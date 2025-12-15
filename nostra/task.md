@@ -8,9 +8,7 @@ Check the following checkbox whether the task I'm requesting is just a design or
 [x] Just Design how to implement or research the background
 
 # Tasks 
-## Task-1: Advanced Design about AI Boost Market Creation 
-![alt text](/images/image-1212-01.png)
-It's error occurred when a user try to claim their winning amount in the My Position page. It worked before the current update which is not committed yet. I think it's related to some batch related code. Can you check it? Let's talk about the cause.
+## Task-1: 
 
 ## After changing any code while coworking with me 
 You should say whether I should rerun api server or not. That goes the same for web server.
