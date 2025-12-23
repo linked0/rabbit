@@ -1,292 +1,714 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nostra - Design Analysis</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; padding: 20px; background: #f5f5f5; }
-        h1, h2, h3 { color: #333; }
-        h1 { border-bottom: 2px solid #e74c3c; padding-bottom: 10px; }
-        h2 { color: #e74c3c; margin-top: 30px; }
-        h3 { color: #2c3e50; }
-        .error-box { background: #fce4e4; border-left: 4px solid #e74c3c; padding: 15px; margin: 20px 0; }
-        .solution-box { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0; }
-        .warning-box { background: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0; }
-        .info-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0; }
-        .code-block { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: 'Fira Code', monospace; font-size: 13px; white-space: pre; }
-        .code-block .comment { color: #6a9955; }
-        .code-block .keyword { color: #569cd6; }
-        .code-block .string { color: #ce9178; }
-        .code-block .function { color: #dcdcaa; }
-        .file-path { font-family: monospace; background: #e0e0e0; padding: 2px 6px; border-radius: 3px; }
-        .inline-code { font-family: monospace; background: #e8e8e8; padding: 2px 6px; border-radius: 3px; }
-        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background: #333; color: white; }
-        tr:nth-child(even) { background: #f9f9f9; }
-        .flow-diagram { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .step { display: inline-block; background: #3498db; color: white; padding: 8px 16px; border-radius: 20px; margin: 5px; }
-        .step-error { background: #e74c3c; }
-        .step-success { background: #4caf50; }
-        .arrow { display: inline-block; margin: 0 10px; color: #666; }
-        .version-compare { display: flex; gap: 20px; }
-        .version-compare > div { flex: 1; }
+        /* Chainlink Integration Styles (Light Scheme) */
+        :root {
+            --cl-primary: #2563eb;
+            --cl-primary-light: #3b82f6;
+            --cl-primary-dark: #1e40af;
+            --cl-accent: #7c3aed;
+            --cl-bg-page: #f8fafc;
+            --cl-bg-card: #ffffff;
+            --cl-text-main: #1e293b;
+            --cl-text-muted: #64748b;
+            --cl-border: #e2e8f0;
+            --cl-glass-bg: #f1f5f9;
+            --cl-code-bg: #1e293b;
+        }
+
+        .cl-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2.5rem;
+            background: var(--cl-bg-page);
+            color: var(--cl-text-main);
+            border-radius: 24px;
+            margin-bottom: 4rem;
+            border: 1px solid var(--cl-border);
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .cl-section {
+            background: var(--cl-bg-card);
+            border: 1px solid var(--cl-border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .cl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cl-card-mini {
+            background: #ffffff;
+            border: 1px solid var(--cl-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .cl-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .cl-badge-blue {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        .cl-code {
+            font-family: 'Fira Code', monospace;
+            background: var(--cl-code-bg);
+            padding: 1.25rem;
+            border-radius: 12px;
+            color: #e2e8f0;
+            display: block;
+            white-space: pre;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        /* Existing Styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #333;
+        }
+
+        h1 {
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #e74c3c;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #2c3e50;
+        }
+
+        .error-box {
+            background: #fce4e4;
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .solution-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            white-space: pre;
+        }
+
+        .code-block .comment {
+            color: #6a9955;
+        }
+
+        .code-block .keyword {
+            color: #569cd6;
+        }
+
+        .code-block .string {
+            color: #ce9178;
+        }
+
+        .code-block .function {
+            color: #dcdcaa;
+        }
+
+        .file-path {
+            font-family: monospace;
+            background: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .inline-code {
+            font-family: monospace;
+            background: #e8e8e8;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #333;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .flow-diagram {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .step {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin: 5px;
+        }
+
+        .step-error {
+            background: #e74c3c;
+        }
+
+        .step-success {
+            background: #4caf50;
+        }
+
+        .arrow {
+            display: inline-block;
+            margin: 0 10px;
+            color: #666;
+        }
+
+        .version-compare {
+            display: flex;
+            gap: 20px;
+        }
+
+        .version-compare>div {
+            flex: 1;
+        }
     </style>
 </head>
+
 <body>
 
-<h1>Task-1: Claim "Not Resolved" Error Analysis</h1>
-<p><strong>Date:</strong> December 12, 2025</p>
-<p><strong>Error Message:</strong> <code>Failed to claim: execution reverted: "Not resolved"</code></p>
+    <!-- Chainlink Oracle Integration Design -->
+    <div class="cl-container" style="margin-top: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); background: white;">
+        <header style="margin-bottom: 2.5rem;">
+            <div class="cl-badge cl-badge-blue">Architecture Proposal</div>
+            <h1
+                style="color: #0f172a; border: none; font-size: 2.5rem; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">
+                Chainlink Oracle Integration Plan</h1>
+            <p style="color: var(--cl-text-muted); font-size: 1.1rem; max-width: 850px;">
+                Prediction markets need two oracle patterns: (1) on-chain price data for liquid assets and (2)
+                verifiable decisions from off-chain APIs for bespoke events.
+            </p>
+        </header>
 
-<h2>1. Error Analysis</h2>
+        <div class="cl-section">
+            <h2 style="color: #0f172a; margin-top: 0; font-family: 'Outfit', sans-serif;">Goals</h2>
+            <ul style="list-style: none; padding: 0;">
+                <li
+                    style="margin-bottom: 0.75rem; color: var(--cl-text-main); position: relative; padding-left: 1.5rem;">
+                    <span style="position: absolute; left: 0; color: var(--cl-primary);">→</span>
+                    <strong>Reliable Resolutions:</strong> Reliable, replayable resolutions with audit trails.
+                </li>
+                <li
+                    style="margin-bottom: 0.75rem; color: var(--cl-text-main); position: relative; padding-left: 1.5rem;">
+                    <span style="position: absolute; left: 0; color: var(--cl-primary);">→</span>
+                    <strong>DON-First:</strong> Minimize custom off-chain infra; lean on Chainlink-hosted DONs where
+                    possible.
+                </li>
+                <li
+                    style="margin-bottom: 0.75rem; color: var(--cl-text-main); position: relative; padding-left: 1.5rem;">
+                    <span style="position: absolute; left: 0; color: var(--cl-primary);">→</span>
+                    <strong>Deterministic Interface:</strong> Deterministic on-chain resolution interface for all market
+                    types.
+                </li>
+                <li
+                    style="margin-bottom: 0.75rem; color: var(--cl-text-main); position: relative; padding-left: 1.5rem;">
+                    <span style="position: absolute; left: 0; color: var(--cl-primary);">→</span>
+                    <strong>Funding Model:</strong> Clear model where price feeds are free reads, while
+                    Functions/Automation require LINK.
+                </li>
+            </ul>
+        </div>
 
-<div class="error-box">
-    <h3>Error Origin</h3>
-    <p>The error occurs in <span class="file-path">ConditionalTokens.sol:160</span></p>
-    <div class="code-block"><span class="keyword">function</span> <span class="function">redeemPositions</span>(...) <span class="keyword">external</span> {
-    Condition <span class="keyword">storage</span> condition = conditions[conditionId];
-    <span class="keyword">require</span>(condition.isResolved, <span class="string">"Not resolved"</span>);  <span class="comment">// &lt;-- Line 160</span>
-    ...
-}</div>
-    <p>The <code>redeemPositions</code> function checks if the condition has been resolved on-chain before allowing token redemption.</p>
-</div>
+        <div class="cl-grid">
+            <div class="cl-card-mini">
+                <h3 style="color: var(--cl-primary); margin-top: 0; font-family: 'Outfit', sans-serif;">MarketRegistry
+                </h3>
+                <p style="font-size: 0.85rem; color: var(--cl-text-muted);">Records each market’s oracle config: type,
+                    sourceId, timeout, quorumRules.</p>
+            </div>
+            <div class="cl-card-mini">
+                <h3 style="color: var(--cl-primary); margin-top: 0; font-family: 'Outfit', sans-serif;">OracleRouter
+                </h3>
+                <p style="font-size: 0.85rem; color: var(--cl-text-muted);">Single entry that markets call. Delegates to
+                    handlers and emits canonical resolution events.</p>
+            </div>
+            <div class="cl-card-mini">
+                <h3 style="color: var(--cl-primary); margin-top: 0; font-family: 'Outfit', sans-serif;">PriceFeedHandler
+                </h3>
+                <p style="font-size: 0.85rem; color: var(--cl-text-muted);">Thin wrapper around Data Feeds. Validates
+                    heartbeat/staleness before returning standardized price.</p>
+            </div>
+            <div class="cl-card-mini">
+                <h3 style="color: var(--cl-primary); margin-top: 0; font-family: 'Outfit', sans-serif;">Automation
+                    Upkeep</h3>
+                <p style="font-size: 0.85rem; color: var(--cl-text-muted);">Triggers Functions requests on schedule or
+                    at market end, preventing manual intervention.</p>
+            </div>
+        </div>
 
-<h2>2. Root Cause: Uncommitted Code Regression</h2>
+        <div class="cl-section">
+            <h2 style="color: #0f172a; margin-top: 0; font-family: 'Outfit', sans-serif;">Operational Flows</h2>
+            <div style="margin-bottom: 2rem;">
+                <h3
+                    style="color: var(--cl-primary-dark); border-bottom: 1px solid var(--cl-border); padding-bottom: 0.5rem;">
+                    Price Market</h3>
+                <p style="font-size: 0.95rem; margin: 1rem 0;">1) Market registers: type=price_feed, sourceId=Aggregator
+                    address, heartbeat, deviation. <br>
+                    2) Settlement call → OracleRouter → Handler: validates roundId freshness and writes resolved price.
+                    <br>
+                    3) Emits MarketResolved(marketId, price, roundId, updatedAt).
+                </p>
+            </div>
+            <div>
+                <h3
+                    style="color: var(--cl-primary-dark); border-bottom: 1px solid var(--cl-border); padding-bottom: 0.5rem;">
+                    API-Decision Market</h3>
+                <p style="font-size: 0.95rem; margin: 1rem 0;">1) Market registers sourceId with subscriptionId, router,
+                    and expectedSchema. <br>
+                    2) Automation upkeep triggers at market end → calls Functions with specific question payload. <br>
+                    3) Functions JS executes HTTP call, normalizes to JSON, and returns verified status. <br>
+                    4) OracleRouter receives callback, validates signature/replay guard, and finalizes settlement.</p>
+            </div>
+        </div>
 
-<div class="info-box">
-    <h3>Key Discovery: Committed Code is Correct</h3>
-    <p>The <strong>committed code (HEAD)</strong> uses the correct function <code>adminFinalizeResolution()</code>.</p>
-    <p>The <strong>uncommitted changes</strong> introduced a broken function call <code>resolveMarket()</code> which does NOT exist in the contract ABI.</p>
-</div>
+        <div class="cl-section">
+            <h2 style="color: #0f172a; margin-top: 0; font-family: 'Outfit', sans-serif;">Contract Sketches</h2>
+            <pre class="cl-code"><code>interface IOracleRouter {
+    function resolvePrice(uint256 marketId) external;
+    function requestDecision(uint256 marketId) external;
+    event MarketResolved(uint256 indexed marketId, bytes32 resolutionType, bytes data);
+}
 
-<h3>Version Comparison</h3>
-<table>
-    <tr>
-        <th>Version</th>
-        <th>Function Called</th>
-        <th>Status</th>
-    </tr>
-    <tr style="background: #e8f5e9;">
-        <td><strong>Committed (HEAD)</strong></td>
-        <td><code>adminFinalizeResolution(questionId, outcomeSlotCount, payouts)</code></td>
-        <td style="color: #4caf50; font-weight: bold;">CORRECT</td>
-    </tr>
-    <tr style="background: #fce4e4;">
-        <td><strong>Uncommitted (working)</strong></td>
-        <td><code>resolveMarket(questionId, payoutIndex)</code></td>
-        <td style="color: #e74c3c; font-weight: bold;">BROKEN</td>
-    </tr>
-</table>
+// Logic: Store feed decimals and convert to 18d fixed-point on read.
+// Security: pendingRequestId[marketId] to prevent duplicate callbacks.</code></pre>
+        </div>
 
-<h3>Committed Code (Working)</h3>
-<div class="code-block"><span class="comment">// Committed version - CORRECT</span>
-<span class="keyword">const</span> outcomeSlotCount = mkt.outcomes.length; <span class="comment">// 2 for binary markets</span>
-<span class="keyword">const</span> tx = <span class="keyword">await</span> resolutionOracle.<span class="function">adminFinalizeResolution</span>(
-    mkt.questionId,
-    outcomeSlotCount,
-    payouts
-);
-<span class="keyword">await</span> tx.wait();
-txHashes.push(tx.hash);</div>
+        <div class="cl-section">
+            <h2 style="color: #0f172a; margin-top: 0; font-family: 'Outfit', sans-serif;">Off-Chain Functions Script
+            </h2>
+            <pre class="cl-code"><code>const res = await Functions.makeHttpRequest({ url, method: "GET", params });
+const { outcome, evidenceUrl, signature } = normalize(res.data);
+return Functions.encodeString(JSON.stringify({ outcome, evidenceUrl, signature }));</code></pre>
+        </div>
 
-<h3>Uncommitted Code (Broken)</h3>
-<div class="code-block"><span class="comment">// Uncommitted changes - BROKEN (resolveMarket does NOT exist!)</span>
-<span class="keyword">try</span> {
-    <span class="keyword">const</span> tx = <span class="keyword">await</span> resolutionOracle.<span class="function">resolveMarket</span>(mkt.questionId, payoutIndex);
-    <span class="keyword">await</span> tx.wait();
-    txHashes.push(tx.hash);
-} <span class="keyword">catch</span> (e: any) {
-    console.warn(<span class="string">`On-chain resolution failed: ${e.message}`</span>);
-    <span class="comment">// Silently continues - DB updated but on-chain NOT resolved!</span>
-}</div>
+        <div class="cl-section">
+            <h2 style="color: #0f172a; margin-top: 0; font-family: 'Outfit', sans-serif;">Rollout Roadmap</h2>
+            <div style="font-size: 0.95rem; color: var(--cl-text-main);">
+                <div style="margin-bottom: 1rem;"><strong>1. Network & Accounts:</strong> Create Functions subscription
+                    on Polygon Amoy/BSC. Record IDs in .env.</div>
+                <div style="margin-bottom: 1rem;"><strong>2. Contract Plumbing:</strong> Deploy Registry/Router in
+                    nostra-contracts. Wire into settlement entrypoints.</div>
+                <div style="margin-bottom: 1rem;"><strong>3. Automation Assets:</strong> CLI scripts to push Functions
+                    source and register Upkeep.</div>
+                <div style="margin-bottom: 1rem;"><strong>4. SDK & Server:</strong> Expose handlers in SDK. job-watch
+                    MarketResolved events for indexing.</div>
+                <div style="margin-bottom: 1rem;"><strong>5. Ops:</strong> Provision LINK, set up dashboards for feed
+                    freshness and runway alerts.</div>
+            </div>
+        </div>
 
-<h2>3. The Problem with Uncommitted Changes</h2>
+        <div class="cl-section">
+            <h2 style="color: #0f172a; margin-top: 0; font-family: 'Outfit', sans-serif;">Adoption & Setup</h2>
+            <div class="cl-grid">
+                <div class="cl-card-mini" style="border-left: 4px solid var(--cl-primary);">
+                    <div class="cl-badge cl-badge-blue">Price Markets</div>
+                    <ul style="list-style: none; padding: 0; font-size: 0.9rem; color: var(--cl-text-main);">
+                        <li style="margin-bottom: 0.5rem;"><strong>1. Feed Discovery:</strong> Find proxy addresses for
+                            BTC/USD, etc. on the <a href="https://docs.chain.link/data-feeds/price-feeds/addresses"
+                                target="_blank" style="color: var(--cl-primary);">Chainlink Directory</a>.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>2. Registration:</strong> If the feed is restricted,
+                            add our <code>OracleRouter</code> address to the Proxy's "Consumers" list.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>3. Funding:</strong> No LINK tokens needed. Only
+                            native gas (MATIC/BNB) is charged for read/resolve transactions.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>4. Repo actions:</strong> Write the proxy + heartbeat
+                            into <code>nostra-contracts/packages/contracts/reference/feeds.&lt;chain&gt;.json</code>
+                            and surface through the SDK; expose the active feed/updatedAt in <code>nostra-server/api</code>
+                            and show it in the web market details.</li>
+                    </ul>
+                </div>
+                <div class="cl-card-mini" style="border-left: 4px solid var(--cl-accent);">
+                    <div class="cl-badge" style="background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff;">API
+                        Decisions</div>
+                    <ul style="list-style: none; padding: 0; font-size: 0.9rem; color: var(--cl-text-main);">
+                        <li style="margin-bottom: 0.5rem;"><strong>1. Acquire LINK:</strong> Request from <a
+                                href="https://faucets.chain.link/" target="_blank"
+                                style="color: var(--cl-accent);">Faucet</a> (Testnet) or swap on DEX (Mainnet).</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>2. Functions Sub:</strong> Create a Subscription ID
+                            on the <a href="https://functions.chain.link/" target="_blank"
+                                style="color: var(--cl-accent);">Functions Portal</a> and fund with LINK.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>3. Automation Portal:</strong> Register a Custom
+                            Logic Upkeep on the <a href="https://automation.chain.link/" target="_blank"
+                                style="color: var(--cl-accent);">Automation Portal</a> to trigger resolutions.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
-<div class="error-box">
-    <h3>Why the Uncommitted Code Fails</h3>
-    <ol>
-        <li><code>resolveMarket()</code> does NOT exist in the ResolutionOracle contract ABI</li>
-        <li>The call throws an error, caught by try/catch</li>
-        <li>Code continues and updates DB to <code>RESOLVED</code></li>
-        <li>On-chain <code>condition.isResolved</code> remains <code>false</code></li>
-        <li>User tries to claim → <code>redeemPositions()</code> reverts with "Not resolved"</li>
-    </ol>
-</div>
+        <div class="cl-section" style="background: #f8fafc;">
+            <h2 style="color: #0f172a; margin-top: 0; font-family: 'Outfit', sans-serif;">Price Feed Onboarding (Nostra-specific)</h2>
+            <p style="font-size: 0.95rem; color: var(--cl-text-main); margin-top: 0;">Detailed steps for using Chainlink price feeds in the Nostra stack:</p>
+            <ul style="padding-left: 1.25rem; color: var(--cl-text-main); font-size: 0.95rem;">
+                <li><strong>Discover & record:</strong> In Chainlink Directory pick the chain (Polygon Amoy/BSC). Copy proxy, decimals, heartbeat for BTC/USD, ETH/USD. Save to <code>feeds.&lt;chain&gt;.json</code> under <code>nostra-contracts/packages/contracts/reference/</code> and mirror keys in <code>.env</code> for deploy scripts (e.g., <code>CHAINLINK_BTCUSD=0x...</code>).</li>
+                <li><strong>Access check:</strong> If the Directory marks the feed as restricted, submit the deployed <code>OracleRouter</code> (or resolution contract) in the feed’s Consumers/Access UI. Keep that address noted in <code>deployments.json</code> and <code>nostra-server/docs/ops/chainlink.md</code>.</li>
+                <li><strong>Funding:</strong> Feeds do not consume LINK. Keep the resolver/operator wallet funded with native gas (MATIC/BNB/ETH) for <code>resolvePrice</code> calls and monitoring bots.</li>
+                <li><strong>Contract wiring:</strong> In <code>PriceFeedHandler</code> store feed decimals/heartbeat, validate freshness/deviation, convert to 18d, and emit <code>MarketResolved</code> with <code>roundId</code>/<code>updatedAt</code>.</li>
+                <li><strong>Server/web surface:</strong> API should expose feed metadata to admins (address, heartbeat, last update). Web should show the active feed and “last updated” timestamp on market pages to build trust.</li>
+            </ul>
+        </div>
 
-<h3>Available Functions in ResolutionOracle</h3>
-<table>
-    <tr>
-        <th>Function</th>
-        <th>Parameters</th>
-        <th>Access</th>
-        <th>Description</th>
-    </tr>
-    <tr>
-        <td><code>proposeResolution</code></td>
-        <td>questionId, outcomeSlotCount, payouts[]</td>
-        <td>onlyResolver</td>
-        <td>Proposes resolution, starts dispute period</td>
-    </tr>
-    <tr>
-        <td><code>finalizeResolution</code></td>
-        <td>questionId, outcomeSlotCount</td>
-        <td>onlyResolver</td>
-        <td>Finalizes after dispute period (1 day)</td>
-    </tr>
-    <tr style="background: #e8f5e9;">
-        <td><strong><code>adminFinalizeResolution</code></strong></td>
-        <td>questionId, outcomeSlotCount, payouts[]</td>
-        <td>onlyOwner</td>
-        <td><strong>Immediate resolution - bypasses dispute period (CORRECT FUNCTION)</strong></td>
-    </tr>
-    <tr style="background: #fce4e4;">
-        <td><s><code>resolveMarket</code></s></td>
-        <td>-</td>
-        <td>-</td>
-        <td><strong>DOES NOT EXIST</strong></td>
-    </tr>
-</table>
+        <div class="cl-section" style="margin-bottom: 0; background: var(--cl-bg-page);">
+            <h2 style="color: #0f172a; margin-top: 0; font-family: 'Outfit', sans-serif;">Notes & Error Handling</h2>
+            <ul style="padding-left: 1.5rem; font-size: 0.9rem; color: var(--cl-text-muted);">
+                <li>Stale feed → resolution revert; emit StaleFeed event.</li>
+                <li>Functions timeout → Automation retry N times, then escalate to manual multi-sig.</li>
+                <li>Keep all artifacts (roundId, payload hash) in events for full auditability.</li>
+            </ul>
+        </div>
+    </div>
 
-<h2>4. Execution Flow Comparison</h2>
+    <hr style="border: none; border-top: 2px dashed #ccc; margin: 4rem 0;">
 
-<div class="flow-diagram">
-    <h3>Uncommitted Code Flow (BROKEN)</h3>
-    <span class="step">Admin clicks Resolve</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step step-error">resolveMarket() throws error</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step">catch: console.warn()</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step">DB Updated (RESOLVED)</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step">User clicks Claim</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step step-error">redeemPositions() REVERTS</span>
-</div>
+    <h1>Task-1: Claim "Not Resolved" Error Analysis</h1>
+    <p><strong>Date:</strong> December 12, 2025</p>
+    <p><strong>Error Message:</strong> <code>Failed to claim: execution reverted: "Not resolved"</code></p>
 
-<div class="flow-diagram">
-    <h3>Committed Code Flow (CORRECT)</h3>
-    <span class="step">Admin clicks Resolve</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step step-success">adminFinalizeResolution()</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step step-success">reportPayouts() called</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step step-success">condition.isResolved = true</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step">DB Updated (RESOLVED)</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step">User clicks Claim</span>
-    <span class="arrow">&#8594;</span>
-    <span class="step step-success">redeemPositions() SUCCESS</span>
-</div>
+    <h2>1. Error Analysis</h2>
 
-<h2>5. Solution</h2>
+    <div class="error-box">
+        <h3>Error Origin</h3>
+        <p>The error occurs in <span class="file-path">ConditionalTokens.sol:160</span></p>
+        <div class="code-block"><span class="keyword">function</span> <span class="function">redeemPositions</span>(...)
+            <span class="keyword">external</span> {
+            Condition <span class="keyword">storage</span> condition = conditions[conditionId];
+            <span class="keyword">require</span>(condition.isResolved, <span class="string">"Not resolved"</span>);
+            <span class="comment">// &lt;-- Line 160</span>
+            ...
+            }
+        </div>
+        <p>The <code>redeemPositions</code> function checks if the condition has been resolved on-chain before allowing
+            token redemption.</p>
+    </div>
 
-<div class="solution-box">
-    <h3>Option 1: Discard Uncommitted Changes (Recommended)</h3>
-    <p>If the uncommitted changes to <code>admin.ts</code> are not needed, simply restore the committed version:</p>
-    <div class="code-block">git checkout api/src/routes/admin.ts</div>
-    <p>This will restore the working <code>adminFinalizeResolution()</code> calls.</p>
-</div>
+    <h2>2. Root Cause: Uncommitted Code Regression</h2>
 
-<div class="warning-box">
-    <h3>Option 2: Fix the Uncommitted Changes</h3>
-    <p>If the uncommitted changes contain other necessary modifications, replace the broken <code>resolveMarket()</code> calls:</p>
-    <div class="code-block"><span class="comment">// Replace this (BROKEN):</span>
-<span class="keyword">const</span> tx = <span class="keyword">await</span> resolutionOracle.<span class="function">resolveMarket</span>(mkt.questionId, payoutIndex);
+    <div class="info-box">
+        <h3>Key Discovery: Committed Code is Correct</h3>
+        <p>The <strong>committed code (HEAD)</strong> uses the correct function <code>adminFinalizeResolution()</code>.
+        </p>
+        <p>The <strong>uncommitted changes</strong> introduced a broken function call <code>resolveMarket()</code> which
+            does NOT exist in the contract ABI.</p>
+    </div>
 
-<span class="comment">// With this (CORRECT):</span>
-<span class="keyword">const</span> outcomeSlotCount = 2;
-<span class="keyword">const</span> payouts = payoutIndex === 0 ? [100, 0] : [0, 100];
-<span class="keyword">const</span> tx = <span class="keyword">await</span> resolutionOracle.<span class="function">adminFinalizeResolution</span>(
-    mkt.questionId,
-    outcomeSlotCount,
-    payouts
-);</div>
-</div>
-
-<h2>6. Payout Array Format</h2>
-
-<div class="info-box">
-    <h3>Important: Payouts Array</h3>
-    <p>The <code>adminFinalizeResolution</code> function requires a payouts array, not just an index:</p>
+    <h3>Version Comparison</h3>
     <table>
         <tr>
-            <th>Winning Outcome</th>
-            <th>payoutIndex</th>
-            <th>payouts Array</th>
+            <th>Version</th>
+            <th>Function Called</th>
+            <th>Status</th>
         </tr>
-        <tr>
-            <td>YES (first outcome)</td>
-            <td>0</td>
-            <td><code>[100, 0]</code></td>
+        <tr style="background: #e8f5e9;">
+            <td><strong>Committed (HEAD)</strong></td>
+            <td><code>adminFinalizeResolution(questionId, outcomeSlotCount, payouts)</code></td>
+            <td style="color: #4caf50; font-weight: bold;">CORRECT</td>
         </tr>
-        <tr>
-            <td>NO (second outcome)</td>
-            <td>1</td>
-            <td><code>[0, 100]</code></td>
+        <tr style="background: #fce4e4;">
+            <td><strong>Uncommitted (working)</strong></td>
+            <td><code>resolveMarket(questionId, payoutIndex)</code></td>
+            <td style="color: #e74c3c; font-weight: bold;">BROKEN</td>
         </tr>
     </table>
-    <p>The values represent percentage (100 = full payout to that outcome, 0 = no payout).</p>
-</div>
 
-<h2>7. Markets Affected</h2>
+    <h3>Committed Code (Working)</h3>
+    <div class="code-block"><span class="comment">// Committed version - CORRECT</span>
+        <span class="keyword">const</span> outcomeSlotCount = mkt.outcomes.length; <span class="comment">// 2 for binary
+            markets</span>
+        <span class="keyword">const</span> tx = <span class="keyword">await</span> resolutionOracle.<span
+            class="function">adminFinalizeResolution</span>(
+        mkt.questionId,
+        outcomeSlotCount,
+        payouts
+        );
+        <span class="keyword">await</span> tx.wait();
+        txHashes.push(tx.hash);
+    </div>
 
-<div class="warning-box">
-    <h3>Markets Resolved with Broken Code</h3>
-    <p>Any markets resolved while running the uncommitted code are in an inconsistent state:</p>
-    <ul>
-        <li><strong>Database:</strong> status = 'RESOLVED'</li>
-        <li><strong>On-Chain:</strong> condition.isResolved = false</li>
-    </ul>
-    <p><strong>To fix these markets:</strong></p>
-    <ol>
-        <li>Identify all markets with <code>status: 'RESOLVED'</code> in the database</li>
-        <li>For each market, call <code>adminFinalizeResolution</code> manually or via a migration script</li>
-        <li>Verify on-chain resolution using <code>conditionalTokens.conditions(conditionId).isResolved</code></li>
-    </ol>
-</div>
+    <h3>Uncommitted Code (Broken)</h3>
+    <div class="code-block"><span class="comment">// Uncommitted changes - BROKEN (resolveMarket does NOT exist!)</span>
+        <span class="keyword">try</span> {
+        <span class="keyword">const</span> tx = <span class="keyword">await</span> resolutionOracle.<span
+            class="function">resolveMarket</span>(mkt.questionId, payoutIndex);
+        <span class="keyword">await</span> tx.wait();
+        txHashes.push(tx.hash);
+        } <span class="keyword">catch</span> (e: any) {
+        console.warn(<span class="string">`On-chain resolution failed: ${e.message}`</span>);
+        <span class="comment">// Silently continues - DB updated but on-chain NOT resolved!</span>
+        }
+    </div>
 
-<h2>8. Summary</h2>
+    <h2>3. The Problem with Uncommitted Changes</h2>
 
-<table>
-    <tr>
-        <th>Aspect</th>
-        <th>Details</th>
-    </tr>
-    <tr>
-        <td><strong>Root Cause</strong></td>
-        <td>Uncommitted changes introduced broken <code>resolveMarket()</code> call</td>
-    </tr>
-    <tr>
-        <td><strong>Committed Code</strong></td>
-        <td>Correct - uses <code>adminFinalizeResolution()</code></td>
-    </tr>
-    <tr>
-        <td><strong>Fix</strong></td>
-        <td>Discard changes or fix <code>resolveMarket</code> → <code>adminFinalizeResolution</code></td>
-    </tr>
-    <tr>
-        <td><strong>Restart Required</strong></td>
-        <td>Yes - API server restart needed after fix</td>
-    </tr>
-</table>
+    <div class="error-box">
+        <h3>Why the Uncommitted Code Fails</h3>
+        <ol>
+            <li><code>resolveMarket()</code> does NOT exist in the ResolutionOracle contract ABI</li>
+            <li>The call throws an error, caught by try/catch</li>
+            <li>Code continues and updates DB to <code>RESOLVED</code></li>
+            <li>On-chain <code>condition.isResolved</code> remains <code>false</code></li>
+            <li>User tries to claim → <code>redeemPositions()</code> reverts with "Not resolved"</li>
+        </ol>
+    </div>
 
-<h2>9. Git Commands Reference</h2>
+    <h3>Available Functions in ResolutionOracle</h3>
+    <table>
+        <tr>
+            <th>Function</th>
+            <th>Parameters</th>
+            <th>Access</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><code>proposeResolution</code></td>
+            <td>questionId, outcomeSlotCount, payouts[]</td>
+            <td>onlyResolver</td>
+            <td>Proposes resolution, starts dispute period</td>
+        </tr>
+        <tr>
+            <td><code>finalizeResolution</code></td>
+            <td>questionId, outcomeSlotCount</td>
+            <td>onlyResolver</td>
+            <td>Finalizes after dispute period (1 day)</td>
+        </tr>
+        <tr style="background: #e8f5e9;">
+            <td><strong><code>adminFinalizeResolution</code></strong></td>
+            <td>questionId, outcomeSlotCount, payouts[]</td>
+            <td>onlyOwner</td>
+            <td><strong>Immediate resolution - bypasses dispute period (CORRECT FUNCTION)</strong></td>
+        </tr>
+        <tr style="background: #fce4e4;">
+            <td><s><code>resolveMarket</code></s></td>
+            <td>-</td>
+            <td>-</td>
+            <td><strong>DOES NOT EXIST</strong></td>
+        </tr>
+    </table>
 
-<div class="code-block"><span class="comment"># View current changes</span>
-git diff api/src/routes/admin.ts
+    <h2>4. Execution Flow Comparison</h2>
 
-<span class="comment"># Discard uncommitted changes to admin.ts (restore working version)</span>
-git checkout api/src/routes/admin.ts
+    <div class="flow-diagram">
+        <h3>Uncommitted Code Flow (BROKEN)</h3>
+        <span class="step">Admin clicks Resolve</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step step-error">resolveMarket() throws error</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step">catch: console.warn()</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step">DB Updated (RESOLVED)</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step">User clicks Claim</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step step-error">redeemPositions() REVERTS</span>
+    </div>
 
-<span class="comment"># Or selectively stage other changes and reset admin.ts</span>
-git stash
-git checkout api/src/routes/admin.ts
-git stash pop</div>
+    <div class="flow-diagram">
+        <h3>Committed Code Flow (CORRECT)</h3>
+        <span class="step">Admin clicks Resolve</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step step-success">adminFinalizeResolution()</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step step-success">reportPayouts() called</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step step-success">condition.isResolved = true</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step">DB Updated (RESOLVED)</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step">User clicks Claim</span>
+        <span class="arrow">&#8594;</span>
+        <span class="step step-success">redeemPositions() SUCCESS</span>
+    </div>
+
+    <h2>5. Solution</h2>
+
+    <div class="solution-box">
+        <h3>Option 1: Discard Uncommitted Changes (Recommended)</h3>
+        <p>If the uncommitted changes to <code>admin.ts</code> are not needed, simply restore the committed version:</p>
+        <div class="code-block">git checkout api/src/routes/admin.ts</div>
+        <p>This will restore the working <code>adminFinalizeResolution()</code> calls.</p>
+    </div>
+
+    <div class="warning-box">
+        <h3>Option 2: Fix the Uncommitted Changes</h3>
+        <p>If the uncommitted changes contain other necessary modifications, replace the broken
+            <code>resolveMarket()</code> calls:
+        </p>
+        <div class="code-block"><span class="comment">// Replace this (BROKEN):</span>
+            <span class="keyword">const</span> tx = <span class="keyword">await</span> resolutionOracle.<span
+                class="function">resolveMarket</span>(mkt.questionId, payoutIndex);
+
+            <span class="comment">// With this (CORRECT):</span>
+            <span class="keyword">const</span> outcomeSlotCount = 2;
+            <span class="keyword">const</span> payouts = payoutIndex === 0 ? [100, 0] : [0, 100];
+            <span class="keyword">const</span> tx = <span class="keyword">await</span> resolutionOracle.<span
+                class="function">adminFinalizeResolution</span>(
+            mkt.questionId,
+            outcomeSlotCount,
+            payouts
+            );
+        </div>
+    </div>
+
+    <h2>6. Payout Array Format</h2>
+
+    <div class="info-box">
+        <h3>Important: Payouts Array</h3>
+        <p>The <code>adminFinalizeResolution</code> function requires a payouts array, not just an index:</p>
+        <table>
+            <tr>
+                <th>Winning Outcome</th>
+                <th>payoutIndex</th>
+                <th>payouts Array</th>
+            </tr>
+            <tr>
+                <td>YES (first outcome)</td>
+                <td>0</td>
+                <td><code>[100, 0]</code></td>
+            </tr>
+            <tr>
+                <td>NO (second outcome)</td>
+                <td>1</td>
+                <td><code>[0, 100]</code></td>
+            </tr>
+        </table>
+        <p>The values represent percentage (100 = full payout to that outcome, 0 = no payout).</p>
+    </div>
+
+    <h2>7. Markets Affected</h2>
+
+    <div class="warning-box">
+        <h3>Markets Resolved with Broken Code</h3>
+        <p>Any markets resolved while running the uncommitted code are in an inconsistent state:</p>
+        <ul>
+            <li><strong>Database:</strong> status = 'RESOLVED'</li>
+            <li><strong>On-Chain:</strong> condition.isResolved = false</li>
+        </ul>
+        <p><strong>To fix these markets:</strong></p>
+        <ol>
+            <li>Identify all markets with <code>status: 'RESOLVED'</code> in the database</li>
+            <li>For each market, call <code>adminFinalizeResolution</code> manually or via a migration script</li>
+            <li>Verify on-chain resolution using <code>conditionalTokens.conditions(conditionId).isResolved</code></li>
+        </ol>
+    </div>
+
+    <h2>8. Summary</h2>
+
+    <table>
+        <tr>
+            <th>Aspect</th>
+            <th>Details</th>
+        </tr>
+        <tr>
+            <td><strong>Root Cause</strong></td>
+            <td>Uncommitted changes introduced broken <code>resolveMarket()</code> call</td>
+        </tr>
+        <tr>
+            <td><strong>Committed Code</strong></td>
+            <td>Correct - uses <code>adminFinalizeResolution()</code></td>
+        </tr>
+        <tr>
+            <td><strong>Fix</strong></td>
+            <td>Discard changes or fix <code>resolveMarket</code> → <code>adminFinalizeResolution</code></td>
+        </tr>
+        <tr>
+            <td><strong>Restart Required</strong></td>
+            <td>Yes - API server restart needed after fix</td>
+        </tr>
+    </table>
+
+    <h2>9. Git Commands Reference</h2>
+
+    <div class="code-block"><span class="comment"># View current changes</span>
+        git diff api/src/routes/admin.ts
+
+        <span class="comment"># Discard uncommitted changes to admin.ts (restore working version)</span>
+        git checkout api/src/routes/admin.ts
+
+        <span class="comment"># Or selectively stage other changes and reset admin.ts</span>
+        git stash
+        git checkout api/src/routes/admin.ts
+        git stash pop
+    </div>
 
 </body>
+
 </html>

@@ -4,11 +4,16 @@ This is the list of additional tasks in response to your latest implementation o
 # Heads-Up
 Check the following checkbox whether the task I'm requesting is just a design or a code change.
 
-[ ] Change the code 
-[x] Just Design how to implement or research the background
+[x] Change the code 
+[ ] Just Design how to implement or research the background
 
 # Tasks 
 ## Task-1: 
+![Task-1](/images/no60c-bid.png)
+
+This is the result of 3. Trader 2 Buy step on "Test 2: Liquidity & Limit Orders" case in file:///Users/jay/work/nostra-server/docs/test/test-plan.md
+
+60¢: $28.00 (~46.67 shares) should be shown on the Bids. But that bid doesn't show up. As you can see the 60% of probability is right. I think it was normal in the some previous code.
 
 ## After changing any code while coworking with me 
 You should say whether I should rerun api server or not. That goes the same for web server.
@@ -24,7 +29,7 @@ If we just discussing what to do for some change not going to implement it, you 
 
 You should copy this md file to `/Users/jay/work/task/nostra/old-tasks` folder with current date. And if there is already the same file, you should add the new content to the existing file. You should remove the "For my English skill" section from the md file before copying it.
 
-You must summarize the what you've done and the changes you've made to the codebase in the file named `summary.html` with date in the folder `~/work/task/nostra/dev-logs`. Don't include "For English skill" related content for the summary. If there is already the same file, you just add the new content to the existing file. You should add the changed code showing before and after and technical details and background. The code for ‘before’ and ‘after’ should be placed vertically. You can add link to the changed code to the file that shows in antigravity, at least vscode. I think the summary file should be made after you changed some code not for designing how to implement it. I want have a summary.html also in the same folder as this task.md file that can be replaced so that I can see the file in the browser without checking the changing file name.
+You must summarize the what you've done and the changes you've made to the codebase in the file named `log.html` with date in the folder `~/work/task/nostra/dev-logs`. Don't include "For English skill" related content for the log. If there is already the same file, you just add the new content to the existing file. You should add the changed code showing before and after and technical details and background. The code for ‘before’ and ‘after’ should be placed vertically. You can add link to the changed code to the file that shows in antigravity, at least vscode. I think the log file should be made after you changed some code not for designing how to implement it. I want have a log.html also in the same folder as this task.md file that can be replaced so that I can see the file in the browser without checking the changing file name.
 
 I think it's better to make a future plan for the project like fixing some bug or change some hahavior of the codebase like using subgraph for the market data or using web socket for the market data or ect. So you can make a file named `future-plan.html` in the same folder as this task.md file that can be replaced so that I can see the file in the browser without checking the changing file name. Adding future features should be done by my request like "Add it to the future plan".
 
