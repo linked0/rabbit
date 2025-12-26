@@ -8,12 +8,8 @@ Check the following checkbox whether the task I'm requesting is just a design or
 [ ] Just Design how to implement or research the background
 
 # Tasks 
-## Task-1: 
-![Task-1](/images/no60c-bid.png)
-
-This is the result of 3. Trader 2 Buy step on "Test 2: Liquidity & Limit Orders" case in file:///Users/jay/work/nostra-server/docs/test/test-plan.md
-
-60¢: $28.00 (~46.67 shares) should be shown on the Bids. But that bid doesn't show up. As you can see the 60% of probability is right. I think it was normal in the some previous code.
+## Task-1: Remove Admin Vault card from testing-guide page in the Nostra website
+The key is critical to be shown.
 
 ## After changing any code while coworking with me 
 You should say whether I should rerun api server or not. That goes the same for web server.
