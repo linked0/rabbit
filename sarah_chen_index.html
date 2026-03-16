@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sarah Chen — UX Designer for Early-Stage Startups</title>
+  <meta name="description" content="Sarah Chen is a freelance UX designer who helps early-stage startups design and launch their MVPs. Clean, strategic, fast." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:       #E8622A;
+      --accent-hover: #d0561f;
+      --accent-light: rgba(232, 98, 42, 0.10);
+      --black:        #0a0a0a;
+      --near-black:   #111111;
+      --dark:         #1a1a1a;
+      --mid:          #444444;
+      --muted:        #888888;
+      --light:        #d8d8d8;
+      --off-white:    #f7f7f5;
+      --white:        #ffffff;
+      --section-alt:  #f3f2ef;
+      --nav-h:        68px;
+      --radius:       16px;
+      --radius-lg:    24px;
+      --shadow-sm:    0 2px 12px rgba(0,0,0,0.07);
+      --shadow-md:    0 8px 40px rgba(0,0,0,0.10);
+      --shadow-lg:    0 24px 80px rgba(0,0,0,0.13);
+      --transition:   0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--white);
+      color: var(--near-black);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ─── Utility ──────────────────────────────────────────────────────────── */
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 28px;
+    }
+
+    .accent { color: var(--accent); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 50px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+      border: none;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--white);
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(232, 98, 42, 0.35);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--near-black);
+      border: 1.5px solid var(--light);
+    }
+    .btn-outline:hover {
+      border-color: var(--near-black);
+      transform: translateY(-1px);
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    h2.section-title {
+      font-size: clamp(36px, 5vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      color: var(--near-black);
+      margin-bottom: 20px;
+    }
+
+    p.section-sub {
+      font-size: 18px;
+      color: var(--mid);
+      line-height: 1.7;
+      max-width: 560px;
+    }
+
+    /* ─── Animate on scroll ────────────────────────────────────────────────── */
+    .anim {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+      will-change: transform;
+    }
+    .anim.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .anim-delay-1 { transition-delay: 0.08s; }
+    .anim-delay-2 { transition-delay: 0.16s; }
+    .anim-delay-3 { transition-delay: 0.24s; }
+    .anim-delay-4 { transition-delay: 0.32s; }
+
+    /* ─── Navigation ───────────────────────────────────────────────────────── */
+    #nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      z-index: 1000;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    #nav.scrolled {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--near-black);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--mid);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+      transition: color var(--transition);
+    }
+    .nav-links a:hover { color: var(--near-black); }
+
+    .nav-cta { flex-shrink: 0; }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--near-black);
+      border-radius: 2px;
+      transition: var(--transition);
+    }
+
+    /* Mobile nav */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--white);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--near-black);
+      text-decoration: none;
+      letter-spacing: -0.03em;
+    }
+    .mobile-close {
+      position: absolute;
+      top: 20px; right: 24px;
+      background: none;
+      border: none;
+      font-size: 32px;
+      cursor: pointer;
+      color: var(--mid);
+      line-height: 1;
+    }
+
+    /* ─── Hero ─────────────────────────────────────────────────────────────── */
+    #hero {
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      background: var(--white);
+      padding-top: var(--nav-h);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(232, 98, 42, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232, 98, 42, 0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+    .hero-bg-glow {
+      position: absolute;
+      top: -20%;
+      right: -10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(232, 98, 42, 0.10) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      padding: 80px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-light);
+      border: 1px solid rgba(232,98,42,0.2);
+      border-radius: 50px;
+      padding: 6px 14px 6px 8px;
+      margin-bottom: 28px;
+    }
+    .hero-badge-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+    .hero-badge span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+
+    .hero-headline {
+      font-size: clamp(48px, 6vw, 80px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.03;
+      color: var(--near-black);
+      margin-bottom: 24px;
+    }
+
+    .hero-sub {
+      font-size: 19px;
+      color: var(--mid);
+      line-height: 1.7;
+      margin-bottom: 40px;
+      max-width: 460px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .hero-social-proof {
+      margin-top: 48px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .hero-avatars {
+      display: flex;
+    }
+    .hero-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--white);
+      margin-right: -10px;
+      background: linear-gradient(135deg, #c8c8c8, #e8e8e8);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-avatar:nth-child(1) { background: linear-gradient(135deg, #d4c5b0, #e8ddd0); }
+    .hero-avatar:nth-child(2) { background: linear-gradient(135deg, #b0c4d4, #c5d8e8); }
+    .hero-avatar:nth-child(3) { background: linear-gradient(135deg, #c4b0d4, #d8c5e8); }
+    .hero-sp-text {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .hero-sp-text strong { color: var(--near-black); font-weight: 700; }
+
+    /* Hero visual */
+    .hero-visual {
+      position: relative;
+    }
+    .hero-mockup {
+      /* TODO: Replace with actual portfolio screenshot */
+      background: linear-gradient(140deg, #f0ede8 0%, #e8e2d8 50%, #ddd6c8 100%);
+      border-radius: var(--radius-lg);
+      aspect-ratio: 4/3;
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0,0,0,0.05);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-mockup-inner {
+      width: 85%;
+      height: 80%;
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-mockup-bar {
+      height: 32px;
+      background: var(--off-white);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 6px;
+    }
+    .mock-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .mock-dot-r { background: #ff5f56; }
+    .mock-dot-y { background: #febc2e; }
+    .mock-dot-g { background: #27c840; }
+    .hero-mockup-content {
+      padding: 20px;
+    }
+    .mock-line {
+      height: 10px;
+      border-radius: 5px;
+      background: linear-gradient(90deg, #e8e8e8, #f2f2f2);
+      margin-bottom: 10px;
+    }
+    .mock-line.short { width: 55%; }
+    .mock-line.med { width: 75%; }
+    .mock-line.full { width: 100%; }
+    .mock-block {
+      margin-top: 18px;
+      height: 80px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #f0ede8, #e8e2d8);
+    }
+    .mock-accent-bar {
+      margin-top: 18px;
+      height: 36px;
+      border-radius: 6px;
+      background: var(--accent);
+      width: 120px;
+    }
+
+    .hero-float-badge {
+      position: absolute;
+      bottom: -16px;
+      left: -24px;
+      background: var(--white);
+      border-radius: 14px;
+      padding: 14px 18px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero-float-icon {
+      width: 40px; height: 40px;
+      background: var(--accent-light);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .hero-float-label { font-size: 13px; color: var(--muted); }
+    .hero-float-value { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+
+    .hero-float-badge-2 {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      background: var(--near-black);
+      border-radius: 14px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow-md);
+      color: var(--white);
+      text-align: center;
+    }
+    .hero-float-badge-2 .big { font-size: 22px; font-weight: 800; color: var(--accent); }
+    .hero-float-badge-2 .sm { font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 500; }
+
+    /* ─── Stats Bar ─────────────────────────────────────────────────────────── */
+    #stats {
+      background: var(--near-black);
+      padding: 56px 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 0 24px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat-item:last-child { border-right: none; }
+
+    .stat-number {
+      font-size: clamp(40px, 5vw, 60px);
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-number span { color: var(--accent); }
+    .stat-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    /* ─── Services ─────────────────────────────────────────────────────────── */
+    #services {
+      padding: 120px 0;
+      background: var(--white);
+    }
+
+    .services-header {
+      max-width: 600px;
+      margin-bottom: 72px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .service-card {
+      background: var(--off-white);
+      border-radius: var(--radius-lg);
+      padding: 40px 36px;
+      transition: var(--transition);
+      border: 1px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform var(--transition);
+      transform-origin: left;
+    }
+    .service-card:hover {
+      border-color: rgba(232,98,42,0.15);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-4px);
+    }
+    .service-card:hover::before { transform: scaleX(1); }
+
+    .service-icon {
+      width: 52px; height: 52px;
+      background: var(--accent-light);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+    .service-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .service-desc {
+      font-size: 15px;
+      color: var(--mid);
+      line-height: 1.7;
+    }
+    .service-tags {
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-light);
+      border-radius: 50px;
+      padding: 4px 12px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ─── Process ──────────────────────────────────────────────────────────── */
+    #process {
+      padding: 120px 0;
+      background: var(--section-alt);
+    }
+
+    .process-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 80px;
+    }
+    .process-header p.section-sub { margin: 0 auto; }
+
+    .process-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      position: relative;
+    }
+    .process-steps::before {
+      content: '';
+      position: absolute;
+      top: 32px;
+      left: 12.5%;
+      right: 12.5%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--light) 10%, var(--light) 90%, transparent);
+    }
+
+    .process-step {
+      text-align: center;
+      padding: 0 20px;
+      position: relative;
+    }
+    .step-number {
+      width: 64px; height: 64px;
+      background: var(--white);
+      border: 2px solid var(--light);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--near-black);
+      margin: 0 auto 28px;
+      position: relative;
+      z-index: 1;
+      transition: var(--transition);
+    }
+    .process-step:hover .step-number {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--white);
+    }
+    .step-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .step-desc {
+      font-size: 14px;
+      color: var(--mid);
+      line-height: 1.7;
+    }
+
+    /* ─── Work / Portfolio ─────────────────────────────────────────────────── */
+    #work {
+      padding: 120px 0;
+      background: var(--white);
+    }
+
+    .work-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 56px;
+    }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .work-card {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.06);
+      transition: var(--transition);
+      background: var(--white);
+    }
+    .work-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .work-card-img {
+      /* TODO: Replace with actual portfolio screenshots */
+      aspect-ratio: 16/10;
+      position: relative;
+      overflow: hidden;
+    }
+    .work-card-img-1 { background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); }
+    .work-card-img-2 { background: linear-gradient(135deg, #1a1a2a 0%, #0a0a1a 100%); }
+    .work-card-img-3 { background: linear-gradient(135deg, #1a2a1a 0%, #0a1a0a 100%); }
+
+    .work-card-ui {
+      position: absolute;
+      inset: 20px 20px 0;
+      background: var(--white);
+      border-radius: 10px 10px 0 0;
+      padding: 14px;
+    }
+    .work-card-ui-bar {
+      height: 24px;
+      background: var(--off-white);
+      border-radius: 4px 4px 0 0;
+      margin: -14px -14px 12px;
+      display: flex; align-items: center; padding: 0 10px; gap: 5px;
+    }
+    .wdot { width: 7px; height: 7px; border-radius: 50%; }
+    .wdot-r { background: #ff5f56; }
+    .wdot-y { background: #febc2e; }
+    .wdot-g { background: #27c840; }
+    .work-ui-line { height: 8px; border-radius: 4px; background: #eee; margin-bottom: 8px; }
+    .work-ui-line.s { width: 60%; }
+    .work-ui-block { height: 60px; border-radius: 6px; background: linear-gradient(90deg, #f0f0f0, #e8e8e8); margin-top: 14px; }
+    .work-ui-accent { width: 80px; height: 28px; border-radius: 5px; background: var(--accent); margin-top: 10px; }
+
+    .work-card-body {
+      padding: 28px;
+    }
+    .work-card-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .work-card-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+    .work-card-desc {
+      font-size: 14px;
+      color: var(--mid);
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+    .work-card-result {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--near-black);
+      font-weight: 600;
+    }
+    .result-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ─── Testimonials ─────────────────────────────────────────────────────── */
+    #testimonials {
+      padding: 120px 0;
+      background: var(--near-black);
+    }
+
+    .testimonials-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .testimonials-header h2.section-title { color: var(--white); }
+    .testimonials-header p.section-sub { color: rgba(255,255,255,0.5); margin: 0 auto; }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+    }
+
+    .testimonial-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      transition: var(--transition);
+    }
+    .testimonial-card:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(232,98,42,0.3);
+    }
+
+    .quote-mark {
+      font-size: 56px;
+      line-height: 1;
+      color: var(--accent);
+      font-family: Georgia, serif;
+      margin-bottom: 20px;
+      display: block;
+    }
+    .testimonial-text {
+      font-size: 17px;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.75;
+      margin-bottom: 32px;
+      font-style: italic;
+    }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .author-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #555, #333);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      color: rgba(255,255,255,0.6);
+      font-size: 16px;
+    }
+    /* TODO: Replace with actual client photos */
+    .author-avatar.av1 { background: linear-gradient(135deg, #8b7355, #a08060); }
+    .author-avatar.av2 { background: linear-gradient(135deg, #557585, #406070); }
+    .author-name { font-size: 15px; font-weight: 700; color: var(--white); }
+    .author-title { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+    /* ─── Contact ──────────────────────────────────────────────────────────── */
+    #contact {
+      padding: 120px 0;
+      background: var(--white);
+    }
+
+    .contact-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+
+    .contact-left h2.section-title { margin-bottom: 16px; }
+    .contact-left p.section-sub { margin-bottom: 40px; }
+
+    .contact-cta-block {
+      background: var(--near-black);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      margin-top: 40px;
+    }
+    .contact-cta-block h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .contact-cta-block p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 20px;
+    }
+    .contact-cta-block .btn-primary { width: 100%; justify-content: center; }
+
+    .contact-details {
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .contact-detail {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--mid);
+    }
+    .detail-icon {
+      width: 36px; height: 36px;
+      background: var(--off-white);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* Contact form */
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--near-black);
+      letter-spacing: -0.01em;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 14px 16px;
+      border: 1.5px solid var(--light);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--near-black);
+      background: var(--white);
+      transition: var(--transition);
+      outline: none;
+      resize: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(232,98,42,0.1);
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: var(--light); }
+
+    .form-submit {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .form-note {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .form-submit .btn-primary {
+      padding: 15px 32px;
+      font-size: 15px;
+    }
+
+    /* ─── Footer CTA ───────────────────────────────────────────────────────── */
+    #footer-cta {
+      background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+      padding: 100px 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #footer-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 50%, rgba(232,98,42,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 50%, rgba(232,98,42,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .footer-cta-inner { position: relative; z-index: 1; }
+    .footer-cta-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+    #footer-cta h2 {
+      font-size: clamp(36px, 5vw, 60px);
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    #footer-cta p {
+      font-size: 18px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 40px;
+    }
+    .footer-cta-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: rgba(255,255,255,0.7);
+      border: 1.5px solid rgba(255,255,255,0.15);
+    }
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.4);
+      color: var(--white);
+      transform: translateY(-1px);
+    }
+
+    /* ─── Footer ───────────────────────────────────────────────────────────── */
+    footer {
+      background: var(--black);
+      padding: 48px 0 36px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .footer-logo {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .footer-logo span { color: var(--accent); }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+    .footer-links a:hover { color: rgba(255,255,255,0.8); }
+
+    .footer-copy {
+      font-size: 12px;
+      color: rgba(255,255,255,0.25);
+      margin-top: 32px;
+      text-align: center;
+    }
+
+    /* ─── Responsive ───────────────────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .work-grid { grid-template-columns: repeat(2, 1fr); }
+      .process-steps { grid-template-columns: repeat(2, 1fr); gap: 48px; }
+      .process-steps::before { display: none; }
+    }
+
+    @media (max-width: 768px) {
+      :root { --nav-h: 60px; }
+
+      .nav-links, .nav-cta { display: none; }
+      .hamburger { display: flex; }
+
+      .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 48px;
+        padding: 60px 0;
+      }
+      .hero-visual { order: -1; }
+      .hero-headline { font-size: clamp(38px, 10vw, 52px); }
+      .hero-float-badge { left: 0; bottom: -10px; }
+      .hero-float-badge-2 { right: 0; top: -10px; }
+
+      .stats-grid { grid-template-columns: 1fr; gap: 32px; }
+      .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 32px; }
+      .stat-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+      .services-grid { grid-template-columns: 1fr; }
+      .work-grid { grid-template-columns: 1fr; }
+      .process-steps { grid-template-columns: 1fr; gap: 40px; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+
+      .contact-inner { grid-template-columns: 1fr; gap: 48px; }
+      .form-row { grid-template-columns: 1fr; }
+      .form-submit { flex-direction: column; align-items: stretch; }
+      .form-submit .btn-primary { width: 100%; justify-content: center; }
+
+      .work-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* ─── Form success state ────────────────────────────────────────────────── */
+    .form-success {
+      display: none;
+      text-align: center;
+      padding: 60px 40px;
+      background: var(--off-white);
+      border-radius: var(--radius-lg);
+    }
+    .form-success.show { display: block; }
+    .form-success .success-icon {
+      width: 64px; height: 64px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 20px;
+      color: white;
+    }
+    .form-success h3 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .form-success p { font-size: 15px; color: var(--mid); }
+  </style>
+</head>
+
+<body>
+
+  <!-- ─── Mobile menu ──────────────────────────────────────────────────────── -->
+  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation">
+    <button class="mobile-close" id="mobile-close" aria-label="Close menu">&times;</button>
+    <a href="#services" onclick="closeMobileMenu()">Services</a>
+    <a href="#process" onclick="closeMobileMenu()">Process</a>
+    <a href="#work" onclick="closeMobileMenu()">Work</a>
+    <a href="#contact" onclick="closeMobileMenu()">Contact</a>
+    <!-- TODO: Replace with your Calendly link -->
+    <a href="https://calendly.com/sarahchen" target="_blank" rel="noopener" style="color: var(--accent);">Book a Call ↗</a>
+  </div>
+
+  <!-- ─── Navigation ──────────────────────────────────────────────────────── -->
+  <nav id="nav" aria-label="Main navigation">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="#" class="nav-logo" aria-label="Sarah Chen home">Sarah<span>.</span></a>
+
+        <ul class="nav-links" role="list">
+          <li><a href="#services">Services</a></li>
+          <li><a href="#process">Process</a></li>
+          <li><a href="#work">Work</a></li>
+          <li><a href="#testimonials">Clients</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+
+        <!-- TODO: Replace with your Calendly link -->
+        <a href="https://calendly.com/sarahchen" target="_blank" rel="noopener" class="btn btn-primary nav-cta" aria-label="Book a discovery call">
+          Book a Call
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+        </a>
+
+        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ─── Hero ──────────────────────────────────────────────────────────── -->
+    <section id="hero" aria-label="Introduction">
+      <div class="hero-bg-grid" aria-hidden="true"></div>
+      <div class="hero-bg-glow" aria-hidden="true"></div>
+
+      <div class="container">
+        <div class="hero-inner">
+
+          <div class="hero-content">
+            <div class="hero-badge anim" aria-hidden="true">
+              <div class="hero-badge-dot"></div>
+              <span>Available for new projects</span>
+            </div>
+
+            <h1 class="hero-headline anim anim-delay-1">
+              Design that<br />
+              launches your<br />
+              <span class="accent">MVP.</span>
+            </h1>
+
+            <p class="hero-sub anim anim-delay-2">
+              I'm Sarah Chen — a UX designer who partners with early-stage startups to turn raw ideas into polished, shippable products. From zero to launch, fast.
+            </p>
+
+            <div class="hero-actions anim anim-delay-3">
+              <!-- TODO: Replace with your Calendly link -->
+              <a href="https://calendly.com/sarahchen" target="_blank" rel="noopener" class="btn btn-primary">
+                Book a Free Discovery Call
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+              </a>
+              <a href="#work" class="btn btn-outline">View My Work</a>
+            </div>
+
+            <div class="hero-social-proof anim anim-delay-4">
+              <div class="hero-avatars" aria-hidden="true">
+                <div class="hero-avatar">JK</div>
+                <div class="hero-avatar">ML</div>
+                <div class="hero-avatar">AR</div>
+              </div>
+              <!-- TODO: Replace with real founder names / context -->
+              <p class="hero-sp-text"><strong>30+ founders</strong> shipped their MVP with Sarah</p>
+            </div>
+          </div>
+
+          <div class="hero-visual anim anim-delay-2" aria-hidden="true">
+            <div class="hero-mockup">
+              <!-- TODO: Replace with actual portfolio screenshot -->
+              <div class="hero-mockup-inner">
+                <div class="hero-mockup-bar">
+                  <div class="mock-dot mock-dot-r"></div>
+                  <div class="mock-dot mock-dot-y"></div>
+                  <div class="mock-dot mock-dot-g"></div>
+                </div>
+                <div class="hero-mockup-content">
+                  <div class="mock-line short"></div>
+                  <div class="mock-line med"></div>
+                  <div class="mock-line full"></div>
+                  <div class="mock-block"></div>
+                  <div class="mock-accent-bar"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-float-badge">
+              <div class="hero-float-icon">🚀</div>
+              <div>
+                <div class="hero-float-label">Avg. time to launch</div>
+                <div class="hero-float-value">6–8 weeks</div>
+              </div>
+            </div>
+
+            <div class="hero-float-badge-2">
+              <div class="big">30+</div>
+              <div class="sm">MVPs shipped</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Stats ─────────────────────────────────────────────────────────── -->
+    <section id="stats" aria-label="Key statistics">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-item anim">
+            <!-- TODO: Replace with your real numbers -->
+            <div class="stat-number">30<span>+</span></div>
+            <div class="stat-label">MVPs Launched</div>
+          </div>
+          <div class="stat-item anim anim-delay-1">
+            <div class="stat-number">5<span>yrs</span></div>
+            <div class="stat-label">UX Experience</div>
+          </div>
+          <div class="stat-item anim anim-delay-2">
+            <div class="stat-number">$50<span>M+</span></div>
+            <div class="stat-label">Raised by Alumni Startups</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Services ─────────────────────────────────────────────────────── -->
+    <section id="services" aria-labelledby="services-heading">
+      <div class="container">
+        <div class="services-header">
+          <span class="section-label anim">What I Do</span>
+          <h2 class="section-title anim anim-delay-1" id="services-heading">
+            Everything your<br />MVP needs to ship.
+          </h2>
+          <p class="section-sub anim anim-delay-2">
+            I work end-to-end — from early discovery to final handoff — so your team can focus on building the business while I build the experience.
+          </p>
+        </div>
+
+        <div class="services-grid">
+
+          <div class="service-card anim">
+            <div class="service-icon" aria-hidden="true">🎯</div>
+            <div class="service-title">MVP Product Design</div>
+            <p class="service-desc">
+              Full UX and UI design for your core product — wireframes, interactive prototypes, and a polished final design ready for your engineers.
+            </p>
+            <div class="service-tags">
+              <span class="tag">Wireframing</span>
+              <span class="tag">UI Design</span>
+              <span class="tag">Prototyping</span>
+            </div>
+          </div>
+
+          <div class="service-card anim anim-delay-1">
+            <div class="service-icon" aria-hidden="true">🧭</div>
+            <div class="service-title">UX Strategy</div>
+            <p class="service-desc">
+              User research, competitive analysis, and product direction to ensure you're solving the right problem before writing a single line of code.
+            </p>
+            <div class="service-tags">
+              <span class="tag">User Research</span>
+              <span class="tag">Personas</span>
+              <span class="tag">Flows</span>
+            </div>
+          </div>
+
+          <div class="service-card anim anim-delay-2">
+            <div class="service-icon" aria-hidden="true">🧩</div>
+            <div class="service-title">Design Systems</div>
+            <p class="service-desc">
+              A scalable, documented component library in Figma that your team can build on for years — consistent, fast, and dev-friendly.
+            </p>
+            <div class="service-tags">
+              <span class="tag">Figma</span>
+              <span class="tag">Components</span>
+              <span class="tag">Documentation</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Process ───────────────────────────────────────────────────────── -->
+    <section id="process" aria-labelledby="process-heading">
+      <div class="container">
+        <div class="process-header">
+          <span class="section-label anim">How It Works</span>
+          <h2 class="section-title anim anim-delay-1" id="process-heading">My process.</h2>
+          <p class="section-sub anim anim-delay-2">
+            A focused, collaborative process that moves fast without cutting corners. Most engagements go from kickoff to handoff in 6–8 weeks.
+          </p>
+        </div>
+
+        <div class="process-steps">
+
+          <div class="process-step anim">
+            <div class="step-number">01</div>
+            <div class="step-title">Discover</div>
+            <p class="step-desc">
+              We dig into your users, your market, and your business goals. I ask the questions your team is too close to ask.
+            </p>
+          </div>
+
+          <div class="process-step anim anim-delay-1">
+            <div class="step-number">02</div>
+            <div class="step-title">Define</div>
+            <p class="step-desc">
+              Together we map out user flows, information architecture, and the core jobs-to-be-done that will drive every design decision.
+            </p>
+          </div>
+
+          <div class="process-step anim anim-delay-2">
+            <div class="step-number">03</div>
+            <div class="step-title">Design</div>
+            <p class="step-desc">
+              From low-fi wireframes to high-fidelity screens. Iterative, feedback-driven, and always with your engineers in mind.
+            </p>
+          </div>
+
+          <div class="process-step anim anim-delay-3">
+            <div class="step-number">04</div>
+            <div class="step-title">Deliver</div>
+            <p class="step-desc">
+              Fully annotated Figma files, a design system, and an optional dev-handoff session so nothing gets lost in translation.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Work ──────────────────────────────────────────────────────────── -->
+    <section id="work" aria-labelledby="work-heading">
+      <div class="container">
+        <div class="work-header">
+          <div>
+            <span class="section-label anim">Selected Work</span>
+            <h2 class="section-title anim anim-delay-1" id="work-heading">MVPs I've shipped.</h2>
+          </div>
+          <a href="#contact" class="btn btn-outline anim anim-delay-1">Work with me →</a>
+        </div>
+
+        <div class="work-grid">
+
+          <!-- TODO: Replace placeholder cards with real case studies -->
+          <article class="work-card anim">
+            <div class="work-card-img work-card-img-1" aria-hidden="true">
+              <div class="work-card-ui">
+                <div class="work-card-ui-bar">
+                  <div class="wdot wdot-r"></div>
+                  <div class="wdot wdot-y"></div>
+                  <div class="wdot wdot-g"></div>
+                </div>
+                <div class="work-ui-line"></div>
+                <div class="work-ui-line s"></div>
+                <div class="work-ui-block"></div>
+                <div class="work-ui-accent"></div>
+              </div>
+            </div>
+            <div class="work-card-body">
+              <div class="work-card-tag">B2B SaaS · 2024</div>
+              <h3 class="work-card-title">Finlo — Expense Management</h3>
+              <p class="work-card-desc">
+                End-to-end MVP design for a real-time expense tracking platform targeting small finance teams. Took the product from napkin sketch to launch-ready in 7 weeks.
+              </p>
+              <div class="work-card-result">
+                <div class="result-dot" aria-hidden="true"></div>
+                Launched in 7 weeks · Raised $1.2M seed
+              </div>
+            </div>
+          </article>
+
+          <article class="work-card anim anim-delay-1">
+            <div class="work-card-img work-card-img-2" aria-hidden="true">
+              <div class="work-card-ui">
+                <div class="work-card-ui-bar">
+                  <div class="wdot wdot-r"></div>
+                  <div class="wdot wdot-y"></div>
+                  <div class="wdot wdot-g"></div>
+                </div>
+                <div class="work-ui-line"></div>
+                <div class="work-ui-line s"></div>
+                <div class="work-ui-block"></div>
+                <div class="work-ui-accent"></div>
+              </div>
+            </div>
+            <div class="work-card-body">
+              <div class="work-card-tag">Consumer App · 2024</div>
+              <h3 class="work-card-title">Luma — AI Meal Planner</h3>
+              <p class="work-card-desc">
+                Full UX design for an AI-powered meal planning app, including onboarding, preference flows, and a daily planning dashboard. Shipped to beta in 6 weeks.
+              </p>
+              <div class="work-card-result">
+                <div class="result-dot" aria-hidden="true"></div>
+                2,400 beta signups before launch
+              </div>
+            </div>
+          </article>
+
+          <article class="work-card anim anim-delay-2">
+            <div class="work-card-img work-card-img-3" aria-hidden="true">
+              <div class="work-card-ui">
+                <div class="work-card-ui-bar">
+                  <div class="wdot wdot-r"></div>
+                  <div class="wdot wdot-y"></div>
+                  <div class="wdot wdot-g"></div>
+                </div>
+                <div class="work-ui-line"></div>
+                <div class="work-ui-line s"></div>
+                <div class="work-ui-block"></div>
+                <div class="work-ui-accent"></div>
+              </div>
+            </div>
+            <div class="work-card-body">
+              <div class="work-card-tag">HealthTech · 2023</div>
+              <h3 class="work-card-title">Pulse — Remote Patient Monitoring</h3>
+              <p class="work-card-desc">
+                UX strategy and product design for a HIPAA-compliant patient dashboard. Simplified a complex data-heavy interface into a clean, clinical-grade experience.
+              </p>
+              <div class="work-card-result">
+                <div class="result-dot" aria-hidden="true"></div>
+                40% reduction in clinical onboarding time
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Testimonials ─────────────────────────────────────────────────── -->
+    <section id="testimonials" aria-labelledby="testimonials-heading">
+      <div class="container">
+        <div class="testimonials-header">
+          <span class="section-label anim">Client Love</span>
+          <h2 class="section-title anim anim-delay-1" id="testimonials-heading">Founders trust Sarah.</h2>
+          <p class="section-sub anim anim-delay-2">Don't take my word for it — here's what startup founders say after working together.</p>
+        </div>
+
+        <div class="testimonials-grid">
+
+          <!-- TODO: Replace with real client testimonials and photos -->
+          <div class="testimonial-card anim">
+            <span class="quote-mark" aria-hidden="true">"</span>
+            <p class="testimonial-text">
+              Sarah didn't just design our app — she redesigned how we thought about it. She pushed back on ideas that wouldn't serve our users, proposed better ones, and delivered something our engineers loved to build. We shipped in 8 weeks and our investors were floored by the quality.
+            </p>
+            <div class="testimonial-author">
+              <!-- TODO: Replace with real client photo -->
+              <div class="author-avatar av1" aria-hidden="true">JK</div>
+              <div>
+                <div class="author-name">James Ko</div>
+                <div class="author-title">Co-founder & CEO, Finlo</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card anim anim-delay-1">
+            <span class="quote-mark" aria-hidden="true">"</span>
+            <p class="testimonial-text">
+              Working with Sarah is unlike any designer I've hired before. She's fast, opinionated in the best way, and incredibly collaborative. She built us a design system that our team is still using 18 months later. If you're building an MVP, she's the first call you should make.
+            </p>
+            <div class="testimonial-author">
+              <!-- TODO: Replace with real client photo -->
+              <div class="author-avatar av2" aria-hidden="true">ML</div>
+              <div>
+                <div class="author-name">Mia Lester</div>
+                <div class="author-title">Founder, Luma App</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Contact ───────────────────────────────────────────────────────── -->
+    <section id="contact" aria-labelledby="contact-heading">
+      <div class="container">
+        <div class="contact-inner">
+
+          <div class="contact-left">
+            <span class="section-label anim">Get in Touch</span>
+            <h2 class="section-title anim anim-delay-1" id="contact-heading">
+              Let's build<br />something great.
+            </h2>
+            <p class="section-sub anim anim-delay-2">
+              Have an idea and a team ready to build? Tell me about your project and let's figure out if we're a fit.
+            </p>
+
+            <div class="contact-cta-block anim anim-delay-3">
+              <h3>Prefer to jump straight in?</h3>
+              <p>Book a free 30-minute discovery call. No pitch, no pressure — just a conversation about your product.</p>
+              <!-- TODO: Replace with your Calendly link -->
+              <a href="https://calendly.com/sarahchen" target="_blank" rel="noopener" class="btn btn-primary">
+                📅 &nbsp;Book a Free Call
+              </a>
+            </div>
+
+            <div class="contact-details anim anim-delay-4">
+              <div class="contact-detail">
+                <div class="detail-icon" aria-hidden="true">✉️</div>
+                <!-- TODO: Replace with your real email -->
+                <span>hello@sarahchen.com</span>
+              </div>
+              <div class="contact-detail">
+                <div class="detail-icon" aria-hidden="true">🌍</div>
+                <span>Available globally · Remote-first</span>
+              </div>
+              <div class="contact-detail">
+                <div class="detail-icon" aria-hidden="true">⏱</div>
+                <span>Typically responds within 24 hours</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="contact-right anim anim-delay-2">
+            <form class="contact-form" id="contact-form" novalidate aria-label="Contact form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fname">First Name</label>
+                  <input type="text" id="fname" name="fname" placeholder="Alex" autocomplete="given-name" required />
+                </div>
+                <div class="form-group">
+                  <label for="lname">Last Name</label>
+                  <input type="text" id="lname" name="lname" placeholder="Rivera" autocomplete="family-name" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="alex@yourstartup.com" autocomplete="email" required />
+              </div>
+
+              <div class="form-group">
+                <label for="company">Startup / Company</label>
+                <input type="text" id="company" name="company" placeholder="Your startup name" autocomplete="organization" />
+              </div>
+
+              <div class="form-group">
+                <label for="stage">Stage</label>
+                <select id="stage" name="stage">
+                  <option value="" disabled selected>Select your stage</option>
+                  <option>Pre-seed / Idea stage</option>
+                  <option>Seed — early traction</option>
+                  <option>Series A+</option>
+                  <option>Bootstrapped</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="message">Tell me about your project</label>
+                <textarea id="message" name="message" rows="4" placeholder="What are you building? What's the timeline? What do you need help with?" required></textarea>
+              </div>
+
+              <div class="form-submit">
+                <p class="form-note">I'll reply within 24 hours.</p>
+                <!-- TODO: Update action to your form endpoint or backend handler -->
+                <button type="submit" class="btn btn-primary">
+                  Send Message
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                </button>
+              </div>
+            </form>
+
+            <div class="form-success" id="form-success" role="status" aria-live="polite">
+              <div class="success-icon" aria-hidden="true">✓</div>
+              <h3>Message sent!</h3>
+              <p>Thanks for reaching out. I'll be in touch within 24 hours.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Footer CTA ────────────────────────────────────────────────────── -->
+    <section id="footer-cta" aria-label="Call to action">
+      <div class="container">
+        <div class="footer-cta-inner">
+          <span class="footer-cta-label anim">Ready?</span>
+          <h2 class="anim anim-delay-1">Your MVP is waiting.</h2>
+          <p class="anim anim-delay-2">
+            Most founders wait too long to bring in a designer. Let's talk before you do.
+          </p>
+          <div class="footer-cta-actions anim anim-delay-3">
+            <!-- TODO: Replace with your Calendly link -->
+            <a href="https://calendly.com/sarahchen" target="_blank" rel="noopener" class="btn btn-primary">
+              Book a Discovery Call
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+            </a>
+            <a href="#contact" class="btn btn-ghost">Send a Message</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ─── Footer ────────────────────────────────────────────────────────────── -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <a href="#" class="footer-logo" aria-label="Sarah Chen home">Sarah<span>.</span></a>
+        <ul class="footer-links" role="list">
+          <li><a href="#services">Services</a></li>
+          <li><a href="#process">Process</a></li>
+          <li><a href="#work">Work</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <p class="footer-copy">
+        <!-- TODO: Update year automatically if needed -->
+        &copy; 2026 Sarah Chen. All rights reserved. · Freelance UX Designer for Startups
+      </p>
+    </div>
+  </footer>
+
+  <!-- ─── JavaScript ──────────────────────────────────────────────────────── -->
+  <script>
+    // ─── Nav scroll effect ───────────────────────────────────────────────────
+    const nav = document.getElementById('nav');
+    function updateNav() {
+      if (window.scrollY > 40) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    }
+    window.addEventListener('scroll', updateNav, { passive: true });
+    updateNav();
+
+    // ─── Mobile menu ─────────────────────────────────────────────────────────
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileClose = document.getElementById('mobile-close');
+
+    function openMobileMenu() {
+      mobileMenu.classList.add('open');
+      hamburger.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileMenu() {
+      mobileMenu.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+    hamburger.addEventListener('click', openMobileMenu);
+    mobileClose.addEventListener('click', closeMobileMenu);
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mobileMenu.classList.contains('open')) closeMobileMenu();
+    });
+
+    // ─── IntersectionObserver for animate-on-scroll ──────────────────────────
+    const animEls = document.querySelectorAll('.anim');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    animEls.forEach(el => observer.observe(el));
+
+    // ─── Contact form ────────────────────────────────────────────────────────
+    const contactForm = document.getElementById('contact-form');
+    const formSuccess = document.getElementById('form-success');
+
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Basic validation
+      const required = contactForm.querySelectorAll('[required]');
+      let valid = true;
+      required.forEach(field => {
+        if (!field.value.trim()) {
+          field.style.borderColor = '#E8622A';
+          valid = false;
+        } else {
+          field.style.borderColor = '';
+        }
+      });
+      if (!valid) return;
+
+      // TODO: Replace this block with real form submission logic
+      // e.g., fetch('/api/contact', { method: 'POST', body: new FormData(contactForm) })
+      //   .then(res => res.json()).then(() => showSuccess());
+
+      // Simulate submission
+      const submitBtn = contactForm.querySelector('[type="submit"]');
+      submitBtn.textContent = 'Sending…';
+      submitBtn.disabled = true;
+
+      setTimeout(() => {
+        contactForm.style.display = 'none';
+        formSuccess.classList.add('show');
+      }, 900);
+    });
+
+    // Re-validate fields on input
+    contactForm.querySelectorAll('input, textarea').forEach(field => {
+      field.addEventListener('input', () => {
+        field.style.borderColor = '';
+      });
+    });
+
+    // ─── Smooth active nav link (optional enhancement) ───────────────────────
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          navLinks.forEach(link => {
+            link.style.color = link.getAttribute('href') === `#${id}` ? 'var(--near-black)' : '';
+          });
+        }
+      });
+    }, { threshold: 0.4 });
+
+    sections.forEach(s => sectionObserver.observe(s));
+  </script>
+
+</body>
+</html>
