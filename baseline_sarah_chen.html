@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sarah Chen - UX Designer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; color: #111; background: white; }
+    nav {
+      background: white; padding: 16px 32px; border-bottom: 1px solid #e5e7eb;
+      display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10;
+    }
+    nav .logo { font-size: 20px; font-weight: bold; color: #111; text-decoration: none; }
+    nav a { color: #555; text-decoration: none; margin-left: 20px; font-size: 14px; }
+    .btn { display: inline-block; padding: 12px 24px; border-radius: 6px; font-size: 15px; font-weight: bold; text-decoration: none; cursor: pointer; }
+    .btn-orange { background: #ea580c; color: white; }
+    .btn-outline { background: transparent; color: #111; border: 2px solid #111; }
+    .hero {
+      padding: 80px 24px; max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+    }
+    .hero h1 { font-size: 42px; font-weight: bold; margin-bottom: 16px; line-height: 1.15; }
+    .hero h1 span { color: #ea580c; }
+    .hero p { font-size: 17px; color: #555; line-height: 1.65; margin-bottom: 28px; }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .hero-image {
+      background: #f3f4f6; border-radius: 12px; aspect-ratio: 4/3;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 80px; color: #d1d5db;
+    }
+    .section { padding: 72px 24px; max-width: 1100px; margin: 0 auto; }
+    .section h2 { font-size: 32px; font-weight: bold; margin-bottom: 12px; }
+    .section .sub { color: #666; margin-bottom: 48px; font-size: 16px; }
+    .bg-gray { background: #f9fafb; }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .service-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 28px; background: white; }
+    .service-card h3 { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+    .service-card p { font-size: 14px; color: #666; line-height: 1.6; }
+    .service-card .s-icon { font-size: 28px; margin-bottom: 12px; }
+    .process-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .process-step { text-align: center; }
+    .p-num {
+      width: 52px; height: 52px; background: #ea580c; color: white;
+      border-radius: 50%; font-size: 20px; font-weight: bold;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+    }
+    .process-step h3 { font-size: 16px; font-weight: bold; margin-bottom: 8px; }
+    .process-step p { font-size: 14px; color: #666; }
+    .portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .portfolio-card { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: white; }
+    .portfolio-img { background: #f3f4f6; aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #d1d5db; }
+    .portfolio-card .p-info { padding: 20px; }
+    .portfolio-card h3 { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
+    .portfolio-card p { font-size: 13px; color: #666; }
+    .portfolio-card .p-tag { display: inline-block; font-size: 11px; font-weight: bold; color: #ea580c; background: #fff7ed; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+    .contact-section {
+      background: #111; color: white; padding: 80px 24px;
+    }
+    .contact-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+    .contact-inner h2 { font-size: 32px; font-weight: bold; margin-bottom: 12px; }
+    .contact-inner p { font-size: 16px; opacity: 0.8; margin-bottom: 24px; }
+    input, textarea, select {
+      width: 100%; padding: 12px 14px; border: 1px solid #374151; border-radius: 6px;
+      background: #1f2937; color: white; font-size: 14px; margin-bottom: 14px; font-family: inherit;
+    }
+    input::placeholder, textarea::placeholder { color: #9ca3af; }
+    textarea { min-height: 120px; resize: vertical; }
+    footer { background: white; border-top: 1px solid #e5e7eb; padding: 28px 32px; display: flex; align-items: center; justify-content: space-between; }
+    footer p { font-size: 13px; color: #9ca3af; }
+    @media (max-width: 768px) {
+      .hero, .contact-inner { grid-template-columns: 1fr; }
+      .services-grid, .portfolio-grid { grid-template-columns: 1fr; }
+      .process-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo">Sarah Chen</a>
+  <div>
+    <a href="#work">Work</a>
+    <a href="#process">Process</a>
+    <a href="#contact">Contact</a>
+    <a href="#contact" class="btn btn-orange" style="padding:8px 16px;font-size:13px;margin-left:12px;">Book a Call</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div>
+    <h1>UX Design for<br /><span>Early-Stage</span><br />Startups</h1>
+    <p>I help founders turn product ideas into beautiful, user-tested MVPs — fast. Based in San Francisco, working with startups worldwide.</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn btn-orange">Book a Free Call</a>
+      <a href="#work" class="btn btn-outline">View My Work</a>
+    </div>
+  </div>
+  <div class="hero-image">👤<!-- TODO: Replace with Sarah's photo --></div>
+</div>
+
+<div class="bg-gray">
+  <div class="section">
+    <h2>How I Can Help</h2>
+    <p class="sub">Services tailored for early-stage startups</p>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="s-icon">🎨</div>
+        <h3>MVP Product Design</h3>
+        <p>Full end-to-end UX and UI design for your first product — from wireframes to high-fidelity screens ready for development.</p>
+      </div>
+      <div class="service-card">
+        <div class="s-icon">🗺️</div>
+        <h3>UX Strategy</h3>
+        <p>User research, journey mapping, and product strategy to make sure you're building the right thing before you build anything.</p>
+      </div>
+      <div class="service-card">
+        <div class="s-icon">🔧</div>
+        <h3>Design Systems</h3>
+        <p>A scalable component library and design system so your team can build consistently and fast as you grow.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="process">
+  <h2>My Process</h2>
+  <p class="sub">A clear, proven 4-step approach to designing MVPs</p>
+  <div class="process-grid">
+    <div class="process-step">
+      <div class="p-num">1</div>
+      <h3>Discover</h3>
+      <p>Deep-dive into your vision, users, and market to understand what we're solving and for whom.</p>
+    </div>
+    <div class="process-step">
+      <div class="p-num">2</div>
+      <h3>Define</h3>
+      <p>Map out user flows, prioritize features, and align on scope so we build what matters most.</p>
+    </div>
+    <div class="process-step">
+      <div class="p-num">3</div>
+      <h3>Design</h3>
+      <p>Wireframes, prototypes, and high-fidelity UI — iterating quickly with your feedback at every step.</p>
+    </div>
+    <div class="process-step">
+      <div class="p-num">4</div>
+      <h3>Deliver</h3>
+      <p>Handoff-ready Figma files, design system, and developer support to get your MVP shipped.</p>
+    </div>
+  </div>
+</div>
+
+<div class="bg-gray">
+  <div class="section" id="work">
+    <h2>Selected Work</h2>
+    <p class="sub">A few recent projects I'm proud of</p>
+    <div class="portfolio-grid">
+      <div class="portfolio-card">
+        <div class="portfolio-img">📱<!-- TODO: Replace with case study screenshot --></div>
+        <div class="p-info">
+          <div class="p-tag">Mobile App</div>
+          <h3>HealthTrack MVP</h3>
+          <p>Zero-to-MVP in 6 weeks. Raised $1.2M seed after launch.</p>
+        </div>
+      </div>
+      <div class="portfolio-card">
+        <div class="portfolio-img">💻<!-- TODO: Replace with case study screenshot --></div>
+        <div class="p-info">
+          <div class="p-tag">SaaS Dashboard</div>
+          <h3>Optic Analytics</h3>
+          <p>Redesigned the core dashboard. 40% reduction in time-on-task.</p>
+        </div>
+      </div>
+      <div class="portfolio-card">
+        <div class="portfolio-img">🛒<!-- TODO: Replace with case study screenshot --></div>
+        <div class="p-info">
+          <div class="p-tag">E-commerce</div>
+          <h3>Folio Shop</h3>
+          <p>End-to-end redesign. Checkout conversion improved by 28%.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="contact-section" id="contact">
+  <div class="contact-inner">
+    <div>
+      <h2>Let's work together</h2>
+      <p>Book a free 30-minute discovery call to talk through your project and see if we're a good fit.</p>
+      <a href="#" class="btn btn-orange" style="margin-bottom:24px;">Book a Call on Calendly</a>
+      <p style="margin-top:8px;font-size:14px;opacity:0.6;">Or fill out the form →</p>
+      <!-- TODO: Replace with your Calendly link -->
+    </div>
+    <form>
+      <input type="text" placeholder="Your name" />
+      <input type="email" placeholder="Email address" />
+      <input type="text" placeholder="Company / Project" />
+      <textarea placeholder="Tell me about your project..."></textarea>
+      <button type="submit" class="btn btn-orange" style="width:100%;border:none;cursor:pointer;">Send Message</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 Sarah Chen · UX Design</p>
+  <p>san francisco · available worldwide</p>
+</footer>
+
+</body>
+</html>

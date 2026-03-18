@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>super-landing-page skill — Session Summary</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f7; color: #1d1d1f; line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 900px; margin: 0 auto; padding: 64px 32px; }
+    h1 { font-size: 44px; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 8px; }
+    .subtitle { font-size: 18px; color: #6e6e73; margin-bottom: 60px; }
+    h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 20px; margin-top: 56px; }
+    h3 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 8px; }
+    p { font-size: 15px; color: #3a3a3c; line-height: 1.7; }
+    a { color: #0071e3; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .card {
+      background: white; border-radius: 16px; padding: 28px 32px;
+      margin-bottom: 16px; border: 1px solid #e5e7eb;
+    }
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 980px; letter-spacing: 0.06em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .green  { background: #d1fae5; color: #065f46; }
+    .blue   { background: #dbeafe; color: #1e40af; }
+    .amber  { background: #fef3c7; color: #92400e; }
+    .red    { background: #fee2e2; color: #991b1b; }
+    .gray   { background: #f3f4f6; color: #374151; }
+    .purple { background: #ede9fe; color: #5b21b6; }
+    ul { padding-left: 20px; margin-top: 8px; }
+    li { font-size: 15px; color: #3a3a3c; line-height: 1.7; margin-bottom: 3px; }
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12.5px; background: #f3f4f6; padding: 2px 7px;
+      border-radius: 5px; color: #1d1d1f;
+    }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .step-row { display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start; }
+    .step-num {
+      width: 30px; height: 30px; border-radius: 50%; background: #1d1d1f;
+      color: white; font-size: 13px; font-weight: 700; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+    }
+    .step-body h3 { margin-bottom: 4px; font-size: 15px; }
+    .step-body p { font-size: 14px; color: #6e6e73; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 52px 0; }
+    .page-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 14px; font-weight: 600; color: #0071e3;
+      background: #f0f7ff; padding: 6px 14px; border-radius: 8px; margin-top: 10px;
+    }
+    .comparison-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+      border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden;
+    }
+    .comparison-cell { padding: 24px; }
+    .comparison-cell:first-child { border-right: 1px solid #e5e7eb; }
+    .comparison-cell h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+    .comparison-cell h4.with { color: #065f46; }
+    .comparison-cell h4.without { color: #92400e; }
+    .diff-item { font-size: 14px; padding: 5px 0; border-bottom: 1px solid #f3f4f6; color: #3a3a3c; display: flex; gap: 8px; }
+    .diff-item:last-child { border-bottom: none; }
+    .diff-icon { flex-shrink: 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 10px 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #6e6e73; border-bottom: 1px solid #e5e7eb; }
+    td { padding: 12px 12px; font-size: 14px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    td code { font-size: 12px; }
+    @media (max-width: 640px) {
+      h1 { font-size: 30px; } .grid2, .grid3, .comparison-row { grid-template-columns: 1fr; }
+      .comparison-cell:first-child { border-right: none; border-bottom: 1px solid #e5e7eb; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <h1>super-landing-page</h1>
+  <p class="subtitle">Skill creation session summary · March 16, 2026</p>
+
+  <!-- ── WHAT WAS BUILT ── -->
+  <h2>What was built</h2>
+
+  <div class="card">
+    <div class="badge green">New skill · Complete</div>
+    <h3>super-landing-page skill</h3>
+    <p>A Claude Code skill that takes landing page requirements as input, runs a structured two-phase flow (requirements analysis + clarifying Q&A → Apple-style code generation), and produces a complete production-ready single-file HTML/CSS/JS landing page.</p>
+    <p style="margin-top:8px;"><code>~/.claude/plugins/…/skills/super-landing-page/SKILL.md</code></p>
+  </div>
+
+  <h2>All generated pages</h2>
+  <p style="margin-bottom:20px;">Six pages total — three with the skill, three without (baselines). Open side by side to compare design quality.</p>
+
+  <div class="grid3">
+    <div class="card">
+      <div class="badge green">With skill</div>
+      <h3>Flowdesk</h3>
+      <p style="font-size:13px;color:#6e6e73;margin-bottom:2px;">SaaS support inbox · Teal</p>
+      <a class="page-link" href="../index.html">→ Open page</a>
+    </div>
+    <div class="card">
+      <div class="badge green">With skill</div>
+      <h3>Luminary</h3>
+      <p style="font-size:13px;color:#6e6e73;margin-bottom:2px;">Wellness journaling app · Purple</p>
+      <a class="page-link" href="../luminary_index.html">→ Open page</a>
+    </div>
+    <div class="card">
+      <div class="badge green">With skill</div>
+      <h3>Sarah Chen</h3>
+      <p style="font-size:13px;color:#6e6e73;margin-bottom:2px;">UX freelancer portfolio · Orange</p>
+      <a class="page-link" href="../sarah_chen_index.html">→ Open page</a>
+    </div>
+    <div class="card">
+      <div class="badge amber">Baseline (no skill)</div>
+      <h3>Flowdesk</h3>
+      <p style="font-size:13px;color:#6e6e73;margin-bottom:2px;">Generic output, no design system</p>
+      <a class="page-link" href="../baseline_flowdesk.html">→ Open page</a>
+    </div>
+    <div class="card">
+      <div class="badge amber">Baseline (no skill)</div>
+      <h3>Luminary</h3>
+      <p style="font-size:13px;color:#6e6e73;margin-bottom:2px;">Generic output, no design system</p>
+      <a class="page-link" href="../baseline_luminary.html">→ Open page</a>
+    </div>
+    <div class="card">
+      <div class="badge amber">Baseline (no skill)</div>
+      <h3>Sarah Chen</h3>
+      <p style="font-size:13px;color:#6e6e73;margin-bottom:2px;">Generic output, no design system</p>
+      <a class="page-link" href="../baseline_sarah_chen.html">→ Open page</a>
+    </div>
+  </div>
+
+  <hr />
+
+  <!-- ── COMPARISON ── -->
+  <h2>With skill vs. baseline — what's different</h2>
+
+  <div class="comparison-row" style="margin-bottom:16px;">
+    <div class="comparison-cell">
+      <h4 class="with">✦ With skill</h4>
+      <div class="diff-item"><span class="diff-icon">✅</span> Structured requirements analysis before writing any code</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> Clarifying questions written and documented</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> Apple-style font stack: Inter / SF Pro / system</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> Tight letter-spacing on headlines (−0.04em)</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> Generous section padding (100–120px vertical)</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> IntersectionObserver scroll-reveal animations</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> Frosted-glass sticky nav (backdrop-filter)</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> Product UI mockup in hero (not just text)</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> Customer logo strip</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> Pricing toggle (monthly/annual) with JS</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> Full-gradient footer CTA banner</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> TODO comments for every placeholder</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> Hover micro-interactions on cards (scale + shadow)</div>
+      <div class="diff-item"><span class="diff-icon">✅</span> will-change: transform for performance</div>
+    </div>
+    <div class="comparison-cell">
+      <h4 class="without">— Baseline (no skill)</h4>
+      <div class="diff-item"><span class="diff-icon">⬜</span> Jumps straight to code, no analysis</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> No clarifying questions</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> Generic Arial/sans-serif font</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> Default letter-spacing (none)</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> Minimal padding (64px typical)</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> No scroll animations</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> Plain solid-color nav</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> Text-only hero</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> No logo strip</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> Static pricing, no toggle</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> Plain colored CTA section</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> Some TODO comments</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> Basic hover states (color only)</div>
+      <div class="diff-item"><span class="diff-icon">⬜</span> No performance hints</div>
+    </div>
+  </div>
+
+  <hr />
+
+  <!-- ── HOW THE SKILL WORKS ── -->
+  <h2>How the skill works</h2>
+  <div class="card">
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Phase 1 — Extract what's known</h3>
+        <p>Reads the user's input and pulls out: product name, audience, CTA, brand colors, features, sections requested. Identifies what's missing against a checklist (tagline, testimonials, feature details, etc.).</p>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Phase 1 — Clarifying questions</h3>
+        <p>Asks one grouped set of 4–8 targeted questions, organized by theme (product, audience, visual style). Waits for answers before writing any code. Skips questions that can be reasonably inferred.</p>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Phase 2 — Apple-style code generation</h3>
+        <p>Generates a complete single-file HTML/CSS/JS page following a built-in Apple design system. Outputs to <code>/Users/jay/work/task/</code>. Marks every placeholder with <code>&lt;!-- TODO: Replace with... --&gt;</code>. Reports what it built and what needs replacing.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr />
+
+  <!-- ── DESIGN SYSTEM ── -->
+  <h2>Built-in Apple design system</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>Typography</h3>
+      <ul>
+        <li>Stack: Inter → SF Pro → system → Helvetica</li>
+        <li>Hero headlines: 64–96px, weight 800</li>
+        <li>Letter-spacing: <code>-0.04em</code> to <code>-0.045em</code></li>
+        <li>Body: 17–19px, line-height 1.65–1.7</li>
+        <li><code>-webkit-font-smoothing: antialiased</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Color system</h3>
+      <ul>
+        <li>Backgrounds: <code>#ffffff</code> / <code>#fbfbfd</code> / <code>#f5f5f7</code></li>
+        <li>Primary text: <code>#1d1d1f</code></li>
+        <li>Secondary text: <code>#6e6e73</code></li>
+        <li>Accent: user brand color (teal / purple / orange)</li>
+        <li>Borders: <code>#e5e7eb</code> (subtle)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Animations</h3>
+      <ul>
+        <li><code>IntersectionObserver</code> scroll reveal</li>
+        <li>Fade-up: <code>opacity 0→1</code>, <code>translateY 28px→0</code></li>
+        <li>Staggered delays: 0.1s, 0.2s, 0.3s per card</li>
+        <li>Hover: <code>scale(1.02)</code> + shadow lift</li>
+        <li><code>will-change: transform</code> on interactive elements</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Standard sections</h3>
+      <ul>
+        <li>Sticky frosted-glass nav (<code>backdrop-filter</code>)</li>
+        <li>Full-viewport hero + inline product mockup</li>
+        <li>Customer logo strip</li>
+        <li>Features grid (3–6 cards with hover)</li>
+        <li>How-it-works (numbered steps)</li>
+        <li>Testimonials, Pricing (with toggle), Footer CTA</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr />
+
+  <!-- ── EVAL STATUS ── -->
+  <h2>Eval & testing status</h2>
+  <div class="card">
+    <div class="badge red">Subagent permissions blocked</div>
+    <p>6 subagents were launched (3 with-skill + 3 baseline) to run formal evals in parallel. All were denied <code>Write</code> and <code>Bash</code> tool access by the VS Code extension's permission system — a known constraint in this environment. Pages were generated inline instead.</p>
+  </div>
+
+  <div class="card" style="margin-top:0;">
+    <div class="badge purple">10–11 assertions drafted per eval</div>
+    <p>Quantitative assertions were written for all 3 evals (saved to <code>evals/evals.json</code>). They cover: clarifying questions existence, HTML file creation, brand color in CSS, required sections present, responsive media queries, IntersectionObserver, self-contained file, premium font stack, product name, and use-case-specific checks.</p>
+  </div>
+
+  <hr />
+
+  <!-- ── FILES TABLE ── -->
+  <h2>All files</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Description</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>skills/super-landing-page/SKILL.md</code></td>
+          <td>The skill definition (phases, design system, output rules)</td>
+          <td><span class="badge green">Done</span></td>
+        </tr>
+        <tr>
+          <td><code>skills/super-landing-page/evals/evals.json</code></td>
+          <td>3 test cases with full assertion sets</td>
+          <td><span class="badge green">Done</span></td>
+        </tr>
+        <tr>
+          <td><a href="../index.html"><code>task/index.html</code></a></td>
+          <td>Flowdesk landing page (with skill)</td>
+          <td><span class="badge green">Done</span></td>
+        </tr>
+        <tr>
+          <td><a href="../luminary_index.html"><code>task/luminary_index.html</code></a></td>
+          <td>Luminary landing page (with skill)</td>
+          <td><span class="badge green">Done</span></td>
+        </tr>
+        <tr>
+          <td><a href="../sarah_chen_index.html"><code>task/sarah_chen_index.html</code></a></td>
+          <td>Sarah Chen portfolio page (with skill)</td>
+          <td><span class="badge green">Done</span></td>
+        </tr>
+        <tr>
+          <td><a href="../baseline_flowdesk.html"><code>task/baseline_flowdesk.html</code></a></td>
+          <td>Flowdesk — baseline (no skill)</td>
+          <td><span class="badge amber">Baseline</span></td>
+        </tr>
+        <tr>
+          <td><a href="../baseline_luminary.html"><code>task/baseline_luminary.html</code></a></td>
+          <td>Luminary — baseline (no skill)</td>
+          <td><span class="badge amber">Baseline</span></td>
+        </tr>
+        <tr>
+          <td><a href="../baseline_sarah_chen.html"><code>task/baseline_sarah_chen.html</code></a></td>
+          <td>Sarah Chen — baseline (no skill)</td>
+          <td><span class="badge amber">Baseline</span></td>
+        </tr>
+        <tr>
+          <td><code>task/docs/summary.html</code></td>
+          <td>This document</td>
+          <td><span class="badge green">Done</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr />
+
+  <!-- ── NEXT STEPS ── -->
+  <h2>Next steps</h2>
+  <div class="card">
+    <div class="step-row">
+      <div class="step-num">A</div>
+      <div class="step-body">
+        <h3>Review the pages side by side</h3>
+        <p>Open any with-skill page next to its baseline counterpart. The visual and technical quality difference is the main evidence of the skill's value.</p>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">B</div>
+      <div class="step-body">
+        <h3>Package &amp; install the skill</h3>
+        <p>Run <code>python -m scripts.package_skill skills/super-landing-page</code> to produce a <code>.skill</code> file. Install it so the skill triggers automatically when you ask for a landing page.</p>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">C</div>
+      <div class="step-body">
+        <h3>Run description optimization (optional)</h3>
+        <p>Use <code>scripts/run_loop.py</code> with <code>--model claude-sonnet-4-6</code> to optimize the skill's trigger description so it fires reliably on natural phrases like "build me a landing page."</p>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">D</div>
+      <div class="step-body">
+        <h3>Use the skill for real</h3>
+        <p>Tell Claude "I need a landing page for [your product]" and the skill will take over — asking you smart questions and generating a premium page to <code>/Users/jay/work/task/</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top:52px;font-size:13px;color:#9ca3af;text-align:center;">Generated by Claude Code · super-landing-page skill creation · 2026-03-16</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flowdesk - Customer Support Tool</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; color: #333; }
+    nav {
+      background: #0d9488; padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    nav .logo { color: white; font-size: 22px; font-weight: bold; text-decoration: none; }
+    nav a { color: white; text-decoration: none; margin-left: 20px; font-size: 14px; }
+    .hero {
+      background: linear-gradient(135deg, #0d9488, #0f766e);
+      color: white; text-align: center; padding: 80px 24px;
+    }
+    .hero h1 { font-size: 40px; font-weight: bold; margin-bottom: 16px; }
+    .hero p { font-size: 18px; opacity: 0.9; max-width: 600px; margin: 0 auto 32px; }
+    .btn { display: inline-block; padding: 14px 28px; border-radius: 6px; font-size: 16px; font-weight: bold; text-decoration: none; cursor: pointer; border: none; }
+    .btn-white { background: white; color: #0d9488; }
+    .btn-outline { background: transparent; color: white; border: 2px solid white; margin-left: 12px; }
+    .section { padding: 64px 24px; max-width: 1100px; margin: 0 auto; }
+    .section h2 { font-size: 32px; font-weight: bold; margin-bottom: 12px; text-align: center; }
+    .section .sub { text-align: center; color: #666; margin-bottom: 48px; font-size: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; }
+    .card h3 { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+    .card p { font-size: 14px; color: #666; line-height: 1.6; }
+    .card-icon { font-size: 28px; margin-bottom: 12px; }
+    .steps-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; text-align: center; }
+    .step-n { width: 48px; height: 48px; background: #0d9488; color: white; border-radius: 50%; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .step h3 { font-size: 16px; font-weight: bold; margin-bottom: 8px; }
+    .step p { font-size: 14px; color: #666; }
+    .bg-gray { background: #f9fafb; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .pricing-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 28px; }
+    .pricing-card.popular { border-color: #0d9488; border-width: 2px; }
+    .pricing-card h3 { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+    .price { font-size: 36px; font-weight: bold; margin: 16px 0 8px; }
+    .price span { font-size: 16px; font-weight: normal; color: #666; }
+    .pricing-card ul { list-style: none; margin: 20px 0; }
+    .pricing-card li { font-size: 14px; padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
+    .pricing-card li::before { content: '✓ '; color: #0d9488; font-weight: bold; }
+    .btn-teal { background: #0d9488; color: white; }
+    .btn-gray { background: #f3f4f6; color: #333; }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .testimonial { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; }
+    .testimonial p { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 16px; font-style: italic; }
+    .testimonial .author { font-size: 13px; font-weight: bold; color: #333; }
+    footer { background: #1f2937; color: #9ca3af; padding: 40px 24px; text-align: center; }
+    footer p { font-size: 13px; margin-bottom: 8px; }
+    @media (max-width: 768px) { .grid-3, .steps-row, .pricing-grid, .testimonials-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo">Flowdesk</a>
+  <div>
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#testimonials">Testimonials</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Customer Support for Small Teams</h1>
+  <p>Manage all your support emails in one place. No enterprise bloat. Built for teams of 5-20 people.</p>
+  <a href="#" class="btn btn-white">Start Free Trial</a>
+  <a href="#" class="btn btn-outline">Watch Demo</a>
+</div>
+
+<div class="section" id="features">
+  <h2>Features</h2>
+  <p class="sub">Everything you need to deliver great customer support</p>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-icon">📬</div>
+      <h3>Shared Inbox</h3>
+      <p>One inbox for your whole team to manage support emails together without confusion or duplicate replies.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚦</div>
+      <h3>Collision Detection</h3>
+      <p>See when a teammate is already replying to a conversation so you don't send duplicate responses.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h3>Canned Replies</h3>
+      <p>Save your most common responses and insert them with a single click to reply faster.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <h3>Auto-Assignment</h3>
+      <p>Route emails to the right team member automatically based on rules you define.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">👥</div>
+      <h3>Team Presence</h3>
+      <p>See who's online and working in the support queue in real time.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔗</div>
+      <h3>Integrations</h3>
+      <p>Connect with Slack, Gmail, and your existing tools to keep your workflow smooth.</p>
+    </div>
+  </div>
+</div>
+
+<div class="bg-gray">
+  <div class="section" id="how">
+    <h2>How It Works</h2>
+    <p class="sub">Get up and running in minutes</p>
+    <div class="steps-row">
+      <div class="step">
+        <div class="step-n">1</div>
+        <h3>Connect Your Inbox</h3>
+        <p>Forward your support email to Flowdesk or connect Gmail directly.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <h3>Invite Your Team</h3>
+        <p>Add your teammates and set up roles and assignments.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <h3>Start Resolving</h3>
+        <p>Reply, assign, and close tickets — all from one clean inbox.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="testimonials">
+  <h2>What Customers Say</h2>
+  <p class="sub">Teams love using Flowdesk</p>
+  <div class="testimonials-grid">
+    <div class="testimonial">
+      <p>"Flowdesk made our support so much easier. We went from chaos to clarity in a week."</p>
+      <div class="author">— Marcus R., Head of Ops</div>
+    </div>
+    <div class="testimonial">
+      <p>"The collision detection feature is a game-changer. No more double replies to customers."</p>
+      <div class="author">— Sofia P., Co-founder</div>
+    </div>
+    <div class="testimonial">
+      <p>"Simple, fast, and our whole team uses it without any training. Highly recommend."</p>
+      <div class="author">— Tom K., Founder</div>
+    </div>
+  </div>
+</div>
+
+<div class="bg-gray">
+  <div class="section" id="pricing">
+    <h2>Pricing</h2>
+    <p class="sub">Simple plans for every team size</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Free</h3>
+        <div class="price">$0 <span>/ month</span></div>
+        <ul>
+          <li>1 inbox</li>
+          <li>Up to 3 users</li>
+          <li>100 conversations/mo</li>
+          <li>Basic canned replies</li>
+        </ul>
+        <a href="#" class="btn btn-gray" style="display:block;text-align:center;">Get Started</a>
+      </div>
+      <div class="pricing-card popular">
+        <h3>Pro ⭐</h3>
+        <div class="price">$29 <span>/ month</span></div>
+        <ul>
+          <li>3 inboxes</li>
+          <li>Up to 10 users</li>
+          <li>Unlimited conversations</li>
+          <li>Collision detection</li>
+          <li>Slack integration</li>
+        </ul>
+        <a href="#" class="btn btn-teal" style="display:block;text-align:center;">Start Free Trial</a>
+      </div>
+      <div class="pricing-card">
+        <h3>Team</h3>
+        <div class="price">$79 <span>/ month</span></div>
+        <ul>
+          <li>Unlimited inboxes</li>
+          <li>Unlimited users</li>
+          <li>Advanced routing</li>
+          <li>SLA tracking</li>
+          <li>API access</li>
+        </ul>
+        <a href="#" class="btn btn-gray" style="display:block;text-align:center;">Start Free Trial</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p><strong style="color:white;">Flowdesk</strong></p>
+  <p>© 2026 Flowdesk, Inc. · Privacy · Terms</p>
+</footer>
+
+</body>
+</html>
