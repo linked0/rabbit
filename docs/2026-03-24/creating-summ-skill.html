@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creating the /summ Skill</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .badge.green { background: #d1fae5; color: #065f46; }
+    h1 { font-size: 32px; font-weight: 700; margin: 16px 0 8px; }
+    .summary { font-size: 18px; color: #6e6e73; margin-bottom: 32px; }
+    h2 { font-size: 22px; font-weight: 600; margin: 0 0 16px; }
+    ul { padding-left: 20px; margin-bottom: 8px; }
+    li { margin-bottom: 8px; color: #1d1d1f; }
+    .idiom-card {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-radius: 16px;
+      padding: 28px;
+      margin-top: 24px;
+    }
+    .idiom-card h2 { color: #92400e; margin-bottom: 12px; }
+    .idiom-quote { font-size: 20px; font-weight: 600; color: #78350f; margin-bottom: 8px; }
+    .idiom-meaning { color: #92400e; margin-bottom: 12px; }
+    .idiom-example { color: #78350f; font-style: italic; }
+    .back-link { display: inline-block; margin-top: 24px; color: #0066cc; text-decoration: none; font-weight: 500; }
+    .back-link:hover { text-decoration: underline; }
+    .footer { text-align: center; color: #86868b; font-size: 14px; margin-top: 40px; }
+    code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 14px; }
+    pre { background: #f3f4f6; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <span class="badge green">FEATURE</span>
+      <h1>Creating the /summ Skill</h1>
+      <p class="summary">Built a custom Claude Code skill that automatically generates structured HTML task summaries with daily logs, knowledge cards, and English idioms — committed and pushed to the task repo.</p>
+    </div>
+
+    <div class="card">
+      <h2>What was done</h2>
+      <ul>
+        <li>Created a new Claude Code skill at <code>~/.claude/skills/summ/SKILL.md</code> using the skill framework's frontmatter format (name, description, type metadata)</li>
+        <li>Defined the skill trigger patterns: <code>/summ</code>, "summarize my work", "log what I did", "save task summary", and casual phrases like "wrap up" or "done for the day"</li>
+        <li>Designed a two-file output system: a per-task detail HTML file (<code>docs/YYYY-MM-DD/task-slug.html</code>) and a master index page (<code>docs/know-summary.html</code>)</li>
+        <li>Specified Apple-inspired design guidelines: SF Pro font stack, <code>#f5f5f7</code> background, white cards with <code>border-radius: 16px</code>, colored badge pills per category</li>
+        <li>Defined 7 task categories with color mappings: bug-fix (red), feature (green), learning (blue), technique (purple), refactor (amber), config (gray), research (blue)</li>
+        <li>Added an "English Idiom of the Day" section to each summary for language learning purposes</li>
+        <li>Built auto-commit and push logic into the skill workflow targeting <code>/Users/jay/work/task</code> repo</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Techniques & Learnings</h2>
+      <ul>
+        <li><strong>Claude Code Skill Structure:</strong> Skills live in <code>~/.claude/skills/&lt;name&gt;/SKILL.md</code> with YAML frontmatter (<code>name</code>, <code>description</code>) followed by markdown instructions. The description field controls when the skill triggers.</li>
+        <li><strong>Skill Triggering:</strong> The description acts as the matching criteria — writing comprehensive trigger phrases (slash commands, natural language variations, casual synonyms) improves activation accuracy.</li>
+        <li><strong>Self-contained HTML:</strong> Using inline styles with no external dependencies ensures summary pages render correctly when opened directly in a browser, without needing a web server or build step.</li>
+        <li><strong>Folder Structure:</strong>
+          <pre>~/.claude/
+  skills/
+    summ/
+      SKILL.md          # Skill definition with frontmatter + instructions
+
+/Users/jay/work/task/
+  docs/
+    know-summary.html   # Master index page (all summaries)
+    2026-03-24/
+      task-slug.html    # Individual task detail page</pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="idiom-card">
+      <h2>Idiom of the Day</h2>
+      <p class="idiom-quote">"Build the ship while sailing it"</p>
+      <p class="idiom-meaning"><strong>Meaning:</strong> To create or improve something while it's already in use, iterating as you go rather than waiting for perfection.</p>
+      <p class="idiom-example">We decided to build the ship while sailing it — launching the /summ skill with its core features and refining the design as we use it in real sessions.</p>
+    </div>
+
+    <a href="../know-summary.html" class="back-link">&larr; Back to Knowledge Summary</a>
+
+    <p class="footer">March 24, 2026</p>
+  </div>
+</body>
+</html>
