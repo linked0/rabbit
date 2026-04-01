@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Source Map Leak Demo Project</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    h2 { font-size: 22px; font-weight: 600; color: #1d1d1f; margin: 32px 0 16px; }
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .summary {
+      font-size: 18px;
+      color: #6e6e73;
+      margin: 16px 0 32px;
+      line-height: 1.7;
+    }
+    .section {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .section h2 { margin-top: 0; font-size: 18px; }
+    ul { margin: 12px 0 0 20px; }
+    li { margin-bottom: 10px; color: #424245; font-size: 15px; }
+    code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: 'SF Mono', SFMono-Regular, Menlo, monospace;
+    }
+    .idiom-card {
+      background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+      border-radius: 16px;
+      border: 1px solid #fde68a;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .idiom-card h2 { margin-top: 0; font-size: 18px; color: #92400e; }
+    .idiom-phrase { font-size: 22px; font-weight: 600; color: #92400e; margin: 12px 0 8px; font-style: italic; }
+    .idiom-meaning { font-size: 15px; color: #78350f; margin-bottom: 12px; }
+    .idiom-example { font-size: 15px; color: #92400e; padding: 12px 16px; background: rgba(255,255,255,0.6); border-radius: 8px; }
+    .back-link { display: inline-block; margin-bottom: 24px; color: #0066cc; text-decoration: none; font-size: 15px; }
+    .back-link:hover { text-decoration: underline; }
+    .footer { text-align: center; color: #86868b; font-size: 14px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../know-summary.html" class="back-link">&larr; Back to Knowledge Summary</a>
+
+    <span class="badge">RESEARCH</span>
+    <h1>Source Map Leak Demo Project</h1>
+    <p class="summary">Built a hands-on demo project reproducing the Claude Code npm source map leak incident (2026-03-31) — showing how <code>.map</code> files in production packages expose full original source code, and how to prevent it.</p>
+
+    <div class="section">
+      <h2>What was done</h2>
+      <ul>
+        <li>Created a TypeScript project simulating a proprietary AI agent system with internal prompts, tool routing, and orchestration logic — mimicking the structure exposed in the Claude Code leak</li>
+        <li>Built <code>build:vulnerable</code> script that compiles with <code>sourceMap</code> + <code>inlineSources</code> enabled, embedding full original TypeScript in <code>.map</code> files</li>
+        <li>Created <code>extract-from-sourcemap.js</code> — reads <code>.map</code> files, parses <code>sourcesContent</code>, and prints the complete recovered source code</li>
+        <li>Built <code>strip-sourcemaps.js</code> — the fix script that deletes <code>.map</code> files and strips <code>sourceMappingURL</code> references from compiled JS</li>
+        <li>Added <code>compare-packages.js</code> to inspect <code>.tgz</code> package contents and flag included source maps</li>
+        <li>Verified both vulnerable and safe build paths work end-to-end</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Techniques & Learnings</h2>
+      <ul>
+        <li><strong>Source map structure:</strong> <code>.map</code> files are JSON with a <code>sourcesContent</code> array containing full original source as strings — trivial to extract with a few lines of JS</li>
+        <li><strong>TypeScript's <code>inlineSources</code>:</strong> This <code>tsconfig</code> option embeds original TS directly in source maps, making recovery even easier than following <code>sources</code> file paths</li>
+        <li><strong>Defense layers:</strong> Multiple independent safeguards are needed — <code>.npmignore</code>, build scripts, <code>package.json</code> <code>files</code> allowlist, and CI/CD checks. Any single one can fail silently</li>
+        <li><strong>"Open source" vs. open source:</strong> Publishing plugin systems and configuration templates while keeping core logic proprietary is a common pattern — the source map leak revealed the gap between the two</li>
+      </ul>
+    </div>
+
+    <div class="idiom-card">
+      <h2>Idiom of the Day</h2>
+      <p class="idiom-phrase">"Let the cat out of the bag"</p>
+      <p class="idiom-meaning"><strong>Meaning:</strong> To accidentally reveal a secret that was supposed to stay hidden.</p>
+      <p class="idiom-example">Anthropic's build pipeline let the cat out of the bag — a single overlooked <code>.map</code> file exposed the entire internal architecture that was meant to stay proprietary.</p>
+    </div>
+
+    <p class="footer">2026-04-02</p>
+  </div>
+</body>
+</html>
