@@ -1,0 +1,22 @@
+{
+  "name": "sourcemap-leak-demo",
+  "version": "1.0.0",
+  "description": "Demonstrates how source maps in npm packages can expose internal source code (inspired by the Claude Code .map file incident, 2026-03-31)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build:vulnerable": "tsc --sourceMap",
+    "build:safe": "tsc --sourceMap && npm run strip-maps",
+    "strip-maps": "node scripts/strip-sourcemaps.js",
+    "pack:vulnerable": "npm run build:vulnerable && npm pack",
+    "pack:safe": "npm run build:safe && npm pack",
+    "demo:extract": "node scripts/extract-from-sourcemap.js",
+    "demo:compare": "npm run pack:vulnerable && node scripts/compare-packages.js"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
