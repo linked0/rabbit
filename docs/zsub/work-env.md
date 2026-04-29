@@ -14,6 +14,15 @@ brew install --cask iterm2 | brew install zsh | brew install karabiner-elements
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ```
 
+
+### Chrome extension 
+
+#### Markdown 파일 자동으로 보기
+- Markdown viewer on Chrome extension
+- chrome://extensions/
+- find the extension, click Details, and toggle "Allow access to file URLs" to ON.
+
+
 ### karanbiner/iterm2/git 및 기타 파일
 - [karabiner](./karabiner.json)
 - iterm2 - Preferences - Profiles - Silence bell
@@ -225,6 +234,7 @@ psql postgres <== 접속해볼 수 있음.
 - Whiteboard (AppStore에 있음)
 
 ### VS Code Plugin
+- Markdown Preview Include Files: 여러개의 md 파일 프리뷰를 볼수 있음. 매우 유용함.
 - Solidity Visual Developer
 - Solidity(JuanBlanco)
 - Go/rust-analyzer
