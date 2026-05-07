@@ -275,6 +275,9 @@ psql postgres <== 접속해볼 수 있음.
   - Toogle Panel Visibility: cmd ctrl j
   - Toggle Terminal : cmd j
 
+- The markdown preview jumps back to the top 
+  - Refresh/Reload: Click "Refresh Preview" in the preview pane menu (top-right three dots) or reload the window (Developer: Reload Window in the command palette).
+  
 ### How to Show the .git Folder in VS Code
 - Open VS Code Settings: Press (Cmd + ,) to open the Settings UI.
 - Open Settings as JSON 📄: Type "files.exclude"
