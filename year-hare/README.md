@@ -36,6 +36,26 @@ pnpm build          # 타입체크 + 빌드 (✅ 통과 확인됨)
 > 현재는 **수동 입력만** 지원 (Excel 업로드는 다음 단계).
 > 배포(GCP Cloud Run + IAP)는 아래 **9번** 참고.
 
+### 🚧 트러블슈팅: Google 로그인 시 "액세스 차단됨" (`redirect_uri_mismatch`)
+
+**증상** — "Google 계정으로 로그인" 버튼을 누르면 앱이 아니라 Google의 빨간 **"액세스 차단됨 / Error 400: redirect_uri_mismatch"** 페이지가 뜬다.
+
+**원인** — 코드 문제가 아니다. 앱(NextAuth)은 표준 redirect URI `http://localhost:3000/api/auth/callback/google` 를 정확히 보내지만, 이 URI가 Google Cloud Console의 OAuth 클라이언트에 **등록되어 있지 않아서** Google이 차단한다.
+
+**해결** — [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → **API 및 서비스 → 사용자 인증 정보** → `AUTH_GOOGLE_ID`와 일치하는 **OAuth 2.0 클라이언트 ID** 열기:
+
+1. **승인된 리디렉션 URI(Authorized redirect URIs)** 에 아래를 **정확히** 추가 (끝 슬래시 없음):
+   ```
+   http://localhost:3000/api/auth/callback/google
+   ```
+2. (권장) **승인된 JavaScript 원본**에 `http://localhost:3000` 추가
+3. **저장** 후 1~2분 기다렸다가 다시 로그인
+4. 배포 시에는 운영 도메인용도 추가: `https://<배포도메인>/api/auth/callback/google`
+
+> 💡 앱이 실제로 보내는 redirect URI는 다음으로 확인할 수 있다:
+> `curl -s -c /tmp/c -b /tmp/c http://localhost:3000/api/auth/csrf` 로 토큰을 받은 뒤
+> `/api/auth/signin/google` 에 POST 하면 `Location` 헤더의 `redirect_uri=` 값이 보인다.
+
 ### 현재 구현된 것 (v0)
 - **Google 로그인** (NextAuth/Auth.js v5) — 허용 이메일만 통과
   - `auth.ts` — Google provider + 이메일 allowlist
