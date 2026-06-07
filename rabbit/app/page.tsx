@@ -11,7 +11,7 @@ export default async function Page() {
   if (!session?.user) {
     return (
       <main>
-        <h1>🐇 year-hare</h1>
+        <h1>🐇 rabbit</h1>
         <p className="sub">내 암호화폐 포트폴리오 요약 (PoC)</p>
         <section className="panel" style={{ maxWidth: 440 }}>
           <h2>로그인</h2>
