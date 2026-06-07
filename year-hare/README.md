@@ -36,6 +36,54 @@ pnpm build          # 타입체크 + 빌드 (✅ 통과 확인됨)
 > 현재는 **수동 입력만** 지원 (Excel 업로드는 다음 단계).
 > 배포(GCP Cloud Run + IAP)는 아래 **9번** 참고.
 
+### 🚀 서버 배포 (Deploy to server) — 빠른 순서
+
+이 앱은 **GCP Cloud Run**(컨테이너 1개, HTTPS 자동, 트래픽 0이면 비용 0)에 올린다. 아래는 순서대로 실행하는 최소 런북이고, Dockerfile·IAP·CI 등 자세한 설명은 **9번 섹션**에 있다.
+
+**사전 준비 (최초 1회)**
+```bash
+gcloud auth login
+gcloud config set project <GCP_PROJECT_ID>
+# 필요한 API 활성화 (run = Cloud Run, cloudbuild = 소스 빌드)
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+```
+
+**1) 비밀값을 Secret Manager에 등록** (코드/명령줄에 시크릿을 노출하지 않기 위해)
+```bash
+printf '%s' "$AUTH_SECRET"        | gcloud secrets create auth-secret   --data-file=-
+printf '%s' "$AUTH_GOOGLE_ID"     | gcloud secrets create google-id     --data-file=-
+printf '%s' "$AUTH_GOOGLE_SECRET" | gcloud secrets create google-secret --data-file=-
+```
+> `AUTH_SECRET`은 `npx auth secret`(또는 `openssl rand -base64 32`)로 생성, `AUTH_GOOGLE_ID/SECRET`은 Google Cloud Console의 OAuth 클라이언트 값. **실제 값은 README에 적지 않는다 — 변수명만.**
+
+**2) 배포** — `--source .`는 레포의 Dockerfile(있으면, 9번 참고) 또는 Cloud Buildpacks로 자동 빌드·푸시·배포한다. `next.config.js`에는 이미 `output: "standalone"`이 설정돼 있다.
+```bash
+gcloud run deploy year-hare \
+  --source . \
+  --region asia-northeast3 \
+  --no-allow-unauthenticated \
+  --set-env-vars ALLOWED_EMAILS=linked0@gmail.com \
+  --set-secrets AUTH_SECRET=auth-secret:latest,AUTH_GOOGLE_ID=google-id:latest,AUTH_GOOGLE_SECRET=google-secret:latest
+```
+배포가 끝나면 `https://year-hare-...run.app` 형태의 **서비스 URL**이 출력된다.
+
+**3) `AUTH_URL`을 방금 받은 도메인으로 설정** (NextAuth가 콜백 URL을 올바르게 만들도록 — 닭·달걀이라 배포 후 한 번 더 갱신)
+```bash
+gcloud run services update year-hare --region asia-northeast3 \
+  --set-env-vars AUTH_URL=https://<배포도메인>
+```
+
+**4) Google Cloud Console에 운영 redirect URI 등록** ⚠️ *이걸 빠뜨리면 로그인에서 `redirect_uri_mismatch`로 차단된다 (위 트러블슈팅 참고).*
+OAuth 클라이언트 → **Authorized redirect URIs**에 추가:
+```
+https://<배포도메인>/api/auth/callback/google
+```
+
+**5) 확인** — 브라우저로 서비스 URL 접속 → "Google 계정으로 로그인" → 허용된 이메일로 통과되는지 확인.
+
+> 🔒 브라우저 접근을 Google 계정으로 한 번 더 보호하려면 Cloud Run 앞에 **IAP**를 켠다 → **9번-3)** 참고.
+> 🔁 코드 수정 후 재배포는 **2)** 명령만 다시 실행하면 된다 (시크릿·env는 유지됨).
+
 ### 🚧 트러블슈팅: Google 로그인 시 "액세스 차단됨" (`redirect_uri_mismatch`)
 
 **증상** — "Google 계정으로 로그인" 버튼을 누르면 앱이 아니라 Google의 빨간 **"액세스 차단됨 / Error 400: redirect_uri_mismatch"** 페이지가 뜬다.
