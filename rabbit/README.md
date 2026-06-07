@@ -1,4 +1,4 @@
-# year-hare
+# rabbit
 
 > **PoC** — 내 투자를 요약해주는 도구. 새 아이디어 검증용 레포.
 > 상태: 🛠️ **v0 구현됨** — Google 로그인 → 수동 입력 → 현재 손익 → 1년 전망. Next.js + TypeScript. (2026-06-04)
@@ -8,7 +8,7 @@
 ## ▶ 실행 방법 (How to run)
 
 ```bash
-cd /Users/jay/work/task/year-hare
+cd /Users/jay/work/task/rabbit
 pnpm install        # 최초 1회 (의존성 설치)
 cp .env.example .env.local   # 최초 1회 — 아래 "로그인 설정" 채우기
 pnpm dev            # 개발 서버 → http://localhost:3000
@@ -58,18 +58,18 @@ printf '%s' "$AUTH_GOOGLE_SECRET" | gcloud secrets create google-secret --data-f
 
 **2) 배포** — `--source .`는 레포의 Dockerfile(있으면, 9번 참고) 또는 Cloud Buildpacks로 자동 빌드·푸시·배포한다. `next.config.js`에는 이미 `output: "standalone"`이 설정돼 있다.
 ```bash
-gcloud run deploy year-hare \
+gcloud run deploy rabbit \
   --source . \
   --region asia-northeast3 \
   --no-allow-unauthenticated \
   --set-env-vars ALLOWED_EMAILS=linked0@gmail.com \
   --set-secrets AUTH_SECRET=auth-secret:latest,AUTH_GOOGLE_ID=google-id:latest,AUTH_GOOGLE_SECRET=google-secret:latest
 ```
-배포가 끝나면 `https://year-hare-...run.app` 형태의 **서비스 URL**이 출력된다.
+배포가 끝나면 `https://rabbit-...run.app` 형태의 **서비스 URL**이 출력된다.
 
 **3) `AUTH_URL`을 방금 받은 도메인으로 설정** (NextAuth가 콜백 URL을 올바르게 만들도록 — 닭·달걀이라 배포 후 한 번 더 갱신)
 ```bash
-gcloud run services update year-hare --region asia-northeast3 \
+gcloud run services update rabbit --region asia-northeast3 \
   --set-env-vars AUTH_URL=https://<배포도메인>
 ```
 
@@ -164,6 +164,7 @@ https://<배포도메인>/api/auth/callback/google
 | 날짜 | 결정 | 이유 | 대안(버린 것) |
 |------|------|------|---------------|
 | 2026-06-04 | 폴더명 `hare` → `year-hare` | jay 요청 | `hare` |
+| 2026-06-07 | 폴더명 `year-hare` → `rabbit` | jay 요청 (`git mv`로 히스토리 보존) | `year-hare` 유지 |
 | 2026-06-04 | PoC로 시작 (완성 제품 아님) | 아이디어 빠른 검증 | 처음부터 풀스택 |
 | 2026-06-04 | 대상 자산 = 암호화폐 전용 | jay 요청 (범위 축소) | 주식·ETF 등 멀티자산 |
 | 2026-06-04 | 초기 데이터 = Excel + 직접 입력 둘 다 | jay 요청 | 한쪽만 지원 |
@@ -197,7 +198,7 @@ https://<배포도메인>/api/auth/callback/google
 - ~~Q9. Verex 기술 스택~~ → ✅ **확인됨** (`/Users/jay/work/verex`):
   pnpm + Turborepo (TS) 모노레포. `web`=Next.js+React+wagmi+viem, `api`=Fastify, `sdk`=`@verex/sdk`(viem), `contracts`, `cli`.
   → **결론: 경로 B (Next.js/TypeScript) 채택.** Python/Streamlit은 통합 불리.
-- **Q10. year-hare를 어디에 둘까** — ① **Verex 모노레포에 새 패키지** `packages/year-hare`(또는 `packages/web` 내 라우트)로 추가 ② **별도 레포**로 만들되 `@verex/sdk` 의존.
+- **Q10. rabbit를 어디에 둘까** — ① **Verex 모노레포에 새 패키지** `packages/rabbit`(또는 `packages/web` 내 라우트)로 추가 ② **별도 레포**로 만들되 `@verex/sdk` 의존.
   👉 **추천**: 통합·시세/체인 데이터 재사용을 생각하면 **① Verex 모노레포 내 새 패키지**. 단, PoC 독립성을 원하면 ②.
 - **Q5. 실시간 시세**
   👉 **추천**: **CoinGecko 무료 API** (API 키 불필요)로 현재가 조회 → 평가손익 자동 계산. 오프라인 대비 수동 입력도 폴백으로 허용.
@@ -210,7 +211,7 @@ https://<배포도메인>/api/auth/callback/google
 
 | 용어 | 뜻 |
 |------|----|
-| year-hare | 프로젝트 코드명 (토끼해 = 2023? 네이밍 의도 확정 예정) |
+| rabbit | 프로젝트 코드명 (토끼해 = 2023? 네이밍 의도 확정 예정) |
 | PoC | Proof of Concept — 아이디어가 되는지 보여주는 최소 검증판 |
 | profitability | 현재까지의 수익성 (손익·수익률) |
 | prospect | 미래 수익 전망 |
@@ -229,7 +230,7 @@ Verex가 TypeScript 모노레포(Next.js+Fastify+viem)이므로 거기에 **맞�
 | 시세 | **CoinGecko 무료 API** | 키 불필요, 크립토 현재가 |
 | 차트 | **Recharts** (또는 Tremor) | React 친화 |
 | 배포 | **GCP Cloud Run** (Docker, Next standalone) | 컨테이너 1개·비용 0·HTTPS 자동 |
-| 위치 | **Verex 모노레포 새 패키지** `packages/year-hare` (추천) | 통합·코드 재사용 (→ Q10) |
+| 위치 | **Verex 모노레포 새 패키지** `packages/rabbit` (추천) | 통합·코드 재사용 (→ Q10) |
 
 > 화면 흐름(초안): **① Excel 업로드 또는 직접 입력 → ② 현재 평가손익 요약 → ③ 시나리오별 미래 전망**
 
@@ -272,7 +273,7 @@ CMD ["node", "server.js"]
 
 ### 3) 배포 — 보호된 접근 (앱 세션 없음, jay 본인만)
 ```bash
-gcloud run deploy year-hare \
+gcloud run deploy rabbit \
   --source . \
   --region asia-northeast3 \         # 서울 리전
   --no-allow-unauthenticated         # 🔒 공개 X — IAM/IAP로만 접근
@@ -283,8 +284,8 @@ gcloud run deploy year-hare \
 브라우저로 접속하려면 Cloud Run 앞에 **IAP(Identity-Aware Proxy)** 를 켠다. 그러면 Google 로그인 페이지가 뜨고, 허용된 계정(jay)만 통과한다. 앱은 인증을 전혀 신경 쓰지 않는다.
 ```bash
 # IAP 켜고, 내 계정만 접근 허용
-gcloud run services update year-hare --region asia-northeast3 --iap
-gcloud run services add-iam-policy-binding year-hare \
+gcloud run services update rabbit --region asia-northeast3 --iap
+gcloud run services add-iam-policy-binding rabbit \
   --region asia-northeast3 \
   --member="user:linked0@gmail.com" \
   --role="roles/iap.httpsResourceAccessor"
@@ -293,14 +294,14 @@ gcloud run services add-iam-policy-binding year-hare \
 
 ### 3-대안) 명시적 빌드/푸시 (CI에 적합)
 ```bash
-gcloud builds submit --tag asia-northeast3-docker.pkg.dev/PROJECT/REPO/year-hare
-gcloud run deploy year-hare --image asia-northeast3-docker.pkg.dev/PROJECT/REPO/year-hare --region asia-northeast3
+gcloud builds submit --tag asia-northeast3-docker.pkg.dev/PROJECT/REPO/rabbit
+gcloud run deploy rabbit --image asia-northeast3-docker.pkg.dev/PROJECT/REPO/rabbit --region asia-northeast3
 ```
 
 ### 4) 환경변수 / 비밀값 (배포 시 필수)
 앱 내 Google 로그인을 쓰므로 Cloud Run에도 인증 env를 넣어야 한다:
 ```bash
-gcloud run deploy year-hare \
+gcloud run deploy rabbit \
   --set-env-vars ALLOWED_EMAILS=linked0@gmail.com,AUTH_URL=https://<배포도메인> \
   --set-secrets AUTH_SECRET=auth-secret:latest,AUTH_GOOGLE_ID=google-id:latest,AUTH_GOOGLE_SECRET=google-secret:latest
 ```
@@ -310,8 +311,8 @@ gcloud run deploy year-hare \
 > **사전 준비(1회)**: `gcloud auth login`, 프로젝트 지정(`gcloud config set project PROJECT`),
 > `run.googleapis.com`·`cloudbuild.googleapis.com`·`artifactregistry.googleapis.com` API 활성화.
 
-> 모노레포(`packages/year-hare`)에 둘 경우: 빌드 컨텍스트를 레포 루트로 잡고
-> Dockerfile에서 해당 패키지만 빌드(turbo `--filter=year-hare`)하도록 조정.
+> 모노레포(`packages/rabbit`)에 둘 경우: 빌드 컨텍스트를 레포 루트로 잡고
+> Dockerfile에서 해당 패키지만 빌드(turbo `--filter=rabbit`)하도록 조정.
 
 ---
 

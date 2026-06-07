@@ -85,7 +85,7 @@ export default function Dashboard() {
 
   return (
     <main>
-      <h1>🐇 year-hare</h1>
+      <h1>🐇 rabbit</h1>
       <p className="sub">
         내 암호화폐 포트폴리오 — 현재 수익성과 1년 후 전망 (PoC · 수동 입력)
       </p>
