@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Postgres Upsert Demo — 멱등 인덱싱 (ON CONFLICT)</title>
+<style>
+  :root { --accent:#2563eb; --bg:#0f172a; --code:#0b1220; --fg:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         color: var(--fg); line-height: 1.65; max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
+  a { color: var(--accent); }
+  .back { font-weight: 600; text-decoration: none; font-size: 0.95rem; }
+  h1 { font-size: 1.7rem; margin: 18px 0 4px; }
+  h2 { font-size: 1.2rem; margin: 34px 0 10px; padding-top: 8px; border-top: 1px solid var(--line); }
+  h3 { font-size: 1.02rem; margin: 20px 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 8px; }
+  .badge { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px;
+           background: rgba(59,130,246,0.15); color: var(--accent); vertical-align: middle; }
+  .en { color: var(--muted); font-style: italic; font-size: 0.92rem; margin: 4px 0 0; }
+  pre { background: var(--code); color: #e2e8f0; padding: 16px 18px; border-radius: 10px;
+        overflow-x: auto; font-size: 0.86rem; line-height: 1.5; }
+  code { font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  p code, li code { background: #eef2ff; color: #3730a3; padding: 1px 5px; border-radius: 4px; font-size: 0.86em; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.9rem; }
+  th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; }
+  th { background: #f8fafc; }
+  .note { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px 14px; border-radius: 6px; margin: 14px 0; }
+  .ok { color: #16a34a; font-weight: 600; }
+  .bad { color: #dc2626; font-weight: 600; }
+</style>
+</head>
+<body>
+  <a class="back" href="../know.html">&larr; Back to Knowledge Base</a>
+
+  <h1>Postgres Upsert Demo <span class="badge">SHELL / SQL</span></h1>
+  <p class="sub">온체인 이벤트 인덱서를 위한 멱등(idempotent) 적재 — <code>INSERT ... ON CONFLICT</code></p>
+
+  <h2>왜 필요한가 — 멱등성(idempotency)</h2>
+  <p>블록체인 인덱서는 같은 이벤트를 <strong>두 번 이상 읽는 일이 정상</strong>입니다.
+     (1) <strong>reorg</strong>로 블록이 갈렸다 재구성되면 같은 로그를 다시 받고,
+     (2) 크래시 후 마지막 처리 블록부터 재시작하면 겹치는 구간을 다시 훑고,
+     (3) RPC/큐가 보통 <strong>at-least-once</strong>(중복 가능) 전달이기 때문입니다.
+     그래서 "같은 입력을 몇 번 넣어도 결과가 같다"는 멱등성을 DB 레벨에서 보장해야 합니다.
+     <code>ON CONFLICT ... DO UPDATE</code>(UPSERT)가 바로 그 장치입니다.</p>
+  <p class="en">EN: A blockchain indexer normally reads the same event more than once — reorgs replay logs,
+     restarts re-scan overlapping ranges, and RPC/queues are usually at-least-once (duplicates possible).
+     So idempotency must be guaranteed at the DB level, and <code>ON CONFLICT ... DO UPDATE</code> (UPSERT) is that mechanism.</p>
+
+  <h2>스키마 + UPSERT</h2>
+  <pre><code>CREATE TABLE bets (
+  id        bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  tx_hash   text NOT NULL,
+  log_index int  NOT NULL,
+  market_id int,
+  amount    numeric,
+  side      text,
+  UNIQUE (tx_hash, log_index)        -- ★ 충돌 타깃 = 멱등성의 닻 (먼저 있어야 함)
+);
+
+-- 있으면 갱신, 없으면 삽입 (한 문장·원자적)
+INSERT INTO bets (tx_hash, log_index, market_id, amount, side)
+VALUES ('0xAA', 0, 7, 100, 'YES')
+ON CONFLICT (tx_hash, log_index) DO UPDATE
+  SET amount = EXCLUDED.amount, side = EXCLUDED.side;</code></pre>
+
+  <h3>어떻게 동작하나</h3>
+  <p><code>ON CONFLICT (tx_hash, log_index)</code>의 괄호는 <strong>충돌 타깃</strong>입니다.
+     INSERT를 시도하다 그 컬럼 조합이 이미 있으면 → INSERT를 버리고 <code>DO UPDATE</code>로 전환합니다.
+     이때 들어오려던 새 값은 <code>EXCLUDED</code> 가상 테이블로 접근합니다(<code>EXCLUDED.amount</code> = 방금 넣으려던 amount).
+     <strong>가장 흔한 실수</strong>: 충돌 타깃에 대응하는 <code>UNIQUE</code> 제약(또는 유니크 인덱스)이 미리 없으면 ON CONFLICT가 매칭할 대상이 없어 에러가 납니다.</p>
+  <p class="en">EN: The parentheses in <code>ON CONFLICT (...)</code> are the conflict target. On a key collision, INSERT is dropped
+     and it switches to <code>DO UPDATE</code>, where the incoming row is reachable via the <code>EXCLUDED</code> pseudo-table.
+     Most common mistake: without a matching <code>UNIQUE</code> constraint/index, ON CONFLICT has nothing to match and errors out.</p>
+
+  <h2>Docker로 한 번에 실행</h2>
+  <pre><code># 1) 일회용 Postgres 컨테이너 띄우기
+docker run --rm -e POSTGRES_PASSWORD=pw -p 5432:5432 -d --name pgtest postgres:16
+sleep 5
+# 2) 스크립트 실행 (psql 설치 불필요 — 컨테이너 안 psql 사용)
+docker exec -i pgtest psql -U postgres &lt; examples/pg-upsert-demo.sql
+# 3) 정리
+docker rm -f pgtest</code></pre>
+
+  <h3>행 확인 (검증 SELECT)</h3>
+  <pre><code>docker exec -i pgtest psql -U postgres &lt;&lt;'SQL'
+SELECT id, tx_hash, log_index, amount, side FROM bets ORDER BY id;
+SELECT count(*) AS total_rows FROM bets;
+SQL</code></pre>
+
+  <h2>결과</h2>
+  <p>같은 로그 <code>(0xAA, 0)</code>를 100 → 250으로 두 번 처리해도 <strong>1행</strong>만 남고 amount가 250으로 갱신됩니다.
+     다른 로그 <code>(0xAA, 1)</code>은 충돌이 없어 새 행(50)으로 들어갑니다.</p>
+  <table>
+    <tr><th>tx_hash</th><th>log_index</th><th>amount</th><th>side</th><th>비고</th></tr>
+    <tr><td>0xAA</td><td>0</td><td>250</td><td>YES</td><td>충돌 → 100에서 250으로 갱신 (1행)</td></tr>
+    <tr><td>0xAA</td><td>1</td><td>50</td><td>NO</td><td>충돌 없음 → 새 행</td></tr>
+  </table>
+  <p>총 행 수: 2 <span class="ok">✅ 멱등(중복 0)</span>.
+     대조군으로 <code>UNIQUE</code>/<code>ON CONFLICT</code> 없이 그냥 INSERT 두 번 하면 <span class="bad">2행 중복 ❌</span> (전형적인 인덱서 버그).</p>
+  <p class="en">EN: Processing the same log <code>(0xAA,0)</code> twice (100 → 250) leaves a single row updated to 250, while a different
+     log <code>(0xAA,1)</code> inserts as a new row (50) — two rows total, no duplicates. Without UNIQUE/ON CONFLICT, two plain
+     INSERTs would duplicate <code>(0xAA,0)</code> into two rows.</p>
+
+  <h2>DO UPDATE vs DO NOTHING</h2>
+  <p><code>DO UPDATE SET ...</code> 는 같은 로그를 다시 보면 <strong>덮어쓰기</strong>(데이터가 보강/정정될 때).
+     <code>DO NOTHING</code> 은 이미 있으면 <strong>그냥 무시</strong> — 로그는 불변이라 보통 이쪽이 더 흔하고 싸다.
+     단, reorg로 <em>제거된</em> 로그까지 정리하려면 <code>block_number</code>·<code>removed</code> 플래그로 별도 처리가 필요합니다.</p>
+
+  <div class="note">
+    <strong>로컬 테스트 팁:</strong> Docker가 없으면 <code>brew install postgresql@16 &amp;&amp; brew services start postgresql@16</code>
+    후 <code>createdb upserttest &amp;&amp; psql upserttest -f examples/pg-upsert-demo.sql</code> 로도 동일하게 확인할 수 있습니다.
+    스크립트 원본: <code>examples/pg-upsert-demo.sql</code>, 자동 검증판: <code>examples/pg-upsert-test.sh</code>.
+  </div>
+
+  <p style="margin-top:28px"><a class="back" href="../know.html">&larr; Back to Knowledge Base</a></p>
+</body>
+</html>

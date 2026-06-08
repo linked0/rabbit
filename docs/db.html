@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DB — Database Notes (Postgres, Redis 등)</title>
+<style>
+  :root { --accent:#2563eb; --code:#0b1220; --fg:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         color: var(--fg); line-height: 1.65; max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
+  a { color: var(--accent); }
+  .back { font-weight: 600; text-decoration: none; font-size: 0.95rem; }
+  h1 { font-size: 1.7rem; margin: 18px 0 4px; }
+  h2 { font-size: 1.25rem; margin: 38px 0 10px; padding-top: 10px; border-top: 2px solid var(--line); }
+  h3 { font-size: 1.02rem; margin: 20px 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 8px; }
+  .badge { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px;
+           background: rgba(59,130,246,0.15); color: var(--accent); vertical-align: middle; }
+  .toc { background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; padding: 12px 18px; margin: 18px 0; }
+  .toc ul { margin: 6px 0 0; padding-left: 20px; }
+  .en { color: var(--muted); font-style: italic; font-size: 0.92rem; margin: 4px 0 0; }
+  pre { background: var(--code); color: #e2e8f0; padding: 16px 18px; border-radius: 10px;
+        overflow-x: auto; font-size: 0.86rem; line-height: 1.5; }
+  code { font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  p code, li code { background: #eef2ff; color: #3730a3; padding: 1px 5px; border-radius: 4px; font-size: 0.86em; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.9rem; }
+  th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; }
+  th { background: #f8fafc; }
+  .note { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px 14px; border-radius: 6px; margin: 14px 0; }
+  .ok { color: #16a34a; font-weight: 600; }
+  .bad { color: #dc2626; font-weight: 600; }
+</style>
+</head>
+<body>
+  <a class="back" href="../know.html">&larr; Back to Knowledge Base</a>
+
+  <h1>DB — Database Notes <span class="badge">SHELL / SQL</span></h1>
+  <p class="sub">실무에서 자주 쓰는 데이터베이스 패턴 모음 — Postgres, Redis 등. 새 주제는 아래에 계속 추가.</p>
+  <p class="en">EN: A growing collection of practical database patterns — Postgres, Redis, and more. New topics get appended below.</p>
+
+  <div class="toc">
+    <strong>주제 (Topics)</strong>
+    <ul>
+      <li><a href="#upsert">1. Postgres Upsert — 멱등 인덱싱 (<code>ON CONFLICT</code>)</a></li>
+      <li><a href="#redis-lock">2. Redis 분산 락 — 중복 잡 방지 (<code>SET NX PX</code>)</a></li>
+    </ul>
+  </div>
+
+  <!-- ===================== 1. Postgres Upsert ===================== -->
+  <h2 id="upsert">1. Postgres Upsert — 멱등 인덱싱 <span class="badge">SQL</span></h2>
+  <p class="sub">온체인 이벤트 인덱서를 위한 멱등(idempotent) 적재 — <code>INSERT ... ON CONFLICT</code></p>
+
+  <h3>왜 필요한가 — 멱등성(idempotency)</h3>
+  <p>블록체인 인덱서는 같은 이벤트를 <strong>두 번 이상 읽는 일이 정상</strong>입니다.
+     (1) <strong>reorg</strong>로 블록이 갈렸다 재구성되면 같은 로그를 다시 받고,
+     (2) 크래시 후 마지막 처리 블록부터 재시작하면 겹치는 구간을 다시 훑고,
+     (3) RPC/큐가 보통 <strong>at-least-once</strong>(중복 가능) 전달이기 때문입니다.
+     <code>ON CONFLICT ... DO UPDATE</code>(UPSERT)가 "같은 입력을 몇 번 넣어도 결과가 같다"를 DB 레벨에서 보장합니다.</p>
+  <p class="en">EN: An indexer normally reads the same event more than once — reorgs replay logs, restarts re-scan overlapping ranges,
+     and RPC/queues are usually at-least-once. <code>ON CONFLICT ... DO UPDATE</code> (UPSERT) guarantees idempotency at the DB level.</p>
+
+  <h3>스키마 + UPSERT</h3>
+  <pre><code>CREATE TABLE bets (
+  id        bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  tx_hash   text NOT NULL,
+  log_index int  NOT NULL,
+  market_id int,
+  amount    numeric,
+  side      text,
+  UNIQUE (tx_hash, log_index)        -- ★ 충돌 타깃 = 멱등성의 닻 (먼저 있어야 함)
+);
+
+INSERT INTO bets (tx_hash, log_index, market_id, amount, side)
+VALUES ('0xAA', 0, 7, 100, 'YES')
+ON CONFLICT (tx_hash, log_index) DO UPDATE
+  SET amount = EXCLUDED.amount, side = EXCLUDED.side;</code></pre>
+  <p>괄호 <code>(tx_hash, log_index)</code>는 <strong>충돌 타깃</strong>. 그 조합이 이미 있으면 INSERT를 버리고 <code>DO UPDATE</code>로 전환하며,
+     들어오려던 새 값은 <code>EXCLUDED</code> 가상 테이블로 접근합니다. <strong>가장 흔한 실수</strong>: 대응하는 <code>UNIQUE</code> 제약이 없으면 ON CONFLICT가 에러.</p>
+  <p class="en">EN: The parentheses are the conflict target; on collision it switches to <code>DO UPDATE</code> with the incoming row in <code>EXCLUDED</code>.
+     Common mistake: without a matching <code>UNIQUE</code> constraint, ON CONFLICT errors out.</p>
+
+  <h3>Docker로 한 번에 실행 + 검증</h3>
+  <pre><code># 1) 일회용 Postgres 컨테이너
+docker run --rm -e POSTGRES_PASSWORD=pw -p 5432:5432 -d --name pgtest postgres:16
+sleep 5
+# 2) 스크립트 실행 (psql 설치 불필요)
+docker exec -i pgtest psql -U postgres &lt; examples/pg-upsert-demo.sql
+# 3) 행 확인
+docker exec -i pgtest psql -U postgres -c \
+  "SELECT tx_hash, log_index, amount, side FROM bets ORDER BY id;"
+# 4) 정리
+docker rm -f pgtest</code></pre>
+
+  <h3>결과</h3>
+  <table>
+    <tr><th>tx_hash</th><th>log_index</th><th>amount</th><th>side</th><th>비고</th></tr>
+    <tr><td>0xAA</td><td>0</td><td>250</td><td>YES</td><td>같은 로그 100→250 두 번 처리 → 충돌 → 1행 갱신</td></tr>
+    <tr><td>0xAA</td><td>1</td><td>50</td><td>NO</td><td>충돌 없음 → 새 행</td></tr>
+  </table>
+  <p>총 2행 <span class="ok">✅ 멱등(중복 0)</span>. 대조군: <code>UNIQUE</code>/<code>ON CONFLICT</code> 없이 INSERT 두 번 → <span class="bad">2행 중복 ❌</span>.
+     <code>DO NOTHING</code>은 로그가 불변일 때 더 싸고 흔함.</p>
+
+  <!-- ===================== 2. Redis Lock ===================== -->
+  <h2 id="redis-lock">2. Redis 분산 락 — 중복 잡 방지 <span class="badge">Redis</span></h2>
+  <p class="sub">여러 워커가 같은 정산을 동시에 돌리지 않게 — <code>SET key val NX PX</code></p>
+
+  <p><code>NX</code>(없을 때만) + <code>PX</code>(만료시간) 덕분에 단 하나의 워커만 락을 잡고, 워커가 죽어도 TTL이 지나면 자동 해제됩니다.
+     해제는 반드시 <strong>내 토큰일 때만</strong> 삭제(Lua)해야 만료 후 남의 락을 지우는 사고를 막습니다.</p>
+  <p class="en">EN: <code>NX</code> (only if absent) + <code>PX</code> (TTL) means exactly one worker grabs the lock, and it auto-releases on TTL if a worker dies.
+     Release only when the token is yours (via Lua), or you'll delete someone else's lock after expiry.</p>
+
+  <pre><code># 획득
+redis-cli SET lock:settle:42 workerA NX PX 30000   # OK
+redis-cli SET lock:settle:42 workerB NX PX 30000   # (nil) — 다른 워커 실패
+
+# 안전 해제: 내 토큰일 때만 DEL (Lua)
+redis-cli EVAL "if redis.call('get',KEYS[1])==ARGV[1] \
+  then return redis.call('del',KEYS[1]) else return 0 end" 1 lock:settle:42 workerA</code></pre>
+
+  <pre><code>// Node (ioredis) — 워커 잡
+const token = `${workerId}-${crypto.randomUUID()}`;
+const ok = await redis.set(`lock:settle:${marketId}`, token, "NX", "PX", 30000);
+if (!ok) return;                    // 다른 워커가 점유 중
+try { await settle(marketId); }
+finally {
+  await redis.eval(
+    "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end",
+    1, `lock:settle:${marketId}`, token);
+}</code></pre>
+
+  <div class="note">
+    <strong>주의:</strong> 단일 Redis 인스턴스 방식은 로컬·소규모엔 충분하지만, 다중 노드 HA에서는 페일오버 순간 락 안전성이 깨질 수 있어요 —
+    그 경우 <strong>Redlock</strong>(여러 독립 Redis에 과반 획득)을 씁니다.
+    스크립트 원본: <code>examples/redis-lock-test.mjs</code> (워커 5개 동시 경쟁 → 1개만 실행 검증).
+  </div>
+
+  <div class="note">
+    <strong>로컬 테스트 팁:</strong> Postgres — Docker 없으면 <code>brew install postgresql@16</code> 후 <code>psql ... -f examples/pg-upsert-demo.sql</code>.
+    Redis — <code>brew install redis &amp;&amp; redis-server</code> 또는 <code>docker run --rm -p 6379:6379 -d redis:7</code>.
+  </div>
+
+  <p style="margin-top:28px"><a class="back" href="../know.html">&larr; Back to Knowledge Base</a></p>
+</body>
+</html>
