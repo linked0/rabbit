@@ -174,6 +174,19 @@
             border-top: 1px dashed var(--border);
             padding-top: 8px;
         }
+
+        .card-code {
+            margin: 10px 0 0;
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-family: monospace;
+            font-size: 0.78rem;
+            line-height: 1.55;
+            overflow-x: auto;
+            white-space: pre;
+        }
     </style>
 </head>
 
@@ -283,6 +296,17 @@
                         <span class="card-path">docs/sub-agents.md</span>
                         <span class="card-desc">좁은 에이전트 × Dispatch(패턴 vs Beta 기능) — Scheduled, fan-out, control plane 3단계 정리</span>
                     </a>
+                    <div class="card">
+                        <span class="card-title">DB <span class="badge" style="background: rgba(59,130,246,0.2); color: #2563eb;">SHELL</span></span>
+                        <span class="card-path">Postgres upsert demo (Docker)</span>
+<pre class="card-code"># 1) 일회용 Postgres 컨테이너 띄우기
+docker run --rm -e POSTGRES_PASSWORD=pw -p 5432:5432 -d --name pgtest postgres:16
+sleep 5
+# 2) 스크립트 실행 (psql 설치 불필요 — 컨테이너 안 psql 사용)
+docker exec -i pgtest psql -U postgres &lt; examples/pg-upsert-demo.sql
+# 3) 정리
+docker rm -f pgtest</pre>
+                    </div>
                 </div>
                 <div style="text-align: right; margin-top: 12px;">
                     <a href="sections/knowledge.html"
