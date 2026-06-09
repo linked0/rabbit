@@ -53,6 +53,17 @@ uv run python main.py
 uv add 패키지명
 ```
 
+### 5. 테스트 / Tests
+
+`test_main.py` 가 토큰화·코사인 유사도·임베딩을 검증한다.
+토큰화/유사도/mock 임베딩 테스트는 네트워크 없이 돌고, 실(live) 임베딩 테스트는
+Ollama 가 `:11434` 에 떠 있지 않으면 자동으로 skip 된다.
+
+```bash
+uv run pytest -v                  # 전체 / all (Ollama 없으면 live 2개는 skip)
+uv run pytest -v -m "not ollama"  # 오프라인만 / offline-only (18 tests)
+```
+
 ---
 
 ## Expected Output

@@ -5,3 +5,13 @@ requires-python = ">=3.9"
 dependencies = [
     "tiktoken",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "ollama: integration test that needs a local Ollama server on :11434",
+]
