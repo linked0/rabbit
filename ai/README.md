@@ -9,6 +9,7 @@ A collection of small, self-contained experiments for learning the building bloc
 | `agentic_rag.ipynb` | Agentic RAG: an agent that *decides* when to retrieve, refines queries, and self-reflects | LangChain, LangGraph, Chroma, OpenAI |
 | `tokenizer-embedding/` | How an LLM "reads" text — BPE tokenization, embeddings, cosine similarity | tiktoken, Ollama (`nomic-embed-text`) |
 | `mlx-study/` | Running a 70B model fully locally on Apple Silicon | MLX (`mlx-lm`) |
+| `quantization/` | Quantization: Q4/Q8/FP16 trade-offs, GGUF vs MLX, tok/s benchmarking | Ollama, MLX |
 | `main.py` | Placeholder entry point | — |
 
 Each sub-project is independent. The root project (`pyproject.toml` / `uv.lock`) drives the notebook.
