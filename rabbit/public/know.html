@@ -534,8 +534,26 @@
             });
         </script>
 
-    <!-- rabbit 로그인 진입점 — /login → 성공 시 /summary -->
-    <a href="/login" style="position:fixed;top:18px;right:20px;z-index:1000;background:#d29922;color:#0e1116;padding:8px 14px;border-radius:6px;font-weight:600;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;">로그인 →</a>
+    <!-- rabbit 앱 진입점 — 비로그인: 로그인 버튼 / 로그인됨: 앱 메뉴 -->
+    <div id="rabbit-nav" style="position:fixed;top:18px;right:20px;z-index:1000;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;">
+        <a href="/login" style="background:#d29922;color:#0e1116;padding:8px 14px;border-radius:6px;font-weight:600;text-decoration:none;">로그인 →</a>
+    </div>
+    <script>
+        // 세션이 있으면 로그인 버튼 대신 앱 메뉴를 보여준다
+        fetch('/api/auth/session')
+            .then(function (r) { return r.json(); })
+            .then(function (s) {
+                if (!s || !s.user) return;
+                var link = 'color:#e6edf3;text-decoration:none;padding:8px 12px;';
+                document.getElementById('rabbit-nav').innerHTML =
+                    '<div style="display:flex;align-items:center;background:rgba(14,17,22,.92);border:1px solid #2a323d;border-radius:8px;padding:2px 6px;">' +
+                    '<a href="/summary" style="' + link + '">요약</a>' +
+                    '<a href="/chat" style="' + link + '">AI 챗</a>' +
+                    '<a href="/dashboard" style="' + link + '">포트폴리오</a>' +
+                    '</div>';
+            })
+            .catch(function () { /* 세션 확인 실패 시 로그인 버튼 유지 */ });
+    </script>
 </body>
 
 </html>
