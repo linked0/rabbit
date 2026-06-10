@@ -14,18 +14,22 @@ cp .env.example .env.local   # 최초 1회 — 아래 "로그인 설정" 채우�
 pnpm dev            # 개발 서버 → http://localhost:3000
 ```
 
-### 🔑 로그인 설정 (Google) — 최초 1회
-`.env.local`에 3가지를 채운다 (`.env.example` 참고):
+### 🔑 로그인 설정 — 최초 1회
+1차 구현부터 실행 모드(`APP_MODE`, 기본 `local`)에 따라 로그인이 다르다:
+
+**local 모드 (기본)** — `.env.local`에 2가지만 채우면 된다:
 1. **`AUTH_SECRET`** — 생성: `npx auth secret` (또는 `openssl rand -base64 32`)
-2. **`AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`** — [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → OAuth 2.0 클라이언트 ID 생성
+2. **`LOCAL_PASSWORD`** — 로컬 로그인용 비밀번호 (직접 정하기)
+
+**cloud 모드 (GCP)** — Google 로그인. 위에 더해:
+1. **`AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`** — [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → OAuth 2.0 클라이언트 ID 생성
    - **Authorized redirect URI**에 `http://localhost:3000/api/auth/callback/google` 등록 (배포 시 운영 도메인도 추가)
-3. **`ALLOWED_EMAILS`** — 접근 허용 이메일(콤마 구분). 본인만 쓰면 한 개. *비우면 누구나 로그인되니 운영에선 꼭 설정.*
-> 미설정 상태로도 앱은 뜨지만, 로그인 버튼을 누르면 Google이 클라이언트 ID 오류를 낸다.
+2. **`ALLOWED_EMAILS`** — 접근 허용 이메일(콤마 구분). 본인만 쓰면 한 개. *비우면 누구나 로그인되니 운영에선 꼭 설정.*
 
 브라우저에서 **http://localhost:3000** 접속 →
-1. **보유 코인 입력** (심볼·수량·평균 매수가·매수일) → `+ 추가`
-2. **현재가 불러오기 (CoinGecko)** 클릭 → 현재 평가액·손익·수익률 표시
-3. **1년 후 전망** — 보수/기본/낙관 시나리오별 추정액
+1. `/` — **know.html 공개 랜딩** → 우상단 `로그인 →` 버튼
+2. 로그인 성공 → **`/summary`** (BTC·ETH·S&P 500·KOSPI, 60초 갱신)
+3. 상단 탭: **요약**(`/summary`) · **AI 챗**(`/chat`) · **포트폴리오**(`/dashboard`, v0 대시보드)
 
 프로덕션 빌드 확인:
 ```bash
