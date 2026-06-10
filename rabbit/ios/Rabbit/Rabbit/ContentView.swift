@@ -8,9 +8,15 @@
 import SwiftUI
 import WebKit
 
-// rabbit 웹 앱 주소 — 시뮬레이터의 localhost는 Mac(pnpm dev)을 가리킨다.
-// GCP 배포 후에는 Cloud Run URL로 교체.
+// rabbit 웹 앱 주소 — GCP 배포 후에는 Cloud Run URL 하나로 교체.
+#if targetEnvironment(simulator)
+// 시뮬레이터: localhost = Mac(pnpm dev)
 private let rabbitURL = URL(string: "http://localhost:3000")!
+#else
+// 실기기: localhost는 폰 자신 → Mac의 LAN IP 사용 (같은 Wi-Fi 필수)
+// IP 확인: Mac에서 `ipconfig getifaddr en0`
+private let rabbitURL = URL(string: "http://192.168.0.34:3000")!
+#endif
 
 struct ContentView: View {
     var body: some View {
