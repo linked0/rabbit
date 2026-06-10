@@ -8,6 +8,7 @@ export default async function Nav() {
   return (
     <div className="topbar" style={{ justifyContent: "space-between" }}>
       <nav style={{ display: "flex", gap: 16 }}>
+        <Link href="/">지식</Link>
         <Link href="/summary">요약</Link>
         <Link href="/chat">AI 챗</Link>
         <Link href="/dashboard">포트폴리오</Link>
