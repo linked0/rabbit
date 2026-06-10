@@ -40,6 +40,31 @@ pnpm build          # 타입체크 + 빌드 (✅ 통과 확인됨)
 > 현재는 **수동 입력만** 지원 (Excel 업로드는 다음 단계).
 > 배포(GCP Cloud Run + IAP)는 아래 **9번** 참고.
 
+### 📱 iPhone 실기기에 iOS 앱 설치해서 테스트
+
+iOS 앱(`ios/Rabbit/Rabbit.xcodeproj`)은 웹 앱을 감싸는 WKWebView 래퍼다.
+시뮬레이터는 `localhost`가 Mac을 가리켜서 그냥 ▶ Run 하면 되지만, **실기기는 아래 순서**를 따른다:
+
+1. **서명 설정 (최초 1회)** — Xcode > Settings > Accounts에 Apple ID 추가 →
+   프로젝트 타깃 `Rabbit` > **Signing & Capabilities** > Team에 본인 **Personal Team** 선택.
+   Bundle Identifier가 겹치면 고유하게 변경 (예: `com.linked0.rabbit`).
+2. **iPhone 연결** — USB 케이블로 연결 (이후엔 같은 Wi-Fi면 무선 디버깅도 가능).
+3. **Developer Mode 켜기 (최초 1회, iOS 16+)** — iPhone 설정 > 개인정보 보호 및 보안 >
+   **개발자 모드** ON → 재부팅.
+4. **실행 대상을 내 iPhone으로** 선택 후 **▶ Run** — Xcode가 빌드해서 폰에 설치한다.
+5. **개발자 신뢰 (최초 1회)** — 폰에서 앱이 안 열리면: 설정 > 일반 >
+   **VPN 및 기기 관리** > 본인 Apple ID 신뢰.
+6. **접속 주소 바꾸기** — 실기기의 `localhost`는 폰 자신이다. 둘 중 하나:
+   - **같은 Wi-Fi에서 Mac의 dev 서버 사용**: `ContentView.swift` 상단의 `rabbitURL`을
+     `http://<Mac의-LAN-IP>:3000` 으로 변경 (IP 확인: `ipconfig getifaddr en0`).
+     평문 HTTP라서 타깃 > Info에 **App Transport Security Settings >
+     Allows Local Networking = YES** 추가 필요. 폰의 "로컬 네트워크" 권한 허용.
+   - **배포된 서버 사용 (권장, 가장 간단)**: GCP 배포 후 `rabbitURL`을
+     `https://<Cloud-Run-URL>` 로 변경 — HTTPS라 ATS 설정 불필요.
+
+> 무료 Apple ID로 설치한 앱은 **7일 후 만료**된다 — Xcode에서 다시 Run 하면 갱신.
+> 유료 개발자 계정($99/년)이면 1년 + TestFlight 배포 가능.
+
 ### 🚀 서버 배포 (Deploy to server) — 빠른 순서
 
 이 앱은 **GCP Cloud Run**(컨테이너 1개, HTTPS 자동, 트래픽 0이면 비용 0)에 올린다. 아래는 순서대로 실행하는 최소 런북이고, Dockerfile·IAP·CI 등 자세한 설명은 **9번 섹션**에 있다.
