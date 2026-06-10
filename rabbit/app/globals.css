@@ -192,3 +192,41 @@ button:hover {
   margin: 0 auto;
   padding: 12px 20px 0;
 }
+
+.topbar a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.topbar a:hover {
+  color: var(--accent);
+}
+
+/* AI 챗 */
+.chat-log {
+  max-height: 60vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.msg .who {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.msg .bubble {
+  background: #0e1116;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  font-size: 14px;
+}
+
+.msg.user .bubble {
+  border-color: var(--accent);
+}
