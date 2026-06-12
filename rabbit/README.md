@@ -67,51 +67,39 @@ iOS 앱(`ios/Rabbit/Rabbit.xcodeproj`)은 웹 앱을 감싸는 WKWebView 래퍼�
 
 ### 🚀 서버 배포 (Deploy to server) — 빠른 순서
 
-이 앱은 **GCP Cloud Run**(컨테이너 1개, HTTPS 자동, 트래픽 0이면 비용 0)에 올린다. 아래는 순서대로 실행하는 최소 런북이고, Dockerfile·IAP·CI 등 자세한 설명은 **9번 섹션**에 있다.
+이 앱은 **GCP Cloud Run**(컨테이너 1개, HTTPS 자동, 트래픽 0이면 비용 0)에 올린다. 모든 명령은 **`scripts/deploy.sh`** 하나에 들어 있다(재실행 안전). 수동 명령·Dockerfile·IAP·CI 등 자세한 설명은 **9번 섹션**에 있다.
 
 **사전 준비 (최초 1회)**
 ```bash
 gcloud auth login
-gcloud config set project <GCP_PROJECT_ID>
-# 필요한 API 활성화 (run = Cloud Run, cloudbuild = 소스 빌드)
-gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+cp scripts/deploy.env.example scripts/deploy.env   # PROJECT_ID / REGION / SERVICE 입력 (git-ignored)
 ```
+- `.env.local`에 실제 값 채우기 — `AUTH_SECRET`, `AUTH_GOOGLE_ID/SECRET`, `AI_PROVIDER/AI_API_KEY`, `MARKET_API_KEY`, `ALLOWED_EMAILS`
+- GCP 프로젝트에 **결제(billing)** 활성화 필요
 
-**1) 비밀값을 Secret Manager에 등록** (코드/명령줄에 시크릿을 노출하지 않기 위해)
+**1) 배포 — 한 줄**
 ```bash
-printf '%s' "$AUTH_SECRET"        | gcloud secrets create auth-secret   --data-file=-
-printf '%s' "$AUTH_GOOGLE_ID"     | gcloud secrets create google-id     --data-file=-
-printf '%s' "$AUTH_GOOGLE_SECRET" | gcloud secrets create google-secret --data-file=-
+./scripts/deploy.sh
 ```
-> `AUTH_SECRET`은 `npx auth secret`(또는 `openssl rand -base64 32`)로 생성, `AUTH_GOOGLE_ID/SECRET`은 Google Cloud Console의 OAuth 클라이언트 값. **실제 값은 README에 적지 않는다 — 변수명만.**
+스크립트가 순서대로 처리한다:
+1. 필요한 API 활성화 (Cloud Run, Cloud Build, Artifact Registry, Secret Manager)
+2. `.env.local`의 시크릿 5개를 Secret Manager에 upsert (처음엔 생성, 이후엔 새 버전)
+3. `gcloud run deploy --source .` — Dockerfile로 빌드, `APP_MODE=cloud` + 시크릿 연결
+4. 배포된 서비스 URL을 읽어 `AUTH_URL` 자동 설정
 
-**2) 배포** — `--source .`는 레포의 Dockerfile(있으면, 9번 참고) 또는 Cloud Buildpacks로 자동 빌드·푸시·배포한다. `next.config.js`에는 이미 `output: "standalone"`이 설정돼 있다.
-```bash
-gcloud run deploy rabbit \
-  --source . \
-  --region asia-northeast3 \
-  --no-allow-unauthenticated \
-  --set-env-vars ALLOWED_EMAILS=linked0@gmail.com \
-  --set-secrets AUTH_SECRET=auth-secret:latest,AUTH_GOOGLE_ID=google-id:latest,AUTH_GOOGLE_SECRET=google-secret:latest
-```
-배포가 끝나면 `https://rabbit-...run.app` 형태의 **서비스 URL**이 출력된다.
+> 첫 실행은 빌드 때문에 5–10분 걸리고, Artifact Registry 저장소 생성 질문에는 `Y`로 답한다.
+> `.gcloudignore`가 `.env*` 파일의 업로드를 차단한다 (시크릿은 Secret Manager로만 전달).
 
-**3) `AUTH_URL`을 방금 받은 도메인으로 설정** (NextAuth가 콜백 URL을 올바르게 만들도록 — 닭·달걀이라 배포 후 한 번 더 갱신)
-```bash
-gcloud run services update rabbit --region asia-northeast3 \
-  --set-env-vars AUTH_URL=https://<배포도메인>
-```
-
-**4) Google Cloud Console에 운영 redirect URI 등록** ⚠️ *이걸 빠뜨리면 로그인에서 `redirect_uri_mismatch`로 차단된다 (위 트러블슈팅 참고).*
-OAuth 클라이언트 → **Authorized redirect URIs**에 추가:
+**2) Google Cloud Console에 운영 redirect URI 등록 (최초 1회)** ⚠️ *이걸 빠뜨리면 로그인에서 `redirect_uri_mismatch`로 차단된다 (위 트러블슈팅 참고).*
+OAuth 클라이언트 → **Authorized redirect URIs**에 스크립트가 출력한 URL로 추가:
 ```
 https://<배포도메인>/api/auth/callback/google
 ```
 
-**5) 확인** — 브라우저로 서비스 URL 접속 → "Google 계정으로 로그인" → 허용된 이메일로 통과되는지 확인.
+**3) 확인** — 브라우저로 서비스 URL 접속 → "Google 계정으로 로그인" → 허용된 이메일로 통과되는지 확인.
 
-> 🔒 브라우저 접근을 Google 계정으로 한 번 더 보호하려면 Cloud Run 앞에 **IAP**를 켠다 → **9번-3)** 참고.
-> 🔁 코드 수정 후 재배포는 **2)** 명령만 다시 실행하면 된다 (시크릿·env는 유지됨).
+> 🔒 브라우저 접근을 Google 계정으로 한 번 더 보호하려면 Cloud Run 앞에 **IAP**를 켠다 → **9번-3)** 참고. (스크립트는 앱 자체 로그인 + 이메일 allowlist를 믿고 `--allow-unauthenticated`로 배포한다.)
+> 🔁 코드 수정 후 재배포는 `./scripts/deploy.sh`만 다시 실행하면 된다 (시크릿·env·URL 유지, **2)** 반복 불필요).
 
 ### 🚧 트러블슈팅: Google 로그인 시 "액세스 차단됨" (`redirect_uri_mismatch`)
 
