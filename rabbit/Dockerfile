@@ -1,6 +1,7 @@
 # rabbit — Cloud Run용 멀티스테이지 빌드 (README §9)
+# Node 22 필수: pnpm 11이 node:sqlite를 사용 (Node 20에는 없음)
 # build
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile
@@ -10,7 +11,7 @@ ENV AUTH_SECRET=build-time-dummy-secret
 RUN pnpm build
 
 # run
-FROM node:20-slim AS runner
+FROM node:22-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/.next/standalone ./
