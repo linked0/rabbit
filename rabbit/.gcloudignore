@@ -1,0 +1,8 @@
+# gcloud run deploy --source 업로드 제외 목록
+# (.gcloudignore가 없으면 rabbit/.gitignore만 적용되어 .env가 업로드됨 — 명시적으로 차단)
+.gcloudignore
+.git
+.gitignore
+#!include:.gitignore
+.env
+.env.*
