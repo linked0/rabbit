@@ -22,6 +22,10 @@ gcloud config set project "$PROJECT_ID" >/dev/null
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
   artifactregistry.googleapis.com secretmanager.googleapis.com
 
+# Cloud Run 리비전이 사용하는 기본 컴퓨트 서비스 계정 — 시크릿 읽기 권한 부여 대상
+PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+RUN_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+
 # 시크릿 upsert — 있으면 새 버전 추가, 없으면 생성
 upsert_secret() {
   local name=$1 value=$2
@@ -34,7 +38,11 @@ upsert_secret() {
   else
     printf '%s' "$value" | gcloud secrets create "$name" --replication-policy=automatic --data-file=- >/dev/null
   fi
-  echo "  - $name: OK"
+  # Cloud Run 서비스 계정에 이 시크릿의 읽기 권한 부여 (재실행 안전)
+  gcloud secrets add-iam-policy-binding "$name" \
+    --member="serviceAccount:$RUN_SA" \
+    --role=roles/secretmanager.secretAccessor >/dev/null
+  echo "  - $name: OK (+accessor)"
 }
 
 echo "▶ Secret Manager 갱신"
