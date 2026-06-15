@@ -4,6 +4,13 @@
 
 ---
 
+## 2026-06-15
+
+- **[Verex CTF 마이그레이션 — 코드 분석 계획](2026-06-15/verex-ctf-migration-analysis-plan.md)** · *Analysis · verex · security*
+  - verex `ctf-exchange` 브랜치(PR #2, S2.x, 커밋 21개) CTF 스택 전환을 어떤 순서로 리뷰할지 정리한 체크리스트.
+  - 최우선 리스크: off-chain EIP-712 주문 해시 parity. 컨트랙트/SDK/CLI/테스트/보안 관점 분리.
+  - *"parity" — exact equivalence between two implementations (off-chain vs on-chain hashing).*
+
 ## 2026-05-12
 
 - **[TypeScript infer + Rust Borrowing + LLM Tokenizer Session](2026-05-12/typescript-llm-learning-session.md)** · *Learning · typescript · rust · llm*
