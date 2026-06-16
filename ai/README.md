@@ -10,6 +10,7 @@ A collection of small, self-contained experiments for learning the building bloc
 | `tokenizer-embedding/` | How an LLM "reads" text — BPE tokenization, embeddings, cosine similarity | tiktoken, Ollama (`nomic-embed-text`) |
 | `mlx-study/` | Running a 70B model fully locally on Apple Silicon | MLX (`mlx-lm`) |
 | `quantization/` | Quantization: Q4/Q8/FP16 trade-offs, GGUF vs MLX, tok/s benchmarking | Ollama, MLX |
+| `prompt-engineering/` | Prompt structure for a local auditor — system prompt, few-shot, CoT, XML tags | Ollama (`llama3.1:70b`) |
 | `main.py` | Placeholder entry point | — |
 
 Each sub-project is independent. The root project (`pyproject.toml` / `uv.lock`) drives the notebook.
