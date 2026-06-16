@@ -10,6 +10,7 @@ A workspace under `~/work/task/` used for tracking work traces, ad-hoc notes, an
 
 ## Conventions
 
+- **Branching (this repo only).** Do not create a new branch for code changes unless jay explicitly asks for one — work on the current branch. This applies only to the task repo; other repos keep the default of creating a `claude/<topic>` feature branch.
 - New trace notes go under `docs/trace/<today>/notes.md`. Keep entries short — one or two sentences per topic is enough.
 - Commits should explain the *why* of the entry (what was being tested or verified), not just restate the filename.
 
