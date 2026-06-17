@@ -2,7 +2,7 @@
 
 > Generated 2026-06-17. A prioritized review list for the **v0 PoC** (dual-mode
 > Next.js crypto-portfolio tool, live on Cloud Run since 2026-06-12). This is *what to
-> verify and decide next*, not a status report — see `docs/plan/first-phase-design.md`
+> verify and decide next*, not a status report — see `docs/tasks/first-phase-design.md`
 > for the spec and `docs/history/2026-06-12-deploy-troubleshooting.md` for the deploy log.
 
 ## TL;DR — current state

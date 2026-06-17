@@ -1,6 +1,6 @@
 # 2026-06-17 — Icon, game page, top-menu, and Google-login fix
 
-Session summary of the Jun-16 task batch (see `docs/plan/Jun-16-plan.md`) plus a
+Session summary of the Jun-16 task batch (see `docs/tasks/Jun-16-plan.md`) plus a
 production Google-login fix.
 
 ## Features
@@ -47,5 +47,5 @@ production Google-login fix.
   (protected), `/` 200.
 
 ## Planning docs added
-- `docs/plan/Jun-16-plan.md` — design/approach for the four Jun-16 tasks.
-- `docs/plan/review-checklist.md` — "what to check/analyze" review of work to date.
+- `docs/tasks/Jun-16-plan.md` — design/approach for the four Jun-16 tasks.
+- `docs/tasks/review-checklist.md` — "what to check/analyze" review of work to date.

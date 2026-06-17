@@ -82,9 +82,9 @@ Google-side redirect mismatch.
 
 ## 4. Feature design — Agentic Commerce (M2M / AP2 / X402)
 **Goal:** an imaginative feature design using agentic-commerce rails (M2M, Google's AP2, or
-Coinbase's x402). Output a design doc in `docs/plan/`.
+Coinbase's x402). Output a design doc in `docs/tasks/`.
 
-**Design (what I'd write):** a standalone doc, e.g. `docs/plan/agentic-commerce-design.md`, sketching
+**Design (what I'd write):** a standalone doc, e.g. `docs/tasks/agentic-commerce-design.md`, sketching
 how rabbit's AI chat agent could **act on the portfolio**, not just describe it:
 - **Concept:** the chat agent proposes an action ("rebalance 5% BTC→ETH") and can *execute a
   payment/settlement* autonomously via an agent-to-agent payment protocol.
@@ -98,7 +98,7 @@ how rabbit's AI chat agent could **act on the portfolio**, not just describe it:
 - **Verex tie-in:** this overlaps Verex's Phase-3 session-key / paymaster work (`verex/docs/plan/watch-list.md`),
   so the design should note where the two could share an agent-authority model.
 
-**Files:** `docs/plan/agentic-commerce-design.md` (new design doc).
+**Files:** `docs/tasks/agentic-commerce-design.md` (new design doc).
 **Open Q:** which rail should be the centerpiece — x402 (pay-per-call), AP2 (delegated mandates),
 or a comparison of all three? And is this purely conceptual, or should it include a small PoC route?
 

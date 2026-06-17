@@ -15,7 +15,7 @@
 - When I try to login as google account this error happend: ![alt text](./login-server-error.png)
 
 ### Create a some feature design for Agentic Commerce
-- You can add the file to this folder: /Users/jay/work/task/rabbit/docs/plan
+- You can add the file to this folder: /Users/jay/work/task/rabbit/docs/tasks
 - This is some imaginatory description a feature using Agentic commerce using M2M, or AP2 or X402
 
 

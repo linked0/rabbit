@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# rabbit → GCP Cloud Run 배포 (docs/plan §6 / README §9). 재실행 안전(idempotent).
+# rabbit → GCP Cloud Run 배포 (docs/tasks §6 / README §9). 재실행 안전(idempotent).
 # 사용법:
 #   1) scripts/deploy.env.example → scripts/deploy.env 복사 후 PROJECT_ID 등 입력
 #   2) ./scripts/deploy.sh
