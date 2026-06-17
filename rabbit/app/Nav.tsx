@@ -12,6 +12,7 @@ export default async function Nav() {
         <Link href="/summary">요약</Link>
         <Link href="/chat">AI 챗</Link>
         <Link href="/dashboard">포트폴리오</Link>
+        <Link href="/game">게임</Link>
       </nav>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <span className="muted">👤 {session?.user?.email}</span>
