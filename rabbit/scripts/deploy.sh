@@ -62,8 +62,12 @@ gcloud run deploy "$SERVICE" \
   --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},AI_PROVIDER=${AI_PROVIDER:-openai}" \
   --set-secrets "AUTH_SECRET=rabbit-auth-secret:latest,AUTH_GOOGLE_ID=rabbit-google-id:latest,AUTH_GOOGLE_SECRET=rabbit-google-secret:latest,AI_API_KEY=rabbit-ai-key:latest,MARKET_API_KEY=rabbit-market-key:latest"
 
-URL=$(gcloud run services describe "$SERVICE" --region "$REGION" --format='value(status.url)')
-echo "▶ AUTH_URL=$URL 적용"
+# AUTH_URL은 projectNumber 기반 고정 도메인으로 못 박는다.
+# status.url(=…-<hash>-<region>.a.run.app)을 쓰면 로그인 시작 호스트와 콜백 호스트가
+# 달라져 Auth.js PKCE 쿠키가 유실된다(InvalidCheck → Configuration 500).
+# OAuth 클라이언트의 redirect URI도 반드시 이 도메인으로 등록할 것.
+URL="https://${SERVICE}-${PROJECT_NUMBER}.${REGION}.run.app"
+echo "▶ AUTH_URL=$URL 적용 (고정 도메인)"
 gcloud run services update "$SERVICE" --region "$REGION" --update-env-vars "AUTH_URL=$URL" >/dev/null
 
 echo
