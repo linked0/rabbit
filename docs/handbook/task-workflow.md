@@ -20,6 +20,22 @@ each repo's `docs/`:
 - **tasks/** answers *what we want and how we'll do it* (intent + plan).
 - **history/** answers *what we actually did* (the record, for future reference).
 
+## The wider `docs/` layout
+`tasks/` and `history/` are the core of the cycle; add the rest **only as you need them**
+(keep it light):
+
+- **`docs/tasks/`** — per-work-item task descriptions + the plans produced from them *(transient)*.
+- **`docs/history/`** — dated records of what was done, `YYYY-MM-DD.md` *(transient log)*.
+- **`docs/features/`** (or a single `features.md`) — the feature catalog: what the service
+  provides *(durable, product-level)*.
+- **`docs/plan/`** — roadmap / phase sequencing — the big-picture "what's next".
+- **`docs/architecture/`** — system-design overviews + ADRs (decision records).
+- **`docs/analysis/`** — research / investigation notes (evaluating a library, protocol, etc.).
+- **`docs/handbook/`** — team conventions and guides (this folder).
+
+**Rule of thumb:** *transient* (per work item) → `tasks/` + `history/`; *durable*
+(product/design) → `features/`, `plan/`, `architecture/`.
+
 ## Worked example (this repo)
 - Task: `docs/tasks/Jun-16-tasks.md`
 - Plan: `docs/tasks/Jun-16-plan.md`
