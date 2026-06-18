@@ -10,6 +10,7 @@ designed to move to a shared team repo (or per-project `CONTRIBUTING.md`) as the
 - [github-workflow.md](github-workflow.md) — branching, PRs, commits, reviews
 - [architecture.md](architecture.md) — documenting system design + decisions (ADRs)
 - [documenting-ideas.md](documenting-ideas.md) — AI-assisted idea → markdown flow
+- [task-workflow.md](task-workflow.md) — task → plan → build → history cycle
 
 ## Principles
 - **Keep docs short and living** — a stale guide is worse than none. Date and prune them.
