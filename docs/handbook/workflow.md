@@ -34,19 +34,19 @@ The cycle:
 - **tasks/** answers *what we want and how we'll do it* (intent + plan).
 - **history/** answers *what we actually did* (the record).
 
-## The wider `docs/` layout
-`tasks/` and `history/` are the core of the cycle; add the rest **only as you need them**:
+## The `docs/` layout (keep it simple — features-first)
+Lead with **`features/`** and add the rest **only as you need them**. Don't keep a separate
+`plan/` folder — fold the roadmap into `features/README.md` (a status table), so there's one
+home for "what we're building."
 
-- **`docs/features/`** — the feature design drafts (Category → Feature → to-do).
-- **`docs/tasks/`** — task descriptions + plans *(transient)*.
-- **`docs/history/`** — dated records *(transient log)*.
-- **`docs/plan/`** — roadmap / "what's next".
-- **`docs/architecture/`** — system-design overviews + ADRs.
-- **`docs/analysis/`** — research / investigation notes.
-- **`docs/handbook/`** — team conventions and guides (this folder).
+- **`docs/features/`** — what we're building: Category → Feature → to-do. Its `README.md` also
+  holds the **roadmap / status** (no separate `plan/` folder).
+- **`docs/history/`** — what we did: dated records *(transient log)*.
+- **`docs/tasks/`** *(optional)* — per-work-item task + plan *(transient)*.
+- **`docs/architecture/`** *(optional)* — ADRs, only for big, hard-to-reverse decisions.
 
-**Rule of thumb:** *transient* (per work item) → `tasks/` + `history/`; *durable*
-(product/design) → `features/`, `plan/`, `architecture/`.
+**Rule of thumb:** **one folder per distinct purpose** — if two folders overlap, merge them
+(e.g. `plan/` overlaps `features/`, so fold it in). Keep the structure flat and small.
 
 ## Worked example (this repo)
 - **Design:** `docs/features/` — categories (Game, AI Chat, Portfolio & Market, …), each with features + to-dos.
