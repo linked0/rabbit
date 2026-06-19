@@ -16,15 +16,24 @@ then summarize the built result into `docs/history/`.
 | Verex | ↗ external | [verex-link.md](verex-link.md) |
 | _Cross-cutting_ | — | [common.md](common.md) — navigation/top-menu (Common #1) + CI/CD (Common #2) |
 
-## Roadmap — recommended implementation order
-Ordered by dependency and value (a roadmap like verex's `docs/plan/README.md §1.4`).
-Effort = focused AI-assisted work, not calendar time.
+## Roadmap — phase · step schedule
+Broken into steps like verex's `docs/plan/README.md §1.4`. Effort = focused AI-assisted
+work (not calendar time); if a step runs over, **cut its scope** rather than slipping the next.
 
-| Phase | Features (in order) | Why this order | Rough effort |
-|-------|---------------------|----------------|--------------|
-| **1 — Shell & navigation** | navigation (common) → main-page (Home gate) → knowledge-base → verex-link → CI/CD | The menu is the backbone everything hangs off; Home + Knowledge depend on it; Verex is a one-line external link; CI early so later PRs are auto-checked | 2–3 days |
-| **2 — Core features** | portfolio-and-market (merge + DB) → ai-chat (provider selector + OSS model) | The substance of the app. Portfolio needs a DB (Prisma + Cloud SQL), so it's the biggest single piece — do it first in this phase | 3–5 days |
-| **3 — Extras** | game (Unity, `rabbit-hole`) → ap2-test | Bigger/independent or experimental. Game depends on you building the Unity game; AP2 is a learning spike | 3–5 days |
+| Phase · Step | Key deliverables | Milestone | Est. |
+|---|---|---|---|
+| **P1 Shell · S1** | Navigation restructure — Home-anchored top menu + active-link highlight | every section reachable from the new menu | 0.5d |
+| **P1 Shell · S2** | Home gate (`app/page.tsx`) — card grid + hero image | `/` shows the Home gate | 0.5–1d |
+| **P1 Shell · S3** | Knowledge → `/knowledge`; Verex external link | knowledge at `/knowledge`; Verex opens externally | 0.5d |
+| **P1 Shell · S4** | CI/CD — GitHub Actions (lint/build/test on PR; deploy on merge) | PRs auto-checked, merge auto-deploys | 0.5–1d |
+| **P2 Core · S5** | Merge `/summary` + `/dashboard` → `/portfolio` (Market + Portfolio zones) | one Portfolio & Market page | 1d |
+| **P2 Core · S6** | DB persistence — Cloud SQL Postgres + Prisma; holdings schema + CRUD API | holdings survive refresh, keyed by user | 1–2d |
+| **P2 Core · S7** | AI Chat — provider selector + small OSS model (Qwen2.5-0.5B) on Cloud Run | pick Local/OpenAI; OSS model answers | 1–2d |
+| **P3 Extras · S8** | Game — Unity (`rabbit-hole`) WebGL build embedded in `/game` | sample game playable in `/game` | 2–3d* |
+| **P3 Extras · S9** | AP2 Test — x402 "agent pays for data" mock loop | agent pay → retry → data works | 1–2d |
+| **P3 Extras · S10** | Polish — error boundaries, a few tests, deploy, history write-up | all features live; history recorded | 1–2d |
+
+\*S8 is gated on your Unity game build. **Total: ~10–15 focused days.**
 
 **Sequencing rules**
 - **Navigation first** — every other feature plugs into the new top menu.
