@@ -139,6 +139,61 @@
 
 ---
 
+## 8. Agent Teams · Subagents · tmux 보기 (2026-06-22)
+
+> 한 요청에 멀티 에이전트를 돌리고 화면으로 보는 법. (Claude Code, 터미널)
+
+세 단계:
+
+| 단계 | 정체 | 누가 대화 | 트리거 |
+|---|---|---|---|
+| 나 혼자 | 단일 세션 | — | 일반 요청 |
+| **서브에이전트**(Workflow) | 서브태스크 도우미 | **나에게만** 보고 | 프롬프트에 **`ultracode`** |
+| **Agent Teams** | 병렬 팀원 | **서로 + 당신** | env 플래그 (verex 전용) |
+
+### 서브에이전트 — `ultracode`
+- 프롬프트 아무 곳에나 **`ultracode`** → 그 턴이 여러 서브에이전트로 fan-out. **설정 불필요, 어느 repo나.**
+- 나에게 보고(서로 대화 X). 진행은 **`/workflows`** 로 봄.
+
+### Agent Teams (verex 전용)
+- `verex/.claude/settings.local.json` 에 `"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"` + `"teammateMode": "auto"`. gitignore라 개인용 → **verex에서만** 켜짐.
+- 팀원끼리 메시지, 실시간 조종. 세션당 팀 1개, **3~5명** 권장, 단일 세션 대비 **~7배 토큰**.
+
+### tmux — 에이전트 화면 보기 (핵심)
+tmux는 **표시 전용**: 팀원을 각자 패널로 보여줌. 켜든 끄든 에이전트 실행은 동일.
+
+```bash
+tmux new -s verex          # 1. 먼저 tmux 세션 시작
+cd /Users/jay/work/verex   # 2. verex로 이동
+claude                     # 3. 재시작(설정 로드) 후 팀 spawn
+```
+`teammateMode: "auto"` 라 tmux 안이면 팀원을 패널로 자동 분할.
+
+치트시트 (프리픽스 `Ctrl-b` 누른 뒤):
+
+| 키 | 동작 |
+|---|---|
+| `Ctrl-b` ←/→/↑/↓ | 패널(팀원) 이동 |
+| `Ctrl-b` `z` | 한 패널 전체화면(토글) |
+| `Ctrl-b` `q` | 패널 번호 표시 |
+| `Ctrl-b` `o` | 다음 패널로 순환 |
+| `Ctrl-b` `d` | detach (에이전트는 백그라운드 계속) |
+| `tmux attach -t verex` | 재접속 |
+| `tmux ls` | 세션 목록 |
+| `tmux list-panes -a` | 모든 패널(=모든 팀원) 목록 |
+
+인앱(tmux 없이도): `Ctrl-T` 작업목록 · `↑/↓` 팀원 선택, `Enter` 열기/메시지 · `Esc` 중단.
+**규칙:** tmux + `Ctrl-T` = **팀원**, `/workflows` = **서브에이전트**.
+
+### 비용
+- 팀 ≈ 단일 세션의 **7배 토큰**. Claude Max는 5시간+주간 한도를 더 빨리 소진(돈 청구 X, 스로틀). 먼저 **`/usage`**.
+- 팀 실행 전 **사전 경고 없음** — `/usage-credits`(Max)나 Console 워크스페이스 상한으로 직접 캡.
+
+### 보너스 — 터미널 스크린샷
+- `Cmd+Ctrl+Shift+4` 로 복사 → Claude Code에서 **`Ctrl+V`** (Cmd+V 아님). 또는 이미지 파일 드래그, 경로 입력(`Analyze /path/to/error.png`).
+
+---
+
 ## 참고 (Sources)
 - Fortune — _I used Claude's new Dispatch feature for a month_
 - AI Tomorrow (Medium) — _Meet Dispatch: assign tasks from anywhere_
