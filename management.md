@@ -65,3 +65,50 @@ git switch main && git merge feat/year-hare
 
 ### 비고 (느슨한 정책)
 - 워킹트리에 **관련 없는 untracked 변경이 떠 있어도 무방** — 선택적 `git add`로 의도한 파일만 커밋한다.
+
+---
+
+## Deployment Workflow (배포 워크플로우)
+
+> 커밋·머지와 배포의 타이밍, 그리고 "배포 안 하면 못 잡는 버그"를 다루는 법. _(2026-06-24)_
+
+### 핵심 순서 — 배포는 *마지막*
+배포 = **커밋된(이상적으론 머지된) 상태를 출하**한다. 커밋 안 된 로컬 변경은 절대 배포하지 않는다(추적·롤백 불가).
+```
+1. 로컬 실행/테스트  → 버그 찾기 (검증은 여기서)
+2. commit           → 로컬에서 동작할 때만
+3. push → PR → 리뷰 → merge
+4. deploy            → 검증된 코드 출하 (마지막)
+```
+
+### 두 종류의 버그
+| 종류 | 어디서 잡나 |
+|------|------------|
+| 앱/로직 버그 (UI, 쿼리, 렌더링) | **로컬** 실행으로 |
+| 배포/환경 버그 (Cloud SQL 소켓, Secret Manager, CORS, OAuth redirect, 콜드스타트…) | **배포해야** 잡힘 — 로컬 재현 불가 |
+
+### 배포 버그는 "안전한 타겟"에 먼저 배포해서 잡는다
+실제 도메인에 바로 붙이지 않는다. Cloud Run이 주는 **`*.run.app` URL = 스테이징**.
+```
+deploy → *.run.app URL 에서 테스트 → 배포 버그 수정 → redeploy
+작동하면 → verex.jaylabs.xyz 매핑  (= go live, 마지막)
+```
+도메인(=prod)은 run.app URL이 작동한 뒤 *마지막에* 붙인다 → prod가 깨질 일이 없다.
+
+### 첫 배포 루프 (반복은 정상)
+```
+branch 배포 → run.app → 배포 버그 → 수정 → commit → redeploy
+   ... run.app 이 작동할 때까지 반복 ...
+→ 그다음: main 머지 + 도메인 매핑
+```
+("merge 후 prod 배포"가 정상 상태; "branch를 스테이징에 배포·반복 후 merge+go-live"가 첫 도달 방법.)
+
+### 로컬 실행 (커밋 전 앱 버그 잡기) — 예: verex
+```bash
+docker run -d --name verex-pg -e POSTGRES_PASSWORD=dev -p 5432:5432 postgres:16
+# packages/api/.env       → DATABASE_URL=postgresql://postgres:dev@localhost:5432/verex
+pnpm --filter @verex/api exec prisma db push && pnpm --filter @verex/api seed
+pnpm --filter @verex/api dev        # API :4000
+# packages/web/.env.local → NEXT_PUBLIC_API_URL=http://localhost:4000
+pnpm --filter @verex/web dev        # web :3000 → http://localhost:3000 에서 확인
+```

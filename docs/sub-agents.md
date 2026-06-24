@@ -194,6 +194,166 @@ claude                     # 3. 재시작(설정 로드) 후 팀 spawn
 
 ---
 
+## 9. 설정 레퍼런스 — 권한 자동 통과 & Agent Teams (settings.json) (2026-06-24)
+
+> 무인(hands-off) 실행과 Agent Teams를 위한 `settings.json` 설정 모음. 나중에 참고용.
+> 위치: `~/.claude/settings.json`(전역) 또는 프로젝트 `.claude/settings.local.json`(개인, gitignore).
+
+### A. 권한 프롬프트 자동 통과 (hands-off)
+
+권한 모드 `permissions.defaultMode`:
+
+| 모드 | 파일 편집(Write/Edit) | 셸 명령(git, pnpm…) |
+|------|----------------------|---------------------|
+| `acceptEdits` | ✅ 자동 | ❌ 여전히 물음 |
+| `bypassPermissions` | ✅ | ✅ 자동 (전부) |
+
+**완전 무인(프롬프트 0):**
+```jsonc
+{
+  "permissions": { "defaultMode": "bypassPermissions" },
+  "skipDangerousModePermissionPrompt": true   // bypass 경고 사전 수락 (top-level 키!)
+}
+```
+
+**꼭 알아둘 함정:**
+- **재시작 필요** — `defaultMode`는 세션 *시작* 시 적용됨. 중간에 바꿔도 현재 세션엔 적용 안 됨 → 앱 재시작.
+- **복합 명령은 allow-list로도 안 통과** — 파이프 `|`, `$(...)`, `${...}`, `;` 가 든 명령은 "정적 분석 불가"라 규칙과 무관하게 물어봄. **오직 `bypassPermissions`만** 이걸 건너뜀.
+- `bypassPermissions` = *모든* 프롬프트 생략(파괴적 명령 `rm`·force-push 포함). **본인 샌드박스 repo에서만** 권장.
+
+**덜 위험한 대안 — allow-list만 넓히기** (단순 명령만 자동 통과):
+```jsonc
+{ "permissions": { "allow": ["Bash(pnpm:*)", "Bash(git add:*)", "Bash(gh pr create:*)"] } }
+```
+(복합/expansion 명령은 위 이유로 여전히 물을 수 있음.)
+
+#### 실전: 설정했는데도 계속 물어볼 때 (2026-06-24)
+- **`defaultMode`는 세션 *시작* 시에만 적용** → 중간에 바꾸면 현재 세션은 그대로 물어봄.
+  **앱 재시작** 필요 (+ `skipDangerousModePermissionPrompt: true` 도 함께 넣어야 bypass 경고까지 생략).
+- **어떤 명령은 allow-list로 *절대* 안 통과** (규칙을 추가해도 소용 없음):
+  | 패턴 | 프롬프트에 뜨는 이유 |
+  |------|----------------------|
+  | `cd … && …` + 리다이렉션(`>`/`2>`) | *"cd with output redirection — path resolution bypass"* |
+  | `${...}` / `$(...)` / 파이프 `\|` | *"Contains expansion"* / "정적 분석 불가" |
+  → 이런 명령은 **활성화된 `bypassPermissions`만** 건너뛴다. allow-rule로는 못 막음.
+- **해법 두 가지:**
+  - **A. bypass 켜기** — `skipDangerousModePermissionPrompt: true` + **재시작**. 프롬프트 0, 단 안전망 없음.
+  - **B. 단순 명령 쓰기 (권장)** — `cd`·파이프·`${...}`를 피하고 **절대경로 / `git -C` / 단순 명령**을
+    쓰면 기존 `Bash(pnpm:*)`·`Bash(grep:*)` 같은 allow-rule에 매칭 → **안 물어봄 + 안전망 유지**.
+
+#### ⚠️ bypass 최악의 경우 (worst case) & 안전 수칙
+bypass = 권한 프롬프트(=위험한 동작 실행 *전에* 당신이 막을 마지막 체크포인트)를 없앰.
+잘못되면(내 실수·버그·악성 지시) **검토 없이 즉시 실행**된다.
+
+| 분류 | 최악의 경우 |
+|------|------------|
+| 💀 데이터 손실 | 잘못된 `rm -rf` / `git reset --hard` / `git clean` → **커밋 안 된** 작업 소실 |
+| 💸 비용 | `gcloud` 로그인 상태 → 잘못된 배포가 과금 리소스(Cloud SQL/Run) 생성 → 실제 청구 |
+| 🔓 보안 / 프롬프트 인젝션 | 읽은 파일·웹·이슈에 숨은 지시("삭제/curl 실행/비밀 push")를 **프롬프트 없이** 수행 → 비밀 유출 가능 (가장 위험) |
+| 🌐 원격 손상 | `git push --force` 가 원격 히스토리 덮어씀; 잘못된 자동 머지 |
+
+**현실적 위험(당신 기준):** Claude가 폭주하는 게 아니라 — ① 클라우드/배포 중 잘못된 명령이 **돈을 태우거나 DB를 망가뜨림**, ② 신뢰 안 된 콘텐츠가 **해로운 명령을 주입** — 둘 다 막을 프롬프트가 없음.
+
+**안전 수칙:**
+1. **범위가 명확한 작업에만** (예: "이 코드 빌드"). 신뢰 안 된 외부 콘텐츠(웹·임의 repo·메일)를 읽는 세션엔 **끄기**.
+2. **평상시/탐색엔 OFF** (`default`/`acceptEdits`로). 항상 켜두지 말 것.
+3. **돈 상한:** 배포 전 **GCP 예산 알림/청구 한도** 설정 — 가장 가치 큰 안전장치.
+4. **자주 커밋** — 커밋돼 있으면 `rm`/`reset` 피해가 작음.
+5. **프로젝트 스코프 유지**(verex만, 전역 X) → 영향 범위(blast radius) 축소.
+
+**결론:** 본인 샌드박스의 "코드 빌드" = 저위험. 클라우드/돈/신뢰 안 된 콘텐츠를 건드리면 = 프롬프트 켜둘 것.
+특정 무인 실행에만 잠깐 켰다가 다시 끄는 걸 권장.
+
+### B. Agent Teams 켜기 (나중에 쓰려고)
+```jsonc
+{
+  "env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" },  // 팀 가능하게 (실험적)
+  "teammateMode": "auto"                                   // tmux 안이면 팀원을 패널로 분할
+}
+```
+**주의:**
+- **재시작 필요** — `env`는 시작 시에만 읽힘.
+- 켠다고 자동으로 팀 생성 X — 작업이 맞거나 직접 요청할 때만.
+- 현재는 `verex/.claude/settings.local.json`에만 켜둠(gitignore, 개인용, verex 전용).
+
+---
+
+## 10. 훅(hook) — "매번 X일 때 Y" 자동 동작 (2026-06-24)
+
+> 자동·반복 동작은 **CLAUDE.md 규칙이 아니라 훅**으로 만든다. 규칙은 모델 판단(불확실),
+> 훅은 하니스가 이벤트마다 **결정적으로** 실행.
+
+### CLAUDE.md 규칙 vs 훅
+| | CLAUDE.md 규칙 | 훅 (settings.json) |
+|---|---|---|
+| 실행 주체 | 모델(기억할 때만) | 하니스(이벤트마다 결정적) |
+| 적합 | "이런 식으로 일해줘"(판단) | "매번 X 일어나면 Y 해라"(자동) |
+
+→ "history 파일이 바뀔 때마다 복사" 같은 자동 동작은 **훅**. ("중요한 걸 그때그때 history에
+기록" 처럼 *판단*이 필요한 건 CLAUDE.md 규칙 — [[feedback]] 참고.)
+
+### 예: 프로젝트 history를 task/docs/history로 집계
+`PostToolUse`(Write|Edit) 훅 — 편집된 파일이 `*/docs/history/*.md`면 task repo로 **프로젝트명을
+붙여** 복사:
+```
+verex/docs/history/2026-06-24.md        →  task/docs/history/2026-06-24-verex.md
+task/rabbit/docs/history/2026-06-24.md  →  task/docs/history/2026-06-24-rabbit.md
+```
+`~/.claude/settings.json` (전역):
+```jsonc
+{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Write|Edit|MultiEdit",
+      "hooks": [{
+        "type": "command",
+        "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in */docs/history/*.md) ;; *) exit 0;; esac; case \"$f\" in \"$HOME/work/task/docs/history/\"*) exit 0;; esac; proj=$(basename \"$(dirname \"$(dirname \"$(dirname \"$f\")\")\")\"); base=$(basename \"$f\" .md); mkdir -p \"$HOME/work/task/docs/history\"; cp \"$f\" \"$HOME/work/task/docs/history/${base}-${proj}.md\""
+      }]
+    }]
+  }
+}
+```
+**주의:**
+- **훅은 세션 시작 시 로드** → 추가 후 앱 재시작해야 적용.
+- **잘못 만들면 조용히 실패** → `update-config` 스킬로 pipe-test 후 적용 권장.
+- `case` 가드가 history 아닌 편집은 즉시 통과시켜 가볍다.
+- task repo 자신의 history는 건너뜀(자기 복사/루프 방지).
+
+---
+
+## 11. OneNote MCP — Claude Desktop 연결 (2026-06-24)
+
+> OneNote 데이터를 Claude가 읽고 쓰게 해주는 MCP 서버. 노트북·섹션·페이지를 조회/생성/편집.
+> repo: <https://github.com/danosb/onenote-mcp>
+
+### 설치 & 설정 (Claude Desktop 또는 다른 MCP 호환 어시스턴트)
+
+1. repo를 **클론**하고 README의 설치 단계를 따른다.
+2. MCP 서버 **시작**: `npm start`
+3. Claude Desktop 설정에서 OneNote MCP 서버를 **추가**:
+   - **Name**: `onenote`
+   - **Command**: `node`
+   - **Args**: `["/path/to/your/onenote-mcp.mjs"]` (반드시 **절대경로**)
+
+JSON 설정 예시:
+```json
+{
+  "mcpServers": {
+    "onenote": {
+      "command": "node",
+      "args": ["/absolute/path/to/your/onenote-mcp.mjs"],
+      "env": {}
+    }
+  }
+}
+```
+
+4. 이제 Claude에게 **OneNote 데이터를 다뤄달라고** 요청할 수 있다.
+
+> 참고: `node` 실행 + `.mjs` 절대경로 방식 → 이 repo의 [[sub-agents]] 다른 MCP 설정(절대경로 권장)과 동일 패턴.
+
+---
+
 ## 참고 (Sources)
 - Fortune — _I used Claude's new Dispatch feature for a month_
 - AI Tomorrow (Medium) — _Meet Dispatch: assign tasks from anywhere_

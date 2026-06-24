@@ -22,9 +22,44 @@ open-source model that runs cheaply on GCP.
 3. Point the app's "Local LLM" option at that service URL (env var).
 4. Document the steps: `ollama pull qwen2.5:0.5b`, the Dockerfile, and the Cloud Run flags.
 
+## Cost & resource requirements (running the local LLM)
+
+> Numbers are approximate (~Q4 quantized) and hardware-dependent — use as ballpark.
+
+### Resource needs by model size (Ollama)
+| Model | Disk (download) | Min RAM / VRAM | CPU-only? | Rough speed |
+|-------|-----------------|----------------|-----------|-------------|
+| Qwen2.5-0.5B | ~0.4 GB | ~1 GB | ✅ fast | tens of tok/s on CPU |
+| Llama-3.2-1B | ~0.8–1.3 GB | ~1.5 GB | ✅ | snappy on CPU |
+| Gemma-2-2B / Qwen2.5-3B | ~1.6–2 GB | ~3–4 GB | ✅ slower | ok on CPU |
+| Llama-3.1-8B / Qwen2.5-7B | ~4.5–5 GB | ~6–8 GB | ⚠️ slow on CPU → GPU | fast on GPU |
+| 14B | ~9 GB | ~12 GB | GPU recommended | |
+| 70B | ~40–43 GB | ~48 GB+ unified/VRAM | GPU / big unified mem | |
+
+Rule of thumb: **RAM ≥ model size + ~1–2 GB** overhead (plus context). On Apple Silicon the
+GPU shares unified memory, so total RAM is the limit.
+
+### Where it runs — cost
+| Option | Cost model | Notes |
+|--------|-----------|-------|
+| **Local — your machine** (Apple Silicon, unified mem) | **$0 marginal** (hardware owned; electricity negligible) | Private, no rate limits. M-series with enough RAM runs 7–8B snappily; large unified mem runs up to 70B. Best for dev + heavy use. |
+| **Small OSS on Cloud Run (CPU)** | pay per request (vCPU + memory time); **~pennies when idle if scale-to-zero** | 0.5–1B works CPU-only: ~2 GB memory, raise request timeout. `min-instances=0` → cheap but **cold start** reloads the model (seconds). `min-instances=1` → always-warm but billed continuously. |
+| **Cloud Run + GPU (NVIDIA L4)** | higher hourly cost | Only if you need bigger models / low latency in cloud. |
+| **Cloud API (OpenAI `gpt-4o-mini`)** | per token (~$0.15 / $0.60 per 1M in/out) | **Zero infra to run.** For a single low-volume user, the bill is often pennies/month. |
+
+### Recommendation for Rabbit (single user, low volume)
+- **Local mode:** Ollama on your machine — free, fast, private. No change needed.
+- **Cloud mode:** two honest choices —
+  1. **Qwen2.5-0.5B on Cloud Run (CPU, scale-to-zero)** — cheapest infra, matches the
+     feature's "tiny OSS model on GCP" goal, but cold-start latency + you maintain it.
+  2. **`gpt-4o-mini` API** — no infra to run or patch; for one user the cost is negligible.
+- For a **single user**, option 2 is often the simplest/cheapest; pick option 1 if running
+  your own OSS model on GCP is itself a goal (it is, per this doc).
+
 ## Open questions
 - OSS model on Cloud Run (cheap, slower) or a dedicated VM (faster, costlier)?
 - Persist the user's provider choice (per session / per account)?
+- Cloud mode: ship the OSS model on Cloud Run, or just call `gpt-4o-mini` (no infra)?
 
 ## Features
 - [ ] **Provider selector**
