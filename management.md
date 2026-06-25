@@ -116,3 +116,56 @@ pnpm --filter @verex/web dev        # web :3000 → http://localhost:3000 에서
 ```
 
 <!-- 메모 (2026-06-25): Notion은 지식이 머무는 층(durable knowledge store), Slack/Claude Tag는 그 위에 얹는 위임 층(real-time delegation). 둘은 대체재가 아니라 다른 층위 — 지금 솔로 단계의 실질 조합은 Notion(지식) + Claude Code/Cowork(위임). -->
+
+---
+
+## 🤖 Project (Notion 미러)
+
+> Notion 🤖 Project 페이지 내용을 옮겨옴. _(2026-06-25)_
+
+### 기본 원칙
+- Code Review는 하지 않는다.
+  - 다만 보안상/기능상 크리티컬한 부분은 사람이 리뷰한다.
+
+### 기타
+- 노트는 꼼꼼히 관리한다. 대신 다 쓴 것을 버려도 좋다.
+  - 버리지 말고 캐논 스캐너를 이용하자.
+- Policy Responses
+  - 아마존은 정말 중요한 Billing 기능은 철저한 사람의 리뷰를 거친다.
+
+### Tools
+1. 어떻게 아이디어를 공유할 것인가? Miro or FigJam?
+   1. 일단 FigJam 쓰다가 나중에 필요하면 바꾸는 것도 괜찮음. 어차피 Miro 쓰는 데 문제없음.
+   2. FigJam 그냥 써도 됨. 가이드만 잘 만들어 놓으면 되지.
+2. 기본 설계 문서는 GitHub md 파일
+   1. 보안이 필요하면 Google Drive 문서
+   2. 그림을 그리려면 Excalidraw 이용
+
+### Claude 개발 프로세스
+#### 기본
+- 병행 실행을 위해서 리포지토리는 나누는 게 좋을 수 있다.
+
+#### 폴더 구조
+- docs
+  - architecture — 중요한 아키텍처 결정에 대한 문서
+  - history — 완료된 작업에 대한 정리
+  - plan — features.md
+  - tasks — 개발자에 의한 작업 명세 / 클로드에 의한 설계 파일
+
+#### 프로세스
+1. 전체 프로젝트 개요 작성
+   1. Google Docs에 파워포인트 생성 — Excalidraw와 스크린 캡처를 이용해 화면 생성·붙이기
+   2. features에 개괄적 기능 명세 — 일정 등도 README.md에서 함께 관리
+   3. 기능 관리를 GitHub 이슈로 할지 고민 필요 (상세 설계는 문서 대신 이슈로, 공동 작업 시 특히 유용)
+2. task 파일을 만들고 design 파일을 요청한다 (예: `jun-19-task.md`, `jun-19-task-design.md`)
+3. design 파일을 통해 중요 사항 결정
+4. design 파일을 기반으로 작업 진행
+5. 작업 완료 후 history 폴더에 작업 이력 남기기 (중간 체크포인트도 기록)
+6. 모든 작업은 브랜치와 PR을 통해 검증한다.
+7. 사실 정리하는 시간에 시킬 일을 그냥 시킨다.
+
+### 협업/지식 도구 (2026-06-25)
+- **Notion = 지식이 머무는 층 (durable knowledge store)** — 스펙·태스크·리서치 노트처럼 오래 남기고 다시 찾는 것.
+- **Slack / Claude Tag = 위임이 일어나는 층 (real-time delegation)** — Notion을 컨텍스트 소스로 읽어서 일한다. Notion을 대체하지 않는다.
+- 둘은 경쟁재가 아니라 다른 층위. 솔로 단계의 실질 조합 = **Notion(지식) + Claude Code/Cowork(위임)**.
+- Claude Tag는 현재 Enterprise/Team Slack 한정 → 솔로면 지금은 못 씀. 팀 셋업이 생기면 그때 위임 층으로 얹는다.
