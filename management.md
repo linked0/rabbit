@@ -2,6 +2,8 @@
 
 ## Collaboration & Infrastructure
 
+<!-- 결론(2026-06-25): Notion = 지식 층(durable), Slack/Claude Tag = 위임 층(real-time). 대체가 아니라 다른 층위. -->
+
 - **Need a collaboration tool like Notion and Slack**
 - Establish policies and methods for schedule sharing and documentation
 
@@ -112,3 +114,5 @@ pnpm --filter @verex/api dev        # API :4000
 # packages/web/.env.local → NEXT_PUBLIC_API_URL=http://localhost:4000
 pnpm --filter @verex/web dev        # web :3000 → http://localhost:3000 에서 확인
 ```
+
+<!-- 메모 (2026-06-25): Notion은 지식이 머무는 층(durable knowledge store), Slack/Claude Tag는 그 위에 얹는 위임 층(real-time delegation). 둘은 대체재가 아니라 다른 층위 — 지금 솔로 단계의 실질 조합은 Notion(지식) + Claude Code/Cowork(위임). -->
