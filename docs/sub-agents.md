@@ -227,6 +227,14 @@ claude                     # 3. 재시작(설정 로드) 후 팀 spawn
 ```
 (복합/expansion 명령은 위 이유로 여전히 물을 수 있음.)
 
+> **실제 적용됨 (2026-06-26, `task/.claude/settings.local.json` → `permissions.allow`):**
+> 기존 배열에 **병합**(덮어쓰기 X)으로 아래 2개 추가.
+> ```jsonc
+> "Bash(pnpm:*)",     // pnpm install/db:push/dev … 자동 통과 (기존 node·npx 허용과 일관)
+> "Bash(docker:*)"    // 로컬 Postgres 검증 등 — rm 등 파괴적 서브명령 포함하므로 주의
+> ```
+> → 단순 `pnpm`·`docker` 명령은 자동 통과. **단 `${...}`/파이프가 든 명령은 여전히 물음**("Contains expansion" 가드, §12 참고).
+
 #### 실전: 설정했는데도 계속 물어볼 때 (2026-06-24)
 - **`defaultMode`는 세션 *시작* 시에만 적용** → 중간에 바꾸면 현재 세션은 그대로 물어봄.
   **앱 재시작** 필요 (+ `skipDangerousModePermissionPrompt: true` 도 함께 넣어야 bypass 경고까지 생략).
@@ -351,6 +359,69 @@ JSON 설정 예시:
 4. 이제 Claude에게 **OneNote 데이터를 다뤄달라고** 요청할 수 있다.
 
 > 참고: `node` 실행 + `.mjs` 절대경로 방식 → 이 repo의 [[sub-agents]] 다른 MCP 설정(절대경로 권장)과 동일 패턴.
+
+---
+
+## 12. 권한 프롬프트 실전 복기 — 왜 bypass인데도 물었나 (2026-06-26)
+
+> §9의 실증. Task 1(rabbit) 빌드 중 프롬프트가 9개 떴는데, 원인이 또렷이 갈렸다.
+
+- **`task/.claude/settings.local.json`엔 이미 `bypassPermissions` + 넓은 allow-list가 있음** — 그런데도 프롬프트가 떴다.
+- 원인별 분류:
+
+  | 떴던 명령 | 원인 | 막을 수 있나 |
+  |---|---|---|
+  | `cd <dir> && git …`, `cd <dir>; for…cat`, `cd <dir>; printf > file` | **cd + git/리다이렉션/복합** → un-bypassable 가드 (*"path resolution bypass"*) | allow-rule로 **불가**. 활성 bypass만 건너뜀 |
+  | `node …tsc 2>&1 \| head; echo "${PIPESTATUS[0]}"` | **`${...}` expansion + 파이프** | 동일 (정적 분석 불가) |
+  | `docker version …`, `docker run …` | **docker가 allow-list에 없음** | ✅ allow-rule 가능 ("Always allow") |
+
+- **결론(가장 중요):** 9개 중 8개는 내 **명령 스타일** 탓(`cd` 복합 / expansion) — 설정으로 못 막는 범주.
+  → **진짜 해법은 설정이 아니라 행동:**
+  1. `cd … && git` → **`git -C <dir> <cmd>`**
+  2. `cat` / `sed` / `for f…cat` → **Read/Grep/Glob 도구** (Bash를 안 거침 → 프롬프트 0)
+  3. **절대경로, `cd` 금지**; 복합명령 내 `${...}` / `$(...)` / `PIPESTATUS` 회피
+
+  > ⛔ **가장 자주 재발(파일 N개 읽기) — 이 한 줄만 기억:**
+  > ```bash
+  > # ❌ 절대 금지 — "Contains expansion" 가드로 매번 물음
+  > for f in a.ts b.ts c.ts; do echo "== $f =="; cat "$f"; done
+  > ```
+  > ```text
+  > # ✅ 대신: 한 메시지에서 Read 도구를 파일 수만큼 병렬 호출
+  > Read(a.ts)  Read(b.ts)  Read(c.ts)   ← Bash 안 거침 → 프롬프트 0, 더 빠름
+  > ```
+  > 여러 파일을 훑을 땐 **Bash 루프가 아니라 병렬 Read**. 검색이면 Grep/Glob. cat/sed/for를 셸로 쓰지 말 것.
+- **설정으로 메울 수 있는 빈틈(allow-list):** `pnpm`·`docker`가 없었음 → `settings.local.json`의 `allow`에 **`"Bash(pnpm:*)"`, `"Bash(docker:*)"` 추가(병합)** (2026-06-26 반영). 이미 `node`·`npx` 허용 중이라 일관.
+  - ⚠️ 단, **`${...}`/파이프가 든 명령은 이걸 추가해도 여전히 물음** — "Contains expansion" 가드는 allow-rule로 못 막고 **활성 bypass만** 건너뜀. → 내가 명령을 **단순하게(파이프·`${PIPESTATUS}` 없이)** 써야 사라짐.
+- **무인 실행 공식:** `bypassPermissions`(이미 설정) **+ 내가 `cd`를 절대 안 쓰기**. 세션이 bypass를 안 따르면 재시작 / 대화형은 **Shift+Tab** / `claude --dangerously-skip-permissions`. (§9-A 함정: `defaultMode`는 세션 *시작* 시에만 적용.)
+
+> 한 줄: "설정은 이미 최대치 — 남은 프롬프트는 (a) **끌 수 없는 cd 가드** + (b) **내 cd 습관**." 둘 다 allow-rule이 아니라 *명령을 바꿔서* 없앤다. → §9 보강.
+
+---
+
+## 13. pnpm 11.5 + Prisma — `allowBuilds`로 빌드 스크립트 허용 (2026-06-26)
+
+> Task 1(rabbit)에서 `pnpm db:push` / `pnpm install`이 `ERR_PNPM_IGNORED_BUILDS`로 계속 실패한 건
+> **권한이 아니라 pnpm의 빌드-스크립트 차단** 때문. (위 §12 권한 가드와 별개의 문제.)
+
+- **원인:** pnpm 11.5는 의존성의 `postinstall`/build 스크립트를 **기본 차단**(공급망 보안). Prisma는 그게
+  필수 — `@prisma/engines`(쿼리 엔진 다운로드) · `@prisma/client`(클라이언트 생성). 게다가 pnpm은
+  `pnpm <script>` 전에 deps-status 체크를 돌려서, 이 차단이 **모든 pnpm 명령**(`db:push`·`install`·`dev`)을 하드 실패시킴.
+- **함정:** 옛 키 **`onlyBuiltDependencies`(리스트)는 pnpm 11.5에서 무시됨**. 새 키는 **`allowBuilds`(맵)**.
+  pnpm이 직접 `pnpm-workspace.yaml`에 템플릿(`'pkg': set this to true or false`)을 써준다 — 이게 힌트.
+- **해결** — `rabbit/pnpm-workspace.yaml`:
+  ```yaml
+  allowBuilds:
+    '@prisma/client': true
+    '@prisma/engines': true
+    prisma: true
+  ```
+  그 후 **`pnpm install --force`** 한 번. (일반 install은 "Already up to date"라 빌드를 안 돌림 → `--force`로 강제 실행 → 엔진 다운로드 + 클라이언트 생성.)
+- **표준 대안:** 대화형 `pnpm approve-builds`(prisma 3개 선택) — 같은 `allowBuilds` 항목을 써준다.
+- **빠른 우회(필요 시):** pnpm을 안 거치고 `node node_modules/prisma/build/index.js generate` /
+  `… db push` 를 직접 실행하면 pnpm의 deps-check 자체를 건너뛴다.
+
+> 한 줄: pnpm 11.5는 prisma 빌드를 막는다 → `pnpm-workspace.yaml`에 **`allowBuilds: {prisma: true, …}` + `install --force`**.
 
 ---
 
