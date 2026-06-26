@@ -51,16 +51,29 @@ upsert_secret rabbit-google-id     "${AUTH_GOOGLE_ID:-}"
 upsert_secret rabbit-google-secret "${AUTH_GOOGLE_SECRET:-}"
 upsert_secret rabbit-ai-key        "${AI_API_KEY:-}"
 upsert_secret rabbit-market-key    "${MARKET_API_KEY:-}"
+upsert_secret rabbit-database-url  "${DATABASE_URL:-}"
 
 echo "▶ Cloud Run 배포"
+# 시크릿 목록 — DATABASE_URL은 설정됐을 때만 추가 (Task 1 DB)
+SECRETS="AUTH_SECRET=rabbit-auth-secret:latest,AUTH_GOOGLE_ID=rabbit-google-id:latest,AUTH_GOOGLE_SECRET=rabbit-google-secret:latest,AI_API_KEY=rabbit-ai-key:latest,MARKET_API_KEY=rabbit-market-key:latest"
+[ -n "${DATABASE_URL:-}" ] && SECRETS="$SECRETS,DATABASE_URL=rabbit-database-url:latest"
+
 # 앱이 자체 Google 로그인 + 이메일 allowlist로 접근을 제어하므로 공개로 배포한다.
 # (README §9의 IAP 방식을 쓰려면 --no-allow-unauthenticated + IAP 활성화로 변경)
+# HL_ACCOUNT_ADDRESS(공개 주소, 비밀 아님)는 env로 — 퍼프 포지션 표시(Task 3, 선택)
 gcloud run deploy "$SERVICE" \
   --source . \
   --region "$REGION" \
   --allow-unauthenticated \
-  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},AI_PROVIDER=${AI_PROVIDER:-openai}" \
-  --set-secrets "AUTH_SECRET=rabbit-auth-secret:latest,AUTH_GOOGLE_ID=rabbit-google-id:latest,AUTH_GOOGLE_SECRET=rabbit-google-secret:latest,AI_API_KEY=rabbit-ai-key:latest,MARKET_API_KEY=rabbit-market-key:latest"
+  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},AI_PROVIDER=${AI_PROVIDER:-openai},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-}" \
+  --set-secrets "$SECRETS"
+
+# Cloud SQL 연결 — deploy.env에 CLOUDSQL_INSTANCE=프로젝트:리전:인스턴스 설정 시
+if [ -n "${CLOUDSQL_INSTANCE:-}" ]; then
+  echo "▶ Cloud SQL 소켓 연결: $CLOUDSQL_INSTANCE"
+  gcloud run services update "$SERVICE" --region "$REGION" \
+    --add-cloudsql-instances "$CLOUDSQL_INSTANCE" >/dev/null
+fi
 
 # AUTH_URL은 projectNumber 기반 고정 도메인으로 못 박는다.
 # status.url(=…-<hash>-<region>.a.run.app)을 쓰면 로그인 시작 호스트와 콜백 호스트가
