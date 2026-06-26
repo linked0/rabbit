@@ -1,7 +1,7 @@
 # rabbit
 
 > **PoC** — 내 투자를 요약해주는 도구. 새 아이디어 검증용 레포.
-> 상태: 🛠️ **v0 구현됨** — Google 로그인 → 수동 입력 → 현재 손익 → 1년 전망. Next.js + TypeScript. (2026-06-04)
+> 상태: 🛠️ **v0 + 투자입력(Postgres)** — 로그인 → 거래 입력 → Current Portfolio(KRW·Upbit 시세) → 1년 전망. Next.js + TypeScript + Prisma. (2026-06-26)
 
 ---
 
@@ -10,7 +10,13 @@
 ```bash
 cd /Users/jay/work/task/rabbit
 pnpm install        # 최초 1회 (의존성 설치)
-cp .env.example .env.local   # 최초 1회 — 아래 "로그인 설정" 채우기
+cp .env.example .env.local   # 최초 1회 — 아래 "로그인 설정" + DATABASE_URL 채우기
+
+# DB (투자입력·포트폴리오용) — 로컬 Postgres 1개
+docker run -d --name rabbit-pg -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=rabbit -p 5432:5432 postgres:16
+#   .env.local → DATABASE_URL=postgresql://postgres:dev@localhost:5432/rabbit
+pnpm db:push        # 최초 1회 — Trade 테이블 생성 (또는 pnpm db:migrate)
+
 pnpm dev            # 개발 서버 → http://localhost:3000
 ```
 
@@ -26,10 +32,20 @@ pnpm dev            # 개발 서버 → http://localhost:3000
    - **Authorized redirect URI**에 `http://localhost:3000/api/auth/callback/google` 등록 (배포 시 운영 도메인도 추가)
 2. **`ALLOWED_EMAILS`** — 접근 허용 이메일(콤마 구분). 본인만 쓰면 한 개. *비우면 누구나 로그인되니 운영에선 꼭 설정.*
 
+### 🗄️ DB 설정 (투자입력 · 포트폴리오) — 최초 1회
+`/invest`(투자입력) 탭은 거래를 **Postgres**에 저장한다. 로컬은 Docker로 띄운다 (위 실행 블록에 포함):
+```bash
+docker run -d --name rabbit-pg -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=rabbit -p 5432:5432 postgres:16
+# .env.local → DATABASE_URL=postgresql://postgres:dev@localhost:5432/rabbit
+pnpm db:push     # Trade 테이블 생성 (마이그레이션 히스토리가 필요하면 pnpm db:migrate)
+```
+시세는 **Upbit 공개 API**(키 불필요, KRW)로 자동 조회 → 평균단가·평가손익 계산. 클라우드 DB(Cloud SQL)는 `docs/runbooks/cloud-sql-setup.md` 참고.
+
 브라우저에서 **http://localhost:3000** 접속 →
 1. `/` — **know.html 공개 랜딩** → 우상단 `로그인 →` 버튼
 2. 로그인 성공 → **`/summary`** (BTC·ETH·S&P 500·KOSPI, 60초 갱신)
-3. 상단 탭: **요약**(`/summary`) · **AI 챗**(`/chat`) · **포트폴리오**(`/dashboard`, v0 대시보드)
+3. 상단 탭: **요약**(`/summary`) · **AI 챗**(`/chat`) · **투자입력**(`/invest`, KRW·DB) · **포트폴리오**(`/dashboard`, v0 인메모리)
+4. **투자입력** 테스트: Transactions History에서 `Buy · BTC · 0.1 · 95000000` 추가 → **Current Portfolio**가 Upbit 시세로 자동 갱신(평가액·손익).
 
 프로덕션 빌드 확인:
 ```bash
@@ -129,9 +145,13 @@ https://<배포도메인>/api/auth/callback/google
 - `app/Dashboard.tsx` — 입력 폼 + 현재 수익성 표 + 시나리오 전망 (클라이언트, 인메모리)
 - `app/api/prices/route.ts` — CoinGecko 현재가 프록시 (`/api/prices?ids=bitcoin,ethereum&vs=usd`)
 - `lib/coins.ts` — 심볼→CoinGecko id 매핑 + 손익/전망 계산 헬퍼
+- **투자입력 · Current Portfolio** (`/invest`, 2026-06-26) — **Postgres 영속화**, KRW 기준, Upbit 시세
+  - `prisma/schema.prisma`(`Trade` 모델) · `lib/db.ts` · `lib/portfolio.ts`(compute-on-read) · `lib/upbit.ts`(KRW 시세)
+  - `app/api/trades`(거래 추가/조회/삭제) · `app/api/portfolio`(계산된 포트폴리오) · `app/invest/`(UI)
 
 ### 아직 안 된 것
-- Excel 업로드 (R5) · 데이터 영속화(새로고침 시 초기화) · GCP 배포 · Verex 연동(R8)
+- Excel 업로드 (R5) · GCP 배포 · Verex 연동(R8)
+- 데이터 영속화: **`/invest`는 Postgres로 영속화 ✅** / `/dashboard`(v0)만 인메모리(새로고침 시 초기화)
 
 ---
 
