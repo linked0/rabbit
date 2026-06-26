@@ -5,8 +5,9 @@ const PUBLIC_PATHS = new Set(["/", "/know.html", "/login"]);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-  // /home(= www.jaylabs.xyz 홈, Task 5)은 공개
-  if (PUBLIC_PATHS.has(pathname) || pathname.startsWith("/home") || pathname.startsWith("/api/auth/")) return;
+  // /home(= www.jaylabs.xyz 홈, Task 5)은 공개 — 정확히 /home 과 /home/* 만 (느슨한 prefix 방지)
+  const isHome = pathname === "/home" || pathname.startsWith("/home/");
+  if (PUBLIC_PATHS.has(pathname) || isHome || pathname.startsWith("/api/auth/")) return;
   if (!req.auth?.user) {
     return Response.redirect(new URL("/login", req.nextUrl));
   }
