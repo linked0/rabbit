@@ -5,7 +5,8 @@ const PUBLIC_PATHS = new Set(["/", "/know.html", "/login"]);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-  if (PUBLIC_PATHS.has(pathname) || pathname.startsWith("/api/auth/")) return;
+  // /home(= www.jaylabs.xyz 홈, Task 5)은 공개
+  if (PUBLIC_PATHS.has(pathname) || pathname.startsWith("/home") || pathname.startsWith("/api/auth/")) return;
   if (!req.auth?.user) {
     return Response.redirect(new URL("/login", req.nextUrl));
   }
