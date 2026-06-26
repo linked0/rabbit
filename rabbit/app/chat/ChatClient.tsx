@@ -9,6 +9,7 @@ export default function ChatClient() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mcp, setMcp] = useState(false); // 🍝 스파게티 MCP on/off
   const logRef = useRef<HTMLDivElement>(null);
 
   async function send(e: React.FormEvent) {
@@ -26,7 +27,7 @@ export default function ChatClient() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({ messages: history, mcp }),
       });
       if (!res.ok || !res.body) {
         const data = await res.json().catch(() => null);
@@ -61,6 +62,17 @@ export default function ChatClient() {
 
   return (
     <section className="panel">
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <button
+          type="button"
+          className={mcp ? "" : "ghost"}
+          onClick={() => setMcp((v) => !v)}
+          title="스파게티 레시피 MCP 도구 on/off"
+        >
+          🍝 Spaghetti MCP: {mcp ? "on" : "off"}
+        </button>
+        {mcp && <span className="muted">레시피 도구가 붙었습니다 — 스파게티/파스타를 물어보세요.</span>}
+      </div>
       <div ref={logRef} className="chat-log">
         {messages.length === 0 && (
           <p className="muted">메시지를 입력해 대화를 시작하세요.</p>

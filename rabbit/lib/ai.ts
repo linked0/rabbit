@@ -14,6 +14,7 @@ export async function streamChat(
 }
 
 const OPENAI_MODEL = "gpt-4o-mini";
+const ANTHROPIC_MODEL = "claude-sonnet-4-6"; // 설계 잠금 (Task 4)
 
 async function streamOllama(messages: ChatMessage[]) {
   const base = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
@@ -35,6 +36,7 @@ async function streamOllama(messages: ChatMessage[]) {
 
 async function streamCloud(messages: ChatMessage[]) {
   const provider = process.env.AI_PROVIDER ?? "openai";
+  if (provider === "anthropic") return streamAnthropic(messages);
   if (provider !== "openai") {
     throw new Error(`지원하지 않는 AI_PROVIDER: ${provider}`);
   }
@@ -57,6 +59,47 @@ async function streamCloud(messages: ChatMessage[]) {
     const payload = line.slice(6);
     if (payload === "[DONE]") return "";
     return JSON.parse(payload)?.choices?.[0]?.delta?.content ?? "";
+  });
+}
+
+// Anthropic Messages API (claude-sonnet-4-6). system 역할은 별도 파라미터로 분리.
+async function streamAnthropic(messages: ChatMessage[]) {
+  const key = process.env.AI_API_KEY;
+  if (!key) throw new Error("AI_API_KEY가 설정되지 않았습니다.");
+
+  const system = messages
+    .filter((m) => m.role === "system")
+    .map((m) => m.content)
+    .join("\n\n");
+  const msgs = messages
+    .filter((m) => m.role !== "system")
+    .map((m) => ({ role: m.role, content: m.content }));
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 1024,
+      system: system || undefined,
+      messages: msgs,
+      stream: true,
+    }),
+  });
+  if (!res.ok || !res.body) throw new Error(`Anthropic 오류: HTTP ${res.status}`);
+
+  // SSE: content_block_delta 의 text_delta 만 추출
+  return extractLines(res.body, (line) => {
+    if (!line.startsWith("data: ")) return "";
+    const evt = JSON.parse(line.slice(6));
+    if (evt?.type === "content_block_delta" && evt?.delta?.type === "text_delta") {
+      return evt.delta.text ?? "";
+    }
+    return "";
   });
 }
 
