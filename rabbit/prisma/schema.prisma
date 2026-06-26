@@ -1,0 +1,36 @@
+// Task 1 — 투자 입력 + Current Portfolio (KRW 기준)
+// 설계: docs/tasks/jun-19-rabbit-design.md
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TradeSide {
+  BUY
+  SELL
+}
+
+// 모든 매매/현금 기록의 단일 소스. Current Portfolio는 이 행들로부터 계산(compute-on-read).
+model Trade {
+  id        String    @id @default(cuid())
+  userEmail String // auth 세션의 이메일 (= ALLOWED_EMAILS)
+  assetType String    @default("CRYPTO") // CRYPTO | CASH | STOCK | ETF …
+  market    String? // "Upbit", "Bithumb", "KRX" …
+  symbol    String // "BTC", "ETH", "KRW"(현금) …
+  side      TradeSide
+  quantity  Decimal   @db.Decimal(38, 18)
+  price     Decimal   @db.Decimal(38, 18) // 단가 (KRW). 현금(CASH)은 1
+  currency  String    @default("KRW")
+  fee       Decimal?  @db.Decimal(38, 18)
+  tradedAt  DateTime  @default(now())
+  note      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userEmail, tradedAt])
+  @@index([symbol])
+}

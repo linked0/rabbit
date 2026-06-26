@@ -11,6 +11,7 @@ export default async function Nav() {
         <Link href="/">지식</Link>
         <Link href="/summary">요약</Link>
         <Link href="/chat">AI 챗</Link>
+        <Link href="/invest">투자입력</Link>
         <Link href="/dashboard">포트폴리오</Link>
         <Link href="/game">게임</Link>
       </nav>

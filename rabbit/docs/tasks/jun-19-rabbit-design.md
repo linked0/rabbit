@@ -11,7 +11,7 @@
 | 3 | Portfolio & Market — **Hyperliquid ETH-perp trading** (API) | **display first, trading next** (testnet) |
 | 4 | **AI Chat — MCP support** (spaghetti recipe MCP + on/off toggle) | ready to build |
 | 5 | **New Site** — `home/` folder **inside the rabbit project** = `www.jaylabs.xyz` | ready to build |
-| 6 | **Deploy into GCP** + domain (`www.jaylabs.xyz` + apex) | ready to build |
+| 6 | **Deploy into GCP** — `*.run.app` first, custom domain later | ready to build |
 
 ## Decisions (locked — incl. jay's 2026-06-25 answers)
 | Topic | Decision |
@@ -25,7 +25,7 @@
 | AI Chat model | **`claude-sonnet-4-6`** now; **document how to self-host a local LLM on GCP** for later swap |
 | MCP server | Dir kept as **`spagetties`**; **hardcoded** sample recipes (simplest); chat history **in-memory per session** |
 | New Site | **`home/` folder inside the rabbit project** (no new repo); **one-time copy** of `linked0.github.io`; serve on **apex `jaylabs.xyz` + `www`** |
-| Public domain | **`www.jaylabs.xyz` (+ apex `jaylabs.xyz`) for everything** — `rabbit.jaylabs.xyz` **dropped** |
+| Public domain | **Phase 1 (now): use the Cloud Run `*.run.app` URL directly** — rabbit = `https://rabbit-179807446244.asia-northeast3.run.app/`, verex = its own `*.run.app`. **Phase 2 (later): map `www.jaylabs.xyz` + apex → rabbit, `verex.jaylabs.xyz` → verex.** `rabbit.jaylabs.xyz` dropped |
 | Auth | existing **Google login** (Auth.js) + `ALLOWED_EMAILS` gate (single user) |
 | Secrets | pushed to **Secret Manager** via `scripts/deploy.sh` (existing pattern) |
 | Git plan | **One branch** (`claude/jun-19-rabbit`), **several commits** (one per task) — per jay |
@@ -223,9 +223,10 @@ copy its private key → put in **Secret Manager** (`HL_AGENT_KEY`). (Needed onl
     live proxy).
   - Domain: serve on **apex `jaylabs.xyz` + `www.jaylabs.xyz`**, mapped to the rabbit Cloud Run service.
 
-### Domain (decided)
-**`www.jaylabs.xyz` (+ apex `jaylabs.xyz`) serves everything** — the home site *and* the rabbit app
-features. **`rabbit.jaylabs.xyz` is dropped.** One Cloud Run service, one public domain.
+### Domain (decided — phased)
+- **Phase 1 (now):** access the site at the **Cloud Run URL** `https://rabbit-179807446244.asia-northeast3.run.app/` — no DNS/custom-domain work yet. (verex stays on its own `*.run.app` URL.)
+- **Phase 2 (later):** map **`www.jaylabs.xyz` + apex `jaylabs.xyz`** → the rabbit service, and **`verex.jaylabs.xyz`** → the verex service. **`rabbit.jaylabs.xyz` is dropped.**
+- One Cloud Run service serves both the home site and the rabbit app features.
 
 ### To-do (who does what)
 | You (jay) | Me (Claude) |
@@ -238,21 +239,126 @@ features. **`rabbit.jaylabs.xyz` is dropped.** One Cloud Run service, one public
 
 ## Task 6 — Deploy into GCP + domain
 
-### Current → Proposed
+> **Phased.** Detailed click-by-click Console steps are in **[GCP Console — step-by-step setup](#gcp-console--step-by-step-setup-web-ui)** below.
+
+### Phase 1 (now) — ship to the `*.run.app` URL
 - **Current:** deploys to the auto `…run.app` URL (`scripts/deploy.sh`).
-- **Proposed:** map **`jaylabs.xyz` + `www.jaylabs.xyz`** → the rabbit Cloud Run service.
+- **Use it directly:** `https://rabbit-179807446244.asia-northeast3.run.app/`. No DNS work.
+- `AUTH_URL` and the Google OAuth redirect both point at the **run.app host** — `deploy.sh` already
+  pins this (lines 65–71) to avoid the Auth.js PKCE cookie issue. So Phase 1 needs **no auth change**.
+
+| You (jay) | Me (Claude) |
+|---|---|
+| Confirm the run.app URL is the one to use | Deploy via `scripts/deploy.sh`; verify `/invest`, `/chat` on the run.app URL |
+| Add `ANTHROPIC_API_KEY`, `DATABASE_URL` → Secret Manager | Wire Cloud Run → Cloud SQL + secrets (Console steps below) |
+
+### Phase 2 (later) — custom domains
+- Map **`jaylabs.xyz` + `www.jaylabs.xyz`** → rabbit service, **`verex.jaylabs.xyz`** → verex service.
   `rabbit.jaylabs.xyz` is **not** used.
 
-### To-do (who does what)
 | You (jay) | Me (Claude) |
 |---|---|
 | Be ready to **edit DNS** at the `jaylabs.xyz` registrar | Run `gcloud run domain-mappings create` (apex + www) |
 | Add the **DNS records** GCP provides; verify ownership if prompted | Give you the exact DNS records |
-| Update **Google OAuth redirect URI** → `https://www.jaylabs.xyz/api/auth/callback/google` | Set `AUTH_URL=https://www.jaylabs.xyz` in deploy |
+| Update **Google OAuth redirect URI** → `https://www.jaylabs.xyz/api/auth/callback/google` | Switch `AUTH_URL=https://www.jaylabs.xyz` in deploy |
 
-> Note: `deploy.sh` pins `AUTH_URL` to the `run.app` host (lines 65–71) to avoid the Auth.js PKCE
-> cookie issue. Moving to the custom domain means updating that **and** the OAuth redirect URI to the
-> same host.
+> Note: moving from the run.app host to the custom domain means updating **both** `AUTH_URL` **and**
+> the OAuth redirect URI to the same host, or Auth.js PKCE cookies break.
+
+---
+
+## GCP Console — step-by-step setup (web UI)
+
+> Click-by-click setup through the **GCP Console** (web), project **`doubletree-498007`**, region
+> **`asia-northeast3`**. CLI equivalents live in `scripts/deploy.sh` + [docs/runbooks/cloud-sql-setup.md](../runbooks/cloud-sql-setup.md).
+
+### 1. Cloud SQL instance (Console → SQL)
+1. Console → **SQL** → **Create Instance** → **PostgreSQL**.
+2. Instance ID `rabbit-pg`; password for `postgres`; **Region** `asia-northeast3`; **Edition** Enterprise,
+   **Sandbox / shared-core (db-f1-micro)** preset (cheapest); Storage 10 GB, auto-increase on → **Create**.
+3. Open the instance → **Databases** → **Create database** `rabbit`.
+4. **Users** → **Add user account** → `rabbit_app` + a strong password.
+5. **Overview** → copy the **Connection name** (`doubletree-498007:asia-northeast3:rabbit-pg`).
+
+### 2. Secrets (Console → Security → Secret Manager)
+For each of `DATABASE_URL`, `ANTHROPIC_API_KEY`, `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`:
+1. **Create Secret** → name it → paste the value → **Create**.
+   - `DATABASE_URL` = `postgresql://rabbit_app:<pw>@localhost/rabbit?host=/cloudsql/doubletree-498007:asia-northeast3:rabbit-pg`
+2. After deploying the service (step 3), grant its **service account** the role
+   **Secret Manager Secret Accessor** (Console usually offers this automatically when you reference a secret).
+
+### 3. Deploy rabbit to Cloud Run (Console → Cloud Run)
+1. Console → **Cloud Run** → **Create Service** (or open `rabbit` → **Edit & Deploy New Revision**).
+2. **Container image**: the image `scripts/deploy.sh` builds & pushes to Artifact Registry (select it).
+3. **Region** `asia-northeast3`; **Service name** `rabbit`; **Authentication** → **Allow unauthenticated
+   invocations** (the app runs its own Google login).
+4. **Containers → Variables & Secrets**:
+   - **Env vars**: `APP_MODE=cloud`, `ALLOWED_EMAILS=linked0@gmail.com`, `AI_PROVIDER=anthropic`.
+   - **Secrets**: "Reference a secret" → `DATABASE_URL`, `ANTHROPIC_API_KEY`, `AUTH_SECRET`,
+     `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` → expose each as the matching env var.
+5. **Containers → Connections → Cloud SQL connections → Add connection** → pick `rabbit-pg`
+   (mounts the socket at `/cloudsql/…`, matching `DATABASE_URL`).
+6. **Deploy** → the service page shows the URL → **`https://rabbit-179807446244.asia-northeast3.run.app/`**
+   (this is the Phase-1 site).
+
+### 4. Google OAuth redirect (Console → APIs & Services → Credentials)
+1. Console → **APIs & Services → Credentials** → open your **OAuth 2.0 Client ID**.
+2. **Authorized redirect URIs → Add URI**:
+   - Phase 1: `https://rabbit-179807446244.asia-northeast3.run.app/api/auth/callback/google`
+   - Phase 2: `https://www.jaylabs.xyz/api/auth/callback/google`
+3. **Save**.
+
+### 5. (Phase 2) Map a custom domain (Console → Cloud Run → Domain mappings)
+1. Cloud Run → **Manage Custom Domains** → **Add Mapping**.
+2. Service `rabbit`, domain `www.jaylabs.xyz` (repeat for apex `jaylabs.xyz`); for verex use the verex service + `verex.jaylabs.xyz`.
+3. Console returns **DNS records** (CNAME for `www`, A/AAAA for apex) → add them at the **jaylabs.xyz
+   registrar** → wait for verification + the managed TLS cert.
+4. Then switch `AUTH_URL` → `https://www.jaylabs.xyz` (new revision) and confirm the OAuth URI from step 4.
+
+---
+
+## Local LLM on GCP — self-hosted (for the later Sonnet → local swap)
+
+> Task 4 deliverable. Goal: run an open model behind an **OpenAI-compatible** endpoint so the chat's API
+> route swaps from `claude-sonnet-4-6` to a local model via **env vars only** — `lib/ai.ts` already has an
+> Ollama path (`OLLAMA_BASE_URL` / `OLLAMA_MODEL`).
+
+### Option A — Ollama on a GPU VM (Compute Engine) — recommended
+1. Console → **Compute Engine → VM instances → Create Instance**.
+   - Machine **g2-standard-4** + **1× NVIDIA L4** (or n1 + T4). Boot disk **Ubuntu 22.04**, 50 GB+.
+   - GPUs may need a quota bump: **IAM & Admin → Quotas** → request `GPUs (all regions) ≥ 1`.
+2. SSH in (Console "SSH" button) → install Ollama:
+   ```bash
+   curl -fsSL https://ollama.com/install.sh | sh
+   ollama pull llama3.1:8b        # or qwen2.5:7b, gemma2, …
+   ```
+   Ollama serves an **OpenAI-compatible** API at `:11434/v1` automatically.
+3. **Lock it down** — Ollama has **no auth**. Do NOT open `:11434` to the internet. Either:
+   - keep the VM private and reach it from Cloud Run over a **Serverless VPC Connector**, or
+   - front it with an authenticated reverse proxy (Caddy/nginx + bearer token in Secret Manager).
+4. Point the app at it (new Cloud Run revision): `OLLAMA_BASE_URL=http://<vm-internal-ip>:11434`,
+   `OLLAMA_MODEL=llama3.1:8b` (+ `APP_MODE`/`AI_PROVIDER` per `lib/ai.ts`).
+
+### Option B — Cloud Run with GPU (serverless)
+- Cloud Run supports **NVIDIA L4** GPUs. Deploy an Ollama container with `--gpu 1 --gpu-type nvidia-l4`,
+  **min-instances ≥ 1** (cold start re-pulls the model). Simpler ops; GPU billed while warm.
+
+### Cost / security
+- A GPU **VM bills per hour while running** (L4 ≈ a few \$/hr) → **stop the VM when idle**. Cloud Run GPU
+  bills while an instance is warm.
+- **Never expose raw Ollama publicly** (no auth by default) — VPC-internal + token proxy only.
+- Any proxy token → **Secret Manager**, injected into Cloud Run like the other secrets.
+
+### Swap is config-only (no code change)
+```bash
+# now — Sonnet
+AI_PROVIDER=anthropic
+AI_API_KEY=<secret>
+# later — local LLM in the cloud
+APP_MODE=cloud
+OLLAMA_BASE_URL=http://<internal-host>:11434
+OLLAMA_MODEL=llama3.1:8b
+```
 
 ---
 
