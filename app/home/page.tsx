@@ -1,0 +1,73 @@
+import Link from "next/link";
+import Nav from "../Nav";
+import { PROFILE, PROJECTS } from "@/lib/home-content";
+
+// Task 5 — www.jaylabs.xyz 홈 (공개). linked0.github.io 미러 + verex 링크.
+export const metadata = {
+  title: `${PROFILE.name} — jaylabs.xyz`,
+  description: PROFILE.tagline,
+};
+
+export default function HomePage() {
+  return (
+    <>
+      <Nav />
+      <main>
+      <header className="profile-head">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="avatar" src={PROFILE.photo} alt={PROFILE.name} width={96} height={96} />
+        <div>
+          <h1 style={{ fontSize: 30 }}>{PROFILE.heading}</h1>
+          <p className="sub" style={{ fontSize: 16, maxWidth: 620, marginBottom: 12 }}>
+            {PROFILE.tagline}
+          </p>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            {PROFILE.links.map((l) => (
+              <a key={l.label} href={l.url} target="_blank" rel="noreferrer">
+                {l.label}
+              </a>
+            ))}
+            <a href={`mailto:${PROFILE.email}`}>{PROFILE.email}</a>
+          </div>
+        </div>
+      </header>
+
+      {/* jaylabs 앱 링크 */}
+      <section className="panel">
+        <h2>jaylabs</h2>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <a className="card-link" href="https://verex.jaylabs.xyz">
+            → Verex
+          </a>
+        </div>
+      </section>
+
+      {/* 프로젝트 (linked0.github.io 미러) */}
+      <section className="panel">
+        <h2>Projects</h2>
+        <div className="scenario-grid">
+          {PROJECTS.map((p) => (
+            <Link key={p.slug} href={`/home/${p.slug}`} className="kpi proj-card" style={{ textDecoration: "none" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="proj-thumb" src={p.img} alt={p.title} />
+              <div className="label" style={{ marginTop: 8 }}>
+                {p.date} · {p.readTime}
+              </div>
+              <div className="value" style={{ fontSize: 16 }}>
+                {p.title}
+              </div>
+              <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
+                {p.description}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <p className="muted" style={{ fontSize: 13 }}>
+        © 2025 {PROFILE.name}
+      </p>
+    </main>
+    </>
+  );
+}
