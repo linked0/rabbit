@@ -9,9 +9,10 @@ type Item = { href: string; label: string; external?: boolean };
 const MENU: Item[] = [
   { href: "/", label: "홈" },
   { href: "/knowledge", label: "지식" },
-  { href: "/portfolio", label: "포트폴리오·마켓" },
+  { href: "/portfolio", label: "포트폴리오" },
   { href: "/chat", label: "AI 챗" },
   { href: "/game", label: "게임" },
+  { href: "/market", label: "마켓" },
   { href: "/ap2", label: "AP2 테스트" },
   { href: "/xyz", label: "XYZ 데모" },
   { href: "/etc", label: "ETC" },
