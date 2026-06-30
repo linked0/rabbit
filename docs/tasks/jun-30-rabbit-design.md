@@ -7,7 +7,7 @@
 Designs for the Jun 30 tasks: split **Portfolio & Market** into two categories + reorder the menu,
 refine **auth / LLM gating**, build the **Market** page (Hyperliquid orderbook + indices), fix the
 **Knowledge** page (serve `know.html`), add **KB-over-MCP/RAG** to AI Chat, an **AP2 Stripe**
-settlement example, and an **ETC ERC-7701/7715** demo.
+settlement example, and an **ETC ERC-7702 / 7715** demo.
 
 ## 1. Split "Portfolio & Market" → Portfolio + Market
 **Now:** one item *Portfolio & Market* (`/portfolio`, stub). **Target:** two categories.
@@ -20,6 +20,9 @@ external link** after ETC. Full bar:
 `Home · Knowledge · Portfolio · AI Chat · Game · Market · AP2 · XYZ · ETC · Verex ↗`.
 **Work:** edit `app/Nav.tsx` MENU; create `/market`; move market widgets out of `/summary`; keep
 `/portfolio` for holdings.
+**✅ Done (2026-06-30):** `Nav.tsx` split + reordered; `/market` page added (stub — indices/orderbook
+content is §3 / task 3); `/market` public + `/portfolio` still login-only in `middleware.ts`.
+Verified on build + server (`/market` 200, `/portfolio` 302→/login).
 
 ## 2. Auth + LLM gating
 - **Login-only category:** **Portfolio** only (others stay public — matches current middleware).
@@ -30,11 +33,13 @@ external link** after ETC. Full bar:
     model provisioned yet) → selecting it there shows "not available in cloud yet".
   - **jay (`linked0@gmail.com`)** uses the **server-stored API key** for the proprietary LLM (no paste).
 - **Design:** `lib/ai.ts` already abstracts providers. Add a key/source resolver:
-  `jay → env secret` · `other user → key submitted per request (not persisted)` ·
+  `jay → env secret` · `other user → own key, persisted per user, **encrypted at rest**` ·
   `Local LLM → enabled in local mode (Ollama at localhost), disabled in cloud`.
   Gate the stored-key path on `session.user.email === linked0@gmail.com`; detect mode via `appMode()`
   (`lib/mode.ts`) so the Local LLM option is live locally and inert in cloud.
-- **Open:** persist other users' keys or per-request only? Which proprietary providers (OpenAI / Anthropic)?
+- **Decided (jay):** **persist** users' keys — **encrypted at rest** (encryption key in env, never
+  plaintext; a `userApiKey` field keyed by user). Proprietary provider = **current setting (OpenAI)**;
+  add Anthropic later if wanted.
 
 ## 3. Market page — Hyperliquid orderbook + indices
 - New `/market` shows:
@@ -44,22 +49,31 @@ external link** after ETC. Full bar:
     Hyperliquid's public info endpoint.
 - **Design:** server route proxies the Hyperliquid REST snapshot (or a WS client streams to the
   page); render a compact L2 book above the index cards. Public API → no key.
-- **Open:** which market(s)? REST poll vs WebSocket stream?
+- **Decided (jay):** **REST poll first**, add **WebSocket** in a later step. Default market =
+  **BTC perp** (most liquid) for the first cut.
 
 ## 4. Knowledge page — serve `know.html` (Fix: No content)
 - **Now:** `/knowledge` is a stub; `know.html` sits **loose at the repo root** (plus a copy in `public/`).
 - **Target:** `/knowledge` renders `know.html`; move the loose root content files into a proper home.
-- **Design:**
-  - Move `know.html`, `management.md`, and the other loose root study files into a dedicated folder
-    (e.g., `content/knowledge/` or `public/knowledge/`).
-  - Serve it: simplest = keep `know.html` under `public/knowledge/` and have `/knowledge` embed it
-    (iframe); cleaner = port to a styled React route.
-- **Open:** iframe the raw HTML vs port to React? Exactly which loose files are "Knowledge" vs other categories?
+- **Decided (jay):** serve **`know.html` as the main content (iframe, no React port)**; gather the
+  files it references and move the whole set into **`public/knowledge/`**.
+- **Design:** move `know.html` + its linked files (e.g. `management.md`, any images it points to)
+  into `public/knowledge/`; `/knowledge` embeds `public/knowledge/know.html` in an iframe. (Scan
+  `know.html` for `href`/`src` to find the exact related-file set.)
+- **✅ Done (2026-06-30):** moved `know.html` + `management.md` → `public/knowledge/`; `/knowledge`
+  iframes `/knowledge/know.html`; `middleware.ts` matcher excludes `knowledge/` so the static file
+  serves without auth. Verified (200 + "Workspace Index" content).
+- **⚠️ Note / not done:** `know.html` links to `ai/`, `eng/`, `nostra/`, `images/`, `docs/` — those
+  moved to `archive/` (or `docs/`) in the restructure, so most internal links in the served page are
+  **stale**; I did **not** relocate those whole trees (would break the repo). The other loose root
+  study files (`index.html`, `baseline_*.html`, `management.html`, `sarah_chen_index.html`,
+  `luminary_index.html`, `zksnark_math.html`, `assumptions.md`, `clarifying_questions.md`) are **left
+  at root** — unclear if "Knowledge". **Decide:** fix/prune know.html's links? sweep these others where?
 
 ## 5. AI Chat — KB via MCP + RAG
 - **Goal:** chat can query the **Knowledge KB** using **RAG**, exposed through an **MCP** tool.
-- **This decides the previously-TBD MCP content** (see `../features/ai-chat.md`): **the MCP exposes
-  KB search / retrieval.**
+- **Decided (jay):** the MCP exposes **KB search / retrieval** (settles the earlier TBD; see
+  `../features/ai-chat.md`).
 - **Design:**
   - Index Knowledge content (`know.html` + md) → embeddings → vector store (local Chroma/Qdrant, or
     a simple file index to start).
@@ -76,16 +90,19 @@ external link** after ETC. Full bar:
   data is released. **Test-mode keys only**, no real charges.
 - **Open:** Checkout vs PaymentIntent; how prominently to contrast it with x402.
 
-## 7. ETC — ERC-7701 / 7715 demo (educational)
-- **Goal:** a test page for **delegatable smart accounts / session keys** (ERC-7701 account +
-  ERC-7715 permission grants) — ties directly to the aiaas spend-policy idea (session key = agent's
-  bounded wallet).
-- **Design (imagined educational feature):**
+## 7. ETC — ERC-7702 / 7715 demo (educational)
+**Standards (jay confirmed):** **EIP-7702** (an EOA temporarily runs smart-account code = a
+*delegatable smart account*) + **ERC-7715** (`wallet_grantPermissions` — grant a scoped **session
+key**) / **ERC-7710** (delegation).
+- **Goal:** a test page for **delegatable smart accounts / session keys** — ties directly to the
+  aiaas spend-policy idea (session key = agent's bounded wallet).
+- **Design (educational):**
   - Connect a wallet → **grant a session key** with a scoped permission ("spend ≤ X testnet USDC to
-    address Y, valid 1h") per ERC-7715 → show the session key performing that **bounded action
+    address Y, valid 1h") per **ERC-7715** → show the session key performing that **bounded action
     without re-signing**.
-  - Testnet + a 7702/7701-capable account; display the permission grant + one delegated tx.
-- **Open:** which AA stack supports 7701/7715 today? Scope = a short explainer + one demo tx.
+  - Testnet (**Sepolia**) + a 7702-capable account; display the permission grant + one delegated tx.
+- **Decided (jay):** stack = **MetaMask Delegation Toolkit** (implements 7715/7710) on **Sepolia**.
+  *(Alternative: ZeroDev / permissionless.js for 7702/4337 session keys.)* Scope = short explainer + one demo tx.
 
 ## 8. Cross-cutting — IA update
 - Update the Target IA table in `../features/README.md`: split Portfolio & Market, add **Market**,
@@ -93,18 +110,22 @@ external link** after ETC. Full bar:
 - New/changed routes: `/market`; Knowledge content move + serve; `/etc` ERC demo subpage; AP2 Stripe
   example under `/ap2`.
 
-## 9. Open questions (consolidated)
-- ~~Home & Verex placement~~ → ✅ Home = `/` (logo), Verex = trailing external link.
-- AI Chat: persist user keys or per-request only? which proprietary providers?
-  -  
-- Market: which Hyperliquid market; REST poll vs WS stream.
-- Knowledge: iframe vs React port; which loose files move where.
-- MCP confirmed to expose **KB retrieval** (per §5)?
-- ERC-7701/7715 stack choice.
+## 9. Decisions & remaining open questions
+**Resolved (jay):**
+- Home = `/` (logo) · Verex = trailing external link.
+- AI Chat keys: **persist per user, encrypted at rest**; proprietary provider = **OpenAI** now (Anthropic later — easy add).
+- Market: **REST poll first**, WebSocket next; default market **BTC perp**.
+- Knowledge: serve **`know.html`** as-is (iframe) + move it and its linked files into **`public/knowledge/`**.
+- MCP exposes **KB retrieval**.
+- ETC standards = **7702 + 7715/7710**; stack = **MetaMask Delegation Toolkit on Sepolia**.
+
+**Still open:**
+- KB: embedding model (local `nomic-embed` vs OpenAI) + vector store; MCP-tool vs in-route RAG.
+- AP2: Stripe Checkout vs PaymentIntent.
 
 ## 10. Suggested sequence
 1. Menu split + reorder + **Market** page (indices first, orderbook next).
 2. **Knowledge** content move + serve `know.html`.
 3. **AI Chat** gating (BYO key / jay's stored key; local disabled).
 4. **KB RAG + MCP**.
-5. **AP2 Stripe** example; **ETC ERC-7701/7715** demo.
+5. **AP2 Stripe** example; **ETC ERC-7702/7715** demo.

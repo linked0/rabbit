@@ -8,6 +8,7 @@ const PUBLIC_PATHS = new Set([
   "/login",
   "/knowledge",
   "/game",
+  "/market",
   "/ap2",
   "/xyz",
   "/etc",
@@ -25,5 +26,5 @@ export default auth((req) => {
 
 export const config = {
   // Next 정적 리소스/아이콘(파비콘·App Router icon) 제외, 나머지 전부 미들웨어 통과
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|profile/).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|profile/|knowledge/).*)"],
 };
