@@ -56,10 +56,17 @@ GPU shares unified memory, so total RAM is the limit.
 - For a **single user**, option 2 is often the simplest/cheapest; pick option 1 if running
   your own OSS model on GCP is itself a goal (it is, per this doc).
 
+## MCP tool-calling (this project's own MCP)
+Give the chat agent a tool: **call an MCP server that this project builds**. The integration itself
+is the feature; **what the MCP exposes is not decided yet (TBD)** — settle its content/tools in a
+later step. (Needs a provider that supports tool/function calling, or route MCP calls through the
+app's `/api/chat`.)
+
 ## Open questions
 - OSS model on Cloud Run (cheap, slower) or a dedicated VM (faster, costlier)?
 - Persist the user's provider choice (per session / per account)?
 - Cloud mode: ship the OSS model on Cloud Run, or just call `gpt-4o-mini` (no infra)?
+- What does our own MCP expose? (tools / content — **undecided**)
 
 ## Features
 - [ ] **Provider selector**
@@ -70,3 +77,7 @@ GPU shares unified memory, so total RAM is the limit.
   - [ ] Containerize Ollama + model; deploy to Cloud Run
   - [ ] Point the "Local LLM" option at the service URL (env var)
   - [ ] Document the install/prepare steps
+- [ ] **Call this project's own MCP**
+  - [ ] (you) Decide what the MCP exposes (tools / content — TBD)
+  - [ ] Build the MCP server
+  - [ ] Wire the chat agent's tool-calling loop to it
