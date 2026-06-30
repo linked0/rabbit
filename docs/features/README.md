@@ -8,7 +8,6 @@ then summarize the built result into `docs/history/`.
 | Menu | Route | Feature doc |
 |------|-------|-------------|
 | Home | `/` | [main-page.md](main-page.md) |
-| Knowledge | `/knowledge` | [knowledge-base.md](knowledge-base.md) |
 | Portfolio & Market | `/portfolio` | [portfolio-and-market.md](portfolio-and-market.md) |
 | AI Chat | `/chat` | [ai-chat.md](ai-chat.md) |
 | Game | `/game` | [game.md](game.md) |
@@ -16,7 +15,10 @@ then summarize the built result into `docs/history/`.
 | XYZ Demo | `/xyz` | [xyz-demo.md](xyz-demo.md) |
 | ETC | `/etc` | [etc.md](etc.md) |
 | Verex | ↗ external | [verex-link.md](verex-link.md) |
+| _UI/UX_ | — | [ui-ux.md](ui-ux.md) — 디자인 접근법: frontend-design 스킬 + UI/UX Pro Max + 6단계 빌드 워크플로 |
 | _Cross-cutting_ | — | [common.md](common.md) — navigation/top-menu (Common #1) + CI/CD (Common #2) |
+
+> **Knowledge 메뉴는 일시 제거됨** — 콘텐츠는 `docs/know.html`(로컬 `file://`로 열람). 필요 시 복원. (앱 측 메뉴/라우트 제거는 PR #18에 포함.)
 
 ## Roadmap — phase · step schedule
 Broken into steps like verex's `docs/plan/README.md §1.4`. Effort = focused AI-assisted
