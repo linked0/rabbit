@@ -23,9 +23,11 @@ external link** after ETC. Full bar:
 **✅ Done (2026-06-30):** `Nav.tsx` split + reordered; `/market` page added (stub — indices/orderbook
 content is §3 / task 3); `/market` public + `/portfolio` still login-only in `middleware.ts`.
 Verified on build + server (`/market` 200, `/portfolio` 302→/login).
+**(2026-06-30 update: Knowledge category later removed from the menu — see §4; current bar omits 지식.)**
 
 ## 2. Auth + LLM gating
-- **Login-only category:** **Portfolio** only (others stay public — matches current middleware).
+- **Login-only category:** **Portfolio** — its **menu item is hidden until login** (`authOnly` in
+  `Nav.tsx`) **and** access-gated in `middleware.ts`. (AI Chat: menu stays visible, access-gated.)
 - **AI Chat access model:**
   - To chat, the user selects a **Proprietary LLM** and supplies **their own API key**.
   - **Local LLM** works **only when the app runs on the local machine** (local mode — Ollama
@@ -53,6 +55,12 @@ Verified on build + server (`/market` 200, `/portfolio` 302→/login).
   **BTC perp** (most liquid) for the first cut.
 
 ## 4. Knowledge page — serve `know.html` (Fix: No content)
+**↺ Superseded (2026-06-30) — Knowledge category removed (restore when needed).** Per jay: the
+Knowledge menu item + `/knowledge` route were **removed** from the app; its content now lives in
+**`docs/`** for **local `file://` browsing** (not web-served → no public exposure):
+`docs/know.html` (index, opened via `file:///Users/jay/work/task/docs/know.html`) + `docs/knowledge/`
+(e.g. `management.md`). The web-iframe approach below is on hold. *Open:* know.html links to
+`ai/`/`eng/`/`nostra/` (in `archive/`, 881 MB) + `docs/*` — not relocated; left for the restore step.
 - **Now:** `/knowledge` is a stub; `know.html` sits **loose at the repo root** (plus a copy in `public/`).
 - **Target:** `/knowledge` renders `know.html`; move the loose root content files into a proper home.
 - **Decided (jay):** serve **`know.html` as the main content (iframe, no React port)**; gather the
@@ -63,12 +71,15 @@ Verified on build + server (`/market` 200, `/portfolio` 302→/login).
 - **✅ Done (2026-06-30):** moved `know.html` + `management.md` → `public/knowledge/`; `/knowledge`
   iframes `/knowledge/know.html`; `middleware.ts` matcher excludes `knowledge/` so the static file
   serves without auth. Verified (200 + "Workspace Index" content).
-- **⚠️ Note / not done:** `know.html` links to `ai/`, `eng/`, `nostra/`, `images/`, `docs/` — those
-  moved to `archive/` (or `docs/`) in the restructure, so most internal links in the served page are
-  **stale**; I did **not** relocate those whole trees (would break the repo). The other loose root
-  study files (`index.html`, `baseline_*.html`, `management.html`, `sarah_chen_index.html`,
-  `luminary_index.html`, `zksnark_math.html`, `assumptions.md`, `clarifying_questions.md`) are **left
-  at root** — unclear if "Knowledge". **Decide:** fix/prune know.html's links? sweep these others where?
+- **Loose root files → `docs/archive/`** ✅ (2026-06-30): moved the leftover study files
+  (`index.html`, `baseline_*.html`, `management.html`, `sarah_chen_index.html`, `luminary_index.html`,
+  `zksnark_math.html`, `assumptions.md`, `clarifying_questions.md`) into `docs/archive/` for later
+  reference. `README.md` (project setup) stays at root.
+- **know.html links — recommend PRUNE** (not fix). The app web-serves only `public/`, so its links to
+  `ai/`/`eng/`/`nostra/`/`images/`/`docs/` (repo files now in `archive/`/`docs/`) would **still 404**
+  even if the paths were corrected. Plan: **fix** the one served link (`management.md` →
+  `/knowledge/management.md`) and **neutralize the rest** (strip dead local `href`s, keep the text).
+  Pending jay's go-ahead.
 
 ## 5. AI Chat — KB via MCP + RAG
 - **Goal:** chat can query the **Knowledge KB** using **RAG**, exposed through an **MCP** tool.
