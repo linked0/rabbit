@@ -1,5 +1,7 @@
 # 2026-06-30 — rabbit
 
+_Implements: task [docs/tasks/jun-30-rabbit.md](../tasks/jun-30-rabbit.md) · design [docs/tasks/jun-30-rabbit-design.md](../tasks/jun-30-rabbit-design.md)._
+
 ### Task 1 — split "Portfolio & Market" into Portfolio + Market; reorder menu
 Implemented Jun-30 design §1: `app/Nav.tsx` menu split + reordered to
 `홈 · 지식 · 포트폴리오 · AI 챗 · 게임 · 마켓 · AP2 · XYZ · ETC · Verex↗`; added `app/market/page.tsx`
