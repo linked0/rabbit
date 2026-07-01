@@ -10,6 +10,7 @@
 - **Status:** design (for review)
 
 ## New First
+✅ **DONE** — C4 관찰자 대시보드 + C2 서처(번들 제출)를 `/xyz`에 구현. 설계·구현: [../features/xyz-demo.md](../features/xyz-demo.md) · [../features/c2-searcher.md](../features/c2-searcher.md)
 
 ### Feature description — PBS consumer track (relay/builder 소비자)
 
@@ -115,6 +116,9 @@ mev-boost -mainnet=false \
 원하면 **C4+C2 스타터 레포**를 스캐폴딩해줄게 — `pbs-consumer/`에 (1) `relaywatch/` 여러 relay Data API 폴링→builder 점유율 집계(Node/TS), (2) `bundler/` Sepolia 번들 제출 3시나리오(원자 멀티-tx·backrun·공개vs프라이빗 비교), (3) `.env.example`·README(Sepolia 세팅·faucet 링크). 만들어줄까? 이건 도커도 validator도 필요 없어서 바로 `npm run`으로 굴러가.
 
 Sources: [Flashbots Protect Quick Start](https://docs.flashbots.net/flashbots-protect/quick-start) · [Sending Tx & Bundles](https://docs.flashbots.net/guide-send-tx-bundle) · [Relay API 스펙](https://flashbots.github.io/relay-specs/) · [ethers-provider-flashbots-bundle](https://github.com/flashbots/ethers-provider-flashbots-bundle) · [Hoodi/Holesky 상태](https://blog.ethereum.org/2025/03/18/hoodi-holesky)
+
+#### 관련 논의 (Related discussion)
+- [Laura Shin / Unchained — 스테이블코인 동결 & freeze 프론트런](https://x.com/laurashin/status/2072006037151052135) — freeze 트랜잭션이 공개 mempool에서 프론트런당하는 실제 사례. 프라이빗 릴레이(Flashbots Protect/빌더 직결)로 pending 노출을 없애 순서 경주를 막는 게 해법 — 이 문서 C1/C2 트랙과 직접 연결됨.
 
 ---
 
