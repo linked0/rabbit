@@ -20,6 +20,10 @@ with a little Sepolia ETH. Source design: **New First / C2** in
 [../tasks/jul-01-rabbit-design.md](../tasks/jul-01-rabbit-design.md). Note: on Sepolia, inclusion
 isn't guaranteed per block (needs a Flashbots-connected builder to win the slot) — resubmit as needed.
 
+**Full walkthrough:** [c2-searcher.md](c2-searcher.md) explains what the sample does end-to-end
+(bundle concept, sign → `eth_callBundle` sim → `eth_sendBundle`, the Flashbots auth header, security,
+and how to run it).
+
 ## Live now — C4 PBS relay observer dashboard ✅
 A working, **key-free** dashboard already shipped at `/xyz` (built 2026-07-01). It polls several
 public relay **Data APIs** (`proposer_payload_delivered`) server-side and aggregates:
