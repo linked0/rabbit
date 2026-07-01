@@ -70,3 +70,12 @@ gained `SEPOLIA_RPC`/`ADMIN_KEY` placeholders (real values go in `.env.local`).
 Why: C2 is the core "actually use a relay" step. Verified: `next build` compiles,
 `/api/bundle` + `/xyz` (4.43 kB) registered. jay to add env values + Sepolia funds
 before it runs. Left uncommitted for review.
+
+### New Fourth: EN/KO language toggle beside the theme button
+Added a language toggle to the top bar. `app/LangContext.tsx` (client context,
+localStorage-persisted, sets `<html lang>`), `app/LangToggle.tsx` (button next to
+`ThemeToggle`, shows the language you'd switch to), `app/NavLinks.tsx` (menu labels
+render ko/en from the context). `Nav.tsx` MENU now carries both `ko`+`en` labels;
+`layout.tsx` wraps children in `LangProvider` and applies theme+lang before paint
+(flash-free). First cut translates the top-menu labels; per-page content can follow.
+Why: jay's New Fourth request. `next build` compiles clean. Separate commit (#2).

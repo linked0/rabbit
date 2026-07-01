@@ -1,26 +1,27 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import ThemeToggle from "./ThemeToggle";
+import LangToggle from "./LangToggle";
+import NavLinks, { type NavItem } from "./NavLinks";
 
 // Target IA 최상단 메뉴 (docs/features/README.md).
 // 대부분 로그인 없이 보인다. authOnly 항목(포트폴리오)은 로그인 시에만 메뉴에 노출.
-// 진입 가드(미들웨어): /portfolio, /chat 은 로그인 필요.
-type Item = { href: string; label: string; external?: boolean; authOnly?: boolean };
+// 진입 가드(미들웨어): /portfolio, /chat 은 로그인 필요. 라벨은 ko/en 둘 다 — 언어 토글로 전환.
 
-const MENU: Item[] = [
-  { href: "/", label: "홈" },
+const MENU: NavItem[] = [
+  { href: "/", ko: "홈", en: "Home" },
   // 지식(Knowledge) 카테고리는 일시 제거 — 콘텐츠는 docs/know.html (로컬 file:// 열람). 필요 시 복원.
-  { href: "/portfolio", label: "포트폴리오", authOnly: true },
-  { href: "/chat", label: "AI 챗" },
-  { href: "/game", label: "게임" },
-  { href: "/market", label: "마켓" },
-  { href: "/ap2", label: "AP2 테스트" },
-  { href: "/xyz", label: "XYZ 데모" },
-  { href: "/jayverse", label: "JayVerse" },
-  { href: "https://verex.jaylabs.xyz", label: "Verex ↗", external: true },
+  { href: "/portfolio", ko: "포트폴리오", en: "Portfolio", authOnly: true },
+  { href: "/chat", ko: "AI 챗", en: "AI Chat" },
+  { href: "/game", ko: "게임", en: "Game" },
+  { href: "/market", ko: "마켓", en: "Market" },
+  { href: "/ap2", ko: "AP2 테스트", en: "AP2 Test" },
+  { href: "/xyz", ko: "XYZ 데모", en: "XYZ Demo" },
+  { href: "/jayverse", ko: "JayVerse", en: "JayVerse" },
+  { href: "https://verex.jaylabs.xyz", ko: "Verex ↗", en: "Verex ↗", external: true },
 ];
 
-// 공통 상단바: Target IA 메뉴 + 로그인/로그아웃
+// 공통 상단바: Target IA 메뉴 + 언어/테마 토글 + 로그인/로그아웃
 export default async function Nav() {
   const session = await auth();
   const loggedIn = !!session?.user;
@@ -28,20 +29,9 @@ export default async function Nav() {
 
   return (
     <div className="topbar" style={{ justifyContent: "space-between" }}>
-      <nav style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        {items.map((m) =>
-          m.external ? (
-            <a key={m.href} href={m.href} target="_blank" rel="noreferrer">
-              {m.label}
-            </a>
-          ) : (
-            <Link key={m.href} href={m.href}>
-              {m.label}
-            </Link>
-          )
-        )}
-      </nav>
+      <NavLinks items={items} />
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <LangToggle />
         <ThemeToggle />
         {loggedIn ? (
           <>
