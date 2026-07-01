@@ -198,8 +198,15 @@ This same doc already carries real public feeds — we can swap mock → real fo
 
 ---
 ## New Fourth
+✅ **DONE**
 - Please Add the button to change English mode and Korean mode besides "Dard/Light" mode button
 - This can be another commit.
+
+**Done (2026-07-01):** Added an **EN/KO language toggle** button next to the theme toggle in
+`app/Nav.tsx`. New `app/LangContext.tsx` (client, localStorage-persisted), `app/LangToggle.tsx`
+(the button), `app/NavLinks.tsx` (menu labels switch ko/en); `app/layout.tsx` wraps the app in
+`LangProvider` and sets `<html lang>` before paint (no flash). First cut translates the top-menu
+labels; page content can follow incrementally. Committed separately.
 
 --- 
 ## 0. Summary

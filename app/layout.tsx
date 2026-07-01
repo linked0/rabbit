@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LangProvider } from "./LangContext";
 
 export const metadata: Metadata = {
   title: "rabbit — Crypto Portfolio Summary",
@@ -14,15 +15,17 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        {/* 페인트 전에 테마 적용 (플래시 방지). 기본 light. */}
+        {/* 페인트 전에 테마·언어 적용 (플래시 방지). 기본 theme=light, lang=ko. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();",
+              "(function(){try{var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t);var l=localStorage.getItem('lang')||'ko';document.documentElement.lang=l;}catch(e){}})();",
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <LangProvider>{children}</LangProvider>
+      </body>
     </html>
   );
 }
