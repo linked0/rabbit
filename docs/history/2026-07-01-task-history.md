@@ -79,3 +79,15 @@ render ko/en from the context). `Nav.tsx` MENU now carries both `ko`+`en` labels
 `layout.tsx` wraps children in `LangProvider` and applies theme+lang before paint
 (flash-free). First cut translates the top-menu labels; per-page content can follow.
 Why: jay's New Fourth request. `next build` compiles clean. Separate commit (#2).
+
+### i18n: translate all top-nav content (EN/KO), cookie-backed
+Extended the language toggle from menu-only to full page content. Source of
+truth moved to a `lang` **cookie** (server-readable) so server components
+translate too; `lib/i18n.ts` (`pick(lang, ko, en)` + `Lang`, client-safe),
+`lib/lang.ts` (`getLang()` via `next/headers`), `LangContext` now seeds from the
+cookie and `router.refresh()` on toggle; `layout.tsx` reads the cookie and sets
+`<html lang>` server-side. Translated: Nav (login/logout), XYZ page + C2
+BundleSubmit + C4 RelayDashboard, Market, JayVerse, AP2, Portfolio, Summary
+(IndexCards), Game, AI Chat (page + ChatClient), Login. Not yet: legacy non-nav
+pages (perp, invest, simulate, dashboard). Verified: `next build` exit 0,
+27/27 static pages, `/home/[slug]` still prerenders. New commit.

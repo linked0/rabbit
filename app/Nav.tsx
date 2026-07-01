@@ -3,6 +3,8 @@ import { auth, signOut } from "@/auth";
 import ThemeToggle from "./ThemeToggle";
 import LangToggle from "./LangToggle";
 import NavLinks, { type NavItem } from "./NavLinks";
+import { getLang } from "@/lib/lang";
+import { pick } from "@/lib/i18n";
 
 // Target IA 최상단 메뉴 (docs/features/README.md).
 // 대부분 로그인 없이 보인다. authOnly 항목(포트폴리오)은 로그인 시에만 메뉴에 노출.
@@ -26,6 +28,7 @@ export default async function Nav() {
   const session = await auth();
   const loggedIn = !!session?.user;
   const items = MENU.filter((m) => !m.authOnly || loggedIn);
+  const lang = getLang();
 
   return (
     <div className="topbar" style={{ justifyContent: "space-between" }}>
@@ -43,13 +46,13 @@ export default async function Nav() {
               }}
             >
               <button className="ghost" type="submit">
-                로그아웃
+                {pick(lang, "로그아웃", "Sign out")}
               </button>
             </form>
           </>
         ) : (
           <Link className="ghost" href="/login">
-            로그인
+            {pick(lang, "로그인", "Sign in")}
           </Link>
         )}
       </div>

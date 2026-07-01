@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useLang } from "../LangContext";
+import { pick } from "@/lib/i18n";
 
 // C4 관찰자 대시보드 — /api/relay 폴링 → builder 점유율·입찰가 분포·relay 지연 집계.
 type Entry = {
@@ -31,6 +33,7 @@ type Resp = {
 const REFRESH_MS = 20000;
 
 export default function RelayDashboard() {
+  const { lang } = useLang();
   const [data, setData] = useState<Resp | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,7 +44,7 @@ export default function RelayDashboard() {
     try {
       const res = await fetch("/api/relay");
       const j = await res.json();
-      if (!res.ok) throw new Error(j?.error ?? "조회 실패");
+      if (!res.ok) throw new Error(j?.error ?? "fetch failed");
       setData(j);
     } catch (e) {
       setError(String(e instanceof Error ? e.message : e));
@@ -99,36 +102,59 @@ export default function RelayDashboard() {
     .sort((a, b) => Number(b.entry.slot) - Number(a.entry.slot))
     .slice(0, 15);
 
+  const net = data?.network ?? "Ethereum Mainnet";
+  const noData = pick(lang, "데이터 없음.", "No data.");
+
   return (
     <>
-      <h1>🛰️ PBS Relay 관찰자 (C4)</h1>
+      <h1>{pick(lang, "🛰️ PBS Relay 관찰자 (C4)", "🛰️ PBS Relay Observer (C4)")}</h1>
       <p className="sub">
-        공개 relay Data API 폴링 — 키 불필요, 20초 자동 갱신. 누가 블록을 만들었나(builder 점유율)·입찰가
-        분포·relay별 지연을 집계. 설계: <code>docs/features/xyz-demo.md</code>
+        {pick(
+          lang,
+          "공개 relay Data API 폴링 — 키 불필요, 20초 자동 갱신. 누가 블록을 만들었나(builder 점유율)·입찰가 분포·relay별 지연을 집계. 설계: ",
+          "Polls public relay Data APIs — no key, auto-refresh every 20s. Aggregates who built the block (builder share), bid distribution, and per-relay latency. Design: "
+        )}
+        <code>docs/features/xyz-demo.md</code>
       </p>
 
       {/* 무엇을 관측하나 — 네트워크/데이터 출처 설명 */}
       <section className="panel">
-        <h2>무엇을 보고 있나</h2>
+        <h2>{pick(lang, "무엇을 보고 있나", "What you're looking at")}</h2>
         <ul className="muted" style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
           <li>
-            <b>네트워크:</b> {data?.network ?? "Ethereum Mainnet"} — mev-boost <b>PBS</b>(제안자–빌더 분리)
-            경매가 실제로 도는 곳. 공개 Data API에 실 트래픽이 있어 테스트넷 대신 메인넷을 관측합니다.
+            <b>{pick(lang, "네트워크:", "Network:")}</b> {net} —{" "}
+            {pick(
+              lang,
+              "mev-boost PBS(제안자–빌더 분리) 경매가 실제로 도는 곳. 공개 Data API에 실 트래픽이 있어 테스트넷 대신 메인넷을 관측합니다.",
+              "where the mev-boost PBS (proposer–builder separation) auction actually runs. The public Data API has real traffic, so we observe mainnet rather than a testnet."
+            )}
           </li>
           <li>
-            <b>데이터:</b> 각 relay의 <code>{data?.endpoint ?? "proposer_payload_delivered"}</code> —
-            relay가 제안자에게 실제로 전달한(= 블록에 들어간) 페이로드. relay당 최근{" "}
-            {data?.limit ?? 20}건.
+            <b>{pick(lang, "데이터:", "Data:")}</b>{" "}
+            <code>{data?.endpoint ?? "proposer_payload_delivered"}</code> —{" "}
+            {pick(
+              lang,
+              `relay가 제안자에게 실제로 전달한(= 블록에 들어간) 페이로드. relay당 최근 ${data?.limit ?? 20}건.`,
+              `payloads the relay actually delivered to a proposer (= made it into a block). Last ${data?.limit ?? 20} per relay.`
+            )}
           </li>
           <li>
-            <b>Relay {data?.relays.length ?? 4}곳:</b>{" "}
+            <b>{pick(lang, `Relay ${data?.relays.length ?? 4}곳:`, `${data?.relays.length ?? 4} relays:`)}</b>{" "}
             {(data?.relays ?? []).map((r) => r.name).join(" · ") ||
               "Flashbots · bloXroute · Agnostic · Ultra Sound"}{" "}
-            — 브라우저 CORS를 피하려 서버(<code>/api/relay</code>)가 병렬로 프록시하며 지연을 측정합니다.
+            {pick(
+              lang,
+              "— 브라우저 CORS를 피하려 서버(",
+              "— the server ("
+            )}
+            <code>/api/relay</code>
+            {pick(lang, ")가 병렬로 프록시하며 지연을 측정합니다.", ") proxies them in parallel and measures latency, avoiding browser CORS.")}
           </li>
           <li>
-            <b>참고:</b> 표시 전용 · 키/지갑 불필요. 오픈소스{" "}
-            <code>flashbots/relayscan</code>이 같은 데이터를 다룹니다.
+            <b>{pick(lang, "참고:", "Note:")}</b>{" "}
+            {pick(lang, "표시 전용 · 키/지갑 불필요. 오픈소스 ", "Display-only · no key/wallet. The open-source ")}
+            <code>flashbots/relayscan</code>
+            {pick(lang, "이 같은 데이터를 다룹니다.", " works with the same data.")}
           </li>
         </ul>
       </section>
@@ -137,34 +163,40 @@ export default function RelayDashboard() {
 
       <section className="panel">
         <div className="kpis">
-          <Kpi label="관측 블록(고유)" value={String(totalBlocks)} />
-          <Kpi label="빌더 수" value={String(builderCount.size)} />
-          <Kpi label="입찰가 중앙값" value={stat ? `${stat.median.toFixed(4)} ETH` : "—"} />
-          <Kpi label="응답 relay" value={`${relays.filter((r) => r.ok).length}/${relays.length}`} />
+          <Kpi label={pick(lang, "관측 블록(고유)", "Blocks (unique)")} value={String(totalBlocks)} />
+          <Kpi label={pick(lang, "빌더 수", "Builders")} value={String(builderCount.size)} />
+          <Kpi label={pick(lang, "입찰가 중앙값", "Median bid")} value={stat ? `${stat.median.toFixed(4)} ETH` : "—"} />
+          <Kpi label={pick(lang, "응답 relay", "Relays up")} value={`${relays.filter((r) => r.ok).length}/${relays.length}`} />
         </div>
         <p className="muted" style={{ marginTop: 10 }}>
           {loading
-            ? "불러오는 중…"
+            ? pick(lang, "불러오는 중…", "Loading…")
             : data
-              ? `마지막 조회 ${new Date(data.fetchedAt).toLocaleTimeString("ko-KR")}`
+              ? pick(
+                  lang,
+                  `마지막 조회 ${new Date(data.fetchedAt).toLocaleTimeString("ko-KR")}`,
+                  `Last fetch ${new Date(data.fetchedAt).toLocaleTimeString("en-US")}`
+                )
               : ""}
         </p>
       </section>
 
       <section className="panel">
-        <h2>Builder 시장점유율 (최근 {totalBlocks} 블록)</h2>
+        <h2>{pick(lang, `Builder 시장점유율 (최근 ${totalBlocks} 블록)`, `Builder market share (last ${totalBlocks} blocks)`)}</h2>
         <p className="muted" style={{ marginTop: -4 }}>
-          delivered 블록을 <code>builder_pubkey</code>로 묶어 센 것 — 어느 빌더가 블록을 많이 이겼나.
+          {pick(lang, "delivered 블록을 ", "Delivered blocks grouped by ")}
+          <code>builder_pubkey</code>
+          {pick(lang, "로 묶어 센 것 — 어느 빌더가 블록을 많이 이겼나.", " — which builder won the most blocks.")}
         </p>
         {builderShare.length === 0 ? (
-          <p className="muted">데이터 없음.</p>
+          <p className="muted">{noData}</p>
         ) : (
           <table>
             <thead>
               <tr>
                 <th>Builder</th>
-                <th>블록</th>
-                <th>점유율</th>
+                <th>{pick(lang, "블록", "Blocks")}</th>
+                <th>{pick(lang, "점유율", "Share")}</th>
               </tr>
             </thead>
             <tbody>
@@ -196,31 +228,39 @@ export default function RelayDashboard() {
       </section>
 
       <section className="panel">
-        <h2>입찰가(value) 분포</h2>
+        <h2>{pick(lang, "입찰가(value) 분포", "Bid value distribution")}</h2>
         <p className="muted" style={{ marginTop: -4 }}>
-          제안자에게 지급된 페이로드 가치(ETH) — PBS 경매에서 블록이 얼마에 팔렸나.
+          {pick(
+            lang,
+            "제안자에게 지급된 페이로드 가치(ETH) — PBS 경매에서 블록이 얼마에 팔렸나.",
+            "payload value paid to the proposer (ETH) — what the block sold for in the PBS auction."
+          )}
         </p>
         <div className="kpis">
-          <Kpi label="최소" value={stat ? `${stat.min.toFixed(4)} ETH` : "—"} />
-          <Kpi label="중앙값" value={stat ? `${stat.median.toFixed(4)} ETH` : "—"} />
-          <Kpi label="평균" value={stat ? `${stat.avg.toFixed(4)} ETH` : "—"} />
-          <Kpi label="최대" value={stat ? `${stat.max.toFixed(4)} ETH` : "—"} />
+          <Kpi label={pick(lang, "최소", "Min")} value={stat ? `${stat.min.toFixed(4)} ETH` : "—"} />
+          <Kpi label={pick(lang, "중앙값", "Median")} value={stat ? `${stat.median.toFixed(4)} ETH` : "—"} />
+          <Kpi label={pick(lang, "평균", "Avg")} value={stat ? `${stat.avg.toFixed(4)} ETH` : "—"} />
+          <Kpi label={pick(lang, "최대", "Max")} value={stat ? `${stat.max.toFixed(4)} ETH` : "—"} />
         </div>
       </section>
 
       <section className="panel">
-        <h2>Relay별 지연 · 상태</h2>
+        <h2>{pick(lang, "Relay별 지연 · 상태", "Relay latency · status")}</h2>
         <p className="muted" style={{ marginTop: -4 }}>
-          {data?.network ?? "Ethereum Mainnet"} relay별 응답 시간(서버→relay) — 어느 relay가 빠른가.
+          {pick(
+            lang,
+            `${net} relay별 응답 시간(서버→relay) — 어느 relay가 빠른가.`,
+            `${net} response time per relay (server→relay) — which relay is fastest.`
+          )}
         </p>
         <table>
           <thead>
             <tr>
               <th>Relay</th>
-              <th>호스트</th>
-              <th>상태</th>
-              <th>지연</th>
-              <th>블록</th>
+              <th>{pick(lang, "호스트", "Host")}</th>
+              <th>{pick(lang, "상태", "Status")}</th>
+              <th>{pick(lang, "지연", "Latency")}</th>
+              <th>{pick(lang, "블록", "Blocks")}</th>
             </tr>
           </thead>
           <tbody>
@@ -230,7 +270,7 @@ export default function RelayDashboard() {
                 <td className="muted">
                   <code>{r.host}</code>
                 </td>
-                <td className={r.ok ? "pos" : "neg"}>{r.ok ? "OK" : (r.error ?? "실패")}</td>
+                <td className={r.ok ? "pos" : "neg"}>{r.ok ? "OK" : (r.error ?? pick(lang, "실패", "failed"))}</td>
                 <td>{r.latencyMs} ms</td>
                 <td>{r.entries.length}</td>
               </tr>
@@ -240,18 +280,22 @@ export default function RelayDashboard() {
       </section>
 
       <section className="panel">
-        <h2>최근 delivered 블록</h2>
+        <h2>{pick(lang, "최근 delivered 블록", "Recent delivered blocks")}</h2>
         <p className="muted" style={{ marginTop: -4 }}>
-          {data?.network ?? "Ethereum Mainnet"}에서 최근 블록에 실제로 포함된 페이로드 (슬롯 내림차순).
+          {pick(
+            lang,
+            `${net}에서 최근 블록에 실제로 포함된 페이로드 (슬롯 내림차순).`,
+            `Payloads actually included in recent blocks on ${net} (slot descending).`
+          )}
         </p>
         {recent.length === 0 ? (
-          <p className="muted">데이터 없음.</p>
+          <p className="muted">{noData}</p>
         ) : (
           <table>
             <thead>
               <tr>
-                <th>슬롯</th>
-                <th>블록</th>
+                <th>{pick(lang, "슬롯", "Slot")}</th>
+                <th>{pick(lang, "블록", "Block")}</th>
                 <th>Builder</th>
                 <th>Value</th>
                 <th>Tx</th>

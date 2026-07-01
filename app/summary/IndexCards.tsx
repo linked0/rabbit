@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLang } from "../LangContext";
+import { pick } from "@/lib/i18n";
 
 type Quote = {
   key: string;
@@ -13,6 +15,7 @@ type Quote = {
 const REFRESH_MS = 60_000;
 
 export default function IndexCards() {
+  const { lang } = useLang();
   const [quotes, setQuotes] = useState<Quote[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +42,7 @@ export default function IndexCards() {
   }, []);
 
   if (!quotes) {
-    return <p className={error ? "err" : "muted"}>{error ?? "불러오는 중…"}</p>;
+    return <p className={error ? "err" : "muted"}>{error ?? pick(lang, "불러오는 중…", "Loading…")}</p>;
   }
 
   return (
