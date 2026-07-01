@@ -1,10 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useLang } from "../LangContext";
+import { pick } from "@/lib/i18n";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 export default function ChatClient() {
+  const { lang } = useLang();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -67,22 +70,30 @@ export default function ChatClient() {
           type="button"
           className={mcp ? "" : "ghost"}
           onClick={() => setMcp((v) => !v)}
-          title="스파게티 레시피 MCP 도구 on/off"
+          title={pick(lang, "스파게티 레시피 MCP 도구 on/off", "Toggle the Spaghetti recipe MCP tool")}
         >
           🍝 Spaghetti MCP: {mcp ? "on" : "off"}
         </button>
-        {mcp && <span className="muted">레시피 도구가 붙었습니다 — 스파게티/파스타를 물어보세요.</span>}
+        {mcp && (
+          <span className="muted">
+            {pick(
+              lang,
+              "레시피 도구가 붙었습니다 — 스파게티/파스타를 물어보세요.",
+              "Recipe tool attached — ask about spaghetti/pasta."
+            )}
+          </span>
+        )}
       </div>
       <div ref={logRef} className="chat-log">
         {messages.length === 0 && (
-          <p className="muted">메시지를 입력해 대화를 시작하세요.</p>
+          <p className="muted">{pick(lang, "메시지를 입력해 대화를 시작하세요.", "Type a message to start the chat.")}</p>
         )}
         {messages.map((m, i) => (
           <div key={i} className={`msg ${m.role}`}>
-            <div className="who">{m.role === "user" ? "나" : "AI"}</div>
+            <div className="who">{m.role === "user" ? pick(lang, "나", "You") : "AI"}</div>
             <div className="bubble">
               {m.content ||
-                (busy && i === messages.length - 1 ? "생각 중…" : "")}
+                (busy && i === messages.length - 1 ? pick(lang, "생각 중…", "Thinking…") : "")}
             </div>
           </div>
         ))}
@@ -92,12 +103,12 @@ export default function ChatClient() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="질문을 입력하세요"
+          placeholder={pick(lang, "질문을 입력하세요", "Type your question")}
           disabled={busy}
           autoFocus
         />
         <button type="submit" disabled={busy}>
-          {busy ? "응답 중…" : "보내기"}
+          {busy ? pick(lang, "응답 중…", "Responding…") : pick(lang, "보내기", "Send")}
         </button>
       </form>
     </section>

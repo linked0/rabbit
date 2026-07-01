@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { LangProvider } from "./LangContext";
+import { getLang } from "@/lib/lang";
 
 export const metadata: Metadata = {
   title: "rabbit — Crypto Portfolio Summary",
@@ -12,19 +13,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const lang = getLang(); // 쿠키 기반 — 서버 렌더부터 올바른 언어
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
-        {/* 페인트 전에 테마·언어 적용 (플래시 방지). 기본 theme=light, lang=ko. */}
+        {/* 페인트 전에 테마 적용 (플래시 방지). 기본 light. 언어는 서버가 <html lang>로 설정. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t);var l=localStorage.getItem('lang')||'ko';document.documentElement.lang=l;}catch(e){}})();",
+              "(function(){try{var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();",
           }}
         />
       </head>
       <body>
-        <LangProvider>{children}</LangProvider>
+        <LangProvider initial={lang}>{children}</LangProvider>
       </body>
     </html>
   );

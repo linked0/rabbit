@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useLang } from "../LangContext";
+import { pick } from "@/lib/i18n";
 
 // C2 서처 — 폼 입력 → /api/bundle → Sepolia relay에 번들 제출. 개인키는 서버에만 있음.
 type BundleResp = {
@@ -20,6 +22,7 @@ type BundleResp = {
 };
 
 export default function BundleSubmit() {
+  const { lang } = useLang();
   const [to, setTo] = useState("");
   const [valueEth, setValueEth] = useState("0");
   const [maxFeeGwei, setMaxFeeGwei] = useState("30");
@@ -38,7 +41,13 @@ export default function BundleSubmit() {
       });
       // 미로그인 시 미들웨어가 /login으로 리다이렉트 → JSON 아님. 친절히 안내.
       if (r.status === 401 || r.redirected || !r.headers.get("content-type")?.includes("json")) {
-        setRes({ error: "로그인이 필요합니다. 상단에서 로그인한 뒤 다시 제출하세요." });
+        setRes({
+          error: pick(
+            lang,
+            "로그인이 필요합니다. 상단에서 로그인한 뒤 다시 제출하세요.",
+            "Login required. Sign in from the top bar, then submit again."
+          ),
+        });
         return;
       }
       const j = (await r.json()) as BundleResp;
@@ -54,19 +63,34 @@ export default function BundleSubmit() {
 
   return (
     <section className="panel">
-      <h2>🛰️ C2 서처 — 번들 제출 (Sepolia)</h2>
+      <h2>{pick(lang, "🛰️ C2 서처 — 번들 제출 (Sepolia)", "🛰️ C2 Searcher — submit a bundle (Sepolia)")}</h2>
       <p className="muted" style={{ marginTop: -4 }}>
-        번들(순서 정해진 tx 묶음)을 <b>Flashbots Sepolia relay</b>(<code>relay-sepolia.flashbots.net</code>)에
-        제출합니다. 먼저 <code>eth_callBundle</code>로 시뮬레이션 후 <code>eth_sendBundle</code>로 전송.
-        <b> 테스트넷 전용</b> · 서명은 서버의 <code>ADMIN_KEY</code>로만 이뤄지며 브라우저에 노출되지 않습니다.
-        로그인 필요.
+        {pick(lang, "번들(순서 정해진 tx 묶음)을 ", "Submits a bundle (an ordered group of txs) to the ")}
+        <b>Flashbots Sepolia relay</b>(<code>relay-sepolia.flashbots.net</code>)
+        {pick(lang, "에 제출합니다. 먼저 ", ". First simulates with ")}
+        <code>eth_callBundle</code>
+        {pick(lang, "로 시뮬레이션 후 ", ", then sends with ")}
+        <code>eth_sendBundle</code>
+        {pick(lang, "로 전송. ", ". ")}
+        <b>{pick(lang, "테스트넷 전용", "Testnet only")}</b>
+        {pick(
+          lang,
+          " · 서명은 서버의 ",
+          " · signing happens only with the server's "
+        )}
+        <code>ADMIN_KEY</code>
+        {pick(
+          lang,
+          "로만 이뤄지며 브라우저에 노출되지 않습니다. 로그인 필요.",
+          " and is never exposed to the browser. Login required."
+        )}
       </p>
 
       <div className="row-form" style={{ marginTop: 12 }}>
         <div className="field" style={{ gridColumn: "span 2" }}>
-          <label>받는 주소 (to)</label>
+          <label>{pick(lang, "받는 주소 (to)", "Recipient (to)")}</label>
           <input
-            placeholder="0x… (예: 자기 지갑 또는 소각 주소)"
+            placeholder={pick(lang, "0x… (예: 자기 지갑 또는 소각 주소)", "0x… (e.g. your wallet or a burn address)")}
             value={to}
             onChange={(e) => setTo(e.target.value)}
           />
@@ -84,7 +108,7 @@ export default function BundleSubmit() {
           <input value={maxPriorityGwei} onChange={(e) => setMaxPriorityGwei(e.target.value)} />
         </div>
         <button onClick={submit} disabled={disabled}>
-          {loading ? "제출 중…" : "번들 제출"}
+          {loading ? pick(lang, "제출 중…", "Submitting…") : pick(lang, "번들 제출", "Submit bundle")}
         </button>
       </div>
 
@@ -93,27 +117,33 @@ export default function BundleSubmit() {
       {res?.ok && (
         <div style={{ marginTop: 14 }}>
           <div className="kpis">
-            <Kpi label="상태" value="제출됨 ✅" />
-            <Kpi label="현재 블록" value={String(res.currentBlock ?? "—")} />
-            <Kpi label="타깃 블록" value={String(res.targetBlock ?? "—")} />
+            <Kpi label={pick(lang, "상태", "Status")} value={pick(lang, "제출됨 ✅", "Submitted ✅")} />
+            <Kpi label={pick(lang, "현재 블록", "Current block")} value={String(res.currentBlock ?? "—")} />
+            <Kpi label={pick(lang, "타깃 블록", "Target block")} value={String(res.targetBlock ?? "—")} />
             <Kpi label="nonce" value={String(res.nonce ?? "—")} />
           </div>
           <table style={{ marginTop: 12 }}>
             <tbody>
               <Row k="bundleHash" v={res.bundleHash ?? "—"} mono />
-              <Row k="보낸 주소" v={res.sender ?? "—"} mono />
-              <Row k="받는 주소" v={res.to ?? "—"} mono />
+              <Row k={pick(lang, "보낸 주소", "From")} v={res.sender ?? "—"} mono />
+              <Row k={pick(lang, "받는 주소", "To")} v={res.to ?? "—"} mono />
               <Row k="value" v={`${res.valueEth} ETH`} />
               <Row k="relay" v={res.relay ?? "—"} />
-              <Row k="제출 시각" v={res.submittedAt ? new Date(res.submittedAt).toLocaleString("ko-KR") : "—"} />
+              <Row
+                k={pick(lang, "제출 시각", "Submitted at")}
+                v={res.submittedAt ? new Date(res.submittedAt).toLocaleString(lang === "en" ? "en-US" : "ko-KR") : "—"}
+              />
             </tbody>
           </table>
           <p className="muted" style={{ marginTop: 10 }}>
-            시뮬레이션 통과 후 relay에 전달됨. 실제 블록 포함은 해당 슬롯을 Flashbots 연동 빌더가 이길 때
-            일어나며, Sepolia에선 즉시 포함이 보장되지 않습니다(다음 블록들에 재제출 가능).
+            {pick(
+              lang,
+              "시뮬레이션 통과 후 relay에 전달됨. 실제 블록 포함은 해당 슬롯을 Flashbots 연동 빌더가 이길 때 일어나며, Sepolia에선 즉시 포함이 보장되지 않습니다(다음 블록들에 재제출 가능).",
+              "Passed simulation and forwarded to the relay. Actual inclusion happens when a Flashbots-connected builder wins that slot; on Sepolia inclusion isn't guaranteed per block (resubmit for later blocks)."
+            )}
           </p>
           <details style={{ marginTop: 8 }}>
-            <summary className="muted">시뮬레이션 원본(JSON)</summary>
+            <summary className="muted">{pick(lang, "시뮬레이션 원본(JSON)", "Raw simulation (JSON)")}</summary>
             <pre style={{ overflowX: "auto", fontSize: 12 }}>
               {JSON.stringify(res.simulation, null, 2)}
             </pre>

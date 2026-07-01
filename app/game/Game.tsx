@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useLang } from "../LangContext";
+import { pick } from "@/lib/i18n";
 
 // 간단한 캔버스 미니게임 (plan §2 #2): 떨어지는 코인(₿·Ξ)을 바구니로 받기.
 // 의존성 없이 가볍게 2D 캔버스로 구현(원하면 추후 WebGL로 교체 가능).
@@ -10,6 +12,7 @@ const WIDTH = 640;
 const HEIGHT = 420;
 
 export default function Game() {
+  const { lang } = useLang();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [running, setRunning] = useState(false);
   const [score, setScore] = useState(0);
@@ -132,8 +135,8 @@ export default function Game() {
   return (
     <div className="panel" style={{ maxWidth: WIDTH + 32 }}>
       <div style={{ display: "flex", gap: 24, marginBottom: 12 }}>
-        <span>점수 <b>{score}</b></span>
-        <span>최고 <b>{best}</b></span>
+        <span>{pick(lang, "점수", "Score")} <b>{score}</b></span>
+        <span>{pick(lang, "최고", "Best")} <b>{best}</b></span>
         <span>♥ {lives > 0 ? "♥".repeat(lives) : "—"}</span>
       </div>
       <div style={{ position: "relative" }}>
@@ -163,12 +166,16 @@ export default function Game() {
               borderRadius: 12,
             }}
           >
-            <h2 style={{ margin: 0, color: "#fff" }}>🪙 코인 받기</h2>
+            <h2 style={{ margin: 0, color: "#fff" }}>{pick(lang, "🪙 코인 받기", "🪙 Catch the coins")}</h2>
             <p style={{ color: "#cdd1d6", margin: 0, textAlign: "center", maxWidth: 360 }}>
-              마우스·터치 또는 ← → 키로 바구니를 움직여 떨어지는 코인을 받으세요. 3번 놓치면 끝!
+              {pick(
+                lang,
+                "마우스·터치 또는 ← → 키로 바구니를 움직여 떨어지는 코인을 받으세요. 3번 놓치면 끝!",
+                "Move the basket with mouse, touch, or ← → keys to catch the falling coins. Miss 3 and it's over!"
+              )}
             </p>
             <button type="button" onClick={start}>
-              {score > 0 || best > 0 ? "다시 시작" : "시작"}
+              {score > 0 || best > 0 ? pick(lang, "다시 시작", "Restart") : pick(lang, "시작", "Start")}
             </button>
           </div>
         )}
