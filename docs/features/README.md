@@ -13,7 +13,7 @@ then summarize the built result into `docs/history/`.
 | Game | `/game` | [game.md](game.md) |
 | AP2 Test | `/ap2` | [ap2-test.md](ap2-test.md) |
 | XYZ Demo | `/xyz` | [xyz-demo.md](xyz-demo.md) |
-| ETC | `/etc` | [etc.md](etc.md) |
+| JayVerse | `/jayverse` | [jayverse.md](jayverse.md) |
 | Verex | ↗ external | [verex-link.md](verex-link.md) |
 | _UI/UX_ | — | [ui-ux.md](ui-ux.md) — 디자인 접근법: frontend-design 스킬 + UI/UX Pro Max + 6단계 빌드 워크플로 |
 | _Cross-cutting_ | — | [common.md](common.md) — navigation/top-menu (Common #1) + CI/CD (Common #2) |

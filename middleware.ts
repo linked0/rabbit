@@ -10,7 +10,8 @@ const PUBLIC_PATHS = new Set([
   "/market",
   "/ap2",
   "/xyz",
-  "/etc",
+  "/jayverse",
+  "/api/relay", // C4 관찰자 대시보드용 공개 relay 프록시 (키 불필요)
 ]);
 
 export default auth((req) => {

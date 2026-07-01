@@ -16,7 +16,7 @@ const MENU: Item[] = [
   { href: "/market", label: "마켓" },
   { href: "/ap2", label: "AP2 테스트" },
   { href: "/xyz", label: "XYZ 데모" },
-  { href: "/etc", label: "ETC" },
+  { href: "/jayverse", label: "JayVerse" },
   { href: "https://verex.jaylabs.xyz", label: "Verex ↗", external: true },
 ];
 
