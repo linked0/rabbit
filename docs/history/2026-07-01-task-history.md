@@ -166,3 +166,12 @@ Branch `claude/jul01-rabbit-updates`. High level:
   pages (cookie-backed so server components translate).
 - **Deps/env:** ethers 6.17 (pnpm); `SEPOLIA_/MAINNET_` RPC+key placeholders.
 All verified via `next build` (27/27). `.env.local` gitignored (keys not committed).
+
+### docs: create jul-02-rabbit-design.md (carry-over + cloud task)
+New design file `docs/tasks/jul-02-rabbit-design.md` derived from jul-01 with the
+**completed** tasks omitted (New First/Third/Fourth, §1, §4). Lead item is a new
+task: **make the PBS consumer track (C2/C4) work in the cloud** — Secret Manager
+for the signing key, tighten `/api/bundle*` to jay-only, disable mainnet in cloud
+by default (behind `ENABLE_MAINNET_BUNDLE` + value cap), Node runtime/egress
+checks. Carries over JayVerse Gravia MVP, auth/LLM gating, Market page, KB RAG+MCP,
+AP2 Stripe, ERC-7702/7715 demo, IA finish. Uncommitted.
