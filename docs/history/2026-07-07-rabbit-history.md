@@ -80,6 +80,13 @@ Hyperliquid testnet. Phase 2a is now unblocked on the funding side.
 | 14 | Open question: remove IndexCards from `/summary` (§1 "move widgets")? | ⬜ Open |
 | 15 | Merge `claude/2026-07-07-session` → `main` when done | ⬜ Pending |
 
+### Design: staging domain staging.rabbit.jaylabs.xyz (new §11)
+
+Source: jay's request; design in [tasks/jun-30-rabbit-design.md §11](../tasks/jun-30-rabbit-design.md).
+Gotcha (verified in GCP docs): Cloud Run built-in domain mapping does not support asia-northeast3
+(Seoul) — the rabbit service's region. Recommended path: Firebase Hosting rewrite → Cloud Run
+(~free, any region); LB (~$18+/mo) and region move rejected as overkill/lossy.
+
 ### Spec: Phase 2a perp trading written into design §3 (Task 3-P2)
 
 Source: jay's go-ahead; spec appended under Task 3-P2 in

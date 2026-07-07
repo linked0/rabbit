@@ -236,3 +236,24 @@ key**) / **ERC-7710** (delegation).
    (ETC/BTC/ETH…).
 4. Then back to the original sequence: **§2 AI Chat gating** → **§5 KB RAG + MCP** →
    **§6 AP2 Stripe / §7 ERC-7702·7715 demo**, with **§8 IA update** alongside whichever ships.
+
+## 11. Staging domain — `staging.rabbit.jaylabs.xyz` (added 2026-07-07)
+- **Status: ⬜ To do**
+
+- **Goal (jay):** give the current Cloud Run URL
+  (`https://rabbit-179807446244.asia-northeast3.run.app/`) a memorable staging address:
+  **`staging.rabbit.jaylabs.xyz`**. Production stays per the jun-19 plan (Phase 2:
+  `www.jaylabs.xyz` + apex → rabbit); this subdomain is the pre-domain testing tier.
+- **Constraint (verified in GCP docs, 2026-07-07):** Cloud Run's built-in **domain mapping does
+  NOT support `asia-northeast3` (Seoul)** — the service's region. The free built-in path is out.
+- **Options:**
+  1. **Firebase Hosting rewrite → Cloud Run** (recommended) — works with any region, ~free,
+     Google-managed TLS. Work: create a Firebase Hosting site, `firebase.json` rewrite
+     `{ "source": "**", "run": { "serviceId": "rabbit", "region": "asia-northeast3" } }`,
+     add the DNS records Firebase issues for `staging.rabbit.jaylabs.xyz`.
+  2. Global external HTTPS **load balancer** + serverless NEG — most control (CDN, Cloud Armor)
+     but ~$18+/mo; overkill for a staging URL.
+  3. **Move the service to `asia-northeast1` (Tokyo)** to use built-in mapping — free, but gives
+     up Seoul latency; not worth it just for a staging alias.
+- **Recommendation:** option 1 (Firebase Hosting). Note `AUTH_URL`/Google-OAuth redirect must
+  include the new origin when auth is used on staging (cloud mode).
