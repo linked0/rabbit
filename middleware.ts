@@ -12,6 +12,8 @@ const PUBLIC_PATHS = new Set([
   "/xyz",
   "/jayverse",
   "/api/relay", // C4 관찰자 대시보드용 공개 relay 프록시 (키 불필요)
+  "/api/indices", // /market(공개)의 지수 카드용 — 공개 시세, 업스트림 60초 캐시
+  "/api/orderbook", // /market(공개)의 Hyperliquid L2 북용 — 공개 info API
 ]);
 
 export default auth((req) => {

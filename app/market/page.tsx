@@ -1,9 +1,13 @@
 import Nav from "../Nav";
+import OrderBook from "./OrderBook";
+import IndexCards from "../summary/IndexCards";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 
-// Market (/market) — split out of "Portfolio & Market" (Jun-30 design §1). Public.
-// 콘텐츠(Hyperliquid 오더북 + 지수)는 §3 / task 3에서 채운다.
+// Market (/market) — Hyperliquid ETC 퍼프 오더북 + 주요 지수 (Jun-30 design §3). Public.
+// 오더북은 REST 폴링 1차 (WebSocket은 다음 단계), 지수 카드는 /summary의 IndexCards 재사용.
+export const dynamic = "force-dynamic";
+
 export default function MarketPage() {
   const lang = getLang();
   return (
@@ -14,11 +18,12 @@ export default function MarketPage() {
         <p className="sub">
           {pick(
             lang,
-            "준비 중 — Hyperliquid 오더북 + 주요 지수. 설계: ",
-            "Coming soon — Hyperliquid orderbook + key indices. Design: "
+            "Hyperliquid ETC 퍼프 오더북 + BTC · ETH · S&P 500 · KOSPI",
+            "Hyperliquid ETC perp orderbook + BTC · ETH · S&P 500 · KOSPI"
           )}
-          <code>docs/tasks/jun-30-rabbit-design.md §3</code>
         </p>
+        <OrderBook coin="ETC" />
+        <IndexCards />
       </main>
     </>
   );

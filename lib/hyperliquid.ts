@@ -5,12 +5,12 @@
 // 기본은 메인넷 info(읽기 전용 시세). 거래(Phase 2)는 테스트넷 우선 — HL_API_URL로 전환.
 const HL_INFO = (process.env.HL_API_URL?.trim() || "https://api.hyperliquid.xyz") + "/info";
 
-async function hlPost<T>(body: unknown): Promise<T> {
+async function hlPost<T>(body: unknown, revalidate = 15): Promise<T> {
   const res = await fetch(HL_INFO, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
-    next: { revalidate: 15 }, // 15초 캐시
+    next: { revalidate }, // 초 단위 캐시 (0 = 캐시 없음, 오더북 폴링용)
   });
   if (!res.ok) throw new Error(`Hyperliquid: HTTP ${res.status}`);
   return res.json() as Promise<T>;
@@ -44,6 +44,32 @@ export async function fetchPerpContext(coin = "ETH"): Promise<PerpContext> {
     openInterest: c.openInterest != null ? Number(c.openInterest) : null,
     prevDayPx,
     dayChangePct: prevDayPx ? ((markPx - prevDayPx) / prevDayPx) * 100 : null,
+  };
+}
+
+export type BookLevel = { px: number; sz: number };
+export type L2Book = {
+  coin: string;
+  time: number; // HL 서버 타임스탬프 (ms)
+  bids: BookLevel[];
+  asks: BookLevel[];
+};
+
+// L2 오더북 스냅샷 — REST 폴링 1차 (Jun-30 design §3; WebSocket은 다음 단계).
+// 응답 levels[0] = bids, levels[1] = asks (각각 { px, sz, n } 문자열).
+export async function fetchL2Book(coin = "BTC", depth = 10): Promise<L2Book> {
+  const raw = await hlPost<{
+    coin: string;
+    time: number;
+    levels: { px: string; sz: string; n: number }[][];
+  }>({ type: "l2Book", coin }, 0);
+  const side = (levels?: { px: string; sz: string }[]) =>
+    (levels ?? []).slice(0, depth).map((l) => ({ px: Number(l.px), sz: Number(l.sz) }));
+  return {
+    coin: raw.coin,
+    time: raw.time,
+    bids: side(raw.levels?.[0]),
+    asks: side(raw.levels?.[1]),
   };
 }
 
