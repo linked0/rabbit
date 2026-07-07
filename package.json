@@ -5,9 +5,9 @@
   "description": "PoC — crypto portfolio summary & forecast (connects to Verex, deploys to GCP Cloud Run)",
   "packageManager": "pnpm@11.5.1",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3100",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3100",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev"
