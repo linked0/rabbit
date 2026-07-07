@@ -31,7 +31,7 @@ pnpm db:push                      # Trade 테이블 생성 (이력 필요 시 pn
 ## Run
 
 ```bash
-pnpm dev      # 개발 서버 → http://localhost:3000
+pnpm dev      # 개발 서버 → http://localhost:3100
 pnpm build    # 프로덕션 빌드 (타입체크 포함)
 pnpm start    # 빌드 결과 실행
 ```
