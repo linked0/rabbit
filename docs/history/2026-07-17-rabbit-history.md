@@ -151,3 +151,11 @@ Added §12 to [docs/tasks/jun-30-rabbit-design.md](../tasks/jun-30-rabbit-design
 last item (backlog, to-do), linking to the detail doc
 [docs/features/dsrv-portal.md](../features/dsrv-portal.md); noted the AA PoC overlaps with
 §7's session-key stack.
+
+### git: Jul-17 batch landed on main (PR #20)
+Per jay's explicit request: committed today's docs on `claude/2026-07-07-session`, pushed,
+opened [PR #20](https://github.com/linked0/rabbit/pull/20), rebase-merged (repo allows
+rebase only). The branch's three Jul-07 commits (market orderbook §3, staging plan §11,
+port 3000→3100) rode along — disclosed in the PR body. Stale `.git/index.lock` (Jul 8,
+0 bytes) removed first. Untracked stray `docs/history/2026-07-07-verex-history.md`
+(verex-named file inside rabbit) left uncommitted — needs jay's call.
