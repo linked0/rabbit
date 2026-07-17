@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The 5 Layers of a Modern Web Stack</title>
+<style>
+  :root {
+    --bg: #f8fafc; --card: #ffffff; --ink: #0f172a; --muted: #64748b;
+    --accent: #2563eb; --line: #e2e8f0;
+    --l1: #eff6ff; --l1b: #2563eb;
+    --l2: #f5f3ff; --l2b: #7c3aed;
+    --l3: #f0fdf4; --l3b: #16a34a;
+    --l4: #fffbeb; --l4b: #d97706;
+    --l5: #fef2f2; --l5b: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px; background: var(--bg); color: var(--ink);
+         font-family: 'Inter', -apple-system, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+  .layer { border-radius: 12px; padding: 16px 20px; margin: 10px 0; border: 1px solid var(--line);
+           border-left-width: 6px; display: grid; grid-template-columns: 200px 1fr; gap: 6px 18px; align-items: baseline; }
+  @media (max-width: 640px) { .layer { grid-template-columns: 1fr; } }
+  .lname { font-weight: 700; font-size: 1rem; }
+  .lname .ko { display: block; font-weight: 500; font-size: .82rem; color: var(--muted); }
+  .lrole { font-size: .92rem; }
+  .ltech { grid-column: 2; font-size: .85rem; color: var(--muted); }
+  @media (max-width: 640px) { .ltech { grid-column: 1; } }
+  .ltech b { color: var(--ink); font-weight: 600; }
+  .arrow { text-align: center; color: var(--muted); font-size: 1.1rem; margin: -4px 0; }
+  .l1 { background: var(--l1); border-left-color: var(--l1b); }
+  .l2 { background: var(--l2); border-left-color: var(--l2b); }
+  .l3 { background: var(--l3); border-left-color: var(--l3b); }
+  .l4 { background: var(--l4); border-left-color: var(--l4b); }
+  .l5 { background: var(--l5); border-left-color: var(--l5b); }
+  .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px;
+          font-size: .9rem; margin-top: 20px; }
+  .rabbit { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; margin-top: 16px; font-size: .92rem; }
+  .cap { font-size: .85rem; color: var(--muted); margin-top: 20px; }
+  h2 { font-size: 1.1rem; margin: 30px 0 8px; border-left: 4px solid var(--accent); padding-left: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>The 5 Layers of a Modern Web Stack</h1>
+<div class="sub">A request's journey from the user's screen to the metal — and which tools live at each stop
+· <span style="color:var(--muted); font-size:.9rem">웹 서비스 기술 스택 5계층 지도</span></div>
+
+<div class="layer l1">
+  <div class="lname">① Presentation &amp; Edge<span class="ko">프레젠테이션 및 엣지</span></div>
+  <div class="lrole">What the user sees, delivered fast — UI frameworks + CDN edge caching.</div>
+  <div class="ltech"><b>UI:</b> React · Next.js · Flutter · Svelte &nbsp;|&nbsp; <b>Edge/CDN:</b> Cloudflare · Fastly · Vercel Edge</div>
+</div>
+<div class="arrow">▼</div>
+<div class="layer l2">
+  <div class="lname">② Integration &amp; Messaging<span class="ko">통합 및 메시징</span></div>
+  <div class="lrole">How parts talk — synchronous APIs and asynchronous message brokers.</div>
+  <div class="ltech"><b>API:</b> REST · gRPC · GraphQL &nbsp;|&nbsp; <b>Async:</b> Kafka · RabbitMQ · GCP Pub/Sub · SQS</div>
+</div>
+<div class="arrow">▼</div>
+<div class="layer l3">
+  <div class="lname">③ Business Logic &amp; Data Access<span class="ko">비즈니스 로직 및 데이터 액세스</span></div>
+  <div class="lrole">The core rules of the app — server frameworks plus the efficiency layer in front of data.</div>
+  <div class="ltech"><b>Server:</b> Spring · Django · Fastify/Express · Rails &nbsp;|&nbsp; <b>Efficiency:</b> Redis (cache) · Hibernate/Prisma (ORM)</div>
+</div>
+<div class="arrow">▼</div>
+<div class="layer l4">
+  <div class="lname">④ Storage &amp; Analytics<span class="ko">데이터 저장 및 분석</span></div>
+  <div class="lrole">Where data lives and where it becomes insight — OLTP databases through big-data/ML tooling.</div>
+  <div class="ltech"><b>DB:</b> PostgreSQL · MySQL · MongoDB &nbsp;|&nbsp; <b>Analytics/ML:</b> Spark · BigQuery · PyTorch</div>
+</div>
+<div class="arrow">▼</div>
+<div class="layer l5">
+  <div class="lname">⑤ Infrastructure<span class="ko">인프라</span></div>
+  <div class="lrole">The ground everything stands on — cloud hosting and container orchestration.</div>
+  <div class="ltech"><b>Cloud:</b> AWS · GCP · Azure &nbsp;|&nbsp; <b>Runtime:</b> Docker · Kubernetes · Cloud Run</div>
+</div>
+
+<h2>Where rabbit sits on this map <span style="color:var(--muted);font-weight:500;font-size:.85rem">rabbit 대입</span></h2>
+<div class="rabbit">
+  ① Next.js (App Router) — no CDN yet (Cloud Run serves directly) ·
+  ② REST route handlers (`app/api/*`); no broker yet — the KB-RAG/MCP work (design §5) adds an MCP surface ·
+  ③ Next.js server + `lib/*`; Prisma as the ORM ·
+  ④ Cloud SQL Postgres (S6) ·
+  ⑤ GCP Cloud Run + Docker (staging domain = design §11).
+  <br><span style="color:var(--muted)">Gaps worth knowing: no CDN, no message broker, no analytics layer — all fine at rabbit's scale; the map shows what would be added first if scale demanded it.</span>
+</div>
+
+<div class="note"><b>How to use this map:</b> when a new tool appears ("should I care about X?"),
+first place it on a layer — most "X vs Y" debates (gRPC vs GraphQL, Kafka vs RabbitMQ) are
+<i>within</i>-layer choices that never touch the other four layers.</div>
+
+<div class="cap">rabbit · docs/knowledge · added 2026-07-17 (source: jay's 5-layer stack note pasted in session)</div>
+</div>
+</body>
+</html>
