@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blockspace Contention vs Linera Microchains</title>
+<style>
+  :root {
+    --bg: #f8fafc; --card: #ffffff; --ink: #0f172a; --muted: #64748b;
+    --accent: #2563eb; --green: #16a34a; --red: #dc2626; --amber: #d97706; --line: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px; background: var(--bg); color: var(--ink);
+         font-family: 'Inter', -apple-system, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 36px 0 10px; border-left: 4px solid var(--accent); padding-left: 10px; }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin: 14px 0; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 760px) { .duo { grid-template-columns: 1fr; } }
+  .cap { font-size: .85rem; color: var(--muted); margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #eef2ff; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+  .tag { display: inline-block; font-size: .75rem; padding: 1px 8px; border-radius: 999px; font-weight: 600; }
+  .tag.l2 { background: rgba(220,38,38,.1); color: var(--red); }
+  .tag.ln { background: rgba(22,163,74,.12); color: var(--green); }
+  .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; font-size: .9rem; }
+  svg { width: 100%; height: auto; display: block; }
+  .ko { color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Blockspace Contention vs Linera Microchains</h1>
+<div class="sub">Why an AI agent making 1,000 micro-transactions a minute cares about whose lane it drives in
+· <span class="ko">블록스페이스 경합 문제와 Linera의 마이크로체인 해법</span></div>
+
+<h2>1. The picture <span class="ko">한눈에 보는 구조</span></h2>
+<div class="duo">
+  <div class="panel">
+    <span class="tag l2">Shared L2 (e.g. Base)</span>
+    <svg viewBox="0 0 460 260" xmlns="http://www.w3.org/2000/svg" aria-label="Shared blockspace congestion">
+      <defs><style>
+        .b { fill:#fff; stroke:#94a3b8; stroke-width:1.5; }
+        .hot { fill:#fee2e2; stroke:#dc2626; stroke-width:2; }
+        .ag { fill:#dbeafe; stroke:#2563eb; stroke-width:2; }
+        .t { font:600 11px Inter,sans-serif; fill:#0f172a; text-anchor:middle; }
+        .s { font:500 10px Inter,sans-serif; fill:#64748b; text-anchor:middle; }
+        .e { stroke:#94a3b8; stroke-width:1.5; marker-end:url(#arr); }
+        .ehot { stroke:#dc2626; stroke-width:2.5; marker-end:url(#arrR); }
+      </style>
+      <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#94a3b8"/></marker>
+      <marker id="arrR" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#dc2626"/></marker>
+      </defs>
+      <rect class="hot" x="20"  y="20" width="120" height="30" rx="6"/><text class="t" x="80" y="39">NFT mint 🔥</text>
+      <rect class="hot" x="170" y="20" width="120" height="30" rx="6"/><text class="t" x="230" y="39">Meme coin 🔥</text>
+      <rect class="ag"  x="320" y="20" width="120" height="30" rx="6"/><text class="t" x="380" y="39">Your AI agent</text>
+      <line class="ehot" x1="80"  y1="50" x2="200" y2="110"/>
+      <line class="ehot" x1="230" y1="50" x2="225" y2="110"/>
+      <line class="e"    x1="380" y1="50" x2="250" y2="110"/>
+      <rect x="120" y="112" width="220" height="44" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+      <text class="t" x="230" y="130">ONE shared blockspace</text>
+      <text class="s" x="230" y="146">global gas auction — everyone bids</text>
+      <line class="e" x1="230" y1="156" x2="230" y2="196"/>
+      <rect class="b" x="95" y="198" width="270" height="40" rx="8"/>
+      <text class="t" x="230" y="215">Agent's fee &amp; latency spike 📈</text>
+      <text class="s" x="230" y="231">because of someone else's mint = blockspace contention</text>
+    </svg>
+    <div class="cap">All apps bid for the same blockspace. A viral mint raises gas for <i>everyone</i> —
+    including your agent. <span class="ko">남의 이벤트가 내 에이전트 비용을 올림 = 블록스페이스 경합.</span></div>
+  </div>
+  <div class="panel">
+    <span class="tag ln">Linera microchains</span>
+    <svg viewBox="0 0 460 260" xmlns="http://www.w3.org/2000/svg" aria-label="Linera microchains isolation">
+      <defs><style>
+        .lane { fill:#f0fdf4; stroke:#16a34a; stroke-width:1.5; }
+        .laneg { fill:#f8fafc; stroke:#cbd5e1; stroke-width:1.2; }
+        .lt { font:600 11px Inter,sans-serif; fill:#0f172a; text-anchor:middle; }
+        .ls { font:500 10px Inter,sans-serif; fill:#64748b; text-anchor:middle; }
+      </style></defs>
+      <rect class="laneg" x="20"  y="20" width="130" height="150" rx="8"/>
+      <text class="lt" x="85" y="42">NFT mint chain</text>
+      <text class="ls" x="85" y="60">busy 🔥</text>
+      <rect class="laneg" x="165" y="20" width="130" height="150" rx="8"/>
+      <text class="lt" x="230" y="42">Meme coin chain</text>
+      <text class="ls" x="230" y="60">busy 🔥</text>
+      <rect class="lane" x="310" y="20" width="130" height="150" rx="8"/>
+      <text class="lt" x="375" y="42">Agent's microchain</text>
+      <text class="ls" x="375" y="60">quiet — own lane ✅</text>
+      <text class="ls" x="85"  y="120">their congestion</text>
+      <text class="ls" x="85"  y="136">stays here</text>
+      <text class="ls" x="230" y="120">their congestion</text>
+      <text class="ls" x="230" y="136">stays here</text>
+      <text class="ls" x="375" y="120">1,000 micro-tx/min</text>
+      <text class="ls" x="375" y="136">flat cost &amp; latency</text>
+      <rect x="20" y="190" width="420" height="48" rx="8" fill="#ecfdf5" stroke="#16a34a" stroke-width="2"/>
+      <text class="lt" x="230" y="209">ONE shared validator set secures ALL microchains (in parallel)</text>
+      <text class="ls" x="230" y="226">isolation of performance, not of security</text>
+    </svg>
+    <div class="cap">Each user/app gets its <b>own microchain</b> — "a private driveway to the destination."
+    Other chains' congestion never touches yours. <span class="ko">성능은 격리, 보안은 공유.</span></div>
+  </div>
+</div>
+
+<h2>2. How a tx flows — sequence <span class="ko">트랜잭션 흐름 비교</span></h2>
+<div class="panel">
+<svg viewBox="0 0 920 210" xmlns="http://www.w3.org/2000/svg" aria-label="Transaction flow comparison">
+  <defs><style>
+    .fb { fill:#fff; stroke:#94a3b8; stroke-width:1.5; }
+    .fr { fill:#fee2e2; stroke:#dc2626; stroke-width:1.5; }
+    .fg { fill:#dcfce7; stroke:#16a34a; stroke-width:1.5; }
+    .ft { font:600 11px Inter,sans-serif; fill:#0f172a; text-anchor:middle; }
+    .fs { font:500 10px Inter,sans-serif; fill:#64748b; text-anchor:middle; }
+    .fe { stroke:#94a3b8; stroke-width:1.5; marker-end:url(#farr); }
+  </style>
+  <marker id="farr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#94a3b8"/></marker>
+  </defs>
+  <text class="ft" x="60" y="40" text-anchor="start">Shared L2</text>
+  <rect class="fb" x="150" y="22" width="110" height="30" rx="6"/><text class="ft" x="205" y="41">agent sends tx</text>
+  <line class="fe" x1="260" y1="37" x2="310" y2="37"/>
+  <rect class="fr" x="312" y="22" width="130" height="30" rx="6"/><text class="ft" x="377" y="41">public mempool</text>
+  <line class="fe" x1="442" y1="37" x2="492" y2="37"/>
+  <rect class="fr" x="494" y="22" width="130" height="30" rx="6"/><text class="ft" x="559" y="41">gas auction 💸</text>
+  <line class="fe" x1="624" y1="37" x2="674" y2="37"/>
+  <rect class="fb" x="676" y="22" width="130" height="30" rx="6"/><text class="ft" x="741" y="41">sequencer includes</text>
+  <text class="fs" x="480" y="75">wait time &amp; fee depend on EVERYONE's activity</text>
+
+  <text class="ft" x="60" y="135" text-anchor="start">Linera</text>
+  <rect class="fb" x="150" y="117" width="150" height="30" rx="6"/><text class="ft" x="225" y="136">agent (chain owner)</text>
+  <line class="fe" x1="300" y1="132" x2="350" y2="132"/>
+  <rect class="fg" x="352" y="117" width="180" height="30" rx="6"/><text class="ft" x="442" y="136">proposes block on OWN chain</text>
+  <line class="fe" x1="532" y1="132" x2="582" y2="132"/>
+  <rect class="fg" x="584" y="117" width="150" height="30" rx="6"/><text class="ft" x="659" y="136">validators certify ⚡</text>
+  <text class="fs" x="480" y="170">no mempool race, no gas auction — owner writes, validators check</text>
+  <text class="fs" x="480" y="188">cross-chain effects travel as async messages between microchains</text>
+</svg>
+<div class="cap">On a single-owner microchain the owner <b>proposes blocks directly</b> — there is no mempool
+competition to price you out. <span class="ko">멤풀 경쟁·가스 경매 자체가 없음. 체인 간 상호작용은 비동기 메시지.</span></div>
+</div>
+
+<h2>3. Side-by-side <span class="ko">비교표</span></h2>
+<div class="panel">
+<table>
+  <tr><th></th><th><span class="tag l2">Shared L2 (Base 등)</span></th><th><span class="tag ln">Linera</span></th></tr>
+  <tr><td>Blockspace</td><td>One lane shared by all apps</td><td><b>One microchain per user/app</b> — elastic, created on demand</td></tr>
+  <tr><td>Fee behavior</td><td>Global gas auction → spikes on others' activity</td><td>Isolated per chain → flat, predictable (key for micro-tx agents)</td></tr>
+  <tr><td>Latency under load</td><td>Degrades for everyone</td><td>Unaffected by other chains' load</td></tr>
+  <tr><td>Security</td><td>Shared sequencer/L1 settlement</td><td><b>Same validator set secures all microchains</b> — isolation is of performance, not security</td></tr>
+  <tr><td>Cross-app calls</td><td>Synchronous, same block (composability)</td><td><b>Async messages</b> between microchains — composability is the trade-off</td></tr>
+  <tr><td>Programming model</td><td>EVM / Solidity — huge ecosystem</td><td>Rust / Wasm SDK — young ecosystem</td></tr>
+  <tr><td>Maturity</td><td>Production, deep liquidity</td><td>Early stage (testnet era) — evaluate before depending on it</td></tr>
+</table>
+</div>
+
+<h2>4. Why this matters for agent payments <span class="ko">에이전트 결제와의 연결</span></h2>
+<div class="panel">
+  <p>An x402-style agent (see <b>ap2-test / agentic-aa</b> in <code>docs/features/</code>) making
+  <b>1,000 micro-payments a minute</b> needs <b>flat, predictable fees</b> — a $0.01 data purchase
+  can't tolerate a $0.30 gas spike caused by someone's meme coin. Shared-blockspace L2s make agent
+  economics <i>hostage to unrelated traffic</i>; per-app chains (Linera microchains — or, less
+  radically, an app-dedicated rollup/subnet like §17's Avalanche Evergreen) restore cost isolation.</p>
+  <p class="ko">마이크로 결제 에이전트의 손익은 수수료 예측 가능성에 달려 있음 — 공유 블록스페이스에선 남의 트래픽이
+  내 원가를 결정. 전용 체인(마이크로체인/서브넷/앱 롤업)이 이를 격리함.</p>
+  <div class="note"><b>Spectrum, not binary:</b> cost isolation comes in degrees —
+  shared L2 → app-dedicated rollup/subnet (Avalanche Evergreen, §17) → per-<i>user</i> microchain
+  (Linera). Linera is the extreme end: even your app's other users can't congest you.</div>
+</div>
+
+<h2>5. One-line takeaway <span class="ko">한 줄 요약</span></h2>
+<div class="panel">
+  <b>Shared blockspace means shared congestion; Linera gives every user their own lane —
+  performance isolated, security still shared.</b>
+  <div class="ko" style="margin-top:6px">공유 블록스페이스는 혼잡도 공유를 뜻한다; Linera는 사용자마다 전용 차선을 주어
+  성능은 격리하고 보안은 계속 공유한다.</div>
+</div>
+
+<div class="cap" style="margin-top:24px">rabbit · docs/knowledge · added 2026-07-17 (source: jay's Linera note — learning page + flow chart request)</div>
+</div>
+</body>
+</html>

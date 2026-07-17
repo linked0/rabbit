@@ -17,6 +17,13 @@ then summarize the built result into `docs/history/`.
 | Verex | ↗ external | [verex-link.md](verex-link.md) |
 | _UI/UX_ | — | [ui-ux.md](ui-ux.md) — 디자인 접근법: frontend-design 스킬 + UI/UX Pro Max + 6단계 빌드 워크플로 |
 | _Cross-cutting_ | — | [common.md](common.md) — navigation/top-menu (Common #1) + CI/CD (Common #2) |
+| _DSRV Portal_ | — (backlog) | [dsrv-portal.md](dsrv-portal.md) — institutional custody study (MPC · approval flow · AA · AML) + no-VASP PoC items |
+| _PET Clean Room_ | — (backlog) | [pet-clean-room.md](pet-clean-room.md) — homomorphic-encryption data clean room study (DESILO/국립암센터 case) + hands-on FHE PoC items |
+| _Zapier MCP_ | `/etc/zapier` (planned) | [zapier-mcp.md](zapier-mcp.md) — sample page: agent triggers real app actions (Gmail/Notion/Slack) via Zapier MCP |
+| _Agentic AA_ | `/etc` (extends §7 demo) | [agentic-aa.md](agentic-aa.md) — 4-pillar AA demo for agent payments: session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix |
+| _Solana_ | `/etc/solana` (planned) | [solana.md](solana.md) — Solana integration study + sample Anchor program (counter → SPL escrow) on devnet, called from a demo page |
+| _KB Hybrid Payment_ | — (reference only) | [kb-hybrid-payment-flow.md](kb-hybrid-payment-flow.md) — flow map: TradFi card rail (ISO 8583) × on-chain settlement (Avalanche subnet); no dev item |
+| _CRE × Cloud_ | — (reference only) | [cre-cloud.md](cre-cloud.md) — 4 hybrid patterns (RWA servicing · PoR · DvP · AI prediction-market settlement): cloud = private truth, CRE = verified bridge, chain = settlement |
 
 > **Knowledge 메뉴는 일시 제거됨** — 콘텐츠는 `docs/know.html`(로컬 `file://`로 열람). 필요 시 복원. (앱 측 메뉴/라우트 제거는 PR #18에 포함.)
 

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merkle Tree vs Verkle Tree</title>
+<style>
+  :root {
+    --bg: #f8fafc; --card: #ffffff; --ink: #0f172a; --muted: #64748b;
+    --accent: #2563eb; --green: #16a34a; --amber: #d97706; --line: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px; background: var(--bg); color: var(--ink);
+         font-family: 'Inter', -apple-system, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 36px 0 10px; border-left: 4px solid var(--accent); padding-left: 10px; }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin: 14px 0; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 760px) { .duo { grid-template-columns: 1fr; } }
+  .cap { font-size: .85rem; color: var(--muted); margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #eef2ff; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+  .tag { display: inline-block; font-size: .75rem; padding: 1px 8px; border-radius: 999px; font-weight: 600; }
+  .tag.m { background: rgba(37,99,235,.12); color: var(--accent); }
+  .tag.v { background: rgba(22,163,74,.12); color: var(--green); }
+  .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; font-size: .9rem; }
+  svg { width: 100%; height: auto; display: block; }
+  .ko { color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Merkle Tree vs Verkle Tree</h1>
+<div class="sub">Why Ethereum's roadmap (The Verge) replaces hash-sibling proofs with vector commitments
+· <span class="ko">머클 트리와 버클 트리 비교 — 증명 크기가 핵심</span></div>
+
+<h2>1. Structure &amp; proof — the picture <span class="ko">구조와 증명</span></h2>
+<div class="duo">
+  <div class="panel">
+    <span class="tag m">Merkle</span>
+    <svg viewBox="0 0 460 240" xmlns="http://www.w3.org/2000/svg" aria-label="Merkle tree proof diagram">
+      <defs>
+        <style>
+          .n { fill:#fff; stroke:#94a3b8; stroke-width:1.5; rx:6; }
+          .path { fill:#dbeafe; stroke:#2563eb; stroke-width:2; }
+          .sib { fill:#fef3c7; stroke:#d97706; stroke-width:2; }
+          .t { font: 600 11px Inter, sans-serif; fill:#0f172a; text-anchor:middle; }
+          .e { stroke:#cbd5e1; stroke-width:1.4; }
+          .ep { stroke:#2563eb; stroke-width:2.2; }
+        </style>
+      </defs>
+      <!-- edges -->
+      <line class="ep" x1="230" y1="52" x2="120" y2="112"/><line class="e" x1="230" y1="52" x2="340" y2="112"/>
+      <line class="e" x1="120" y1="132" x2="65" y2="192"/><line class="ep" x1="120" y1="132" x2="175" y2="192"/>
+      <line class="e" x1="340" y1="132" x2="285" y2="192"/><line class="e" x1="340" y1="132" x2="395" y2="192"/>
+      <!-- nodes -->
+      <rect class="path" x="195" y="30" width="70" height="24" rx="6"/><text class="t" x="230" y="46">Root</text>
+      <rect class="path" x="85"  y="110" width="70" height="24" rx="6"/><text class="t" x="120" y="126">H(AB)</text>
+      <rect class="sib" x="305" y="110" width="70" height="24" rx="6"/><text class="t" x="340" y="126">H(CD) ★</text>
+      <rect class="sib" x="30"  y="190" width="70" height="24" rx="6"/><text class="t" x="65"  y="206">A (leaf) ★</text>
+      <rect class="path" x="140" y="190" width="70" height="24" rx="6"/><text class="t" x="175" y="206">B (leaf)</text>
+      <rect class="n" x="250" y="190" width="70" height="24" rx="6"/><text class="t" x="285" y="206">C (leaf)</text>
+      <rect class="n" x="360" y="190" width="70" height="24" rx="6"/><text class="t" x="395" y="206">D (leaf)</text>
+    </svg>
+    <div class="cap">Proving leaf <b>B</b>: you must ship every <b>★ sibling hash</b> on the way up
+    (log₂ n hashes; 16-ary MPT ships up to 15 siblings <i>per level</i>).
+    <span class="ko">형제 해시를 전부 동봉해야 루트를 재계산할 수 있음.</span></div>
+  </div>
+  <div class="panel">
+    <span class="tag v">Verkle</span>
+    <svg viewBox="0 0 460 300" xmlns="http://www.w3.org/2000/svg" aria-label="Verkle tree proof diagram">
+      <defs>
+        <style>
+          .vn { fill:#dcfce7; stroke:#16a34a; stroke-width:2; }
+          .vg { fill:#f1f5f9; stroke:#cbd5e1; stroke-width:1; }
+          .vt { font: 600 11px Inter, sans-serif; fill:#0f172a; text-anchor:middle; }
+          .vs { font: 500 10px Inter, sans-serif; fill:#64748b; text-anchor:middle; }
+          .ve { stroke:#cbd5e1; stroke-width:1.2; }
+          .vp { stroke:#16a34a; stroke-width:2.2; }
+        </style>
+      </defs>
+      <!-- root commitment -->
+      <line class="vp" x1="230" y1="54" x2="145" y2="122"/>
+      <line class="ve" x1="230" y1="54" x2="60"  y2="122"/><line class="ve" x1="230" y1="54" x2="315" y2="122"/><line class="ve" x1="230" y1="54" x2="400" y2="122"/>
+      <line class="vp" x1="145" y1="146" x2="145" y2="212"/>
+      <line class="ve" x1="145" y1="146" x2="60" y2="212"/><line class="ve" x1="145" y1="146" x2="230" y2="212"/>
+      <rect class="vn" x="180" y="30" width="100" height="24" rx="6"/><text class="vt" x="230" y="46">C₀ = Commit(root)</text>
+      <rect class="vg" x="25"  y="120" width="70" height="24" rx="6"/><text class="vs" x="60"  y="136">child 0…</text>
+      <rect class="vn" x="110" y="120" width="70" height="24" rx="6"/><text class="vt" x="145" y="136">C₁</text>
+      <rect class="vg" x="280" y="120" width="70" height="24" rx="6"/><text class="vs" x="315" y="136">…</text>
+      <rect class="vg" x="365" y="120" width="70" height="24" rx="6"/><text class="vs" x="400" y="136">child 255</text>
+      <rect class="vg" x="25"  y="210" width="70" height="24" rx="6"/><text class="vs" x="60"  y="226">…</text>
+      <rect class="vn" x="110" y="210" width="70" height="24" rx="6"/><text class="vt" x="145" y="226">value v</text>
+      <rect class="vg" x="195" y="210" width="70" height="24" rx="6"/><text class="vs" x="230" y="226">…</text>
+      <rect x="70" y="252" width="320" height="36" rx="8" fill="#ecfdf5" stroke="#16a34a" stroke-dasharray="4 3"/>
+      <text class="vt" x="230" y="274">π — ONE aggregated opening proof (~150 B), no siblings</text>
+    </svg>
+    <div class="cap">Each node is a <b>vector commitment</b> over 256 children. A commitment can be
+    <b>opened directly at index i</b> — no siblings needed; all levels aggregate into one tiny proof π.
+    <span class="ko">형제 노드 없이 인덱스 열림 증명 하나로 끝.</span></div>
+  </div>
+</div>
+
+<h2>2. Side-by-side <span class="ko">비교표</span></h2>
+<div class="panel">
+<table>
+  <tr><th></th><th><span class="tag m">Merkle (/ Merkle-Patricia)</span></th><th><span class="tag v">Verkle</span></th></tr>
+  <tr><td>Node primitive</td><td>Hash (Keccak/SHA-256) of children</td><td><b>Vector commitment</b> (Ethereum: Pedersen + IPA on Bandersnatch; KZG is the alternative)</td></tr>
+  <tr><td>Node width</td><td>2 (classic) / 16 (Ethereum MPT)</td><td>256 — tree is much shallower</td></tr>
+  <tr><td>Proof contains</td><td>All <b>sibling hashes</b> per level</td><td>Path commitments + <b>one aggregated opening proof</b> — no siblings</td></tr>
+  <tr><td>Proof size (state-scale)</td><td>~3–4 KB per key in Ethereum's MPT (worse with depth)</td><td>~150–200 bytes per key; multiproof amortizes across many keys</td></tr>
+  <tr><td>Verify cost</td><td>A few hashes — very cheap</td><td>Elliptic-curve ops — heavier CPU, but bandwidth is the bottleneck being solved</td></tr>
+  <tr><td>Post-quantum</td><td>Hash-based → holds up</td><td>EC-based → <b>not</b> PQ-safe (known trade-off; PQ successors researched)</td></tr>
+  <tr><td>Update cost</td><td>Recompute path hashes — cheap</td><td>Commitment updates are homomorphic (add a delta) — fine, but more math</td></tr>
+  <tr><td>Where used</td><td>Bitcoin block txs · Ethereum state today (MPT) · certificate transparency · airdrops/allowlists</td><td>Ethereum roadmap "<b>The Verge</b>" — statelessness; no major mainnet yet</td></tr>
+</table>
+</div>
+
+<h2>3. Why Ethereum wants it <span class="ko">왜 필요한가</span></h2>
+<div class="panel">
+  <p><b>Stateless clients.</b> Today a validator needs the full state (hundreds of GB) to execute a block.
+  If every block instead carries a <b>witness</b> — proofs for exactly the state it touches — validators
+  could verify with no local state. With MPT proofs that witness is <b>hundreds of MB–GB scale</b> (too big);
+  with Verkle it drops to <b>a few hundred KB–MB</b> — small enough to gossip with the block.</p>
+  <p class="ko">블록에 "그 블록이 만지는 상태의 증명(witness)"을 동봉해 무상태 검증을 가능하게 하는 것이 목적.
+  머클 증명으론 witness가 너무 커서 불가능하고, 버클로는 블록과 함께 전파 가능한 크기가 됨.</p>
+  <div class="note"><b>Name:</b> Verkle = <b>V</b>ector commitment + M<b>erkle</b> (Kuszmaul, 2018).
+  Same tree idea — only the "how do I prove a child belongs to its parent" primitive changes,
+  and that one change is what collapses the proof size.</div>
+</div>
+
+<h2>4. One-line takeaway <span class="ko">한 줄 요약</span></h2>
+<div class="panel">
+  <b>Merkle proves membership by shipping the neighbors; Verkle proves it by opening a commitment —
+  so the proof stops growing with the tree's width and barely grows with its depth.</b>
+  <div class="ko" style="margin-top:6px">머클은 이웃(형제 해시)을 동봉해 증명하고, 버클은 커밋먼트를 열어 증명한다 —
+  그래서 증명 크기가 트리 폭과 무관해지고 깊이에도 거의 영향받지 않는다.</div>
+</div>
+
+<div class="cap" style="margin-top:24px">rabbit · docs/knowledge · added 2026-07-17 (source: jay's Merkle/Verkle note — flow-map/comparison request)</div>
+</div>
+</body>
+</html>
