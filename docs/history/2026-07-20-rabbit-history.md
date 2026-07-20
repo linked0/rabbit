@@ -11,6 +11,14 @@ pick an arbitrary file. Carried along jay's pending content edit (Jul 17 history
 added, two Jun 26/29 cards removed). `public/know.html` (the copy the Next app serves at
 `/know.html`) is untouched, so the app route and middleware allowlist still work.
 
+### Gotcha: Pages deploys from gh-pages, not main
+
+`gh api repos/linked0/rabbit/pages` shows the Pages source is branch **`gh-pages`**,
+path `/docs` — pushing `main` alone never updates the site. No sync workflow exists;
+`gh-pages` was a stale ancestor of `main`, so deploying = fast-forward push
+`git push origin main:gh-pages`. Verified live afterwards: site root serves the
+knowledge-base page; old `/know.html` returns 404.
+
 ### Fix back-links after the rename
 
 Updated `../know.html` → `../index.html` in `docs/db.html` and
