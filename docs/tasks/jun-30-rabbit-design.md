@@ -65,6 +65,14 @@ settlement example, and an **ETC ERC-7702 / 7715** demo.
 
 ## 3. Market page — Hyperliquid orderbook + indices <a id="s3"></a>
 <sub>[↑ TOC](#toc)</sub>
+- **Canonical advanced implementation detail (2026-07-20):**
+  [Hyperliquid advanced market and trading](details/hyperliquid-advanced-market.md). It refines the
+  historical notes below into a network-safe workspace, WebSocket lifecycle, typed data model,
+  direct-signing and agent-wallet phases, validation rules, recovery behavior, tests, and release
+  gates. Use the detailed page for new implementation work; keep this section as the decision log.
+- **Latest product decision (2026-07-20, ✅ applied to `/market`):** the default is now **ETH perp**,
+  not ETC. Build a simple Hyperliquid-backed HTS, prove direct MetaMask trading on testnet, then release a guarded
+  mainnet direct-trading mode. The existing ETC references below remain historical context.
 - **Status: 🟡 In progress** (display done · trading to do)
   - ✅ **Done** (2026-07-07) — orderbook (ETC perp, REST 5s poll) + index cards on `/market`;
     3-P2 prep (research, 2a/2b decision, Phase 2a spec, HL-TEST wallet + testnet mock USDC)
