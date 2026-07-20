@@ -19,6 +19,15 @@ path `/docs` — pushing `main` alone never updates the site. No sync workflow e
 `git push origin main:gh-pages`. Verified live afterwards: site root serves the
 knowledge-base page; old `/know.html` returns 404.
 
+### Hackathon entry: CarrotPay idea + design doc
+
+Wrote [tasks/details/jul-20-solana-hackathon-design.md](../tasks/details/jul-20-solana-hackathon-design.md) for
+the Google Cloud × Solana AI Agentic Hackathon (submission Aug 3, demo day Aug 21): an AI agent
+with its own devnet wallet paying per-call for data (x402 loop) under a user-granted spend
+mandate — the merge point of the existing ap2-test.md and solana.md designs. Work items W0–W8,
+server-side mandate MVP, on-chain PDA mandate as stretch. Branch `claude/solana-hackathon`,
+uncommitted for review.
+
 ### Fix back-links after the rename
 
 Updated `../know.html` → `../index.html` in `docs/db.html` and
