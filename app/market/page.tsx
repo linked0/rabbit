@@ -1,4 +1,5 @@
 import Nav from "../Nav";
+import TradePanel from "./TradePanel";
 import OrderBook from "./OrderBook";
 import IndexCards from "../summary/IndexCards";
 import { getLang } from "@/lib/lang";
@@ -22,6 +23,7 @@ export default function MarketPage() {
             "Hyperliquid ETH perp order book + BTC · ETH · S&P 500 · KOSPI"
           )}
         </p>
+        <TradePanel coin="ETH" />
         <OrderBook coin="ETH" />
         <IndexCards />
       </main>

@@ -153,6 +153,12 @@ once funded. To trade from `/market` with jay's MetaMask account:
 - **Done when:** on testnet, connect → place a small ETC/ETH limit order (MetaMask popup) → see it
   in open orders and on app.hyperliquid-testnet.xyz → cancel it → position/balance update.
 
+  ### July 21 Request
+  #### Trading
+  - A user can trade hyperliquid perp products in Market page on testnet with some test account that already have mock USDC in hyperliquid testnet. The account should be on .env or somewhere that you can recommend.
+  - It should be on the top before the ETH Perp information section.
+  - You can create default setting inputs and buttons as basic if I don't provide UI.
+  
 ## 4. Knowledge page — serve `know.html` (Fix: No content) <a id="s4"></a>
 <sub>[↑ TOC](#toc)</sub>
 - **Status: ✅ Done** (2026-06-30; menu item later removed per jay — see note below)
@@ -182,6 +188,8 @@ Knowledge menu item + `/knowledge` route were **removed** from the app; its cont
   even if the paths were corrected. Plan: **fix** the one served link (`management.md` →
   `/knowledge/management.md`) and **neutralize the rest** (strip dead local `href`s, keep the text).
   Pending jay's go-ahead.
+
+
 
 ## 5. AI Chat — KB via MCP + RAG <a id="s5"></a>
 <sub>[↑ TOC](#toc)</sub>

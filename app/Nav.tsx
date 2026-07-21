@@ -31,31 +31,33 @@ export default async function Nav() {
   const lang = getLang();
 
   return (
-    <div className="topbar" style={{ justifyContent: "space-between" }}>
-      <NavLinks items={items} />
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <LangToggle />
-        <ThemeToggle />
-        {loggedIn ? (
-          <>
-            <span className="muted">👤 {session?.user?.email}</span>
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/" });
-              }}
-            >
-              <button className="ghost" type="submit">
-                {pick(lang, "로그아웃", "Sign out")}
-              </button>
-            </form>
-          </>
-        ) : (
-          <Link className="ghost" href="/login">
-            {pick(lang, "로그인", "Sign in")}
-          </Link>
-        )}
+    <header className="site-header">
+      <div className="topbar" style={{ justifyContent: "space-between" }}>
+        <NavLinks items={items} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <LangToggle />
+          <ThemeToggle />
+          {loggedIn ? (
+            <>
+              <span className="muted">👤 {session?.user?.email}</span>
+              <form
+                action={async () => {
+                  "use server";
+                  await signOut({ redirectTo: "/" });
+                }}
+              >
+                <button className="ghost" type="submit">
+                  {pick(lang, "로그아웃", "Sign out")}
+                </button>
+              </form>
+            </>
+          ) : (
+            <Link className="ghost" href="/login">
+              {pick(lang, "로그인", "Sign in")}
+            </Link>
+          )}
+        </div>
       </div>
-    </div>
+    </header>
   );
 }
