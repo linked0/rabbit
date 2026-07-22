@@ -12,7 +12,7 @@ export default function LangToggle() {
       aria-label="언어 전환 / Toggle language"
       title={lang === "ko" ? "Switch to English" : "한국어로 전환"}
     >
-      {lang === "ko" ? "EN" : "한국어"}
+      {lang === "ko" ? "EN" : "KO"}
     </button>
   );
 }

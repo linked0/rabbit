@@ -2,7 +2,8 @@
 # rabbit → GCP Cloud Run 배포 (docs/tasks §6 / README §9). 재실행 안전(idempotent).
 # 사용법:
 #   1) scripts/deploy.env.example → scripts/deploy.env 복사 후 PROJECT_ID 등 입력
-#   2) ./scripts/deploy.sh
+#   2) ./scripts/deploy.sh prod   # 운영 서비스(rabbit) — 허용 메뉴만(ALLOW_* 필터) — 기본
+#      ./scripts/deploy.sh test   # 테스트 서비스(rabbit-test) — 전체 메뉴
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -15,7 +16,17 @@ source .env.local         # AUTH_SECRET, AUTH_GOOGLE_*, AI_*, MARKET_API_KEY, AL
 
 : "${PROJECT_ID:?deploy.env에 PROJECT_ID가 필요합니다}"
 REGION=${REGION:-asia-northeast3}
-SERVICE=${SERVICE:-rabbit}
+SERVICE=${SERVICE:-rabbit}                  # 운영(필터) 서비스
+TEST_SERVICE=${TEST_SERVICE:-rabbit-test}   # 테스트(전체 메뉴) 서비스
+
+# 대상: prod(기본)=운영(허용 메뉴만) / test=테스트(전체 메뉴). 서로 다른 Cloud Run 서비스.
+TARGET="${1:-prod}"
+case "$TARGET" in
+  prod) DEPLOY_SERVICE="$SERVICE";      MENU_SHOW_ALL="false" ;;
+  test) DEPLOY_SERVICE="$TEST_SERVICE"; MENU_SHOW_ALL="true" ;;
+  *) echo "❌ 사용법: ./scripts/deploy.sh [prod|test]"; exit 1 ;;
+esac
+echo "▶ 배포 대상: $TARGET (서비스=$DEPLOY_SERVICE, 전체메뉴표시=$MENU_SHOW_ALL)"
 
 echo "▶ gcloud 프로젝트/API 설정 ($PROJECT_ID)"
 gcloud config set project "$PROJECT_ID" >/dev/null
@@ -58,20 +69,27 @@ echo "▶ Cloud Run 배포"
 SECRETS="AUTH_SECRET=rabbit-auth-secret:latest,AUTH_GOOGLE_ID=rabbit-google-id:latest,AUTH_GOOGLE_SECRET=rabbit-google-secret:latest,AI_API_KEY=rabbit-ai-key:latest,MARKET_API_KEY=rabbit-market-key:latest"
 [ -n "${DATABASE_URL:-}" ] && SECRETS="$SECRETS,DATABASE_URL=rabbit-database-url:latest"
 
+# 메뉴 표시 플래그(ALLOW_*)를 .env.local 에서 읽어 Cloud Run env 로 전달한다.
+# 클라우드는 기본 "숨김"이라 전달하지 않으면 모든 메뉴가 사라진다. 나중에 추가한 ALLOW_* 도 자동 포함.
+MENU_ENV=""
+for v in $(compgen -v | grep '^ALLOW_' || true); do
+  MENU_ENV="${MENU_ENV},${v}=${!v}"
+done
+
 # 앱이 자체 Google 로그인 + 이메일 allowlist로 접근을 제어하므로 공개로 배포한다.
 # (README §9의 IAP 방식을 쓰려면 --no-allow-unauthenticated + IAP 활성화로 변경)
 # HL_ACCOUNT_ADDRESS(공개 주소, 비밀 아님)는 env로 — 퍼프 포지션 표시(Task 3, 선택)
-gcloud run deploy "$SERVICE" \
+gcloud run deploy "$DEPLOY_SERVICE" \
   --source . \
   --region "$REGION" \
   --allow-unauthenticated \
-  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},AI_PROVIDER=${AI_PROVIDER:-openai},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-}" \
+  --set-env-vars "APP_MODE=cloud,MENU_SHOW_ALL=${MENU_SHOW_ALL},SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},AI_PROVIDER=${AI_PROVIDER:-openai},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-}${MENU_ENV}" \
   --set-secrets "$SECRETS"
 
 # Cloud SQL 연결 — deploy.env에 CLOUDSQL_INSTANCE=프로젝트:리전:인스턴스 설정 시
 if [ -n "${CLOUDSQL_INSTANCE:-}" ]; then
   echo "▶ Cloud SQL 소켓 연결: $CLOUDSQL_INSTANCE"
-  gcloud run services update "$SERVICE" --region "$REGION" \
+  gcloud run services update "$DEPLOY_SERVICE" --region "$REGION" \
     --add-cloudsql-instances "$CLOUDSQL_INSTANCE" >/dev/null
 fi
 
@@ -79,9 +97,14 @@ fi
 # status.url(=…-<hash>-<region>.a.run.app)을 쓰면 로그인 시작 호스트와 콜백 호스트가
 # 달라져 Auth.js PKCE 쿠키가 유실된다(InvalidCheck → Configuration 500).
 # OAuth 클라이언트의 redirect URI도 반드시 이 도메인으로 등록할 것.
-URL="https://${SERVICE}-${PROJECT_NUMBER}.${REGION}.run.app"
+# AUTH_URL: prod에 커스텀 도메인(PROD_URL)이 있으면 그것, 없으면 run.app 고정 도메인.
+if [ "$TARGET" = "prod" ] && [ -n "${PROD_URL:-}" ]; then
+  URL="$PROD_URL"
+else
+  URL="https://${DEPLOY_SERVICE}-${PROJECT_NUMBER}.${REGION}.run.app"
+fi
 echo "▶ AUTH_URL=$URL 적용 (고정 도메인)"
-gcloud run services update "$SERVICE" --region "$REGION" --update-env-vars "AUTH_URL=$URL" >/dev/null
+gcloud run services update "$DEPLOY_SERVICE" --region "$REGION" --update-env-vars "AUTH_URL=$URL" >/dev/null
 
 echo
 echo "✅ 배포 완료: $URL"
