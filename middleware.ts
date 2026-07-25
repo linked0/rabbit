@@ -1,19 +1,16 @@
-import { auth } from "@/auth";
+import { auth, isOwnerEmail } from "@/auth";
 
-// 라우트 가드 (plan §2): 공개 랜딩/로그인 외 전부 인증 필요 → 미인증 시 /login
-// Target IA 메뉴는 전부 보인다. 단, 진입 시 로그인 필요: /portfolio, /chat.
+// 라우트 가드. 공개 표면은 딱 여기 적힌 것뿐이고, 나머지는 전부 오너
+// (= ALLOWED_EMAILS 의 구글 계정) 로그인 필요 → 아니면 /login (2026-07-25, jay).
+// app/Nav.tsx 의 `pub` 플래그와 짝을 이룬다 — 메뉴에서 숨긴 페이지는 URL 직접 입력도 막힌다.
 const PUBLIC_PATHS = new Set([
   "/",
-  "/know.html",
   "/login",
-  "/game",
-  "/market",
-  "/ap2",
-  "/xyz",
-  "/jayverse",
-  "/api/relay", // C4 관찰자 대시보드용 공개 relay 프록시 (키 불필요)
-  "/api/indices", // /market(공개)의 지수 카드용 — 공개 시세, 업스트림 60초 캐시
-  "/api/orderbook", // /market(공개)의 Hyperliquid L2 북용 — 공개 info API
+  "/market", // 공개 시세만 — 메뉴에도 항상 노출 (Nav pub)
+  "/xyz", // C4 관찰자 대시보드 — 공개 데이터만 (Nav pub)
+  "/api/relay", // /xyz 용 공개 relay 프록시 (키 불필요)
+  "/api/indices", // /market 의 지수 카드용 — 공개 시세, 업스트림 60초 캐시
+  "/api/orderbook", // /market 의 Hyperliquid L2 북용 — 공개 info API
 ]);
 
 export default auth((req) => {
@@ -21,7 +18,7 @@ export default auth((req) => {
   // /home(= www.jaylabs.xyz 홈, Task 5)은 공개 — 정확히 /home 과 /home/* 만 (느슨한 prefix 방지)
   const isHome = pathname === "/home" || pathname.startsWith("/home/");
   if (PUBLIC_PATHS.has(pathname) || isHome || pathname.startsWith("/api/auth/")) return;
-  if (!req.auth?.user) {
+  if (!isOwnerEmail(req.auth?.user?.email)) {
     return Response.redirect(new URL("/login", req.nextUrl));
   }
 });
