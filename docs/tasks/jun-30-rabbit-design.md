@@ -54,6 +54,14 @@ settlement example, and an **ETC ERC-7702 / 7715** demo.
     reachable at `localhost`). On the **cloud deployment** it's **shown but disabled** (no hosted OSS
     model provisioned yet) → selecting it there shows "not available in cloud yet".
   - **jay (`linked0@gmail.com`)** uses the **server-stored API key** for the proprietary LLM (no paste).
+  - **Public "About me" path (couples with [§5b](#s5b)) — new:** the About-me RAG mode targets **keyless
+    public visitors** (potential employers/clients), so it can neither require BYO-key nor reach the
+    email-gated jay key as-is, and today `/chat` + `/api/chat` are **login-gated** in `middleware.ts`
+    (a visitor can't even open the chat). Reconcile here: add a **server-keyed, rate-limited,
+    budget-capped** path **scoped to the About-me system prompt** (not general chat), reachable
+    **without login** (add the route to `PUBLIC_PATHS`). General chat stays BYO-key. **Open (jay):**
+    power it with jay's server key + abuse caps, a cheap hosted small model, or keep it login-only
+    for now.
 - **Design:** `lib/ai.ts` already abstracts providers. Add a key/source resolver:
   `jay → env secret` · `other user → own key, persisted per user, **encrypted at rest**` ·
   `Local LLM → enabled in local mode (Ollama at localhost), disabled in cloud`.
@@ -205,6 +213,35 @@ Knowledge menu item + `/knowledge` route were **removed** from the app; its cont
     do RAG directly in `/api/chat` and keep MCP for tool-calling.)
   - Flow: question → retrieve top-k chunks → inject into prompt → LLM answers **with citations**.
 - **Open:** embedding model (local `nomic-embed` vs OpenAI), vector store, MCP-tool vs in-route RAG.
+
+### 5b. Ask about me (RAG) — ✅ Done (2026-07-25) <a id="s5b"></a>
+- **Status: ✅ Done** — a **sibling** RAG to the KB feature above, shipped first because the corpus
+  already exists. (§5's KB-over-MCP scope stays ⬜ To do.)
+- **Goal (jay):** a visitor — possibly a potential **employer or client** — opens the AI Chat and
+  asks about **Hyunjae Lee** ("What does he do?", "Tell me about the prediction market project",
+  "How do I contact him?") → **factual, grounded** answers, not a hallucinated résumé.
+- **How it differs from §5:** indexes the **profile/projects** (`lib/home-content.ts` + optional
+  `content/profile/*.md`), **not** the Knowledge KB; **lexical** keyword retrieval (no embeddings
+  yet); **in-route** RAG (no MCP). It proves the "**in-route RAG**" side of §5's still-open
+  "MCP-tool vs in-route RAG" question for a small corpus.
+- **Built:** `lib/about-me.ts` (corpus + `retrieve()` + `buildAboutMeSystemMessage()`) ·
+  `POST /api/chat` `aboutMe` flag (composes with `mcp`) · `👤 About Hyunjae` toggle in
+  `app/chat/ChatClient.tsx`.
+- **Decision (jay):** **RAG, not fine-tuning** — cheaper, always current, no hallucinated facts,
+  no training pipeline needed.
+- **Deploy note:** `content/` isn't copied into the Cloud Run image, so the `.md` depth is
+  **local-dev only**; the cloud still answers from the structured `home-content.ts` corpus. One
+  Dockerfile line (`COPY --from=builder /app/content ./content`) enables full cloud depth.
+- **Detail → [../features/ai-chat.md](../features/ai-chat.md#ask-about-me-rag--implemented)** ·
+  history → [../history/2026-07-25-rabbit-history.md](../history/2026-07-25-rabbit-history.md).
+- **Upgrade path:** swap lexical `retrieve()` for embedding search (feeds §5's KB direction) behind
+  the same `Chunk` interface — no route/UI change.
+- **⚠️ Couples with [§2 (Auth + LLM gating)](#s2):** this mode is only useful if a **keyless,
+  logged-out visitor** can actually run it — which §2's current model blocks (BYO-key to chat ·
+  jay-email-gated server key · `/chat` login-gated). Shipping the About-me mode to real
+  employers/clients therefore **depends on [§2](#s2) adding a public, server-keyed, capped path**
+  (see §2's "Public About me path" bullet). Until then it works only for a logged-in user with a key
+  configured. **Decision needed from jay** before this is truly public-facing.
 
 ## 6. AP2 — Stripe settlement example (educational) <a id="s6"></a>
 <sub>[↑ TOC](#toc)</sub>

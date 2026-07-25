@@ -13,6 +13,7 @@ export default function ChatClient() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mcp, setMcp] = useState(false); // 🍝 스파게티 MCP on/off
+  const [aboutMe, setAboutMe] = useState(false); // 👤 About-me RAG on/off
   const logRef = useRef<HTMLDivElement>(null);
 
   async function send(e: React.FormEvent) {
@@ -30,7 +31,7 @@ export default function ChatClient() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history, mcp }),
+        body: JSON.stringify({ messages: history, mcp, aboutMe }),
       });
       if (!res.ok || !res.body) {
         const data = await res.json().catch(() => null);
@@ -65,7 +66,19 @@ export default function ChatClient() {
 
   return (
     <section className="panel">
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+        <button
+          type="button"
+          className={aboutMe ? "" : "ghost"}
+          onClick={() => setAboutMe((v) => !v)}
+          title={pick(
+            lang,
+            "Hyunjae Lee에 대해 물어보는 모드 on/off (프로필·프로젝트 기반 RAG)",
+            "Toggle 'Ask about Hyunjae Lee' mode (RAG over his profile & projects)"
+          )}
+        >
+          👤 About Hyunjae: {aboutMe ? "on" : "off"}
+        </button>
         <button
           type="button"
           className={mcp ? "" : "ghost"}
@@ -74,6 +87,15 @@ export default function ChatClient() {
         >
           🍝 Spaghetti MCP: {mcp ? "on" : "off"}
         </button>
+        {aboutMe && (
+          <span className="muted">
+            {pick(
+              lang,
+              "Hyunjae Lee의 경력·프로젝트로 답합니다 — 예: “무슨 일을 하나요?”, “예측 시장 프로젝트가 뭐죠?”",
+              "Answers from Hyunjae Lee's background — e.g. “What does he do?”, “Tell me about the prediction market project.”"
+            )}
+          </span>
+        )}
         {mcp && (
           <span className="muted">
             {pick(
