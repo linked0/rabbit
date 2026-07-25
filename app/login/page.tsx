@@ -1,19 +1,22 @@
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
-import { signIn } from "@/auth";
+import { googleEnabled, signIn } from "@/auth";
 import { appMode } from "@/lib/mode";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-// 로그인 페이지 (plan §2): cloud → Google 버튼 / local → 비밀번호 폼. 성공 시 /summary
+// 로그인 페이지 (plan §2). 성공 시 /summary.
+// Google 버튼은 OAuth 자격증명이 있으면 로컬에서도 뜬다 — 로컬에서 실제 구글 로그인
+// 흐름을 그대로 확인하려고 (2026-07-25, jay). 비밀번호 폼은 로컬에서만.
 export default function LoginPage({
   searchParams,
 }: {
   searchParams: { error?: string };
 }) {
-  const cloud = appMode() === "cloud";
+  const local = appMode() !== "cloud";
+  const google = googleEnabled();
   const lang = getLang();
 
   return (
@@ -22,7 +25,7 @@ export default function LoginPage({
       <p className="sub">{pick(lang, "로그인하면 투자 요약 페이지로 이동합니다.", "Signing in takes you to the Investment Summary page.")}</p>
       <section className="panel" style={{ maxWidth: 440 }}>
         <h2>{pick(lang, "로그인", "Sign in")}</h2>
-        {cloud ? (
+        {google && (
           <form
             action={async () => {
               "use server";
@@ -34,11 +37,17 @@ export default function LoginPage({
             </p>
             <button type="submit">{pick(lang, "Google 계정으로 로그인", "Sign in with Google")}</button>
           </form>
-        ) : (
-          <form action={loginLocal}>
+        )}
+        {local && (
+          <form action={loginLocal} style={google ? { marginTop: 20 } : undefined}>
+            {google && (
+              <p className="muted" style={{ marginBottom: 12 }}>
+                {pick(lang, "또는 로컬 비밀번호로 로그인", "Or sign in with the local password")}
+              </p>
+            )}
             <div className="field">
               <label htmlFor="password">{pick(lang, "비밀번호", "Password")}</label>
-              <input id="password" name="password" type="password" autoFocus />
+              <input id="password" name="password" type="password" />
             </div>
             <button type="submit" style={{ marginTop: 12 }}>
               {pick(lang, "로그인", "Sign in")}

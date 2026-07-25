@@ -4,15 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLang } from "./LangContext";
 
-// 메뉴 링크 — 현재 언어(ko/en)에 맞는 라벨을 고른다. 필터링(authOnly)은 서버 Nav에서 끝냄.
+// 메뉴 링크 — 현재 언어(ko/en)에 맞는 라벨을 고른다. 필터링(pub/오너)은 서버 Nav에서 끝냄.
 export type NavItem = {
   href: string;
   ko: string;
   en: string;
   external?: boolean;
-  authOnly?: boolean;
+  pub?: boolean; // 비로그인 방문자에게도 노출. 없으면 오너 로그인 시에만 보인다.
   code?: string; // 클라우드 표시 제어 키 → env ALLOW_<code>
-  always?: boolean; // true면 필터 무시하고 항상 표시 (예: Verex)
 };
 
 export default function NavLinks({ items }: { items: NavItem[] }) {
