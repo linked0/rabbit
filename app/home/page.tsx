@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Nav from "../Nav";
 import { PROFILE, PROJECTS } from "@/lib/home-content";
+import { verexUrl } from "@/lib/verex";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 
@@ -48,6 +49,28 @@ export default function HomePage() {
           </div>
         </div>
       </header>
+
+      {/* 피처드: Verex — 상단 메뉴 항목을 대체하는 카드 (2026-07-25, jay). 라이브 앱으로 외부 링크. */}
+      <section className="panel">
+        <h2>{pick(lang, "피처드", "Featured")}</h2>
+        <a href={verexUrl()} target="_blank" rel="noreferrer" className="kpi featured-card">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="featured-mark" src="/profile/verex.svg" alt="Verex" width={64} height={64} />
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <div className="label">{pick(lang, "라이브 · 예측 시장", "Live · Prediction market")}</div>
+            <div className="value" style={{ fontSize: 18 }}>
+              Verex ↗
+            </div>
+            <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
+              {pick(
+                lang,
+                "탈중앙화 예측 시장 — truth through exchange. CTF(조건부 토큰) 기반 Yes/No 마켓, 온체인 정산, 단독 설계·개발·운영(풀스택). 지금 라이브 앱에서 바로 사용해 볼 수 있습니다.",
+                "A decentralized prediction market — truth through exchange. CTF (conditional-token) Yes/No markets with on-chain settlement; sole developer, end-to-end (full-stack). Try the live app now."
+              )}
+            </div>
+          </div>
+        </a>
+      </section>
 
       {/* 프로젝트 (linked0.github.io 미러) */}
       <section className="panel">
