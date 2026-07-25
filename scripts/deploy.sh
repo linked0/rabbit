@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # rabbit → GCP Cloud Run 배포 (docs/tasks §6 / README §9). 재실행 안전(idempotent).
+# 운영 서비스는 1대뿐이다 (2026-07-25, jay). rabbit-test / MENU_SHOW_ALL 분기는 삭제 —
+# 두 서비스를 나란히 유지할 이유가 없고, 메뉴 노출은 이제 ALLOW_* + 오너 로그인으로 정해진다.
 # 사용법:
 #   1) scripts/deploy.env.example → scripts/deploy.env 복사 후 PROJECT_ID 등 입력
-#   2) ./scripts/deploy.sh prod   # 운영 서비스(rabbit) — 허용 메뉴만(ALLOW_* 필터) — 기본
-#      ./scripts/deploy.sh test   # 테스트 서비스(rabbit-test) — 전체 메뉴
+#   2) ./scripts/deploy.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -16,22 +17,22 @@ source .env.local         # AUTH_SECRET, AUTH_GOOGLE_*, AI_*, MARKET_API_KEY, AL
 
 : "${PROJECT_ID:?deploy.env에 PROJECT_ID가 필요합니다}"
 REGION=${REGION:-asia-northeast3}
-SERVICE=${SERVICE:-rabbit}                  # 운영(필터) 서비스
-TEST_SERVICE=${TEST_SERVICE:-rabbit-test}   # 테스트(전체 메뉴) 서비스
+SERVICE=${SERVICE:-rabbit} # 유일한 운영 서비스
 
-# 대상: prod(기본)=운영(허용 메뉴만) / test=테스트(전체 메뉴). 서로 다른 Cloud Run 서비스.
-TARGET="${1:-prod}"
-case "$TARGET" in
-  prod) DEPLOY_SERVICE="$SERVICE";      MENU_SHOW_ALL="false" ;;
-  test) DEPLOY_SERVICE="$TEST_SERVICE"; MENU_SHOW_ALL="true" ;;
-  *) echo "❌ 사용법: ./scripts/deploy.sh [prod|test]"; exit 1 ;;
-esac
-echo "▶ 배포 대상: $TARGET (서비스=$DEPLOY_SERVICE, 전체메뉴표시=$MENU_SHOW_ALL)"
+# 예전 `deploy.sh prod|test` 습관으로 인자를 넘겨도 조용히 무시하지 않고 알려준다.
+if [ $# -gt 0 ]; then
+  echo "ℹ️  인자 '$1' 무시 — 운영 서비스 1대 체제라 대상 선택이 없습니다."
+fi
+echo "▶ 배포 대상: $SERVICE ($REGION)"
 
-echo "▶ gcloud 프로젝트/API 설정 ($PROJECT_ID)"
-gcloud config set project "$PROJECT_ID" >/dev/null
+# 모든 gcloud 호출에 --project 를 명시한다. `gcloud config set project` 로 전역 상태를
+# 바꾸면, 다른 저장소(verex 등)의 배포가 동시에 돌 때 서로의 활성 프로젝트를 덮어쓴다.
+# 2026-07-25 실제로 이 사고가 났다: verex 배포가 활성 프로젝트를 verex-499205 로 바꿔서
+# 마지막 AUTH_URL 갱신이 "Service [rabbit] could not be found" 로 실패 → 운영에 AUTH_URL
+# 없는 리비전이 떴다. 전역 config 는 건드리지 않는다.
+echo "▶ gcloud API 설정 ($PROJECT_ID)"
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
-  artifactregistry.googleapis.com secretmanager.googleapis.com
+  artifactregistry.googleapis.com secretmanager.googleapis.com --project "$PROJECT_ID"
 
 # Cloud Run 리비전이 사용하는 기본 컴퓨트 서비스 계정 — 시크릿 읽기 권한 부여 대상
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
@@ -44,13 +45,13 @@ upsert_secret() {
     echo "  - $name: 값 없음 → 건너뜀"
     return
   fi
-  if gcloud secrets describe "$name" >/dev/null 2>&1; then
-    printf '%s' "$value" | gcloud secrets versions add "$name" --data-file=- >/dev/null
+  if gcloud secrets describe "$name" --project "$PROJECT_ID" >/dev/null 2>&1; then
+    printf '%s' "$value" | gcloud secrets versions add "$name" --project "$PROJECT_ID" --data-file=- >/dev/null
   else
-    printf '%s' "$value" | gcloud secrets create "$name" --replication-policy=automatic --data-file=- >/dev/null
+    printf '%s' "$value" | gcloud secrets create "$name" --project "$PROJECT_ID" --replication-policy=automatic --data-file=- >/dev/null
   fi
   # Cloud Run 서비스 계정에 이 시크릿의 읽기 권한 부여 (재실행 안전)
-  gcloud secrets add-iam-policy-binding "$name" \
+  gcloud secrets add-iam-policy-binding "$name" --project "$PROJECT_ID" \
     --member="serviceAccount:$RUN_SA" \
     --role=roles/secretmanager.secretAccessor >/dev/null
   echo "  - $name: OK (+accessor)"
@@ -79,17 +80,18 @@ done
 # 앱이 자체 Google 로그인 + 이메일 allowlist로 접근을 제어하므로 공개로 배포한다.
 # (README §9의 IAP 방식을 쓰려면 --no-allow-unauthenticated + IAP 활성화로 변경)
 # HL_ACCOUNT_ADDRESS(공개 주소, 비밀 아님)는 env로 — 퍼프 포지션 표시(Task 3, 선택)
-gcloud run deploy "$DEPLOY_SERVICE" \
+gcloud run deploy "$SERVICE" \
   --source . \
+  --project "$PROJECT_ID" \
   --region "$REGION" \
   --allow-unauthenticated \
-  --set-env-vars "APP_MODE=cloud,MENU_SHOW_ALL=${MENU_SHOW_ALL},SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},AI_PROVIDER=${AI_PROVIDER:-openai},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-}${MENU_ENV}" \
+  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},AI_PROVIDER=${AI_PROVIDER:-openai},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-}${MENU_ENV}" \
   --set-secrets "$SECRETS"
 
 # Cloud SQL 연결 — deploy.env에 CLOUDSQL_INSTANCE=프로젝트:리전:인스턴스 설정 시
 if [ -n "${CLOUDSQL_INSTANCE:-}" ]; then
   echo "▶ Cloud SQL 소켓 연결: $CLOUDSQL_INSTANCE"
-  gcloud run services update "$DEPLOY_SERVICE" --region "$REGION" \
+  gcloud run services update "$SERVICE" --project "$PROJECT_ID" --region "$REGION" \
     --add-cloudsql-instances "$CLOUDSQL_INSTANCE" >/dev/null
 fi
 
@@ -97,14 +99,22 @@ fi
 # status.url(=…-<hash>-<region>.a.run.app)을 쓰면 로그인 시작 호스트와 콜백 호스트가
 # 달라져 Auth.js PKCE 쿠키가 유실된다(InvalidCheck → Configuration 500).
 # OAuth 클라이언트의 redirect URI도 반드시 이 도메인으로 등록할 것.
-# AUTH_URL: prod에 커스텀 도메인(PROD_URL)이 있으면 그것, 없으면 run.app 고정 도메인.
-if [ "$TARGET" = "prod" ] && [ -n "${PROD_URL:-}" ]; then
-  URL="$PROD_URL"
-else
-  URL="https://${DEPLOY_SERVICE}-${PROJECT_NUMBER}.${REGION}.run.app"
-fi
+# AUTH_URL: 커스텀 도메인(PROD_URL, 예: https://www.jaylabs.xyz)이 있으면 그것,
+# 없으면 run.app 고정 도메인.
+URL="${PROD_URL:-https://${SERVICE}-${PROJECT_NUMBER}.${REGION}.run.app}"
 echo "▶ AUTH_URL=$URL 적용 (고정 도메인)"
-gcloud run services update "$DEPLOY_SERVICE" --region "$REGION" --update-env-vars "AUTH_URL=$URL" >/dev/null
+gcloud run services update "$SERVICE" --project "$PROJECT_ID" --region "$REGION" --update-env-vars "AUTH_URL=$URL" >/dev/null
+
+# 배포됐는데 AUTH_URL 만 빠진 리비전은 겉보기엔 멀쩡하고 로그인만 깨진다 — 조용히 넘어가면
+# 안 되므로 실제로 반영됐는지 되읽어 확인한다 (2026-07-25 사고 재발 방지).
+LIVE_AUTH_URL=$(gcloud run services describe "$SERVICE" --project "$PROJECT_ID" --region "$REGION" \
+  --format="value(spec.template.spec.containers[0].env.filter(\"name:AUTH_URL\").extract(\"value\"))" 2>/dev/null | tr -d "[]'")
+if [ "$LIVE_AUTH_URL" != "$URL" ]; then
+  echo "❌ AUTH_URL 반영 실패: 기대 '$URL' / 실제 '$LIVE_AUTH_URL'"
+  echo "   이 상태로 두면 Google 로그인이 깨집니다. 수동 복구:"
+  echo "   gcloud run services update $SERVICE --project $PROJECT_ID --region $REGION --update-env-vars AUTH_URL=$URL"
+  exit 1
+fi
 
 echo
 echo "✅ 배포 완료: $URL"
