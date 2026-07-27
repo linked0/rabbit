@@ -15,9 +15,11 @@ cp .env.example .env.local        # 환경변수 — 아래 "로그인" 참고�
 pnpm db:generate                  # Prisma 클라이언트 생성
 ```
 
-### 로그인 (`APP_MODE`)
-- **local (기본)** — `.env.local`에 두 개: `AUTH_SECRET`(`npx auth secret`), `LOCAL_PASSWORD`(직접 정함).
-- **cloud (GCP)** — Google 로그인. 추가로 `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`, `ALLOWED_EMAILS`(접근 허용 이메일, 콤마 구분).
+### 로그인
+로컬·운영 모두 **Google 로그인 하나뿐**이다 (2026-07-27 — `LOCAL_PASSWORD` 비밀번호 로그인 삭제).
+`.env.local`에 `AUTH_SECRET`(`npx auth secret`), `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`,
+`ALLOWED_EMAILS`(접근 허용 이메일, 콤마 구분)를 넣는다. 로컬에서 쓰려면 OAuth 클라이언트에
+`http://localhost:3100/api/auth/callback/google` 리디렉션 URI 가 등록돼 있어야 한다.
 
 ### DB (투자입력·포트폴리오용 — Postgres)
 ```bash
@@ -47,7 +49,7 @@ pnpm start    # 빌드 결과 실행
    - **다크/라이트 토글** — 우상단 ☀️/🌙 버튼으로 전환, `localStorage`에 저장(새로고침 유지).
 2. **공개 메뉴 (로그아웃)** — `/knowledge`, `/game`, `/ap2`, `/xyz`, `/etc` 모두 로그인 없이 열린다.
 3. **가드** — 로그아웃 상태에서 `/portfolio` · `/chat` 접근 시 `/login`으로 리다이렉트(302).
-4. **로그인** — 우상단 `로그인` → local 모드면 `LOCAL_PASSWORD`로 통과 → 이후 `/portfolio` · `/chat` 접근 가능.
+4. **로그인** — 우상단 `로그인` → Google 로그인(`ALLOWED_EMAILS` 계정) → 보던 페이지로 복귀, `/portfolio` · `/chat` 접근 가능.
 5. **투자입력** — `/invest`에서 `Buy · BTC · 0.1 · 95000000` 추가 → Current Portfolio가 Upbit 시세로 자동 갱신(평가액·손익).
 6. **요약** — `/summary` 카드(BTC·ETH·S&P 500·KOSPI) 60초 갱신 확인.
 7. **빌드** — `pnpm build` 가 타입 에러 없이 통과.

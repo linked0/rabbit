@@ -1,12 +1,11 @@
-import Link from "next/link";
 import { auth, isOwnerEmail } from "@/auth";
 import ThemeToggle from "./ThemeToggle";
 import LangToggle from "./LangToggle";
 import UserMenu from "./UserMenu";
+import SignInLink from "./SignInLink";
 import NavLinks, { type NavItem } from "./NavLinks";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
-import { appMode } from "@/lib/mode";
 
 // Target IA 최상단 메뉴 (docs/features/README.md).
 // `pub` 항목(홈·마켓·XYZ)만 비로그인 방문자에게 보인다. 나머지는 오너(= ALLOWED_EMAILS
@@ -26,14 +25,13 @@ const MENU: NavItem[] = [
   // Verex 항목은 제거 (2026-07-25, jay) — 홈의 피처드 카드로 대체 (app/home/page.tsx, lib/verex.ts).
 ];
 
-// 메뉴 표시 제어.
-// - 로컬 모드: 로그인 여부와 무관하게 전체 메뉴 표시 (개발 편의 — 게이트를 걸면
-//   매번 로그인해야 메뉴가 보인다).
-// - 운영(클라우드): 기본 "숨김" — env `ALLOW_<code>` 가 "true" 이고, 그중에서도
-//   `pub` 항목만 방문자에게 보인다. 나머지는 오너 로그인 시에만.
-//   설정이 없거나 나중에 추가된 메뉴는 운영에서 자동으로 숨겨진다.
+// 메뉴 표시 제어 — 로컬·운영 동일 규칙 (2026-07-27, jay).
+// 기본은 "숨김": env `ALLOW_<code>` 가 "true" 여야 후보에 오르고, 그중 `pub` 항목만
+// 방문자에게 보인다. 나머지는 오너(= ALLOWED_EMAILS 의 구글 계정) 로그인 시에만.
+// 설정이 없거나 나중에 추가된 메뉴는 자동으로 숨겨진다.
+// 예전엔 로컬을 무조건 전체 표시로 두었지만, 그러면 로컬에서 본 메뉴가 운영과 달라
+// "배포하고 나서야 빠진 걸 발견"하는 일이 생겼다. 이제 로컬도 똑같이 게이트를 통과해야 한다.
 function menuVisible(item: NavItem, isOwner: boolean): boolean {
-  if (appMode() !== "cloud") return true;
   if (!item.code || process.env[`ALLOW_${item.code}`] !== "true") return false;
   return !!item.pub || isOwner;
 }
@@ -55,18 +53,15 @@ export default async function Nav() {
             <LangToggle />
             <ThemeToggle />
           </div>
-          {/* 로그인 버튼은 운영(클라우드)에서만 숨긴다 (2026-07-25, jay — 일단).
-              방문자에게 보여줄 이유가 없는 오너 전용 입구라서. 오너는 /login 으로 직접
-              들어간다. 로컬은 개발 편의상 그대로 노출.
+          {/* 로그인 버튼은 로컬·클라우드 모두 노출한다 (2026-07-27, jay).
+              2026-07-25 엔 클라우드에서 숨겼는데(오너 전용 입구라 방문자에게 보일 이유가
+              없다는 이유), 그러면 오너가 매번 /login 을 직접 쳐야 메뉴가 열린다. 접근 통제는
+              allowlist(ALLOWED_EMAILS)+미들웨어가 하지 버튼 숨김이 하는 게 아니다.
               로그아웃은 로그인 상태의 UserMenu 안에 그대로 있다. */}
           {loggedIn ? (
             <UserMenu email={session?.user?.email ?? ""} />
           ) : (
-            appMode() !== "cloud" && (
-              <Link className="ghost" href="/login">
-                {pick(lang, "로그인", "Sign in")}
-              </Link>
-            )
+            <SignInLink label={pick(lang, "로그인", "Sign in")} />
           )}
         </div>
       </div>

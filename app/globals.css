@@ -247,6 +247,9 @@ a.ghost {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  /* 상단바에서 메뉴가 늘어나면 이 버튼이 눌려 "Sign / in" 으로 줄바꿈되던 문제
+     (2026-07-27, jay 스크린샷). nowrap 이면 min-content 가 글자 폭이 되어 더는 안 줄어든다. */
+  white-space: nowrap;
   background: transparent;
   color: var(--foreground);
   border: 1px solid var(--border);
