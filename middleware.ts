@@ -19,7 +19,10 @@ export default auth((req) => {
   const isHome = pathname === "/home" || pathname.startsWith("/home/");
   if (PUBLIC_PATHS.has(pathname) || isHome || pathname.startsWith("/api/auth/")) return;
   if (!isOwnerEmail(req.auth?.user?.email)) {
-    return Response.redirect(new URL("/login", req.nextUrl));
+    // 원래 가려던 곳을 들려보낸다 — 로그인 성공 후 여기로 돌려보내기 위해 (2026-07-27, jay).
+    const login = new URL("/login", req.nextUrl);
+    login.searchParams.set("callbackUrl", pathname + req.nextUrl.search);
+    return Response.redirect(login);
   }
 });
 
