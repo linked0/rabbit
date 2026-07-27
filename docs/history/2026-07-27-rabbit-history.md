@@ -91,6 +91,79 @@ the verifier never survives the trip to Google.
 `/login`'s bundle grows 175 B → 3.03 kB, the cost of shipping the auth client. Worth it for a
 login that works.
 
+### ROOT CAUSE: Firebase Hosting strips cookies from GET requests to Cloud Run
+
+Instrumented instead of guessing — added `debug: process.env.AUTH_DEBUG === "true"` to
+[auth.ts](../../auth.ts) and set `AUTH_DEBUG=true` on the service. Auth.js then logs
+`USE_PKCECODEVERIFIER` with the cookie value it actually received. Two requests **0.2 s apart,
+same curl cookie jar, identical `Cookie:` header on the wire**:
+
+| Path | Debug line | Result |
+|---|---|---|
+| `www.jaylabs.xyz` (Firebase Hosting rewrite) | `USE_PKCECODEVERIFIER {}` | cookie absent → `InvalidCheck` |
+| `rabbit-…run.app` (direct Cloud Run) | `USE_PKCECODEVERIFIER {` + value | cookie present → check passes |
+
+Confirmed independently with the CSRF endpoint: two `GET /api/auth/csrf` calls through
+`www.jaylabs.xyz` with the same jar return two *different* tokens, neither matching the cookie —
+so the app never sees it. The same call direct to Cloud Run returns the jar's token exactly.
+
+**Firebase Hosting forwards only the `__session` cookie to a Cloud Run rewrite; everything else is
+stripped from GET requests.** [firebase.json](../../firebase.json) rewrites `**` to the `rabbit`
+service, so every page load and every OAuth callback arrives cookie-less. That breaks two things,
+not one: the PKCE verifier on the callback (the visible error) and the session cookie on every
+subsequent page load. Auth.js cannot work behind this setup at all — which is why login has never
+succeeded on the custom domain, in any browser, incognito or not.
+
+Wrong turns worth recording, so nobody re-runs them: the Server Action `signIn()` and stale browser
+cookies both looked guilty and neither was. Both survived because early curl tests ran POSTs (which
+Firebase does *not* strip) and reused a warm instance within 1–2 s. The tell was that only browser
+GETs failed.
+
+Fix requires taking Firebase Hosting out of the request path — map the domain straight at Cloud Run
+(domain mapping or an external HTTPS load balancer with a serverless NEG). Renaming Auth.js cookies
+to `__session` is not viable: it needs four distinct cookies.
+
+Related foot-gun found on the way: `scripts/deploy.sh` uses `--set-env-vars`, which wipes any env
+var set outside the script (it deleted `AUTH_DEBUG` immediately after it was applied).
+
+### Migration: Seoul → Tokyo, and the domain now points straight at Cloud Run
+
+Seoul cannot host the fix: `501 Creating domain mappings is not allowed in asia-northeast3`. Cloud
+Run domain mappings do not exist in that region, so the only ways to drop Firebase Hosting from the
+path were a different region or an external load balancer (~$18/mo). jay chose the region move.
+
+Tokyo costs nothing here — worth recording *why* it was safe, since "don't move regions" is usually
+good advice. `DATABASE_URL` points at `localhost:5432` and the Cloud SQL Admin API isn't even
+enabled, so there is no cloud database to end up far from; Secret Manager is global; the extra
+~30 ms Seoul→Tokyo is invisible for this app.
+
+Steps taken:
+
+- `scripts/deploy.env` → `REGION=asia-northeast1`, with the 501 recorded in a comment so nobody
+  moves it back.
+- Deployed `rabbit` to `asia-northeast1` (revision `rabbit-00002-6v9`).
+- Created the Cloud Run domain mapping for `www.jaylabs.xyz`.
+- Repointed DNS: `www.jaylabs.xyz. CNAME ghs.googlehosted.com.` (was `doubletree-498007.web.app.`).
+  The zone `jaylabs-xyz` is Cloud DNS in this same project, so this was a gcloud call, not a
+  registrar visit — an earlier note claiming otherwise was wrong.
+- [firebase.json](../../firebase.json) rewrite region → `asia-northeast1`, so the `*.web.app` URL
+  doesn't dangle at a deleted service.
+- Deleted the Seoul service, last, once Tokyo was verified.
+
+Certificate provisioning took 13 minutes (02:42 mapping created → 02:55 `CertificateProvisioned`),
+and the edge needed 7 minutes more before it would complete a TLS handshake (03:02 first `200`).
+The domain was down for that ~20 minutes. Expected for this kind of cutover; worth planning for
+next time rather than being surprised.
+
+**Verified on the new setup:** a cookie now round-trips through `www.jaylabs.xyz` — two
+`GET /api/auth/csrf` calls with one jar return the *same* token, where before the migration they
+returned two different ones. The full OAuth flow gets past the PKCE check and fails only at token
+exchange (`CallbackRouteError: server responded with an error`), which is the correct response to a
+fake authorization code.
+
+`AUTH_DEBUG` is not set on the Tokyo service — `deploy.sh`'s `--set-env-vars` dropped it, which for
+once is the behaviour we wanted.
+
 ### Login: return to the page you came from, drop the password login, add a way out
 
 Three asks from jay in one pass.

@@ -33,18 +33,19 @@ export default function LoginPage({
       </p>
       <h1>🐇 rabbit</h1>
       <p className="sub">
-        {pick(lang, "로그인하면 보던 페이지로 돌아갑니다.", "Signing in takes you back to the page you came from.")}
+        {pick(lang, "사이트 소유자 전용 입구입니다. 인증하면 보던 페이지로 돌아갑니다.", "Owner-only entrance. Once you're in, you go back to the page you came from.")}
       </p>
       <section className="panel" style={{ maxWidth: 440 }}>
-        <h2>{pick(lang, "로그인", "Sign in")}</h2>
+        {/* "로그인"이 아니라 "관리자" — 가입 개념이 없는 1인 사이트라 (2026-07-27, jay). */}
+        <h2>{pick(lang, "관리자", "Admin")}</h2>
         {google ? (
           <div>
             <p className="muted" style={{ marginBottom: 16 }}>
-              {pick(lang, "Google 계정으로 로그인하세요. 허용된 계정만 접근할 수 있습니다.", "Sign in with Google. Only allowed accounts can access.")}
+              {pick(lang, "허용된 Google 계정 하나만 들어올 수 있습니다.", "Only one allowed Google account can get in.")}
             </p>
             <GoogleSignInButton
               callbackUrl={callbackUrl}
-              label={pick(lang, "Google 계정으로 로그인", "Sign in with Google")}
+              label={pick(lang, "Google 계정으로 계속", "Continue with Google")}
             />
           </div>
         ) : (

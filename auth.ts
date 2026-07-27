@@ -38,6 +38,12 @@ const providers = [
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true, // 로컬 임의 포트 + Cloud Run 프록시 뒤에서 Host 헤더 신뢰
+  // AUTH_DEBUG=true 일 때만 Auth.js 내부 로그를 켠다 (2026-07-27, jay).
+  // `InvalidCheck: pkceCodeVerifier value could not be parsed` 를 쫓는 중인데, 이 메시지는
+  // "쿠키가 아예 없음"과 "있는데 복호화 실패"를 구분해주지 않는다 (@auth/core 의 parseCookie
+  // 가 두 경우를 같은 문자열로 뭉갠다). debug 를 켜면 USE_PKCECODEVERIFIER 로그에 서버가
+  // 실제로 받은 쿠키 값이 찍혀서 둘을 가를 수 있다. 진단이 끝나면 env 를 내리면 된다.
+  debug: process.env.AUTH_DEBUG === "true",
   providers,
   session: { strategy: "jwt", maxAge: SESSION_MAX_AGE },
   pages: { signIn: "/login" },

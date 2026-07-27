@@ -57,11 +57,14 @@ export default async function Nav() {
               2026-07-25 엔 클라우드에서 숨겼는데(오너 전용 입구라 방문자에게 보일 이유가
               없다는 이유), 그러면 오너가 매번 /login 을 직접 쳐야 메뉴가 열린다. 접근 통제는
               allowlist(ALLOWED_EMAILS)+미들웨어가 하지 버튼 숨김이 하는 게 아니다.
-              로그아웃은 로그인 상태의 UserMenu 안에 그대로 있다. */}
+              로그아웃은 로그인 상태의 UserMenu 안에 그대로 있다.
+              라벨은 "로그인"이 아니라 "관리자" — 이 사이트엔 가입이란 개념이 없고
+              ALLOWED_EMAILS 의 오너 한 명만 들어올 수 있는 입구라서, "로그인"은 방문자에게
+              계정을 만들 수 있다는 오해를 준다. */}
           {loggedIn ? (
             <UserMenu email={session?.user?.email ?? ""} />
           ) : (
-            <SignInLink label={pick(lang, "로그인", "Sign in")} />
+            <SignInLink label={pick(lang, "관리자", "Admin")} />
           )}
         </div>
       </div>
