@@ -18,9 +18,9 @@ const MENU: NavItem[] = [
   { href: "/portfolio", ko: "포트폴리오", en: "Portfolio", code: "PORTFOLIO" },
   { href: "/chat", ko: "AI 챗", en: "AI Chat", code: "CHAT" },
   { href: "/game", ko: "게임", en: "Game", code: "GAME" },
-  { href: "/market", ko: "마켓", en: "Market", code: "MARKET", pub: true },
+  { href: "/market", ko: "마켓", en: "Hyperliquid Trading", code: "MARKET", pub: true },
   { href: "/ap2", ko: "AP2 테스트", en: "AP2 Test", code: "AP2" },
-  { href: "/xyz", ko: "XYZ 데모", en: "XYZ Demo", code: "XYZ", pub: true },
+  { href: "/xyz", ko: "XYZ 데모", en: "PBS", code: "XYZ", pub: true },
   { href: "/jayverse", ko: "JayVerse", en: "JayVerse", code: "JAYVERSE" },
   // Verex 항목은 제거 (2026-07-25, jay) — 홈의 피처드 카드로 대체 (app/home/page.tsx, lib/verex.ts).
 ];
