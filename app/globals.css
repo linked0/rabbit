@@ -693,11 +693,33 @@ a.ghost:hover {
 .featured-card > * {
   position: relative; /* ::before 워시 위로 */
 }
-/* 마크는 원형이라 사각 타일에 넣으면 어색하다 — 배경/테두리 없이 그대로 세운다. */
-.featured-mark {
+/* 마크는 원형이라 사각 타일에 넣으면 어색하다 — 배경/테두리 없이 그대로 세운다.
+   VerexBall(react-three-fiber)이 실제 3D 구체 + 조명으로 렌더링하므로, 여기서는
+   캔버스 크기와 접지 그림자만 잡아준다 (음영/회전 로직은 CSS 트릭이 아니라
+   실제 라이팅으로 처리되어 이전 rotateY+box-shadow 흉내보다 훨씬 자연스럽다). */
+.featured-mark-wrap {
+  position: relative;
   width: 64px;
   height: 64px;
   flex-shrink: 0;
+}
+.featured-mark-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+/* 바닥 그림자 — 공이 표면 위에 놓여/굴러가는 느낌을 주는 접지 그림자. */
+.featured-mark-wrap::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 68%;
+  height: 8px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.3), transparent 80%);
+  pointer-events: none;
 }
 .post-hero {
   width: 100%;

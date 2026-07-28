@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Nav from "../Nav";
+import VerexBallLazy from "./VerexBallLazy";
 import { PROFILE, PROJECTS } from "@/lib/home-content";
 import { verexUrl } from "@/lib/verex";
 import { getLang } from "@/lib/lang";
@@ -54,8 +55,9 @@ export default function HomePage() {
       <section className="panel">
         <h2>{pick(lang, "피처드", "Featured")}</h2>
         <a href={verexUrl()} target="_blank" rel="noreferrer" className="kpi featured-card">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="featured-mark" src="/profile/verex.svg" alt="Verex" width={64} height={64} />
+          <div className="featured-mark-wrap">
+            <VerexBallLazy />
+          </div>
           <div style={{ flex: 1, minWidth: 220 }}>
             <div className="label">{pick(lang, "라이브 · 예측 시장", "Live · Prediction market")}</div>
             <div className="value" style={{ fontSize: 18 }}>
