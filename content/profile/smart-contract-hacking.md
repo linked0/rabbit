@@ -15,7 +15,7 @@ Smart contract hacking exercises with the solutions.
 ### Overview
 1. Compilation of smart contract hacking cases
 2. Documentation of actual hacking processes using contract code and test code
-3. Ongoing personal project undertaken after resignation
+3. An ongoing personal side project
 
 ### Introduce Project
 
@@ -35,7 +35,7 @@ Smart contract hacking exercises with the solutions.
 ### Overview
 1. 스마트 컨트랙트 해킹 사례를 정리
 2. 실제 해킹과정을 컨트랙트 코드와 테스트 코드로 정리
-3. 퇴사 후에 개인적으로 진행한 프로젝트로서 계속 진행중
+3. 개인적으로 지속하고 있는 사이드 프로젝트
 
 ### Introduce Project
 

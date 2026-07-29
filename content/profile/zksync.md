@@ -15,7 +15,7 @@ zkSync L2 Layer Test and Analysis
 ### Overview
 1. zkSync L2 Project Analysis
 2. Testing by integrating with Bosagora network nodes
-3. A personal project undertaken after resignation
+3. A personal project further developed based on hands-on experience
 
 ### Introduce Project
 
@@ -39,7 +39,7 @@ zkSync L2 Layer Test and Analysis
 ### Overview
 1. zkSync L2 프로젝트 분석
 2. Bosagora 네트워크 노드와 연동하여 테스트
-3. 퇴사 후에 개인적으로 진행한 프로젝트
+3. 실무 경험을 기반으로 개인적으로 발전시킨 프로젝트
 
 ### Introduce Project
 
