@@ -24,6 +24,7 @@ then summarize the built result into `docs/history/`.
 | _Solana_ | `/etc/solana` (planned) | [solana.md](solana.md) — Solana integration study + sample Anchor program (counter → SPL escrow) on devnet, called from a demo page |
 | _KB Hybrid Payment_ | — (reference only) | [kb-hybrid-payment-flow.md](kb-hybrid-payment-flow.md) — flow map: TradFi card rail (ISO 8583) × on-chain settlement (Avalanche subnet); no dev item |
 | _CRE × Cloud_ | — (reference only) | [cre-cloud.md](cre-cloud.md) — 4 hybrid patterns (RWA servicing · PoR · DvP · AI prediction-market settlement): cloud = private truth, CRE = verified bridge, chain = settlement |
+| _Thirdweb_ | — (reference only) | [thirdweb.md](thirdweb.md) — full-stack Web3 platform survey (contracts · Connect wallets/AA · Engine backend tx · Unity SDK); breadth-over-best-parts tradeoff; touchpoints: agentic-aa, ap2 backend tx, Unity track |
 
 > **Knowledge 메뉴는 일시 제거됨** — 콘텐츠는 `docs/know.html`(로컬 `file://`로 열람). 필요 시 복원. (앱 측 메뉴/라우트 제거는 PR #18에 포함.)
 
