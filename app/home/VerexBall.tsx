@@ -15,7 +15,7 @@ function Ball() {
   const mesh = useRef<Mesh>(null);
 
   useFrame((_, delta) => {
-    if (mesh.current) mesh.current.rotation.y += delta * 0.5;
+    if (mesh.current) mesh.current.rotation.y += delta * 0.75;
   });
 
   return (
