@@ -25,3 +25,18 @@ Logs" subtitle, matching the header's existing inline-style idiom and the `.card
 Two known limits, accepted for now: the path is absolute and machine-specific, so it only
 resolves on jay's Mac; and browsers block `file://` navigation from a page served over http(s),
 so the link only works when the index itself is opened as a local file.
+
+### docs index: dot link after the Knowledge Base title
+
+jay asked for a dot at the end of the "Knowledge Base" line linking to a `mind.html` page whose
+content is still to come. Added a `&bull;` anchor inside the `<h2 class="section-title">`, at
+55% opacity in accent color, with `title`/`aria-label="Mind"` so the bare glyph still has an
+accessible name.
+
+Chose `knowledge/mind.html` for the href — every other HTML doc in that section lives under
+`knowledge/`. The page does not exist yet, so the link 404s until jay supplies the content.
+`.section-title` is `display:flex` with `gap:10px` and a flex-filling `::after` rule, so the dot
+lands as its own flex item between the text and the line — no CSS changes needed.
+
+Verified in the browser: dot renders after the title, href resolves to `knowledge/mind.html`,
+all 43 cards intact, and the search filter still works (1 visible on "merkle", 43 restored).
