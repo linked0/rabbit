@@ -14,3 +14,14 @@ Verified in the browser: 5 sections remain (Logs, Knowledge Base, External Resou
 English Learning & Corrections, Designs & Visuals) and "Nostra - Core" is absent from the
 rendered page, no console errors. Note the file has a pre-existing `<div` / `</div>` count
 mismatch (22/21 before, 19/18 after) — unchanged by this edit, not investigated.
+
+### docs index: self-link to the file's local path under the title
+
+jay wanted a clickable link to the index file's own location under the page title, for opening
+the file directly in a browser. Added a monospace accent-colored anchor to
+`file:///Users/jay/work/rabbit/docs/index.html` right below the "Documentation, Tasks, and Dev
+Logs" subtitle, matching the header's existing inline-style idiom and the `.card-path` look.
+
+Two known limits, accepted for now: the path is absolute and machine-specific, so it only
+resolves on jay's Mac; and browsers block `file://` navigation from a page served over http(s),
+so the link only works when the index itself is opened as a local file.
