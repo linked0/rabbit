@@ -40,3 +40,14 @@ lands as its own flex item between the text and the line — no CSS changes need
 
 Verified in the browser: dot renders after the title, href resolves to `knowledge/mind.html`,
 all 43 cards intact, and the search filter still works (1 visible on "merkle", 43 restored).
+
+### docs index: revert the Knowledge Base dot link
+
+jay changed course and asked to drop the dot and the planned `mind.html`. Removed the `&bull;`
+anchor from the Knowledge Base `<h2>`; `docs/index.html` is now byte-identical to commit
+`4ce9579`, the state before the dot went in. No CSS was ever added for it, so nothing else
+needed unwinding.
+
+`knowledge/mind.html` was never created — the request to drop it arrived while the file was
+still being drafted, so there was nothing to delete. Verified in the browser: the title has no
+links, 43 cards and 5 sections intact, and the header self-link still resolves.
