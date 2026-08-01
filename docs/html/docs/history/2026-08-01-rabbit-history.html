@@ -146,6 +146,34 @@ some files&#39; git-commit dates, which would have skewed a fresh &quot;latest&q
 ranking already established earlier in the session instead of re-deriving from the now-polluted
 dates. Verified all links resolve, exactly 6 cards in the section, and verex&#39;s git status stayed
 clean throughout.</p>
+<h3>feat: Jay Chat — public About-Jay persona chat (branch: claude/jay-chat-public)</h3>
+<p>jay wanted the &quot;AI Chat&quot; nav item restored and renamed to &quot;Jay Chat&quot; — turns out the real gap
+(already flagged in <code>docs/features/ai-chat.md</code>) was that <code>/chat</code> has always required login, so
+logged-out visitors (employers/clients — the actual intended audience) never had access. Talked
+through the design first: public keyless persona-only endpoint, GitHub + LinkedIn as additional
+corpus sources (LinkedIn manually, never scraped — against its ToS), production model (OpenAI)
+over local LLM for now, RAG technique — all per jay&#39;s explicit calls.</p>
+<p>Security discussion before building: agreed on 5 required (not optional) safeguards — dedicated
+API key, OpenAI account-level hard spending cap, hourly token budget, per-IP burst guard, scoped
+system prompt. Then refined the budget scope with jay: hourly <em>token</em> total (not per-minute,
+not per-message-count) since a real employer conversation shouldn&#39;t hit an artificial wall, and
+—jay&#39;s call, given traffic is currently rare—global pool rather than per-visitor, accepting that
+tradeoff as fine for now and cheaply upgradable later if traffic picks up.</p>
+<p>Built as an isolated new feature (<code>/jay-chat</code>, <code>/api/jay-chat</code>, <code>lib/jay-chat.ts</code>) rather than
+retrofitting the existing private <code>/chat</code>, so there&#39;s zero risk to it. Reused the already-working
+RAG core (<code>lib/about-me.ts</code>) unchanged. Added <code>content/profile/github-summary.md</code> from GitHub&#39;s
+real public API (linked0) — picked up automatically by the existing corpus loader, no code
+change needed. Also fixed a real deploy gap found along the way: <code>content/</code> wasn&#39;t being copied
+into the Cloud Run image, so the markdown corpus depth silently only worked in local dev —
+updated the <code>Dockerfile</code> and corrected the now-stale note about it in the feature doc.</p>
+<p>Verified end-to-end locally (temporary dev server on a spare port — port 3100 was already in use
+by what looked like jay&#39;s own running server, left untouched): real grounded answers including a
+GitHub-specific question pulling the new corpus file, oversized-message rejection, and the burst
+guard tripping at exactly the configured threshold.</p>
+<p>Committed on <code>claude/jay-chat-public</code>, not pushed — this is real app code (not the docs-only
+work from earlier today), so held off pending review. Also not yet deployable: needs a real
+dedicated <code>JAY_CHAT_OPENAI_API_KEY</code> from jay (not his existing <code>AI_API_KEY</code>) with its own
+spending cap set in the OpenAI dashboard.</p>
 
   </article>
 </div>

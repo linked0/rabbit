@@ -135,3 +135,37 @@ some files' git-commit dates, which would have skewed a fresh "latest" recompute
 ranking already established earlier in the session instead of re-deriving from the now-polluted
 dates. Verified all links resolve, exactly 6 cards in the section, and verex's git status stayed
 clean throughout.
+
+### feat: Jay Chat — public About-Jay persona chat (branch: claude/jay-chat-public)
+
+jay wanted the "AI Chat" nav item restored and renamed to "Jay Chat" — turns out the real gap
+(already flagged in `docs/features/ai-chat.md`) was that `/chat` has always required login, so
+logged-out visitors (employers/clients — the actual intended audience) never had access. Talked
+through the design first: public keyless persona-only endpoint, GitHub + LinkedIn as additional
+corpus sources (LinkedIn manually, never scraped — against its ToS), production model (OpenAI)
+over local LLM for now, RAG technique — all per jay's explicit calls.
+
+Security discussion before building: agreed on 5 required (not optional) safeguards — dedicated
+API key, OpenAI account-level hard spending cap, hourly token budget, per-IP burst guard, scoped
+system prompt. Then refined the budget scope with jay: hourly *token* total (not per-minute,
+not per-message-count) since a real employer conversation shouldn't hit an artificial wall, and
+—jay's call, given traffic is currently rare—global pool rather than per-visitor, accepting that
+tradeoff as fine for now and cheaply upgradable later if traffic picks up.
+
+Built as an isolated new feature (`/jay-chat`, `/api/jay-chat`, `lib/jay-chat.ts`) rather than
+retrofitting the existing private `/chat`, so there's zero risk to it. Reused the already-working
+RAG core (`lib/about-me.ts`) unchanged. Added `content/profile/github-summary.md` from GitHub's
+real public API (linked0) — picked up automatically by the existing corpus loader, no code
+change needed. Also fixed a real deploy gap found along the way: `content/` wasn't being copied
+into the Cloud Run image, so the markdown corpus depth silently only worked in local dev —
+updated the `Dockerfile` and corrected the now-stale note about it in the feature doc.
+
+Verified end-to-end locally (temporary dev server on a spare port — port 3100 was already in use
+by what looked like jay's own running server, left untouched): real grounded answers including a
+GitHub-specific question pulling the new corpus file, oversized-message rejection, and the burst
+guard tripping at exactly the configured threshold.
+
+Committed on `claude/jay-chat-public`, not pushed — this is real app code (not the docs-only
+work from earlier today), so held off pending review. Also not yet deployable: needs a real
+dedicated `JAY_CHAT_OPENAI_API_KEY` from jay (not his existing `AI_API_KEY`) with its own
+spending cap set in the OpenAI dashboard.
