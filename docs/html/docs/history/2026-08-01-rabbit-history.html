@@ -94,6 +94,15 @@ the verex repo since the earlier revert (confirmed: <code>git status</code> clea
 rabbit&#39;s — into <code>docs/html/projects/verex/docs/features/README.html</code>, read-only from verex,
 written only into rabbit. Repointed the Verex card and deleted the now-orphaned root-README
 copy (<code>docs/html/projects/verex/README.html</code>), since nothing linked to it anymore.</p>
+<h3>docs(index): add Rabbit/Verex Tasks sections</h3>
+<p>jay asked for a new &quot;Tasks&quot; section per repo, latest-first, capped at 6 cards each. Ranked
+<code>docs/tasks/*.md</code> by last git commit date (not filename — the date embedded in filenames like
+<code>jun-30-rabbit-design.md</code> isn&#39;t reliably the actual edit date, and some files&#39; names don&#39;t match
+their content date at all). Rabbit already had all 6 selected files converted from the initial
+pass; copied Verex&#39;s 5 task files into rabbit the same read-only-source way as the features
+README. Ties at the same commit are ordered arbitrarily (a few of Verex&#39;s task files were all
+touched in the same commit) — accepted as good enough, not worth over-engineering finer-grained
+ranking for.</p>
 
   </article>
 </div>
