@@ -100,12 +100,12 @@ Languages (외국어): Korean (native), English (conversational).
 Keep it tight — roughly 8–12 short lines total, in this shape:
 
 1. **One-line framing** — a developer since 1997 (26+ years), in blockchain since 2019.
-2. **1997–2009, compress into ONE sentence, no per-company detail** — started at Ssangyong
-   (쌍용정보통신) building intranet groupware, then ~a decade of client/mobile software: a Java
-   office mail client, network performance analysis, and mobile/embedded browsers incl. MSN
-   Mobile on BREW and a set-top-box browser.
-3. **2009 onward, one short line each, with a bit more substance** — Myriad Group Korea
-   (2009–2013, KTF mobile browser + KT "Kibot" learning-robot Android app); People & Technology
+2. **1997–2013, compress into ONE sentence, no per-company detail** — started at Ssangyong
+   (쌍용정보통신) building intranet groupware, then ~15 years of client/mobile software: a Java
+   office mail client, network performance analysis, mobile/embedded browsers (MSN Mobile on
+   BREW, a set-top-box browser, the KTF mobile browser), and KT's "Kibot" learning-robot Android
+   app at Myriad Group Korea.
+3. **2013 onward, one short line each, with a bit more substance** — People & Technology
    (2013–2019, IndoorPlus BLE indoor-positioning app, then BC Card Hyperledger settlement
    contracts — where his blockchain work starts); BPF Korea (2019–2021, Bosagora L1 FBA
    consensus-engine core dev); ZeroOne (2021–2023, EVM Bosagora mainnet + Votera DAO + BoaSpace
