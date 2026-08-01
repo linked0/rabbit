@@ -91,5 +91,5 @@ reference architecture, and as a UX pattern the 4-pillar demo page can borrow.*
   (TEE/MPC) earns MetaMask-level trust.
 
 ## Status
-Backlog / to do — see `../tasks/jun-30-rabbit-design.md` §15. Sequencing: do **§7 first**
+Backlog / to do — see `../tasks/current-design.md` §15. Sequencing: do **§7 first**
 (it is pillar 1), then extend the same page with pillars 2–4 (+ the ERC-8021 suffix demo).

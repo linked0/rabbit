@@ -1,6 +1,6 @@
 # Rabbit — Hyperliquid advanced market and trading
 
-- **Parent:** [Jun 30 design §3](../jun-30-rabbit-design.md#s3)
+- **Parent:** [Jun 30 design §3](../current-design.md#s3)
 - **Status:** detailed implementation design — ready to build in milestones
 - **Reviewed:** 2026-07-20 against the current Rabbit code and official Hyperliquid API docs
 - **Scope:** evolve `/market` from its ETH order-book panel into a simple **ETH-PERP HTS**

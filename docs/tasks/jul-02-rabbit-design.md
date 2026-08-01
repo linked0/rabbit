@@ -1,7 +1,7 @@
 # Rabbit — Jul 02 Task
 
 - **Carried over from:** [jul-01-rabbit-design.md](jul-01-rabbit-design.md) — **completed tasks omitted.**
-- **Status:** task / design (for review) · **IA:** [../features/current-design.md](../features/current-design.md)
+- **Status:** task / design (for review) · **IA:** [../features/README.md](../features/README.md)
 
 ## 0. Summary
 The lead item is **new**: make the **PBS consumer track (C2 searcher + C4 observer) work in the
@@ -118,7 +118,7 @@ under **XYZ**, or its own slot.)*
 
 ## 8. Cross-cutting — IA update
 🔲 **TODO** *(partly done Jul-01: Nav split/reorder, JayVerse rename applied)*
-- Finish the Target IA table in [../features/current-design.md](../features/current-design.md): reflect Market split +
+- Finish the Target IA table in [../features/README.md](../features/README.md): reflect Market split +
   new order (already applied), and any new routes: `/market` content, ERC-7702 demo subpage, AP2 Stripe
   under `/ap2`.
 

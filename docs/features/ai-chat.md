@@ -14,7 +14,7 @@ update (retrain on every résumé edit), and prone to inventing facts; there is 
 in the repo. RAG **retrieves** the relevant profile/project text and **augments** the prompt, so
 answers stay current and accurate, and updating the bio is just editing content. (Decision logged in
 [2026-07-25 history](../history/2026-07-25-rabbit-history.md); roadmap home:
-[jun-30 design §5b](../tasks/jun-30-rabbit-design.md#s5b).)
+[jun-30 design §5b](../tasks/current-design.md#s5b).)
 
 **How it works**
 - **Corpus** — built from `lib/home-content.ts` (`PROFILE` + all `PROJECTS`, EN/KO), plus, when
@@ -39,13 +39,13 @@ the full markdown depth in the cloud, add one line to the `Dockerfile` runner st
 **Upgrade path.** Swap the lexical `retrieve()` for an embedding search (e.g. OpenAI embeddings +
 a small vector index) without touching the route or the UI — same `Chunk` interface.
 
-**⚠️ Access/gating — couples with auth + LLM gating** ([jun-30 design §2](../tasks/jun-30-rabbit-design.md#s2)
-↔ [§5b](../tasks/jun-30-rabbit-design.md#s5b)). This mode is meant
+**⚠️ Access/gating — couples with auth + LLM gating** ([jun-30 design §2](../tasks/current-design.md#s2)
+↔ [§5b](../tasks/current-design.md#s5b)). This mode is meant
 for **keyless, logged-out visitors** (employers/clients), but today general chat is BYO-API-key, the
 server-stored key is gated to jay's email, and `/chat` + `/api/chat` require login. So the current
 build only serves a **logged-in** user with a key configured. To make it truly public it needs a
 **server-keyed, rate-/budget-capped path scoped to the About-me prompt, exposed without login** —
-tracked in [jun-30 design §2 "Public About me path"](../tasks/jun-30-rabbit-design.md#s2). Decision pending from jay.
+tracked in [jun-30 design §2 "Public About me path"](../tasks/current-design.md#s2). Decision pending from jay.
 
 **Follow-ups**
 - [ ] Optional: embedding-based retrieval for larger corpora.

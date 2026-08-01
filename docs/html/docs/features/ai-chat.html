@@ -47,7 +47,7 @@ update (retrain on every résumé edit), and prone to inventing facts; there is 
 in the repo. RAG <strong>retrieves</strong> the relevant profile/project text and <strong>augments</strong> the prompt, so
 answers stay current and accurate, and updating the bio is just editing content. (Decision logged in
 <a href="../history/2026-07-25-rabbit-history.html">2026-07-25 history</a>; roadmap home:
-<a href="../tasks/jun-30-rabbit-design.html#s5b">jun-30 design §5b</a>.)</p>
+<a href="../tasks/current-design.html#s5b">jun-30 design §5b</a>.)</p>
 <p><strong>How it works</strong></p>
 <ul>
 <li><strong>Corpus</strong> — built from <code>lib/home-content.ts</code> (<code>PROFILE</code> + all <code>PROJECTS</code>, EN/KO), plus, when
@@ -70,13 +70,13 @@ the full markdown depth in the cloud, add one line to the <code>Dockerfile</code
 <code>COPY --from=builder /app/content ./content</code>.</p>
 <p><strong>Upgrade path.</strong> Swap the lexical <code>retrieve()</code> for an embedding search (e.g. OpenAI embeddings +
 a small vector index) without touching the route or the UI — same <code>Chunk</code> interface.</p>
-<p><strong>⚠️ Access/gating — couples with auth + LLM gating</strong> (<a href="../tasks/jun-30-rabbit-design.html#s2">jun-30 design §2</a>
-↔ <a href="../tasks/jun-30-rabbit-design.html#s5b">§5b</a>). This mode is meant
+<p><strong>⚠️ Access/gating — couples with auth + LLM gating</strong> (<a href="../tasks/current-design.html#s2">jun-30 design §2</a>
+↔ <a href="../tasks/current-design.html#s5b">§5b</a>). This mode is meant
 for <strong>keyless, logged-out visitors</strong> (employers/clients), but today general chat is BYO-API-key, the
 server-stored key is gated to jay&#39;s email, and <code>/chat</code> + <code>/api/chat</code> require login. So the current
 build only serves a <strong>logged-in</strong> user with a key configured. To make it truly public it needs a
 <strong>server-keyed, rate-/budget-capped path scoped to the About-me prompt, exposed without login</strong> —
-tracked in <a href="../tasks/jun-30-rabbit-design.html#s2">jun-30 design §2 &quot;Public About me path&quot;</a>. Decision pending from jay.</p>
+tracked in <a href="../tasks/current-design.html#s2">jun-30 design §2 &quot;Public About me path&quot;</a>. Decision pending from jay.</p>
 <p><strong>Follow-ups</strong></p>
 <ul>
 <li><input disabled="" type="checkbox"> Optional: embedding-based retrieval for larger corpora.</li>
