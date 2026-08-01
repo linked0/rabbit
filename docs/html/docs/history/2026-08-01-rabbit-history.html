@@ -103,6 +103,21 @@ pass; copied Verex&#39;s 5 task files into rabbit the same read-only-source way 
 README. Ties at the same commit are ordered arbitrarily (a few of Verex&#39;s task files were all
 touched in the same commit) — accepted as good enough, not worth over-engineering finer-grained
 ranking for.</p>
+<h3>docs: rename features README to current-design.md; merge index sections</h3>
+<p>jay wanted a stably-named &quot;current design&quot; doc per project instead of a generic <code>README.md</code>,
+and wanted the separate Tasks sections folded back into &quot;Current Projects&quot; (confirmed this was
+his original intention — the earlier separate-sections read was a misunderstanding on my part).</p>
+<p>Renamed <code>docs/features/README.md</code> → <code>docs/features/current-design.md</code> via <code>git mv</code> (history
+follows the rename) and updated the live links pointing to it (<code>README.md</code>,
+<code>docs/handbook/workflow.md</code>, and the 3 design task files citing it as &quot;IA:&quot;). Deliberately left
+<code>docs/history/*.md</code> and one stale absolute-path mention in <code>jun-26-rabbit.md</code> unedited — those
+are dated records, not live navigation, and rewriting them to match a later rename would be
+revisionist.</p>
+<p>For Verex: could not rename the actual source (would mean touching the verex repo again, ruled
+out earlier) — renamed only rabbit&#39;s read-only copy to match. Merged &quot;Current Projects&quot; /
+&quot;Rabbit — Tasks&quot; / &quot;Verex — Tasks&quot; into one &quot;Current Projects&quot; section: 1 current-design card +
+top-2-most-recent task cards per project = 6 total, matching jay&#39;s requested split. Verified
+every link resolves and confirmed verex&#39;s git status stayed clean throughout.</p>
 
   </article>
 </div>
