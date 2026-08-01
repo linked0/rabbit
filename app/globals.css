@@ -848,7 +848,7 @@ a.ghost:hover {
 }
 .home-proj-row {
   display: block;
-  padding: 7px 10px;
+  padding: 5px 10px;
   border-radius: var(--radius);
   text-decoration: none;
   color: inherit;
@@ -859,10 +859,17 @@ a.ghost:hover {
   background: var(--panel-2, rgb(127 127 127 / 0.06));
   border-color: var(--border);
 }
+/* 섹션 제목 줄 — 제목 왼쪽, "전체 보기 →" 오른쪽. 링크를 목록 아래가 아니라
+   여기에 두면 섹션 높이가 그만큼 줄어든다 (2026-08-01, jay). */
+.home-sec-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
 .home-proj-more {
-  align-self: flex-end;
-  margin-top: 4px;
-  padding: 4px 10px;
+  padding: 0;
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;

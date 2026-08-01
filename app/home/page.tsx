@@ -58,7 +58,12 @@ export default function HomePage() {
       {/* 수행 프로젝트 요약 — 좌: 피처드(Verex + 3D 구), 우: 프로젝트 텍스트 목록.
           전체(이미지 카드 그리드 포함)는 /projects 에서 (2026-08-01, jay). */}
       <section className="panel">
-        <h2>{pick(lang, "수행 프로젝트", "Projects")}</h2>
+        <div className="home-sec-head">
+          <h2 style={{ margin: 0 }}>{pick(lang, "수행 프로젝트", "Projects")}</h2>
+          <Link href="/projects" className="home-proj-more">
+            {pick(lang, "전체 보기 →", "View all →")}
+          </Link>
+        </div>
         <div className="home-split">
           {/* 좌: 피처드 — 라이브 앱으로 외부 링크. */}
           <a href={verexUrl()} target="_blank" rel="noreferrer" className="kpi featured-card">
@@ -70,31 +75,26 @@ export default function HomePage() {
               <div className="value" style={{ fontSize: 18 }}>
                 Verex ↗
               </div>
-              <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
+              <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>
                 {pick(
                   lang,
-                  "탈중앙화 예측 시장 — truth through exchange. CTF(조건부 토큰) 기반 Yes/No 마켓, 온체인 정산, 단독 설계·개발·운영(풀스택).",
-                  "A decentralized prediction market — truth through exchange. CTF (conditional-token) Yes/No markets with on-chain settlement; sole developer, end-to-end (full-stack)."
+                  "탈중앙화 예측 시장 — 단독 설계·개발·운영(풀스택).",
+                  "A decentralized prediction market — sole developer, end-to-end."
                 )}
               </div>
             </div>
           </a>
 
-          {/* 우: 프로젝트 텍스트 목록 — 각 항목은 상세 페이지로. */}
+          {/* 우: 프로젝트 제목만 (설명 줄 없음 — 섹션이 너무 길어져서, 2026-08-01 jay).
+              최근 3건만 요약하고 나머지는 "전체 보기 →"(= /projects)로 넘긴다. */}
           <div className="home-proj-list">
-            {projects.map((p) => (
+            {projects.slice(0, 3).map((p) => (
               <Link key={p.slug} href={`/home/${p.slug}`} className="home-proj-row">
-                <div className="value" style={{ fontSize: 15 }}>
+                <div className="value" style={{ fontSize: 14.5 }}>
                   {pick(lang, p.titleKo ?? p.title, p.title)}
-                </div>
-                <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>
-                  {pick(lang, p.descriptionKo ?? p.description, p.description)}
                 </div>
               </Link>
             ))}
-            <Link href="/projects" className="home-proj-more">
-              {pick(lang, "전체 보기 →", "View all →")}
-            </Link>
           </div>
         </div>
       </section>
