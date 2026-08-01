@@ -293,3 +293,55 @@ Governance, EVM-based Bosagora Mainnet) rather than the 3 most recent by date.
 
 Verified in a real browser (a scoped locator was needed — the first `button.ghost` on the page is
 the EN language toggle, not a chat prompt) and again on production after deploy.
+
+### content: Verex as the current prediction market
+
+Asked "예측 시장 프로젝트가 뭐죠?", Jay Chat only described Nostra — the older project — since
+that was the sole prediction-market entry in the corpus. Added
+`content/profile/prediction-market-verex.md` covering both: Nostra as the first take, Verex as
+the current improved successor (live at verex.jaylabs.xyz, built at Sapiens AI).
+
+Facts pulled from the verex repo rather than written from memory, and deliberately split into
+"built and running" (CTF markets, CLOB+AMM, multi-outcome groups, async settlement, MM agent,
+Sepolia on Cloud Run/Cloud SQL) vs "planned/exploratory" (EIP-7702 AA, negative-risk MM,
+Chainlink CCIP, markets-as-tokens, MCP), following the repo's own S1✅/S2-current/S3–S10-planned
+status. This bot talks to potential employers — claiming unshipped features as done would be the
+worst failure mode. Verified: asking whether AA/CCIP already work returns "don't have that
+detail", not a false yes.
+
+### fix(rag): corpus docs were being silently truncated
+
+Found while testing a new career-summary instruction that the bot kept ignoring. Root cause:
+`markdownChunks()` produced ONE chunk per file capped at 1200 chars. `resume-career.md` is ~8.6k,
+so everything past the first 1200 chars — the entire guidance section, and most of the career
+history — was unreachable by retrieval. The model wasn't disobeying; it could not see the text.
+
+Fixed by splitting each doc on its `##`/`###` headings so every section (and each employer entry)
+is separately retrievable, with the cap now per-chunk. Verified every section of
+`resume-career.md` now fits under the cap. This silently improves answers across the whole
+corpus — the older project write-ups had been cut off the same way.
+
+### feat: career-summary prompt + honest model attribution
+
+First example prompt is now "주요 경력을 요약해주세요" / "Summarize his career", with corpus guidance
+for the answer's shape (per jay, refined once): 1997–**2013** compressed to one sentence — Myriad
+folded in at his request, so the detailed part now starts at People & Technology (2013) exactly
+where his blockchain work begins — then one line per role through Sapiens AI, closing with
+project highlights, and never omitting the current role.
+
+Chat subtitle now names the model actually in use: "OpenAI ChatGPT(gpt-4o-mini) ... (RAG)". jay
+asked whether to also write "local LLM"; deliberately did NOT, since Jay Chat only calls OpenAI
+today (`lib/jay-chat.ts` has no local path) and advertising an unwired backend on a public page
+would be false. Worth adding once it actually exists.
+
+### note: cost exposure review (Telegram vs OpenAI)
+
+jay asked whether frequent Telegram notifications could get expensive. Telegram's Bot API is free
+(only rate limits, no billing), and the extra Cloud Run egress is negligible — the real cost
+driver is OpenAI. While checking, found and corrected an earlier overstatement of mine: the
+hourly token budget in `lib/jay-chat.ts` is in-memory and therefore **per instance**, and both
+services run `maxScale=20`, so the effective ceiling is up to 20×30k tokens/hour, not 30k. jay
+has since set an $80/month hard cap on the OpenAI side, which bounds the worst case (~9 days of
+a saturated attack to reach it), so the offered Postgres-backed global counter was deliberately
+NOT built — it would add DB complexity to defend an already-bounded risk. Revisit if Jay Chat
+ever gets real traffic.

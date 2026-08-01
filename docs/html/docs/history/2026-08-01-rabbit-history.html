@@ -271,6 +271,47 @@ project list is now a fixed set of the three jay called most important (NFT Mark
 Governance, EVM-based Bosagora Mainnet) rather than the 3 most recent by date.</p>
 <p>Verified in a real browser (a scoped locator was needed — the first <code>button.ghost</code> on the page is
 the EN language toggle, not a chat prompt) and again on production after deploy.</p>
+<h3>content: Verex as the current prediction market</h3>
+<p>Asked &quot;예측 시장 프로젝트가 뭐죠?&quot;, Jay Chat only described Nostra — the older project — since
+that was the sole prediction-market entry in the corpus. Added
+<code>content/profile/prediction-market-verex.md</code> covering both: Nostra as the first take, Verex as
+the current improved successor (live at verex.jaylabs.xyz, built at Sapiens AI).</p>
+<p>Facts pulled from the verex repo rather than written from memory, and deliberately split into
+&quot;built and running&quot; (CTF markets, CLOB+AMM, multi-outcome groups, async settlement, MM agent,
+Sepolia on Cloud Run/Cloud SQL) vs &quot;planned/exploratory&quot; (EIP-7702 AA, negative-risk MM,
+Chainlink CCIP, markets-as-tokens, MCP), following the repo&#39;s own S1✅/S2-current/S3–S10-planned
+status. This bot talks to potential employers — claiming unshipped features as done would be the
+worst failure mode. Verified: asking whether AA/CCIP already work returns &quot;don&#39;t have that
+detail&quot;, not a false yes.</p>
+<h3>fix(rag): corpus docs were being silently truncated</h3>
+<p>Found while testing a new career-summary instruction that the bot kept ignoring. Root cause:
+<code>markdownChunks()</code> produced ONE chunk per file capped at 1200 chars. <code>resume-career.md</code> is ~8.6k,
+so everything past the first 1200 chars — the entire guidance section, and most of the career
+history — was unreachable by retrieval. The model wasn&#39;t disobeying; it could not see the text.</p>
+<p>Fixed by splitting each doc on its <code>##</code>/<code>###</code> headings so every section (and each employer entry)
+is separately retrievable, with the cap now per-chunk. Verified every section of
+<code>resume-career.md</code> now fits under the cap. This silently improves answers across the whole
+corpus — the older project write-ups had been cut off the same way.</p>
+<h3>feat: career-summary prompt + honest model attribution</h3>
+<p>First example prompt is now &quot;주요 경력을 요약해주세요&quot; / &quot;Summarize his career&quot;, with corpus guidance
+for the answer&#39;s shape (per jay, refined once): 1997–<strong>2013</strong> compressed to one sentence — Myriad
+folded in at his request, so the detailed part now starts at People &amp; Technology (2013) exactly
+where his blockchain work begins — then one line per role through Sapiens AI, closing with
+project highlights, and never omitting the current role.</p>
+<p>Chat subtitle now names the model actually in use: &quot;OpenAI ChatGPT(gpt-4o-mini) ... (RAG)&quot;. jay
+asked whether to also write &quot;local LLM&quot;; deliberately did NOT, since Jay Chat only calls OpenAI
+today (<code>lib/jay-chat.ts</code> has no local path) and advertising an unwired backend on a public page
+would be false. Worth adding once it actually exists.</p>
+<h3>note: cost exposure review (Telegram vs OpenAI)</h3>
+<p>jay asked whether frequent Telegram notifications could get expensive. Telegram&#39;s Bot API is free
+(only rate limits, no billing), and the extra Cloud Run egress is negligible — the real cost
+driver is OpenAI. While checking, found and corrected an earlier overstatement of mine: the
+hourly token budget in <code>lib/jay-chat.ts</code> is in-memory and therefore <strong>per instance</strong>, and both
+services run <code>maxScale=20</code>, so the effective ceiling is up to 20×30k tokens/hour, not 30k. jay
+has since set an $80/month hard cap on the OpenAI side, which bounds the worst case (~9 days of
+a saturated attack to reach it), so the offered Postgres-backed global counter was deliberately
+NOT built — it would add DB complexity to defend an already-bounded risk. Revisit if Jay Chat
+ever gets real traffic.</p>
 
   </article>
 </div>
