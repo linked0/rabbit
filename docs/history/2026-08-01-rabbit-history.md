@@ -192,3 +192,34 @@ Verified live on the real production domain, not just Cloud Run's `*.run.app` UR
 `https://www.jaylabs.xyz/jay-chat` loads (200), `/api/jay-chat` returns a real grounded answer,
 and the nav genuinely shows "제이 챗" (Jay Chat) publicly — confirmed `ALLOW_CHAT=true` was
 already set locally so the menu item didn't silently stay hidden behind its visibility flag.
+
+### feat: Telegram notifications for site visits + Jay Chat starts, deployed
+
+jay asked for the same Telegram-notification pattern built for verex earlier today to also
+cover rabbit: notify on home-page/other-page visits and on chat starts. Added
+`lib/visitor-notify.ts` (`notifyPageView`, `notifyChatStart`), fire-and-forget, 5-minute
+per-(page, visitor) debounce so refreshes don't spam duplicates. Wired into the home page
+(`app/home/page.tsx`, served at `/` via the existing rewrite), the Jay Chat page, and the first
+message of a new Jay Chat conversation. Scope assumption: these two entry points, not every page
+site-wide — flagged for jay to confirm or expand later.
+
+Local testing hit a real but environment-local snag: Node's `fetch` to `api.telegram.org` timed
+out from this sandbox specifically (both IPv6 and IPv4 connection attempts failed at the socket
+level, confirmed with `--dns-result-order=ipv4first`), while `curl` to the same host succeeded
+instantly. Diagnosed as a sandbox-local networking quirk, not a code bug — didn't chase it
+further since the identical fetch pattern already proved working end-to-end against verex's real
+Cloud Run deployment earlier today (jay confirmed receiving that message). Deployed anyway on
+that basis, and confirmed live afterward (home + jay-chat both 200).
+
+`scripts/deploy.sh`: `TELEGRAM_BOT_TOKEN` through Secret Manager (`rabbit-telegram-bot-token`,
+same `upsert_secret` pattern as everything else), `TELEGRAM_CHAT_ID` as a plain env var.
+
+### fix(nav): EN/KO menu labels had drifted apart
+
+jay noticed the top-menu labels didn't match between languages. Found two real mismatches:
+`/market` said "마켓" (KO) vs "Hyperliquid Trading" (EN), and `/xyz` said "XYZ 데모" (KO) vs "PBS"
+(EN) — both pre-existing, not introduced today. Used each page's own `<h1>` (which already agrees
+between languages) as the source of truth rather than guessing: `/market`'s h1 is just "Market"
+in both languages, `/xyz`'s is "XYZ Demo — PBS consumer track" in both — so aligned the nav's EN
+labels to match KO (and the pages' own titles) rather than the other way around. Deployed and
+confirmed live.

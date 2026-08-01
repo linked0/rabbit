@@ -192,6 +192,31 @@ account-level cap is a defense-in-depth backstop, not a blocker.</p>
 <code>https://www.jaylabs.xyz/jay-chat</code> loads (200), <code>/api/jay-chat</code> returns a real grounded answer,
 and the nav genuinely shows &quot;제이 챗&quot; (Jay Chat) publicly — confirmed <code>ALLOW_CHAT=true</code> was
 already set locally so the menu item didn&#39;t silently stay hidden behind its visibility flag.</p>
+<h3>feat: Telegram notifications for site visits + Jay Chat starts, deployed</h3>
+<p>jay asked for the same Telegram-notification pattern built for verex earlier today to also
+cover rabbit: notify on home-page/other-page visits and on chat starts. Added
+<code>lib/visitor-notify.ts</code> (<code>notifyPageView</code>, <code>notifyChatStart</code>), fire-and-forget, 5-minute
+per-(page, visitor) debounce so refreshes don&#39;t spam duplicates. Wired into the home page
+(<code>app/home/page.tsx</code>, served at <code>/</code> via the existing rewrite), the Jay Chat page, and the first
+message of a new Jay Chat conversation. Scope assumption: these two entry points, not every page
+site-wide — flagged for jay to confirm or expand later.</p>
+<p>Local testing hit a real but environment-local snag: Node&#39;s <code>fetch</code> to <code>api.telegram.org</code> timed
+out from this sandbox specifically (both IPv6 and IPv4 connection attempts failed at the socket
+level, confirmed with <code>--dns-result-order=ipv4first</code>), while <code>curl</code> to the same host succeeded
+instantly. Diagnosed as a sandbox-local networking quirk, not a code bug — didn&#39;t chase it
+further since the identical fetch pattern already proved working end-to-end against verex&#39;s real
+Cloud Run deployment earlier today (jay confirmed receiving that message). Deployed anyway on
+that basis, and confirmed live afterward (home + jay-chat both 200).</p>
+<p><code>scripts/deploy.sh</code>: <code>TELEGRAM_BOT_TOKEN</code> through Secret Manager (<code>rabbit-telegram-bot-token</code>,
+same <code>upsert_secret</code> pattern as everything else), <code>TELEGRAM_CHAT_ID</code> as a plain env var.</p>
+<h3>fix(nav): EN/KO menu labels had drifted apart</h3>
+<p>jay noticed the top-menu labels didn&#39;t match between languages. Found two real mismatches:
+<code>/market</code> said &quot;마켓&quot; (KO) vs &quot;Hyperliquid Trading&quot; (EN), and <code>/xyz</code> said &quot;XYZ 데모&quot; (KO) vs &quot;PBS&quot;
+(EN) — both pre-existing, not introduced today. Used each page&#39;s own <code>&lt;h1&gt;</code> (which already agrees
+between languages) as the source of truth rather than guessing: <code>/market</code>&#39;s h1 is just &quot;Market&quot;
+in both languages, <code>/xyz</code>&#39;s is &quot;XYZ Demo — PBS consumer track&quot; in both — so aligned the nav&#39;s EN
+labels to match KO (and the pages&#39; own titles) rather than the other way around. Deployed and
+confirmed live.</p>
 
   </article>
 </div>
