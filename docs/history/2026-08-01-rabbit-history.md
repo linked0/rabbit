@@ -32,3 +32,13 @@ Per jay's explicit instruction, fast-forward merged `claude/remove-nostra-core-s
 commits, clean fast-forward, no divergence from `origin/main`) directly into `main` and pushed
 both `rabbit` and `verex` — bypassing the repo's own stated PR-review policy for this one-off
 docs-only change, at jay's repeated explicit request.
+
+### docs: scope correction — keep the Verex README copy inside rabbit, not in verex
+
+jay clarified that all doc-conversion work should stay confined to the rabbit project only —
+pushing `docs/html/README.html` to the verex repo (in the change above) was out of scope.
+Reverted that commit on verex (`git revert`, pushed) and instead regenerated the same rendered
+Verex README into `rabbit/docs/html/projects/verex/README.html`, reading `verex/README.md` as a
+read-only source but writing the output only inside rabbit. Updated the "Current Projects" card
+in `docs/index.html` to link to the new in-repo path instead of the cross-repo one. verex's git
+history is now untouched by this work.
