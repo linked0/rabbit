@@ -223,3 +223,37 @@ between languages) as the source of truth rather than guessing: `/market`'s h1 i
 in both languages, `/xyz`'s is "XYZ Demo — PBS consumer track" in both — so aligned the nav's EN
 labels to match KO (and the pages' own titles) rather than the other way around. Deployed and
 confirmed live.
+
+**Correction:** jay wanted the opposite direction — keep the *English* labels and align Korean to
+them. Redid it: `/market` → "하이퍼리퀴드 트레이딩" / "Hyperliquid Trading", `/xyz` → "PBS" in both
+(kept as the acronym, matching how "AP2" stays untranslated elsewhere in the nav).
+
+### content: enrich the profile tagline
+
+jay wanted the tagline to cover more than the generic specialization line. Drafted an added
+sentence for review first (he'd asked to see it before committing), iterated once on his feedback
+(drop "설계" — keep just "구현"), then committed the approved version: L1 blockchain engine built
+from scratch + hands-on end-to-end experience across DAO governance, NFT marketplace, and
+prediction market platforms. Feeds both the homepage headline and Jay Chat's RAG corpus.
+
+### feat: merge Featured+Projects on home, inline Jay Chat, add /projects
+
+jay's homepage restructure. Reflected the full design back in chat before touching code (it's a
+live public portfolio, and the request had several interacting parts), and confirmed two open
+points with him: URL = `/projects`, and `/jay-chat` removed entirely rather than kept unlinked.
+
+Home now has one "수행 프로젝트" section replacing the separate Featured + Projects sections, split
+half/half: left = Verex featured card with the rotating 3D sphere, right = compact text-only
+project list + a "전체 보기 →" link. Jay Chat is inline below it. The full Featured card and
+image-card grid moved to the new `/projects` page.
+
+Notable details: `/api/jay-chat` is intentionally kept (the inline chat still calls it) — only the
+page route is gone. Created a new `ALLOW_PROJECTS` flag rather than reusing `ALLOW_CHAT` for a
+differently-named menu item, since silently repurposing the old code would have been confusing
+later.
+
+Checked both pages **visually in a browser** at 1280px before deploying, not just via build
+output — which caught a layout flaw the build couldn't: the Verex card only filled the top of its
+column, leaving a large empty gap next to the taller project list. Fixed with equal-height
+columns. Deployed and confirmed live (home 200, /projects 200, old /jay-chat 302, nav shows
+"수행 프로젝트", inline chat returns a real grounded answer).
