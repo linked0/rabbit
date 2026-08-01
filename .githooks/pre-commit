@@ -1,0 +1,31 @@
+#!/bin/sh
+# Regenerates docs/html/ for any staged .md files before commit, so the
+# committed HTML is never stale. Only converts what changed (not a full
+# rescan of all docs) — see scripts/generate-docs-html.mjs.
+#
+# Enabled via: git config core.hooksPath .githooks
+set -e
+
+cd "$(git rev-parse --show-toplevel)"
+
+changed_md=$(git diff --cached --name-only --diff-filter=ACMR -- '*.md')
+deleted_md=$(git diff --cached --name-only --diff-filter=D -- '*.md')
+
+if [ -z "$changed_md" ] && [ -z "$deleted_md" ]; then
+  exit 0
+fi
+
+if [ -n "$changed_md" ]; then
+  echo "docs-html: converting changed markdown file(s)..."
+  # shellcheck disable=SC2086
+  node scripts/generate-docs-html.mjs $changed_md
+fi
+
+if [ -n "$deleted_md" ]; then
+  echo "$deleted_md" | while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    rm -f "docs/html/${f%.md}.html"
+  done
+fi
+
+git add -A -- docs/html

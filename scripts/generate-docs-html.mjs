@@ -107,7 +107,12 @@ ${bodyHtml}
 }
 
 function main() {
-  const files = findMdFiles(REPO_ROOT);
+  // With file args, only convert those (used by the pre-commit hook for changed files).
+  // With no args, do a full scan (used by `pnpm docs:html`).
+  const argFiles = process.argv.slice(2).filter((a) => /\.md$/i.test(a));
+  const files = argFiles.length
+    ? argFiles.map((f) => path.resolve(REPO_ROOT, f)).filter((f) => fs.existsSync(f))
+    : findMdFiles(REPO_ROOT);
   const seenOutputs = new Map();
   const conflicts = [];
   let converted = 0;
