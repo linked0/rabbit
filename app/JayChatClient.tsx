@@ -14,9 +14,10 @@ export default function JayChatClient() {
   const [error, setError] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    const text = input.trim();
+  // 예시 질문 버튼은 입력창을 채우는 대신 곧바로 전송한다 (2026-08-01, jay) —
+  // 그래서 전송할 문장을 인자로 받는다. 폼 제출은 입력창 값을 넘긴다.
+  async function send(raw: string) {
+    const text = raw.trim();
     if (!text || busy) return;
 
     setError(null);
@@ -75,7 +76,7 @@ export default function JayChatClient() {
       {messages.length === 0 && (
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
           {examplePrompts.map((p) => (
-            <button key={p} type="button" className="ghost" onClick={() => setInput(p)}>
+            <button key={p} type="button" className="ghost" disabled={busy} onClick={() => void send(p)}>
               {p}
             </button>
           ))}
@@ -96,7 +97,13 @@ export default function JayChatClient() {
         ))}
       </div>
       {error && <p className="err">{error}</p>}
-      <form onSubmit={send} style={{ display: "flex", gap: 8, marginTop: 12 }}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void send(input);
+        }}
+        style={{ display: "flex", gap: 8, marginTop: 12 }}
+      >
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}

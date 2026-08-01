@@ -18,8 +18,12 @@ export const metadata = {
 export default function HomePage() {
   const lang = getLang();
   notifyPageView("/ (home)", headers().get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown");
-  // 최신순(날짜 내림차순) 정렬 — 날짜는 "YYYY-MM-DD" 문자열이라 문자열 비교로 충분.
-  const projects = [...PROJECTS].sort((a, b) => b.date.localeCompare(a.date));
+  // 홈에 싣는 대표 프로젝트 — jay가 직접 고른 3건(가장 중요한 것들)이라 날짜순이 아니라
+  // 이 순서를 그대로 쓴다. 해당 slug 가 없어지면 조용히 빠지도록 filter (2026-08-01, jay).
+  const HOME_SLUGS = ["boaspace", "votera", "evm-bosagora"];
+  const featured = HOME_SLUGS.map((s) => PROJECTS.find((p) => p.slug === s)).filter(
+    (p): p is (typeof PROJECTS)[number] => !!p
+  );
   return (
     <>
       <Nav />
@@ -86,9 +90,11 @@ export default function HomePage() {
           </a>
 
           {/* 우: 프로젝트 제목만 (설명 줄 없음 — 섹션이 너무 길어져서, 2026-08-01 jay).
-              최근 3건만 요약하고 나머지는 "전체 보기 →"(= /projects)로 넘긴다. */}
+              최신순이 아니라 jay가 꼽은 대표 3건을 고정으로 싣는다 (2026-08-01):
+              NFT 마켓플레이스 · DAO 거버넌스 · EVM 기반 Bosagora 메인넷.
+              나머지는 "전체 보기 →"(= /projects)로 넘긴다. */}
           <div className="home-proj-list">
-            {projects.slice(0, 3).map((p) => (
+            {featured.map((p) => (
               <Link key={p.slug} href={`/home/${p.slug}`} className="home-proj-row">
                 <div className="value" style={{ fontSize: 14.5 }}>
                   {pick(lang, p.titleKo ?? p.title, p.title)}
