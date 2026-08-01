@@ -81,6 +81,12 @@ single-dev repo and needs no new dependency) — on each commit it regenerates <
 staged <code>.md</code> files only, removes the generated <code>.html</code> for deleted <code>.md</code> files, and stages the
 result automatically. Known limit: a brand-new <code>.md</code> with no card in <code>index.html</code> yet still
 needs a manual card added — the hook only keeps already-linked docs in sync.</p>
+<h3>docs(index): fix Current Projects — feature roadmap doc, not root README</h3>
+<p>jay clarified the original ask: the &quot;Rabbit&quot; card in Current Projects should link to
+<code>docs/features/README.md</code> (the feature roadmap/current-work index), not the generic project
+root <code>README.md</code> I&#39;d used. Repointed the card to <code>html/docs/features/README.html</code> and retitled
+it &quot;Rabbit — Feature Designs&quot; to match the doc&#39;s own heading. No script changes needed — that
+file was already converted in the initial full pass.</p>
 
   </article>
 </div>
