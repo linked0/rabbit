@@ -42,3 +42,14 @@ Verex README into `rabbit/docs/html/projects/verex/README.html`, reading `verex/
 read-only source but writing the output only inside rabbit. Updated the "Current Projects" card
 in `docs/index.html` to link to the new in-repo path instead of the cross-repo one. verex's git
 history is now untouched by this work.
+
+### chore: pre-commit hook to auto-convert only changed .md files
+
+jay asked to avoid re-converting all 290 files on every change — only the ones that actually
+changed. Extended `scripts/generate-docs-html.mjs` to accept explicit file paths as CLI args
+(converts just those; falls back to a full scan with no args). Added `.githooks/pre-commit`,
+enabled via `git config core.hooksPath .githooks` (chose this over Husky since it's a
+single-dev repo and needs no new dependency) — on each commit it regenerates `docs/html/` for
+staged `.md` files only, removes the generated `.html` for deleted `.md` files, and stages the
+result automatically. Known limit: a brand-new `.md` with no card in `index.html` yet still
+needs a manual card added — the hook only keeps already-linked docs in sync.
