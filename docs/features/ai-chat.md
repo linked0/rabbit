@@ -30,22 +30,53 @@ answers stay current and accurate, and updating the bio is just editing content.
 - **UI** — a `👤 About Hyunjae` toggle in `app/chat/ChatClient.tsx`, next to the 🍝 Spaghetti MCP
   toggle, with example prompts shown when on.
 
-**Deploy note.** `content/` is **not** copied into the Cloud Run image (the Dockerfile ships only
-`.next/standalone` + `.next/static` + `public`), so the `.md` depth is **local-dev only** by
-default — in the cloud the feature still works from the structured `home-content.ts` corpus. To get
-the full markdown depth in the cloud, add one line to the `Dockerfile` runner stage:
-`COPY --from=builder /app/content ./content`.
+**Deploy note.** `content/` **is** copied into the Cloud Run image (`Dockerfile` runner stage has
+`COPY --from=builder /app/content ./content`, added 2026-08-01 for Jay Chat) — the `.md` depth
+works in production, not just local dev.
 
 **Upgrade path.** Swap the lexical `retrieve()` for an embedding search (e.g. OpenAI embeddings +
 a small vector index) without touching the route or the UI — same `Chunk` interface.
 
-**⚠️ Access/gating — couples with auth + LLM gating** ([jun-30 design §2](../tasks/current-plan.md#s2)
-↔ [§5b](../tasks/current-plan.md#s5b)). This mode is meant
-for **keyless, logged-out visitors** (employers/clients), but today general chat is BYO-API-key, the
-server-stored key is gated to jay's email, and `/chat` + `/api/chat` require login. So the current
-build only serves a **logged-in** user with a key configured. To make it truly public it needs a
-**server-keyed, rate-/budget-capped path scoped to the About-me prompt, exposed without login** —
-tracked in [jun-30 design §2 "Public About me path"](../tasks/current-plan.md#s2). Decision pending from jay.
+**✅ Access/gating — resolved via Jay Chat (2026-08-01).** The original gap: this mode is meant
+for **keyless, logged-out visitors** (employers/clients), but `/chat` + `/api/chat` require login
+and use the owner's server-stored key. Resolved by building a **separate public surface** instead
+of opening up `/chat` itself — see "Jay Chat" below.
+
+## Jay Chat — public surface (✅ implemented, 2026-08-01)
+
+**What:** the nav item (formerly "AI Chat") is renamed **"Jay Chat"**, points at a new public page
+`/jay-chat`, and is `pub: true` — visible and usable by logged-out visitors. `/chat` itself is
+unchanged (still owner-only, still general-purpose + the `👤 About Hyunjae` toggle) — Jay Chat is
+an isolated build, not a retrofit, so there's zero risk to the existing private chat.
+
+**How it stays safe as a public, keyless endpoint:**
+- **Dedicated API key** (`JAY_CHAT_OPENAI_API_KEY`, separate from `AI_API_KEY`) — revocable on its
+  own if ever abused, without touching the owner's private chat.
+- **Always-on persona, never general chat** — `/api/jay-chat` (`app/api/jay-chat/route.ts`) always
+  injects `buildAboutMeSystemMessage()` itself; there's no client-supplied toggle to turn it off,
+  so the endpoint can't be repurposed as a free general-purpose proxy.
+- **Hourly global token budget** (`lib/jay-chat.ts`, in-memory, default 30k tokens/hr, env
+  `JAY_CHAT_HOURLY_TOKEN_BUDGET`) — shared across all visitors, not per-visitor. A deliberate v1
+  simplification (jay's call, 2026-08-01): real traffic is rare right now, so the downside (one
+  active conversation could exhaust the shared hour) is low-probability, and splitting per-visitor
+  later is a small, contained change if traffic ever picks up. Checked before every request, so
+  even a fast burst gets cut off at the cap — bounds cost regardless of request speed.
+- **Per-IP burst guard** (15 req/min) — not a cost control (the token budget already bounds cost),
+  just protects server stability from one script hammering it with simultaneous requests.
+- **Request caps** — max 20 messages/conversation, max 2000 chars/message, max 500 output tokens —
+  bound worst-case cost per request.
+- **OpenAI account-level hard spending cap** — set on the dedicated key in the OpenAI dashboard, as
+  the final backstop regardless of any bug in the app's own limiting logic.
+
+**Corpus expansion:** `content/profile/github-summary.md` added (real data, GitHub's public API,
+no auth needed) — picked up automatically by the existing `markdownChunks()` loader, no code
+change needed. **LinkedIn** intentionally not scraped (against LinkedIn's ToS) — needs jay to
+manually export/paste his profile text into a `content/profile/*.md` file whenever he's ready;
+the loader will pick it up the same way, automatically.
+
+**Deploy note — content/ now ships to Cloud Run.** `Dockerfile` now has
+`COPY --from=builder /app/content ./content`, so the markdown corpus depth (including the new
+GitHub summary) works in production too, not just local dev — resolves the limitation noted above.
 
 **Follow-ups**
 - [ ] Optional: embedding-based retrieval for larger corpora.
