@@ -61,16 +61,22 @@ export default function JayChatClient() {
 
   const examplePrompts =
     lang === "ko"
-      ? ["무슨 일을 하나요?", "예측 시장 프로젝트가 뭐죠?", "어떻게 연락하나요?"]
-      : ["What does he do?", "Tell me about the prediction market project.", "How do I contact him?"];
+      ? ["주요 경력을 요약해주세요", "예측 시장 프로젝트가 뭐죠?", "어떻게 연락하나요?"]
+      : [
+          "Summarize his career.",
+          "Tell me about the prediction market project.",
+          "How do I contact him?",
+        ];
 
   return (
     <section className="panel">
       <p className="muted" style={{ marginBottom: 12 }}>
+        {/* 실제로 쓰는 모델만 적는다 — 현재 Jay Chat 은 OpenAI 만 호출한다(lib/jay-chat.ts).
+            로컬 LLM 은 아직 연결돼 있지 않으므로 붙이지 않는다 (2026-08-01, jay와 확인). */}
         {pick(
           lang,
-          "Hyunjae Lee의 경력·프로젝트에 대해 물어보세요 — 프로필 기반으로 답합니다.",
-          "Ask about Hyunjae Lee's background and projects — answers are grounded in his profile."
+          "Hyunjae Lee의 경력·프로젝트에 대해 물어보세요 — OpenAI ChatGPT(gpt-4o-mini)가 프로필·이력 데이터를 근거로(RAG) 답합니다.",
+          "Ask about Hyunjae Lee's background and projects — answered by OpenAI's ChatGPT (gpt-4o-mini), grounded in his profile and résumé (RAG)."
         )}
       </p>
       {messages.length === 0 && (

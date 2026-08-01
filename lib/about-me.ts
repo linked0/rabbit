@@ -63,16 +63,25 @@ function markdownChunks(): Chunk[] {
     const path = require("node:path") as typeof import("node:path");
     const dir = path.join(process.cwd(), "content", "profile");
     if (!fs.existsSync(dir)) return [];
-    return fs
-      .readdirSync(dir)
-      .filter((f) => f.endsWith(".md"))
-      .map((f) => {
-        const raw = fs.readFileSync(path.join(dir, f), "utf8");
-        const text = stripMarkdown(raw);
-        // Cap each doc so one long write-up can't crowd out the rest of the context.
-        return { source: `doc:${f}`, text: text.slice(0, 1200) };
-      })
-      .filter((c) => c.text.length > 0);
+    // Split each doc on its top-level "## " headings so a long file contributes SEVERAL
+    // retrievable chunks. Previously each file was one chunk truncated to 1200 chars, which
+    // silently discarded everything past that point — e.g. resume-career.md is ~8.6k chars,
+    // so its later sections (career-summary guidance) could never be retrieved at all.
+    const out: Chunk[] = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith(".md"))) {
+      const raw = fs.readFileSync(path.join(dir, f), "utf8");
+      // Split on "##" AND "###" — the per-employer "###" sections of a long career doc each
+      // become their own chunk, instead of everything after the first 1500 chars being lost.
+      for (const part of raw.split(/\n(?=###?\s)/)) {
+        const heading = (part.match(/^###?\s+(.+)$/m)?.[1] ?? "").trim();
+        // Still cap per chunk, so one very long section can't crowd out the rest.
+        const text = stripMarkdown(part).slice(0, 1500);
+        if (text.length > 0) {
+          out.push({ source: heading ? `doc:${f} — ${heading}` : `doc:${f}`, text });
+        }
+      }
+    }
+    return out;
   } catch {
     return [];
   }

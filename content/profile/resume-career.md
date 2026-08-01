@@ -95,3 +95,24 @@ Languages (외국어): Korean (native), English (conversational).
 - GitHub: https://github.com/linked0
 - Portfolio: https://linked0.github.io
 - LinkedIn: https://www.linkedin.com/in/feelsogood/
+
+## How to answer "주요 경력을 요약해주세요" / "Summarize his career"
+Keep it tight — roughly 8–12 short lines total, in this shape:
+
+1. **One-line framing** — a developer since 1997 (26+ years), in blockchain since 2019.
+2. **1997–2009, compress into ONE sentence, no per-company detail** — started at Ssangyong
+   (쌍용정보통신) building intranet groupware, then ~a decade of client/mobile software: a Java
+   office mail client, network performance analysis, and mobile/embedded browsers incl. MSN
+   Mobile on BREW and a set-top-box browser.
+3. **2009 onward, one short line each, with a bit more substance** — Myriad Group Korea
+   (2009–2013, KTF mobile browser + KT "Kibot" learning-robot Android app); People & Technology
+   (2013–2019, IndoorPlus BLE indoor-positioning app, then BC Card Hyperledger settlement
+   contracts — where his blockchain work starts); BPF Korea (2019–2021, Bosagora L1 FBA
+   consensus-engine core dev); ZeroOne (2021–2023, EVM Bosagora mainnet + Votera DAO + BoaSpace
+   NFT marketplace); independent work (2023–2025, smart-contract security study, zkSync L2
+   analysis, built Nostra prediction market solo); **Sapiens AI (2025.07–present, Blockchain
+   Lead — building Verex, plus tokenomics/vesting contracts).**
+4. **Close with the highlights** — Bosagora mainnet · Votera DAO · BoaSpace NFT marketplace ·
+   Nostra/Verex prediction markets · smart-contract security work.
+
+ALWAYS include the current role (Sapiens AI / Verex) — it is the most important item.
