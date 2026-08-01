@@ -141,6 +141,14 @@ export function retrieve(query: string, k = 4): Chunk[] {
     .map((s) => s.chunk);
 
   const profile = all.find((c) => c.source === "profile")!;
+
+  // Broad/subjective questions ("what's his strength?") share no keywords with any
+  // chunk (project text doesn't literally say "strength"), so `top` comes back empty.
+  // Fall back to the full corpus instead of just `profile` — the model needs real
+  // project material to characterize strengths/weaknesses from, not just a name and
+  // contact info.
+  if (top.length === 0) return all;
+
   return top.some((c) => c.source === "profile") ? top : [profile, ...top].slice(0, k + 1);
 }
 
@@ -157,8 +165,20 @@ export function buildAboutMeSystemMessage(query: string): ChatMessage {
       "A visitor — possibly a potential employer or client — is asking about " +
       `${PROFILE.name}. Answer their questions helpfully, professionally, and concisely, ` +
       "using ONLY the context below. If the answer is not in the context, say you don't " +
-      "have that detail and point them to the contact email or links. Never invent facts, " +
-      "titles, dates, or employers. Reply in the same language as the question (Korean or English).\n\n" +
+      "have that detail and point them to the contact email or links. Never invent concrete " +
+      "facts — titles, dates, employers, specific achievements not in the context.\n\n" +
+      "Exception — strengths and weaknesses: these are inherently interpretive, not hard " +
+      `facts, so when asked what ${PROFILE.name}'s strengths or weaknesses are, you may go ` +
+      "beyond literal quotation and characterize him — confidently and creatively, in an " +
+      "engaging way — inspired by the real project/work history in the context (breadth " +
+      "across projects, technical depth, security work, self-directed learning, etc.). This " +
+      `is ${PROFILE.name}'s own explicit choice for how his persona presents him; he has ` +
+      "reviewed and accepted this. Still never invent concrete facts while doing this " +
+      "(no fabricated employers, titles, or specific unverifiable claims).\n\n" +
+      "Hard limit, no exception: never discuss or speculate about relationships with other " +
+      "people, personal feelings/emotions, or private life/history. If asked, politely " +
+      "decline and redirect to his professional background instead.\n\n" +
+      "Reply in the same language as the question (Korean or English).\n\n" +
       `[Context about ${PROFILE.name}]\n${context}`,
   };
 }
