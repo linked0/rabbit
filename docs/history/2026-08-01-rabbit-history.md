@@ -100,3 +100,16 @@ out earlier) — renamed only rabbit's read-only copy to match. Merged "Current 
 "Rabbit — Tasks" / "Verex — Tasks" into one "Current Projects" section: 1 current-design card +
 top-2-most-recent task cards per project = 6 total, matching jay's requested split. Verified
 every link resolves and confirmed verex's git status stayed clean throughout.
+
+### docs: fix — Current Design belongs in docs/tasks, not docs/features
+
+jay corrected the above entry: the intended file was `docs/tasks/jun-30-rabbit-design.md` (the
+most recently-edited design doc — referenced by ~10 other files with section anchors like
+`#s2`/`#s5b`), not `docs/features/README.md`. Reverted the features rename and its link
+updates, then renamed `docs/tasks/jun-30-rabbit-design.md` → `docs/tasks/current-design.md`,
+fixing all live references across `docs/rabbit-design.md`, `tasks/details/`, `tasks/jul-01-...`,
+and 6 `docs/features/*.md` files. History entries left alone as before.
+
+Applied the same correction to Verex's rabbit-side copy only: `jul-28-verex-design.md` (the
+verex equivalent by last-edit recency) is now `current-design.html` there. Verex's real repo
+stayed untouched throughout — confirmed via `git status` after each step.
