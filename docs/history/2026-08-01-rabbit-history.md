@@ -113,3 +113,25 @@ and 6 `docs/features/*.md` files. History entries left alone as before.
 Applied the same correction to Verex's rabbit-side copy only: `jul-28-verex-design.md` (the
 verex equivalent by last-edit recency) is now `current-design.html` there. Verex's real repo
 stayed untouched throughout — confirmed via `git status` after each step.
+
+### docs: full correction — restore Feature Designs card, rename to current-plan.md, add View All Tasks
+
+jay laid out the complete intent again after two rounds of partial misses: (1) keep the section
+merge (confirmed correct); (2) restore the `docs/features/README.md` "Feature Designs" card,
+which I'd wrongly dropped; (3) rename the task-design file to `current-plan.md` (changed his
+mind from "current-design"); (4) Current Projects = 6 cards total, 3 per project (Feature
+Designs + Current Plan + 1 latest task); (5) a "View All Tasks" link for files that don't make
+the cut, mirroring the Logs section's existing "View All Logs" pattern.
+
+Given this was the third correction cycle on the same section, reflected the full understanding
+back in chat and got explicit confirmation ("Go!") before touching files again, rather than
+risk a fourth rework. Built `docs/tasks/summary.md` (real file, flows through the normal
+pipeline) and a hand-built Verex-side equivalent
+(`docs/html/projects/verex/docs/tasks/summary.html`, since verex's repo isn't touched) listing
+every task newest-first.
+
+Noted and worked around a side effect: my own cross-reference edits earlier today had bumped
+some files' git-commit dates, which would have skewed a fresh "latest" recompute — used the
+ranking already established earlier in the session instead of re-deriving from the now-polluted
+dates. Verified all links resolve, exactly 6 cards in the section, and verex's git status stayed
+clean throughout.

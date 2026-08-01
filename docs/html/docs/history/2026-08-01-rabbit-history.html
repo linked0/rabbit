@@ -128,6 +128,24 @@ and 6 <code>docs/features/*.md</code> files. History entries left alone as befor
 <p>Applied the same correction to Verex&#39;s rabbit-side copy only: <code>jul-28-verex-design.md</code> (the
 verex equivalent by last-edit recency) is now <code>current-design.html</code> there. Verex&#39;s real repo
 stayed untouched throughout — confirmed via <code>git status</code> after each step.</p>
+<h3>docs: full correction — restore Feature Designs card, rename to current-plan.md, add View All Tasks</h3>
+<p>jay laid out the complete intent again after two rounds of partial misses: (1) keep the section
+merge (confirmed correct); (2) restore the <code>docs/features/README.md</code> &quot;Feature Designs&quot; card,
+which I&#39;d wrongly dropped; (3) rename the task-design file to <code>current-plan.md</code> (changed his
+mind from &quot;current-design&quot;); (4) Current Projects = 6 cards total, 3 per project (Feature
+Designs + Current Plan + 1 latest task); (5) a &quot;View All Tasks&quot; link for files that don&#39;t make
+the cut, mirroring the Logs section&#39;s existing &quot;View All Logs&quot; pattern.</p>
+<p>Given this was the third correction cycle on the same section, reflected the full understanding
+back in chat and got explicit confirmation (&quot;Go!&quot;) before touching files again, rather than
+risk a fourth rework. Built <code>docs/tasks/summary.md</code> (real file, flows through the normal
+pipeline) and a hand-built Verex-side equivalent
+(<code>docs/html/projects/verex/docs/tasks/summary.html</code>, since verex&#39;s repo isn&#39;t touched) listing
+every task newest-first.</p>
+<p>Noted and worked around a side effect: my own cross-reference edits earlier today had bumped
+some files&#39; git-commit dates, which would have skewed a fresh &quot;latest&quot; recompute — used the
+ranking already established earlier in the session instead of re-deriving from the now-polluted
+dates. Verified all links resolve, exactly 6 cards in the section, and verex&#39;s git status stayed
+clean throughout.</p>
 
   </article>
 </div>
