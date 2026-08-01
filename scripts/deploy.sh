@@ -64,11 +64,13 @@ upsert_secret rabbit-google-secret "${AUTH_GOOGLE_SECRET:-}"
 upsert_secret rabbit-ai-key        "${AI_API_KEY:-}"
 upsert_secret rabbit-market-key    "${MARKET_API_KEY:-}"
 upsert_secret rabbit-database-url  "${DATABASE_URL:-}"
+upsert_secret rabbit-jay-chat-key  "${JAY_CHAT_OPENAI_API_KEY:-}"
 
 echo "▶ Cloud Run 배포"
 # 시크릿 목록 — DATABASE_URL은 설정됐을 때만 추가 (Task 1 DB)
 SECRETS="AUTH_SECRET=rabbit-auth-secret:latest,AUTH_GOOGLE_ID=rabbit-google-id:latest,AUTH_GOOGLE_SECRET=rabbit-google-secret:latest,AI_API_KEY=rabbit-ai-key:latest,MARKET_API_KEY=rabbit-market-key:latest"
 [ -n "${DATABASE_URL:-}" ] && SECRETS="$SECRETS,DATABASE_URL=rabbit-database-url:latest"
+[ -n "${JAY_CHAT_OPENAI_API_KEY:-}" ] && SECRETS="$SECRETS,JAY_CHAT_OPENAI_API_KEY=rabbit-jay-chat-key:latest"
 
 # 메뉴 표시 플래그(ALLOW_*)를 .env.local 에서 읽어 Cloud Run env 로 전달한다.
 # 클라우드는 기본 "숨김"이라 전달하지 않으면 모든 메뉴가 사라진다. 나중에 추가한 ALLOW_* 도 자동 포함.
