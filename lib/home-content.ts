@@ -9,9 +9,9 @@ export const PROFILE = {
   headingKo: "안녕하세요, 이현재입니다",
   // _config.yml: about-author
   tagline:
-    "I specialize in smart contract development, blockchain infrastructure, and smart contract security — with a strong focus on technical depth.",
+    "I specialize in smart contract development, blockchain infrastructure, and smart contract security — with a strong focus on technical depth. I've personally built an L1 blockchain engine from scratch, and have hands-on, end-to-end experience building DAO governance, NFT marketplace, and prediction market platforms.",
   taglineKo:
-    "스마트 컨트랙트 개발, 블록체인 인프라, 스마트 컨트랙트 보안을 전문으로 하며, 기술적 깊이에 강점을 두고 있습니다.",
+    "스마트 컨트랙트 개발, 블록체인 인프라, 스마트 컨트랙트 보안을 전문으로 하며, 기술적 깊이에 강점을 두고 있습니다. L1 블록체인 엔진을 직접 구현했고, DAO 거버넌스, NFT 마켓플레이스, 예측 시장까지 다양한 온체인 서비스를 처음부터 끝까지 만들어봤습니다.",
   photo: "/profile/hyunjae-lee.jpeg",
   email: "linked0@me.com",
   links: [
