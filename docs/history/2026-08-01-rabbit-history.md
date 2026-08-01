@@ -61,3 +61,12 @@ jay clarified the original ask: the "Rabbit" card in Current Projects should lin
 root `README.md` I'd used. Repointed the card to `html/docs/features/README.html` and retitled
 it "Rabbit — Feature Designs" to match the doc's own heading. No script changes needed — that
 file was already converted in the initial full pass.
+
+### docs(index): same fix for Verex
+
+jay asked for the identical fix on the Verex card, and separately confirmed I hadn't touched
+the verex repo since the earlier revert (confirmed: `git status` clean there). Copied
+`verex/docs/features/README.md` — verex's own feature-roadmap doc, structurally identical to
+rabbit's — into `docs/html/projects/verex/docs/features/README.html`, read-only from verex,
+written only into rabbit. Repointed the Verex card and deleted the now-orphaned root-README
+copy (`docs/html/projects/verex/README.html`), since nothing linked to it anymore.

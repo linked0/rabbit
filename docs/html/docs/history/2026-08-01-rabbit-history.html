@@ -87,6 +87,13 @@ needs a manual card added — the hook only keeps already-linked docs in sync.</
 root <code>README.md</code> I&#39;d used. Repointed the card to <code>html/docs/features/README.html</code> and retitled
 it &quot;Rabbit — Feature Designs&quot; to match the doc&#39;s own heading. No script changes needed — that
 file was already converted in the initial full pass.</p>
+<h3>docs(index): same fix for Verex</h3>
+<p>jay asked for the identical fix on the Verex card, and separately confirmed I hadn&#39;t touched
+the verex repo since the earlier revert (confirmed: <code>git status</code> clean there). Copied
+<code>verex/docs/features/README.md</code> — verex&#39;s own feature-roadmap doc, structurally identical to
+rabbit&#39;s — into <code>docs/html/projects/verex/docs/features/README.html</code>, read-only from verex,
+written only into rabbit. Repointed the Verex card and deleted the now-orphaned root-README
+copy (<code>docs/html/projects/verex/README.html</code>), since nothing linked to it anymore.</p>
 
   </article>
 </div>
