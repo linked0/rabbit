@@ -257,3 +257,39 @@ output — which caught a layout flaw the build couldn't: the Verex card only fi
 column, leaving a large empty gap next to the taller project list. Fixed with equal-height
 columns. Deployed and confirmed live (home 200, /projects 200, old /jay-chat 302, nav shows
 "수행 프로젝트", inline chat returns a real grounded answer).
+
+### style(home): Projects section cut to ~1/3 height
+
+jay's screenshot feedback: the section was too tall, and the per-project description line under
+each title was what made the right column so high. Measured before/after rather than eyeballing
+(his target was 30–40% of original): **537px → 179px = 33.3%**. Three changes got it there —
+dropped the description lines (titles only), showed 3 projects instead of 7, and moved
+"전체 보기 →" from below the list up beside the section heading (~30px saved, and it reads
+better). Checked at 1280px and 390px.
+
+### feat: résumé + LinkedIn corpus, one-click prompts, curated home projects
+
+jay reported Jay Chat refusing "어떤 학교를 나왔어요?" and supplied his résumé (PDF ×3) and a
+LinkedIn MHTML export. No PDF tooling was installed (no pdftotext/poppler, and pip is
+externally-managed) — used a throwaway venv with pypdf, and parsed the MHTML via Python's `email`
+module.
+
+Built `content/profile/resume-career.md` from them. Fixes the reported failure, and closed a gap
+nobody had noticed: the corpus had **no mention of his current job** — it ended at ZeroOne (2023).
+Now includes Blockchain Lead at Sapiens AI (2025.07~), the full career back to 1997,
+certifications and skills.
+
+**Privacy call — the important part.** Those documents contained a phone number, home address,
+birth year/age/gender, GPA, a certificate ID, and a personal gmail. This corpus feeds a *public,
+unauthenticated* endpoint, so all of it was deliberately excluded (kept only the already-public
+linked0@me.com). Verified two ways: grepped the corpus, and asked the live production bot for
+each — it refuses. This matches the privacy line jay drew earlier (relationships/feelings/private
+life off-limits); he was told explicitly so he can ask for any of it back if he actually wants it.
+
+Also: example prompt buttons now **send on click** instead of just filling the input — refactored
+`send()` to take the text as an argument so the form and buttons share one path. And the home
+project list is now a fixed set of the three jay called most important (NFT Marketplace, DAO
+Governance, EVM-based Bosagora Mainnet) rather than the 3 most recent by date.
+
+Verified in a real browser (a scoped locator was needed — the first `button.ghost` on the page is
+the EN language toggle, not a chat prompt) and again on production after deploy.
