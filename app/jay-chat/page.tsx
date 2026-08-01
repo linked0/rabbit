@@ -1,13 +1,16 @@
+import { headers } from "next/headers";
 import Nav from "../Nav";
 import JayChatClient from "./JayChatClient";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
+import { notifyPageView } from "@/lib/visitor-notify";
 
 // Public "Jay Chat" page — no login required (docs/features/ai-chat.md).
 export const dynamic = "force-dynamic";
 
 export default function JayChatPage() {
   const lang = getLang();
+  notifyPageView("/jay-chat", headers().get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown");
 
   return (
     <>

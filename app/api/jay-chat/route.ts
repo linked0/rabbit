@@ -1,6 +1,7 @@
 import type { ChatMessage } from "@/lib/ai";
 import { buildAboutMeSystemMessage } from "@/lib/about-me";
 import { streamJayChat, budgetExhausted, burstLimited } from "@/lib/jay-chat";
+import { notifyChatStart } from "@/lib/visitor-notify";
 
 // Public, keyless "About Jay" persona endpoint — no login required (see middleware.ts
 // PUBLIC_PATHS). Always answers as the About-Jay persona; never general-purpose chat,
@@ -34,6 +35,8 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "messages 배열이 필요합니다." }, { status: 400 });
   }
+
+  if (messages.length === 1) notifyChatStart(ip); // first message of a new conversation
 
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
   const outgoing = [buildAboutMeSystemMessage(lastUser?.content ?? ""), ...messages];

@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import Nav from "../Nav";
 import VerexBallLazy from "./VerexBallLazy";
 import { PROFILE, PROJECTS } from "@/lib/home-content";
 import { verexUrl } from "@/lib/verex";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
+import { notifyPageView } from "@/lib/visitor-notify";
 
 // Task 5 — www.jaylabs.xyz 홈 (공개). linked0.github.io 미러 + verex 링크.
 export const metadata = {
@@ -14,6 +16,7 @@ export const metadata = {
 
 export default function HomePage() {
   const lang = getLang();
+  notifyPageView("/ (home)", headers().get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown");
   // 최신순(날짜 내림차순) 정렬 — 날짜는 "YYYY-MM-DD" 문자열이라 문자열 비교로 충분.
   const projects = [...PROJECTS].sort((a, b) => b.date.localeCompare(a.date));
   return (

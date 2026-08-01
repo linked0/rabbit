@@ -65,12 +65,14 @@ upsert_secret rabbit-ai-key        "${AI_API_KEY:-}"
 upsert_secret rabbit-market-key    "${MARKET_API_KEY:-}"
 upsert_secret rabbit-database-url  "${DATABASE_URL:-}"
 upsert_secret rabbit-jay-chat-key  "${JAY_CHAT_OPENAI_API_KEY:-}"
+upsert_secret rabbit-telegram-bot-token "${TELEGRAM_BOT_TOKEN:-}"
 
 echo "▶ Cloud Run 배포"
 # 시크릿 목록 — DATABASE_URL은 설정됐을 때만 추가 (Task 1 DB)
 SECRETS="AUTH_SECRET=rabbit-auth-secret:latest,AUTH_GOOGLE_ID=rabbit-google-id:latest,AUTH_GOOGLE_SECRET=rabbit-google-secret:latest,AI_API_KEY=rabbit-ai-key:latest,MARKET_API_KEY=rabbit-market-key:latest"
 [ -n "${DATABASE_URL:-}" ] && SECRETS="$SECRETS,DATABASE_URL=rabbit-database-url:latest"
 [ -n "${JAY_CHAT_OPENAI_API_KEY:-}" ] && SECRETS="$SECRETS,JAY_CHAT_OPENAI_API_KEY=rabbit-jay-chat-key:latest"
+[ -n "${TELEGRAM_BOT_TOKEN:-}" ] && SECRETS="$SECRETS,TELEGRAM_BOT_TOKEN=rabbit-telegram-bot-token:latest"
 
 # 메뉴 표시 플래그(ALLOW_*)를 .env.local 에서 읽어 Cloud Run env 로 전달한다.
 # 클라우드는 기본 "숨김"이라 전달하지 않으면 모든 메뉴가 사라진다. 나중에 추가한 ALLOW_* 도 자동 포함.
@@ -87,7 +89,7 @@ gcloud run deploy "$SERVICE" \
   --project "$PROJECT_ID" \
   --region "$REGION" \
   --allow-unauthenticated \
-  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},AI_PROVIDER=${AI_PROVIDER:-openai},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-}${MENU_ENV}" \
+  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},AI_PROVIDER=${AI_PROVIDER:-openai},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-},TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}${MENU_ENV}" \
   --set-secrets "$SECRETS"
 
 # Cloud SQL 연결 — deploy.env에 CLOUDSQL_INSTANCE=프로젝트:리전:인스턴스 설정 시
