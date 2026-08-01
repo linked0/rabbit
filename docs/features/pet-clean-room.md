@@ -39,4 +39,4 @@ focused days for A+C+B.
   compliance-tech (RegTech) angle.
 
 ## Status
-Backlog / study item — not scheduled. See design entry: `../tasks/current-design.md` §13.
+Backlog / study item — not scheduled. See design entry: `../tasks/current-plan.md` §13.

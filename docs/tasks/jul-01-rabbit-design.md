@@ -1,10 +1,10 @@
 # Rabbit — Jul 01 Task
 
-- **Related design:** [current-design.md](current-design.md)
+- **Related design:** [current-plan.md](current-plan.md)
 - **Status:** task (feature description + carried-over design)
 
 
-> Full content of [current-design.md](current-design.md), included for reference.
+> Full content of [current-plan.md](current-plan.md), included for reference.
 
 - **Source task file:** [jun-30-rabbit.md](jun-30-rabbit.md) · **IA:** [../features/README.md](../features/README.md)
 - **Status:** design (for review)

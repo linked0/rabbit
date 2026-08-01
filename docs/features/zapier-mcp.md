@@ -47,6 +47,6 @@ an MCP server yourself) — start by consuming someone else's MCP.*
 possible loop, ~0.5–1d including the Zapier-side setup.
 
 ## Status
-Backlog / to do — see `../tasks/current-design.md` §14. Natural sequencing: after §5
+Backlog / to do — see `../tasks/current-plan.md` §14. Natural sequencing: after §5
 (KB RAG + MCP) so the MCP client/server concepts land together, but it's independent enough
 to pull forward as a quick win.
