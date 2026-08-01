@@ -1,6 +1,6 @@
 # Rabbit — Jun 30 Design
 
-- **Source task file:** [jun-30-rabbit.md](jun-30-rabbit.md) · **IA:** [../features/README.md](../features/README.md)
+- **Source task file:** [jun-30-rabbit.md](jun-30-rabbit.md) · **IA:** [../features/current-design.md](../features/current-design.md)
 - **Status:** design (for review)
 
 ## Table of contents <a id="toc"></a>
@@ -275,7 +275,7 @@ key**) / **ERC-7710** (delegation).
 <sub>[↑ TOC](#toc)</sub>
 - **Status: ⬜ To do**
 
-- Update the Target IA table in `../features/README.md`: split Portfolio & Market, add **Market**,
+- Update the Target IA table in `../features/current-design.md`: split Portfolio & Market, add **Market**,
   apply the new order.
 - New/changed routes: `/market`; Knowledge content move + serve; `/etc` ERC demo subpage; AP2 Stripe
   example under `/ap2`.

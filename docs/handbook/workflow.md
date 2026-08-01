@@ -36,7 +36,7 @@ The cycle:
 
 ## The `docs/` layout (keep it simple — features-first)
 Lead with **`features/`** and add the rest **only as you need them**. Don't keep a separate
-`plan/` folder — fold the roadmap into `features/README.md` (a status table), so there's one
+`plan/` folder — fold the roadmap into `features/current-design.md` (a status table), so there's one
 home for "what we're building."
 
 - **`docs/features/`** — what we're building: Category → Feature → to-do. Its `README.md` also

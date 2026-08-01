@@ -1,7 +1,7 @@
 # rabbit
 
 > **PoC** — 암호화폐 포트폴리오 요약·전망 도구. Next.js + TypeScript + Prisma, GCP Cloud Run 배포.
-> 설계·배포 상세 → [docs/rabbit-design.md](docs/rabbit-design.md) · 기능 설계 → [docs/features/](docs/features/README.md)
+> 설계·배포 상세 → [docs/rabbit-design.md](docs/rabbit-design.md) · 기능 설계 → [docs/features/](docs/features/current-design.md)
 
 > 이 레포 **루트가 곧 앱**이다 (이전엔 `rabbit/` 하위였으나 평탄화됨).
 
@@ -42,7 +42,7 @@ pnpm start    # 빌드 결과 실행
 
 ## Test this site (수동 점검)
 
-상단 메뉴는 **Target IA**(docs/features/README.md)를 따른다. **메뉴 항목은 로그인 없이도 전부 보이며**,
+상단 메뉴는 **Target IA**(docs/features/current-design.md)를 따른다. **메뉴 항목은 로그인 없이도 전부 보이며**,
 로그인은 **`/portfolio` · `/chat` 진입 시에만** 필요하다.
 
 1. **홈 (`/`)** — 프로필 페이지(linked0.github.io 미러)가 뜬다: 프로필 사진 + 소개 + 프로젝트 그리드(썸네일 7개). `/home/<slug>` 상세는 **글 전체 본문**(`content/profile/<slug>.md`를 marked로 렌더 — 표·이미지 포함, 외부 링크 없음). `/`는 내부적으로 `/home`을 rewrite (URL은 `/` 유지). 상단 메뉴 전체 노출.

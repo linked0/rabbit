@@ -6,7 +6,7 @@
 
 > Full content of [jun-30-rabbit-design.md](jun-30-rabbit-design.md), included for reference.
 
-- **Source task file:** [jun-30-rabbit.md](jun-30-rabbit.md) · **IA:** [../features/README.md](../features/README.md)
+- **Source task file:** [jun-30-rabbit.md](jun-30-rabbit.md) · **IA:** [../features/current-design.md](../features/current-design.md)
 - **Status:** design (for review)
 
 ## New First
@@ -197,7 +197,7 @@ This same doc already carries real public feeds — we can swap mock → real fo
 - **ETC → JayVerse:** `docs/features/etc.md` renamed (`git mv`) to
   [../features/jayverse.md](../features/jayverse.md) and rewritten as the JayVerse showcase category
   (`/jayverse`), holding the eye-popping Gravia live-trading dashboard from **New Second**.
-- IA table in [../features/README.md](../features/README.md) updated: `ETC | /etc | etc.md` →
+- IA table in [../features/current-design.md](../features/current-design.md) updated: `ETC | /etc | etc.md` →
   `JayVerse | /jayverse | jayverse.md`.
 
 ---
@@ -334,7 +334,7 @@ key**) / **ERC-7710** (delegation).
 
 ## 8. Cross-cutting — IA update
 🔲 **TODO**
-- Update the Target IA table in `../features/README.md`: split Portfolio & Market, add **Market**,
+- Update the Target IA table in `../features/current-design.md`: split Portfolio & Market, add **Market**,
   apply the new order.
 - New/changed routes: `/market`; Knowledge content move + serve; `/etc` ERC demo subpage; AP2 Stripe
   example under `/ap2`.
