@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jul-28 Verex — Follow-up Features: Design &amp; Implementation Plan (Verex)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#f8fafc; --card:#fff; --text:#0f172a; --text2:#475569; --accent:#0ea5e9; --border:#e2e8f0; }
+  * { box-sizing: border-box; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.7; margin:0; padding:0; }
+  .wrap { max-width: 820px; margin:0 auto; padding: 28px 18px 80px; }
+  .back { display:inline-block; margin-bottom:18px; color:var(--accent); text-decoration:none; font-size:0.92rem; font-weight:500; }
+  .src { font-family: ui-monospace, monospace; font-size:0.78rem; color:var(--text2); margin-bottom:20px; word-break:break-all; }
+  article { background: var(--card); border:1px solid var(--border); border-radius:14px; padding: 24px 22px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06); }
+  article h1:first-child { margin-top: 0; }
+  h1,h2,h3,h4,h5 { line-height:1.3; }
+  h1 { font-size:1.7rem; } h2 { font-size:1.35rem; } h3 { font-size:1.15rem; }
+  a { color: var(--accent); word-break: break-word; }
+  p, li { word-wrap: break-word; }
+  pre { background:#0f172a; color:#e2e8f0; padding:14px; border-radius:8px; overflow-x:auto; font-size:0.85rem; }
+  code { font-family: ui-monospace, monospace; }
+  :not(pre) > code { background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.88em; }
+  table { border-collapse: collapse; width:100%; display:block; overflow-x:auto; }
+  th, td { border:1px solid var(--border); padding:8px 12px; text-align:left; }
+  img { max-width:100%; height:auto; border-radius:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../../../../../index.html">&larr; Index</a>
+  <div class="src">Source: verex/docs/tasks/jul-28-verex-design.md (external project &mdash; copied into rabbit for browsing, not part of this repo's git history in verex)</div>
+  <article>
+<h1>Jul-28 Verex — Follow-up Features: Design &amp; Implementation Plan</h1>
+<blockquote>
+<p>Design doc for <a href="../../../../../../../verex/docs/tasks/jul-28-verex.md"><code>jul-28-verex.md</code></a>. Reference UI:
+<a href="../../../../../../../verex/docs/tasks/images/create-market.png"><code>images/create-market.png</code></a>. Written 2026-07-28 for jay&#39;s review —
+<strong>no implementation until approved.</strong> One branch for everything: <code>claude/jul-28-features</code>.</p>
+</blockquote>
+<h2>Scope (4 tasks)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>One-line design</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td><strong>Multi Outcomes</strong></td>
+<td>N-outcome market = N binary CTF conditions + a DB <code>MarketGroup</code>, with <strong>group-wide price renormalization</strong> (Σ = 1)</td>
+</tr>
+<tr>
+<td>B</td>
+<td><strong>Create Market</strong></td>
+<td><code>/create</code> form → <code>POST /market-groups</code> returns <code>202 + jobId</code>; a background job runs the on-chain batch, funded by operator USDC</td>
+</tr>
+<tr>
+<td>C</td>
+<td><strong>Faster Trading / Resolution / Redeem</strong></td>
+<td>DB-backed <code>ChainJob</code> queue + in-process worker; API answers from the DB immediately, chain settles asynchronously</td>
+</tr>
+<tr>
+<td>D</td>
+<td><strong>Top menu for usage</strong></td>
+<td>&quot;How to use&quot; page (trade / resolve / portfolio / redeem / create) linked from <code>SiteNav</code>, with real screenshots</td>
+</tr>
+</tbody></table>
+<p><strong>Proposed implementation order: A → C → B → D</strong> (not the task-file order). Reason: the
+Create-Market screenshot explicitly shows a <em>&quot;batch processor will create the markets …
+asynchronously&quot;</em> — i.e. Task B rides on Task C&#39;s job infrastructure. Building C first avoids
+building a throwaway mini-queue inside B. Each step is still serial with coherent commits.</p>
+<h3>How this differs from nostra-server (clean-room differentiation, per the task&#39;s copyright note)</h3>
+<p>Concepts were reviewed from <code>/Users/jay/work/nostra-server</code>; <strong>no code is copied</strong>. Deliberate design changes:</p>
+<ol>
+<li><strong>Pricing</strong>: nostra keeps group outcomes on independent order books with <em>no</em> sum-to-1
+constraint (an arbitrage bot merely nudges the sum back inside [0.95, 1.05], and its display
+price is a lifetime VWAP that goes stale). Verex instead <strong>renormalizes the whole group
+deterministically after every trade</strong> so probabilities always sum to exactly 1 — simpler,
+always coherent, and a genuinely different algorithm.</li>
+<li><strong>Execution model</strong>: <del>verex keeps its existing maker/taker <code>fillOrder</code> flow</del>
+Jay&#39;s Comment: I would like to chose CLOB because other platform use CLOB.
+→ <strong>Adopted (rev 2): verex becomes a CLOB</strong> — see the new <a href="#execution-model--clob-rev-2">Execution model — CLOB</a>
+section. Still clean-room different from nostra&#39;s CLOB: strict price-time-priority matching
+(nostra matches ad hoc), display price from the live book&#39;s best-bid/ask mid (nostra shows a
+lifetime VWAP that goes stale), group coherence via deterministic renormalizing MM re-quotes
+(nostra: a ±5% arb-bot band), and race-safe matching with row locks + atomic job claims.</li>
+<li><strong>Job queue</strong>: nostra&#39;s worker has a known double-execution flaw (no job claiming). Verex&#39;s
+<code>ChainJob</code> worker claims jobs with an atomic <code>updateMany</code> guard and adds exponential backoff.</li>
+<li>Schema, naming, file structure, and UI are all verex&#39;s own (existing shadcn identity).</li>
+</ol>
+<hr>
+<h2>Execution model — CLOB (rev 2)</h2>
+<blockquote>
+<p>Adopted from jay&#39;s review comment; replaces the &quot;keep <code>fillOrder</code> maker/taker&quot; plan everywhere
+below. Binary and grouped markets both trade through the book.</p>
+</blockquote>
+<ul>
+<li><strong><code>Order</code> table (Prisma)</strong>: <code>marketId</code>, <code>outcomeId</code>, <code>maker</code> (wallet address), <code>side BUY|SELL</code>,
+<code>price Decimal(10,6)</code> (USDC per share, 0.01–0.99), <code>size</code>, <code>sizeFilled</code>,
+<code>status OPEN|PARTIALLY_FILLED|FILLED|CANCELLED|EXPIRED</code>, <code>expiresAt</code>, <code>signedOrder Json</code>
+(EIP-712 — signed server-side with the demo wallet key, exactly like today&#39;s flow), unique
+order hash.</li>
+<li><strong>Placement — <code>POST /orders</code></strong>: validate funds (BUY: <code>price × size</code> USDC; SELL: token balance),
+insert, and run the matching engine inside the same DB transaction. Cancel via
+<code>DELETE /orders/:id</code> (also cancels on-chain-invalid orders lazily).</li>
+<li><strong>Matching engine</strong> (in-process, price-time priority): a new order crosses the best opposite
+levels while prices overlap; partial fills split. Every match writes a <code>Trade</code>
+(<code>settlement: PENDING</code>) and enqueues a <code>ChainJob</code> that settles via <code>CTFExchange.matchOrders</code>
+(multicall-batched when several pairs settle together). <code>SELECT … FOR UPDATE</code> row locks make
+concurrent placements race-free.</li>
+<li><strong>Casual trade UX unchanged</strong>: the market page&#39;s Buy/Sell panel submits a <em>marketable limit
+order</em> (priced at the best opposite level ± a slippage cap), so casual users never have to see
+the book. The detail page gains a small order-book depth widget (bids/asks around the mid).</li>
+<li><strong>Operator as market maker</strong> (replaces &quot;operator fills from inventory&quot;): at seed / market
+creation, the operator posts a ladder of bids and asks per outcome around the initial price,
+with ask sizes fractioned so the posted SELL total never exceeds the minted inventory. After
+each settlement, a re-quote step re-centers the operator&#39;s ladder.</li>
+<li><strong>Group coherence — the &quot;advanced algorithm&quot;, revised</strong>: after any fill in a group, the
+operator&#39;s re-quote step renormalizes its ladder <em>centers</em> across all members so the implied
+mids sum to exactly 1 (the A.3 formula, applied to quote centers). Third-party resting orders
+are never mutated — coherence is enforced economically through the MM&#39;s quotes, but
+deterministically, unlike nostra&#39;s ±5% arb band.</li>
+<li><strong>Price display</strong>: mid of best bid/ask (fallback: last trade price), appended to <code>PricePoint</code>
+on every trade and re-quote — charts and cards keep working unchanged.</li>
+</ul>
+<p>Impact on the rest of this doc: A.3&#39;s formula now drives MM quote centers (not direct DB price
+writes); Task C&#39;s job types gain <code>SETTLE_MATCH</code> + a re-quote step; Task B&#39;s &quot;provision liquidity&quot;
+becomes &quot;mint inventory + post the initial ladders&quot;.</p>
+<hr>
+<h2>Task A — Multi-outcome markets</h2>
+<h3>A.1 On-chain model decision</h3>
+<p><strong>Option (a) — N grouped binary conditions ✅ recommended</strong></p>
+<p>Each outcome (&quot;Brazil wins WC&quot;) is its own binary CTF condition with its own Yes/No token pair,
+registered on <code>CTFExchange</code> exactly like today. A DB-only <code>MarketGroup</code> stitches them together.</p>
+<p>Jay&#39;s Comment: I&#39;d like to choose this option.</p>
+<p><strong>Option (b) — one N-slot condition ❌ rejected.</strong> <code>ConditionalTokens.prepareCondition</code> happily
+takes <code>outcomeSlotCount = N</code>, but our exchange can&#39;t trade it:
+<code>ctf-exchange/src/exchange/mixins/Registry.sol:41-51</code> stores exactly one <em>complement</em> per token
+and <code>validateTokenId</code> (enforced on <strong>every</strong> fill, <code>Trading.sol:76</code>) requires it — the registry
+is structurally binary. Polymarket itself solves this with grouped binaries + a NegRisk adapter.</p>
+<p>Consequences we accept (same trade-off Polymarket/nostra accept):</p>
+<ul>
+<li>No on-chain Σ=1 enforcement (we enforce it in the DB price layer instead — see A.3).</li>
+<li>Operator inventory costs <code>L × N</code> USDC per group instead of <code>L</code>.</li>
+<li>Resolution = N <code>reportPayouts</code> txs (winner <code>[1,0]</code>, losers <code>[0,1]</code>) — handled by Task C&#39;s queue.</li>
+<li>A future NegRisk-style adapter (convert &quot;No on A&quot; → &quot;Yes on everything else&quot;) stays possible;
+out of scope now (noted in <code>docs/features/negative-risk-markets.md</code>).</li>
+</ul>
+<h3>A.2 Prisma schema changes</h3>
+<pre><code class="language-prisma">model MarketGroup {
+  id          String       @id @default(cuid())
+  slug        String       @unique          // &quot;world-series-champion-2026&quot;
+  title       String                        // &quot;Who will win the 2026 World Series?&quot;
+  description String?
+  category    String
+  imageUrl    String?
+  status      MarketStatus @default(OPEN)   // reuse existing enum
+  closesAt    DateTime?
+  resolvedMarketId String?                  // winning member market once RESOLVED
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  markets     Market[]
+
+  @@index([category, status])
+}
+
+model Market {
+  // ... existing fields unchanged (slug, questionId, conditionId, yesTokenId, noTokenId, ...)
+  groupId     String?                       // null = standalone binary market (today&#39;s markets)
+  group       MarketGroup? @relation(fields: [groupId], references: [id])
+  groupLabel  String?                       // outcome display name inside the group: &quot;Brazil&quot;
+  sortOrder   Int          @default(0)      // ordering within the group
+}
+</code></pre>
+<p>Why this shape: every existing binary market keeps working untouched (<code>groupId = null</code>); a group
+member is a full market (own condition, own trade panel, own PricePoint history — so the
+multi-series group chart falls out for free from existing per-market <code>PricePoint</code> rows). The
+on-chain question stays the full legal sentence (&quot;Will Brazil win the 2026 World Cup?&quot;), the DB
+<code>groupLabel</code> is the short chip text — same split nostra uses, which read well in its UI.</p>
+<p>No change to <code>Outcome</code>, <code>Trade</code>, <code>PricePoint</code>. (<code>PricePoint</code> already hangs off the member market,
+which <em>is</em> the per-outcome series.)</p>
+<h3>A.3 Pricing — group renormalization (the &quot;more advanced algorithm&quot;)</h3>
+<blockquote>
+<p>Rev 2 (CLOB): this formula no longer writes outcome prices directly — it computes the
+operator MM&#39;s new <strong>quote centers</strong> after a fill (the book then produces the displayed mid).
+The math is unchanged.</p>
+</blockquote>
+<p>Standalone markets keep a single-market version (linear impact <code>k = usdc/2000</code> shifts the
+quote center; No = 1 − Yes).</p>
+<p>For a market inside a group, after computing the traded member&#39;s new center <code>p&#39;ᵢ</code>:</p>
+<pre><code>scale = (1 − p&#39;ᵢ) / Σⱼ≠ᵢ pⱼ          // proportionally rescale the others
+p&#39;ⱼ = clamp(pⱼ × scale)   for j ≠ i
+each member&#39;s No price = 1 − member&#39;s Yes price   (unchanged invariant)
+</code></pre>
+<ul>
+<li>Buying &quot;Brazil Yes&quot; automatically drips probability out of Argentina/France/… — economically
+correct for mutually exclusive outcomes, and the group header % always sums to 100.</li>
+<li>One Prisma <code>$transaction</code> updates all member outcomes + the traded market&#39;s volume + one
+<code>PricePoint</code> per <em>moved</em> member (so the group chart shows the cross-impact).</li>
+<li>Floor: members are clamped to <code>PRICE_MIN = 0.02</code> before rescaling the remainder, so a 20-outcome
+group can&#39;t push anyone negative.</li>
+<li>Resolution: winner → 1.0, all other members → 0.0 (extends <code>resolve.ts:52-61</code>).</li>
+</ul>
+<h3>A.4 API &amp; UI changes</h3>
+<p>API (<code>packages/api</code>):</p>
+<ul>
+<li><code>GET /markets</code> grows a grouped shape: groups are returned as one item with member summaries
+(label, yesPrice) — new <code>GET /market-groups/:slug</code> for the detail page.</li>
+<li><code>POST /trade</code> unchanged externally (still targets a member market slug + Yes/No) — only the
+price-update internals branch on <code>groupId</code>.</li>
+<li><code>resolveMarket</code> gains a group path: resolving via the group page reports payouts for <strong>all N</strong>
+members (Task C makes this one queued job).</li>
+<li><code>walletSummary</code> (<code>trade.ts:241-294</code>) — replace the sequential per-outcome <code>balanceOf</code> loop with
+one <code>balanceOfBatch</code> multicall; with N-outcome groups the current loop gets too slow anyway.</li>
+</ul>
+<p>Web (<code>packages/web</code>) — the known Yes/No-hardcoded surfaces (from the audit):</p>
+<ul>
+<li><code>MarketCard</code> → new <code>GroupCard</code>: title + top-3 outcomes with % + a &quot;N outcomes&quot; badge
+(Polymarket-style rows), standalone markets keep the current card.</li>
+<li><code>app/market/[slug]/page.tsx</code> → group detail page <code>app/group/[slug]/page.tsx</code>: outcome rows
+(label, Yes price, Buy Yes/No buttons), multi-series <code>ProbChart</code> (one line per member, top 5),
+trade panel targets the row you click.</li>
+<li><code>TradePanel</code>: gets <code>outcomeLabel</code> context but keeps its Yes/No pair semantics (you always trade
+the <em>binary</em> member) — smallest possible change.</li>
+<li><code>ResolvePanel</code> (group variant): pick the winning outcome from a list instead of two buttons.</li>
+<li><code>ProbChart</code>: accept N series + a small legend; per-outcome line colors from a fixed palette
+added in <code>globals.css</code> (extends the <code>--yes</code>/<code>--no</code> vars).</li>
+<li>Portfolio: rows show &quot;Group title — Outcome label&quot;; redeem logic unchanged (member markets
+redeem individually, Task C batches them).</li>
+</ul>
+<h3>A.5 Seed data (new grouped markets)</h3>
+<p>Add ~3 groups alongside the existing 10 binary markets (refreshed vs. Polymarket&#39;s current style):</p>
+<ol>
+<li><strong>&quot;Who will win the 2026 MLB Home Run Derby?&quot;</strong> — 6 sluggers (Sports)</li>
+<li><strong>&quot;Who will win the 2026 World Series?&quot;</strong> — 8 teams (Sports)</li>
+<li><strong>&quot;Who will be TIME Person of the Year 2026?&quot;</strong> — 5–6 candidates (Culture)</li>
+</ol>
+<p>Seed refactor: extract the per-market on-chain block (<code>seed.ts:422-461</code>) into a shared
+<code>createBinaryMarketOnChain()</code> in <code>packages/api/src/market-create.ts</code> so the seed, and later Task
+B&#39;s runtime endpoint, call the same function (prepare → register → split). Group seeding = loop
+over outcomes + one <code>MarketGroup</code> row; initial prices normalized to sum 1.</p>
+<hr>
+<h2>Task C — Faster trading / resolution / redeem (async chain settlement)</h2>
+<blockquote>
+<p>Presented before B because B depends on it.</p>
+</blockquote>
+<h3>C.1 Design decision: DB-first optimistic execution + <code>ChainJob</code> queue</h3>
+<p>Today every endpoint blocks on 1–3 <code>waitForTransactionReceipt</code> calls (Sepolia ≈ 12s blocks — the
+pain jay describes). The jul-22 doc stopped at optimistic <em>UI</em>; the jul-28 task explicitly asks
+for server-side async (&quot;timer or thread&quot;), which supersedes that doc&#39;s &quot;job system would be
+over-engineering&quot; stance.</p>
+<p><strong>New model — the DB (order book) is the UX source of truth; the chain settles behind it:</strong></p>
+<ol>
+<li><code>POST /orders</code> validates, runs the matching engine, writes any matched <code>Trade</code> rows with
+<code>settlement: PENDING</code> (no <code>txHash</code> yet), enqueues a <code>SETTLE_MATCH</code> job, and <strong>returns in
+~100 ms</strong> — with the order&#39;s resting/filled state.</li>
+<li>A worker inside the Fastify process (interval ~1 s + immediate wake on enqueue) settles the
+matched pairs on-chain (<code>CTFExchange.matchOrders</code>, multicalled), then stamps
+<code>txHash</code> + <code>settlement: CONFIRMED</code> and triggers the operator MM re-quote step.</li>
+<li>On terminal failure (after retries): <code>settlement: FAILED</code> <strong>+ compensation</strong> — the fill is
+reversed (order sizes un-filled, <code>Trade</code> voided, book restored) and the UI surfaces a
+&quot;trade reverted&quot; notice. (Failures are rare: wallets are pre-warmed and orders are validated
+at placement; compensation is the safety net, not the common path.)</li>
+</ol>
+<p>Same pattern for <code>resolve</code> (N <code>reportPayouts</code> for a group = one job; market flips to RESOLVED in
+the DB immediately) and <code>redeem</code> (job computes redeemable from chain, executes, then writes the
+REDEEM trade rows on confirmation — redeem alone stays <em>pessimistic</em> about balances since payout
+math must come from the chain).</p>
+<h3>C.2 Schema + worker</h3>
+<pre><code class="language-prisma">enum ChainJobType   { SETTLE_MATCH  RESOLVE  REDEEM  CREATE_GROUP }
+enum ChainJobStatus { PENDING  RUNNING  CONFIRMED  FAILED }
+
+model ChainJob {
+  id         String         @id @default(cuid())
+  type       ChainJobType
+  status     ChainJobStatus @default(PENDING)
+  payload    Json                       // e.g. {marketId, outcomeId, side, usdcAmount, wallet}
+  result     Json?                      // {txHashes[]} / error detail
+  tradeId    String?                    // backlink for settlement stamping
+  attempts   Int            @default(0)
+  maxAttempts Int           @default(3)
+  runAfter   DateTime       @default(now())   // backoff scheduling
+  claimedAt  DateTime?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@index([status, runAfter])
+}
+</code></pre>
+<p>Also: <code>Trade.settlement SettlementStatus @default(CONFIRMED)</code> (new enum PENDING/CONFIRMED/FAILED —
+default CONFIRMED keeps all historical rows valid).</p>
+<p>Worker rules:</p>
+<ul>
+<li><strong>Atomic claim</strong> (fixes nostra&#39;s flaw): <code>updateMany({where: {id, status: PENDING}, data: {status: RUNNING, claimedAt: now}})</code>
+and only proceed if <code>count === 1</code>. Safe even if a second instance ever appears.</li>
+<li><strong>Strict serial execution</strong> (concurrency 1). This is deliberate: every tx is sent by the
+operator wallet, so serial execution doubles as <strong>nonce management</strong> — no nonce races, no gap
+stalls. Throughput is bounded by the chain anyway.</li>
+<li>Retry with exponential backoff via <code>runAfter</code> (5s → 25s → 125s), error text into <code>result</code>.</li>
+<li>Startup recovery: any <code>RUNNING</code> job older than 2 min is reset to <code>PENDING</code> (crash mid-tx).</li>
+</ul>
+<h3>C.3 Client feedback</h3>
+<ul>
+<li><code>POST /orders</code> response includes the fill result + <code>jobId</code> + <code>settlement: &quot;PENDING&quot;</code>;
+TradePanel keeps its optimistic snapshot but the <em>server</em> is now also instant, so the snapshot
+shows the real fill price from the book immediately.</li>
+<li>Lightweight <code>GET /jobs/:id</code> for polling; TradePanel/ResolvePanel poll every 2 s only while a
+job of theirs is pending, showing a small &quot;settling on-chain… ⧗ / ✓ txHash / ✗ reverted&quot; chip.
+(SSE/WebSocket is unnecessary complexity at this scale — polling one row is fine. This also
+resolves jul-22 leftover #3, ResolvePanel optimism, and makes leftover #4/SSE moot.)</li>
+<li>Portfolio + market pages render <code>settlement</code> status on activity rows.</li>
+</ul>
+<h3>C.4 ⚠️ Cloud Run caveat (needs jay&#39;s decision)</h3>
+<p>The current <code>verex-api</code> Cloud Run service only gets CPU during requests — a background worker
+starves between requests. Options:</p>
+<ol>
+<li><strong>Set <code>--no-cpu-throttling</code> (+ <code>min-instances 1</code>) on <code>verex-api</code></strong> ✅ recommended — one gcloud
+flag, keeps one process; adds always-on cost (roughly the cost of one small always-on instance).
+  Jay&#39;s Comment: I would choose this.</li>
+<li>Piggyback execution on request lifetime (<code>setImmediate</code> after reply) — free but jobs die if
+the instance is reclaimed mid-tx; retries would cover it, ugly.</li>
+<li>Cloud Tasks / separate worker service — over-engineered for a demo.</li>
+</ol>
+<p>Local dev (anvil) is unaffected — worker just runs in-process.</p>
+<hr>
+<h2>Task B — Create Market (operator-funded)</h2>
+<h3>B.1 Flow (mirrors the screenshot: form → &quot;Start Batch Creation&quot; → progress)</h3>
+<p>New page <code>packages/web/src/app/create/page.tsx</code> with the screenshot&#39;s fields:
+question, category (existing category list), image URL <em>(text field — file upload needs storage
+we don&#39;t have; can add later)</em>, <strong>initial liquidity per outcome</strong> (default 100 USDC), outcomes
+(min 2 rows; exactly 2 labeled &quot;Yes/No&quot; → creates a standalone binary market; otherwise a group),
+resolution date+time → <code>closesAt</code>.</p>
+<pre><code>POST /market-groups
+  body: {title, category, imageUrl?, outcomes: [{label, description?}], liquidityPerOutcome, closesAt, creatorWallet}
+  → validation + pre-flight solvency check → 202 {jobId}
+</code></pre>
+<ul>
+<li><strong>Pre-flight solvency check</strong> (kept from the reference design — it&#39;s a good idea): read
+operator USDC balance; if <code>&lt; L × N</code>, on local/staging <strong>mint the shortfall</strong> (MockUSDC), on prod
+reject with <code>{required, available}</code>.</li>
+<li>The handler only writes a <code>ChainJob {type: CREATE_GROUP}</code> + a <code>MarketGroup</code> row with a new
+status <code>CREATING</code> (markets appear on the homepage only once OPEN). Everything on-chain happens
+in the worker: per outcome <code>prepareCondition(2)</code> → <code>registerToken</code> → <code>splitPosition(L)</code>, then
+member <code>Market</code> + <code>Outcome</code> rows, initial quote centers <code>1/N</code>, <strong>post the operator&#39;s initial
+bid/ask ladders</strong> (rev 2 — this is the &quot;provision liquidity automatically&quot; from the screenshot),
+flip group to OPEN.</li>
+<li>Job progress: the <code>CREATE_GROUP</code> job&#39;s <code>result</code> carries <code>{done, total, stage}</code>; the create page
+polls <code>GET /jobs/:id</code> and renders the progress bar (like the screenshot&#39;s batch note).</li>
+<li>Failure mid-batch: retries resume from the last finished outcome (each outcome&#39;s on-chain
+steps are idempotent-checkable: <code>getCondition</code> → already prepared? registered? split?). If
+terminally failed, group flips to <code>CANCELLED</code> with the error visible.</li>
+</ul>
+<h3>B.2 Decisions folded in</h3>
+<ul>
+<li><p><strong>Who can create:</strong> any demo wallet (there&#39;s no real auth — same trust level as trading).
+<code>Market/MarketGroup.creator</code> stores the wallet address for display (&quot;Created by wallet #3&quot;).
+No moderation queue (the reference had none either); can be added when real auth lands (S7).
+Jay comment: Anyone can create markets.</p>
+</li>
+<li><p><strong>Operator liquidity source:</strong> operator&#39;s existing USDC balance (topped up by seed / MockUSDC
+mint on test). Per-outcome <code>L</code> capped at <strong>1,000 USDC</strong> to stop a demo user draining the operator.</p>
+</li>
+<li><p><strong>No fees</strong> for now (creation fee / redemption fee are a separate product decision — the
+reference charged 2% of redemption profit; flagging as a future option, not building it).
+Jay comment: I will set the fee policy later.</p>
+</li>
+<li><p><code>Market.liquidity</code> note: the split gives the operator <code>L</code> Yes + <code>L</code> No inventory per member —
+that&#39;s what backs the MM&#39;s ask ladders (rev 2), so low-L markets simply have thinner books.</p>
+</li>
+</ul>
+<hr>
+<h2>Task D — &quot;How to use&quot; top menu</h2>
+<ul>
+<li>New route <code>packages/web/src/app/how-to/page.tsx</code>, linked from <code>SiteNav</code> (left of Portfolio):
+<strong>How to use</strong>. Server component, static content — sections:<ol>
+<li><strong>Trade</strong> — pick a demo wallet (#1–5) in the nav, use the faucet, Buy/Sell on a market;
+what &quot;settling on-chain&quot; means (Task C chip).</li>
+<li><strong>Resolve</strong> — switch to the Operator wallet, open a market/group, report the outcome.</li>
+<li><strong>Portfolio</strong> — positions, cost basis, P&amp;L breakdown popup.</li>
+<li><strong>Redeem</strong> — after resolution, redeem winning tokens from the Portfolio page.</li>
+<li><strong>Create a market</strong> — the Task B form, operator funding explained.</li>
+</ol>
+</li>
+<li><strong>Screenshots:</strong> captured from the running app (real UI, taken after A–C land so they show the
+final state), stored in <code>packages/web/public/how-to/*.png</code>, rendered with <code>next/image</code>.</li>
+<li>Keep it one scrollable page with an in-page TOC — no docs framework needed.</li>
+</ul>
+<hr>
+<h2>Commit plan (serial, one branch <code>claude/jul-28-features</code>)</h2>
+<ol>
+<li><code>docs: jul-28 design doc</code> (this file; also fix the broken <code>./create-market.png</code> link in the task file)</li>
+<li><code>feat(db): MarketGroup schema + migration</code> (A.2)</li>
+<li><code>feat(db+api): Order table + CLOB matching engine + POST /orders</code> (rev 2)</li>
+<li><code>feat(api): operator MM ladders + renormalizing re-quotes (group Σ=1)</code> (A.3, rev 2)</li>
+<li><code>feat(api): seed grouped markets + initial books via shared createBinaryMarketOnChain</code> (A.5)</li>
+<li><code>feat(web): group card, group detail page, multi-series chart, group resolve, depth widget</code> (A.4)</li>
+<li><code>feat(api): ChainJob queue + async settle/resolve/redeem via matchOrders</code> (C)</li>
+<li><code>feat(web): settlement status chips + polling</code> (C.3)</li>
+<li><code>feat: create-market page + POST /market-groups batch creation</code> (B)</li>
+<li><code>feat(web): how-to guide page + nav link, with screenshots</code> (D)</li>
+<li><code>docs(history): 2026-07-28 technical summary</code> (per the task&#39;s &quot;After the implementation&quot;)</li>
+</ol>
+<p>Each lands only after local verification (anvil run-through: seed → place orders against the MM
+book → check group renormalized re-quotes → resolve group → redeem → create market end-to-end).</p>
+<h2>Decisions recorded from jay&#39;s review (rev 2)</h2>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>jay&#39;s call</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Execution model</td>
+<td><strong>CLOB</strong> (&quot;other platforms use CLOB&quot;) — design revised throughout</td>
+</tr>
+<tr>
+<td>Multi-outcome on-chain model</td>
+<td>Option (a), N grouped binary conditions ✅</td>
+</tr>
+<tr>
+<td>Cloud Run worker</td>
+<td>Option 1: <code>--no-cpu-throttling</code> + <code>min-instances 1</code> ✅</td>
+</tr>
+<tr>
+<td>Market creation access</td>
+<td>Anyone can create ✅</td>
+</tr>
+<tr>
+<td>Fees</td>
+<td>jay sets fee policy later — none built now ✅</td>
+</tr>
+</tbody></table>
+<h2>Remaining open questions (answer + &quot;go&quot;)</h2>
+<ol>
+<li><strong>Order book UI depth:</strong> casual Buy/Sell panel + a small depth widget on the detail page
+(recommended), or also expose full limit-order placement (price/size form) to users?</li>
+<li><strong>Group coherence via MM re-quotes</strong> (rev 2 shape): OK that Σ=1 holds at the MM&#39;s quote
+centers (third-party resting orders can briefly skew displayed mids until re-quote)?</li>
+<li><strong>Trade UX:</strong> OK that fills are instant in the DB book and the chain settles behind a status
+chip — including the rare auto-revert on settlement failure?</li>
+<li><strong>Create-market caps:</strong> default 100 / max 1,000 USDC per outcome OK? Image as URL text field OK?</li>
+<li><strong>Seed groups:</strong> the 3 proposed groups (HR Derby, World Series, TIME PotY) OK, or different ones?</li>
+<li><strong>Task order:</strong> confirm A → C(+CLOB) → B → D.</li>
+</ol>
+
+  </article>
+</div>
+</body>
+</html>

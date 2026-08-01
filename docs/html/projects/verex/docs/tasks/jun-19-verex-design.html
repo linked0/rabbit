@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jun-19 Verex — Design &amp; Task Breakdown (Verex)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#f8fafc; --card:#fff; --text:#0f172a; --text2:#475569; --accent:#0ea5e9; --border:#e2e8f0; }
+  * { box-sizing: border-box; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.7; margin:0; padding:0; }
+  .wrap { max-width: 820px; margin:0 auto; padding: 28px 18px 80px; }
+  .back { display:inline-block; margin-bottom:18px; color:var(--accent); text-decoration:none; font-size:0.92rem; font-weight:500; }
+  .src { font-family: ui-monospace, monospace; font-size:0.78rem; color:var(--text2); margin-bottom:20px; word-break:break-all; }
+  article { background: var(--card); border:1px solid var(--border); border-radius:14px; padding: 24px 22px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06); }
+  article h1:first-child { margin-top: 0; }
+  h1,h2,h3,h4,h5 { line-height:1.3; }
+  h1 { font-size:1.7rem; } h2 { font-size:1.35rem; } h3 { font-size:1.15rem; }
+  a { color: var(--accent); word-break: break-word; }
+  p, li { word-wrap: break-word; }
+  pre { background:#0f172a; color:#e2e8f0; padding:14px; border-radius:8px; overflow-x:auto; font-size:0.85rem; }
+  code { font-family: ui-monospace, monospace; }
+  :not(pre) > code { background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.88em; }
+  table { border-collapse: collapse; width:100%; display:block; overflow-x:auto; }
+  th, td { border:1px solid var(--border); padding:8px 12px; text-align:left; }
+  img { max-width:100%; height:auto; border-radius:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../../../../../index.html">&larr; Index</a>
+  <div class="src">Source: verex/docs/tasks/jun-19-verex-design.md (external project &mdash; copied into rabbit for browsing, not part of this repo's git history in verex)</div>
+  <article>
+<h1>Jun-19 Verex — Design &amp; Task Breakdown</h1>
+<blockquote>
+<p>Design doc derived from <a href="../../../../../../../verex/docs/tasks/jun-19-verex.md"><code>jun-19-verex.md</code></a>. Reference UI:
+<a href="../../../../../../../verex/docs/tasks/images/homepage.png"><code>images/homepage.png</code></a> (Polymarket-style). <em>(2026-06-23)</em></p>
+</blockquote>
+<h2>Task map</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Area</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>Basic Web UI</strong> — Kalshi-referenced, <strong>binary</strong> markets, <strong>real CTF contracts on anvil</strong></td>
+<td>✅ <strong>built 2026-07-07</strong> (shadcn UI + on-chain trading; see addendum 2)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Deploy to GCP</strong> + Cloud SQL DB + domain <code>verex.jaylabs.xyz</code></td>
+<td>✅ <strong>complete</strong> — <code>verex-api</code>/<code>verex-web</code> live on Cloud Run, Cloud SQL wired, Sepolia trading live (chain decision resolved: (a) testnet); custom domain routed via Firebase Hosting (jul-25 <code>5278191</code>, prod routing jul-27 <code>9921e23</code>)</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Portfolio page + market resolution</strong> (operator #0 as admin)</td>
+<td>✅ <strong>implemented + verified 2026-07-20</strong> — <a href="../../../../../../../verex/docs/tasks/details/jul-20-portfolio-resolution-design.md">details/jul-20-portfolio-resolution-design.md</a></td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Trade/resolution latency UX</strong> (chained on-chain txs feel slow on a real chain)</td>
+<td>✅ <strong>complete 2026-07-28</strong> — #1 (demo-wallet pre-warming) + #2 (optimistic trade UI) done and verified live; leftover #3 (<code>ResolvePanel</code> optimism) and #4 (SSE) are superseded by the jul-28 async-settlement design (<a href="../../../../../../../verex/docs/tasks/jul-28-verex-design.md">jul-28-verex-design.md</a> Task C) — <a href="../../../../../../../verex/docs/tasks/details/jul-22-trade-resolution-latency-ux.md">details/jul-22-trade-resolution-latency-ux.md</a></td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Per-environment contract isolation</strong> (separate backbone per local/test/production, not shared)</td>
+<td>✅ <strong>complete</strong> — separate test/prod backbones recorded in <code>packages/contracts/deployments.json</code> and enforced by the seed&#39;s <code>VEREX_DEPLOY_TARGET</code> manifest + preflight; residual polish rides with future deploy work — <a href="../../../../../../../verex/docs/tasks/details/jul-22-per-environment-contract-isolation.md">details/jul-22-per-environment-contract-isolation.md</a></td>
+</tr>
+</tbody></table>
+<h2>Decisions (proposed — confirm)</h2>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Proposed</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Web app</td>
+<td><code>packages/web</code> (Next.js 14, App Router)</td>
+<td>existing scaffold (<code>layout.tsx</code>, <code>page.tsx</code>)</td>
+</tr>
+<tr>
+<td>Data layer</td>
+<td><del>DB-only</del> → <strong>real CTF contracts (anvil) + DB mirror</strong></td>
+<td>superseded 2026-07-07 per jay: &quot;use real contract for the market&quot;</td>
+</tr>
+<tr>
+<td>DB</td>
+<td><strong>Cloud SQL for PostgreSQL</strong> + <strong>Prisma</strong></td>
+<td>consistent with rabbit; verex has no DB yet</td>
+</tr>
+<tr>
+<td>API</td>
+<td><strong>Next.js route handlers + Prisma</strong> in <code>web</code></td>
+<td>simplest for DB-only; alt = existing <code>packages/api</code> (Fastify) — <strong>open Q</strong></td>
+</tr>
+<tr>
+<td>Market type</td>
+<td><strong>Categorical</strong> (N outcomes; binary = N=2)</td>
+<td>per spec</td>
+</tr>
+<tr>
+<td>Domain</td>
+<td><strong><code>verex.jaylabs.xyz</code></strong> (subdomain) → Cloud Run</td>
+<td>spec names this exact host</td>
+</tr>
+<tr>
+<td>Deploy pattern</td>
+<td>mirror rabbit <code>scripts/deploy.sh</code> (secrets → Secret Manager)</td>
+<td>reuse known-good flow</td>
+</tr>
+<tr>
+<td>UI kit</td>
+<td><strong>shadcn/ui + Tailwind</strong></td>
+<td>see <a href="#task-1-addendum--ui-stack--design-similarity-risk-2026-07-07">Task 1 addendum</a> — research + legal-risk notes</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💸 Cost: Cloud SQL bills monthly even when idle (~$8–10+ smallest tier).</p>
+</blockquote>
+<hr>
+<h2>Task 1 — Basic Web UI (prediction market)</h2>
+<p>Build a Polymarket-style UI driven entirely by the database (no contract integration yet).</p>
+<h3>Screens (from <code>images/homepage.png</code>)</h3>
+<ul>
+<li><strong>Top nav:</strong> logo, search, &quot;How it works&quot;, Login/Sign-up (reuse Auth.js Google login).</li>
+<li><strong>Category tabs:</strong> Trending, Politics, Sports, Crypto, … (from <code>Market.category</code>).</li>
+<li><strong>Featured market</strong> (large card): title, <strong>categorical outcomes with % (implied probability)</strong>, a probability-over-time chart, volume, close date.</li>
+<li><strong>&quot;All markets&quot; grid:</strong> market cards — title, image/icon, top outcomes with %, volume.</li>
+<li><strong>Sidebar:</strong> &quot;Hot topics&quot; list (by volume). <em>(Nice-to-have; can defer.)</em></li>
+<li><strong>Market detail page</strong> (<code>/market/[slug]</code>): all outcomes + prices, chart, description, and a
+<strong>(mock) trade panel</strong> — buys recorded in the DB, no on-chain calls.</li>
+</ul>
+<h3>Data model (Prisma) — draft (review &amp; adjust)</h3>
+<pre><code class="language-prisma">// prisma/schema.prisma
+generator client { provider = &quot;prisma-client-js&quot; }
+datasource db { provider = &quot;postgresql&quot;; url = env(&quot;DATABASE_URL&quot;) }
+
+enum MarketStatus { OPEN  RESOLVED  CANCELLED }
+
+model Market {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  title       String
+  description String?
+  category    String?                              // &quot;Politics&quot;,&quot;Sports&quot;,&quot;Crypto&quot;…
+  imageUrl    String?
+  status      MarketStatus @default(OPEN)
+  volume      Decimal      @default(0) @db.Decimal(20, 2)
+  closesAt    DateTime?
+  resolvedOutcomeId String?                         // winning outcome once RESOLVED
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  outcomes    Outcome[]
+
+  @@index([category, status])
+}
+
+model Outcome {
+  id        String  @id @default(cuid())
+  marketId  String
+  market    Market  @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  label     String                                  // &quot;Yes&quot;/&quot;No&quot; or &quot;Candidate A&quot;…
+  price     Decimal @db.Decimal(10, 6)               // implied probability 0..1
+  sortOrder Int     @default(0)
+
+  @@index([marketId])
+}
+</code></pre>
+<p>Optional later: <code>PricePoint</code> (chart history), <code>Position</code>/<code>Trade</code> (mock trading per user).
+Open: include mock trading in v1, or read-only display first?</p>
+<h3>To-do (who does what)</h3>
+<table>
+<thead>
+<tr>
+<th>You (jay)</th>
+<th>Me (Claude)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Confirm API choice (Next.js routes vs <code>packages/api</code>)</td>
+<td>Add Prisma + schema + migration</td>
+</tr>
+<tr>
+<td>Confirm v1 scope: read-only vs mock trading</td>
+<td>Build homepage (tabs, featured, grid) + market detail</td>
+</tr>
+<tr>
+<td>Approve seed markets (how many / which categories)</td>
+<td>Seed sample <strong>categorical</strong> markets to match the screenshot</td>
+</tr>
+<tr>
+<td></td>
+<td>Wire list/detail API routes (DB-backed)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Task 1 addendum — UI stack &amp; design-similarity risk (2026-07-07)</h2>
+<h3>UI stack: recommendation = shadcn/ui + Tailwind</h3>
+<p>Current <code>packages/web</code> is bare Next.js 14 (no Tailwind, no component lib, hand-rolled CSS) — the
+source of the &quot;awkward&quot; look. Research summary (2026 landscape):</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Fit for Verex</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>shadcn/ui</strong> (+ Tailwind, Radix primitives)</td>
+<td>De facto standard for Next.js; <strong>copy-in code you own</strong> (no dep lock-in) → full freedom to build our own visual identity; <code>shadcn charts</code> (Recharts) covers the probability chart; a11y from Radix</td>
+<td>✅ <strong>pick</strong></td>
+</tr>
+<tr>
+<td>Mantine</td>
+<td>Batteries-included, strong for data-dense B2B dashboards; own styling system (not Tailwind)</td>
+<td>good, but heavier identity to override</td>
+</tr>
+<tr>
+<td>MUI</td>
+<td>Enterprise breadth (data grid etc.)</td>
+<td>Material look fights a Polymarket-style feed</td>
+</tr>
+<tr>
+<td>HeroUI / daisyUI / Aceternity</td>
+<td>lighter or animation-focused</td>
+<td>not aimed at data-dense trading UI</td>
+</tr>
+</tbody></table>
+<p>Why shadcn specifically for us: (1) 2026 trend is headless/Tailwind-first — shadcn is its center of
+gravity, best AI-tooling + ecosystem support; (2) copied-in source = we can diverge the theme
+tokens (colors/typography/radius) from both Polymarket <strong>and</strong> any prior work, which is exactly
+what the risk section below needs; (3) jay already knows it — lowest learning cost.</p>
+<p>Implementation note: Task 1 build starts with <code>tailwindcss</code> + <code>shadcn init</code> in <code>packages/web</code>
+(theme tokens defined once in <code>globals.css</code>), then the screens in the spec above.</p>
+<h3>Design-similarity legal risk (prior employer / Polymarket) — mitigation plan</h3>
+<p>Context: jay built a similar Polymarket-style UI with shadcn at a previous company; concern is a
+future claim that Verex copies that work. Not legal advice — framework + hygiene below; for real
+assurance have an IP/employment lawyer read the old employment contract.</p>
+<p><strong>How the law sees it (US frame; KR analog in parens):</strong></p>
+<ul>
+<li><strong>Copyright</strong> protects concrete code and specific graphic assets — not layouts, UX flows, or
+functional concepts. (KR 저작권법 similar: 아이디어/기능 배제.)</li>
+<li><strong>Trade dress</strong> can protect overall &quot;look and feel&quot; but requires distinctiveness,
+<strong>non-functionality</strong>, and consumer confusion — a high bar for a functional, genre-standard
+prediction-market feed. (KR: 부정경쟁방지법 성과물 도용 조항(파목)이 가장 넓은 catch-all.)</li>
+<li>The realistic risk is therefore <strong>not</strong> &quot;similar layout&quot; but (a) <strong>reused code/assets</strong> and
+(b) <strong>employment-contract clauses</strong> (IP assignment, confidentiality, non-compete).</li>
+</ul>
+<p><strong>Mitigation checklist (do these; mostly already repo policy):</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>Zero reuse</strong>: no code, components, Figma files, configs, seed copy, or screenshots from the
+previous company — clean-room rebuild only. (Using shadcn again is fine: MIT-licensed generic
+building blocks; a library choice isn&#39;t ownable.)</li>
+<li><input disabled="" type="checkbox"> <strong>Differentiate identity from BOTH Polymarket and the prior project</strong>: own palette,
+typography, icon set, naming, copy — layout/density inspiration only, per README §2.2.6.
+One divergence step protects against both claim sources.</li>
+<li><input disabled="" type="checkbox"> <strong>Provenance trail</strong>: fresh git history + <code>docs/history/</code> decision log (already the
+convention) shows independent creation with dates — the strongest practical defense.</li>
+<li><input disabled="" type="checkbox"> <strong>Contract check (jay)</strong>: reread prior employment contract for IP-assignment scope,
+confidentiality, and non-compete duration; that clause set — not UI similarity — decides the
+actual exposure. Lawyer review if any clause is broad or ambiguous.</li>
+<li><input disabled="" type="checkbox"> <strong>No confidential inputs</strong>: don&#39;t consult the old product, its repo, internal docs, or
+metrics while building Verex screens; work from Polymarket&#39;s public site + this spec only.</li>
+</ul>
+<p>Sources: <a href="https://www.untitledui.com/blog/react-component-libraries">Untitled UI — React component libraries 2026</a> ·
+<a href="https://dualite.dev/blogs/best-ui-component-libraries">Dualite — shadcn/MUI/Radix compared</a> ·
+<a href="https://www.candcip.com/single-post/legal-protection-of-user-interface-and-user-experience-design-comparing-trade-dress-copyright-and">C&amp;C IP — UI/UX legal protection: trade dress vs copyright</a> ·
+<a href="https://cyber.harvard.edu/property/protection/resources/byerly_unedited.html">Harvard — look &amp; feel: copyright or trade dress</a> ·
+<a href="https://newmedialaw.proskauer.com/2013/11/07/trade-dress-can-be-viable-means-of-protecting-websites-from-competitors-look-alike-sites/">Proskauer — website trade dress claims</a></p>
+<h3>Main page UI</h3>
+<p>We can use this screen shots from Kalshi</p>
+<ol>
+<li>Main page
+<img src="../../../../../../../verex/docs/tasks/images/kalshi-homepage.png" alt="Kalshi homepage"></li>
+</ol>
+<h3>Detail page UI</h3>
+<h2>We can use this screen shot from Kalshi
+<img src="../../../../../../../verex/docs/tasks/images/kalshi-detail.png" alt="Kalshi detail page"></h2>
+<h2>Task 1 addendum 2 — as built (2026-07-07)</h2>
+<p>Implemented on branch <code>claude/deploy-export-log</code> per jay&#39;s &quot;working version, complete features&quot; directive:</p>
+<ul>
+<li><strong>UI</strong>: Tailwind + shadcn (manual copy-in: button/card/badge/input/tabs/separator) with a
+distinct Verex identity (indigo primary, emerald Yes / rose No — NOT the Kalshi mint).
+Main page: nav (search + faucet + demo-wallet selector), category tabs, featured market with
+Recharts probability chart, market grid, hot-markets sidebar. Detail page: chart, outcome rows,
+rules + conditionId, recent activity, sticky Buy/Sell trade panel.</li>
+<li><strong>Real contracts</strong>: every market is an on-chain CTF condition on anvil (seed deploys the
+backbone via <code>DeployCTF.s.sol</code>, then <code>prepareCondition</code> → <code>registerToken</code> → operator splits
+10k USDC inventory per market). Addresses live in the DB (<code>ChainConfig</code>) — no env coordination.</li>
+<li><strong>Trading</strong>: every Buy/Sell is a real <code>CTFExchange.fillOrder</code> tx — the user (demo anvil
+account 1–5, keys server-side) signs the maker order, the operator (account 0) fills from its
+inventory. Auto-faucet keeps the flow one-click. DB mirrors each fill: price impact (linear,
+L=2000 USDC), volume, trade log, chart point. Production wallet path (MetaMask → AA session
+keys) stays the S7 track.</li>
+<li><strong>Run locally</strong>: <code>anvil</code> → <code>pnpm --filter @verex/api db:reset</code> (migrate + deploy + seed) →
+<code>pnpm --filter @verex/api dev</code> → <code>pnpm --filter @verex/web dev</code>.</li>
+</ul>
+<h2>Task 2 addendum — GCP setup summary (2026-07-07): jay&#39;s actions vs Claude&#39;s</h2>
+<p><strong>⚠️ New decision needed first — where does the chain live in the cloud?</strong> Task 1 now trades
+against anvil, which is local-only. Options for <code>verex.jaylabs.xyz</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>What it means</th>
+<th>Trade-off</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>(a) Testnet (recommended)</strong></td>
+<td>Deploy CTF backbone to a public testnet (e.g. Base Sepolia); operator key in Secret Manager</td>
+<td>Real public chain, demoable anywhere; needs faucet ETH + key management</td>
+</tr>
+<tr>
+<td>(b) Hosted anvil</td>
+<td>Run anvil in a Cloud Run/GCE container</td>
+<td>Fast, but state resets on restart — toy-grade</td>
+</tr>
+<tr>
+<td>(c) DB-only fallback</td>
+<td>Cloud version reads DB, trading disabled (&quot;local demo only&quot; banner)</td>
+<td>Cheapest; loses the headline feature in the cloud</td>
+</tr>
+</tbody></table>
+<p><strong>jay does (needs your accounts/access):</strong></p>
+<ol>
+<li>Decide the chain option above (a/b/c) — blocks everything else.</li>
+<li>Pick the <strong>GCP project</strong>: reuse <code>doubletree-498007</code> (rabbit) or create a new one; confirm <strong>billing</strong> is on.</li>
+<li><del>Be ready at the registrar</del> → <strong>almost nothing</strong> (updated 2026-07-07): <code>jaylabs.xyz</code>&#39;s
+nameservers are <code>ns-cloud-e*.googledomains.com</code> — the zone lives in <strong>Cloud DNS</strong>, so Claude
+can add the <code>verex</code> record via <code>gcloud dns</code>. jay&#39;s only possible action: click <strong>Verify</strong> in
+Google Search Console if Cloud Run demands domain-ownership verification (Claude adds the TXT
+record; the verify click needs jay&#39;s Google account).</li>
+<li>If option (a): fund the operator address with testnet ETH (faucet) and approve storing its private key in Secret Manager.</li>
+<li>If Google login ships: add the production <strong>OAuth redirect URI</strong> in Google Cloud Console.</li>
+<li>Accept the standing cost: Cloud SQL smallest tier ≈ <strong>$8–10+/month even idle</strong> + Cloud Run per-use.</li>
+</ol>
+<p><strong>Claude does (scriptable, no jay input needed):</strong></p>
+<ol>
+<li><strong>Cloud SQL</strong> Postgres instance + database + user; run migrations; put <code>DATABASE_URL</code> in <strong>Secret Manager</strong>.</li>
+<li><strong>Two Cloud Run services</strong>: <code>verex-api</code> (Fastify — trading needs it in the cloud now) and <code>verex-web</code> (Next.js), with <code>API_URL</code> wired web→api.</li>
+<li><code>scripts/deploy.sh</code> mirroring rabbit&#39;s shape (build → push secrets → <code>gcloud run deploy --set-secrets</code>).</li>
+<li><strong>Domain mapping</strong> <code>verex.jaylabs.xyz</code> → <code>verex-web</code>; hand jay the DNS record to add.</li>
+<li>If option (a): deploy <code>DeployCTF.s.sol</code> to the testnet, re-run the seed against it, store operator key in Secret Manager.</li>
+<li>Smoke test in the cloud + history log entry.</li>
+</ol>
+<hr>
+<h2>Task 2 — Deploy to GCP + DB + domain (<code>verex.jaylabs.xyz</code>)</h2>
+<h3>Plan</h3>
+<ul>
+<li><strong>Cloud SQL Postgres</strong> instance + DB + user; <code>DATABASE_URL</code> → Secret Manager.</li>
+<li><strong>Cloud Run</strong> deploy of <code>packages/web</code>; connect to Cloud SQL.</li>
+<li><strong>Domain mapping</strong> <code>verex.jaylabs.xyz</code> → the Cloud Run service.</li>
+<li>Reuse rabbit&#39;s <code>deploy.sh</code> shape (push secrets to Secret Manager, <code>--set-secrets</code>).</li>
+</ul>
+<h3>To-do (who does what)</h3>
+<table>
+<thead>
+<tr>
+<th>You (jay)</th>
+<th>Me (Claude)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Confirm <strong>billing enabled</strong> on the GCP project</td>
+<td>Create Cloud SQL instance + DB + user</td>
+</tr>
+<tr>
+<td><del>Edit DNS at the registrar</del> — zone is on <strong>Cloud DNS</strong>; only click <strong>Verify</strong> in Search Console if prompted</td>
+<td>Write <code>verex/scripts/deploy.sh</code> (mirror rabbit)</td>
+</tr>
+<tr>
+<td>(DNS record itself: Claude adds via <code>gcloud dns</code>)</td>
+<td>Run <code>gcloud run domain-mappings create</code> for <code>verex.jaylabs.xyz</code> + add the CNAME in Cloud DNS</td>
+</tr>
+<tr>
+<td>Update OAuth redirect URI if login is used</td>
+<td>Set <code>AUTH_URL</code>, push secrets, deploy</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Which <strong>GCP project</strong> for verex? Rabbit uses <code>doubletree-498007</code>; reuse it or a separate project?</p>
+</blockquote>
+<hr>
+<h2>Delivery process (from the task&#39;s &quot;After the implementation&quot;)</h2>
+<ol>
+<li><strong>Summarize</strong> what was done in <code>docs/history/</code> (per verex convention).</li>
+<li><strong>Commit + push</strong> on a new branch <code>claude/&lt;topic&gt;</code>.</li>
+<li><strong>Create a PR</strong>, then <strong>merge it</strong> — the task explicitly authorizes merging (this overrides the
+repo&#39;s usual &quot;leave the PR for jay&quot; default, but I&#39;ll still pause for your review first).</li>
+</ol>
+<hr>
+<h2>Open questions for jay</h2>
+<ol>
+<li><strong>API layer:</strong> Next.js route handlers (simplest) or the existing Fastify <code>packages/api</code>?</li>
+<li><strong>v1 scope:</strong> read-only market display, or include <strong>mock trading</strong> (DB-recorded buys)?</li>
+<li><strong>Auth:</strong> homepage public, login only for trading? (Auth.js Google login already scaffolded.)</li>
+<li><strong>Seed data:</strong> how many sample categorical markets, and which categories?</li>
+<li><strong>Chart:</strong> static seeded prices, or simulate price movement for the probability chart?</li>
+<li><strong>GCP project:</strong> reuse <code>doubletree-498007</code> or a separate project for verex?</li>
+<li><strong>Cloud SQL tier:</strong> smallest (shared-core) OK?</li>
+</ol>
+<h2>When ready</h2>
+<p>Say <strong>&quot;go&quot;</strong> and I&#39;ll build everything on a <strong>single branch</strong> — <code>claude/jun-19-verex</code>
+(Tasks 1 + 2 together) — pausing for review before any commit. Per the task&#39;s
+&quot;after the implementation&quot;: summarize in <code>docs/history/</code>, push, open a PR, then merge.</p>
+
+  </article>
+</div>
+</body>
+</html>
