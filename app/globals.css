@@ -821,3 +821,49 @@ a.ghost:hover {
   border-top: 1px solid var(--border);
   margin: 28px 0;
 }
+
+/* ── 홈 "수행 프로젝트" 요약 섹션 (2026-08-01) ──
+   좌: 피처드(Verex + 3D 구), 우: 프로젝트 텍스트 목록. 전체 목록은 /projects.
+   좁은 화면에서는 자연스럽게 위/아래로 쌓인다. */
+.home-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+/* 피처드 카드가 왼쪽 칼럼을 꽉 채우도록 — 오른쪽 목록이 길어도 위쪽에만 붙어
+   보이지 않게 한다. */
+.home-split > .featured-card {
+  align-content: center;
+}
+@media (max-width: 760px) {
+  .home-split {
+    grid-template-columns: 1fr;
+  }
+}
+.home-proj-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.home-proj-row {
+  display: block;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid transparent;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.home-proj-row:hover {
+  background: var(--panel-2, rgb(127 127 127 / 0.06));
+  border-color: var(--border);
+}
+.home-proj-more {
+  align-self: flex-end;
+  margin-top: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}

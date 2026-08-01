@@ -2,6 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import Nav from "../Nav";
 import VerexBallLazy from "./VerexBallLazy";
+import JayChatClient from "../JayChatClient";
 import { PROFILE, PROJECTS } from "@/lib/home-content";
 import { verexUrl } from "@/lib/verex";
 import { getLang } from "@/lib/lang";
@@ -54,49 +55,54 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 피처드: Verex — 상단 메뉴 항목을 대체하는 카드 (2026-07-25, jay). 라이브 앱으로 외부 링크. */}
+      {/* 수행 프로젝트 요약 — 좌: 피처드(Verex + 3D 구), 우: 프로젝트 텍스트 목록.
+          전체(이미지 카드 그리드 포함)는 /projects 에서 (2026-08-01, jay). */}
       <section className="panel">
-        <h2>{pick(lang, "피처드", "Featured")}</h2>
-        <a href={verexUrl()} target="_blank" rel="noreferrer" className="kpi featured-card">
-          <div className="featured-mark-wrap">
-            <VerexBallLazy />
-          </div>
-          <div style={{ flex: 1, minWidth: 220 }}>
-            <div className="label">{pick(lang, "라이브 · 예측 시장", "Live · Prediction market")}</div>
-            <div className="value" style={{ fontSize: 18 }}>
-              Verex ↗
+        <h2>{pick(lang, "수행 프로젝트", "Projects")}</h2>
+        <div className="home-split">
+          {/* 좌: 피처드 — 라이브 앱으로 외부 링크. */}
+          <a href={verexUrl()} target="_blank" rel="noreferrer" className="kpi featured-card">
+            <div className="featured-mark-wrap">
+              <VerexBallLazy />
             </div>
-            <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-              {pick(
-                lang,
-                "탈중앙화 예측 시장 — truth through exchange. CTF(조건부 토큰) 기반 Yes/No 마켓, 온체인 정산, 단독 설계·개발·운영(풀스택). 지금 라이브 앱에서 바로 사용해 볼 수 있습니다.",
-                "A decentralized prediction market — truth through exchange. CTF (conditional-token) Yes/No markets with on-chain settlement; sole developer, end-to-end (full-stack). Try the live app now."
-              )}
-            </div>
-          </div>
-        </a>
-      </section>
-
-      {/* 프로젝트 (linked0.github.io 미러) */}
-      <section className="panel">
-        <h2>{pick(lang, "프로젝트", "Projects")}</h2>
-        <div className="scenario-grid">
-          {projects.map((p) => (
-            <Link key={p.slug} href={`/home/${p.slug}`} className="kpi proj-card" style={{ textDecoration: "none" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="proj-thumb" src={p.img} alt={p.title} />
-              <div className="label" style={{ marginTop: 8 }}>
-                {p.date} · {pick(lang, p.readTime.replace(" min", "분"), p.readTime)}
-              </div>
-              <div className="value" style={{ fontSize: 16 }}>
-                {pick(lang, p.titleKo ?? p.title, p.title)}
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div className="label">{pick(lang, "라이브 · 예측 시장", "Live · Prediction market")}</div>
+              <div className="value" style={{ fontSize: 18 }}>
+                Verex ↗
               </div>
               <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-                {pick(lang, p.descriptionKo ?? p.description, p.description)}
+                {pick(
+                  lang,
+                  "탈중앙화 예측 시장 — truth through exchange. CTF(조건부 토큰) 기반 Yes/No 마켓, 온체인 정산, 단독 설계·개발·운영(풀스택).",
+                  "A decentralized prediction market — truth through exchange. CTF (conditional-token) Yes/No markets with on-chain settlement; sole developer, end-to-end (full-stack)."
+                )}
               </div>
+            </div>
+          </a>
+
+          {/* 우: 프로젝트 텍스트 목록 — 각 항목은 상세 페이지로. */}
+          <div className="home-proj-list">
+            {projects.map((p) => (
+              <Link key={p.slug} href={`/home/${p.slug}`} className="home-proj-row">
+                <div className="value" style={{ fontSize: 15 }}>
+                  {pick(lang, p.titleKo ?? p.title, p.title)}
+                </div>
+                <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>
+                  {pick(lang, p.descriptionKo ?? p.description, p.description)}
+                </div>
+              </Link>
+            ))}
+            <Link href="/projects" className="home-proj-more">
+              {pick(lang, "전체 보기 →", "View all →")}
             </Link>
-          ))}
+          </div>
         </div>
+      </section>
+
+      {/* Jay Chat — 별도 페이지에서 홈으로 통합 (2026-08-01, jay). */}
+      <section className="panel">
+        <h2>{pick(lang, "제이 챗", "Jay Chat")}</h2>
+        <JayChatClient />
       </section>
 
       <p className="muted" style={{ fontSize: 13 }}>

@@ -16,7 +16,8 @@ const MENU: NavItem[] = [
   { href: "/", ko: "홈", en: "Home", code: "HOME", pub: true },
   // 지식(Knowledge) 카테고리는 일시 제거 — 콘텐츠는 docs/know.html (로컬 file:// 열람). 필요 시 복원.
   { href: "/portfolio", ko: "포트폴리오", en: "Portfolio", code: "PORTFOLIO" },
-  { href: "/jay-chat", ko: "제이 챗", en: "Jay Chat", code: "CHAT", pub: true },
+  // 제이 챗은 홈 페이지에 통합됨 — 별도 메뉴/페이지 제거 (2026-08-01, jay).
+  { href: "/projects", ko: "수행 프로젝트", en: "Projects", code: "PROJECTS", pub: true },
   { href: "/game", ko: "게임", en: "Game", code: "GAME" },
   { href: "/market", ko: "하이퍼리퀴드 트레이딩", en: "Hyperliquid Trading", code: "MARKET", pub: true },
   { href: "/ap2", ko: "AP2 테스트", en: "AP2 Test", code: "AP2" },

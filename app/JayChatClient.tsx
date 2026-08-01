@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useLang } from "../LangContext";
+import { useLang } from "./LangContext";
 import { pick } from "@/lib/i18n";
 
 type Msg = { role: "user" | "assistant"; content: string };

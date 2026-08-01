@@ -11,8 +11,8 @@ const PUBLIC_PATHS = new Set([
   "/api/relay", // /xyz 용 공개 relay 프록시 (키 불필요)
   "/api/indices", // /market 의 지수 카드용 — 공개 시세, 업스트림 60초 캐시
   "/api/orderbook", // /market 의 Hyperliquid L2 북용 — 공개 info API
-  "/jay-chat", // Jay Chat — About-Jay 페르소나 전용 공개 챗 (Nav pub, 로그인 불필요)
-  "/api/jay-chat", // 위 페이지의 API — 전용 키 + 시간당 토큰 예산 + 버스트 가드로 보호됨
+  "/projects", // 수행 프로젝트 — 홈에 있던 피처드/프로젝트 전체 (Nav pub, 로그인 불필요)
+  "/api/jay-chat", // 홈에 통합된 Jay Chat 의 API — 전용 키 + 시간당 토큰 예산 + 버스트 가드로 보호됨
 ]);
 
 export default auth((req) => {
