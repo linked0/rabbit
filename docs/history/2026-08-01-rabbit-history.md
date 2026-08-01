@@ -169,3 +169,26 @@ Committed on `claude/jay-chat-public`, not pushed — this is real app code (not
 work from earlier today), so held off pending review. Also not yet deployable: needs a real
 dedicated `JAY_CHAT_OPENAI_API_KEY` from jay (not his existing `AI_API_KEY`) with its own
 spending cap set in the OpenAI dashboard.
+
+### deploy: Jay Chat live on production
+
+jay provided the dedicated key. Verified it directly against OpenAI before wiring it in, then
+verified the actual `/api/jay-chat` route end-to-end locally with the real key (not the borrowed
+`AI_API_KEY` used for the earlier smoke test) — asked "How do I contact him?", got back the
+correct grounded answer with jay's real email.
+
+Extended `scripts/deploy.sh` with the same `upsert_secret` pattern already used for `AI_API_KEY`
+etc. — new `rabbit-jay-chat-key` Secret Manager secret, wired in only when
+`JAY_CHAT_OPENAI_API_KEY` is set in `.env.local`. jay confirmed he didn't want to wait for the
+OpenAI-side spending cap before deploying, since the app's own safeguards (hourly token budget,
+burst guard, request caps — all already tested) provide real protection on their own; the
+account-level cap is a defense-in-depth backstop, not a blocker.
+
+Merged `claude/jay-chat-public` into `main` and pushed first (keeping "what's live" in sync with
+"what's on main," same as today's earlier pattern), then ran the actual deploy —
+`rabbit-jay-chat-key` secret created, new revision (`rabbit-00014-v7w`) serving 100% of traffic.
+
+Verified live on the real production domain, not just Cloud Run's `*.run.app` URL:
+`https://www.jaylabs.xyz/jay-chat` loads (200), `/api/jay-chat` returns a real grounded answer,
+and the nav genuinely shows "제이 챗" (Jay Chat) publicly — confirmed `ALLOW_CHAT=true` was
+already set locally so the menu item didn't silently stay hidden behind its visibility flag.

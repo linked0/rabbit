@@ -174,6 +174,24 @@ guard tripping at exactly the configured threshold.</p>
 work from earlier today), so held off pending review. Also not yet deployable: needs a real
 dedicated <code>JAY_CHAT_OPENAI_API_KEY</code> from jay (not his existing <code>AI_API_KEY</code>) with its own
 spending cap set in the OpenAI dashboard.</p>
+<h3>deploy: Jay Chat live on production</h3>
+<p>jay provided the dedicated key. Verified it directly against OpenAI before wiring it in, then
+verified the actual <code>/api/jay-chat</code> route end-to-end locally with the real key (not the borrowed
+<code>AI_API_KEY</code> used for the earlier smoke test) — asked &quot;How do I contact him?&quot;, got back the
+correct grounded answer with jay&#39;s real email.</p>
+<p>Extended <code>scripts/deploy.sh</code> with the same <code>upsert_secret</code> pattern already used for <code>AI_API_KEY</code>
+etc. — new <code>rabbit-jay-chat-key</code> Secret Manager secret, wired in only when
+<code>JAY_CHAT_OPENAI_API_KEY</code> is set in <code>.env.local</code>. jay confirmed he didn&#39;t want to wait for the
+OpenAI-side spending cap before deploying, since the app&#39;s own safeguards (hourly token budget,
+burst guard, request caps — all already tested) provide real protection on their own; the
+account-level cap is a defense-in-depth backstop, not a blocker.</p>
+<p>Merged <code>claude/jay-chat-public</code> into <code>main</code> and pushed first (keeping &quot;what&#39;s live&quot; in sync with
+&quot;what&#39;s on main,&quot; same as today&#39;s earlier pattern), then ran the actual deploy —
+<code>rabbit-jay-chat-key</code> secret created, new revision (<code>rabbit-00014-v7w</code>) serving 100% of traffic.</p>
+<p>Verified live on the real production domain, not just Cloud Run&#39;s <code>*.run.app</code> URL:
+<code>https://www.jaylabs.xyz/jay-chat</code> loads (200), <code>/api/jay-chat</code> returns a real grounded answer,
+and the nav genuinely shows &quot;제이 챗&quot; (Jay Chat) publicly — confirmed <code>ALLOW_CHAT=true</code> was
+already set locally so the menu item didn&#39;t silently stay hidden behind its visibility flag.</p>
 
   </article>
 </div>
