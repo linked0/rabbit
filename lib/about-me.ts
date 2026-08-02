@@ -120,6 +120,15 @@ function tokenize(s: string): string[] {
     if (/[가-힣]/.test(t) && t.length > 2) {
       const stem = t.replace(KO_PARTICLE, "");
       if (stem.length >= 2 && stem !== t) out.push(stem);
+    } else if (/^[a-z]+$/.test(t) && t.length >= 4) {
+      // Crude English stemming so a query and the corpus meet in the middle: asking
+      // "what did he study?" scored zero against a corpus that says "Studies"
+      // (2026-08-02). Applied to BOTH sides, so studies/study, worked/work, building/build
+      // all collapse to the same key.
+      const stem = t
+        .replace(/ies$/, "y")
+        .replace(/(ing|ed|es|s)$/, "");
+      if (stem.length >= 3 && stem !== t) out.push(stem);
     }
   }
   return out;
@@ -198,6 +207,8 @@ export function retrieve(query: string, k = 4): Chunk[] {
 
 // Assemble the grounded system message injected when the "About me" mode is on.
 export function buildAboutMeSystemMessage(query: string): ChatMessage {
+  // Any Hangul in the question ⇒ treat it as a Korean question.
+  const asksInKorean = /[가-힣]/.test(query);
   const context = retrieve(query)
     .map((c) => `- [${c.source}] ${c.text}`)
     .join("\n");
@@ -227,7 +238,21 @@ export function buildAboutMeSystemMessage(query: string): ChatMessage {
       "is not. If asked how old he is, say he shares his 학번 (university entrance cohort) " +
       "rather than his age, and give that: 91학번 — entered university in 1991, graduated " +
       "1997, developer since 1997.\n\n" +
-      "Reply in the same language as the question (Korean or English).\n\n" +
-      `[Context about ${PROFILE.name}]\n${context}`,
+      "Voice: you are an assistant speaking ABOUT him, never AS him. Always use the third " +
+      "person (he / 이현재는), never the first person (I, my / 저는, 제), even when the " +
+      "visitor phrases the question as if speaking to him directly. This applies in " +
+      "whichever language you are answering in.\n\n" +
+      "LANGUAGE — match the visitor's question, independently of the language used in these " +
+      "instructions or in the context below: a Korean question gets a Korean answer, an " +
+      "English question gets an English answer.\n\n" +
+      `[Context about ${PROFILE.name}]\n${context}\n\n` +
+      // The corpus is deliberately bilingual, so "answer in the same language as the question"
+      // proved unreliable — the mixed-language context kept dragging English questions into
+      // Korean answers, and which way it fell flipped between runs as the corpus changed
+      // (2026-08-02). Detecting the language in code and stating it flatly removes the
+      // ambiguity instead of trying to out-phrase it.
+      `MANDATORY — the visitor asked in ${asksInKorean ? "KOREAN" : "ENGLISH"}. Write your ` +
+      `entire answer in ${asksInKorean ? "KOREAN" : "ENGLISH"}, regardless of the language ` +
+      "of the context above. Always third person.",
   };
 }

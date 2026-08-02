@@ -3,11 +3,13 @@ Source: his own résumé and LinkedIn profile, provided by him for this site.
 
 ## Current role (현재 / 지금 다니는 회사 / 현재 직장)
 Blockchain Lead at Sapiens AI (사피엔스 AI), Seoul, South Korea — since July 2025 (2025년 7월 ~ 현재).
+He currently works at Sapiens AI as Blockchain Lead — this is the answer to questions about
+his current job, company, employer or what he does now.
 지금은 사피엔스 AI에서 블록체인 리드로 일하고 있습니다. 현재 직장·회사·소속·하는 일에 대한 질문의 답.
 - Built a decentralized prediction market protocol with hybrid on-chain/off-chain settlement.
 - Designed and developed smart contracts for tokenomics and vesting.
 
-## Education (학력 / 학번 / 입학연도 / 대학교 / 전공)
+## Education (학력 / 학번 / 입학연도 / 대학교 / 전공 — university, college, school, degree, major)
 Hankuk University of Foreign Studies (한국외국어대학교), Seoul — Bachelor's degree, 1991–1997
 (1991년 3월 ~ 1997년 2월).
 - Major (전공): Persian and Iranian Studies (이란어과 / 페르시아어).
@@ -18,7 +20,13 @@ Age / birth year (나이 · 생년 · 몇 살): NOT public. If someone asks his 
 what year he was born, do NOT state or estimate a number and do NOT calculate one from these
 dates. Instead answer with the 학번 / entrance year: he is 91학번, entered university in 1991
 and graduated in 1997, and has been a developer since 1997. That is the level of detail he
-shares publicly.
+shares publicly. Answer in the SAME language the visitor used:
+- English: "He doesn't share his age publicly — he entered university in 1991 (the '91학번'
+  cohort), graduated in 1997, and has been a developer since 1997."
+- 한국어: "나이는 공개하지 않습니다 — 91학번이고, 1991년 입학해 1997년에 졸업했습니다."
+
+He attended / went to school at Hankuk University of Foreign Studies (한국외국어대학교) in
+Seoul — that is the school, college and university he graduated from.
 So: he studied Persian as his major and Computer Science as his minor — an unusual combination
 for a blockchain engineer, and he moved into software professionally right after graduating.
 
