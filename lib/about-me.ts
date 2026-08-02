@@ -108,8 +108,21 @@ function corpus(): Chunk[] {
 }
 
 // Tokenize into lowercase words — ASCII alphanumerics and Korean syllables.
+const KO_PARTICLE = /(은|는|이|가|을|를|에|의|도|와|과|로|으로|에서|에게|부터|까지|만|이나|나)$/;
+
 function tokenize(s: string): string[] {
-  return s.toLowerCase().match(/[a-z0-9]+|[가-힣]+/g) ?? [];
+  const raw = s.toLowerCase().match(/[a-z0-9]+|[가-힣]+/g) ?? [];
+  // Korean glues particles onto nouns ("지금은", "회사에서"), so a bare token never matches
+  // the corpus form. Emit the particle-stripped stem alongside the raw token.
+  const out: string[] = [];
+  for (const t of raw) {
+    out.push(t);
+    if (/[가-힣]/.test(t) && t.length > 2) {
+      const stem = t.replace(KO_PARTICLE, "");
+      if (stem.length >= 2 && stem !== t) out.push(stem);
+    }
+  }
+  return out;
 }
 
 // Common words that shouldn't drive retrieval (so "what does he do?" doesn't match on
@@ -151,12 +164,20 @@ export function retrieve(query: string, k = 4): Chunk[] {
 
   const profile = all.find((c) => c.source === "profile")!;
 
-  // Broad/subjective questions ("what's his strength?") share no keywords with any
-  // chunk (project text doesn't literally say "strength"), so `top` comes back empty.
-  // Fall back to the full corpus instead of just `profile` — the model needs real
-  // project material to characterize strengths/weaknesses from, not just a name and
-  // contact info.
-  if (top.length === 0) return all;
+  // Broad/subjective questions ("what's his strength?") and Korean phrasings that share no
+  // literal keyword with the corpus ("지금은 어디서 일해요?" vs a corpus that says "현재")
+  // score zero everywhere. Fall back to a CORE set — profile, current role, the career
+  // summary and its guidance — rather than dumping all ~83 chunks: a huge unfocused context
+  // costs far more tokens and measurably answers worse (2026-08-02, "지금은 어디서 일해요?"
+  // returned "no information" while the same question with an explicit subject worked).
+  if (top.length === 0) {
+    const core = all.filter(
+      (c) =>
+        c.source === "profile" ||
+        /Current role|Experience summary|How to answer|Skills/i.test(c.source)
+    );
+    return core.length > 0 ? core : all.slice(0, 8);
+  }
 
   return top.some((c) => c.source === "profile") ? top : [profile, ...top].slice(0, k + 1);
 }

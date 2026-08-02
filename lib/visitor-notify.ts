@@ -40,3 +40,10 @@ export function notifyChatStart(ip: string) {
   if (debounced(key)) return;
   send(`🐰 💬 Rabbit — Jay Chat conversation started (${ip})`);
 }
+
+// Someone is genuinely engaged, not just poking at it — worth knowing separately from the
+// "a conversation started" ping. No debounce: the route only calls this on the exact
+// threshold turn, so it fires once per conversation.
+export function notifyChatMilestone(turns: number, ip: string) {
+  send(`🐰 🔥 Rabbit — Jay Chat: ${turns} questions in one conversation (${ip})`);
+}

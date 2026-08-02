@@ -14,7 +14,10 @@ const MAX_OUTPUT_TOKENS = 500; // caps cost per request even under abuse
 // docs/features/ai-chat.md for the tradeoff). This is a soft safety net, not the
 // hard guarantee — the real backstop is the OpenAI account-level spending cap
 // (set separately in the OpenAI dashboard for the dedicated key below).
-const HOURLY_TOKEN_BUDGET = Number(process.env.JAY_CHAT_HOURLY_TOKEN_BUDGET ?? 30000);
+// 150k/hour ≈ 60+ questions with the history trimming in the route (~2.3k tokens each).
+// The old 30k died at ~question 11: the client resends the whole conversation every turn, so
+// cost grew quadratically — question 20 cost 8× question 1 (measured, 2026-08-02).
+const HOURLY_TOKEN_BUDGET = Number(process.env.JAY_CHAT_HOURLY_TOKEN_BUDGET ?? 150000);
 let windowStart = Date.now();
 let tokensUsedThisHour = 0;
 

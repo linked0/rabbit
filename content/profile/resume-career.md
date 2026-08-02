@@ -1,8 +1,9 @@
 Career, education and background of Hyunjae Lee (이현재), also known as Jay.
 Source: his own résumé and LinkedIn profile, provided by him for this site.
 
-## Current role (현재)
+## Current role (현재 / 지금 다니는 회사 / 현재 직장)
 Blockchain Lead at Sapiens AI (사피엔스 AI), Seoul, South Korea — since July 2025 (2025년 7월 ~ 현재).
+지금은 사피엔스 AI에서 블록체인 리드로 일하고 있습니다. 현재 직장·회사·소속·하는 일에 대한 질문의 답.
 - Built a decentralized prediction market protocol with hybrid on-chain/off-chain settlement.
 - Designed and developed smart contracts for tokenomics and vesting.
 
