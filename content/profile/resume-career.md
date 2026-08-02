@@ -7,11 +7,18 @@ Blockchain Lead at Sapiens AI (사피엔스 AI), Seoul, South Korea — since Ju
 - Built a decentralized prediction market protocol with hybrid on-chain/off-chain settlement.
 - Designed and developed smart contracts for tokenomics and vesting.
 
-## Education (학력)
+## Education (학력 / 학번 / 입학연도 / 대학교 / 전공)
 Hankuk University of Foreign Studies (한국외국어대학교), Seoul — Bachelor's degree, 1991–1997
 (1991년 3월 ~ 1997년 2월).
 - Major (전공): Persian and Iranian Studies (이란어과 / 페르시아어).
 - Minor (부전공): Computer Science (컴퓨터공학).
+- 학번: 91학번 (1991년 입학 / entrance year 1991, graduated 1997).
+
+Age / birth year (나이 · 생년 · 몇 살): NOT public. If someone asks his age, how old he is, or
+what year he was born, do NOT state or estimate a number and do NOT calculate one from these
+dates. Instead answer with the 학번 / entrance year: he is 91학번, entered university in 1991
+and graduated in 1997, and has been a developer since 1997. That is the level of detail he
+shares publicly.
 So: he studied Persian as his major and Computer Science as his minor — an unusual combination
 for a blockchain engineer, and he moved into software professionally right after graduating.
 
