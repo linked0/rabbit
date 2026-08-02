@@ -1,5 +1,6 @@
 // Visitor activity notifications — Telegram, mirroring the pattern already built for
-// verex's trade/faucet/resolve events. Fire-and-forget: a Telegram hiccup must never
+// verex's trade/faucet/resolve events. Every message is prefixed 🐰 (this portfolio site);
+// verex uses 🔮, so the two projects are distinguishable at a glance in the chat. Fire-and-forget: a Telegram hiccup must never
 // affect a real page load or chat request. Reuses the same bot (@ClaudeAgentJayBot,
 // same token value as verex/the Claude Code channel) — one bot, multiple use-cases.
 
@@ -31,11 +32,11 @@ function debounced(key: string): boolean {
 export function notifyPageView(pathname: string, ip: string) {
   const key = `page:${pathname}:${ip}`;
   if (debounced(key)) return;
-  send(`👀 Visitor on ${pathname} (${ip})`);
+  send(`🐰 👀 Rabbit — visitor on ${pathname} (${ip})`);
 }
 
 export function notifyChatStart(ip: string) {
   const key = `chat:${ip}`;
   if (debounced(key)) return;
-  send(`💬 Jay Chat conversation started (${ip})`);
+  send(`🐰 💬 Rabbit — Jay Chat conversation started (${ip})`);
 }
