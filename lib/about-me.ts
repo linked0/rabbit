@@ -150,8 +150,22 @@ export function retrieve(query: string, k = 4): Chunk[] {
     let total = 0;
     for (const term of terms) {
       const n = counts.get(term) ?? 0;
-      if (n > 0) distinct++;
-      total += n;
+      if (n > 0) {
+        distinct++;
+        total += n;
+        continue;
+      }
+      // Korean compounds words without spaces: "학교" (school) is a substring of
+      // "한국외국어대학교", never its own token, so exact matching alone can never find it —
+      // asking 학교는 어디 나왔나요? scored ZERO against the education section (2026-08-02).
+      // Fall back to substring containment for Korean terms, weighted below an exact hit.
+      if (term.length >= 2 && /[가-힣]/.test(term)) {
+        const hits = toks.filter((t) => t.length > term.length && t.includes(term)).length;
+        if (hits > 0) {
+          distinct += 0.7;
+          total += hits;
+        }
+      }
     }
     return { chunk: c, score: distinct + 0.1 * total };
   });
@@ -174,7 +188,7 @@ export function retrieve(query: string, k = 4): Chunk[] {
     const core = all.filter(
       (c) =>
         c.source === "profile" ||
-        /Current role|Experience summary|How to answer|Skills/i.test(c.source)
+        /Current role|Education|Experience summary|How to answer|Skills|Certifications/i.test(c.source)
     );
     return core.length > 0 ? core : all.slice(0, 8);
   }
