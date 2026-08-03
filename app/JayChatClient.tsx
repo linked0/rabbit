@@ -75,7 +75,7 @@ export default function JayChatClient() {
             로컬 LLM 은 아직 연결돼 있지 않으므로 붙이지 않는다 (2026-08-01, jay와 확인). */}
         {pick(
           lang,
-          "Hyunjae Lee에 대해 물어보세요 — ChatGPT(gpt-4o-mini) + 이력 기반 RAG. 대화는 저장되지 않습니다.",
+          "이현재에 대해 물어보세요 — ChatGPT(gpt-4o-mini) + 이력 기반 RAG. 대화는 저장되지 않습니다.",
           "Ask anything about Hyunjae Lee — ChatGPT (gpt-4o-mini) + RAG over his résumé. Nothing is stored."
         )}
       </p>

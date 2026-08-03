@@ -73,7 +73,7 @@ export default function ChatClient() {
           onClick={() => setAboutMe((v) => !v)}
           title={pick(
             lang,
-            "Hyunjae Lee에 대해 물어보는 모드 on/off (프로필·프로젝트 기반 RAG)",
+            "이현재에 대해 물어보는 모드 on/off (프로필·프로젝트 기반 RAG)",
             "Toggle 'Ask about Hyunjae Lee' mode (RAG over his profile & projects)"
           )}
         >
@@ -91,7 +91,7 @@ export default function ChatClient() {
           <span className="muted">
             {pick(
               lang,
-              "Hyunjae Lee의 경력·프로젝트로 답합니다 — 예: “무슨 일을 하나요?”, “예측 시장 프로젝트가 뭐죠?”",
+              "이현재의 경력·프로젝트로 답합니다 — 예: “무슨 일을 하나요?”, “예측 시장 프로젝트가 뭐죠?”",
               "Answers from Hyunjae Lee's background — e.g. “What does he do?”, “Tell me about the prediction market project.”"
             )}
           </span>
