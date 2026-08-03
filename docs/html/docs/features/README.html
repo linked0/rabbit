@@ -40,190 +40,185 @@
 Each feature has its own file; this is the main index. These are for review — refine first,
 then summarize the built result into <code>docs/history/</code>.</p>
 <h2>Target information architecture (one top menu, anchored by Home)</h2>
+<p>Status verified against the running code on 2026-08-03 (routes, <code>app/Nav.tsx</code>, <code>next.config.js</code>),
+not just doc text — several rows are flagged stale below (see notes under the table). <strong>This
+table is now the single status source for everything except AP2 + Account Abstraction (AA) — the
+only two tasks tracked in <a href="../tasks/current-plan.html">current-plan.md</a></strong> (§2, §3, §6). The PoCs
+hub those two plug into is tracked here instead, at <a href="pocs-hub.html">pocs-hub.md</a> — every other
+section that used to live in current-plan.md has had its full detail moved into the linked doc
+below.</p>
 <table>
 <thead>
 <tr>
 <th>Menu</th>
 <th>Route</th>
 <th>Feature doc</th>
+<th>Status</th>
 </tr>
 </thead>
 <tbody><tr>
 <td>Home</td>
 <td><code>/</code></td>
 <td><a href="main-page.html">main-page.md</a></td>
+<td>✅ Done — <code>/</code> rewrites to <code>app/home/page.tsx</code></td>
 </tr>
 <tr>
 <td>Portfolio &amp; Market</td>
-<td><code>/portfolio</code></td>
+<td><code>/portfolio</code> + <code>/market</code></td>
 <td><a href="portfolio-and-market.html">portfolio-and-market.md</a></td>
+<td>🟡 Stale row — already split into <strong>Portfolio</strong> (<code>/portfolio</code>, ✅ done) and <strong>Market</strong> (<code>/market</code>, 🟡 in progress — Hyperliquid trading, see the doc); this table&#39;s Menu column needs a nav-update pass to reflect the split as two rows</td>
 </tr>
 <tr>
 <td>AI Chat</td>
 <td><code>/chat</code></td>
-<td><a href="ai-chat.html">ai-chat.md</a></td>
+<td><a href="ai-chat.html">ai-chat.md</a> — full design incl. Auth+LLM gating and KB-via-MCP+RAG</td>
+<td>🟡 Route exists but was <strong>dropped from the top nav</strong> (2026-08-01, folded into Home); gating/BYO-key ⬜ · KB-RAG ⬜ · Ask-about-me ✅ · Jay Chat public surface ✅</td>
 </tr>
 <tr>
 <td>Game</td>
 <td><code>/game</code></td>
 <td><a href="game.html">game.md</a></td>
+<td>🟡 In progress — <code>/game</code> is a 2D-canvas placeholder (&quot;Coin Catcher&quot;), Unity WebGL embed not built yet</td>
 </tr>
 <tr>
 <td>AP2 Test</td>
 <td><code>/ap2</code></td>
-<td><a href="ap2-test.html">ap2-test.md</a></td>
+<td><a href="ap2-test.html">ap2-test.md</a> — plus <a href="../tasks/current-plan.html#s2">current-plan.md §2</a> for the active Stripe-example build</td>
+<td>⬜ To do — page is a &quot;Coming soon&quot; stub; <strong>actively being built now</strong> (Stripe settlement example)</td>
 </tr>
 <tr>
 <td>XYZ Demo</td>
 <td><code>/xyz</code></td>
 <td><a href="xyz-demo.html">xyz-demo.md</a></td>
+<td>🟡 In progress — C2 bundle-submit + C4 PBS relay dashboard live; other items pending</td>
 </tr>
 <tr>
 <td>JayVerse</td>
 <td><code>/jayverse</code></td>
 <td><a href="jayverse.html">jayverse.md</a></td>
+<td>⬜ To do — &quot;Coming soon&quot; stub, Gravia-style dashboard not built</td>
 </tr>
 <tr>
 <td>Verex</td>
 <td>↗ external</td>
 <td><a href="verex-link.html">verex-link.md</a></td>
+<td>✅ Done, but <strong>not as designed here</strong> — the nav item was removed (2026-07-25); replaced with a featured card on the Home page (<code>app/home/page.tsx</code>, <code>lib/verex.ts</code>) instead of a top-menu external link</td>
 </tr>
 <tr>
 <td><em>UI/UX</em></td>
 <td>—</td>
 <td><a href="ui-ux.html">ui-ux.md</a> — 디자인 접근법: frontend-design 스킬 + UI/UX Pro Max + 6단계 빌드 워크플로</td>
+<td>🔄 Ongoing — applied per-feature, not a single deliverable</td>
 </tr>
 <tr>
 <td><em>Cross-cutting</em></td>
 <td>—</td>
 <td><a href="common.html">common.md</a> — navigation/top-menu (Common #1) + CI/CD (Common #2)</td>
+<td>🟡 Partial — Nav restructure done (<code>app/Nav.tsx</code>, owner/public gating); <strong>CI/CD not found</strong> — no <code>.github/workflows/</code> directory exists in the repo despite <code>common.md</code> describing a <code>deploy.yml</code></td>
 </tr>
 <tr>
 <td><em>DSRV Portal</em></td>
 <td>— (backlog)</td>
 <td><a href="dsrv-portal.html">dsrv-portal.md</a> — institutional custody study (MPC · approval flow · AA · AML) + no-VASP PoC items</td>
+<td>⬜ To do (backlog) — not yet scheduled</td>
 </tr>
 <tr>
 <td><em>PET Clean Room</em></td>
 <td>— (backlog)</td>
 <td><a href="pet-clean-room.html">pet-clean-room.md</a> — homomorphic-encryption data clean room study (DESILO/국립암센터 case) + hands-on FHE PoC items</td>
+<td>⬜ To do (backlog) — not yet scheduled</td>
 </tr>
 <tr>
 <td><em>Zapier MCP</em></td>
 <td><code>/etc/zapier</code> (planned)</td>
 <td><a href="zapier-mcp.html">zapier-mcp.md</a> — sample page: agent triggers real app actions (Gmail/Notion/Slack) via Zapier MCP</td>
+<td>⬜ To do — not yet scheduled</td>
 </tr>
 <tr>
 <td><em>Agentic AA</em></td>
-<td><code>/etc</code> (extends §7 demo)</td>
+<td><code>/etc</code> (extends the §3 ETC demo)</td>
 <td><a href="agentic-aa.html">agentic-aa.md</a> — 4-pillar AA demo for agent payments: session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix</td>
+<td>⬜ To do — <strong>actively being built now</strong>, see <a href="../tasks/current-plan.html#s6">current-plan.md §6</a> (sequenced after §3)</td>
 </tr>
 <tr>
 <td><em>Solana</em></td>
 <td><code>/etc/solana</code> (planned)</td>
 <td><a href="solana.html">solana.md</a> — Solana integration study + sample Anchor program (counter → SPL escrow) on devnet, called from a demo page</td>
+<td>⬜ To do — not yet scheduled</td>
 </tr>
 <tr>
 <td><em>KB Hybrid Payment</em></td>
 <td>— (reference only)</td>
 <td><a href="kb-hybrid-payment-flow.html">kb-hybrid-payment-flow.md</a> — flow map: TradFi card rail (ISO 8583) × on-chain settlement (Avalanche subnet); no dev item</td>
+<td>📎 Reference only</td>
 </tr>
 <tr>
 <td><em>CRE × Cloud</em></td>
 <td>— (reference only)</td>
 <td><a href="cre-cloud.html">cre-cloud.md</a> — 4 hybrid patterns (RWA servicing · PoR · DvP · AI prediction-market settlement): cloud = private truth, CRE = verified bridge, chain = settlement</td>
+<td>📎 Reference only</td>
 </tr>
 <tr>
 <td><em>Thirdweb</em></td>
 <td>— (reference only)</td>
 <td><a href="thirdweb.html">thirdweb.md</a> — full-stack Web3 platform survey (contracts · Connect wallets/AA · Engine backend tx · Unity SDK); breadth-over-best-parts tradeoff; touchpoints: agentic-aa, ap2 backend tx, Unity track</td>
+<td>📎 Reference only — not scheduled</td>
+</tr>
+<tr>
+<td><em>ERC-8141</em></td>
+<td>— (knowledge page, planned)</td>
+<td><a href="erc-8141.html">erc-8141.md</a> — native account-abstraction study: Frame Transactions (<code>0x06</code>), the protocol-native sibling of the app-layer AA work (see <a href="../tasks/current-plan.html#s3">current-plan.md §3</a>)</td>
+<td>⬜ To do — not yet scheduled</td>
+</tr>
+<tr>
+<td><em>Toss Payments</em></td>
+<td><code>/ap2</code> or <code>/etc/toss</code> (planned)</td>
+<td><a href="toss-payments.html">toss-payments.md</a> — KRW settlement example via Toss Payments, counterpart to the AP2 Stripe example (see <a href="../tasks/current-plan.html#s2">current-plan.md §2</a>)</td>
+<td>⬜ To do — not yet scheduled</td>
+</tr>
+<tr>
+<td><em>Staging Domain</em></td>
+<td>— (infra, not a menu item)</td>
+<td><a href="staging-domain.html">staging-domain.md</a> — <code>staging.rabbit.jaylabs.xyz</code> via Firebase Hosting rewrite</td>
+<td>🚫 Not pursuing</td>
+</tr>
+<tr>
+<td><em>Merkle vs Verkle</em></td>
+<td>— (reference only)</td>
+<td><a href="../../../knowledge/merkle-vs-verkle.html">../knowledge/merkle-vs-verkle.html</a> — proof-size comparison, Ethereum&#39;s Verge context</td>
+<td>📎 Reference only</td>
+</tr>
+<tr>
+<td><em>Linera Microchains</em></td>
+<td>— (reference only)</td>
+<td><a href="../../../knowledge/linera-microchains.html">../knowledge/linera-microchains.html</a> — blockspace-contention + per-user microchain model</td>
+<td>📎 Reference only</td>
+</tr>
+<tr>
+<td><em>Web Stack Layers</em></td>
+<td>— (reference only)</td>
+<td><a href="../../../knowledge/web-stack-layers.html">../knowledge/web-stack-layers.html</a> — 5-layer map with a rabbit overlay</td>
+<td>📎 Reference only</td>
+</tr>
+<tr>
+<td><em>PoCs hub</em></td>
+<td><code>/etc</code> (building)</td>
+<td><a href="pocs-hub.html">pocs-hub.md</a> — consolidated demo menu wrapping Hyperliquid Trading, PBS, AP2, and AA under one top-menu item</td>
+<td>🟡 In progress — building on branch <code>claude/pocs-hub</code></td>
+</tr>
+<tr>
+<td><em>TIL (&quot;Today I Learned&quot;)</em></td>
+<td><code>/til</code> (building)</td>
+<td><code>lib/til-cards.ts</code> — same card format as the PoCs hub (<code>app/DemoCard.tsx</code>, shared type <code>lib/demo-cards.ts</code>). Code demos re-implementing something from a day&#39;s learning (math formula, algorithm, or a recommended-service integration) — not a sync of jay&#39;s private daily report file</td>
+<td>🟡 In progress — 3 seed cards, all &quot;Coming soon&quot; pending jay filling in the actual code; building on branch <code>claude/pocs-hub</code>. Build log: <a href="../history/2026-08-03-rabbit-history.html">2026-08-03 history</a> (search &quot;TIL&quot;)</td>
 </tr>
 </tbody></table>
+<p><strong>Legend:</strong> ✅ Done · 🟡 In progress / partial / stale · ⬜ To do · 🔄 Ongoing · 📎 Reference only ·
+🚫 Not pursuing · 🗒️ Design (not yet approved to build).</p>
 <blockquote>
-<p><strong>Knowledge 메뉴는 일시 제거됨</strong> — 콘텐츠는 <code>docs/know.html</code>(로컬 <code>file://</code>로 열람). 필요 시 복원. (앱 측 메뉴/라우트 제거는 PR #18에 포함.)</p>
+<p><strong>Knowledge 메뉴는 일시 제거됨</strong> — 콘텐츠는 <code>docs/know.html</code>(로컬 <code>file://</code>로 열람). 필요 시 복원. (앱 측 메뉴/라우트 제거는 PR #18에 포함.)
+<strong>Also not in this table but live in <code>app/Nav.tsx</code>:</strong> a public <strong>Projects</strong> menu item (<code>/projects</code>) — added after this table was last updated.</p>
 </blockquote>
-<h2>Roadmap — phase · step schedule</h2>
-<p>Broken into steps like verex&#39;s <code>docs/plan/README.md §1.4</code>. Effort = focused AI-assisted
-work (not calendar time); if a step runs over, <strong>cut its scope</strong> rather than slipping the next.</p>
-<table>
-<thead>
-<tr>
-<th>Phase · Step</th>
-<th>Key deliverables</th>
-<th>Milestone</th>
-<th>Est.</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>P1 Shell · S1</strong></td>
-<td>Navigation restructure — Home-anchored top menu + active-link highlight</td>
-<td>every section reachable from the new menu</td>
-<td>0.5d</td>
-</tr>
-<tr>
-<td><strong>P1 Shell · S2</strong></td>
-<td>Home gate (<code>app/page.tsx</code>) — card grid + hero image</td>
-<td><code>/</code> shows the Home gate</td>
-<td>0.5–1d</td>
-</tr>
-<tr>
-<td><strong>P1 Shell · S3</strong></td>
-<td>Knowledge → <code>/knowledge</code>; Verex external link</td>
-<td>knowledge at <code>/knowledge</code>; Verex opens externally</td>
-<td>0.5d</td>
-</tr>
-<tr>
-<td><strong>P1 Shell · S4</strong></td>
-<td>CI/CD — GitHub Actions (lint/build/test on PR; deploy on merge)</td>
-<td>PRs auto-checked, merge auto-deploys</td>
-<td>0.5–1d</td>
-</tr>
-<tr>
-<td><strong>P2 Core · S5</strong></td>
-<td>Merge <code>/summary</code> + <code>/dashboard</code> → <code>/portfolio</code> (Market + Portfolio zones)</td>
-<td>one Portfolio &amp; Market page</td>
-<td>1d</td>
-</tr>
-<tr>
-<td><strong>P2 Core · S6</strong></td>
-<td>DB persistence — Cloud SQL Postgres + Prisma; holdings schema + CRUD API</td>
-<td>holdings survive refresh, keyed by user</td>
-<td>1–2d</td>
-</tr>
-<tr>
-<td><strong>P2 Core · S7</strong></td>
-<td>AI Chat — provider selector + small OSS model (Qwen2.5-0.5B) on Cloud Run</td>
-<td>pick Local/OpenAI; OSS model answers</td>
-<td>1–2d</td>
-</tr>
-<tr>
-<td><strong>P3 Extras · S8</strong></td>
-<td>Game — Unity (<code>rabbit-hole</code>) WebGL build embedded in <code>/game</code></td>
-<td>sample game playable in <code>/game</code></td>
-<td>2–3d*</td>
-</tr>
-<tr>
-<td><strong>P3 Extras · S9</strong></td>
-<td>AP2 Test — x402 &quot;agent pays for data&quot; mock loop</td>
-<td>agent pay → retry → data works</td>
-<td>1–2d</td>
-</tr>
-<tr>
-<td><strong>P3 Extras · S10</strong></td>
-<td>Polish — error boundaries, a few tests, deploy, history write-up</td>
-<td>all features live; history recorded</td>
-<td>1–2d</td>
-</tr>
-</tbody></table>
-<p>*S8 is gated on your Unity game build. <strong>Total: ~10–15 focused days.</strong></p>
-<p><strong>Sequencing rules</strong></p>
-<ul>
-<li><strong>Navigation first</strong> — every other feature plugs into the new top menu.</li>
-<li><strong>CI/CD early</strong> (Phase 1) — so Phase 2/3 PRs are auto-checked.</li>
-<li><strong>Portfolio &amp; Market is the critical path</strong> for real value (it needs the DB) — start Phase 2 with it.</li>
-<li><strong>Game and AP2 last</strong> — Game is a separate Unity repo (<code>rabbit-hole</code>) gated on your game build; AP2 is experimental.</li>
-<li><strong>Quick wins</strong> you can pull forward anytime: <code>verex-link</code> (one external <code>&lt;a&gt;</code>) and the app icon (already done).</li>
-</ul>
 <h2>Demo for employer — trade[XYZ] / Unit Labs (Sr. Software Engineer)</h2>
 <p>Surfaced under the new <strong>XYZ Demo</strong> menu (<code>/xyz</code>) — see <a href="xyz-demo.html">xyz-demo.md</a>. Three demo
 items I can build to showcase fit for this spec (Go backend, oracle/pricing infrastructure,
@@ -266,9 +261,6 @@ They escalate: <strong>data → monetized data → on-chain data.</strong></p>
 &quot;priced data, paid for by an agent&quot; story that hits the oracle, pricing, Go, and 0→1 bullets
 most directly. Item 3 is the strongest <em>blockchain</em> signal but the heaviest; pull it in only if
 the Hyperliquid testnet integration lands cleanly.</p>
-<h2>Status / prerequisite</h2>
-<p>Portfolio and Investment Summary are currently <strong>separate</strong> menus (<code>/dashboard</code>, <code>/summary</code>);
-they must be <strong>merged</strong> into <em>Portfolio &amp; Market</em> — see <a href="portfolio-and-market.html">portfolio-and-market.md</a>.</p>
 
   </article>
 </div>

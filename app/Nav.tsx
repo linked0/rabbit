@@ -8,7 +8,7 @@ import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 
 // Target IA 최상단 메뉴 (docs/features/README.md).
-// `pub` 항목(홈·마켓·XYZ)만 비로그인 방문자에게 보인다. 나머지는 오너(= ALLOWED_EMAILS
+// `pub` 항목(홈·프로젝트·PoCs)만 비로그인 방문자에게 보인다. 나머지는 오너(= ALLOWED_EMAILS
 // 의 구글 계정) 로그인 시에만 노출되고, 미들웨어도 같은 기준으로 진입을 막는다
 // (2026-07-25, jay — 운영 서버 1대 체제). 라벨은 ko/en 둘 다 — 언어 토글로 전환.
 
@@ -19,9 +19,12 @@ const MENU: NavItem[] = [
   // 제이 챗은 홈 페이지에 통합됨 — 별도 메뉴/페이지 제거 (2026-08-01, jay).
   { href: "/projects", ko: "수행 프로젝트", en: "Projects", code: "PROJECTS", pub: true },
   { href: "/game", ko: "게임", en: "Game", code: "GAME" },
-  { href: "/market", ko: "하이퍼리퀴드 트레이딩", en: "Hyperliquid Trading", code: "MARKET", pub: true },
+  // 마켓·XYZ 는 별도 메뉴에서 PoCs 허브 카드로 통합 (2026-08-03, jay) — 라우트(/market, /xyz)는
+  // 그대로 살아있고 진입점만 바뀜. 설계: docs/tasks/current-plan.md §7.
+  { href: "/etc", ko: "PoCs", en: "PoCs", code: "ETC", pub: true },
+  // TIL — 일상 학습을 코드로 다시 구현한 모음, PoCs와 같은 카드 포맷 (2026-08-03, jay).
+  { href: "/til", ko: "TIL", en: "TIL", code: "TIL", pub: true },
   { href: "/ap2", ko: "AP2 테스트", en: "AP2 Test", code: "AP2" },
-  { href: "/xyz", ko: "PBS", en: "PBS", code: "XYZ", pub: true },
   { href: "/jayverse", ko: "JayVerse", en: "JayVerse", code: "JAYVERSE" },
   // Verex 항목은 제거 (2026-07-25, jay) — 홈의 피처드 카드로 대체 (app/home/page.tsx, lib/verex.ts).
 ];

@@ -45,7 +45,7 @@ pnpm db:push     # Trade 테이블 생성 (마이그레이션 히스토리가 �
 1. `/` — **know.html 공개 랜딩** → 우상단 `로그인 →` 버튼
 2. 로그인 성공 → **`/summary`** (BTC·ETH·S&P 500·KOSPI, 60초 갱신)
 3. 상단 탭: **요약**(`/summary`) · **AI 챗**(`/chat`) · **투자입력**(`/invest`, KRW·DB) · **포트폴리오**(`/dashboard`, v0 인메모리)
-   - **AI 챗**의 `👤 About Hyunjae` 토글: 방문자(잠재 고용주·고객)가 Hyunjae Lee에 대해 물으면 프로필·프로젝트 기반 **RAG**로 답함. 설계 → [features/ai-chat.md](features/ai-chat.md#ask-about-me-rag--implemented) · 로드맵 → [jun-30 design §5b](tasks/current-plan.md#s5b) (공개 게이팅은 [§2](tasks/current-plan.md#s2)와 연동)
+   - **AI 챗**의 `👤 About Hyunjae` 토글: 방문자(잠재 고용주·고객)가 Hyunjae Lee에 대해 물으면 프로필·프로젝트 기반 **RAG**로 답함. 설계 → [features/ai-chat.md](features/ai-chat.md#ask-about-me-rag--implemented) (공개 게이팅 설계는 같은 문서의 [Auth + LLM gating](features/ai-chat.md#auth-llm-gating) 섹션)
 4. **투자입력** 테스트: Transactions History에서 `Buy · BTC · 0.1 · 95000000` 추가 → **Current Portfolio**가 Upbit 시세로 자동 갱신(평가액·손익).
 
 프로덕션 빌드 확인:

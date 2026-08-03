@@ -6,8 +6,10 @@ import { auth, isOwnerEmail } from "@/auth";
 const PUBLIC_PATHS = new Set([
   "/",
   "/login",
-  "/market", // 공개 시세만 — 메뉴에도 항상 노출 (Nav pub)
-  "/xyz", // C4 관찰자 대시보드 — 공개 데이터만 (Nav pub)
+  "/etc", // PoCs 허브 — Market/XYZ 를 여기로 통합 (Nav pub, 2026-08-03)
+  "/til", // TIL 허브 — Today I Learned, PoCs와 같은 카드 포맷 (Nav pub, 2026-08-03)
+  "/market", // 공개 시세만 — 메뉴에선 PoCs 허브 카드로만 노출 (라우트는 그대로 공개)
+  "/xyz", // C4 관찰자 대시보드 — 공개 데이터만 (메뉴에선 PoCs 허브 카드로만 노출)
   "/api/relay", // /xyz 용 공개 relay 프록시 (키 불필요)
   "/api/indices", // /market 의 지수 카드용 — 공개 시세, 업스트림 60초 캐시
   "/api/orderbook", // /market 의 Hyperliquid L2 북용 — 공개 info API

@@ -48,4 +48,4 @@ Write a compact EVM-dev-oriented comparison into this doc (or `docs/knowledge/`)
   for an "EVM vs Solana agent payments" perspective.
 
 ## Status
-Backlog / to do — see `../tasks/current-plan.md` §16.
+Backlog / to do — not yet scheduled.

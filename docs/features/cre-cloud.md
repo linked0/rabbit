@@ -49,4 +49,4 @@ Cloud = private truth (compliance, cash, reserves, AI judgment) · chain = publi
 **CRE = the verified bridge that lets the second react to the first.**
 
 ## Status
-📎 Reference only — see `../tasks/current-plan.md` §21.
+📎 Reference only — not a scheduled dev item.

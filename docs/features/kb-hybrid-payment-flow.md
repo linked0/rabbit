@@ -80,4 +80,4 @@ the same authorize/settle split card networks already use, with the settle leg o
 - **[dsrv-portal.md](dsrv-portal.md)**: MPC custody + compliance pipeline are shared pillars.
 
 ## Status
-Reference only. See `../tasks/current-plan.md` §17 (pointer entry).
+Reference only — flow map, not a dev item.
