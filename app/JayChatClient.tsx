@@ -12,6 +12,7 @@ export default function JayChatClient() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [asked, setAsked] = useState<string[]>([]); // prompts already used, hidden from the list
   const logRef = useRef<HTMLDivElement>(null);
 
   // 예시 질문 버튼은 입력창을 채우는 대신 곧바로 전송한다 (2026-08-01, jay) —
@@ -19,6 +20,7 @@ export default function JayChatClient() {
   async function send(raw: string) {
     const text = raw.trim();
     if (!text || busy) return;
+    setAsked((prev) => (prev.includes(text) ? prev : [...prev, text]));
 
     setError(null);
     setInput("");
@@ -59,14 +61,33 @@ export default function JayChatClient() {
     }
   }
 
-  const examplePrompts =
+  // A pool rather than a fixed trio: once a question has been asked it drops out and the next
+  // one from the pool takes its place, so the suggestions stay useful for the whole
+  // conversation instead of going stale (2026-08-03, jay).
+  const PROMPT_POOL =
     lang === "ko"
-      ? ["주요 경력을 요약해주세요", "예측 시장 프로젝트가 뭐죠?", "어떻게 연락하나요?"]
+      ? [
+          "주요 경력을 요약해주세요",
+          "예측 시장 프로젝트가 뭐죠?",
+          "어떻게 연락하나요?",
+          "어떤 기술을 주로 쓰나요?",
+          "학력이 어떻게 되나요?",
+          "가장 큰 강점은 뭔가요?",
+          "블록체인은 언제부터 했나요?",
+          "지금은 어디서 일하나요?",
+        ]
       : [
           "Summarize his career.",
           "Tell me about the prediction market project.",
           "How do I contact him?",
+          "What technologies does he use?",
+          "What did he study?",
+          "What is his greatest strength?",
+          "When did he start working in blockchain?",
+          "Where does he work now?",
         ];
+  const VISIBLE_PROMPTS = 3;
+  const examplePrompts = PROMPT_POOL.filter((p) => !asked.includes(p)).slice(0, VISIBLE_PROMPTS);
 
   return (
     <section className="panel">
@@ -79,7 +100,7 @@ export default function JayChatClient() {
           "Ask anything about Hyunjae Lee — ChatGPT (gpt-4o-mini) + RAG over his résumé. Nothing is stored."
         )}
       </p>
-      {messages.length === 0 && (
+      {examplePrompts.length > 0 && (
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
           {examplePrompts.map((p) => (
             <button key={p} type="button" className="ghost" disabled={busy} onClick={() => void send(p)}>
@@ -89,9 +110,6 @@ export default function JayChatClient() {
         </div>
       )}
       <div ref={logRef} className="chat-log">
-        {messages.length === 0 && (
-          <p className="muted">{pick(lang, "메시지를 입력해 대화를 시작하세요.", "Type a message to start the chat.")}</p>
-        )}
         {messages.map((m, i) => (
           <div key={i} className={`msg ${m.role}`}>
             <div className="who">{m.role === "user" ? pick(lang, "나", "You") : "Jay Chat"}</div>

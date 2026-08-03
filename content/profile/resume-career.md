@@ -112,6 +112,14 @@ Languages (외국어): Korean (native), English (conversational).
 - Portfolio: https://linked0.github.io
 - LinkedIn: https://www.linkedin.com/in/feelsogood/
 
+## How to contact him (연락 방법 / 어떻게 연락하나요)
+Two ways, and mention BOTH when asked how to get in touch:
+1. Email: linked0@me.com
+2. LinkedIn — message him directly there: https://www.linkedin.com/in/feelsogood/
+
+한국어: 연락은 이메일(linked0@me.com) 또는 링크드인 메시지
+(https://www.linkedin.com/in/feelsogood/)로 하시면 됩니다. 두 가지 방법을 모두 안내할 것.
+
 ## How to answer "주요 경력을 요약해주세요" / "Summarize his career"
 Keep it tight — roughly 8–12 short lines total, in this shape:
 
