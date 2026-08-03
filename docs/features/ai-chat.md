@@ -13,8 +13,7 @@ ask about **Hyunjae Lee** ("What does he do?", "Tell me about the prediction mar
 update (retrain on every résumé edit), and prone to inventing facts; there is no training pipeline
 in the repo. RAG **retrieves** the relevant profile/project text and **augments** the prompt, so
 answers stay current and accurate, and updating the bio is just editing content. (Decision logged in
-[2026-07-25 history](../history/2026-07-25-rabbit-history.md); roadmap home:
-[jun-30 design §5b](../tasks/current-plan.md#s5b).)
+[2026-07-25 history](../history/2026-07-25-rabbit-history.md).)
 
 **How it works**
 - **Corpus** — built from `lib/home-content.ts` (`PROFILE` + all `PROJECTS`, EN/KO), plus, when
@@ -83,13 +82,62 @@ GitHub summary) works in production too, not just local dev — resolves the lim
 - [ ] Optional: ship `content/` to the cloud image for full `.md` depth (one-line Dockerfile change).
 - [ ] Optional: suggested-question chips in the UI when `About Hyunjae` is on.
 
-## Current
-`lib/ai.ts` already abstracts Ollama (local) vs OpenAI (cloud), but the choice is fixed by
-`APP_MODE` — not user-selectable.
+## Auth + LLM gating <a id="auth-llm-gating"></a>
+**Status: ⬜ To do** — design only, not yet built. Not part of the current active work
+(AP2/AA/PoCs hub); scheduled for later.
 
-## Proposed
-- A **provider selector** in the chat UI (dropdown: Local LLM / OpenAI / …), sent to `/api/chat`.
-  Keep `lib/ai.ts` as the abstraction; route by the selected provider at request time.
+**Current:** `lib/ai.ts` already abstracts Ollama (local) vs OpenAI (cloud), but the choice is
+fixed by `APP_MODE` — not user-selectable. No provider-selector UI, no BYO-key input, no
+per-user key storage exist yet (verified against the code 2026-08-03).
+
+**Access model:**
+- **Portfolio** is login-only (menu hidden until login, `authOnly` in `Nav.tsx`, gated in
+  `middleware.ts`). AI Chat's menu stays visible; access is gated separately.
+- To chat, the user picks a **Proprietary LLM** and supplies **their own API key**.
+- **Local LLM** only works when the app runs locally (Ollama reachable at `localhost`); on the
+  cloud deployment it's shown but disabled ("not available in cloud yet") — no hosted OSS model
+  provisioned.
+- **jay** (`linked0@gmail.com`) uses a **server-stored API key** — no paste required.
+- **Public "About me" path** — resolved separately via **Jay Chat** (`/jay-chat`, see above)
+  rather than opening up general `/chat`; that's why this section's public-access gap doesn't
+  block the About-me feature anymore.
+
+**Design:** add a key/source resolver on top of `lib/ai.ts`: `jay → env secret` ·
+`other user → own key, persisted per user, encrypted at rest` ·
+`Local LLM → enabled in local mode (Ollama at localhost), disabled in cloud`. Gate the
+stored-key path on `session.user.email === linked0@gmail.com`; detect mode via `appMode()`
+(`lib/mode.ts`).
+
+**Decided (jay):** persist users' keys, **encrypted at rest** (encryption key in env, never
+plaintext; a `userApiKey` field keyed by user). Proprietary provider = **current setting
+(OpenAI)**; add Anthropic later if wanted. A **provider selector** in the chat UI (dropdown:
+Local LLM / OpenAI / …) sends the choice to `/api/chat`; `lib/ai.ts` stays the abstraction,
+routes by the selected provider at request time.
+
+## KB via MCP + RAG <a id="kb-via-mcp--rag"></a>
+**Status: ⬜ To do** — design only, not yet built. Not part of the current active work
+(AP2/AA/PoCs hub); scheduled for later.
+
+**Goal:** chat can query the **Knowledge KB** (`docs/know.html` + `docs/knowledge/*.md`) using
+**RAG**, exposed through an **MCP** tool — distinct from "Ask about me" above, which indexes the
+profile/projects corpus, not the Knowledge KB.
+
+**Decided (jay):** the MCP exposes **KB search / retrieval** — settles what this project's own
+MCP server exposes (previously TBD below).
+
+**Design:**
+- Index Knowledge content (`know.html` + md) → embeddings → vector store (local Chroma/Qdrant, or
+  a simple file index to start).
+- Expose retrieval as this project's MCP server; the chat agent calls it as a tool. (Fallback: do
+  RAG directly in `/api/chat` and keep MCP for tool-calling.)
+- Flow: question → retrieve top-k chunks → inject into prompt → LLM answers **with citations**.
+
+**Open:** embedding model (local `nomic-embed` vs OpenAI) · vector store · MCP-tool vs in-route
+RAG (About-me above already proves the in-route side for a small corpus).
+
+**Note:** the repo's only existing MCP server (`spagetties/`, `@modelcontextprotocol/sdk`)
+currently serves hardcoded pasta recipes — unrelated placeholder content, not KB retrieval
+(verified 2026-08-03).
 
 ## Smallest OSS model (recommendation)
 - Candidates: **Qwen2.5-0.5B-Instruct**, **Llama-3.2-1B**, Gemma-2-2B, TinyLlama-1.1B.
@@ -165,16 +213,15 @@ GPU shares unified memory, so total RAM is the limit.
   your own OSS model on GCP is itself a goal (it is, per this doc).
 
 ## MCP tool-calling (this project's own MCP)
-Give the chat agent a tool: **call an MCP server that this project builds**. The integration itself
-is the feature; **what the MCP exposes is not decided yet (TBD)** — settle its content/tools in a
-later step. (Needs a provider that supports tool/function calling, or route MCP calls through the
-app's `/api/chat`.)
+Give the chat agent a tool: **call an MCP server that this project builds**. **Resolved:** the
+MCP exposes **KB search/retrieval** — see "KB via MCP + RAG" above for the full design. (Needs a
+provider that supports tool/function calling, or route MCP calls through the app's `/api/chat`.)
 
 ## Open questions
 - OSS model on Cloud Run (cheap, slower) or a dedicated VM (faster, costlier)?
 - Persist the user's provider choice (per session / per account)?
 - Cloud mode: ship the OSS model on Cloud Run, or just call `gpt-4o-mini` (no infra)?
-- What does our own MCP expose? (tools / content — **undecided**)
+- KB-RAG: embedding model + vector store (see "KB via MCP + RAG" above).
 
 ## Features
 - [ ] **Provider selector**

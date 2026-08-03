@@ -5,21 +5,21 @@ autonomously-paying agent that a normal EOA wallet cannot — one demo panel per
 
 *Source: "The What: 4 Pillars of Agentic AA" note, pasted in session 2026-07-17 (no URL
 provided — this doc is the canonical copy). Sits on top of the existing agent-payments track:
-[ap2-test.md](ap2-test.md) (x402 / aiaas, spend policy) and design §7 (ERC-7702/7715 session
+[ap2-test.md](ap2-test.md) (x402 / aiaas, spend policy) and design §3 (ERC-7702/7715 session
 keys).*
 
 ## 1. The four pillars
 
 | # | Pillar | What it means | Key standard / piece |
 |---|--------|---------------|----------------------|
-| 1 | **Scoped delegation** ("the allowance") | No master key handed over — issue a **session key**: "spend ≤ 10 USDC/day, only on service X, valid 48h" | ERC-7715 / 7710 (already the §7 demo); ERC-4337 session-key validators |
+| 1 | **Scoped delegation** ("the allowance") | No master key handed over — issue a **session key**: "spend ≤ 10 USDC/day, only on service X, valid 48h" | ERC-7715 / 7710 (already the §3 demo); ERC-4337 session-key validators |
 | 2 | **Gas independence** ("the paymaster") | Agent never hunts for ETH/SOL — pays gas **in the USDC it earns**, or a sponsor covers it | ERC-4337 **Paymaster** (ERC-20 gas payment or sponsored) |
 | 3 | **Atomic intent** ("the batch") | Swap A→B → bridge → pay provider bundled into **one UserOperation**; any failure reverts the whole thing — agent never gets stuck mid-flow | ERC-4337 batched calls (`executeBatch`) |
 | 4 | **KYA — Know Your Agent** | The AA wallet doubles as a digital ID; counterparties check the agent's **reputation/"credit score"** before dealing | **ERC-8004** (trustless-agents identity/reputation registries) |
 
 ## 2. How it maps onto existing rabbit items (mostly already planned!)
-- **Pillar 1 = design §7** (MetaMask Delegation Toolkit, ERC-7715 scoped session key on
-  Sepolia). Building §7 ticks this pillar.
+- **Pillar 1 = design §3** (MetaMask Delegation Toolkit, ERC-7715 scoped session key on
+  Sepolia). Building §3 ticks this pillar.
 - **Pillar 2** = the paymaster ideas already noted in [ap2-test.md](ap2-test.md) (escrow/
   paymaster, Verex session-key reuse) and [dsrv-portal.md](dsrv-portal.md) PoC #2 (ZeroDev/
   Biconomy sponsored gas). New work: pay gas **in ERC-20 (USDC)**, not just sponsorship.
@@ -28,10 +28,10 @@ keys).*
 - **Pillar 4** is new and exploratory: read/register an agent in an **ERC-8004** identity/
   reputation registry (testnet deployment availability to verify — the standard is young).
 
-## 3. Demo shape (`/etc` — extend the §7 page rather than a new route)
+## 3. Demo shape (`/etc` — extend the §3 page rather than a new route)
 One page, four cards; each card = one pillar with a [Run] button + result/tx link:
 1. **Session key** — grant scoped permission, agent spends within scope, out-of-scope attempt
-   fails (this card *is* §7's demo).
+   fails (this card *is* §3's demo).
 2. **Paymaster** — send a tx with zero native token in the agent account; gas paid in test
    USDC (ZeroDev/Pimlico ERC-20 paymaster) or sponsored.
 3. **Batch** — one UserOp doing two actions atomically; a second run with a failing leg shows
@@ -39,8 +39,8 @@ One page, four cards; each card = one pillar with a [Run] button + result/tx lin
 4. **KYA** — look up (or register) the agent's ERC-8004 identity; display reputation fields.
 
 **Stack:** ZeroDev or permissionless.js + Pimlico (bundler/paymaster) on **Sepolia** — same
-family as §7's decided stack, so the page shares wallet-connect and account plumbing.
-**Est.:** pillars 1–3 ≈ 2–3 focused days on top of §7; pillar 4 +1d (standard maturity risk).
+family as §3's decided stack, so the page shares wallet-connect and account plumbing.
+**Est.:** pillars 1–3 ≈ 2–3 focused days on top of §3; pillar 4 +1d (standard maturity risk).
 
 ## 4. ERC-8021 — builder codes / on-chain attribution (added 2026-07-17)
 *Source: jay's ERC-8021 note, pasted in session 2026-07-17 (no URL — canonical copy here).
@@ -91,5 +91,5 @@ reference architecture, and as a UX pattern the 4-pillar demo page can borrow.*
   (TEE/MPC) earns MetaMask-level trust.
 
 ## Status
-Backlog / to do — see `../tasks/current-plan.md` §15. Sequencing: do **§7 first**
+Backlog / to do — see `../tasks/current-plan.md` §6. Sequencing: do **§3 first**
 (it is pillar 1), then extend the same page with pillars 2–4 (+ the ERC-8021 suffix demo).
