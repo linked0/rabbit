@@ -37,4 +37,5 @@ provider quotes a price
   keep the two fully independent.
 
 ## Status
-Backlog / to do — not yet scheduled.
+🟡 Active — tracked as [current-plan.md §7](../tasks/current-plan.md#s7) (added 2026-08-04,
+alongside §2 AP2/Stripe and §6 AA).

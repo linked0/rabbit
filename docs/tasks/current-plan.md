@@ -1,4 +1,4 @@
-# Rabbit — Current Plan: AP2 + Account Abstraction (AA)
+# Rabbit — Current Plan: AP2 + Toss Payments + Account Abstraction (AA)
 
 - **Originally:** [jun-30-rabbit.md](jun-30-rabbit.md) design doc, covering the full Jun-30 task
   list. **Narrowed (2026-08-03, jay):** this file holds only **AP2 + AA** — everything else
@@ -9,7 +9,8 @@
   itself an AP2/AA task, so it now lives at
   **[../features/pocs-hub.md](../features/pocs-hub.md)**.
 - **IA:** [../features/README.md](../features/README.md)
-- **Status:** active — AP2 (§2) and AA (§3 + §6) are the only tracked tasks in this file.
+- **Status:** active — AP2 (§2), Toss Payments (§7), and AA (§3 + §6) are the only tracked tasks in
+  this file.
 - **Numbering note:** sections are numbered sequentially in this file, unlike the original doc
   which numbered by when a section was added. If you see a section reference elsewhere in the
   repo using an old number (e.g. "§6" meaning AP2, "§24" meaning the PoCs hub), it predates the
@@ -23,64 +24,113 @@
 - [§4 — Decisions & remaining open questions](#s4)
 - [§5 — Sequence](#s5)
 - [§6 — Agentic AA — 4 pillars demo](#s6)
+- [§7 — Toss Payments — KRW settlement example (educational)](#s7)
 
 ## 0. Summary <a id="s0"></a>
 <sub>[↑ TOC](#toc)</sub>
-Two build tasks, jay's own framing: **AP2 = Agentic Payment Protocol** (§2, a Stripe settlement
-example) and **AA = Account Abstraction** (§3's ERC-7702/7715 foundation + §6's Agentic AA
-pillars). Both wire into the **PoCs hub** (`/etc`, in progress —
-[../features/pocs-hub.md](../features/pocs-hub.md)) as cards once built, but the hub itself isn't
-tracked here.
+Three build tasks, jay's own framing: **AP2 = Agentic Payment Protocol** (§2, a Stripe settlement
+example, USD rail), **Toss Payments** (§7, the KRW-native counterpart to §2 — added 2026-08-04
+after hitting Stripe's country-signup limitation), and **AA = Account Abstraction** (§3's
+ERC-7702/7715 foundation + §6's Agentic AA pillars). All three wire into the **PoCs hub** (`/etc`,
+in progress — [../features/pocs-hub.md](../features/pocs-hub.md)) as cards once built, but the hub
+itself isn't tracked here.
 
 **History:** this doc stays short on purpose — for the full blow-by-blow of what was actually
 built/tested/decided on a given day, follow the `docs/history/YYYY-MM-DD-rabbit-history.md` link
-next to whichever task you're resuming (e.g. [2026-08-03](../history/2026-08-03-rabbit-history.md)
-for everything below).
+next to whichever task you're resuming (e.g. [2026-08-03](../history/2026-08-03-rabbit-history.md),
+[2026-08-04](../history/2026-08-04-rabbit-history.md) for everything below).
+
+**Resume point (2026-08-04 EOD):** all four tasks are built on branch
+**`claude/ap2-toss-aa-demos`** — ⚠️ **uncommitted** (working tree only, does not travel across
+machines until committed/pushed). Next steps, in order: ① jay's browser click-throughs — AA
+wallet flows on `/etc/aa` (MetaMask ERC-7715 grant + thirdweb Connect), Stripe test card on
+`/ap2`, Toss test card on `/etc/toss` (client key was fixed late on 08-04 — O→0 typo — restart
+the dev server first); ② jay reviews the diff → commit/PR; ③ deploy via `scripts/deploy.sh`
+after merge. Full build details: [2026-08-04 history](../history/2026-08-04-rabbit-history.md).
 
 ### Task status
 
 | § | Task | Status |
 | --- | --- | --- |
-| [§2](#s2) | AP2 — Stripe settlement example | ⬜ To do |
-| [§3](#s3) | ETC — ERC-7702 / 7715 demo (AA foundation) | ⬜ To do |
-| [§6](#s6) | Agentic AA — 4 pillars demo | ⬜ To do (after §3) |
+| [§2](#s2) | AP2 — Stripe settlement example | 🟢 Built — verified live against Stripe's test API |
+| [§7](#s7) | Toss Payments — KRW settlement example | 🟢 Built — verified live against Toss's test API |
+| [§3](#s3) | ETC — ERC-7702 / 7715 demo (AA foundation) | 🟡 Built — needs jay's own wallet click-through |
+| [§6](#s6) | Agentic AA — 4 pillars demo | 🟡 Built — needs jay's own wallet click-through |
 
 Legend: ⬜ To do.
 
 ## 1. Prerequisites — what jay needs to provide <a id="s1"></a>
 <sub>[↑ TOC](#toc)</sub>
+- **All keys below are filled in `.env.local` as of 2026-08-04** — this section is kept for
+  reference (where each came from) rather than as an open ask.
 - **§2 AP2 Stripe** — a Stripe **test-mode** publishable + secret key pair.
+  - Get them at **[dashboard.stripe.com/test/apikeys](https://dashboard.stripe.com/test/apikeys)**
+    (sign in / create a free Stripe account → dashboard defaults to **Test mode**, toggle top-right
+    if it doesn't → "Developers" → "API keys"). Copy the **Publishable key** (`pk_test_...`) and
+    **Secret key** (`sk_test_...`). No business verification needed for test mode.
 - **§3 AA foundation** — nothing expected (reuses the existing `SEPOLIA_RPC`, client-side signing).
 - **§6 Agentic AA (thirdweb half)** — a thirdweb **client ID**, and possibly a secret key for
   server-side Engine calls.
+  - Get them at **[thirdweb.com/dashboard](https://thirdweb.com/dashboard)** (sign in → create a
+    project if none exists → project's "Settings" tab → "API Keys"). Copy the **Client ID**
+    (public, safe client-side) and, if server-side Engine calls end up needed, the **Secret key**
+    (server-only, never expose client-side).
+- **§7 Toss Payments** — a Toss **test-mode** client + secret key pair.
+  - Get them at **[developers.tosspayments.com](https://developers.tosspayments.com)** (개발자센터
+    → sign in → "API 키" — a sandbox project's test client/secret keys are issued immediately, no
+    business registration needed). Toss also publishes generic public test keys directly in its
+    integration docs for quick sandbox testing without signing up at all — see
+    [docs.tosspayments.com](https://docs.tosspayments.com)'s "연동 키" guide. Copy the **Client key**
+    (public) and **Secret key** (server-only).
 
 ## 2. AP2 — Stripe settlement example (educational) <a id="s2"></a>
 <sub>[↑ TOC](#toc)</sub>
-- **Status: ⬜ To do**
+- **Status: 🟢 Built (2026-08-04)** — code at [app/ap2/page.tsx](../../app/ap2/page.tsx) +
+  [app/api/ap2/checkout/route.ts](../../app/api/ap2/checkout/route.ts). Live PoCs-hub card.
 
 - **Goal:** a simple, educational **fiat** settlement example via **Stripe** (counterpart to the
   on-chain x402 / aiaas track in `../features/ap2-test.md`).
-- **Design:** mock "agent buys data, settles via Stripe":
-  provider returns a price → client creates a **Stripe Checkout / PaymentIntent** → on success the
-  data is released. **Test-mode keys only**, no real charges.
-- **Open:** Checkout vs PaymentIntent; how prominently to contrast it with x402.
+- **Design (built as):** mock "agent buys data, settles via Stripe": provider quotes a fixed price
+  → plain `<form>` POSTs to `/api/ap2/checkout` → server creates a **Stripe Checkout Session**
+  (Checkout, not raw PaymentIntent — simpler, hosted UI) → redirect to Stripe's hosted page →
+  success returns to `/ap2?session_id=…`, where the server verifies `payment_status === "paid"`
+  via the Stripe API before releasing the mock data (never trusts the redirect alone).
+  **Test-mode keys only**, no real charges.
+- **Verified:** session creation + Stripe redirect + server-side payment-status verification all
+  confirmed live against Stripe's real test API (`curl`-level, no UI). **Not yet done:** an actual
+  card entry click-through on Stripe's hosted Checkout page (needs a browser).
 
 ## 3. ETC — ERC-7702 / 7715 demo (educational) <a id="s3"></a>
 <sub>[↑ TOC](#toc)</sub>
-- **Status: ⬜ To do**
+- **Status: 🟡 Built (2026-08-04), needs jay's own wallet click-through** — code at
+  [app/etc/aa/SessionKeyDemo.tsx](../../app/etc/aa/SessionKeyDemo.tsx). Live PoCs-hub card
+  (`/etc/aa`), but ERC-7715's MetaMask popup can't be clicked through by an agent — see Verified
+  below.
 
 **Standards (jay confirmed):** **EIP-7702** (an EOA temporarily runs smart-account code = a
 *delegatable smart account*) + **ERC-7715** (`wallet_grantPermissions` — grant a scoped **session
 key**) / **ERC-7710** (delegation).
 - **Goal:** a test page for **delegatable smart accounts / session keys** — ties directly to the
   aiaas spend-policy idea (session key = agent's bounded wallet).
-- **Design (educational):**
-  - Connect a wallet → **grant a session key** with a scoped permission ("spend ≤ X testnet USDC to
-    address Y, valid 1h") per **ERC-7715** → show the session key performing that **bounded action
-    without re-signing**.
-  - Testnet (**Sepolia**) + a 7702-capable account; display the permission grant + one delegated tx.
-- **Decided (jay):** stack = **MetaMask Delegation Toolkit** (implements 7715/7710) on **Sepolia**.
+- **Design (built as):**
+  - Connect MetaMask → generate a throwaway **session account** client-side (never leaves the
+    browser) → request an **ERC-20 allowance permission** via ERC-7715 ("≤5 test Sepolia USDC,
+    valid 1h", the closest built-in permission type to jay's "spend ≤ X to address Y" framing) →
+    the session account then signs and sends a bounded transfer **on its own, no MetaMask popup**.
+  - Testnet (**Sepolia**); a public read-only RPC is used client-side (not jay's Alchemy key).
+- **Decided (jay):** stack = **MetaMask Delegation Toolkit** on **Sepolia**.
   *(Alternative: ZeroDev / permissionless.js for 7702/4337 session keys.)* Scope = short explainer + one demo tx.
+- **Package rename found while building (2026-08-04):** `@metamask/delegation-toolkit` is
+  deprecated in favor of **`@metamask/smart-accounts-kit`** (same team/framework, same concepts) —
+  used the renamed package. Its permission API also evolved from the old `wallet_grantPermissions`
+  naming to **`requestExecutionPermissions()`** (`wallet_requestExecutionPermissions` under the
+  hood) — current docs at
+  [docs.metamask.io/smart-accounts-kit](https://docs.metamask.io/smart-accounts-kit/).
+- **Requires MetaMask v13.23.0+** (per MetaMask's own docs) — this is the **standard extension**,
+  not Flask-only as originally assumed when this section was written.
+- **Verified:** package installed, TypeScript compiles clean against the real SDK types, `pnpm
+  build` succeeds, page serves 200. **Not yet done:** the actual ERC-7715 permission grant — that
+  opens a real MetaMask popup, which needs jay's own browser/wallet to click through.
 - This is **AA pillar 1** — §6 extends it with pillars 2–4 (different stack, see §6's
   "AA implementation stack" note).
 
@@ -90,28 +140,47 @@ key**) / **ERC-7710** (delegation).
 - ETC standards = **7702 + 7715/7710**; stack = **MetaMask Delegation Toolkit on Sepolia** (§3).
 - Agentic AA's pillars 2–4 (§6) use **thirdweb** instead of ZeroDev/Pimlico — see
   [§6's stack note](#s6) (2026-08-03).
+- Added **Toss Payments (§7)** as the KRW-native settlement counterpart to §2 (2026-08-04) — jay
+  hit Stripe's country-signup limitation (no live account available for his country), which
+  surfaced Toss as the practical Korea-native alternative already scoped in
+  [../features/toss-payments.md](../features/toss-payments.md).
+- AP2 (§2) built with **Stripe Checkout** (not raw PaymentIntent) — simpler, Stripe-hosted UI, no
+  card-form UI to build ourselves. No explicit contrast-with-x402 UI added (2026-08-04).
+- Toss Payments (§7) built as a **standalone page** (`/etc/toss`), not an `/ap2` extension — kept
+  independent rather than a side-by-side USD/KRW comparison table (2026-08-04, default choice, not
+  explicitly re-confirmed with jay).
 
 **Still open:**
-- AP2 (§2): Stripe Checkout vs PaymentIntent.
+- None blocking — §2/§7/§3/§6 are all built. Remaining open items are noted inline in each
+  section's Status line (mainly: jay's own wallet click-through for §3/§6).
 
 *(All other resolved decisions — Auth/LLM keys, Market defaults, Knowledge serving, MCP scope —
 moved to their respective docs in [../features/](../features/README.md).)*
 
 ## 5. Sequence <a id="s5"></a>
 <sub>[↑ TOC](#toc)</sub>
-1. **Implement §2 AP2 Stripe** — Checkout-based, wired in as a PoCs-hub card.
-2. **Implement AA (§3 foundation + §6 pillars)** — MetaMask Delegation Toolkit for the
-   7702/7715 half, thirdweb for the 4337-pillars half — wired in as a PoCs-hub card.
+1. **Implement §2 AP2 Stripe** — Checkout-based, wired in as a PoCs-hub card. ✅ Built 2026-08-04.
+2. **Implement §7 Toss Payments** — KRW counterpart to §2, standalone page, wired in as a
+   PoCs-hub card. ✅ Built 2026-08-04.
+3. **Implement AA (§3 foundation + §6 pillars)** — MetaMask Delegation Toolkit (now
+   `@metamask/smart-accounts-kit`) for the 7702/7715 half, thirdweb for the 4337-pillars half —
+   wired in as a PoCs-hub card. ✅ Built 2026-08-04, needs jay's own wallet click-through.
 
-Both depend on the **PoCs hub** (`/etc`) existing to plug into — that reorg is tracked
-separately at [../features/pocs-hub.md](../features/pocs-hub.md), in progress on branch
-`claude/pocs-hub`. What's actually been built so far (`/etc` + `/til` pages, shared `DemoCard`
-component, nav/middleware/env changes, local build+dev-server verification) is logged in
-[2026-08-03 history](../history/2026-08-03-rabbit-history.md) — search for "PoCs hub" and "TIL".
+All three depend on the **PoCs hub** (`/etc`), which was built and deployed to production
+2026-08-03 — see [../features/pocs-hub.md](../features/pocs-hub.md) for that design and
+[2026-08-03 history](../history/2026-08-03-rabbit-history.md) for what shipped (`/etc` + `/til`
+pages, shared `DemoCard` component, nav/middleware/env changes). §2/§3/§6/§7's own build details
+are in [2026-08-04 history](../history/2026-08-04-rabbit-history.md).
 
 ## 6. Agentic AA — 4 pillars demo (added 2026-07-17) <a id="s6"></a>
 <sub>[↑ TOC](#toc)</sub>
-- **Status: ⬜ To do** (sequenced after §3 — §3 *is* pillar 1)
+- **Status: 🟡 Built (2026-08-04), needs jay's own wallet click-through** — pillars ②③ live at
+  code [app/etc/aa/AgenticPillars.tsx](../../app/etc/aa/AgenticPillars.tsx) (① is §3's
+  SessionKeyDemo on the same page). **Pillar ④ (KYA) stayed an explainer card, not a live
+  demo** — per this section's own note below, ERC-8004 Sepolia registry availability was never
+  verified, so building a real demo against it would've been guessing at an unconfirmed contract.
+  `pnpm build` succeeds, page serves 200; the actual sponsored-tx / batch-tx clicks need jay's own
+  browser + thirdweb ConnectButton (can't be done by an agent).
 
 - **Goal (jay):** demo the four things AA gives an autonomously-paying agent that an EOA
   can't: **① scoped delegation** (session key: "≤10 USDC/day, service X only, 48h"),
@@ -160,6 +229,24 @@ in play — **"AA" here is actually two different standards**, and that split ma
   transparency/control and some vendor lock-in vs. the "raw" ZeroDev/Pimlico stack — an acceptable
   trade for a demo.
 - **Net effect:** the AA card ends up genuinely demonstrating **two different AA standards on two
-  different SDKs** — 7702/7715 via MetaMask Delegation Toolkit, 4337 pillars via thirdweb. That's
-  not a compromise, it's the actual point: the demo shows both a delegation-based and a
-  bundler-based approach to account abstraction side by side.
+  different SDKs** — 7702/7715 via MetaMask Delegation Toolkit (now `@metamask/smart-accounts-kit`,
+  see §3's build note), 4337 pillars via thirdweb. That's not a compromise, it's the actual point:
+  the demo shows both a delegation-based and a bundler-based approach to account abstraction side
+  by side.
+
+## 7. Toss Payments — KRW settlement example (educational) <a id="s7"></a>
+<sub>[↑ TOC](#toc)</sub>
+- **Status: 🟢 Built (2026-08-04)** — code at [app/etc/toss/page.tsx](../../app/etc/toss/page.tsx)
+  + [lib/toss.ts](../../lib/toss.ts). Live PoCs-hub card, standalone page (not an `/ap2`
+  extension — see §4).
+
+- **Goal:** the **KRW-native counterpart** to §2 — same "agent buys data, settles via a payment
+  provider" mock, on Toss Payments instead of Stripe. **Added 2026-08-04** after jay found his
+  country isn't in Stripe's account-creation list; Toss is the practical Korea-native rail (no
+  such signup restriction) and mirrors the same pattern well enough to run side by side with §2.
+- **Detail:** full flow, integration pieces (client/secret key handling), surface placement, and
+  open questions are already scoped in
+  **[../features/toss-payments.md](../features/toss-payments.md)** — this entry just tracks it as
+  an active task alongside §2/§6 rather than backlog.
+- **Keys:** see [§1 Prerequisites](#s1) for where to get test-mode client/secret keys.
+- History: why this was added — [2026-08-04](../history/2026-08-04-rabbit-history.md).

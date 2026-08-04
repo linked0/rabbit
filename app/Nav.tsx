@@ -24,7 +24,8 @@ const MENU: NavItem[] = [
   { href: "/etc", ko: "PoCs", en: "PoCs", code: "ETC", pub: true },
   // TIL — 일상 학습을 코드로 다시 구현한 모음, PoCs와 같은 카드 포맷 (2026-08-03, jay).
   { href: "/til", ko: "TIL", en: "TIL", code: "TIL", pub: true },
-  { href: "/ap2", ko: "AP2 테스트", en: "AP2 Test", code: "AP2" },
+  // AP2(Stripe 정산 데모)도 마켓·XYZ와 같은 이유로 PoCs 허브 카드로 통합 (2026-08-04, jay) —
+  // /ap2 라우트는 그대로 공개, 진입점만 /etc 카드로. 설계: docs/tasks/current-plan.md §2.
   { href: "/jayverse", ko: "JayVerse", en: "JayVerse", code: "JAYVERSE" },
   // Verex 항목은 제거 (2026-07-25, jay) — 홈의 피처드 카드로 대체 (app/home/page.tsx, lib/verex.ts).
 ];

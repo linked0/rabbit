@@ -1,6 +1,7 @@
 import Nav from "../Nav";
 import Card from "../DemoCard";
 import { POC_CARDS } from "@/lib/poc-cards";
+import { liveFirst } from "@/lib/demo-cards";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 
@@ -21,7 +22,7 @@ export default function EtcPage() {
           )}
         </p>
         <div className="poc-grid">
-          {POC_CARDS.map((card) => (
+          {liveFirst(POC_CARDS).map((card) => (
             <Card key={card.key} card={card} lang={lang} />
           ))}
         </div>
