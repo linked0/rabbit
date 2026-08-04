@@ -1,8 +1,13 @@
 import Nav from "../Nav";
 import BundleSubmit from "./BundleSubmit";
 import RelayDashboard from "./RelayDashboard";
+import TechNotes from "../TechNotes";
+import TechNotesLink from "../TechNotesLink";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
+import { POC_CARDS } from "@/lib/poc-cards";
+
+const PBS_CARD = POC_CARDS.find((c) => c.key === "pbs")!;
 
 // Target IA: XYZ Demo (/xyz) — 고용주 데모. 설계: docs/features/xyz-demo.md
 // C2 서처(번들 제출) + C4 관찰자(relay Data API) 대시보드.
@@ -23,8 +28,11 @@ export default function XyzPage() {
           )}
           <code>docs/features/xyz-demo.md</code>
         </p>
+        <TechNotesLink lang={lang} />
         <BundleSubmit />
         <RelayDashboard />
+
+        <TechNotes cards={[PBS_CARD]} lang={lang} />
       </main>
     </>
   );
