@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import Nav from "../Nav";
 import VerexBallLazy from "../home/VerexBallLazy";
 import { PROFILE, PROJECTS } from "@/lib/home-content";
 import { verexUrl } from "@/lib/verex";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
-import { notifyPageView } from "@/lib/visitor-notify";
 
 // 수행 프로젝트 (/projects) — 홈에 있던 피처드 + 프로젝트 전체를 그대로 옮겨온 페이지.
 // 홈은 이제 요약본만 두고, 전체 목록은 여기서 본다 (2026-08-01, jay).
@@ -19,7 +17,6 @@ export const metadata = {
 
 export default function ProjectsPage() {
   const lang = getLang();
-  notifyPageView("/projects", headers().get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown");
   // 최신순(날짜 내림차순) 정렬 — 날짜는 "YYYY-MM-DD" 문자열이라 문자열 비교로 충분.
   const projects = [...PROJECTS].sort((a, b) => b.date.localeCompare(a.date));
 

@@ -29,6 +29,9 @@ function debounced(key: string): boolean {
   return false;
 }
 
+// 알림을 보내는 시점은 딱 둘이다 — 홈 방문, 그리고 Jay Chat 대화 시작 (jay, 2026-08-05).
+// /projects 방문 알림은 제거했다: 페이지마다 알림을 붙이면 신호가 아니라 소음이 되고, 정작
+// 알아야 할 두 이벤트가 묻힌다. 새 페이지에 notifyPageView 를 추가하기 전에 이 결정을 먼저 볼 것.
 export function notifyPageView(pathname: string, ip: string) {
   const key = `page:${pathname}:${ip}`;
   if (debounced(key)) return;

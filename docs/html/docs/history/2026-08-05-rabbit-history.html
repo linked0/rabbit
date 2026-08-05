@@ -225,6 +225,17 @@ Cloud Run 환경에서는 이쪽이 구조적으로 맞다.</p>
 <code>scripts/deploy.sh</code> 에 Stripe/Toss 서버 키 시크릿 2개와 공개 키 env 2개 전달 로직 추가.</p>
 <p><strong>Result:</strong> 타입 체크 + 빌드 통과. 이 수정이 없었으면 배포 자체는 &quot;성공&quot;으로 끝나고 결제 데모
 셋만 운영에서 깨졌을 것 — 로컬에서는 <code>.env.local</code> 덕분에 멀쩡해 보이므로 알아채기 어려운 종류.</p>
+<h3>텔레그램 알림 시점을 홈 방문 + Jay Chat 시작 둘로 축소</h3>
+<p><strong>Cause:</strong> jay 요청 — 알림을 보낼 시점을 홈 페이지 방문과 Jay Chat 대화 시작 두 가지로 정리.
+기존에는 <code>/projects</code> 방문에도 알림이 나갔다.</p>
+<p><strong>Reasoning:</strong> 페이지마다 알림을 붙이면 신호가 아니라 소음이 된다 — 방문이 잦은 페이지의 알림이
+쌓이면 정작 알아야 할 이벤트(누가 실제로 대화를 시작했다)가 묻힌다. 10턴 마일스톤 알림은 남겼다:
+대화당 최대 1회이고 &quot;잠깐 눌러본 사람&quot;과 &quot;실제로 파고든 사람&quot;을 구분하는 다른 종류의 신호라,
+요청에서 명시적으로 빼라고 하지 않은 것을 임의로 지우는 쪽이 더 위험하다고 판단.</p>
+<p><strong>Change:</strong> <code>app/projects/page.tsx</code> 에서 <code>notifyPageView</code> 호출과 이제 쓰이지 않는 <code>headers</code> import
+제거. <code>lib/visitor-notify.ts</code> 에 &quot;알림 시점은 이 둘뿐&quot;이라는 결정을 주석으로 남겨, 새 페이지에
+알림을 붙이려는 사람이 먼저 보게 함.</p>
+<p><strong>Result:</strong> 남은 알림 지점 — 홈 방문, Jay Chat 첫 메시지, Jay Chat 10턴(마일스톤). 빌드 통과.</p>
 
   </article>
 </div>
