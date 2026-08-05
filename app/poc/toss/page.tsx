@@ -1,4 +1,5 @@
 import Nav from "../../Nav";
+import BackLink from "../../BackLink";
 import TechNotes from "../../TechNotes";
 import TechNotesLink from "../../TechNotesLink";
 import PaymentReceipt from "../../PaymentReceipt";
@@ -47,6 +48,7 @@ export default async function TossPage({
     <>
       <Nav />
       <main>
+        <BackLink lang={lang} />
         <h1>{pick(lang, "Toss Payments — KRW 정산 데모", "Toss Payments — KRW Settlement Demo")}</h1>
         <p className="sub">
           {pick(
@@ -103,6 +105,7 @@ export default async function TossPage({
               {pick(lang, `${TOSS_PRODUCT.amountKrw.toLocaleString()}원`, `₩${TOSS_PRODUCT.amountKrw.toLocaleString()}`)}
             </p>
             <TossBuyButton
+              clientKey={process.env.TOSS_CLIENT_KEY ?? process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? ""}
               amount={TOSS_PRODUCT.amountKrw}
               orderName={pick(lang, TOSS_PRODUCT.titleKo, TOSS_PRODUCT.titleEn)}
               buyLabel={pick(lang, "구매 (에이전트 대신 결제)", "Buy (pay on the agent's behalf)")}

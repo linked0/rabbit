@@ -1,11 +1,14 @@
 "use client";
 
-// AA §6 — Agentic AA 4대 요소 (pillar 1은 위의 SessionKeyDemo). 설계: docs/tasks/current-plan.md §6.
+// AA §6 — 에이전트를 위한 AA 구성요소 ②③④ (①은 위의 SessionKeyDemo). 설계: docs/tasks/current-plan.md §6.
+// 이름에서 "Agentic"을 뺀 이유: 아래 동작은 전부 사람이 버튼을 눌러 시작한다 — 능력은 맞지만
+// 자율성은 아니다(jay 지적, 2026-08-05). 결정 루프가 생기기 전까지는 "AA for agents"가 정확한 이름.
 // 스택: thirdweb Connect + Account(ERC-4337 스마트 계정) + sponsorGas(paymaster). Sepolia.
 import { ThirdwebProvider, ConnectButton, useActiveAccount, useSendTransaction, useSendBatchTransaction, lightTheme } from "thirdweb/react";
-import { prepareTransaction } from "thirdweb";
+import { prepareTransaction, type ThirdwebClient } from "thirdweb";
 import { sepolia } from "thirdweb/chains";
-import { thirdwebClient } from "@/lib/thirdweb-client";
+import { useMemo } from "react";
+import { makeThirdwebClient } from "@/lib/thirdweb-client";
 import { useLang } from "../../LangContext";
 import { pick } from "@/lib/i18n";
 
@@ -16,7 +19,7 @@ const connectButtonTheme = lightTheme({
   colors: { primaryButtonBg: "var(--primary)", primaryButtonText: "var(--primary-foreground)" },
 });
 
-function Pillar2GasIndependence({ t }: { t: (ko: string, en: string) => string }) {
+function Pillar2GasIndependence({ t, client }: { t: (ko: string, en: string) => string; client: ThirdwebClient }) {
   const account = useActiveAccount();
   const { mutate: sendTx, data, error, isPending } = useSendTransaction();
   return (
@@ -35,7 +38,7 @@ function Pillar2GasIndependence({ t }: { t: (ko: string, en: string) => string }
         onClick={() =>
           account &&
           sendTx(
-            prepareTransaction({ to: account.address, chain: sepolia, client: thirdwebClient, value: 0n })
+            prepareTransaction({ to: account.address, chain: sepolia, client, value: 0n })
           )
         }
       >
@@ -57,7 +60,7 @@ function Pillar2GasIndependence({ t }: { t: (ko: string, en: string) => string }
   );
 }
 
-function Pillar3AtomicIntent({ t }: { t: (ko: string, en: string) => string }) {
+function Pillar3AtomicIntent({ t, client }: { t: (ko: string, en: string) => string; client: ThirdwebClient }) {
   const account = useActiveAccount();
   const { mutate: sendBatch, data, error, isPending } = useSendBatchTransaction();
   return (
@@ -76,8 +79,8 @@ function Pillar3AtomicIntent({ t }: { t: (ko: string, en: string) => string }) {
         onClick={() =>
           account &&
           sendBatch([
-            prepareTransaction({ to: account.address, chain: sepolia, client: thirdwebClient, value: 0n }),
-            prepareTransaction({ to: account.address, chain: sepolia, client: thirdwebClient, value: 0n }),
+            prepareTransaction({ to: account.address, chain: sepolia, client, value: 0n }),
+            prepareTransaction({ to: account.address, chain: sepolia, client, value: 0n }),
           ])
         }
       >
@@ -113,12 +116,12 @@ function Pillar4Kya({ t }: { t: (ko: string, en: string) => string }) {
   );
 }
 
-function PillarsInner({ t }: { t: (ko: string, en: string) => string }) {
+function PillarsInner({ t, client }: { t: (ko: string, en: string) => string; client: ThirdwebClient }) {
   const account = useActiveAccount();
   return (
     <div style={{ marginTop: 24 }}>
       <ConnectButton
-        client={thirdwebClient}
+        client={client}
         accountAbstraction={{ chain: sepolia, sponsorGas: true }}
         theme={connectButtonTheme}
       />
@@ -130,19 +133,30 @@ function PillarsInner({ t }: { t: (ko: string, en: string) => string }) {
           )}
         </p>
       )}
-      <Pillar2GasIndependence t={t} />
-      <Pillar3AtomicIntent t={t} />
+      <Pillar2GasIndependence t={t} client={client} />
+      <Pillar3AtomicIntent t={t} client={client} />
       <Pillar4Kya t={t} />
     </div>
   );
 }
 
-export default function AgenticPillars() {
+export default function AgenticPillars({ clientId }: { clientId: string }) {
   const { lang } = useLang();
   const t = (ko: string, en: string) => pick(lang, ko, en);
+  const client = useMemo(() => makeThirdwebClient(clientId), [clientId]);
+  if (!clientId) {
+    return (
+      <p className="sub" style={{ marginTop: 16, color: "#dc2626" }}>
+        {t(
+          "thirdweb 클라이언트 ID가 설정되지 않아 ②③을 실행할 수 없습니다 (THIRDWEB_CLIENT_ID).",
+          "Pillars ②③ cannot run: the thirdweb client ID is not configured (THIRDWEB_CLIENT_ID)."
+        )}
+      </p>
+    );
+  }
   return (
     <ThirdwebProvider>
-      <PillarsInner t={t} />
+      <PillarsInner t={t} client={client} />
     </ThirdwebProvider>
   );
 }

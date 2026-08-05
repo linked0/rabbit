@@ -5,7 +5,7 @@ import { liveFirst } from "@/lib/demo-cards";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 
-// Target IA: PoCs (/etc) — consolidated demo hub. Design: docs/tasks/current-plan.md §7.
+// Target IA: PoCs (/poc) — consolidated demo hub. Design: docs/tasks/current-plan.md §7.
 // Card grid replaces separate top-nav slots for each technical demo (Market/XYZ folded in here).
 export default function EtcPage() {
   const lang = getLang();

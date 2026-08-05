@@ -5,7 +5,7 @@ import { liveFirst } from "@/lib/demo-cards";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 
-// Target IA: TIL (/til) — "Today I Learned" code-demo hub, same card format as PoCs (/etc).
+// Target IA: TIL (/til) — "Today I Learned" code-demo hub, same card format as PoCs (/poc).
 // Each card re-implements something from a day's learning (math formula, algorithm, or a
 // recommended-service integration) as standalone code — not a sync of the private daily report.
 export default function TilPage() {

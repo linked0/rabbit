@@ -34,7 +34,14 @@ export default function TechNotes({ cards, lang }: { cards: DemoCard[]; lang: La
               <strong>{pick(lang, "동작 방식: ", "How it works: ")}</strong>
               {pick(lang, card.howItWorksKo, card.howItWorks)}
             </p>
-            {card.diagram && <MermaidDiagram definition={card.diagram} />}
+            {card.diagrams?.map((d) => (
+              <figure key={d.title} style={{ margin: "16px 0 0" }}>
+                <figcaption className="sub" style={{ fontSize: 13, marginBottom: 4 }}>
+                  {pick(lang, d.titleKo, d.title)}
+                </figcaption>
+                <MermaidDiagram definition={d.src} />
+              </figure>
+            ))}
           </div>
         );
       })}

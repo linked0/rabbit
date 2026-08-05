@@ -1,4 +1,5 @@
 import Nav from "../Nav";
+import BackLink from "../BackLink";
 import TradePanel from "./TradePanel";
 import OrderBook from "./OrderBook";
 import IndexCards from "../summary/IndexCards";
@@ -20,6 +21,7 @@ export default function MarketPage() {
     <>
       <Nav />
       <main>
+        <BackLink lang={lang} />
         <h1>{pick(lang, "마켓 (Market)", "Market")}</h1>
         <p className="sub">
           {pick(
