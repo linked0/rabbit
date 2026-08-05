@@ -1,8 +1,9 @@
 import type Stripe from "stripe";
-import Nav from "../Nav";
-import TechNotes from "../TechNotes";
-import TechNotesLink from "../TechNotesLink";
-import PaymentReceipt from "../PaymentReceipt";
+import Nav from "../../Nav";
+import BackLink from "../../BackLink";
+import TechNotes from "../../TechNotes";
+import TechNotesLink from "../../TechNotesLink";
+import PaymentReceipt from "../../PaymentReceipt";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 import { getStripe } from "@/lib/stripe";
@@ -46,6 +47,7 @@ export default async function Ap2Page({
     <>
       <Nav />
       <main>
+        <BackLink lang={lang} />
         <h1>{pick(lang, "AP2 — Stripe 정산 데모", "AP2 — Stripe Settlement Demo")}</h1>
         <p className="sub">
           {pick(

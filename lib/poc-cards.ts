@@ -1,4 +1,4 @@
-// PoCs hub (/etc) card data — see docs/tasks/current-plan.md §7.
+// PoCs hub (/poc) card data — see docs/tasks/current-plan.md §7.
 // Shares its card shape with the TIL hub (lib/til-cards.ts) — see lib/demo-cards.ts.
 
 import type { DemoCard } from "./demo-cards";
@@ -51,7 +51,7 @@ export const POC_CARDS: DemoCard[] = [
     description: "Agent buys data, settles via Stripe Checkout — an educational fiat-rail example.",
     descriptionKo: "에이전트가 데이터를 사고 Stripe Checkout으로 정산하는 교육용 법정화폐 예시.",
     status: "live",
-    href: "/ap2",
+    href: "/poc/ap2",
     howTo: "Click \"buy\" → Stripe test Checkout → pay with Stripe's test card 4242 4242 4242 4242.",
     howToKo: "\"구매\" 클릭 → Stripe 테스트 Checkout → Stripe 테스트 카드(4242 4242 4242 4242)로 결제.",
     purpose:
@@ -62,7 +62,11 @@ export const POC_CARDS: DemoCard[] = [
       "A plain HTML form posts to a server route that creates a Stripe Checkout Session via the Stripe SDK using a server-only secret key, then redirects to Stripe's hosted payment page. On return, the same server-rendered page independently re-verifies the session's payment_status against Stripe's API before releasing the purchased content — it never trusts the client-side redirect alone, closing the obvious \"skip payment, hit the success URL directly\" attack.",
     howItWorksKo:
       "일반 HTML 폼이 서버 라우트로 POST 되면, 서버 전용 secret key로 Stripe SDK를 통해 Checkout Session을 생성한 뒤 Stripe의 호스팅 결제 페이지로 리다이렉트합니다. 결제 후 돌아오면 같은 서버 컴포넌트가 Stripe API로 세션의 payment_status를 다시 독립적으로 검증한 뒤에만 구매 콘텐츠를 공개합니다 — 클라이언트 리다이렉트만 믿지 않기 때문에 \"결제 건너뛰고 success URL 직접 호출\" 같은 공격을 막습니다.",
-    diagram: `sequenceDiagram
+    diagrams: [
+      {
+        title: "Checkout, then server-side re-verification",
+        titleKo: "결제 후 서버에서 재검증",
+        src: `sequenceDiagram
     participant U as Browser (visitor)
     participant S as rabbit server
     participant ST as Stripe
@@ -72,48 +76,143 @@ export const POC_CARDS: DemoCard[] = [
     ST-->>S: session { url, id }
     S-->>U: 303 redirect
     U->>ST: pay (hosted Checkout page)
-    ST-->>U: redirect to /ap2?session_id=...
-    U->>S: GET /ap2?session_id=...
+    ST-->>U: redirect to /poc/ap2?session_id=...
+    U->>S: GET /poc/ap2?session_id=...
     S->>ST: checkout.sessions.retrieve(session_id)
     ST-->>S: payment_status: "paid"
     S-->>U: release purchased content`,
+      },
+    ],
+  },
+  {
+    key: "erc-7702",
+    title: "EIP-7702 — smart account, same address",
+    titleKo: "EIP-7702 — 주소 그대로 스마트 계정",
+    description: "Inspect an account's delegation designator live, plus what the spec is used for.",
+    descriptionKo: "계정의 위임 지정자를 직접 확인해 보고, 이 스펙의 활용 사례를 살펴봅니다.",
+    status: "live",
+    href: "/poc/7702",
+    howTo:
+      "Paste any Sepolia address (or use your own wallet) → Inspect. Read-only: no gas, no signature, no wallet required. For the clearest result, inspect your address before and after granting a session key on the AA demo.",
+    howToKo:
+      "Sepolia 주소를 아무거나 붙여넣거나(또는 본인 지갑 사용) → 확인. 읽기 전용이라 가스도 서명도 지갑도 필요 없습니다. AA 데모에서 세션 키 권한을 부여하기 전후로 본인 주소를 확인하면 차이가 가장 뚜렷합니다.",
+    purpose:
+      "EIP-7702 is the precondition behind every other account-abstraction demo here, but it is invisible: the wallet performs it once, silently, and nothing on screen shows it happened. This page makes that invisible step observable — and separates the three standards people routinely conflate (7702 grants the capability, 7715 requests permission, 7710 enforces it).",
+    purposeKo:
+      "EIP-7702는 이곳의 다른 모든 계정 추상화 데모의 전제조건이지만 눈에 보이지 않습니다 — 지갑이 한 번 조용히 처리할 뿐, 화면에는 아무 흔적도 남지 않습니다. 이 페이지는 그 보이지 않는 단계를 관찰 가능하게 만들고, 사람들이 흔히 뒤섞는 세 표준을 분리합니다(7702는 능력을 부여하고, 7715는 권한을 요청하고, 7710은 그것을 강제합니다).",
+    howItWorks:
+      "An EIP-7702 authorization writes a 23-byte delegation designator into the account's code slot: the 3-byte marker 0xef0100 followed by a 20-byte implementation address. The account keeps its address, balance, nonce, and history — only its code slot changes, and pointing it back at the zero address undoes it. The inspector calls eth_getCode against a public Sepolia RPC and branches on what it finds: empty means a plain EOA that can sign but not execute; a body starting with 0xef0100 means a delegated account, and the remaining 20 bytes are decoded and linked as the implementation; anything else is an ordinary deployed contract, reported with its bytecode length. Because eth_getCode is a read, the whole demo needs no wallet, no signature, and no gas — any address can be inspected, including ones that belong to someone else.",
+    howItWorksKo:
+      "EIP-7702 인가는 계정의 코드 슬롯에 23바이트짜리 위임 지정자를 씁니다 — 3바이트 마커 0xef0100 뒤에 20바이트 구현체 주소가 붙습니다. 계정의 주소·잔액·nonce·이력은 그대로이고 코드 슬롯만 바뀌며, 0 주소를 가리키게 하면 되돌릴 수 있습니다. 인스펙터는 공개 Sepolia RPC로 eth_getCode를 호출하고 결과에 따라 갈라집니다: 비어 있으면 서명은 하지만 실행은 못 하는 평범한 EOA, 0xef0100으로 시작하면 위임된 계정이며 나머지 20바이트를 구현체 주소로 디코딩해 링크합니다. 그 외에는 일반 배포 컨트랙트로 보고 바이트코드 길이를 함께 표시합니다. eth_getCode는 읽기 호출이므로 지갑도 서명도 가스도 필요 없고, 남의 주소를 포함해 어떤 주소든 확인할 수 있습니다.",
+    diagrams: [
+      {
+        title: "The upgrade, and how this page observes it",
+        titleKo: "업그레이드, 그리고 이 페이지가 그것을 관찰하는 법",
+        src: `sequenceDiagram
+    participant U as Owner (MetaMask)
+    participant C as Ethereum (Sepolia)
+    participant D as DeleGator implementation
+    participant P as This page
+    U->>C: type-4 tx with signed authorization
+    C->>C: write 0xef0100 + impl into the account's code slot
+    Note over C: address, balance, nonce unchanged
+    P->>C: eth_getCode(address)
+    C-->>P: 0xef0100 + implementation address
+    P->>P: decode designator, link implementation
+    Note over C,D: later calls to the account run D's code`,
+      },
+    ],
   },
   {
     key: "aa",
     title: "AA — delegatable accounts & session keys",
     titleKo: "AA — 위임형 계정 & 세션 키",
-    description: "ERC-7702/7715 delegation + a 4-pillar Agentic AA demo (paymaster, atomic tx, KYA).",
-    descriptionKo: "ERC-7702/7715 위임 + 4대 요소 Agentic AA 데모 (paymaster, 원자적 트랜잭션, KYA).",
+    description: "ERC-7702/7715 delegation + the four AA building blocks an agent needs (paymaster, atomic tx, KYA).",
+    descriptionKo: "ERC-7702/7715 위임 + 에이전트에게 필요한 AA 구성요소 4가지 (paymaster, 원자적 트랜잭션, KYA).",
     status: "live",
-    href: "/etc/aa",
+    href: "/poc/aa",
     howTo:
-      "Connect MetaMask on Sepolia → grant a scoped session key → watch it spend within the granted limit, no re-sign popup.",
-    howToKo: "Sepolia에서 MetaMask 연결 → 범위 제한 세션 키 부여 → 재서명 팝업 없이 한도 내에서 지출되는 것을 확인.",
+      "Connect MetaMask on Sepolia → grant a scoped session key → watch it spend within the granted limit, no re-sign popup. Needs test USDC (faucet.circle.com) and a little Sepolia ETH for the session account's gas — the page lists both up front.",
+    howToKo:
+      "Sepolia에서 MetaMask 연결 → 범위 제한 세션 키 부여 → 재서명 팝업 없이 한도 내에서 지출되는 것을 확인. 테스트 USDC(faucet.circle.com)와 세션 계정 가스용 Sepolia ETH가 필요하며, 준비물은 페이지 상단에 안내되어 있습니다.",
     purpose:
       "Four properties account abstraction gives an autonomous agent that a plain wallet (EOA) can't: scoped delegation, gas independence, atomic multi-step execution, and (conceptually) on-chain identity checks — using two different AA standards side by side to show they solve overlapping problems differently.",
     purposeKo:
       "계정 추상화(AA)가 일반 지갑(EOA)은 줄 수 없는, 자율 에이전트를 위한 네 가지 속성 — 범위 제한 위임, 가스 독립, 원자적 다단계 실행, 그리고 (개념적으로) 온체인 신원 확인 — 을 보여줍니다. 서로 다른 두 AA 표준을 나란히 사용해, 겹치는 문제를 다른 방식으로 푸는 것을 대비시킵니다.",
     howItWorks:
-      "Pillar ① uses MetaMask's ERC-7715 permission API: the owner wallet grants a browser-generated, single-use session account a capped ERC-20 allowance (\"≤5 test USDC, 1 hour\") via a signed permission request; the session account then spends within that limit by signing and broadcasting its own transaction directly — no further wallet popup, because the permission itself is the authorization. Pillars ②–③ switch to ERC-4337 (bundler-based smart accounts) via thirdweb: connecting a wallet wraps it in a smart contract account, gas is covered by a paymaster instead of the user's own ETH (pillar ②), and two calls can be bundled into one UserOperation that succeeds or reverts as a single atomic unit (pillar ③). Pillar ④ (on-chain agent identity/reputation via ERC-8004) is left as a written explainer rather than a live demo, since that standard's testnet deployment status hasn't been verified.",
+      "Pillar ① uses MetaMask's ERC-7715 permission API: the owner wallet grants a browser-generated, single-use session account a capped ERC-20 allowance (\"≤5 test USDC, 1 hour\") via a signed permission request; the session account then spends within that limit by signing and broadcasting its own transaction directly — no further wallet popup, because the permission itself is the authorization. Pillars ②–③ switch to ERC-4337 (bundler-based smart accounts) via thirdweb: connecting a wallet wraps it in a smart contract account, gas is covered by a paymaster instead of the user's own ETH (pillar ②), and two calls can be bundled into one UserOperation that succeeds or reverts as a single atomic unit (pillar ③). Pillar ④ (on-chain agent identity/reputation via ERC-8004) is left as a written explainer rather than a live demo, since that standard's testnet deployment status hasn't been verified. One thing the page is explicit about: every action here is triggered by a human pressing a button, so it demonstrates the capabilities an autonomous agent would need rather than an agent itself — the missing piece is a decision loop, and the page names that gap instead of papering over it with the word \"agentic\".",
     howItWorksKo:
-      "① 세션 키는 MetaMask의 ERC-7715 권한 API를 사용합니다: 소유자 지갑이 서명된 권한 요청으로, 브라우저에서 생성한 1회용 세션 계정에 한도가 걸린 ERC-20 허용량(\"최대 5 테스트 USDC, 1시간\")을 부여합니다. 이후 세션 계정은 그 한도 안에서 직접 서명·전송하며, 권한 자체가 인가이므로 추가 지갑 팝업이 없습니다. ②~③은 thirdweb을 통한 ERC-4337(번들러 기반 스마트 계정)로 전환됩니다: 지갑을 연결하면 스마트 컨트랙트 계정으로 감싸지고, 가스는 사용자의 ETH 대신 paymaster가 대신 냅니다(②). 두 개의 호출을 하나의 UserOperation으로 묶어 성공/실패가 원자적으로 함께 처리됩니다(③). ④(ERC-8004 기반 온체인 신원/평판)는 라이브 데모 대신 설명으로만 제공하는데, 해당 표준의 테스트넷 배포 여부가 아직 확인되지 않았기 때문입니다.",
-    diagram: `sequenceDiagram
+      "① 세션 키는 MetaMask의 ERC-7715 권한 API를 사용합니다: 소유자 지갑이 서명된 권한 요청으로, 브라우저에서 생성한 1회용 세션 계정에 한도가 걸린 ERC-20 허용량(\"최대 5 테스트 USDC, 1시간\")을 부여합니다. 이후 세션 계정은 그 한도 안에서 직접 서명·전송하며, 권한 자체가 인가이므로 추가 지갑 팝업이 없습니다. ②~③은 thirdweb을 통한 ERC-4337(번들러 기반 스마트 계정)로 전환됩니다: 지갑을 연결하면 스마트 컨트랙트 계정으로 감싸지고, 가스는 사용자의 ETH 대신 paymaster가 대신 냅니다(②). 두 개의 호출을 하나의 UserOperation으로 묶어 성공/실패가 원자적으로 함께 처리됩니다(③). ④(ERC-8004 기반 온체인 신원/평판)는 라이브 데모 대신 설명으로만 제공하는데, 해당 표준의 테스트넷 배포 여부가 아직 확인되지 않았기 때문입니다. 페이지가 분명히 밝히는 점 하나: 여기의 모든 동작은 사람이 버튼을 눌러 시작됩니다. 따라서 이 페이지는 자율 에이전트에게 필요한 능력을 보여줄 뿐 에이전트 자체를 보여주지는 않습니다 — 빠진 조각은 결정 루프이고, \"agentic\"이라는 단어로 덮는 대신 그 간극을 명시했습니다.",
+    diagrams: [
+      {
+        title: "Full lifecycle — one upgrade, free grants, gas per spend",
+        titleKo: "전체 수명주기 — 업그레이드 1회, 무료 부여, 지출마다 가스",
+        src: `sequenceDiagram
+    autonumber
+    actor U as You
+    participant MM as MetaMask
+    participant EOA as Your EOA
+    participant DM as DelegationManager
+    participant EN as Caveat enforcers
+    participant P as The page
+    participant SK as Session key
+    participant T as USDC
+
+    Note over U,EOA: PRECONDITION (EIP-7702) — at most once
+    MM->>EOA: type-4 tx, authorizationList names the DeleGator
+    Note over EOA: code slot becomes 0xef0100 + implementation
+
+    Note over P,MM: GRANT (ERC-7715) — off-chain, free, repeatable
+    P->>P: generate a session keypair
+    P->>MM: requestExecutionPermissions(session address, up to 5 USDC, 1h)
+    MM-->>P: signed delegation (permissionContext)
+
+    Note over SK,T: SPEND (ERC-7710) — gas paid by the session key
+    SK->>DM: redeemDelegations(permissionContext, calldata)
+    DM->>DM: recover signature, check revocation
+    DM->>EN: beforeHooks — within cap? within the hour?
+    DM->>EOA: plain CALL, executeFromExecutor(mode, calldata)
+    Note over EOA: EVM follows the code-slot pointer,<br/>runs the DeleGator as your account
+    EOA->>T: transfer(0.1 USDC)
+    DM->>EN: afterHooks`,
+      },
+      {
+        title: "One redemption — where each check happens",
+        titleKo: "행사 한 건 — 각 검사가 일어나는 위치",
+        src: `flowchart TD
+    SK["Session key<br/>signs the tx, pays gas"] --> DM
+
+    subgraph DM["DelegationManager"]
+      direction TB
+      V1["Is the delegation signature the owner's?"] --> V2["Has it been revoked?"]
+      V2 --> V3["Enforcers: within 5 USDC, within 1 hour?"]
+    end
+
+    DM -->|"all checks passed"| CALL["An ordinary CALL to your address<br/>executeFromExecutor(mode, calldata)"]
+    CALL --> EVM{{"EVM: does the code slot start with 0xef0100?"}}
+    EVM -->|"no — a plain EOA"| DEAD["Nothing runs. Calldata ignored."]
+    EVM -->|"yes — load the implementation's bytecode"| ACC
+
+    subgraph ACC["Your EOA, running the DeleGator's code"]
+      direction TB
+      C1["Is msg.sender the manager I was deployed to trust?"] --> C2["execute the call"]
+    end
+
+    ACC --> T["USDC.transfer<br/>msg.sender = your address"]`,
+      },
+      {
+        title: "Pillars ②③ — ERC-4337 smart account via thirdweb",
+        titleKo: "②③ 요소 — thirdweb의 ERC-4337 스마트 계정",
+        src: `sequenceDiagram
     participant O as Owner wallet (MetaMask)
-    participant B as Session account (browser)
-    participant RPC as Public Sepolia RPC
     participant SA as Smart account (thirdweb)
     participant PM as thirdweb Paymaster
 
-    Note over O,RPC: Pillar ① — ERC-7715 session key
-    B->>O: wallet_requestExecutionPermissions(up to 5 USDC, 1h)
-    O-->>B: signed permission (one popup)
-    B->>RPC: sendTransactionWithDelegation()
-    Note over B,RPC: session account signs itself, no popup
-
-    Note over O,PM: Pillars ②③ — ERC-4337 smart account
-    O->>SA: connect + wrap in smart account
+    O->>SA: connect + wrap in a smart account
     SA->>PM: submit UserOperation (2 batched calls)
     PM-->>SA: sponsor gas + execute atomically`,
+      },
+    ],
   },
   {
     key: "solana",
@@ -152,6 +251,49 @@ export const POC_CARDS: DemoCard[] = [
       "계획: 서버 라우트가 Zapier MCP 연결(URL + 인증 토큰, 브라우저에 절대 노출 안 함)을 들고 있고, Anthropic API의 네이티브 MCP 커넥터로 툴 호출을 전달하거나, @modelcontextprotocol/sdk로 직접 범용 MCP 클라이언트 역할을 하며 사용 가능한 툴 목록을 보여주고 모델이 선택한 것을 실행합니다 — 에이전트에게 실제 계정에 대한 무제한 접근을 주지 않도록 안전한 액션(예: \"내게 이메일 보내기\")만 명시적으로 허용 목록에 넣습니다. 아직 미구현.",
   },
   {
+    key: "dvt",
+    title: "DVT in the protocol",
+    titleKo: "프로토콜에 흡수된 DVT",
+    description: "Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.",
+    descriptionKo: "분산 밸리데이터를 프로토콜이 직접 다루자는 제안 정독 노트 — 키를 쪼개지 않는 m-of-n, 그리고 그것이 만들어내는 것들.",
+    status: "live",
+    href: "/poc/dvt",
+    howTo: "Read-only design analysis — no wallet needed. Start with the two diagrams contrasting DVT today against the proposal.",
+    howToKo: "읽기 전용 설계 분석 — 지갑 불필요. 오늘의 DVT와 제안을 대비시킨 다이어그램 두 장부터 보세요.",
+    purpose:
+      "Reading a live protocol-design discussion closely enough to separate three things people usually blur: what the proposal actually changes, what it leaves unresolved, and which parts of the idea can be built one layer up without waiting for it. It is also a second instance of a pattern this site already documents elsewhere — middleware doing a job well until the protocol absorbs it, which is exactly what ERC-4337 bundlers face from native account abstraction.",
+    purposeKo:
+      "진행 중인 프로토콜 설계 논의를, 사람들이 흔히 뭉뚱그리는 세 가지를 분리할 만큼 자세히 읽는 작업입니다: 제안이 실제로 바꾸는 것, 미해결로 남긴 것, 그리고 제안을 기다리지 않고 한 층 위에서 지금 만들 수 있는 부분. 이 사이트가 이미 다른 곳에서 기록하고 있는 패턴의 두 번째 사례이기도 합니다 — 미들웨어가 어떤 일을 잘 해내다가 프로토콜에 흡수되는 흐름으로, ERC-4337 번들러가 네이티브 계정 추상화 앞에서 맞고 있는 상황과 같습니다.",
+    howItWorks:
+      "Today's DVT (Obol, SSV) splits one validator key with Shamir sharing or threshold BLS and runs an off-chain consensus round to reassemble a signature each time; the protocol still sees a single validator, and all distribution lives in middleware. The proposal never splits the key: each participant registers their own (n ≤ 16), the protocol groups them m-of-n, and BLS aggregation plus a participation bitfield — the same grammar as today's attestation aggregation — decides whether enough took part. That removes both the per-signature consensus round and the DKG ceremony, and it is only possible because EIP-7251 raised the max effective balance so that 32·n ETH standing up n slots is arithmetic the protocol can do internally. The page is explicit that this is an ethresear.ch-stage discussion with no assigned EIP number, lists the four questions it leaves open (slashing attribution, latency budget, the m<n collusion trade-off, the n ≤ 16 rationale), and separates PoC candidates into those buildable today at the application layer and those that genuinely wait on adoption.",
+    howItWorksKo:
+      "오늘의 DVT(Obol·SSV)는 하나의 밸리데이터 키를 샤미르 분할이나 임계 BLS로 쪼갠 뒤, 서명이 필요할 때마다 오프체인 합의 라운드로 재조립합니다 — 프로토콜은 여전히 밸리데이터 하나만 보고, 분산은 전부 미들웨어에 삽니다. 제안은 키를 쪼개지 않습니다: 각 참여자가 자기 키를 등록하고(n ≤ 16), 프로토콜이 m-of-n으로 묶으며, BLS 집계와 참여 비트필드(오늘날 attestation 집계와 같은 문법)로 충분한 인원이 참여했는지 판정합니다. 이로써 서명마다의 합의 라운드와 DKG 세리머니가 함께 사라지고, 이것이 가능한 이유는 EIP-7251이 유효 잔고 상한을 올려 32·n ETH가 n개 슬롯을 세운다는 산수를 프로토콜이 내부적으로 할 수 있게 되었기 때문입니다. 페이지는 이것이 EIP 번호가 없는 ethresear.ch 단계의 논의임을 명시하고, 미해결로 남은 질문 넷(슬래싱 귀속, 지연 예산, m<n 공모 트레이드오프, n ≤ 16의 근거)을 나열하며, PoC 후보를 애플리케이션 계층에서 지금 만들 수 있는 것과 실제로 채택을 기다려야 하는 것으로 구분합니다.",
+    diagrams: [
+      {
+        title: "Today — one key split, reassembled outside the protocol",
+        titleKo: "오늘 — 키 하나를 쪼개, 프로토콜 밖에서 재조립",
+        src: `flowchart LR
+    K["One validator key"] -->|"Shamir / threshold BLS"| S1["Share 1"]
+    K --> S2["Share 2"]
+    K --> S3["Share 3"]
+    S1 --> C["Off-chain consensus round<br/>QBFT-family, every signature"]
+    S2 --> C
+    S3 --> C
+    C -->|"reassembled signature"| P["Protocol<br/>sees one validator"]`,
+      },
+      {
+        title: "The proposal — separate keys, grouped m-of-n by the protocol",
+        titleKo: "제안 — 따로 있는 키들을 프로토콜이 m-of-n으로 묶음",
+        src: `flowchart LR
+    K1["Participant 1<br/>own key"] --> AGG["BLS aggregate<br/>+ participation bitfield"]
+    K2["Participant 2<br/>own key"] --> AGG
+    K3["Participant 3<br/>own key"] --> AGG
+    AGG -->|"m of n present?"| P["Protocol<br/>groups them natively"]
+    P -->|"bitfield is public"| D["Per-operator uptime<br/>becomes on-chain data"]`,
+      },
+    ],
+  },
+  {
     key: "erc-8141",
     title: "ERC-8141",
     titleKo: "ERC-8141",
@@ -176,7 +318,7 @@ export const POC_CARDS: DemoCard[] = [
     description: "KRW settlement example via Toss Payments — the domestic counterpart to AP2/Stripe.",
     descriptionKo: "토스페이먼츠를 통한 KRW 정산 예시 — AP2/Stripe의 국내 버전.",
     status: "live",
-    href: "/etc/toss",
+    href: "/poc/toss",
     howTo: "Click \"buy\" → Toss test Checkout.",
     howToKo: "\"구매\" 클릭 → 토스 테스트 결제.",
     purpose:
@@ -187,7 +329,11 @@ export const POC_CARDS: DemoCard[] = [
       "The client loads Toss's hosted payment SDK via script tag and calls requestPayment, redirecting to Toss's payment page. On successful return, the query string carries a paymentKey/orderId/amount triple, which the server independently re-submits to Toss's payment-confirmation API using a server-only secret key before releasing the purchased content. Because Toss's confirm endpoint checks the submitted amount against what it actually authorized, a tampered redirect URL (e.g. a lower amount) fails confirmation server-side rather than being trusted.",
     howItWorksKo:
       "클라이언트가 script 태그로 Toss의 호스팅 결제 SDK를 로드하고 requestPayment를 호출해 Toss 결제 페이지로 리다이렉트합니다. 결제 성공 후 돌아오면 쿼리스트링에 paymentKey/orderId/amount가 담겨 있고, 서버가 서버 전용 secret key로 Toss의 결제승인 API에 이를 독립적으로 다시 제출한 뒤에만 구매 콘텐츠를 공개합니다. Toss의 confirm 엔드포인트가 제출된 금액을 실제 승인된 금액과 대조하기 때문에, 리다이렉트 URL을 조작(예: 금액을 낮춤)해도 서버 측 승인에서 걸러지고 그대로 신뢰되지 않습니다.",
-    diagram: `sequenceDiagram
+    diagrams: [
+      {
+        title: "Payment window, then server-side confirmation",
+        titleKo: "결제창, 그리고 서버 측 승인",
+        src: `sequenceDiagram
     participant U as Browser (visitor)
     participant TW as Toss Payment Widget SDK
     participant T as Toss Payments
@@ -196,10 +342,12 @@ export const POC_CARDS: DemoCard[] = [
     U->>TW: requestPayment() [client key]
     TW->>T: open hosted payment page
     U->>T: pay (test card)
-    T-->>U: redirect /etc/toss?paymentKey&orderId&amount
-    U->>S: GET /etc/toss?...
+    T-->>U: redirect /poc/toss?paymentKey&orderId&amount
+    U->>S: GET /poc/toss?...
     S->>T: POST /v1/payments/confirm [secret key]
     T-->>S: status "DONE" (rejects on amount mismatch)
     S-->>U: release purchased content`,
+      },
+    ],
   },
 ];

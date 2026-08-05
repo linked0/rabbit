@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
         quantity: 1,
       },
     ],
-    success_url: `${origin}/ap2?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/ap2?canceled=1`,
+    success_url: `${origin}/poc/ap2?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/poc/ap2?canceled=1`,
   });
   if (!session.url) {
     return NextResponse.json({ error: "Stripe did not return a checkout URL" }, { status: 502 });

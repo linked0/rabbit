@@ -1,4 +1,5 @@
 import Nav from "../Nav";
+import BackLink from "../BackLink";
 import BundleSubmit from "./BundleSubmit";
 import RelayDashboard from "./RelayDashboard";
 import TechNotes from "../TechNotes";
@@ -19,7 +20,8 @@ export default function XyzPage() {
     <>
       <Nav />
       <main>
-        <h1>{pick(lang, "XYZ 데모 — PBS 소비자 트랙", "XYZ Demo — PBS consumer track")}</h1>
+        <BackLink lang={lang} />
+        <h1>{pick(lang, "PBS 소비자 트랙", "PBS consumer track")}</h1>
         <p className="sub">
           {pick(
             lang,

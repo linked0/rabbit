@@ -21,11 +21,15 @@ const MENU: NavItem[] = [
   { href: "/game", ko: "게임", en: "Game", code: "GAME" },
   // 마켓·XYZ 는 별도 메뉴에서 PoCs 허브 카드로 통합 (2026-08-03, jay) — 라우트(/market, /xyz)는
   // 그대로 살아있고 진입점만 바뀜. 설계: docs/tasks/current-plan.md §7.
-  { href: "/etc", ko: "PoCs", en: "PoCs", code: "ETC", pub: true },
+  // 라우트는 /etc → /poc 로 옮겼지만(2026-08-05) `code` 는 URL 이 아니라 env 키(`ALLOW_ETC`)다.
+  // 여기서 함께 바꾸면 배포 환경(Cloud Run)의 env 도 같은 시점에 바꿔야 하고, 안 바꾸면 메뉴가
+  // 조용히 사라진다 — 실패가 눈에 안 띄는 종류라 URL 이동과 분리했다. 이름을 맞추고 싶으면
+  // `ALLOW_POC` 을 배포 env 에 먼저 넣은 뒤 이 값을 "POC" 로 바꿀 것.
+  { href: "/poc", ko: "PoCs", en: "PoCs", code: "ETC", pub: true },
   // TIL — 일상 학습을 코드로 다시 구현한 모음, PoCs와 같은 카드 포맷 (2026-08-03, jay).
   { href: "/til", ko: "TIL", en: "TIL", code: "TIL", pub: true },
   // AP2(Stripe 정산 데모)도 마켓·XYZ와 같은 이유로 PoCs 허브 카드로 통합 (2026-08-04, jay) —
-  // /ap2 라우트는 그대로 공개, 진입점만 /etc 카드로. 설계: docs/tasks/current-plan.md §2.
+  // /poc/ap2 라우트는 그대로 공개, 진입점만 /poc 카드로. 설계: docs/tasks/current-plan.md §2.
   { href: "/jayverse", ko: "JayVerse", en: "JayVerse", code: "JAYVERSE" },
   // Verex 항목은 제거 (2026-07-25, jay) — 홈의 피처드 카드로 대체 (app/home/page.tsx, lib/verex.ts).
 ];

@@ -14,11 +14,13 @@ declare global {
 }
 
 export default function TossBuyButton({
+  clientKey,
   amount,
   orderName,
   buyLabel,
   errorLabel,
 }: {
+  clientKey: string;
   amount: number;
   orderName: string;
   buyLabel: string;
@@ -29,7 +31,6 @@ export default function TossBuyButton({
 
   async function buy() {
     setError(null);
-    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
     if (!clientKey || !window.TossPayments) {
       setError(errorLabel);
       return;
@@ -40,8 +41,8 @@ export default function TossBuyButton({
         amount,
         orderId,
         orderName,
-        successUrl: `${window.location.origin}/etc/toss`,
-        failUrl: `${window.location.origin}/etc/toss`,
+        successUrl: `${window.location.origin}/poc/toss`,
+        failUrl: `${window.location.origin}/poc/toss`,
       });
     } catch (e) {
       // 사용자가 결제창을 닫는 경우도 여기로 온다 — 에러로 취급하지 않는다.

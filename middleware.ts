@@ -6,7 +6,7 @@ import { auth, isOwnerEmail } from "@/auth";
 const PUBLIC_PATHS = new Set([
   "/",
   "/login",
-  "/etc", // PoCs 허브 — Market/XYZ 를 여기로 통합 (Nav pub, 2026-08-03)
+  "/poc", // PoCs 허브 — Market/XYZ 를 여기로 통합 (Nav pub, 2026-08-03)
   "/til", // TIL 허브 — Today I Learned, PoCs와 같은 카드 포맷 (Nav pub, 2026-08-03)
   "/market", // 공개 시세만 — 메뉴에선 PoCs 허브 카드로만 노출 (라우트는 그대로 공개)
   "/xyz", // C4 관찰자 대시보드 — 공개 데이터만 (메뉴에선 PoCs 허브 카드로만 노출)
@@ -15,10 +15,18 @@ const PUBLIC_PATHS = new Set([
   "/api/orderbook", // /market 의 Hyperliquid L2 북용 — 공개 info API
   "/projects", // 수행 프로젝트 — 홈에 있던 피처드/프로젝트 전체 (Nav pub, 로그인 불필요)
   "/api/jay-chat", // 홈에 통합된 Jay Chat 의 API — 전용 키 + 시간당 토큰 예산 + 버스트 가드로 보호됨
-  "/ap2", // AP2 — Stripe 정산 데모 (test mode) — 메뉴에선 PoCs 허브 카드로만 노출 (라우트는 공개)
-  "/api/ap2/checkout", // /ap2 용 Stripe Checkout 세션 생성 — 공개(로그인 불필요, 테스트 결제만)
-  "/etc/toss", // Toss Payments — KRW 정산 데모 (test mode) — /ap2와 동일하게 PoCs 허브 카드로만 노출
-  "/etc/aa", // AA — ERC-7702/7715 세션 키 + Agentic AA 4대 요소 데모 (Sepolia) — PoCs 허브 카드로만 노출
+  "/poc/ap2", // AP2 — Stripe 정산 데모 (test mode) — 메뉴에선 PoCs 허브 카드로만 노출 (라우트는 공개)
+  "/api/ap2/checkout", // /poc/ap2 용 Stripe Checkout 세션 생성 — 공개(로그인 불필요, 테스트 결제만)
+  "/poc/toss", // Toss Payments — KRW 정산 데모 (test mode) — /poc/ap2와 동일하게 PoCs 허브 카드로만 노출
+  "/poc/aa", // AA — ERC-7702/7715 세션 키 + Agentic AA 4대 요소 데모 (Sepolia) — PoCs 허브 카드로만 노출
+  "/poc/7702", // EIP-7702 계정 인스펙터 — 읽기 전용(eth_getCode), PoCs 허브 카드로만 노출
+  "/poc/dvt", // DVT 프로토콜 흡수 제안 정독 노트 — 정적 설명 페이지
+  // /poc/aa 의 에이전트 시나리오 상세 — 정적 설명 페이지. 허용 목록은 명시적으로 유지하는 게
+  // 이 파일의 규칙이라(맨 위 주석), prefix 매칭 대신 4개를 그대로 적는다.
+  "/poc/aa/scenarios/aggregating-buyer",
+  "/poc/aa/scenarios/pay-per-call",
+  "/poc/aa/scenarios/scheduled-operator",
+  "/poc/aa/scenarios/counterparty-check",
 ]);
 
 export default auth((req) => {
