@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Nav from "../Nav";
 import VerexBallLazy from "./VerexBallLazy";
 import SessionKeyMark from "./SessionKeyMark";
+import ProfileLinks from "./ProfileLinks";
 import JayChatClient from "../JayChatClient";
 import { PROFILE } from "@/lib/home-content";
 import { POC_CARDS, FEATURED_POC_KEY } from "@/lib/poc-cards";
@@ -35,26 +36,7 @@ export default function HomePage() {
           <p className="sub" style={{ fontSize: 16, maxWidth: 620, marginBottom: 12 }}>
             {pick(lang, PROFILE.taglineKo, PROFILE.tagline)}
           </p>
-          <div
-            className="muted"
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              marginBottom: 6,
-            }}
-          >
-            {pick(lang, "링크", "Links")}
-          </div>
-          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-            {PROFILE.links.map((l) => (
-              <a key={l.label} href={l.url} target="_blank" rel="noreferrer">
-                {l.label}
-              </a>
-            ))}
-            <a href={`mailto:${PROFILE.email}`}>{PROFILE.email}</a>
-          </div>
+          <ProfileLinks lang={lang} />
         </div>
       </header>
 
