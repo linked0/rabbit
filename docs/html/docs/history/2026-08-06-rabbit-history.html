@@ -189,6 +189,62 @@ PoC 피처드 카드 추가. <code>lib/poc-cards.ts</code>에 <code>FEATURED_POC
 <p><strong>Change:</strong> <code>app/poc/page.tsx</code> — 상단에 피처드 섹션(제목·설명에 더해 <code>howTo</code> 한 줄까지 노출,
 카드보다 넓은 자리라 실행 방법을 미리 보여줄 수 있다), 그리드는 피처드를 제외한 나머지만.</p>
 <p><strong>Result:</strong> 빌드 통과. 현재 피처드는 AA 카드, 그리드는 10장.</p>
+<h3>TIL 카드 추가 — LMSR과 하이브리드 AMM</h3>
+<p><strong>Cause:</strong> jay 요청 — 하이브리드 AMM과 LMSR로 카드 하나를 추가하되, 그날 나눈 대화의 내용을
+따를 것. 출처는 verex Phase A 마켓메이킹 논의(콜드 스타트, b·ln(n) 상한, Polymarket이 AMM을
+폐기한 이유, 정보/무지 거래자와 스프레드).</p>
+<p><strong>Reasoning:</strong> PoCs가 아니라 <strong>TIL</strong>에 넣었다 — TIL의 정의가 &quot;그날 배운 것을 다시 구현하는 코드
+데모(수학 공식·알고리즘·서비스 연동)&quot;이고 LMSR 비용 함수는 정확히 수학 공식이다. PoCs는 돌려볼
+페이지가 딸린 데모 쪽이라 성격이 다르다. 옮기고 싶으면 배열만 바꾸면 되는 한 줄 작업.
+카드의 관점을 &quot;LMSR은 좋은 설계다&quot;가 아니라 **&quot;설계에는 유효기간이 있다&quot;**로 잡았다 — Polymarket이
+AMM을 폐기한 사실이 이 설계의 흠이 아니라 만료일이고, 자기가 그 날짜의 어느 쪽에 있는지 아는 게
+요점이기 때문. 그 편이 카드 하나로 배울 값이 크다.
+verex의 결정 사항은 여기 옮기지 않았다 — 개념 카드이지 verex 작업 항목이 아니다(주석에도 명시).</p>
+<p><strong>Change:</strong> <code>lib/til-cards.ts</code>에 <code>lmsr-hybrid-amm</code> 카드 신설(status <code>soon</code>, 페이지 없음).
+다이어그램 둘 — ① 콜드 스타트 루프와 유일한 출구(빈 호가창→가격 없음→…→빈 호가창, LMSR 사다리가
+끊는 지점), ② 스프레드는 정보 거래자가 정하고 무지한 거래자가 지불하며, 정보 비율이 오르면
+5%→2센트 / 15%→8센트 / 40%→어떤 스프레드도 불가로 가 호가가 사라지는 흐름.
+계획한 페이지도 두 패널로 적어둠(공식 슬라이더 + 정보 비율 슬라이더).</p>
+<p><strong>Result:</strong> <code>tsc --noEmit</code> 통과. 이어서 jay 요청으로 상세 페이지까지 만들면서 카드는 <code>live</code> +
+<code>href</code> + <code>date: 2026-08-06</code>로 승격 — TIL에서 처음으로 열리는 카드가 됐다.</p>
+<h3><code>/til/lmsr-hybrid-amm</code> 상세 페이지 — 대화에서 나온 분석을 통째로 옮김</h3>
+<p><strong>Cause:</strong> jay 요청 — LMSR 카드에 상세 페이지가 있어야 하고, 내용은 그날 대화의 두 갈래
+(① 스프레드를 누가 정하고 누가 지불하는가 ② Polymarket은 왜 안 쓰는데 우리는 왜 써야 하는가).</p>
+<p><strong>Reasoning:</strong> <code>/poc/dvt</code>(정독 노트)와 같은 성격이라 그 형식을 따랐다 — 지갑도 상태도 없는 읽기
+전용 페이지이므로 <code>status: &quot;live&quot;</code>가 맞다(코드 데모가 아니라고 해서 &quot;준비 중&quot;인 건 아니다).
+글의 뼈대는 대화의 결론을 그대로 유지했다: 스프레드는 정보 거래자가 정하고 무지한 거래자가
+지불한다 → 정보 비율을 올리면 어떤 스프레드도 안 되는 지점에서 시장이 사라진다 → 그러므로
+&quot;시장이 존재한다는 것 자체가 무지한 흐름의 증거&quot; → Polymarket의 네 반론은 전부 규모 반론이라
+초기 단계에는 구속력이 없다 → 안전한 이유는 사다리가 그냥 지정가 주문이라 끄는 게 게시 중단뿐
+이라는 것 → 실패 시나리오는 사다리의 영구화이고 이건 코드에 안 보인다.</p>
+<p><strong>Change:</strong> <code>app/til/lmsr-hybrid-amm/page.tsx</code> 신설 — 공식(C(q)=b·ln Σe^(qᵢ/b), 최악 b·ln(n)),
+세 질문 표, 붕괴 사다리(5%/15%/40%), 넓은 스프레드의 두 해석(정직 vs 지대, 거래량이 신호),
+Polymarket 4대 반론, 규모 반론 대조표, 제거 가능성 설계, 실패 시나리오와 종료 조건, 한 줄 요약.
+전부 ko/en 양쪽. <code>lib/til-cards.ts</code> 카드를 live로 승격하고 <code>howItWorks</code>를 &quot;계획&quot;에서 실제 내용
+서술로 교체(인터랙티브 슬라이더만 계획으로 남김). <code>middleware.ts</code> PUBLIC_PATHS에 경로 추가.</p>
+<p><strong>Result:</strong> 빌드 통과, <code>/til/lmsr-hybrid-amm</code> 2.23 kB. 편집 중 <code>howItWorks</code> 문자열을 중간에서
+끊어 깨뜨렸다가 파이썬으로 두 줄을 통째로 다시 써서 복구 — 긴 문자열은 부분 치환보다 줄 단위
+교체가 안전하다.</p>
+<h3>Jay Chat RAG에 PoC·TIL 카드 전부 투입</h3>
+<p><strong>Cause:</strong> jay 요청 — 방문자가 큰 프로젝트뿐 아니라 작은 데모들도 궁금해하니, Jay Chat이 PoC와
+TIL을 전부 알게 하자.</p>
+<p><strong>Reasoning:</strong> <code>lib/about-me.ts</code>에 이미 어휘 기반 RAG(PROFILE/PROJECTS + content/profile/*.md)가
+있어서 새 검색기를 만들 필요가 없었다 — 카드를 청크로 만들어 코퍼스에 넣으면 끝. 카드가 원본이라
+페이지 설명과 챗 설명이 어긋날 수 없다는 게 부수 효과.
+카드 하나를 <strong>청크 둘(영/한)</strong> 로 나눴다: 한 청크에 두 언어를 넣으면 글자수 상한에서 한쪽이
+잘리고, 검색에 걸려도 절반이 엉뚱한 언어라 컨텍스트가 지저분해진다.
+<strong>상태(status)를 반드시 함께 넣었다</strong> — TIL 대부분과 <code>/poc/agent</code>는 아직 없거나 목업이라,
+상태 없이 넣으면 챗이 없는 데모를 있다고 말하게 된다. 시스템 프롬프트에도 &quot;상태를 지어내지 말고
+정확히 따르라&quot;를 명시.</p>
+<p><strong>Change:</strong> <code>lib/about-me.ts</code>에 <code>demoChunks()</code> + <code>demoStatusLine()</code> 추가하고 <code>corpus()</code>에 편입.
+<code>buildAboutMeSystemMessage</code>에 데모 상태 준수 지시 추가.</p>
+<p><strong>Result:</strong> 실측으로 검증 — &quot;session key account abstraction demo&quot; → <code>poc:aa</code>/<code>poc:erc-7702</code>,
+&quot;LMSR 이 뭔가요&quot; → <code>til:lmsr-hybrid-amm</code> 양쪽 언어 청크, &quot;자율 결제 에이전트 데모 써볼 수 있나요&quot;
+→ <code>poc:agent:ko</code>(목업 상태 포함)로 정확히 검색됨.
+<strong>중간에 발견한 버그:</strong> &quot;what small demos has he built?&quot;가 <em>만들지 않은</em> 카드들을 최상위로
+끌어왔다 — 상태 문구가 &quot;not built yet&quot;이라 질문의 &quot;built&quot;와 어휘 매칭된 것. 부정문에서 그 단어를
+빼고 &quot;Status: planned — no page exists yet.&quot;로 바꿔 해결. 어휘 검색에서는 <strong>부정문에 쓰는 단어가
+곧 오검색</strong>이라는 걸 문구에 주석으로 남김.</p>
 <h3>D1 결정 근거 — 스폰서 가스로 갈아타지 않고 7710을 유지</h3>
 <p><strong>Cause:</strong> 08-05의 <code>insufficient funds for transfer</code>는 우발적 버그가 아니라 구조였다 — ERC-7710에서
 세션 계정이 <strong>자기 트랜잭션을 직접 브로드캐스트</strong>하므로 Sepolia ETH가 필요하다. thirdweb paymaster로
