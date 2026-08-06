@@ -7,11 +7,13 @@ then summarize the built result into `docs/history/`.
 ## Target information architecture (one top menu, anchored by Home)
 Status verified against the running code on 2026-08-03 (routes, `app/Nav.tsx`, `next.config.js`),
 not just doc text — several rows are flagged stale below (see notes under the table). **This
-table is now the single status source for everything except AP2 + Account Abstraction (AA) — the
-only two tasks tracked in [current-plan.md](../tasks/current-plan.md)** (§2, §3, §6). The PoCs
-hub those two plug into is tracked here instead, at [pocs-hub.md](pocs-hub.md) — every other
-section that used to live in current-plan.md has had its full detail moved into the linked doc
-below.
+table is the single status source for everything except the one task tracked in
+[current-plan.md](../tasks/current-plan.md) — the Agentic AA autonomy loop** (`/poc/agent`).
+AP2, Toss, and the AA building blocks graduated out of current-plan.md on 2026-08-06 once built
+(archived at
+[../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md));
+their rows below are now the live status. The PoCs hub they all plug into is tracked here too, at
+[pocs-hub.md](pocs-hub.md).
 
 | Menu | Route | Feature doc | Status |
 |------|-------|-------------|--------|
@@ -19,7 +21,7 @@ below.
 | Portfolio & Market | `/portfolio` + `/market` | [portfolio-and-market.md](portfolio-and-market.md) | 🟡 Stale row — already split into **Portfolio** (`/portfolio`, ✅ done) and **Market** (`/market`, 🟡 in progress — Hyperliquid trading, see the doc); this table's Menu column needs a nav-update pass to reflect the split as two rows |
 | AI Chat | `/chat` | [ai-chat.md](ai-chat.md) — full design incl. Auth+LLM gating and KB-via-MCP+RAG | 🟡 Route exists but was **dropped from the top nav** (2026-08-01, folded into Home); gating/BYO-key ⬜ · KB-RAG ⬜ · Ask-about-me ✅ · Jay Chat public surface ✅ |
 | Game | `/game` | [game.md](game.md) | 🟡 In progress — `/game` is a 2D-canvas placeholder ("Coin Catcher"), Unity WebGL embed not built yet |
-| AP2 Test | `/ap2` | [ap2-test.md](ap2-test.md) — plus [current-plan.md §2](../tasks/current-plan.md#s2) for the active Stripe-example build | ⬜ To do — page is a "Coming soon" stub; **actively being built now** (Stripe settlement example) |
+| AP2 Test | `/poc/ap2` | [ap2-test.md](ap2-test.md) — build detail in the [archived plan §2](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s2) | ✅ Done — Stripe Checkout settlement example (test mode), server-side `payment_status` verification; moved from `/ap2` to `/poc/ap2` |
 | XYZ Demo | `/xyz` | [xyz-demo.md](xyz-demo.md) | 🟡 In progress — C2 bundle-submit + C4 PBS relay dashboard live; other items pending |
 | JayVerse | `/jayverse` | [jayverse.md](jayverse.md) | ⬜ To do — "Coming soon" stub, Gravia-style dashboard not built |
 | Verex | ↗ external | [verex-link.md](verex-link.md) | ✅ Done, but **not as designed here** — the nav item was removed (2026-07-25); replaced with a featured card on the Home page (`app/home/page.tsx`, `lib/verex.ts`) instead of a top-menu external link |
@@ -28,18 +30,20 @@ below.
 | _DSRV Portal_ | — (backlog) | [dsrv-portal.md](dsrv-portal.md) — institutional custody study (MPC · approval flow · AA · AML) + no-VASP PoC items | ⬜ To do (backlog) — not yet scheduled |
 | _PET Clean Room_ | — (backlog) | [pet-clean-room.md](pet-clean-room.md) — homomorphic-encryption data clean room study (DESILO/국립암센터 case) + hands-on FHE PoC items | ⬜ To do (backlog) — not yet scheduled |
 | _Zapier MCP_ | `/etc/zapier` (planned) | [zapier-mcp.md](zapier-mcp.md) — sample page: agent triggers real app actions (Gmail/Notion/Slack) via Zapier MCP | ⬜ To do — not yet scheduled |
-| _Agentic AA_ | `/etc` (extends the §3 ETC demo) | [agentic-aa.md](agentic-aa.md) — 4-pillar AA demo for agent payments: session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix | ⬜ To do — **actively being built now**, see [current-plan.md §6](../tasks/current-plan.md#s6) (sequenced after §3) |
+| _Agentic AA — building blocks_ | `/poc/aa` | [agentic-aa.md](agentic-aa.md) — session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix | 🟡 Built — ① session key (ERC-7715/7710) + ②③ sponsored/batch tx (thirdweb 4337) live; ④ KYA stayed an explainer card (ERC-8004 testnet registry unverified). All human-triggered — that gap is what the row below addresses |
+| _Agentic AA — autonomy loop_ | `/poc/agent` (planned) | **[current-plan.md](../tasks/current-plan.md)** — the only task tracked there | ⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes `lib/agent-scenarios.ts`'s `scheduled-operator` actually run |
+| _EIP-7702 inspector_ | `/poc/7702` | [erc-8141.md](erc-8141.md) is the *native*-AA sibling study; this page is the app-layer inspector | ✅ Done — read-only `eth_getCode` account inspector (plain EOA / 7702-delegated / contract), no wallet required |
 | _Solana_ | `/etc/solana` (planned) | [solana.md](solana.md) — Solana integration study + sample Anchor program (counter → SPL escrow) on devnet, called from a demo page | ⬜ To do — not yet scheduled |
 | _KB Hybrid Payment_ | — (reference only) | [kb-hybrid-payment-flow.md](kb-hybrid-payment-flow.md) — flow map: TradFi card rail (ISO 8583) × on-chain settlement (Avalanche subnet); no dev item | 📎 Reference only |
 | _CRE × Cloud_ | — (reference only) | [cre-cloud.md](cre-cloud.md) — 4 hybrid patterns (RWA servicing · PoR · DvP · AI prediction-market settlement): cloud = private truth, CRE = verified bridge, chain = settlement | 📎 Reference only |
 | _Thirdweb_ | — (reference only) | [thirdweb.md](thirdweb.md) — full-stack Web3 platform survey (contracts · Connect wallets/AA · Engine backend tx · Unity SDK); breadth-over-best-parts tradeoff; touchpoints: agentic-aa, ap2 backend tx, Unity track | 📎 Reference only — not scheduled |
 | _ERC-8141_ | — (knowledge page, planned) | [erc-8141.md](erc-8141.md) — native account-abstraction study: Frame Transactions (`0x06`), the protocol-native sibling of the app-layer AA work (see [current-plan.md §3](../tasks/current-plan.md#s3)) | ⬜ To do — not yet scheduled |
-| _Toss Payments_ | `/ap2` or `/etc/toss` (planned) | [toss-payments.md](toss-payments.md) — KRW settlement example via Toss Payments, counterpart to the AP2 Stripe example (see [current-plan.md §7](../tasks/current-plan.md#s7)) | ⬜ To do — **actively tracked now**, see [current-plan.md §7](../tasks/current-plan.md#s7) |
+| _Toss Payments_ | `/poc/toss` | [toss-payments.md](toss-payments.md) — KRW settlement example, counterpart to the AP2 Stripe example | ✅ Done — standalone page (not an `/ap2` extension); test-mode client/secret keys. Detail in the [archived plan §7](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s7) |
 | _Staging Domain_ | — (infra, not a menu item) | [staging-domain.md](staging-domain.md) — `staging.rabbit.jaylabs.xyz` via Firebase Hosting rewrite | 🚫 Not pursuing |
 | _Merkle vs Verkle_ | — (reference only) | [../knowledge/merkle-vs-verkle.html](../knowledge/merkle-vs-verkle.html) — proof-size comparison, Ethereum's Verge context | 📎 Reference only |
 | _Linera Microchains_ | — (reference only) | [../knowledge/linera-microchains.html](../knowledge/linera-microchains.html) — blockspace-contention + per-user microchain model | 📎 Reference only |
 | _Web Stack Layers_ | — (reference only) | [../knowledge/web-stack-layers.html](../knowledge/web-stack-layers.html) — 5-layer map with a rabbit overlay | 📎 Reference only |
-| _PoCs hub_ | `/etc` (building) | [pocs-hub.md](pocs-hub.md) — consolidated demo menu wrapping Hyperliquid Trading, PBS, AP2, and AA under one top-menu item | 🟡 In progress — building on branch `claude/pocs-hub` |
+| _PoCs hub_ | `/poc` | [pocs-hub.md](pocs-hub.md) — consolidated demo menu wrapping Hyperliquid Trading, PBS, AP2, and AA under one top-menu item | ✅ Done — shipped 2026-08-03, routes moved `/etc` → `/poc`; cards registered in [`lib/poc-cards.ts`](../../lib/poc-cards.ts) |
 | _TIL ("Today I Learned")_ | `/til` (building) | `lib/til-cards.ts` — same card format as the PoCs hub (`app/DemoCard.tsx`, shared type `lib/demo-cards.ts`). Code demos re-implementing something from a day's learning (math formula, algorithm, or a recommended-service integration) — not a sync of jay's private daily report file | 🟡 In progress — 3 seed cards, all "Coming soon" pending jay filling in the actual code; building on branch `claude/pocs-hub`. Build log: [2026-08-03 history](../history/2026-08-03-rabbit-history.md) (search "TIL") |
 
 **Legend:** ✅ Done · 🟡 In progress / partial / stale · ⬜ To do · 🔄 Ongoing · 📎 Reference only ·

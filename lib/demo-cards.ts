@@ -9,6 +9,11 @@ export type DemoCard = {
   descriptionKo: string;
   status: "live" | "soon";
   href?: string; // omitted while "soon" and no page exists yet
+  // 구현 날짜 (YYYY-MM-DD) — 카드 정렬 기준 (jay, 2026-08-06). "카드를 만든 날"이 아니라
+  // "그 데모가 실제로 동작하게 된 날"을 적는다 — 예를 들어 AP2는 "곧 공개" 스텁이 6월부터
+  // 있었지만 Stripe 결제가 실제로 도는 건 08-04이므로 08-04.
+  // 아직 구현되지 않은 "soon" 카드는 비워둔다 — 없는 날짜를 지어내지 않는다.
+  date?: string;
   howTo: string;
   howToKo: string;
   // Longer technical write-up rendered in the "Technical Notes" section at the page bottom
@@ -29,8 +34,17 @@ export type DemoDiagram = {
   src: string; // mermaid 정의
 };
 
-// "live" 카드가 항상 "soon" 카드보다 앞에 오도록 정렬 (jay, 2026-08-04) — 카드 상태가
-// 바뀔 때마다 배열 순서를 손으로 맞출 필요 없게, 각 그룹 내 원래 순서는 그대로 유지(stable sort).
-export function liveFirst(cards: DemoCard[]): DemoCard[] {
-  return [...cards].sort((a, b) => (a.status === b.status ? 0 : a.status === "live" ? -1 : 1));
+// 카드 정렬 — 두 기준을 순서대로 적용한다:
+//   ① "live"가 "soon"보다 앞 (jay, 2026-08-04) — 아직 못 여는 카드가 동작하는 데모를 밀어내면 안 된다.
+//   ② 같은 그룹 안에서는 구현 날짜 최신순 (jay, 2026-08-06) — 최근 작업이 위로 온다.
+// 날짜가 없는 카드(아직 구현 전)는 날짜가 있는 카드 뒤로 가고, 자기들끼리는 배열 순서 유지.
+// 상태와 날짜만 보므로, 카드가 바뀌어도 배열 순서를 손으로 맞출 필요는 여전히 없다.
+export function sortDemoCards(cards: DemoCard[]): DemoCard[] {
+  return [...cards].sort((a, b) => {
+    if (a.status !== b.status) return a.status === "live" ? -1 : 1;
+    if (a.date && b.date) return b.date.localeCompare(a.date); // ISO 문자열이라 사전순 = 시간순
+    if (a.date) return -1;
+    if (b.date) return 1;
+    return 0;
+  });
 }

@@ -2,8 +2,10 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import Nav from "../Nav";
 import VerexBallLazy from "./VerexBallLazy";
+import SessionKeyMark from "./SessionKeyMark";
 import JayChatClient from "../JayChatClient";
-import { PROFILE, PROJECTS } from "@/lib/home-content";
+import { PROFILE } from "@/lib/home-content";
+import { POC_CARDS, FEATURED_POC_KEY } from "@/lib/poc-cards";
 import { verexUrl } from "@/lib/verex";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
@@ -18,12 +20,9 @@ export const metadata = {
 export default function HomePage() {
   const lang = getLang();
   notifyPageView("/ (home)", headers().get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown");
-  // 홈에 싣는 대표 프로젝트 — jay가 직접 고른 3건(가장 중요한 것들)이라 날짜순이 아니라
-  // 이 순서를 그대로 쓴다. 해당 slug 가 없어지면 조용히 빠지도록 filter (2026-08-01, jay).
-  const HOME_SLUGS = ["boaspace", "votera", "evm-bosagora"];
-  const featured = HOME_SLUGS.map((s) => PROJECTS.find((p) => p.slug === s)).filter(
-    (p): p is (typeof PROJECTS)[number] => !!p
-  );
+  // 대표 PoC 한 장 — 어느 카드인지는 lib/poc-cards.ts의 FEATURED_POC_KEY가 정한다(/poc 상단과
+  // 같은 출처). 없는 key여도 홈이 죽지 않도록, 못 찾으면 이 자리를 통째로 비운다.
+  const poc = POC_CARDS.find((c) => c.key === FEATURED_POC_KEY);
   return (
     <>
       <Nav />
@@ -59,23 +58,26 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 수행 프로젝트 요약 — 좌: 피처드(Verex + 3D 구), 우: 프로젝트 텍스트 목록.
-          전체(이미지 카드 그리드 포함)는 /projects 에서 (2026-08-01, jay). */}
+      {/* 대표 작업 — 두 갈래에서 한 장씩 (2026-08-06, jay): 수행 프로젝트에서 Verex,
+          PoCs에서 AA. 이전엔 프로젝트 3건의 제목 목록이 오른쪽에 있었는데, 섹션 이름이
+          "대표 작업"이 된 이상 그 안에 대표가 아닌 것이 섞여 있으면 이름이 거짓말이 된다 —
+          목록은 /projects로 완전히 넘겼다. */}
       <section className="panel">
         <div className="home-sec-head">
-          <h2 style={{ margin: 0 }}>{pick(lang, "수행 프로젝트", "Projects")}</h2>
-          <Link href="/projects" className="home-proj-more">
-            {pick(lang, "전체 보기 →", "View all →")}
-          </Link>
+          <h2 style={{ margin: 0 }}>{pick(lang, "대표 작업", "Featured")}</h2>
         </div>
+        {/* 전체 보기로 나가는 문(섹션 머리 링크 → 카드 아래 서브카드)은 둘 다 어색해서
+            뺐다 — 섹션 구성은 jay가 나중에 직접 다듬는다 (2026-08-06). */}
         <div className="home-split">
-          {/* 좌: 피처드 — 라이브 앱으로 외부 링크. */}
+          {/* 좌: 수행 프로젝트 쪽 대표 — 라이브 앱으로 외부 링크. */}
           <a href={verexUrl()} target="_blank" rel="noreferrer" className="kpi featured-card">
             <div className="featured-mark-wrap">
               <VerexBallLazy />
             </div>
             <div style={{ flex: 1, minWidth: 200 }}>
-              <div className="label">{pick(lang, "라이브 · 예측 시장", "Live · Prediction market")}</div>
+              <div className="label">
+                {pick(lang, "수행 프로젝트 · 라이브", "Project · Live")}
+              </div>
               <div className="value" style={{ fontSize: 18 }}>
                 Verex ↗
               </div>
@@ -89,19 +91,27 @@ export default function HomePage() {
             </div>
           </a>
 
-          {/* 우: 프로젝트 제목만 (설명 줄 없음 — 섹션이 너무 길어져서, 2026-08-01 jay).
-              최신순이 아니라 jay가 꼽은 대표 3건을 고정으로 싣는다 (2026-08-01):
-              NFT 마켓플레이스 · DAO 거버넌스 · EVM 기반 Bosagora 메인넷.
-              나머지는 "전체 보기 →"(= /projects)로 넘긴다. */}
-          <div className="home-proj-list">
-            {featured.map((p) => (
-              <Link key={p.slug} href={`/home/${p.slug}`} className="home-proj-row">
-                <div className="value" style={{ fontSize: 14.5 }}>
-                  {pick(lang, p.titleKo ?? p.title, p.title)}
+          {/* 우: PoCs 쪽 대표 — 내부 라우트. 제목·설명은 카드가 원본이라 여기서 복사하지 않는다. */}
+          {poc?.href && (
+            <Link href={poc.href} className="kpi featured-card featured-card-poc">
+              <div className="featured-mark-wrap">
+                <SessionKeyMark />
+              </div>
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <div className="label">
+                  {poc.status === "live"
+                    ? pick(lang, "PoC · 라이브", "PoC · Live")
+                    : pick(lang, "PoC · 목업", "PoC · Mock")}
                 </div>
-              </Link>
-            ))}
-          </div>
+                <div className="value" style={{ fontSize: 18 }}>
+                  {pick(lang, poc.titleKo, poc.title)}
+                </div>
+                <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>
+                  {pick(lang, poc.descriptionKo, poc.description)}
+                </div>
+              </div>
+            </Link>
+          )}
         </div>
       </section>
 

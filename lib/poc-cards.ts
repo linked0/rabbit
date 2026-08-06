@@ -3,6 +3,11 @@
 
 import type { DemoCard } from "./demo-cards";
 
+// 대표로 올릴 PoC 카드 한 장 — 홈의 "대표 작업" 섹션과 /poc 상단이 같이 본다 (2026-08-06, jay).
+// 자율 결제 에이전트(/poc/agent)가 실제로 돌기 시작하면 "agent"로 바꾼다. 두 화면이 이 상수
+// 하나를 보고, 제목·설명도 카드에서 직접 읽으므로 교체는 이 줄 하나로 끝난다.
+export const FEATURED_POC_KEY = "aa";
+
 export const POC_CARDS: DemoCard[] = [
   {
     key: "hyperliquid",
@@ -12,6 +17,7 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo: "실시간 L2 오더북 + MetaMask를 통한 테스트넷 퍼프/스팟 트레이딩.",
     status: "live",
     href: "/market",
+    date: "2026-07-07", // Hyperliquid 오더북/거래가 실제로 붙은 날 (Market 분리는 06-30)
     howTo:
       "Connect MetaMask → switch to the Hyperliquid testnet → claim mock USDC at the HL testnet faucet → place a small limit order.",
     howToKo:
@@ -33,6 +39,7 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo: "서처로 Sepolia 번들을 제출하고, 메인넷 릴레이 포함 여부를 실시간으로 확인.",
     status: "live",
     href: "/xyz",
+    date: "2026-07-01", // PBS 서처/릴레이 대시보드가 올라간 날
     howTo: "Submit a bundle via the searcher form (Sepolia) → watch the relay dashboard for inclusion.",
     howToKo: "서처 폼으로 번들 제출(Sepolia) → 릴레이 대시보드에서 포함 여부 확인.",
     purpose:
@@ -52,6 +59,7 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo: "에이전트가 데이터를 사고 Stripe Checkout으로 정산하는 교육용 법정화폐 예시.",
     status: "live",
     href: "/poc/ap2",
+    date: "2026-08-04", // Stripe Checkout 연동일 ("곧 공개" 스텁은 06-29부터 있었음)
     howTo: "Click \"buy\" → Stripe test Checkout → pay with Stripe's test card 4242 4242 4242 4242.",
     howToKo: "\"구매\" 클릭 → Stripe 테스트 Checkout → Stripe 테스트 카드(4242 4242 4242 4242)로 결제.",
     purpose:
@@ -92,6 +100,7 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo: "계정의 위임 지정자를 직접 확인해 보고, 이 스펙의 활용 사례를 살펴봅니다.",
     status: "live",
     href: "/poc/7702",
+    date: "2026-08-05",
     howTo:
       "Paste any Sepolia address (or use your own wallet) → Inspect. Read-only: no gas, no signature, no wallet required. For the clearest result, inspect your address before and after granting a session key on the AA demo.",
     howToKo:
@@ -131,6 +140,7 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo: "ERC-7702/7715 위임 + 에이전트에게 필요한 AA 구성요소 4가지 (paymaster, 원자적 트랜잭션, KYA).",
     status: "live",
     href: "/poc/aa",
+    date: "2026-08-04", // 세션 키 + 4대 요소 데모 구축일 (08-05은 수정·보강)
     howTo:
       "Connect MetaMask on Sepolia → grant a scoped session key → watch it spend within the granted limit, no re-sign popup. Needs test USDC (faucet.circle.com) and a little Sepolia ETH for the session account's gas — the page lists both up front.",
     howToKo:
@@ -215,6 +225,50 @@ export const POC_CARDS: DemoCard[] = [
     ],
   },
   {
+    // 위 "aa" 카드가 남긴 빈자리를 메우는 카드 — 4대 요소는 전부 사람이 버튼을 눌러 시작하므로
+    // 능력이지 자율성이 아니다(jay, 2026-08-05). 설계: docs/tasks/current-plan.md.
+    key: "agent",
+    title: "Autonomous payment agent",
+    titleKo: "자율 결제 에이전트",
+    description:
+      "An agent that wakes on a timer, decides on its own whether to spend, and cannot exceed the mandate it was given.",
+    descriptionKo:
+      "타이머에 깨어나 스스로 지출 여부를 판단하고, 받은 위임을 넘길 수 없는 에이전트.",
+    // status는 "soon"인데 href가 있다 — 페이지는 열리지만 각본만 도는 목업이라서.
+    // DemoCard가 이 조합을 "목업" 배지로 렌더한다 (app/DemoCard.tsx).
+    status: "soon",
+    href: "/poc/agent",
+    howTo:
+      "A mockup, not a running agent — no chain, no wallet. Step through the scripted ticks to see the shape: the skips, the two bounded payments, and what happens after the mandate expires.",
+    howToKo:
+      "동작하는 에이전트가 아니라 목업입니다 — 체인도 지갑도 없습니다. 각본을 한 틱씩 넘기며 모양을 보세요: 건너뛴 판단들, 한도 안의 지출 두 번, 그리고 위임이 만료된 뒤에 벌어지는 일.",
+    purpose:
+      "The other demos on this page prove capability: a session key can spend within a bound, a paymaster can cover gas, a batch can revert atomically. Every one of them is started by a human pressing a button, which makes them account abstraction for agents rather than an agent. This one closes that gap with the missing piece — a decision loop that runs with nobody in the room. The claim it exists to demonstrate is narrower and more useful than \"the agent is autonomous\": the safety of an unattended agent is arithmetic, not trust. Its worst case is fixed in advance by an amount cap and a deadline that contracts enforce, and it is observable afterwards in a log.",
+    purposeKo:
+      "이 페이지의 다른 데모들이 증명하는 건 능력입니다 — 세션 키는 한도 안에서 쓸 수 있고, paymaster는 가스를 대신 낼 수 있고, 배치는 원자적으로 되돌아갈 수 있다. 그런데 전부 사람이 버튼을 눌러야 시작합니다. 그건 에이전트가 아니라 에이전트를 위한 계정 추상화입니다. 이 데모는 빠진 조각 하나로 그 간극을 메웁니다 — 방에 아무도 없을 때 도는 결정 루프. 증명하려는 명제는 \"에이전트가 자율적이다\"보다 좁고 유용합니다: 무인 에이전트의 안전은 신뢰가 아니라 산수다. 최악의 경우가 금액 한도와 기한으로 미리 고정되어 있고 — 컨트랙트가 강제합니다 — 사후에 로그로 확인됩니다.",
+    howItWorks:
+      "A scheduler hits a server endpoint every few minutes with no browser open. Each tick reads a real signal (the Chainlink Sepolia ETH/USD feed), evaluates a threshold rule against the last action, and either spends test USDC through an ERC-7715 session key or records why it declined. Skips are logged as carefully as spends — a journal reading \"moved 0.4%, below the 2% threshold, no action\" is what makes a decision legible as a decision, whereas a page showing only successful payments would just be the capability demo again. The mandate is bounded in two independent directions, amount and expiry, and neither bound is enforced by the agent's own code: an amount enforcer keeps the running total, a TimestampEnforcer compares block time to the deadline. The last state is the interesting one — leave the scheduler running past the expiry and the same code keeps ticking while the chain keeps rejecting it. Nothing had to be revoked; the window simply closed.",
+    howItWorksKo:
+      "스케줄러가 브라우저 없이 몇 분마다 서버 엔드포인트를 호출합니다. 각 틱은 실제 신호(Chainlink Sepolia ETH/USD 피드)를 읽고, 마지막 행동 대비 임계 규칙을 평가한 뒤, ERC-7715 세션 키로 테스트 USDC를 지출하거나 지출하지 않은 이유를 기록합니다. 스킵도 지출만큼 꼼꼼히 남깁니다 — \"0.4% 움직임, 2% 임계 미달, 행동 없음\"이라고 적힌 저널이 판단을 판단으로 읽히게 만듭니다. 결제 성공만 보여주는 페이지였다면 결국 능력 데모의 반복이었을 겁니다. 위임은 금액과 만료라는 서로 독립된 두 방향으로 묶여 있고, 둘 다 에이전트 자신의 코드가 아니라 바깥에서 강제됩니다 — 금액 enforcer가 누적 합계를 들고 있고, TimestampEnforcer가 블록 시간을 기한과 비교합니다. 마지막 상태가 가장 흥미롭습니다: 만료 이후에도 스케줄러를 켜두면, 같은 코드가 계속 돌고 체인은 계속 거부합니다. 취소할 게 없었습니다. 창이 닫혔을 뿐입니다.",
+    diagrams: [
+      {
+        title: "One tick — observe, decide, act, record",
+        titleKo: "한 틱 — 관측·판단·행동·기록",
+        src: `flowchart TB
+    T["Scheduler — every N minutes<br/>no browser open"] --> O["Observe<br/>Chainlink ETH/USD + budget left"]
+    O --> D{"Rule: moved past<br/>the threshold?"}
+    D -->|"no"| SK["Record a skip<br/>observation + why not"]
+    D -->|"yes"| R["Redeem the delegation<br/>session key signs"]
+    R --> EN{"Enforcers:<br/>within amount? before deadline?"}
+    EN -->|"ok"| P["Pay — bounded, on-chain"]
+    EN -->|"expired or over cap"| RJ["Rejected<br/>agent learns from its own failure"]
+    P --> J["Journal row"]
+    SK --> J
+    RJ --> J`,
+      },
+    ],
+  },
+  {
     key: "solana",
     title: "Solana",
     titleKo: "솔라나",
@@ -258,6 +312,7 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo: "분산 밸리데이터를 프로토콜이 직접 다루자는 제안 정독 노트 — 키를 쪼개지 않는 m-of-n, 그리고 그것이 만들어내는 것들.",
     status: "live",
     href: "/poc/dvt",
+    date: "2026-08-05",
     howTo: "Read-only design analysis — no wallet needed. Start with the two diagrams contrasting DVT today against the proposal.",
     howToKo: "읽기 전용 설계 분석 — 지갑 불필요. 오늘의 DVT와 제안을 대비시킨 다이어그램 두 장부터 보세요.",
     purpose:
@@ -319,6 +374,7 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo: "토스페이먼츠를 통한 KRW 정산 예시 — AP2/Stripe의 국내 버전.",
     status: "live",
     href: "/poc/toss",
+    date: "2026-08-04",
     howTo: "Click \"buy\" → Toss test Checkout.",
     howToKo: "\"구매\" 클릭 → 토스 테스트 결제.",
     purpose:

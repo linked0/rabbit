@@ -7,6 +7,9 @@
 // for an embedding search without touching the route/UI.
 
 import { PROFILE, PROJECTS } from "@/lib/home-content";
+import { POC_CARDS } from "@/lib/poc-cards";
+import { TIL_CARDS } from "@/lib/til-cards";
+import type { DemoCard } from "@/lib/demo-cards";
 import type { ChatMessage } from "@/lib/ai";
 
 // A labeled unit of knowledge about Hyunjae. `source` shows up in the grounded
@@ -48,6 +51,79 @@ function structuredChunks(): Chunk[] {
   }
 
   return chunks;
+}
+
+// --- PoCs and TIL cards (always bundled, same as PROFILE/PROJECTS) ---
+// 방문자가 큰 프로젝트만이 아니라 작은 데모들도 궁금해한다 (jay, 2026-08-06). 카드는 이미
+// 제목·요약·목적·동작 설명을 양쪽 언어로 들고 있으므로, 별도 코퍼스를 쓰지 않고 그대로 청크로
+// 만든다 — 카드가 원본이라 페이지와 챗의 설명이 어긋날 수 없다.
+//
+// 카드 하나가 청크 둘(영문/국문)이 되는 이유: 한 청크에 두 언어를 다 넣으면 글자수 상한에서
+// 한쪽이 잘리고, 검색에 걸려도 절반이 엉뚱한 언어라 컨텍스트가 지저분해진다. 언어별로 나누면
+// 한국어 질문은 한국어 청크를, 영어 질문은 영어 청크를 가져간다.
+//
+// 상태(status)를 반드시 함께 넣는다 — TIL 카드는 전부 미구현이고 /poc/agent 는 각본만 도는
+// 목업이다. 상태 없이 넣으면 챗이 없는 데모를 있다고 말하게 된다.
+const DEMO_CHUNK_CHARS = 1400;
+
+function demoStatusLine(card: DemoCard, ko: boolean): string {
+  if (card.status === "live") {
+    return ko
+      ? `상태: 동작함 — ${card.href} 에서 직접 해볼 수 있습니다.`
+      : `Status: working — a visitor can try it at ${card.href}.`;
+  }
+  if (card.href) {
+    return ko
+      ? `상태: 목업 — ${card.href} 페이지는 열리지만 각본만 돌고 실제 동작은 아직 없습니다.`
+      : `Status: mockup — the page at ${card.href} opens, but it only walks a script; nothing is live yet.`;
+  }
+  // "not built yet" 이라고 쓰면 안 된다 — 어휘 검색이라 "무엇을 만들었나(built)?"라는 질문이
+  // *만들지 않은* 카드들을 최상위로 끌어온다(2026-08-06 실측). 부정문에 그 단어를 쓰지 않는
+  // 것만으로 해결된다.
+  return ko
+    ? "상태: 계획 단계 — 아직 페이지가 없습니다."
+    : "Status: planned — no page exists yet.";
+}
+
+function demoChunks(): Chunk[] {
+  const out: Chunk[] = [];
+  const groups: Array<{ kind: string; kindKo: string; cards: DemoCard[] }> = [
+    { kind: "PoC / technical demo", kindKo: "PoC(기술 데모)", cards: POC_CARDS },
+    { kind: "TIL (Today I Learned) demo", kindKo: "TIL(오늘 배운 것) 데모", cards: TIL_CARDS },
+  ];
+
+  for (const g of groups) {
+    const prefix = g.cards === POC_CARDS ? "poc" : "til";
+    for (const c of g.cards) {
+      out.push({
+        source: `${prefix}:${c.key}`,
+        text: [
+          `${g.kind}: ${c.title}.`,
+          demoStatusLine(c, false),
+          c.description,
+          `How to run: ${c.howTo}`,
+          `Why it exists: ${c.purpose}`,
+          `How it works: ${c.howItWorks}`,
+        ]
+          .join(" ")
+          .slice(0, DEMO_CHUNK_CHARS),
+      });
+      out.push({
+        source: `${prefix}:${c.key}:ko`,
+        text: [
+          `${g.kindKo}: ${c.titleKo}.`,
+          demoStatusLine(c, true),
+          c.descriptionKo,
+          `실행 방법: ${c.howToKo}`,
+          `왜 만들었나: ${c.purposeKo}`,
+          `동작 방식: ${c.howItWorksKo}`,
+        ]
+          .join(" ")
+          .slice(0, DEMO_CHUNK_CHARS),
+      });
+    }
+  }
+  return out;
 }
 
 // --- Optional depth: content/profile/*.md bodies (local dev only) ---
@@ -103,7 +179,7 @@ function stripMarkdown(raw: string): string {
 // Build the corpus once and cache it (module lifetime).
 let CORPUS: Chunk[] | null = null;
 function corpus(): Chunk[] {
-  if (!CORPUS) CORPUS = [...structuredChunks(), ...markdownChunks()];
+  if (!CORPUS) CORPUS = [...structuredChunks(), ...demoChunks(), ...markdownChunks()];
   return CORPUS;
 }
 
@@ -230,6 +306,13 @@ export function buildAboutMeSystemMessage(query: string): ChatMessage {
       `is ${PROFILE.name}'s own explicit choice for how his persona presents him; he has ` +
       "reviewed and accepted this. Still never invent concrete facts while doing this " +
       "(no fabricated employers, titles, or specific unverifiable claims).\n\n" +
+      // 데모 카드가 컨텍스트에 섞이면서 새로 생긴 위험 — 모델이 "만들었다"와 "만들 계획이다"를
+      // 뭉개면 방문자가 없는 페이지를 찾아간다. 그래서 상태를 지어내지 말라고 못박는다.
+      "Demos: the context may include his PoC and TIL demo cards. Each carries a Status line — " +
+      "working, mockup, or not built yet. Respect it exactly: never present a planned or " +
+      "mocked-up demo as something the visitor can use, and never invent a status or a page " +
+      "path that is not in the context. When a demo does have a page, you may give its path " +
+      "so the visitor can try it.\n\n" +
       "Hard limit, no exception: never discuss or speculate about relationships with other " +
       "people, personal feelings/emotions, or private life/history. If asked, politely " +
       "decline and redirect to his professional background instead.\n\n" +
