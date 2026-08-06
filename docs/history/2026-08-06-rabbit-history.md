@@ -288,3 +288,29 @@ TIL을 전부 알게 하자.
 실패 사례로 오히려 쓸모가 있다.
 
 **Result:** 7715/7710 유지 + 세션 계정 1회 선충전을 권고안으로 문서화(D1). 확정은 jay 확인 후.
+
+### 홈 프로필 연락 줄 — 맨 글자 링크에서 칩으로
+
+**Cause:** jay — "LINKS / GitHub LinkedIn linked0@me.com" 부분이 어색하다, 스타일리시하게.
+
+**Reasoning:** 세 가지를 바꿨고 그중 둘은 스타일이 아니라 내용이다.
+① **"LINKS" 라벨 삭제** — 링크 셋 옆에서 그 단어는 아무것도 설명하지 않는다. 뺄 액세서리.
+② **글자를 플랫폼 이름에서 핸들로** — 마크가 이미 "어느 플랫폼"을 말하므로, 글자는 "거기서 그가
+누구인가"를 말하는 게 정보량이 크다. "GitHub / LinkedIn"은 모든 포트폴리오가 똑같이 적는 말이고
+`linked0` / `feelsogood`는 그의 것이다. 방문자가 복사할 수 있는 값이기도 하다.
+③ **hover 색 = 목적지 자신의 색** (LinkedIn 파랑, 메일은 사이트가 이미 쓰는 인디고). 장식이 아니라
+미리보기 — 색이 먼저 어디로 가는지 말한다. GitHub만 색을 주지 않았다: 마크 자체가 단색인 게 그
+정체성이고, 셋 다 색을 주면 연락 줄이 신호등이 된다.
+들어올리는 hover(translateY)는 일부러 쓰지 않았다 — 그 제스처는 피처드 카드의 것이고, 둘 다
+쓰면 둘 다 흐려진다. 새 시각 언어를 만들지 않고 사이트가 이미 쓰는 재료(1px 테두리, --radius,
+--card, --ring)만 썼다.
+
+**Change:** `app/home/ProfileLinks.tsx` 신설(인라인 SVG 마크 3종, `aria-label`에 플랫폼명+핸들 —
+화면에는 핸들만 보이므로 스크린리더에는 둘 다 읽어준다). `lib/home-content.ts`의 links에 `handle`
+필드 추가. `app/globals.css`에 `.plinks`/`.plink` + 목적지별 `--accent-link`(다크 테마 값 별도 —
+#0a66c2는 어두운 배경에서 안 읽힌다), `:focus-visible` 링. `app/home/page.tsx`에서 기존 라벨+링크
+블록 제거.
+
+**Result:** dev 서버 렌더 확인 — 칩 3개, 핸들 표기, "LINKS" 사라짐. 중간에 `next start`가
+`_document` MODULE_NOT_FOUND로 500을 냈는데 `.next` 캐시 문제였고(08-05·08-06에 이어 세 번째),
+dev로 다시 띄우니 정상.

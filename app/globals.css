@@ -704,6 +704,66 @@ a.ghost:hover {
   display: block;
 }
 
+/* ── 홈 프로필의 연락 줄 (2026-08-06) ──
+   맨 글자 링크 세 개("GitHub LinkedIn linked0@me.com")를 칩으로 바꾼다. 규칙은 두 가지:
+   ① 이 사이트가 이미 쓰는 재료만 쓴다 — 1px 테두리, --radius, --card. 새 시각 언어를 만들지 않는다.
+   ② hover 색은 목적지 자신의 색이다. 장식이 아니라 미리보기 — 어디로 가는지를 색이 먼저 말한다.
+   들어올리는 제스처(translateY)는 쓰지 않는다. 그건 피처드 카드의 것이고, 둘 다 하면 둘 다 흐려진다. */
+.plinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.plink {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: color 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+}
+.plink-mark {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  /* 마크는 평소 한 단계 더 물러나 있다가 hover에서 글자와 함께 목적지 색으로 올라온다. */
+  opacity: 0.75;
+  transition: opacity 0.14s ease;
+}
+.plink:hover {
+  color: var(--accent-link, var(--foreground));
+  border-color: color-mix(in srgb, var(--accent-link, var(--foreground)) 38%, var(--border));
+  background: color-mix(in srgb, var(--accent-link, var(--foreground)) 6%, var(--card));
+}
+.plink:hover .plink-mark {
+  opacity: 1;
+}
+.plink:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+/* 목적지별 색. GitHub은 원래 마크 자체가 단색이라 전경색이 그 정체성이고, 나머지 둘만
+   자기 색을 갖는다 — 셋 다 색을 주면 연락 줄이 신호등이 된다. */
+.plink-linkedin {
+  --accent-link: #0a66c2;
+}
+:root[data-theme="dark"] .plink-linkedin {
+  --accent-link: #4aa3e8; /* 어두운 배경에서 #0a66c2 는 읽히지 않는다 */
+}
+.plink-mail {
+  --accent-link: #3f36e2; /* 이 사이트가 이미 쓰는 인디고 (피처드 카드) */
+}
+:root[data-theme="dark"] .plink-mail {
+  --accent-link: #8b84ff;
+}
+
 /* ── Featured card (홈 피처드: Verex) ──
    프로젝트 썸네일과 달리 브랜드 마크를 배지로 세운다. 색은 Verex 브랜드 고정값
    (#3F36E2 인디고 / #C026D3 푸시아) — 테마 토큰이 아니라 로고에 종속. */

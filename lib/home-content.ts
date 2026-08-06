@@ -14,9 +14,12 @@ export const PROFILE = {
     "스마트 컨트랙트 개발, 블록체인 인프라, 스마트 컨트랙트 보안을 전문으로 하며, 기술적 깊이에 강점을 두고 있습니다. L1 블록체인 엔진을 직접 구현했고, DAO 거버넌스, NFT 마켓플레이스, 예측 시장까지 다양한 온체인 서비스를 처음부터 끝까지 만들어봤습니다.",
   photo: "/profile/hyunjae-lee.jpeg",
   email: "linked0@me.com",
+  // handle — 홈 프로필의 연락 줄에 플랫폼 이름 대신 표시되는 값 (2026-08-06).
+  // 마크가 이미 "어느 플랫폼인지"를 말하므로, 글자는 "거기서 그가 누구인지"를 말하는 게 낫다.
+  // "GitHub / LinkedIn"은 모든 포트폴리오가 똑같이 적는 말이고, 핸들은 그 사람의 것이다.
   links: [
-    { label: "GitHub", url: "https://github.com/linked0" },
-    { label: "LinkedIn", url: "https://www.linkedin.com/in/feelsogood/" },
+    { label: "GitHub", handle: "linked0", url: "https://github.com/linked0" },
+    { label: "LinkedIn", handle: "feelsogood", url: "https://www.linkedin.com/in/feelsogood/" },
   ],
 };
 
