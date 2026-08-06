@@ -14,8 +14,10 @@ function Ball() {
   const texture = useLoader(TextureLoader, "/profile/verex-ball-texture.png");
   const mesh = useRef<Mesh>(null);
 
+  // 회전 속도(rad/s). 0.75 → 0.975 로 30% 상향 (jay, 2026-08-06).
+  // delta 를 곱하므로 프레임레이트와 무관하게 같은 속도로 돈다.
   useFrame((_, delta) => {
-    if (mesh.current) mesh.current.rotation.y += delta * 0.75;
+    if (mesh.current) mesh.current.rotation.y += delta * 0.975;
   });
 
   return (

@@ -1,252 +1,273 @@
-# Rabbit — Current Plan: AP2 + Toss Payments + Account Abstraction (AA)
+# Rabbit — Current Plan: Agentic AA — the autonomy loop
 
-- **Originally:** [jun-30-rabbit.md](jun-30-rabbit.md) design doc, covering the full Jun-30 task
-  list. **Narrowed (2026-08-03, jay):** this file holds only **AP2 + AA** — everything else
-  (Portfolio/Market, Auth+LLM gating, Knowledge page, KB-RAG, staging domain, the full backlog,
-  all reference/knowledge pages, **and the PoCs hub reorg**) has been moved to
-  **[../features/README.md](../features/README.md)** and its linked docs — nothing was deleted,
-  just relocated. The PoCs hub specifically is supporting infrastructure AP2/AA plug into, not
-  itself an AP2/AA task, so it now lives at
-  **[../features/pocs-hub.md](../features/pocs-hub.md)**.
-- **IA:** [../features/README.md](../features/README.md)
-- **Status:** active — AP2 (§2), Toss Payments (§7), and AA (§3 + §6) are the only tracked tasks in
-  this file.
-- **Numbering note:** sections are numbered sequentially in this file, unlike the original doc
-  which numbered by when a section was added. If you see a section reference elsewhere in the
-  repo using an old number (e.g. "§6" meaning AP2, "§24" meaning the PoCs hub), it predates the
-  2026-08-03 renumbering.
+- **Scope:** one task — make an agent that **decides and pays without a human present** — plus one
+  optional side-quest, a Unity visualization of that agent ([§8](#s8)), explicitly off the critical
+  path. Everything else lives in **[../features/README.md](../features/README.md)** and its linked
+  docs.
+- **Previous plan (AP2 · Toss · AA building blocks) — all built and shipped**, archived verbatim at
+  [archive/2026-08-06-current-plan-ap2-toss-aa.md](archive/2026-08-06-current-plan-ap2-toss-aa.md).
+  Nothing was deleted; the finished rows moved to the features table.
+- **Design source:** [../features/agentic-aa.md](../features/agentic-aa.md) (4 pillars, ERC-8021,
+  WalletChan) · scenario prose in [`lib/agent-scenarios.ts`](../../lib/agent-scenarios.ts).
+- **Status:** ⬜ Not started — design below, no code yet.
 
 ## Table of contents <a id="toc"></a>
 - [§0 — Summary](#s0)
-- [§1 — Prerequisites — what jay needs to provide](#s1)
-- [§2 — AP2 — Stripe settlement example (educational)](#s2)
-- [§3 — ETC — ERC-7702 / 7715 demo (educational, AA foundation)](#s3)
-- [§4 — Decisions & remaining open questions](#s4)
-- [§5 — Sequence](#s5)
-- [§6 — Agentic AA — 4 pillars demo](#s6)
-- [§7 — Toss Payments — KRW settlement example (educational)](#s7)
+- [§1 — Why this, and not more pillars](#s1)
+- [§2 — The demo: scheduled operator, actually running](#s2)
+- [§3 — Build plan (M1–M5)](#s3)
+- [§4 — Open decisions](#s4)
+- [§5 — Prerequisites — what jay needs to provide](#s5)
+- [§6 — What this demo does *not* prove](#s6)
+- [§7 — What already exists (the rail this builds on)](#s7)
+- [§8 — Side-quest: Unity visualization via the `rabbit-hole` submodule](#s8)
 
 ## 0. Summary <a id="s0"></a>
 <sub>[↑ TOC](#toc)</sub>
-Three build tasks, jay's own framing: **AP2 = Agentic Payment Protocol** (§2, a Stripe settlement
-example, USD rail), **Toss Payments** (§7, the KRW-native counterpart to §2 — added 2026-08-04
-after hitting Stripe's country-signup limitation), and **AA = Account Abstraction** (§3's
-ERC-7702/7715 foundation + §6's Agentic AA pillars). All three wire into the **PoCs hub** (`/etc`,
-in progress — [../features/pocs-hub.md](../features/pocs-hub.md)) as cards once built, but the hub
-itself isn't tracked here.
 
-**History:** this doc stays short on purpose — for the full blow-by-blow of what was actually
-built/tested/decided on a given day, follow the `docs/history/YYYY-MM-DD-rabbit-history.md` link
-next to whichever task you're resuming (e.g. [2026-08-03](../history/2026-08-03-rabbit-history.md),
-[2026-08-04](../history/2026-08-04-rabbit-history.md) for everything below).
+Build **`/poc/agent`** — a server-side agent that wakes on a timer, reads a real signal, decides on
+its own whether to act, and when it acts, **pays from a mandate it cannot exceed**. The page is not
+a button; it is a **live journal** of the agent's decisions, including the ticks where it decided
+*not* to spend, and the ticks after the mandate expires where it fails harmlessly.
 
-**Resume point (2026-08-04 EOD):** all four tasks are built on branch
-**`claude/ap2-toss-aa-demos`** — ⚠️ **uncommitted** (working tree only, does not travel across
-machines until committed/pushed). Next steps, in order: ① jay's browser click-throughs — AA
-wallet flows on `/etc/aa` (MetaMask ERC-7715 grant + thirdweb Connect), Stripe test card on
-`/ap2`, Toss test card on `/etc/toss` (client key was fixed late on 08-04 — O→0 typo — restart
-the dev server first); ② jay reviews the diff → commit/PR; ③ deploy via `scripts/deploy.sh`
-after merge. Full build details: [2026-08-04 history](../history/2026-08-04-rabbit-history.md).
+This makes live the `scheduled-operator` scenario already written in
+[`lib/agent-scenarios.ts`](../../lib/agent-scenarios.ts) — today it is prose next to a diagram; the
+task is to make it a thing that is actually running while nobody is watching.
 
-### Task status
+**History:** this doc stays short on purpose — for the blow-by-blow of what got built on a given
+day, follow `docs/history/YYYY-MM-DD-rabbit-history.md` (latest:
+[2026-08-06](../history/2026-08-06-rabbit-history.md); the building blocks this sits on were built
+[08-04](../history/2026-08-04-rabbit-history.md) and refined
+[08-05](../history/2026-08-05-rabbit-history.md)).
 
-| § | Task | Status |
-| --- | --- | --- |
-| [§2](#s2) | AP2 — Stripe settlement example | 🟢 Built — verified live against Stripe's test API |
-| [§7](#s7) | Toss Payments — KRW settlement example | 🟢 Built — verified live against Toss's test API |
-| [§3](#s3) | ETC — ERC-7702 / 7715 demo (AA foundation) | 🟡 Built — needs jay's own wallet click-through |
-| [§6](#s6) | Agentic AA — 4 pillars demo | 🟡 Built — needs jay's own wallet click-through |
+**Resume point (2026-08-06):** plan + a discussion mockup on branch **`claude/agentic-aa-plan`**
+(committed and pushed). What exists: the **`agent` PoC card** in
+[`lib/poc-cards.ts`](../../lib/poc-cards.ts) (status `soon` + `href`, so it renders with a "Mock"
+badge and still opens), and **`/poc/agent`** — a hand-written 7-tick script walked by a "next tick"
+button, no chain/wallet/scheduler ([app/poc/agent/](../../app/poc/agent/)). Nothing about the real
+agent is built.
 
-Legend: ⬜ To do.
+Next step: settle [§4's open decisions](#s4) (**D2 key custody blocks M1**; D1 gas, D3 scheduler
+host, D4 journal storage), then M1. The mock's own four questions — journal columns, choice of
+signal, how much the visitor drives, how to live with expiry — are listed at the bottom of
+`/poc/agent` itself and are worth answering before M3 designs the page for real.
 
-## 1. Prerequisites — what jay needs to provide <a id="s1"></a>
+## 1. Why this, and not more pillars <a id="s1"></a>
 <sub>[↑ TOC](#toc)</sub>
-- **All keys below are filled in `.env.local` as of 2026-08-04** — this section is kept for
-  reference (where each came from) rather than as an open ask.
-- **§2 AP2 Stripe** — a Stripe **test-mode** publishable + secret key pair.
-  - Get them at **[dashboard.stripe.com/test/apikeys](https://dashboard.stripe.com/test/apikeys)**
-    (sign in / create a free Stripe account → dashboard defaults to **Test mode**, toggle top-right
-    if it doesn't → "Developers" → "API keys"). Copy the **Publishable key** (`pk_test_...`) and
-    **Secret key** (`sk_test_...`). No business verification needed for test mode.
-- **§3 AA foundation** — nothing expected (reuses the existing `SEPOLIA_RPC`, client-side signing).
-- **§6 Agentic AA (thirdweb half)** — a thirdweb **client ID**, and possibly a secret key for
-  server-side Engine calls.
-  - Get them at **[thirdweb.com/dashboard](https://thirdweb.com/dashboard)** (sign in → create a
-    project if none exists → project's "Settings" tab → "API Keys"). Copy the **Client ID**
-    (public, safe client-side) and, if server-side Engine calls end up needed, the **Secret key**
-    (server-only, never expose client-side).
-- **§7 Toss Payments** — a Toss **test-mode** client + secret key pair.
-  - Get them at **[developers.tosspayments.com](https://developers.tosspayments.com)** (개발자센터
-    → sign in → "API 키" — a sandbox project's test client/secret keys are issued immediately, no
-    business registration needed). Toss also publishes generic public test keys directly in its
-    integration docs for quick sandbox testing without signing up at all — see
-    [docs.tosspayments.com](https://docs.tosspayments.com)'s "연동 키" guide. Copy the **Client key**
-    (public) and **Secret key** (server-only).
 
-## 2. AP2 — Stripe settlement example (educational) <a id="s2"></a>
+jay's own point, 2026-08-05, recorded in
+[`AgenticPillars.tsx`](../../app/poc/aa/AgenticPillars.tsx)'s header comment:
+
+> everything below is started by a human pressing a button — the capability is right, the autonomy
+> isn't. Until there's a decision loop, "AA for agents" is the accurate name.
+
+So the four building blocks (session key · paymaster · atomic batch · KYA) are **done as
+capability** and are not the gap. The gap is the loop: *observe → decide → act → record*, running
+with nobody in the room. Adding a fifth pillar card would deepen the same demo we already have.
+Adding the loop changes what the page proves.
+
+The claim to demonstrate, precisely: **the safety of an unattended agent is arithmetic, not trust** —
+the mandate's amount cap and expiry are enforced by contracts the agent has no control over, so a
+buggy or compromised agent's worst case is bounded in advance and observable after the fact.
+
+## 2. The demo: scheduled operator, actually running <a id="s2"></a>
 <sub>[↑ TOC](#toc)</sub>
-- **Status: 🟢 Built (2026-08-04)** — code at [app/ap2/page.tsx](../../app/ap2/page.tsx) +
-  [app/api/ap2/checkout/route.ts](../../app/api/ap2/checkout/route.ts). Live PoCs-hub card.
 
-- **Goal:** a simple, educational **fiat** settlement example via **Stripe** (counterpart to the
-  on-chain x402 / aiaas track in `../features/ap2-test.md`).
-- **Design (built as):** mock "agent buys data, settles via Stripe": provider quotes a fixed price
-  → plain `<form>` POSTs to `/api/ap2/checkout` → server creates a **Stripe Checkout Session**
-  (Checkout, not raw PaymentIntent — simpler, hosted UI) → redirect to Stripe's hosted page →
-  success returns to `/ap2?session_id=…`, where the server verifies `payment_status === "paid"`
-  via the Stripe API before releasing the mock data (never trusts the redirect alone).
-  **Test-mode keys only**, no real charges.
-- **Verified:** session creation + Stripe redirect + server-side payment-status verification all
-  confirmed live against Stripe's real test API (`curl`-level, no UI). **Not yet done:** an actual
-  card entry click-through on Stripe's hosted Checkout page (needs a browser).
+**Route:** `/poc/agent` (new PoCs-hub card). Sepolia, test USDC, no real money.
 
-## 3. ETC — ERC-7702 / 7715 demo (educational) <a id="s3"></a>
+### The loop — one tick
+Runs every N minutes on a scheduler, with no browser open:
+
+| Step | What happens | Made visible as |
+|---|---|---|
+| **Observe** | Read a real on-chain signal — Chainlink Sepolia **ETH/USD** feed (`0x694AA1769357215DE4FAC081bf1f309aDC325306`), plus block time and the mandate's remaining budget | the observed value in the journal row |
+| **Decide** | Deterministic policy: *act only if the price moved > X% since the last action **and** the cooldown has passed*; otherwise skip | rule evaluated + verdict, **skips logged too** |
+| **Act** | Redeem the delegation — transfer ≤ cap of test USDC to the provider address, signed by the session key alone | tx hash → Etherscan |
+| **Record** | Append a journal row: time, observation, verdict, tx or skip reason, cumulative spend, budget left, expiry countdown | the journal table on the page |
+
+**Skips are the point.** A demo that only shows successful payments shows capability again. A
+journal where most rows read *"observed 2,412.30, moved 0.4% < 2% threshold → no action"* is what
+makes a decision visible as a decision.
+
+### The three states the page must show
+1. **Within mandate, no action needed** — the common case; agent watches and declines to spend.
+2. **Within mandate, action taken** — bounded payment lands, budget decrements on screen.
+3. **Past expiry** — the *money shot*: leave the agent running after the deadline. The same code
+   keeps ticking, the chain keeps rejecting, and the journal fills with harmless failures. Nothing
+   was revoked; the window simply closed. This is the `scheduled-operator` guarantee, shown rather
+   than asserted.
+
+### Page layout
+- **Mandate panel** — connect owner wallet → grant (amount cap · expiry · recipient) → live
+  readout of budget remaining, expiry countdown, agent address, revoke button (kill switch).
+- **Journal** — auto-refreshing table, newest first, each row expandable to the raw observation and
+  tx. This is the main surface; it should read like a log, not a dashboard.
+- **Honest footer** — [§6](#s6)'s limitations, in the same voice as the scenario pages'
+  `limitation` fields.
+
+## 3. Build plan (M1–M5) <a id="s3"></a>
 <sub>[↑ TOC](#toc)</sub>
-- **Status: 🟡 Built (2026-08-04), needs jay's own wallet click-through** — code at
-  [app/etc/aa/SessionKeyDemo.tsx](../../app/etc/aa/SessionKeyDemo.tsx). Live PoCs-hub card
-  (`/etc/aa`), but ERC-7715's MetaMask popup can't be clicked through by an agent — see Verified
-  below.
 
-**Standards (jay confirmed):** **EIP-7702** (an EOA temporarily runs smart-account code = a
-*delegatable smart account*) + **ERC-7715** (`wallet_grantPermissions` — grant a scoped **session
-key**) / **ERC-7710** (delegation).
-- **Goal:** a test page for **delegatable smart accounts / session keys** — ties directly to the
-  aiaas spend-policy idea (session key = agent's bounded wallet).
-- **Design (built as):**
-  - Connect MetaMask → generate a throwaway **session account** client-side (never leaves the
-    browser) → request an **ERC-20 allowance permission** via ERC-7715 ("≤5 test Sepolia USDC,
-    valid 1h", the closest built-in permission type to jay's "spend ≤ X to address Y" framing) →
-    the session account then signs and sends a bounded transfer **on its own, no MetaMask popup**.
-  - Testnet (**Sepolia**); a public read-only RPC is used client-side (not jay's Alchemy key).
-- **Decided (jay):** stack = **MetaMask Delegation Toolkit** on **Sepolia**.
-  *(Alternative: ZeroDev / permissionless.js for 7702/4337 session keys.)* Scope = short explainer + one demo tx.
-- **Package rename found while building (2026-08-04):** `@metamask/delegation-toolkit` is
-  deprecated in favor of **`@metamask/smart-accounts-kit`** (same team/framework, same concepts) —
-  used the renamed package. Its permission API also evolved from the old `wallet_grantPermissions`
-  naming to **`requestExecutionPermissions()`** (`wallet_requestExecutionPermissions` under the
-  hood) — current docs at
-  [docs.metamask.io/smart-accounts-kit](https://docs.metamask.io/smart-accounts-kit/).
-- **Requires MetaMask v13.23.0+** (per MetaMask's own docs) — this is the **standard extension**,
-  not Flask-only as originally assumed when this section was written.
-- **Verified:** package installed, TypeScript compiles clean against the real SDK types, `pnpm
-  build` succeeds, page serves 200. **Not yet done:** the actual ERC-7715 permission grant — that
-  opens a real MetaMask popup, which needs jay's own browser/wallet to click through.
-- This is **AA pillar 1** — §6 extends it with pillars 2–4 (different stack, see §6's
-  "AA implementation stack" note).
+| M | Milestone | Deliverable | Est. |
+|---|---|---|---|
+| **M1** | **Agent identity + mandate** | Server-held session account (address exposed to the browser); grant flow scoped to amount + expiry + recipient; revoke | 1d |
+| **M2** | **The tick, callable by hand** | `POST /api/agent/tick` — observe → decide → act → record, idempotent, safe to call twice. Verified by `curl` before any scheduler exists | 1d |
+| **M3** | **Journal + persistence** | Journal store (see [D4](#s4)), read API, `/poc/agent` page with the three states | 1d |
+| **M4** | **Actually unattended** | Scheduler wired (see [D3](#s4)) — the loop runs with no browser and no terminal. **This is the milestone that earns the word "agentic"**; M1–M3 without it is still a button | 0.5d |
+| **M5** | **Expiry run** *(evidence, not code)* | Let a mandate lapse with the scheduler live; capture the journal showing post-expiry rejections; add it to the PoC card's tech notes | 0.5d |
 
-## 4. Decisions & remaining open questions <a id="s4"></a>
+**Optional follow-ons, not in scope until M5 lands:** ERC-8021 attribution suffix on the agent's
+txs (agent proves its own output on-chain, ~+0.5d) · an LLM-written rationale line per journal row
+(rabbit already has the LLM plumbing; the *decision* stays deterministic — see [D5](#s4)).
+
+## 4. Open decisions <a id="s4"></a>
 <sub>[↑ TOC](#toc)</sub>
-**Resolved (jay):**
-- ETC standards = **7702 + 7715/7710**; stack = **MetaMask Delegation Toolkit on Sepolia** (§3).
-- Agentic AA's pillars 2–4 (§6) use **thirdweb** instead of ZeroDev/Pimlico — see
-  [§6's stack note](#s6) (2026-08-03).
-- Added **Toss Payments (§7)** as the KRW-native settlement counterpart to §2 (2026-08-04) — jay
-  hit Stripe's country-signup limitation (no live account available for his country), which
-  surfaced Toss as the practical Korea-native alternative already scoped in
-  [../features/toss-payments.md](../features/toss-payments.md).
-- AP2 (§2) built with **Stripe Checkout** (not raw PaymentIntent) — simpler, Stripe-hosted UI, no
-  card-form UI to build ourselves. No explicit contrast-with-x402 UI added (2026-08-04).
-- Toss Payments (§7) built as a **standalone page** (`/etc/toss`), not an `/ap2` extension — kept
-  independent rather than a side-by-side USD/KRW comparison table (2026-08-04, default choice, not
-  explicitly re-confirmed with jay).
 
-**Still open:**
-- None blocking — §2/§7/§3/§6 are all built. Remaining open items are noted inline in each
-  section's Status line (mainly: jay's own wallet click-through for §3/§6).
+**D1 — gas: pre-fund the session account, or move to a 4337 account with a paymaster?**
+The 08-05 bug (`insufficient funds for transfer`) was structural, not incidental: under ERC-7710
+the **session account broadcasts its own transaction**, so it needs Sepolia ETH. thirdweb's
+sponsored gas would remove that chore but only for a **4337 smart account** — a different account
+type that does not have the amount/expiry *enforcer* story this demo is built on.
+→ **Recommendation: keep 7715/7710 and pre-fund the session account once.** The mandate semantics
+*are* the demo; sponsored gas is a convenience. Bonus: "agent ran out of gas" becomes an honest
+journal failure mode, which is truer to how unattended agents actually die.
 
-*(All other resolved decisions — Auth/LLM keys, Market defaults, Knowledge serving, MCP scope —
-moved to their respective docs in [../features/](../features/README.md).)*
+**D2 — where does the session key live?**
+Today `SessionKeyDemo` generates it in the browser and it never leaves. An unattended loop needs
+the key where the loop runs. → **Proposal: generate server-side, expose only the address to the
+browser for the grant, private key in server env.** Testnet-grade custody, labelled as such on the
+page — production would use a KMS or a TEE (cf. WalletChan in
+[agentic-aa.md §5](../features/agentic-aa.md)). ⚠️ Needs jay's explicit OK before M1.
 
-## 5. Sequence <a id="s5"></a>
+**D3 — scheduler host.** Options: Cloud Scheduler → the existing deploy target · GitHub Actions
+cron (note: `.github/workflows/` does not exist in this repo yet) · a hosted cron pinging
+`/api/agent/tick`. Cheapest thing that survives a day unattended wins. ⬜ Undecided.
+
+**D4 — journal storage.** Options: the existing Postgres (Prisma) · a JSON file on the server ·
+reconstruct from chain + logs. Chain-only is tempting for purity but cannot record **skips**, and
+skips are [§2](#s2)'s whole point → needs real storage. ⬜ Undecided, leaning Postgres.
+
+**D5 — deterministic rule or LLM decision?** → **Deterministic for the demo.** An LLM in the
+decision path makes the safety claim harder to state, not easier; the interesting property is that
+the *bound* holds regardless of how the agent decides. LLM rationale text as a later cosmetic
+layer, if at all.
+
+## 5. Prerequisites — what jay needs to provide <a id="s5"></a>
 <sub>[↑ TOC](#toc)</sub>
-1. **Implement §2 AP2 Stripe** — Checkout-based, wired in as a PoCs-hub card. ✅ Built 2026-08-04.
-2. **Implement §7 Toss Payments** — KRW counterpart to §2, standalone page, wired in as a
-   PoCs-hub card. ✅ Built 2026-08-04.
-3. **Implement AA (§3 foundation + §6 pillars)** — MetaMask Delegation Toolkit (now
-   `@metamask/smart-accounts-kit`) for the 7702/7715 half, thirdweb for the 4337-pillars half —
-   wired in as a PoCs-hub card. ✅ Built 2026-08-04, needs jay's own wallet click-through.
+- **Decision on [D2](#s4)** (server-held session key) — blocks M1.
+- **Test USDC** in the owner wallet — [faucet.circle.com](https://faucet.circle.com), Circle's
+  official Sepolia USDC (`0x1c7D…7238`, 6 decimals).
+- **A little Sepolia ETH** for the session account, if [D1](#s4) goes as recommended.
+- **Scheduler access** for [D3](#s4), once chosen.
+- Everything else (`SEPOLIA_RPC`, thirdweb client ID, Stripe/Toss test keys) is already in
+  `.env.local` — see the [archived plan §1](archive/2026-08-06-current-plan-ap2-toss-aa.md) for
+  where each came from.
 
-All three depend on the **PoCs hub** (`/etc`), which was built and deployed to production
-2026-08-03 — see [../features/pocs-hub.md](../features/pocs-hub.md) for that design and
-[2026-08-03 history](../history/2026-08-03-rabbit-history.md) for what shipped (`/etc` + `/til`
-pages, shared `DemoCard` component, nav/middleware/env changes). §2/§3/§6/§7's own build details
-are in [2026-08-04 history](../history/2026-08-04-rabbit-history.md).
-
-## 6. Agentic AA — 4 pillars demo (added 2026-07-17) <a id="s6"></a>
+## 6. What this demo does *not* prove <a id="s6"></a>
 <sub>[↑ TOC](#toc)</sub>
-- **Status: 🟡 Built (2026-08-04), needs jay's own wallet click-through** — pillars ②③ live at
-  code [app/etc/aa/AgenticPillars.tsx](../../app/etc/aa/AgenticPillars.tsx) (① is §3's
-  SessionKeyDemo on the same page). **Pillar ④ (KYA) stayed an explainer card, not a live
-  demo** — per this section's own note below, ERC-8004 Sepolia registry availability was never
-  verified, so building a real demo against it would've been guessing at an unconfirmed contract.
-  `pnpm build` succeeds, page serves 200; the actual sponsored-tx / batch-tx clicks need jay's own
-  browser + thirdweb ConnectButton (can't be done by an agent).
+Written up front so it does not get quietly dropped later — and it belongs on the page itself.
+- **Not autonomous goal-setting.** A human still writes the policy and grants the mandate. The
+  agent chooses *when* and *whether*, not *what for*.
+- **Not production custody.** A server-held key is a demo compromise ([D2](#s4)).
+- **Not a market strategy.** The price rule is a plausible trigger, not advice — the demo is about
+  the payment mandate, not about the trade.
+- **Expiry is block time, not wall clock**, and nothing notifies the owner when the mandate lapses
+  — the agent has to notice its own rejection (per the scenario's own `limitation` field).
 
-- **Goal (jay):** demo the four things AA gives an autonomously-paying agent that an EOA
-  can't: **① scoped delegation** (session key: "≤10 USDC/day, service X only, 48h"),
-  **② gas independence** (paymaster — gas paid in earned USDC or sponsored),
-  **③ atomic intent** (swap→bridge→pay in one UserOperation; any failure reverts all),
-  **④ KYA** (ERC-8004 identity/reputation — counterparties check the agent before dealing).
-- **Detail:** pillar table + mapping to existing items + demo shape in
-  **[../features/agentic-aa.md](../features/agentic-aa.md)**.
-- **Shape:** extend the §3 ETC page — four cards, one per pillar, each with [Run] + tx link.
-  **Stack — updated 2026-08-03: thirdweb** (Connect + Account + Engine) instead of the
-  ZeroDev/permissionless.js + Pimlico stack originally noted here — see "AA implementation
-  stack" below for the reasoning. Pillars 2–3 are the genuinely new work; pillar 4 is
-  exploratory (ERC-8004 is young — verify testnet registry availability).
-- **Est.:** pillars 1–3 ≈ 2–3d on top of §3; pillar 4 +1d. Ties the aiaas spend-policy idea
-  ([ap2-test.md](../features/ap2-test.md)) and [dsrv-portal.md](../features/dsrv-portal.md)
-  AA PoC into one coherent demo.
-- **ERC-8021 add-on (added 2026-07-17):** on-chain attribution ("builder codes") — a
-  calldata **suffix** (`[schema ID 1B] + [builder code] + [ERC marker 16B]`) the EVM ignores
-  but the ledger keeps, proving which app/agent produced a tx (revenue share, agent
-  rewards). Companion to pillar 4: **8004 = who the agent is, 8021 = what it produced.**
-  Demo: tag pillars 1–3's txs with a rabbit builder code and parse the suffix back in the
-  execution log (~+0.5d). Detail: [agentic-aa.md §4](../features/agentic-aa.md).
-- **WalletChan case study (added 2026-07-17):** "MetaMask for AI agents" — EIP-1193/6963
-  provider injection + **remote signing** in the Bankr backend's TEE (keys never in the
-  browser); v3's batch tx = pillar 3, gasless relayer = pillar 2, tx **simulation before
-  signing** = a safety rail our demo page should copy. Control-flow inversion vs the aiaas
-  track: human drives the UI, agent executes. Detail: [agentic-aa.md §5](../features/agentic-aa.md).
-
-### AA implementation stack — thirdweb vs. what's already decided
-jay asked me to consider **ThirdWeb** (or recommend an alternative) for AA. There's already a
-survey of thirdweb in **[../features/thirdweb.md](../features/thirdweb.md)**, which flags this
-*exact* comparison under "Rabbit touchpoints." My recommendation, split by which AA standard is
-in play — **"AA" here is actually two different standards**, and that split matters:
-
-- **§3's scope (EIP-7702 delegation + ERC-7715/7710 session keys) — keep MetaMask Delegation
-  Toolkit.** Thirdweb's "Account Abstraction" product is **ERC-4337 smart accounts** — a
-  different mechanism (bundler + UserOperations) from 7702's "an EOA temporarily runs
-  smart-account code." Thirdweb doesn't currently implement 7702/7715 specifically, so it isn't a
-  drop-in substitute for what §3 is actually demoing. No change recommended here.
-- **§6 Agentic AA's scope (pillars 2–4: paymaster / gas independence, atomic UserOperation
-  intent, ERC-8004 KYA) — use thirdweb instead of ZeroDev/permissionless.js + Pimlico.** This half
-  of the demo is already ERC-4337-based, which is exactly what thirdweb's Connect + Account +
-  Engine stack targets. Thirdweb bundles wallet connect, the smart account, and the paymaster in
-  one SDK, so there's less bundler/infra plumbing to hand-roll for what's meant to be an
-  educational demo, not production infra. Trade-off (per `thirdweb.md`'s own framing): less
-  transparency/control and some vendor lock-in vs. the "raw" ZeroDev/Pimlico stack — an acceptable
-  trade for a demo.
-- **Net effect:** the AA card ends up genuinely demonstrating **two different AA standards on two
-  different SDKs** — 7702/7715 via MetaMask Delegation Toolkit (now `@metamask/smart-accounts-kit`,
-  see §3's build note), 4337 pillars via thirdweb. That's not a compromise, it's the actual point:
-  the demo shows both a delegation-based and a bundler-based approach to account abstraction side
-  by side.
-
-## 7. Toss Payments — KRW settlement example (educational) <a id="s7"></a>
+## 7. What already exists (the rail this builds on) <a id="s7"></a>
 <sub>[↑ TOC](#toc)</sub>
-- **Status: 🟢 Built (2026-08-04)** — code at [app/etc/toss/page.tsx](../../app/etc/toss/page.tsx)
-  + [lib/toss.ts](../../lib/toss.ts). Live PoCs-hub card, standalone page (not an `/ap2`
-  extension — see §4).
+All built and committed — no work owed here, listed so a cold session knows what it can reuse.
 
-- **Goal:** the **KRW-native counterpart** to §2 — same "agent buys data, settles via a payment
-  provider" mock, on Toss Payments instead of Stripe. **Added 2026-08-04** after jay found his
-  country isn't in Stripe's account-creation list; Toss is the practical Korea-native rail (no
-  such signup restriction) and mirrors the same pattern well enough to run side by side with §2.
-- **Detail:** full flow, integration pieces (client/secret key handling), surface placement, and
-  open questions are already scoped in
-  **[../features/toss-payments.md](../features/toss-payments.md)** — this entry just tracks it as
-  an active task alongside §2/§6 rather than backlog.
-- **Keys:** see [§1 Prerequisites](#s1) for where to get test-mode client/secret keys.
-- History: why this was added — [2026-08-04](../history/2026-08-04-rabbit-history.md).
+| Piece | Where | State |
+|---|---|---|
+| Session key grant + bounded spend (ERC-7715/7710, `@metamask/smart-accounts-kit`) | [app/poc/aa/SessionKeyDemo.tsx](../../app/poc/aa/SessionKeyDemo.tsx) | ✅ the mandate mechanics M1 reuses |
+| Sponsored tx + batch tx (ERC-4337, thirdweb) | [app/poc/aa/AgenticPillars.tsx](../../app/poc/aa/AgenticPillars.tsx) | ✅ relevant to [D1](#s4) only |
+| EIP-7702 account inspector | [app/poc/7702/](../../app/poc/7702/) | ✅ read-only, no wallet needed |
+| Four agent scenarios (prose + diagrams) | [lib/agent-scenarios.ts](../../lib/agent-scenarios.ts) | ✅ `scheduled-operator` is what §2 makes live |
+| AP2 — Stripe settlement (USD) | [app/poc/ap2/](../../app/poc/ap2/) | ✅ shipped |
+| Toss Payments — KRW settlement | [app/poc/toss/](../../app/poc/toss/) | ✅ shipped |
+| PoCs hub + card registry | [app/poc/page.tsx](../../app/poc/page.tsx), [lib/poc-cards.ts](../../lib/poc-cards.ts) | ✅ `agent` card added 08-06 (`soon`). M3 flips it to `live` with `href`/`date` and adds a `middleware.ts` PUBLIC_PATHS entry |
+
+## 8. Side-quest: Unity visualization via the `rabbit-hole` submodule <a id="s8"></a>
+<sub>[↑ TOC](#toc)</sub>
+- **Status: ⬜ Design only — jay's idea, 2026-08-06, filed on request. Nothing built, nothing
+  decided.** For fun, and explicitly **not on the critical path**: [§3](#s3)'s M1–M5 must ship
+  whether or not this ever exists.
+
+**The idea (jay):** a Unity program that *shows* the agent acting — the same tick loop as
+[§2](#s2), but watched instead of read. Kept in its own repo (**`rabbit-hole`**, already created
+and empty at `github.com/linked0/rabbit-hole`) and pulled into rabbit as a **git submodule**,
+since the Unity code is genuinely independent of the Next.js app.
+
+**One concern, stated once:** Unity WebGL brings a multi-MB payload and a build toolchain for what
+is a decorative layer over a journal table — a 2D canvas or three.js scene would be a tenth of the
+cost. Filed anyway and planned as asked, because there is a second reason that outweighs it: the
+**Unity track already exists in this project** ([../features/game.md](../features/game.md),
+[thirdweb.md](../features/thirdweb.md)'s Unity SDK note), it is a portfolio signal on its own, and
+this gives it a subject worth rendering instead of a placeholder game.
+
+### 8.1 What the visualization shows
+The value beyond "fun" is that it makes the **enforcer physical**. In the journal, a rejection is
+a red word in a table; in a scene, it is a gate that will not open. Mapping to [§2](#s2)'s three
+states, one-to-one:
+
+| Journal row | Scene |
+|---|---|
+| tick fires, nobody watching | the agent wakes on its own, looks at a price board |
+| skip — below threshold | it shrugs and goes back to sleep. **Most of the runtime is this** — the boredom is the honesty |
+| paid — within mandate | it walks to the vendor, pays, and a visible budget meter drains |
+| rejected — past expiry | it walks up as usual and the gate stays shut. It tries again next tick. Nobody closed anything — the clock did |
+
+### 8.2 The one architectural rule: Unity is a dumb renderer
+**Unity gets journal rows and animates them. It never touches the chain, a key, or an RPC.**
+The page fetches the journal (it already must, for [§2](#s2)) and pushes rows into the build via
+`unityInstance.SendMessage()`; Unity's only input is that JSON.
+
+Two reasons this is not negotiable: a second code path to the chain could **disagree with the
+journal**, and the whole demo's claim rests on the journal being the record of what happened; and
+keys must not enter a WebGL build under any circumstances. Consequence worth stating plainly —
+**the visualization can never show anything the journal doesn't say.** That is the intended
+constraint, not a limitation.
+
+### 8.3 Submodule strategy — the real decision (**U1**)
+The thing rabbit needs at build time is the **WebGL output**, not the Unity source. A submodule of
+source alone doesn't feed `next build`. Three ways, and this is **the same open question
+[game.md](../features/game.md) already asks** — whatever we pick should serve both, so the repo
+ends up with one Unity story rather than two:
+
+| | How | Cost | Verdict |
+|---|---|---|---|
+| **A. Source + CI build** | submodule the Unity project; a Unity GitHub Action builds WebGL during rabbit's CI | needs a Unity license in CI, a heavy runner, and **`.github/workflows/` does not exist in rabbit yet** | over-built for a side-quest |
+| **B. Source + committed build** ⭐ | `rabbit-hole` holds the Unity project *and* its `Build/` WebGL output; rabbit submodules it and serves that folder | binaries in git (WebGL builds are MBs, and every rebuild is a new blob) | **recommended** — no CI, no license plumbing, works today |
+| **C. No submodule** | publish the WebGL build to GitHub Releases or gh-pages; `/poc/agent` iframes the URL | rabbit doesn't vendor the build at all; needs a release step | fine fallback if B's git bloat bites |
+
+**Recommended: B**, with a caveat to check before committing to it — if `Build/` churn makes the
+repo unpleasant, C is a one-line change from B (same repo, different delivery). Either way,
+**pin the submodule to a commit** and treat updating it as a deliberate act; a floating submodule
+is how these silently break on the other machine.
+
+### 8.4 Where it appears
+`/poc/agent` gains a **view toggle — journal ⇄ scene**, defaulting to the journal. Same data, two
+readings; the journal stays the source of truth and the page still works with the scene disabled
+(or on a phone, where a Unity build is unkind). Not a new route: the moment it becomes its own
+page, the two can disagree about what happened, which [§8.2](#s8) exists to prevent. `/game`
+stays a separate matter — see [game.md](../features/game.md).
+
+### 8.5 Sequence and open questions
+Do this **after M5**, when there is a real journal with real rows to render. Building the scene
+against mock data first would mean tuning it twice.
+
+1. `rabbit-hole` — Unity project, a scene with agent / price board / vendor / gate / budget meter.
+2. A **JSON contract** for a journal row, written down in `rabbit-hole`'s README and imported by
+   both sides — the one thing that must not drift.
+3. WebGL build → delivery per [U1](#s8) → submodule wired into rabbit.
+4. View toggle on `/poc/agent`.
+
+**Open — needs jay:**
+- **U1** — submodule strategy (A/B/C above). Blocks everything else here.
+- **U2** — does the scene replay history, or only animate live ticks as they arrive? Replay is more
+  fun and demos better; live-only is simpler and more honest about what "unattended" means.
+- **U3** — art direction: is this the same visual world as `/game`'s Coin Catcher, or its own?
+- **U4** — worth confirming: is `rabbit-hole` meant for **this** Unity program specifically, or is
+  it the general home for jay's Unity work (in which case `/game`'s game lives there too, and
+  [game.md](../features/game.md)'s `rabbit-game` plan should be folded into it)?

@@ -1,7 +1,7 @@
 import Nav from "../Nav";
 import Card from "../DemoCard";
 import { TIL_CARDS } from "@/lib/til-cards";
-import { liveFirst } from "@/lib/demo-cards";
+import { sortDemoCards } from "@/lib/demo-cards";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 
@@ -25,7 +25,7 @@ export default function TilPage() {
           )}
         </p>
         <div className="poc-grid">
-          {liveFirst(TIL_CARDS).map((card) => (
+          {sortDemoCards(TIL_CARDS).map((card) => (
             <Card
               key={card.key}
               card={card}

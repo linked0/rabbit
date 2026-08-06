@@ -42,11 +42,13 @@ then summarize the built result into <code>docs/history/</code>.</p>
 <h2>Target information architecture (one top menu, anchored by Home)</h2>
 <p>Status verified against the running code on 2026-08-03 (routes, <code>app/Nav.tsx</code>, <code>next.config.js</code>),
 not just doc text — several rows are flagged stale below (see notes under the table). <strong>This
-table is now the single status source for everything except AP2 + Account Abstraction (AA) — the
-only two tasks tracked in <a href="../tasks/current-plan.html">current-plan.md</a></strong> (§2, §3, §6). The PoCs
-hub those two plug into is tracked here instead, at <a href="pocs-hub.html">pocs-hub.md</a> — every other
-section that used to live in current-plan.md has had its full detail moved into the linked doc
-below.</p>
+table is the single status source for everything except the one task tracked in
+<a href="../tasks/current-plan.html">current-plan.md</a> — the Agentic AA autonomy loop</strong> (<code>/poc/agent</code>).
+AP2, Toss, and the AA building blocks graduated out of current-plan.md on 2026-08-06 once built
+(archived at
+<a href="../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.html">../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md</a>);
+their rows below are now the live status. The PoCs hub they all plug into is tracked here too, at
+<a href="pocs-hub.html">pocs-hub.md</a>.</p>
 <table>
 <thead>
 <tr>
@@ -82,9 +84,9 @@ below.</p>
 </tr>
 <tr>
 <td>AP2 Test</td>
-<td><code>/ap2</code></td>
-<td><a href="ap2-test.html">ap2-test.md</a> — plus <a href="../tasks/current-plan.html#s2">current-plan.md §2</a> for the active Stripe-example build</td>
-<td>⬜ To do — page is a &quot;Coming soon&quot; stub; <strong>actively being built now</strong> (Stripe settlement example)</td>
+<td><code>/poc/ap2</code></td>
+<td><a href="ap2-test.html">ap2-test.md</a> — build detail in the <a href="../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.html#s2">archived plan §2</a></td>
+<td>✅ Done — Stripe Checkout settlement example (test mode), server-side <code>payment_status</code> verification; moved from <code>/ap2</code> to <code>/poc/ap2</code></td>
 </tr>
 <tr>
 <td>XYZ Demo</td>
@@ -135,10 +137,22 @@ below.</p>
 <td>⬜ To do — not yet scheduled</td>
 </tr>
 <tr>
-<td><em>Agentic AA</em></td>
-<td><code>/etc</code> (extends the §3 ETC demo)</td>
-<td><a href="agentic-aa.html">agentic-aa.md</a> — 4-pillar AA demo for agent payments: session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix</td>
-<td>⬜ To do — <strong>actively being built now</strong>, see <a href="../tasks/current-plan.html#s6">current-plan.md §6</a> (sequenced after §3)</td>
+<td><em>Agentic AA — building blocks</em></td>
+<td><code>/poc/aa</code></td>
+<td><a href="agentic-aa.html">agentic-aa.md</a> — session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix</td>
+<td>🟡 Built — ① session key (ERC-7715/7710) + ②③ sponsored/batch tx (thirdweb 4337) live; ④ KYA stayed an explainer card (ERC-8004 testnet registry unverified). All human-triggered — that gap is what the row below addresses</td>
+</tr>
+<tr>
+<td><em>Agentic AA — autonomy loop</em></td>
+<td><code>/poc/agent</code> (planned)</td>
+<td><strong><a href="../tasks/current-plan.html">current-plan.md</a></strong> — the only task tracked there</td>
+<td>⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes <code>lib/agent-scenarios.ts</code>&#39;s <code>scheduled-operator</code> actually run</td>
+</tr>
+<tr>
+<td><em>EIP-7702 inspector</em></td>
+<td><code>/poc/7702</code></td>
+<td><a href="erc-8141.html">erc-8141.md</a> is the <em>native</em>-AA sibling study; this page is the app-layer inspector</td>
+<td>✅ Done — read-only <code>eth_getCode</code> account inspector (plain EOA / 7702-delegated / contract), no wallet required</td>
 </tr>
 <tr>
 <td><em>Solana</em></td>
@@ -172,9 +186,9 @@ below.</p>
 </tr>
 <tr>
 <td><em>Toss Payments</em></td>
-<td><code>/ap2</code> or <code>/etc/toss</code> (planned)</td>
-<td><a href="toss-payments.html">toss-payments.md</a> — KRW settlement example via Toss Payments, counterpart to the AP2 Stripe example (see <a href="../tasks/current-plan.html#s7">current-plan.md §7</a>)</td>
-<td>⬜ To do — <strong>actively tracked now</strong>, see <a href="../tasks/current-plan.html#s7">current-plan.md §7</a></td>
+<td><code>/poc/toss</code></td>
+<td><a href="toss-payments.html">toss-payments.md</a> — KRW settlement example, counterpart to the AP2 Stripe example</td>
+<td>✅ Done — standalone page (not an <code>/ap2</code> extension); test-mode client/secret keys. Detail in the <a href="../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.html#s7">archived plan §7</a></td>
 </tr>
 <tr>
 <td><em>Staging Domain</em></td>
@@ -202,9 +216,9 @@ below.</p>
 </tr>
 <tr>
 <td><em>PoCs hub</em></td>
-<td><code>/etc</code> (building)</td>
+<td><code>/poc</code></td>
 <td><a href="pocs-hub.html">pocs-hub.md</a> — consolidated demo menu wrapping Hyperliquid Trading, PBS, AP2, and AA under one top-menu item</td>
-<td>🟡 In progress — building on branch <code>claude/pocs-hub</code></td>
+<td>✅ Done — shipped 2026-08-03, routes moved <code>/etc</code> → <code>/poc</code>; cards registered in <a href="../../../../lib/poc-cards.ts"><code>lib/poc-cards.ts</code></a></td>
 </tr>
 <tr>
 <td><em>TIL (&quot;Today I Learned&quot;)</em></td>

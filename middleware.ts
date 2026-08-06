@@ -21,6 +21,9 @@ const PUBLIC_PATHS = new Set([
   "/poc/aa", // AA — ERC-7702/7715 세션 키 + Agentic AA 4대 요소 데모 (Sepolia) — PoCs 허브 카드로만 노출
   "/poc/7702", // EIP-7702 계정 인스펙터 — 읽기 전용(eth_getCode), PoCs 허브 카드로만 노출
   "/poc/dvt", // DVT 프로토콜 흡수 제안 정독 노트 — 정적 설명 페이지
+  // 자율 결제 에이전트 — 아직 구현 전이라 각본만 도는 목업. 카드가 "준비 중"이라 허브에서
+  // 링크되지 않고 URL로만 들어온다. 논의 중 공유하려면 로그인 없이 열려야 해서 공개로 둔다.
+  "/poc/agent",
   // /poc/aa 의 에이전트 시나리오 상세 — 정적 설명 페이지. 허용 목록은 명시적으로 유지하는 게
   // 이 파일의 규칙이라(맨 위 주석), prefix 매칭 대신 4개를 그대로 적는다.
   "/poc/aa/scenarios/aggregating-buyer",
