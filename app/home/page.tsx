@@ -103,28 +103,6 @@ export default function HomePage() {
         <JayChatClient />
       </section>
 
-      {/* 문서 미러 (jay, 2026-08-11) — docs/ 를 GitHub Pages 로 낸 정적 사이트.
-          앱 안에서 다시 렌더하지 않고 링크만 둔다: 원본은 저장소의 마크다운이고,
-          여기서 한 벌 더 그리면 두 벌이 갈라진다. 파일 하나가 진실이면 링크가 맞다. */}
-      <section className="panel">
-        <h2>{pick(lang, "문서", "Docs")}</h2>
-        <p className="sub" style={{ fontSize: 13.5 }}>
-          {pick(
-            lang,
-            "설계 문서·기능 노트·작업 히스토리 — 저장소의 마크다운을 그대로 낸 정적 사이트입니다.",
-            "Design docs, feature notes, and the build history — the repository's markdown, published as-is."
-          )}
-        </p>
-        <a
-          href="https://linked0.github.io/rabbit/"
-          target="_blank"
-          rel="noreferrer"
-          style={{ fontSize: 14 }}
-        >
-          linked0.github.io/rabbit ↗
-        </a>
-      </section>
-
       <p className="muted" style={{ fontSize: 13 }}>
         © {new Date().getFullYear()} {PROFILE.name}
       </p>

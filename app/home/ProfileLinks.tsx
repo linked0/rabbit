@@ -67,6 +67,32 @@ export default function ProfileLinks({ lang }: { lang: Lang }) {
         </svg>
         <span>{PROFILE.email}</span>
       </a>
+      {/* 지식 — docs/ 를 GitHub Pages 로 낸 정적 사이트 (jay, 2026-08-11).
+          별도 섹션이 아니라 연락 줄에 둔다: 이것도 "그가 어디에 있는가"의 하나이고,
+          섹션으로 세우면 콘텐츠가 있는 것처럼 보이지만 실제로는 나가는 링크 하나다.
+          글자는 핸들 자리라 URL 이 아니라 무엇인지를 적는다. */}
+      <a
+        href="https://linked0.github.io/rabbit/"
+        target="_blank"
+        rel="noreferrer"
+        className="plink plink-knowledge"
+        aria-label={pick(lang, "지식 — 설계 문서·노트", "Knowledge — design docs and notes")}
+      >
+        <svg
+          className="plink-mark"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v18H5.5A1.5 1.5 0 0 1 4 19.5z" />
+          <path d="M8 7.5h7M8 11h7" />
+        </svg>
+        <span>{pick(lang, "지식", "knowledge")}</span>
+      </a>
     </div>
   );
 }
