@@ -17,7 +17,7 @@ const MENU: NavItem[] = [
   // 지식(Knowledge) 카테고리는 일시 제거 — 콘텐츠는 docs/know.html (로컬 file:// 열람). 필요 시 복원.
   { href: "/portfolio", ko: "포트폴리오", en: "Portfolio", code: "PORTFOLIO" },
   // 제이 챗은 홈 페이지에 통합됨 — 별도 메뉴/페이지 제거 (2026-08-01, jay).
-  { href: "/projects", ko: "수행 프로젝트", en: "Projects", code: "PROJECTS", pub: true },
+  { href: "/projects", ko: "프로젝트", en: "Projects", code: "PROJECTS", pub: true },
   { href: "/game", ko: "게임", en: "Game", code: "GAME" },
   // 마켓·XYZ 는 별도 메뉴에서 PoCs 허브 카드로 통합 (2026-08-03, jay) — 라우트(/market, /xyz)는
   // 그대로 살아있고 진입점만 바뀜. 설계: docs/tasks/current-plan.md §7.
@@ -32,11 +32,15 @@ const MENU: NavItem[] = [
   // ⚠️ 새 메뉴는 `ALLOW_LIVE=true` 가 있어야 뜬다 — .env.local 에 넣었고, deploy.sh 가
   // ALLOW_* 를 전부 Cloud Run env 로 전달하므로 배포 시 자동으로 따라간다.
   { href: "/live", ko: "라이브", en: "Live", code: "LIVE", pub: true },
+  // 알고리즘 — 수학·알고리즘 노트 (2026-08-11, jay). 예전 TIL 카드 중 두 장이 여기로.
+  // ⚠️ `ALLOW_ALGORITHMS=true` 필요 — LIVE 와 같은 게이트다.
+  { href: "/algorithms", ko: "알고리즘", en: "Algorithms", code: "ALGORITHMS", pub: true },
   // TIL 메뉴는 제거 — /poc 안의 섹션으로 흡수했다 (2026-08-11, jay). /til 은 /poc 로
   // 리다이렉트하고, 상세(/til/lmsr-hybrid-amm)는 그대로 살아 있다.
   // AP2(Stripe 정산 데모)도 마켓·XYZ와 같은 이유로 PoCs 허브 카드로 통합 (2026-08-04, jay) —
   // /poc/ap2 라우트는 그대로 공개, 진입점만 /poc 카드로. 설계: docs/tasks/current-plan.md §2.
-  { href: "/jayverse", ko: "JayVerse", en: "JayVerse", code: "JAYVERSE" },
+  // JayVerse 제거 (2026-08-11, jay) — 메뉴와 PoC 카드 둘 다. /jayverse 라우트는 남아 있지만
+  // 어디서도 링크하지 않는다. 되살리려면 이 줄과 카드를 함께 복원할 것.
   // Verex 항목은 제거 (2026-07-25, jay) — 홈의 피처드 카드로 대체 (app/home/page.tsx, lib/verex.ts).
 ];
 

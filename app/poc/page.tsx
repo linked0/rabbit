@@ -1,7 +1,7 @@
 import Nav from "../Nav";
 import Card from "../DemoCard";
 import { POC_CARDS } from "@/lib/poc-cards";
-import { TIL_CARDS } from "@/lib/til-cards";
+import { TIL_REMAINING } from "@/lib/algorithm-cards";
 import { sortDemoCards } from "@/lib/demo-cards";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
@@ -18,7 +18,10 @@ import { pick } from "@/lib/i18n";
 export default function PocPage() {
   const lang = getLang();
   const building = sortDemoCards(POC_CARDS.filter((c) => c.status !== "live"));
-  const til = sortDemoCards(TIL_CARDS);
+  // 알고리즘 허브(/algorithms)로 간 카드는 빠진다. 라이브도 뺀다 — 이 페이지는 "만들고
+  // 있는 것"을 답하므로, 두 소스 모두에 같은 규칙을 건다(POC 쪽 building 과 동일).
+  // LMSR 이 라이브로 가면서 이게 실제 문제가 됐다 — 안 걸러내면 /poc 와 /live 에 함께 떴다.
+  const til = sortDemoCards(TIL_REMAINING.filter((c) => c.status !== "live"));
 
   return (
     <>

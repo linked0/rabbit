@@ -7,6 +7,7 @@ const PUBLIC_PATHS = new Set([
   "/",
   "/login",
   "/live", // 라이브 허브 — 돌아가는 카드만 (Nav pub, 2026-08-11)
+  "/algorithms", // 알고리즘 허브 — 수학·알고리즘 노트 (Nav pub, 2026-08-11)
   "/poc", // PoCs 허브 — 만들고 있는 것 + TIL 섹션 (Nav pub, 2026-08-03)
   "/til", // → /poc 리다이렉트 (2026-08-11). 공유된 링크가 /login 으로 튀지 않도록 공개 유지.
   "/market", // 공개 시세만 — 메뉴에선 PoCs 허브 카드로만 노출 (라우트는 그대로 공개)
@@ -30,19 +31,26 @@ const PUBLIC_PATHS = new Set([
   "/poc/oz-relayer",
   // TIL 상세 — LMSR/하이브리드 AMM 정독 노트. 읽기 전용 정적 페이지라 /til 과 함께 공개.
   "/til/lmsr-hybrid-amm",
-  // /poc/aa 의 에이전트 시나리오 상세 — 정적 설명 페이지. 허용 목록은 명시적으로 유지하는 게
-  // 이 파일의 규칙이라(맨 위 주석), prefix 매칭 대신 4개를 그대로 적는다.
-  "/poc/aa/scenarios/aggregating-buyer",
-  "/poc/aa/scenarios/pay-per-call",
-  "/poc/aa/scenarios/scheduled-operator",
-  "/poc/aa/scenarios/counterparty-check",
 ]);
+
+// /poc 아래는 전부 공개다 (2026-08-11).
+//
+// 원래 이 파일의 규칙은 "명시적 허용 목록, prefix 매칭 금지"였고, 그래서 /poc/aa/scenarios/*
+// 4개까지 손으로 적어 두었다. 그 규칙을 여기서만 푼다 — 이유는 두 번 데였기 때문이다:
+// /poc/oz-relayer 를 추가하며 빠뜨려 /login 으로 튀었고, 카드 상세 동적 라우트(/poc/[key])는
+// 애초에 손으로 적을 수가 없다(카드가 늘면 경로도 는다). 목록과 라우트가 갈라지는 실패는
+// 빌드에도 tsc 에도 안 잡히고 배포 후에야 보인다.
+//
+// 안전한 이유: /poc 서브트리는 **설계상 전부 공개**다. 데모 허브이고, 오너 전용 데이터를
+// 다루는 페이지가 여기 들어올 일이 없다. 비공개가 필요한 페이지가 생기면 /poc 밖에 두거나
+// 아래에 예외를 명시할 것 — 그 순간 이 주석이 그 결정을 다시 꺼내 준다.
+const isPublicPocPath = (p: string) => p === "/poc" || p.startsWith("/poc/");
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   // /home(= www.jaylabs.xyz 홈, Task 5)은 공개 — 정확히 /home 과 /home/* 만 (느슨한 prefix 방지)
   const isHome = pathname === "/home" || pathname.startsWith("/home/");
-  if (PUBLIC_PATHS.has(pathname) || isHome || pathname.startsWith("/api/auth/")) return;
+  if (PUBLIC_PATHS.has(pathname) || isHome || isPublicPocPath(pathname) || pathname.startsWith("/api/auth/")) return;
   if (!isOwnerEmail(req.auth?.user?.email)) {
     // 원래 가려던 곳을 들려보낸다 — 로그인 성공 후 여기로 돌려보내기 위해 (2026-07-27, jay).
     const login = new URL("/login", req.nextUrl);

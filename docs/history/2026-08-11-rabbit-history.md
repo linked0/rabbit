@@ -74,6 +74,47 @@
 
 **Result:** PoCs 카드 16장. 넷 다 `status: "soon"`이고 `game`/`jayverse`만 `href`가 있다.
 
+### 「알고리즘」 상단 메뉴 신설 — 카드는 옮겨 적지 않고 키로 고른다
+
+**Cause:** jay 요청 — Algorithms 상단 메뉴를 만들고 `LMSR & the hybrid AMM`, `Geometric series → DCF valuation` 두 장을 그리로.
+
+**Reasoning:** 두 카드 본문이 길어서(LMSR 카드만 50줄 가까이) **파일 간 복사가 그 자체로 오타·분기 위험**이다. 같은 내용이 두 파일에 살면 한쪽만 고쳐지는 날이 온다. 그래서 [lib/algorithm-cards.ts](../../lib/algorithm-cards.ts)를 **키로 고르는 얇은 층**으로 만들었다 — 소스는 여전히 `til-cards.ts` 한 곳이고, 갈리는 건 "어느 허브에 뜨는가" 뿐이다. 카드를 옮기려면 `ALGORITHM_KEYS`에 key 하나만 추가하면 `/poc`가 자동으로 뺀다. 메뉴를 가른 근거는 답하는 질문이 다르다는 것 — PoCs는 "무엇을 만들고 있나", 알고리즘은 "어떤 결과를 이해했고 어디에 쓰이나".
+
+**Change:** [lib/algorithm-cards.ts](../../lib/algorithm-cards.ts)(키 기반 분기 + `TIL_REMAINING`) · [app/algorithms/page.tsx](../../app/algorithms/page.tsx) 신설 · `/poc`는 `TIL_REMAINING`을 그림 · Nav에 알고리즘 추가 · `middleware.ts` 공개 · `.env.local`에 `ALLOW_ALGORITHMS=true`. 메뉴 순서도 jay 지시대로 **PoCs → 라이브 → 알고리즘**.
+
+**Result:** 스모크 테스트 통과 — `/algorithms` 200, 메뉴 순서 확인.
+
+**이후 정정 (같은 날, jay):** `amortized-potential-function`을 알고리즘으로 추가하고, **LMSR은 다시 빼서 라이브로** 보냈다. 결과적으로 알고리즘 허브는 「이해했지만 아직 코드가 없는 것」(등비급수→DCF, 포텐셜 함수 분할상환)이 됐고, 완성된 LMSR 노트는 라이브가 가져간다. 이때 `/poc`가 TIL 쪽 라이브 카드를 걸러내지 않고 있다는 게 드러나서(LMSR이 `/poc`와 `/live`에 함께 떴다) 두 소스에 같은 규칙을 걸었다 — **이 페이지는 "만들고 있는 것"만 답한다.** 검증: LMSR이 `/live`에만 1회, `/poc`·`/algorithms`에 0회.
+
+### 카드 상세를 12장 쓰는 대신 동적 라우트 하나로
+
+**Cause:** jay 요청 — "준비 중" 카드 전부에 상세 페이지를 만들고 링크할 것. 대상이 12장이 넘었다.
+
+**Reasoning:** 손으로 12장을 쓰면 **같은 내용이 두 곳에 살면서 갈라진다.** 카드는 이미 `purpose`/`howItWorks`/`diagrams`를 들고 있고 `TechNotes`가 그것을 그대로 렌더한다. 그래서 [app/poc/[key]/page.tsx](../../app/poc/%5Bkey%5D/page.tsx) 하나로 카드 데이터를 펼친다 — 카드를 추가하면 **상세가 저절로 생긴다.** 전용 페이지가 있는 카드는 Next의 정적 세그먼트 우선 규칙 덕에 가로채이지 않는다. `DemoCard`에는 `card.href ?? /poc/{key}` fallback을 넣어 **눌리지 않는 카드가 사라졌다**. 배지는 여전히 `card.href` 기준 — 열리는 것과 만들어진 것은 다른 이야기라 「목업(인디고)」과 「준비 중(회색)」을 유지한다.
+
+**Change:** 동적 상세 라우트 + `DemoCard` fallback + 참조 카드 6장 추가(merkle-vs-verkle · linera-microchains · web-stack-layers · kb-hybrid-payment · cre-cloud · thirdweb). 처음엔 "no dev item"이라 뺐던 것들인데, jay가 다시 물어서 넣었다 — 목록의 목적이 "무엇을 읽고 이해했는가"이기도 하다면 읽기 자료를 숨기는 쪽이 목록을 좁게 만든다.
+
+**Result:** 10개 상세 라우트 200 확인, 프로덕션 빌드 exit 0.
+
+### 미들웨어: 명시적 허용 목록 규칙을 /poc 아래에서만 푼다
+
+**Cause:** 동적 상세 라우트가 전부 **302 → /login**. `/poc/oz-relayer`와 **정확히 같은 실패를 하루에 두 번** 겪었다.
+
+**Reasoning:** `PUBLIC_PATHS`는 명시적 허용 목록이고 "prefix 매칭 금지"가 이 파일의 규칙이었다. 그런데 동적 라우트는 **원리상 손으로 적을 수 없다** — 카드가 늘면 경로도 는다. 그리고 이 실패는 빌드에도 `tsc`에도 안 잡히고 **배포 후에야 보인다.** `/poc` 서브트리는 설계상 전부 공개(데모 허브, 오너 데이터를 다루는 페이지가 들어올 일이 없음)이므로 여기서만 prefix를 허용했다. 주석에 "비공개가 필요한 페이지가 생기면 /poc 밖에 두거나 예외를 명시하라"고 남겨, 그때 이 결정이 다시 꺼내지도록 했다.
+
+**Change:** [middleware.ts](../../middleware.ts)에 `isPublicPocPath` — `/poc` 및 `/poc/*`. 개별 항목 5개(`/poc/aa/scenarios/*` 4개 포함) 제거.
+
+**Result:** 상세 라우트 전부 200. **교훈: 새 공개 페이지는 빌드가 아니라 HTTP 상태로 검증한다.**
+
+### 카드 상태·배치 정리 (jay 지시)
+
+**Cause / Change / Result:** 연속된 큐레이션 지시를 한 항목으로 묶는다.
+- **DVT → 목업** — 페이지는 완성됐지만 돌아가는 건 없다. `/live`는 "열어서 실제로 해볼 수 있는 것"만 답해야 한다.
+- **자율 결제 에이전트 → 라이브.** ⚠️ **페이지 상단 배너는 여전히 "아직 아무것도 실제로 돌지 않습니다"라고 말한다** — 카드와 페이지가 서로 다른 말을 하는 중이라 둘 중 하나를 맞춰야 한다.
+- **라이브는 카테고리가 아니라 필터로 재정의.** LMSR이 `status: "live"`인데 `/live`에 안 뜬다는 지적에서 나왔다 — `/live`가 `POC_CARDS`만 읽고 있었다. 이제 모든 카드 소스에서 `status === "live"`를 모은다. 같은 카드가 알고리즘과 라이브에 함께 보이는 건 중복이 아니라 **필터의 정의**다.
+- **포텐셜 함수 분할상환 분석 → 알고리즘.**
+- **JayVerse 제거** — 메뉴와 카드 둘 다. `/jayverse` 라우트는 남아 있지만 어디서도 링크하지 않는다.
+
 ### 논의에서 남은 미결 항목 (반영 안 함)
 
 **Cause:** 위 논의 중 결론이 났지만 코드/문서에 아직 넣지 않은 것들. 잊히지 않게 여기 남긴다.

@@ -17,6 +17,11 @@ export default function Card({
   // 아직 "soon"인데 열어볼 페이지는 있는 경우 = 논의용 목업 (/poc/agent, 2026-08-06).
   // 배지를 "라이브"로 올리면 동작하지 않는 걸 동작한다고 말하는 셈이고, "준비 중"인데 눌리면
   // 눌린다는 걸 아무도 모른다. 그래서 세 번째 상태를 만든다 — 눌리지만 라이브는 아니다.
+  // 전용 페이지가 없는 카드도 상세로 간다 — /poc/[key] 가 카드 데이터를 그대로 펼친다
+  // (jay, 2026-08-11). 이 fallback 이 생기면서 "눌리지 않는 카드"는 사라졌다.
+  const href = card.href ?? `/poc/${card.key}`;
+  // 배지는 여전히 card.href 로 판단한다 — fallback 상세만 있는 카드는 "목업"이 아니라
+  // "준비 중"이다. 열리는 것과 만들어진 것은 다른 이야기다.
   const isPreview = !isLive && !!card.href;
   const body = (
     <>
@@ -44,13 +49,11 @@ export default function Card({
     </>
   );
 
-  // href가 있으면 연다 — 라이브든 목업이든. 상태는 배지가 말하고, 링크 여부는 페이지 존재가 정한다.
-  if (card.href) {
-    return (
-      <Link href={card.href} className="kpi poc-card">
-        {body}
-      </Link>
-    );
-  }
-  return <div className="kpi poc-card poc-card-disabled">{body}</div>;
+  // 모든 카드가 열린다 — 전용 페이지가 없으면 /poc/[key] 상세로 (2026-08-11).
+  // 상태는 배지가 말한다: 라이브(초록) · 목업(인디고, 전용 페이지 있음) · 준비 중(회색, 상세만).
+  return (
+    <Link href={href} className="kpi poc-card">
+      {body}
+    </Link>
+  );
 }

@@ -24,7 +24,7 @@ export default function ProjectsPage() {
     <>
       <Nav />
       <main>
-        <h1>{pick(lang, "수행 프로젝트", "Projects")}</h1>
+        <h1>{pick(lang, "프로젝트", "Projects")}</h1>
 
         {/* 피처드: Verex — 라이브 앱으로 외부 링크. */}
         <section className="panel">

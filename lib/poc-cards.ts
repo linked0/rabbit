@@ -234,9 +234,9 @@ export const POC_CARDS: DemoCard[] = [
       "An agent that wakes on a timer, decides on its own whether to spend, and cannot exceed the mandate it was given.",
     descriptionKo:
       "타이머에 깨어나 스스로 지출 여부를 판단하고, 받은 위임을 넘길 수 없는 에이전트.",
-    // status는 "soon"인데 href가 있다 — 페이지는 열리지만 각본만 도는 목업이라서.
-    // DemoCard가 이 조합을 "목업" 배지로 렌더한다 (app/DemoCard.tsx).
-    status: "soon",
+    // 라이브 (jay, 2026-08-11). ⚠️ 페이지 상단 배너는 여전히 "아직 아무것도 돌지 않습니다"
+    // 라고 말한다 — 카드와 페이지가 서로 다른 말을 하고 있으니 둘 중 하나를 맞춰야 한다.
+    status: "live",
     href: "/poc/agent",
     howTo:
       "A mockup, not a running agent — no chain, no wallet. Step through the scripted ticks to see the shape: the skips, the two bounded payments, and what happens after the mandate expires.",
@@ -345,9 +345,13 @@ export const POC_CARDS: DemoCard[] = [
     ],
   },
   // ── docs/features/README.md 의 표에는 있는데 카드가 없던 항목들 (jay, 2026-08-11).
-  // "📎 Reference only" 행(KB 하이브리드 결제·CRE×Cloud·Thirdweb·Merkle vs Verkle·Linera·
-  // Web Stack)은 일부러 뺐다 — README 가 그 행들에 "no dev item" 이라고 적어 두었고,
-  // 카드로 만들면 만들 계획이 있는 것처럼 보인다. 라우트가 있거나 만들 의도가 있는 넷만 넣는다.
+  //
+  // 처음엔 "📎 Reference only" 행들을 뺐다 — README 가 "no dev item" 이라 적어 두었으니
+  // 카드로 만들면 만들 계획이 있는 것처럼 보인다는 판단이었다. jay 가 그 여섯을 다시 물어서
+  // 전부 넣었다: 목록의 목적이 "무엇을 만들 것인가" 만이 아니라 "무엇을 읽고 이해했는가"
+  // 이기도 하다면, 읽기 자료를 숨기는 쪽이 오히려 목록을 좁게 만든다.
+  // 대신 status 로 구분한다 — 참조 카드는 href 가 없어 "준비 중" 회색 배지로 남고,
+  // 눌리는 목업(인디고)과 섞이지 않는다.
   {
     key: "game",
     title: "Game — Unity WebGL track",
@@ -366,24 +370,6 @@ export const POC_CARDS: DemoCard[] = [
       "Today: a small 2D canvas game (\"Coin Catcher\") rendered client-side, with no build step beyond the app itself. Planned: a Unity project exported to WebGL, its loader and data files served as static assets, and a thin JS bridge so the page can pass state in and read results out. Not started — the placeholder is not a prototype of the Unity path, it is a different thing occupying the route.",
     howItWorksKo:
       "지금: 클라이언트에서 그리는 작은 2D 캔버스 게임(\"Coin Catcher\") — 앱 외에 별도 빌드 단계가 없습니다. 계획: Unity 프로젝트를 WebGL로 export 하고, 로더와 데이터 파일을 정적 자산으로 서빙하며, 페이지가 상태를 넣고 결과를 읽을 수 있도록 얇은 JS 브리지를 붙입니다. 아직 시작 전입니다 — 자리표시자는 Unity 경로의 프로토타입이 아니라, 그 라우트를 차지하고 있는 다른 물건입니다.",
-  },
-  {
-    key: "jayverse",
-    title: "JayVerse",
-    titleKo: "JayVerse",
-    description: "A Gravia-style dashboard — currently a “coming soon” stub.",
-    descriptionKo: "Gravia 스타일 대시보드 — 지금은 \"곧 공개\" 스텁.",
-    status: "soon",
-    howTo: "Not yet scoped.",
-    howToKo: "아직 범위 미정.",
-    purpose:
-      "A single surface that aggregates everything else here — positions, agent journals, demo state — rather than making a visitor open eight routes to see what exists. It is listed with no route because a dashboard built before the things it aggregates are stable ends up being rewritten with each of them.",
-    purposeKo:
-      "여기 있는 나머지 전부 — 포지션, 에이전트 저널, 데모 상태 — 를 한 화면에 모으는 표면입니다. 방문자가 여덟 개 라우트를 열어야 무엇이 있는지 알 수 있는 상태를 대체하려는 것입니다. 라우트 없이 올려둔 이유는, 모으려는 대상들이 안정되기 전에 만든 대시보드는 그것들이 바뀔 때마다 다시 쓰이기 때문입니다.",
-    howItWorks:
-      "Not built. The stub route exists; the design is a Gravia-style panel grid reading from the same card and journal data the individual pages use, so the dashboard has no data source of its own.",
-    howItWorksKo:
-      "미구현. 스텁 라우트만 있고, 설계는 개별 페이지들이 쓰는 카드·저널 데이터를 그대로 읽는 Gravia 스타일 패널 그리드입니다 — 대시보드가 자기만의 데이터 소스를 갖지 않게 하려는 것입니다.",
   },
   {
     key: "dsrv-portal",
@@ -420,6 +406,115 @@ export const POC_CARDS: DemoCard[] = [
       "Planned as a hands-on rather than a survey: take one FHE library, run a single aggregate (a sum or a count over encrypted inputs) end to end, and measure what it actually costs in latency and ciphertext size — the two numbers that decide whether any of this is usable. The reference case is a hospital/registry data collaboration, where the legal constraint is that raw records cannot leave the owner at all.",
     howItWorksKo:
       "서베이가 아니라 실습으로 계획했습니다: FHE 라이브러리 하나를 골라 암호문 입력에 대한 집계 하나(합계나 카운트)를 끝까지 돌려보고, 지연과 암호문 크기를 실제로 측정합니다 — 이 기술이 쓸 만한지를 정하는 건 결국 이 두 숫자입니다. 참조 사례는 원본 레코드가 소유자를 아예 떠날 수 없다는 법적 제약이 걸린 병원·레지스트리 데이터 협업입니다.",
+  },
+  // ── 참조 전용 (README 의 "📎 Reference only" 행). 읽고 이해한 것이지 만들 항목이 아니라
+  // href 가 없다 — 원문은 docs/knowledge/*.html, docs/features/*.md 에 있다.
+  {
+    key: "merkle-vs-verkle",
+    title: "Merkle vs Verkle",
+    titleKo: "Merkle vs Verkle",
+    description: "Why proof size, not hashing speed, is what decides whether stateless clients are possible.",
+    descriptionKo: "무상태 클라이언트의 가능 여부를 가르는 건 해싱 속도가 아니라 증명 크기라는 것.",
+    status: "soon",
+    howTo: "Reference — docs/knowledge/merkle-vs-verkle.html.",
+    howToKo: "참조 — docs/knowledge/merkle-vs-verkle.html.",
+    purpose:
+      "The state-bloat problem this catalogue keeps running into from the application side, looked at from the protocol side. Every card here that writes a storage slot — an enforcer's spent counter, a token balance — adds to state that every node keeps live forever. Verkle trees do not delete any of it; they change what a node must carry to *prove* a piece of it, which is the difference between \"state is too big\" and \"state is too big to sync\".",
+    purposeKo:
+      "이 카탈로그가 애플리케이션 쪽에서 계속 부딪히는 상태 팽창 문제를, 프로토콜 쪽에서 본 것입니다. 스토리지 슬롯을 쓰는 여기 모든 카드 — 강제기의 지출 카운터, 토큰 잔고 — 가 모든 노드가 영구히 살려 두는 상태에 더해집니다. Verkle 트리는 그걸 지우지 않습니다. 노드가 그중 한 조각을 *증명*하기 위해 들고 다녀야 하는 양을 바꿀 뿐이고, 그게 \"상태가 너무 크다\"와 \"상태가 너무 커서 동기화가 안 된다\" 사이의 차이입니다.",
+    howItWorks:
+      "Reading note, not a demo: how a Merkle proof's size grows with tree width (you must supply every sibling at every level), why vector commitments collapse that to a constant-size proof regardless of width, and what Ethereum's Verge roadmap intends to buy with the swap — stateless clients that validate without holding the state. Also what it costs: heavier cryptography, and a migration of the entire state trie.",
+    howItWorksKo:
+      "데모가 아니라 정독 노트입니다: 머클 증명의 크기가 트리 폭에 따라 어떻게 늘어나는지(각 레벨의 형제 노드를 전부 제출해야 한다), 벡터 커밋먼트가 어떻게 폭과 무관한 상수 크기 증명으로 그것을 접는지, 그리고 이더리움 Verge 로드맵이 그 교체로 사려는 것 — 상태를 들고 있지 않고도 검증하는 무상태 클라이언트. 대가도 함께: 더 무거운 암호학, 그리고 상태 트라이 전체의 마이그레이션.",
+  },
+  {
+    key: "linera-microchains",
+    title: "Linera microchains",
+    titleKo: "Linera 마이크로체인",
+    description: "One chain per user — removing blockspace contention instead of pricing it.",
+    descriptionKo: "사용자당 체인 하나 — 블록스페이스 경합에 값을 매기는 대신 없애버리기.",
+    status: "soon",
+    howTo: "Reference — docs/knowledge/linera-microchains.html.",
+    howToKo: "참조 — docs/knowledge/linera-microchains.html.",
+    purpose:
+      "Almost every scaling design here takes contention as a given and competes for the block: PBS auctions it, gas prices it, a relayer sequences around it. Linera's premise is that contention is a choice — give each user their own chain and there is nothing to contend for. Worth reading precisely because it rejects the assumption the rest of the catalogue is built on.",
+    purposeKo:
+      "여기 있는 거의 모든 확장 설계는 경합을 주어진 것으로 두고 블록을 놓고 경쟁합니다 — PBS는 경매에 부치고, 가스는 값을 매기고, 릴레이어는 그 주위로 순서를 잡습니다. Linera의 전제는 **경합이 선택**이라는 것입니다: 사용자마다 자기 체인을 주면 다툴 대상이 없습니다. 카탈로그의 나머지가 딛고 선 가정을 정면으로 거부하기 때문에 읽을 가치가 있습니다.",
+    howItWorks:
+      "Reading note: the microchain model where each user owns a chain they alone extend, validators run all of them, and cross-chain messages replace shared-state contention. The interesting question the note tracks is not throughput but composability — what happens to an application whose whole point is that many users touch the same state, like an order book.",
+    howItWorksKo:
+      "정독 노트: 각 사용자가 자기만 확장하는 체인을 소유하고, 검증자들이 그 전부를 돌리며, 공유 상태 경합을 체인 간 메시지가 대체하는 마이크로체인 모델. 노트가 따라가는 흥미로운 질문은 처리량이 아니라 **조합 가능성**입니다 — 여러 사용자가 같은 상태를 건드리는 것이 존재 이유인 애플리케이션(오더북 같은)은 어떻게 되는가.",
+  },
+  {
+    key: "web-stack-layers",
+    title: "Web stack layers",
+    titleKo: "웹 스택 계층",
+    description: "A five-layer map of the stack, with this project overlaid on it.",
+    descriptionKo: "스택의 5계층 지도 위에 이 프로젝트를 얹어 본 것.",
+    status: "soon",
+    howTo: "Reference — docs/knowledge/web-stack-layers.html.",
+    howToKo: "참조 — docs/knowledge/web-stack-layers.html.",
+    purpose:
+      "An orientation map rather than a study: which layer each piece of this project actually lives at, and where the gaps are. Useful mostly for noticing that several cards which sound like different problems turn out to sit at the same layer — and that one or two layers have nothing on them at all.",
+    purposeKo:
+      "스터디라기보다 방향 지도입니다: 이 프로젝트의 각 조각이 실제로 어느 계층에 사는지, 그리고 빈 곳은 어디인지. 서로 다른 문제처럼 들리던 카드 여럿이 사실 같은 계층에 앉아 있다는 것, 그리고 어떤 계층은 아예 비어 있다는 것을 알아차리는 데 주로 쓸모가 있습니다.",
+    howItWorks:
+      "A static five-layer diagram with the project's routes and demos placed on it. No code.",
+    howItWorksKo: "프로젝트의 라우트와 데모를 얹은 정적 5계층 다이어그램. 코드는 없습니다.",
+  },
+  {
+    key: "kb-hybrid-payment",
+    title: "KB hybrid payment flow",
+    titleKo: "KB 하이브리드 결제 플로우",
+    description: "A card rail (ISO 8583) meeting on-chain settlement — where the two systems actually touch.",
+    descriptionKo: "카드 레일(ISO 8583)과 온체인 정산이 만나는 지점 — 두 시스템이 실제로 닿는 곳.",
+    status: "soon",
+    howTo: "Reference — docs/features/kb-hybrid-payment-flow.md. No dev item.",
+    howToKo: "참조 — docs/features/kb-hybrid-payment-flow.md. 개발 항목 없음.",
+    purpose:
+      "The AP2 and Toss cards settle an agent's purchase through a payment rail, but treat the rail as a black box. This flow map opens it: an ISO 8583 authorization is decades-old, message-based, and reversible, while on-chain settlement is final and irreversible. Mapping where they meet is mapping where the reversibility mismatch has to be absorbed by somebody — and that somebody is a business decision, not a technical one.",
+    purposeKo:
+      "AP2와 Toss 카드는 에이전트의 구매를 결제 레일로 정산하지만, 레일 자체는 블랙박스로 둡니다. 이 플로우 맵이 그것을 엽니다: ISO 8583 승인은 수십 년 된 메시지 기반 규격이고 **되돌릴 수 있는** 반면, 온체인 정산은 최종적이고 **되돌릴 수 없습니다.** 둘이 만나는 지점을 그린다는 건 곧 그 되돌림 가능성의 불일치를 **누가 떠안는가**를 그리는 것이고, 그 누구는 기술이 아니라 사업의 결정입니다.",
+    howItWorks:
+      "A flow map only: the card-rail leg (authorization, capture, settlement, chargeback windows) against an Avalanche-subnet settlement leg, with the touch points marked. Explicitly no development item attached.",
+    howItWorksKo:
+      "플로우 맵만 있습니다: 카드 레일 구간(승인·매입·정산·차지백 기간)과 Avalanche 서브넷 정산 구간을 나란히 두고 닿는 지점을 표시합니다. 개발 항목은 명시적으로 붙어 있지 않습니다.",
+  },
+  {
+    key: "cre-cloud",
+    title: "CRE × Cloud — four hybrid patterns",
+    titleKo: "CRE × Cloud — 하이브리드 4패턴",
+    description: "Cloud holds the private truth, CRE is the verified bridge, the chain settles.",
+    descriptionKo: "진실은 클라우드에, 검증된 다리는 CRE, 정산은 체인.",
+    status: "soon",
+    howTo: "Reference — docs/features/cre-cloud.md.",
+    howToKo: "참조 — docs/features/cre-cloud.md.",
+    purpose:
+      "Most of this catalogue assumes the interesting data is already on-chain. Real institutional workloads are the opposite: the authoritative record is in a private system that cannot be published, and the chain is only the settlement venue. That inversion is what the four patterns — RWA servicing, proof of reserves, DvP, prediction-market settlement — all share, and it is the same split this project keeps arriving at from the other direction: enforce on-chain, remember off-chain.",
+    purposeKo:
+      "이 카탈로그의 대부분은 흥미로운 데이터가 이미 온체인에 있다고 가정합니다. 실제 기관 워크로드는 정반대입니다 — 권위 있는 기록은 공개할 수 없는 사설 시스템에 있고, 체인은 정산 장소일 뿐입니다. 네 패턴(RWA 서비싱·준비금 증명·DvP·예측시장 정산)이 공유하는 게 그 뒤집힘이고, 이 프로젝트가 반대 방향에서 계속 도달하는 바로 그 분리이기도 합니다: **강제는 온체인, 기억은 오프체인.**",
+    howItWorks:
+      "Reading note: four patterns sharing one shape — a private system of record, a verified bridge that attests to it without publishing it, and on-chain settlement conditioned on that attestation. The load-bearing question in each is what the bridge's attestation is actually worth, since the chain cannot check the private data itself.",
+    howItWorksKo:
+      "정독 노트: 하나의 모양을 공유하는 네 패턴 — 사설 원장, 그것을 공개하지 않으면서 증명하는 검증된 다리, 그리고 그 증명에 조건부인 온체인 정산. 각각에서 핵심 질문은 **그 다리의 증명이 실제로 얼마짜리인가**입니다. 체인은 사설 데이터 자체를 검사할 수 없으니까요.",
+  },
+  {
+    key: "thirdweb",
+    title: "Thirdweb — platform survey",
+    titleKo: "Thirdweb — 플랫폼 서베이",
+    description: "Contracts, wallets/AA, backend tx, Unity SDK — breadth bought with best-in-class parts.",
+    descriptionKo: "컨트랙트·지갑/AA·백엔드 tx·Unity SDK — 각 부문 1등을 내주고 산 넓이.",
+    status: "soon",
+    howTo: "Reference — docs/features/thirdweb.md. Already used in the AA card's pillars ②③.",
+    howToKo: "참조 — docs/features/thirdweb.md. AA 카드의 ②③ 요소에서 이미 쓰고 있습니다.",
+    purpose:
+      "Not a neutral survey — this project already depends on it. The AA card's sponsored-gas and atomic-batch pillars run on thirdweb's 4337 stack, and the D1 gas decision on the agent PoC turns on exactly the tradeoff this note names: thirdweb gives you a paymaster, but only for a 4337 account, which is a different account type from the 7702/7710 one the mandate story is built on. Breadth is convenient right up to the point where one part has to be the best one.",
+    purposeKo:
+      "중립적 서베이가 아닙니다 — 이 프로젝트가 이미 의존하고 있습니다. AA 카드의 가스 대납·원자적 배치 요소가 thirdweb의 4337 스택 위에서 돌고, 에이전트 PoC의 D1 가스 결정이 정확히 이 노트가 짚는 트레이드오프에 달려 있습니다: thirdweb은 paymaster를 주지만 **4337 계정에 한해서**이고, 그건 위임 서사가 딛고 선 7702/7710 계정과 다른 종류입니다. **넓이는 편리합니다 — 어느 한 부분이 반드시 최고여야 하는 지점 전까지는.**",
+    howItWorks:
+      "Reading note across four surfaces (contract deploys, Connect wallets and account abstraction, Engine for backend-signed transactions, the Unity SDK), each rated against doing it directly. The touchpoints that matter here are named: the AA pillars already shipped, backend transactions for the AP2 path, and the Unity track the game card would need.",
+    howItWorksKo:
+      "네 표면(컨트랙트 배포, Connect 지갑·계정 추상화, 백엔드 서명 트랜잭션용 Engine, Unity SDK)에 걸친 정독 노트로, 각각을 직접 구현하는 경우와 견줍니다. 여기서 의미 있는 접점은 명시되어 있습니다 — 이미 나간 AA 요소들, AP2 경로의 백엔드 트랜잭션, 그리고 게임 카드가 필요로 할 Unity 트랙.",
   },
   {
     key: "solana",
@@ -463,7 +558,10 @@ export const POC_CARDS: DemoCard[] = [
     titleKo: "프로토콜에 흡수된 DVT",
     description: "Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.",
     descriptionKo: "분산 밸리데이터를 프로토콜이 직접 다루자는 제안 정독 노트 — 키를 쪼개지 않는 m-of-n, 그리고 그것이 만들어내는 것들.",
-    status: "live",
+    // 목업이지 라이브가 아니다 (jay, 2026-08-11) — 페이지는 완성됐지만 돌아가는 건 없다.
+    // /live 는 "열어서 실제로 해볼 수 있는 것"만 답해야 하고, 정독 노트는 거기 해당하지 않는다.
+    // href 는 그대로라 카드는 계속 눌린다 — DemoCard 가 soon+href 를 목업 배지로 렌더한다.
+    status: "soon",
     href: "/poc/dvt",
     date: "2026-08-05",
     howTo: "Read-only design analysis — no wallet needed. Start with the two diagrams contrasting DVT today against the proposal.",

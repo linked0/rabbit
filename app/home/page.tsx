@@ -58,7 +58,7 @@ export default function HomePage() {
             </div>
             <div style={{ flex: 1, minWidth: 200 }}>
               <div className="label">
-                {pick(lang, "수행 프로젝트 · 라이브", "Project · Live")}
+                {pick(lang, "프로젝트 · 라이브", "Project · Live")}
               </div>
               <div className="value" style={{ fontSize: 18 }}>
                 Verex ↗
