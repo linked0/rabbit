@@ -24,7 +24,9 @@ export default function Card({
         <div className="value" style={{ fontSize: 16 }}>
           {pick(lang, card.titleKo, card.title)}
         </div>
-        <span className={`poc-badge ${isLive ? "poc-badge-live" : "poc-badge-soon"}`}>
+        <span
+          className={`poc-badge ${isLive ? "poc-badge-live" : isPreview ? "poc-badge-mock" : "poc-badge-soon"}`}
+        >
           {isLive
             ? pick(lang, "라이브", "Live")
             : isPreview

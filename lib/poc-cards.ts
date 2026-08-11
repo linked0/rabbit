@@ -269,6 +269,159 @@ export const POC_CARDS: DemoCard[] = [
     ],
   },
   {
+    // 서비스 탐방 42/113에서 넘어온 카드 (jay, 2026-08-11). 다른 카드와 성격이 다르다 —
+    // "이 서비스를 쓸까"가 아니라 "관리형이 죽을 때 무엇이 남는가"를 배우는 항목이고,
+    // 마침 agent 카드가 손으로 짜고 있는 배관(논스·가스·재시도)과 정확히 같은 층이다.
+    key: "oz-relayer",
+    title: "OpenZeppelin Relayer & Monitor",
+    titleKo: "OpenZeppelin Relayer · Monitor",
+    description:
+      "The managed service shut down; the tools were opened. Self-hosted transaction plumbing and on-chain alerting.",
+    descriptionKo:
+      "서비스는 죽고, 도구는 열렸다 — 셀프호스팅 트랜잭션 배관과 온체인 감시.",
+    status: "soon",
+    href: "/poc/oz-relayer",
+    // 카드 그리드용 한 줄 — 세 질문은 페이지로 내렸다 (jay, 2026-08-11: 너무 장황함).
+    howTo: "A thought experiment against verex's ChainJob worker: what a Relayer deletes, and what has to stay.",
+    howToKo: "verex의 ChainJob 워커를 대상으로 한 사고 실험 — Relayer가 지우는 것과, 남아야 하는 것.",
+    purpose:
+      "Two questions this catalogue has not asked yet. First, the operational one: every agent demo here hand-rolls the dullest and most failure-prone part of on-chain work — nonce management, gas strategy, retries — and OpenZeppelin Relayer is that exact layer, extracted and hardened. Second, and larger: Defender was a managed SaaS that stopped taking sign-ups in June 2025 and shut down on 2026-07-01, handing its functionality to open source on the way out. That makes it a case study in a criterion missing from most infrastructure decisions — not \"what does it do\" or \"what does it cost\", but \"what remains when the vendor leaves\". Defender left well: a year's notice, a migration guide, a production-ready open-source successor. Most vendors will not.",
+    purposeKo:
+      "이 카탈로그가 아직 묻지 않은 질문 둘. 첫째는 운영의 문제입니다 — 여기 있는 모든 에이전트 데모가 온체인 작업에서 가장 지루하고 가장 자주 터지는 부분(논스 관리, 가스 전략, 재시도)을 손으로 다시 짜고 있고, OpenZeppelin Relayer는 정확히 그 층을 뽑아내 굳혀놓은 것입니다. 둘째는 더 큰 문제입니다: Defender는 2025년 6월 신규 가입을 닫고 2026-07-01에 완전히 종료된 관리형 SaaS였고, 나가면서 기능을 오픈소스로 넘겼습니다. 그래서 이 항목은 대부분의 인프라 결정에 빠져 있는 기준 하나에 대한 사례 연구가 됩니다 — \"무엇을 하는가\"도 \"얼마인가\"도 아닌, **\"벤더가 떠날 때 무엇이 남는가\"**. Defender는 잘 떠났습니다: 1년 예고, 마이그레이션 가이드, 프로덕션 레디 오픈소스 후계자. 대부분의 벤더는 그렇게 떠나지 않습니다.",
+    howItWorks:
+      "Relayer keeps the plumbing: it accepts a transaction over a REST API, signs it, and owns nonce sequencing, gas pricing, and retry — EVM multi-chain plus Solana and Stellar, with keys in HashiCorp Vault or AWS KMS rather than an env var. Monitor watches the other direction: declarative JSON rules over events, function calls, and transaction patterns, firing Slack or webhook alerts. The concrete scenario is verex, which already wrote this by hand. Its ChainJob worker executes strictly serially, and its own header explains why: “all txs are sent by the operator or a server-held demo key, so a single lane doubles as nonce management.” Around that sit exponential backoff (5s → 25s → 125s), an atomic PENDING→RUNNING claim, and stuck-job recovery after two minutes — a small relayer, built to make settlement work at all. Adopting the real one deletes the nonce lane, the gas strategy, and the retry ladder, but not onFailed: reversing DB fills after a terminal failure is business logic wearing plumbing's clothes, and no relayer can know that a failed SETTLE_MATCH means two users' balances must be un-credited. The interesting question is the third one. The single lane was serializing business logic as a side effect, not just nonces; widen it and you find out whether that mattered — and this codebase has already produced one bug of exactly that family, a ladder sized from a pre-settlement balanceOf. Monitor addresses the mirror image: that bug was invisible off-chain until it produced a wrong quote, while on-chain it was observable the entire time.",
+    howItWorksKo:
+      "Relayer는 배관을 맡습니다: REST API로 트랜잭션을 받아 서명하고, 논스 순서·가스 가격·재시도를 직접 관리합니다 — EVM 멀티체인에 Solana·Stellar까지, 키는 env 변수가 아니라 HashiCorp Vault나 AWS KMS에 둡니다. Monitor는 반대 방향을 봅니다: 이벤트·함수 호출·트랜잭션 패턴을 선언적 JSON 룰로 감시하고 Slack·웹훅으로 알립니다. 구체적인 시나리오는 verex입니다 — 이미 이걸 손으로 짜 놨거든요. ChainJob 워커는 엄격히 직렬로 실행되고, 그 이유가 파일 헤더에 그대로 적혀 있습니다: \"모든 tx를 오퍼레이터나 서버 보관 키가 보내므로, 단일 레인이 곧 논스 관리다.\" 그 주위에 지수 백오프(5s → 25s → 125s), 원자적 PENDING→RUNNING 클레임, 2분 뒤 멈춘 잡 복구가 붙어 있습니다 — 정산을 굴러가게 만들려고 지은 작은 릴레이어입니다. 진짜 Relayer를 도입하면 논스 레인·가스 전략·재시도 사다리는 지워지지만, onFailed는 아닙니다: 종료 실패 후 DB 체결을 되감는 건 배관의 옷을 입은 비즈니스 로직이고, 실패한 SETTLE_MATCH가 곧 두 사용자의 잔고를 취소해야 한다는 뜻임을 아는 릴레이어는 없습니다. 흥미로운 건 세 번째 질문입니다. 단일 레인은 논스만이 아니라 **비즈니스 로직까지 부수적으로 직렬화**하고 있었고, 레인을 넓히면 그게 중요했는지 아닌지가 드러납니다 — 그리고 이 코드베이스는 이미 정확히 그 계열의 버그를 하나 냈습니다(정산 전 balanceOf로 사다리를 산정한 건). Monitor는 그 거울상을 맡습니다: 그 버그는 잘못된 호가를 낼 때까지 오프체인에서 보이지 않았지만, 온체인에서는 처음부터 관측 가능했습니다.",
+    diagrams: [
+      {
+        title: "verex today — one lane, because the lane is the nonce manager",
+        titleKo: "오늘의 verex — 레인이 곧 논스 관리자라서, 레인이 하나",
+        src: `flowchart TB
+    API["API responds from the DB<br/>immediately"] --> Q[("ChainJob rows<br/>PENDING")]
+    Q --> W["Single worker<br/>strictly serial"]
+    W --> N["nonce: implicit<br/>one lane = no races"]
+    N --> G["gas: whatever viem picks"]
+    G --> R{"tx ok?"}
+    R -->|"yes"| OK["CONFIRMED"]
+    R -->|"no, attempts left"| B["backoff 5s / 25s / 125s"]
+    B --> Q
+    R -->|"no, exhausted"| F["onFailed — reverse the DB fills"]
+    F --> X["FAILED"]`,
+      },
+      {
+        title: "With a Relayer — what leaves, what must stay",
+        titleKo: "Relayer를 넣으면 — 무엇이 떠나고 무엇이 남아야 하나",
+        src: `flowchart TB
+    API["API responds from the DB"] --> Q[("ChainJob rows")]
+    Q --> W["Worker — now only<br/>decides WHAT to submit"]
+    W -->|"POST /transactions"| RL["Relayer<br/>nonce · gas · retry · KMS key"]
+    RL --> C["Chain"]
+    C --> CB["callback / poll"]
+    CB --> F["onFailed — reverse the DB fills<br/>STAYS: business logic"]
+    C --> M["Monitor rules"]
+    M --> AL["Slack / webhook"]
+    subgraph OPEN["The question the swap opens"]
+      direction TB
+      S1["The single lane also serialized<br/>business logic, not just nonces"]
+      S2["Widen it — was that load-bearing?<br/>cf. the pre-settlement balanceOf bug"]
+      S1 --- S2
+    end`,
+      },
+      {
+        title: "Where a Relayer would sit in the agent's tick",
+        titleKo: "에이전트의 틱에서 Relayer가 앉을 자리",
+        src: `flowchart LR
+    S["Scheduler"] --> A["Agent decides"]
+    A -->|"today: hand-rolled"| SK["Session key<br/>own nonce, own gas, own retry"]
+    A -->|"with a Relayer"| RL["Relayer REST API<br/>nonce · gas · retry · KMS key"]
+    SK --> C["Chain"]
+    RL --> C
+    C --> M["Monitor rules<br/>events, patterns"]
+    M --> AL["Slack / webhook"]
+    subgraph GAP["Still nobody's job"]
+      G["Gas tank empty<br/>→ the loop stops silently"]
+    end`,
+      },
+    ],
+  },
+  // ── docs/features/README.md 의 표에는 있는데 카드가 없던 항목들 (jay, 2026-08-11).
+  // "📎 Reference only" 행(KB 하이브리드 결제·CRE×Cloud·Thirdweb·Merkle vs Verkle·Linera·
+  // Web Stack)은 일부러 뺐다 — README 가 그 행들에 "no dev item" 이라고 적어 두었고,
+  // 카드로 만들면 만들 계획이 있는 것처럼 보인다. 라우트가 있거나 만들 의도가 있는 넷만 넣는다.
+  {
+    key: "game",
+    title: "Game — Unity WebGL track",
+    titleKo: "게임 — Unity WebGL 트랙",
+    description: "A 2D canvas placeholder today; the Unity WebGL embed is the actual goal.",
+    descriptionKo: "지금은 2D 캔버스 자리표시자 — 진짜 목표는 Unity WebGL 임베드.",
+    status: "soon",
+    href: "/game",
+    howTo: "Open it and play the placeholder. The card is honest that the real track hasn't started.",
+    howToKo: "열어서 자리표시자를 해보면 됩니다. 진짜 트랙은 아직 시작 전이라는 걸 카드가 그대로 말합니다.",
+    purpose:
+      "The only non-financial surface in this catalogue, and the one that would exercise a completely different toolchain: Unity's WebGL build target embedded in a Next.js route, with the browser bridge that implies. Kept as a card rather than quietly dropped because the gap between “a canvas game exists” and “Unity ships to this route” is the whole work, and hiding it would make the placeholder read as the deliverable.",
+    purposeKo:
+      "이 카탈로그에서 유일하게 금융이 아닌 표면이고, 완전히 다른 툴체인을 쓰게 되는 항목입니다 — Unity의 WebGL 빌드 타깃을 Next.js 라우트에 임베드하고, 그에 따르는 브라우저 브리지를 붙이는 일. 조용히 지우지 않고 카드로 남긴 이유는 「캔버스 게임이 있다」와 「Unity가 이 라우트로 나간다」 사이의 간극이 곧 작업 전체이기 때문입니다. 숨기면 자리표시자가 결과물처럼 읽힙니다.",
+    howItWorks:
+      "Today: a small 2D canvas game (\"Coin Catcher\") rendered client-side, with no build step beyond the app itself. Planned: a Unity project exported to WebGL, its loader and data files served as static assets, and a thin JS bridge so the page can pass state in and read results out. Not started — the placeholder is not a prototype of the Unity path, it is a different thing occupying the route.",
+    howItWorksKo:
+      "지금: 클라이언트에서 그리는 작은 2D 캔버스 게임(\"Coin Catcher\") — 앱 외에 별도 빌드 단계가 없습니다. 계획: Unity 프로젝트를 WebGL로 export 하고, 로더와 데이터 파일을 정적 자산으로 서빙하며, 페이지가 상태를 넣고 결과를 읽을 수 있도록 얇은 JS 브리지를 붙입니다. 아직 시작 전입니다 — 자리표시자는 Unity 경로의 프로토타입이 아니라, 그 라우트를 차지하고 있는 다른 물건입니다.",
+  },
+  {
+    key: "jayverse",
+    title: "JayVerse",
+    titleKo: "JayVerse",
+    description: "A Gravia-style dashboard — currently a “coming soon” stub.",
+    descriptionKo: "Gravia 스타일 대시보드 — 지금은 \"곧 공개\" 스텁.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "A single surface that aggregates everything else here — positions, agent journals, demo state — rather than making a visitor open eight routes to see what exists. It is listed with no route because a dashboard built before the things it aggregates are stable ends up being rewritten with each of them.",
+    purposeKo:
+      "여기 있는 나머지 전부 — 포지션, 에이전트 저널, 데모 상태 — 를 한 화면에 모으는 표면입니다. 방문자가 여덟 개 라우트를 열어야 무엇이 있는지 알 수 있는 상태를 대체하려는 것입니다. 라우트 없이 올려둔 이유는, 모으려는 대상들이 안정되기 전에 만든 대시보드는 그것들이 바뀔 때마다 다시 쓰이기 때문입니다.",
+    howItWorks:
+      "Not built. The stub route exists; the design is a Gravia-style panel grid reading from the same card and journal data the individual pages use, so the dashboard has no data source of its own.",
+    howItWorksKo:
+      "미구현. 스텁 라우트만 있고, 설계는 개별 페이지들이 쓰는 카드·저널 데이터를 그대로 읽는 Gravia 스타일 패널 그리드입니다 — 대시보드가 자기만의 데이터 소스를 갖지 않게 하려는 것입니다.",
+  },
+  {
+    key: "dsrv-portal",
+    title: "Institutional custody study",
+    titleKo: "기관 커스터디 스터디",
+    description: "MPC · approval flows · AA · AML — and which parts are buildable without a VASP licence.",
+    descriptionKo: "MPC · 승인 플로우 · AA · AML — 그리고 VASP 없이 만들 수 있는 부분은 어디까지인가.",
+    status: "soon",
+    howTo: "Not yet scoped — a reading study first, then whichever PoC items survive the licence question.",
+    howToKo: "아직 범위 미정 — 먼저 정독, 그다음 라이선스 질문을 통과한 PoC 항목만.",
+    purpose:
+      "Everything else in this catalogue is a single wallet acting for itself. Institutional custody is the opposite shape: keys split across an MPC quorum, transactions gated by an approval workflow, and a compliance surface that is legal rather than technical. The useful output is a separation — which parts are engineering (MPC, approval state machines, AA policies) and which parts are a licence you either have or do not.",
+    purposeKo:
+      "이 카탈로그의 나머지는 전부 「지갑 하나가 자기 자신을 위해 행동한다」입니다. 기관 커스터디는 정반대 모양입니다 — 키는 MPC 정족수로 쪼개지고, 트랜잭션은 승인 워크플로가 막고, 컴플라이언스 표면은 기술이 아니라 법입니다. 유용한 산출물은 분리입니다: 어디까지가 엔지니어링(MPC·승인 상태기계·AA 정책)이고, 어디부터가 있거나 없거나인 라이선스인가.",
+    howItWorks:
+      "Reading study, not a deployment: MPC signing (threshold schemes vs. the key-splitting DVT already studied elsewhere here), approval workflows as state machines, where account abstraction's policy layer overlaps custody policy, and AML/travel-rule obligations. The PoC candidates are the ones that need no VASP registration — an approval-flow simulator, an AA policy contract with quorum caveats — and those are exactly the ones this card would become.",
+    howItWorksKo:
+      "배포가 아니라 정독 스터디입니다: MPC 서명(임계 방식 vs. 여기 DVT 카드에서 이미 다룬 키 분할), 상태기계로서의 승인 워크플로, 계정 추상화의 정책 계층이 커스터디 정책과 겹치는 지점, 그리고 AML·트래블룰 의무. PoC 후보는 VASP 등록이 필요 없는 것들 — 승인 플로우 시뮬레이터, 정족수 caveat을 가진 AA 정책 컨트랙트 — 이고, 이 카드가 실제로 될 것도 그것들입니다.",
+  },
+  {
+    key: "pet-clean-room",
+    title: "PET clean room (FHE)",
+    titleKo: "PET 클린룸 (동형암호)",
+    description: "Homomorphic encryption for data that cannot leave its owner — a hands-on study.",
+    descriptionKo: "소유자를 떠날 수 없는 데이터를 위한 동형암호 — 손으로 해보는 스터디.",
+    status: "soon",
+    howTo: "Not yet scoped — start with one FHE operation end to end, then decide if a page is worth it.",
+    howToKo: "아직 범위 미정 — FHE 연산 하나를 끝까지 해본 뒤에 페이지를 만들지 정합니다.",
+    purpose:
+      "The one problem in this catalogue that cryptography solves and a blockchain does not. On-chain work makes data public and verifiable; a clean room needs the opposite — compute over data that never becomes readable, so two parties can learn a joint result without either seeing the other's input. Worth understanding as a distinct tool rather than assuming encryption-at-rest covers it.",
+    purposeKo:
+      "이 카탈로그에서 유일하게 **암호학이 풀고 블록체인은 못 푸는** 문제입니다. 온체인 작업은 데이터를 공개·검증 가능하게 만들지만, 클린룸에 필요한 건 정반대입니다 — 끝내 읽히지 않는 데이터 위에서 계산해서, 두 주체가 서로의 입력을 보지 않고도 공동 결과만 알아내는 것. 저장 시 암호화로 덮인다고 가정하지 말고 별개의 도구로 이해할 가치가 있습니다.",
+    howItWorks:
+      "Planned as a hands-on rather than a survey: take one FHE library, run a single aggregate (a sum or a count over encrypted inputs) end to end, and measure what it actually costs in latency and ciphertext size — the two numbers that decide whether any of this is usable. The reference case is a hospital/registry data collaboration, where the legal constraint is that raw records cannot leave the owner at all.",
+    howItWorksKo:
+      "서베이가 아니라 실습으로 계획했습니다: FHE 라이브러리 하나를 골라 암호문 입력에 대한 집계 하나(합계나 카운트)를 끝까지 돌려보고, 지연과 암호문 크기를 실제로 측정합니다 — 이 기술이 쓸 만한지를 정하는 건 결국 이 두 숫자입니다. 참조 사례는 원본 레코드가 소유자를 아예 떠날 수 없다는 법적 제약이 걸린 병원·레지스트리 데이터 협업입니다.",
+  },
+  {
     key: "solana",
     title: "Solana",
     titleKo: "솔라나",

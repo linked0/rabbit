@@ -67,6 +67,59 @@ export default function AgentMockPage() {
 
         <AgentJournalMock />
 
+        {/* 2026-08-11 — jay와 이 시나리오를 한 줄씩 따라가며 나온 오해들을 그대로 옮겼다.
+            전부 "물어볼 만해서 물어본" 것들이다: 이름이 겹치거나(delegation이 셋),
+            비유가 새거나(코드가 계정을 "호출"한다), 표준의 범위를 넓게 잡아서(7710이
+            강제까지 정의할 것 같다) 생긴다. 목업 옆에 붙여 두는 이유는, 화면만 보면
+            정확히 이 여섯 가지를 틀리게 읽게 되기 때문이다. */}
+        <div className="panel" style={{ marginTop: 24 }}>
+          <strong>{t("여기서 거의 모두가 틀리는 여섯 가지", "Six things this stack is routinely misread as")}</strong>
+          <p className="sub" style={{ marginTop: 4, fontSize: 13 }}>
+            {t(
+              "화면을 보고 자연스럽게 도달하지만 틀린 결론들. 각 항목은 「흔한 읽기 → 실제」다.",
+              "Conclusions the screen invites, and none of them right. Each item reads: the common reading, then what is actually true."
+            )}
+          </p>
+          <ol className="sub" style={{ marginTop: 8, paddingLeft: 20, fontSize: 13.5 }}>
+            <li>
+              {t(
+                "「delegation이 하나다」 → 셋이고 서로 무관하다. EIP-7702의 delegation designator(내 EOA가 어떤 코드로 도는가), ERC-7710의 delegation(에이전트가 받은 위임), 그리고 DelegationManager(에이전트가 호출하는 컨트랙트). 같은 단어일 뿐이다 — 문서에서는 각각 account implementation · mandate · permission manager로 부르는 게 낫다.",
+                "“Delegation means one thing” → it means three unrelated things. EIP-7702's delegation designator (which code your EOA runs), ERC-7710's delegation (the mandate the agent holds), and the DelegationManager (the contract the agent calls). Shared noun, nothing else. Call them account implementation, mandate, and permission manager instead."
+              )}
+            </li>
+            <li>
+              {t(
+                "「구현체(DeleGator)가 내 계정을 대신해 돈을 보낸다」 → 대신이 아니라 내 계정으로서다. 구현체는 호출되지 않는다 — EVM이 그 코드를 로드해 내 주소의 컨텍스트로 실행한다. USDC가 보는 msg.sender는 내 EOA이고, 구현체의 USDC 잔액은 영원히 0이다. 코드는 구현체에서, 정체성은 EOA에서.",
+                "“The implementation (DeleGator) sends money on my behalf” → not on your behalf — as you. It is never called; the EVM loads its code and runs it in your address's context. USDC sees msg.sender as your EOA, and the implementation's own USDC balance is zero forever. Code from the implementation, identity from the EOA."
+              )}
+            </li>
+            <li>
+              {t(
+                "「enforcer가 잔액을 들고 있다」 → 정수 하나를 들고 있다. 담보도 에스크로도 없고, 예약되는 자금도 없다. 그리고 그 카운터는 세션 키가 아니라 위임 해시로 키잉된다 — 같은 키에 위임을 둘 부여하면 예산도 둘이고 합산되지 않는다.",
+                "“The enforcer holds a balance” → it holds an integer. No custody, no escrow, nothing set aside. And that counter is keyed by delegation hash, not by session key — grant the same key two mandates and you get two budgets that never pool."
+              )}
+            </li>
+            <li>
+              {t(
+                "「한도는 표준이 강제한다」 → ERC-7710이 정의하는 건 redeemDelegations() 하나뿐이다. permission context는 bytes[], 즉 불투명 타입으로 선언되어 있어서 caveat이라는 개념 자체가 스펙 범위 밖이다. 실제로 「아니오」라고 말하는 enforcer들은 MetaMask의 delegation-framework다. 「온체인 컨트랙트가 강제」는 참이지만 「표준이 강제」는 거짓이다.",
+                "“The cap is enforced by a standard” → ERC-7710 defines exactly one function, redeemDelegations(). The permission context is typed bytes[] — opaque — so caveats are outside the spec's scope entirely. The enforcers that actually say no are MetaMask's delegation-framework. “Enforced on-chain by contract” is true; “enforced by a standard” is not."
+              )}
+            </li>
+            <li>
+              {t(
+                "「위임을 부여하면 체인에 기록된다」 → 아무것도 기록되지 않는다. grantPermissions는 트랜잭션이 아니라 서명된 객체를 돌려줄 뿐이고, 가스도 흔적도 없다. 서명한 수표와 같다 — 은행은 누가 현금화하기 전까지 그게 있는 줄도 모른다. 따라오는 결과 둘: 미사용 위임은 체인 스캔으로 감사할 수 없고, 취소는 부여와 대칭이 아니다(가스가 드는 온체인 트랜잭션이다). 만료가 중요한 진짜 이유가 이것이다 — 아무 행동도 가스도 주의도 필요 없는 유일한 취소다.",
+                "“Granting a mandate writes it to the chain” → nothing is written. grantPermissions is not a transaction; it returns a signed object, with no gas and no footprint. It is a signed cheque — the bank does not know it exists until someone cashes it. Two consequences: an unused mandate cannot be audited by scanning the chain, and revocation is not symmetric with granting (it costs an on-chain transaction). That is the real argument for the expiry field — it is the only revocation that needs no action, no gas, and nobody paying attention."
+              )}
+            </li>
+            <li>
+              {t(
+                "「예산은 하나다」 → 셋이고, 지키는 주체가 다르다. ① 위임 한도 — enforcer가 강제. ② 실제 자금(오너의 USDC) — 토큰 컨트랙트가 강제, 위임과 독립이라 「한도는 남았는데 잔고가 없음」이 가능하다. ③ 세션 계정의 가스 — 강제하는 것이 아무것도 없다. 셋째가 떨어지면 에이전트는 revert도 저널 행도 알림도 없이 조용히 멈춘다. 무인 에이전트가 실제로 죽는 방식이라면, 잔여 가스는 비용 열이 아니라 자체 만료를 가진 두 번째 예산으로 헤더에 있어야 한다.",
+                "“There is one budget” → there are three, with different guardians. ① The mandate — enforced by a caveat contract. ② The actual funds (the owner's USDC) — enforced by the token, and independent of the mandate, so “allowance left, balance empty” is a real state. ③ The session account's gas — enforced by nothing at all. When the third runs out the agent stops silently: no revert, no journal row, no notification. If that is how unattended agents really die, remaining gas belongs in the header as a second budget with its own expiry, not as a cost column."
+              )}
+            </li>
+          </ol>
+        </div>
+
         <div className="panel" style={{ marginTop: 24 }}>
           <strong>{t("이 목업을 두고 정해야 할 것", "What this mock is meant to settle")}</strong>
           <ul className="sub" style={{ marginTop: 8, paddingLeft: 20, fontSize: 13.5 }}>
