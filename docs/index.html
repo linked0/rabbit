@@ -300,10 +300,6 @@
             <div class="section">
                 <h2 class="section-title">Algorithms</h2>
                 <div class="grid">
-                    <a href="https://www.jaylabs.xyz/til/lmsr-hybrid-amm" class="card" style="border-left: 4px solid #0d9488;">
-                        <span class="card-title">LMSR &amp; the hybrid AMM &mdash; buying the first liquidity <span class="badge" style="background: rgba(13,148,136,0.2); color: #0d9488;">LIVE</span></span>
-                        <span class="card-path">C(q) = b&middot;ln(&Sigma;e^(q&#7522;/b)) &mdash; worst-case subsidy capped at b&middot;ln(n)</span>
-                    </a>
                     <a href="https://www.jaylabs.xyz/poc/geometric-series-dcf" class="card" style="border-left: 4px solid #64748b;">
                         <span class="card-title">Geometric series &rarr; DCF valuation <span class="badge" style="background: rgba(100,116,139,0.2); color: #64748b;">PLANNED</span></span>
                         <span class="card-path">S = a / (1 &minus; r) &rarr; Gordon Growth perpetuity, the terminal value in a DCF</span>
@@ -314,14 +310,14 @@
                     </a>
                     <!-- 아직 페이지가 없는 항목은 링크로 만들지 않는다 — 죽은 링크보다
                          "링크가 아님"이 정직하다 (2026-08-11). -->
-                    <div class="card" style="border-left: 4px solid #64748b;">
+                    <a href="html/docs/algorithms/supply-demand-equilibrium.html" class="card" style="border-left: 4px solid #0d9488;">
                         <span class="card-title">공급&middot;수요&middot;시장균형 &mdash; 가격은 계산되는 게 아니라 발견된다 <span class="badge" style="background: rgba(100,116,139,0.2); color: #64748b;">DAY 8/50</span></span>
                         <span class="card-path">D(p*) = S(p*). 블록 공간은 <strong>공급곡선이 수직선</strong>(가스 상한)이라 가격이 전부 수요 쪽에서 정해진다 &mdash; 가스비가 민팅 하나에 10&times; 뛰는 이유. EIP-1559 는 이 가격 발견을 경매에서 피드백 루프로 바꾼 설계.</span>
-                    </div>
-                    <div class="card" style="border-left: 4px solid #64748b;">
+                    </a>
+                    <a href="html/docs/algorithms/balanced-trees-concurrency.html" class="card" style="border-left: 4px solid #0d9488;">
                         <span class="card-title">Red-Black vs B+Tree vs Skip List &mdash; 동시성 관점 <span class="badge" style="background: rgba(100,116,139,0.2); color: #64748b;">DAY 2/100</span></span>
                         <span class="card-path">셋 다 O(log n) 정렬 사전. 갈리는 축은 <strong>락 범위와 노드당 키 수</strong> &mdash; 비용은 탐색이 아니라 재균형(회전)이고, Skip List 는 균형을 확률로 사서 회전을 없앤다(RocksDB memtable). 메모리는 확률로, 디스크는 페이지로. 이더리움 클라이언트가 MPT 를 평탄화해 B+Tree KV 위에 얹는 것도 같은 축 &mdash; 증명용 구조 &ne; 저장용 구조.</span>
-                    </div>
+                    </a>
                 </div>
             </div>
 
