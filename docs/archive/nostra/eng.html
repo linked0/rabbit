@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --accent-color: #2563eb;
+            --border-color: #e5e7eb;
+            --code-bg: #f3f4f6;
+            --correct-color: #16a34a;
+            --correction-bg: #dcfce7;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1e1e1e;
+                --text-color: #e5e7eb;
+                --border-color: #374151;
+                --code-bg: #2d2d2d;
+                --correction-bg: #064e3b;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .correction-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background-color: var(--bg-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .original {
+            font-style: italic;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .corrected {
+            font-weight: 500;
+            color: var(--correct-color);
+            background-color: var(--correction-bg);
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .explanation {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        code {
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            background-color: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="correction-card">
+        <div class="original">"뱃살"</div>
+        <div class="corrected">"Belly fat" / "Stomach fat" / "Muffin top" / "Love handles"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"Belly fat"</strong>: 가장 일반적이고 직설적인 표현입니다. (예: "How to lose belly fat")</li>
+                <li><strong>"Muffin top"</strong>: 바지 위로 툭 튀어나온 뱃살을 머핀 윗부분에 비유한 재미있는 표현입니다.</li>
+                <li><strong>"Love handles"</strong>: 옆구리에 붙은 살을 뜻합니다.</li>
+                <li><strong>"Potbelly"</strong>: 올챙이 배처럼 툭 튀어나온 배를 뜻합니다.</li>
+                <li><strong>"Abdominal fat"</strong>: 의학적이거나 격식 있는 표현으로 '복부 지방'을 의미합니다.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"금융화"</div>
+        <div class="corrected">"Financialization"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"Financialization"</strong>: 경제 전반에서 금융 시장, 금융 기관 등의 비중이 커지거나 금융적 논리가 지배하게 되는 현상을 뜻합니다.</li>
+                <li>예: "The financialization of the global economy" (글로벌 경제의 금융화)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"명시하라 it as complete set of the input"</div>
+        <div class="corrected">"Specify it as a complete set of inputs." / "State clearly that it is a complete set of
+            inputs."</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"명시하라"</strong> → <strong>"Specify"</strong> or <strong>"State clearly"</strong>.</li>
+                <li><strong>"complete set of the input"</strong> → <strong>"complete set of inputs"</strong> (usually
+                    plural when referring to a set).</li>
+                <li>Using <strong>"Specify it as..."</strong> is more natural in technical documentation.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"You did it. It works. Thank you! Love you."</div>
+        <div class="corrected">"You did it! It works perfectly. Thank you, I really appreciate it!"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"You did it!"</strong>: 성취를 축하하거나 감사를 표할 때 아주 자연스러운 표현입니다.</li>
+                <li><strong>"It works perfectly."</strong>: 그냥 "It works"보다 조금 더 강조하여 "완벽하게 잘 된다"는 느낌을 줍니다.</li>
+                <li><strong>"Love you"</strong>: 매우 친근하고 열정적인 감사의 표현으로, 캐주얼한 대화에서 자주 쓰입니다.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Great"</div>
+        <div class="corrected">"That's great!" / "Perfect!" / "Excellent."</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"Great"</strong> is perfectly fine as a reaction, but using <strong>"That's great!"</strong>
+                    or <strong>"Perfect!"</strong> adds a more enthusiastic tone.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Everytime you add the check, add it on the top"</div>
+        <div class="corrected">"Every time you add a check, add it to the top."</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"Everytime"</strong> → <strong>"Every time"</strong> (two words).</li>
+                <li><strong>"on the top"</strong> → <strong>"at the top"</strong> or <strong>"to the top"</strong> (more
+                    common prepositions for positions in a file).</li>
+                <li><strong>"the check"</strong> → <strong>"a check"</strong> (since it refers to any new entry).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"You don't need to check the folder `/Users/jay/work/web` that you acutally have to
+            avoid."</div>
+        <div class="corrected">"You should avoid the `/Users/jay/work/web` folder."</div>
+        <div class="explanation">
+            <ul>
+                <li>"acutally" → "actually" (typo).</li>
+                <li>The original sentence is awkward and redundant. Simplified version is clearer.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I think it was normal in the some previous code."</div>
+        <div class="corrected">"I think it was normal in some previous code."</div>
+        <div class="explanation">
+            <ul>
+                <li>"in the some" → "in some" (remove unnecessary "the").</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"You should say whether I should rerun api server or not."</div>
+        <div class="corrected">"You should say whether I should restart the API server or not."</div>
+        <div class="explanation">
+            <ul>
+                <li>"api server" → "the API server" (add definite article; capitalize "API").</li>
+                <li>"rerun" → "restart" (more common for servers).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Everytime you change some code..."</div>
+        <div class="corrected">"Every time you change some code..."</div>
+        <div class="explanation">
+            <ul>
+                <li>"Everytime" → "Every time" (two words).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"...show me the correct version in to the eng.html"</div>
+        <div class="corrected">"...show me the correct version in eng.html"</div>
+        <div class="explanation">
+            <ul>
+                <li>"in to" → "in" (remove extra word; or use "into").</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"...fixing some bug or change some hahavior of the codebase..."</div>
+        <div class="corrected">"...fixing some bugs or changing some behavior of the codebase..."</div>
+        <div class="explanation">
+            <ul>
+                <li>"hahavior" → "behavior" (typo).</li>
+                <li>"change some behavior" → "changing some behavior" (parallel structure with "fixing").</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"If you edit html file which should have code int it, so the html doesn't need to have
+            container becuase the the container..."</div>
+        <div class="corrected">"If you edit an HTML file that contains code, the HTML doesn't need a container because
+            the container..."</div>
+        <div class="explanation">
+            <ul>
+                <li>"html file" → "an HTML file" (add article; capitalize "HTML").</li>
+                <li>"code int it" → "code in it" (typo).</li>
+                <li>"becuase" → "because" (typo).</li>
+                <li>"the the" → "the" (repeated word).</li>
+                <li>"have container" → "have a container" (add article).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"나는 미궁에 빠졌어"</div>
+        <div class="corrected">"I'm at a loss." / "I'm stumped." / "I've hit a wall."</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"I'm at a loss"</strong>: 가장 일반적인 표현으로, 어떻게 해야 할지 모를 때 사용합니다.</li>
+                <li><strong>"I'm stumped"</strong>: 어려운 문제나 질문에 막혀 답을 찾지 못할 때 쓰는 구어체 표현입니다.</li>
+                <li><strong>"I've hit a wall"</strong>: 진행하던 작업이 더 이상 진전되지 않고 막혔을 때(한계에 부딪힘) 사용합니다.</li>
+                <li><strong>"I'm completely lost"</strong>: 맥락을 놓쳤거나 상황 파악이 안 될 때 사용합니다.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Can you change all the md files to use kebab-case excluding the specal root-level
+            metadata files?"</div>
+        <div class="corrected">"Could you rename all the .md files to use kebab-case, excluding the special root-level
+            metadata files?"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"change ... to use"</strong> &rarr; <strong>"rename ... to"</strong> (More specific action).
+                </li>
+                <li><strong>"specal"</strong> &rarr; <strong>"special"</strong> (Typo).</li>
+                <li><strong>"root-level metadata files"</strong> is excellent terminology!</li>
+            </ul>
+        </div>
+    </div>
+    <div class="correction-card">
+        <div class="original">"I want to know what is the current popular format for the naming files like md files.
+            There are so many format of md files like in /Users/jay/work/nostra-server/docs/task/design: some file
+            having upper cases and others lower cases"</div>
+        <div class="corrected">"I want to know what the current popular format is for naming files, such as .md files.
+            There are so many formats... some files have uppercase letters and others have lowercase."</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>Indirect Question:</strong> "what is the current..." (Question) &rarr; "what the current...
+                    is" (Statement/Clause).</li>
+                <li><strong>"naming files like md files"</strong> &rarr; <strong>"naming files, such as .md
+                        files"</strong> (Clearer).</li>
+                <li><strong>"some file having"</strong> &rarr; <strong>"some files have"</strong> (Subject-verb
+                    agreement).</li>
+            </ul>
+        </div>
+    </div>
+    <div class="correction-card">
+        <div class="original">"I want to run the seed-cloud again from start so can you add some niche time bewtween
+            each steps for the previous error not to happen again?"</div>
+        <div class="corrected">"I want to run seed-cloud again from the start. Could you add a short delay (or pause)
+            between each step so the previous error doesn't happen again?"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"niche time"</strong> &rarr; <strong>"delay"</strong>, <strong>"pause"</strong>, or
+                    <strong>"wait time"</strong>. "Niche" means a specialized market or corner, which doesn't fit here.
+                </li>
+                <li><strong>"bewtween"</strong> &rarr; <strong>"between"</strong> (Typo).</li>
+                <li><strong>"from start"</strong> &rarr; <strong>"from the start"</strong> or <strong>"from
+                        scratch"</strong>.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="correction-card">
+        <div class="original">"Ok how me all the scripts that haven't been run in the seed-cloud script because
+            restarting seed-cloud is so waste of time and gas fee"</div>
+        <div class="corrected">"Okay, could you show me all the scripts that were skipped in the seed-cloud script?
+            Restarting it is such a waste of time and gas fees."</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"How me"</strong> &rarr; <strong>"Show me"</strong> (Typo/Phonetic mix-up).</li>
+                <li><strong>"Haven't been run"</strong> &rarr; <strong>"Were skipped"</strong> is more natural when
+                    talking about a process that stopped midway.</li>
+                <li><strong>"So waste of time"</strong> &rarr; <strong>"Such a waste of time"</strong> (Grammar: "such
+                    a" + noun phrase).</li>
+            </ul>
+        </div>
+    </div>
+    <div class="correction-card">
+        <div class="original">"cors"</div>
+        <div class="corrected">"Could you explain CORS?" or "I'm having a CORS issue."</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>CORS</strong> stands for <strong>Cross-Origin Resource Sharing</strong>.</li>
+                <li>Simply typing the word is enough for me to guess, but a full sentence clarifies if you want a
+                    definition or a fix.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Hey from now now for a while I just want to check my english. OK?"</div>
+        <div class="corrected">"Hey, for a while, I just want to check my English. Is that okay?"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"From now now"</strong> is repetitive. <strong>"For a while"</strong> or <strong>"From now
+                        on"</strong> is better.</li>
+                <li><strong>"English"</strong> should always be capitalized.</li>
+                <li><strong>"OK?"</strong> is casual; <strong>"Is that okay?"</strong> is slightly more polite, though
+                    "OK?" is fine in chat.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"직접하면 되지. 왜 메가존을 거쳐?"</div>
+        <div class="corrected">"We could just deal directly. Why go through a middleman like Megazone?"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"Deal directly"</strong> or <strong>"Go direct"</strong> implies contracting with the source
+                    (Google).</li>
+                <li><strong>"Go through"</strong> is the standard phrasal verb for using an intermediary.</li>
+                <li><strong>"Middleman"</strong> or <strong>"Intermediary"</strong> describes the MSP role.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Megazone and MSP : tell me about it"</div>
+        <div class="corrected">"Could you tell me about Megazone and MSPs?"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"Tell me about it"</strong> is often an idiom meaning <em>"I agree completely"</em> (usually
+                    when complaining about something shared).</li>
+                <li>To ask for information, use <strong>"Could you tell me about..."</strong> or <strong>"What
+                        is..."</strong>.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"You mean compute engine is like health trainer"</div>
+        <div class="corrected">"So, you mean Compute Engine is like a personal trainer?"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"So, you mean..."</strong> is excellent for confirming your understanding of an explanation.
+                </li>
+                <li><strong>"A personal trainer"</strong> needs the article "a". Also, "personal trainer" is the
+                    standard term (rather than "health trainer").</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Stateless 이게 이해갸 안 가는데, db가 있으면 state가 있는건데"</div>
+        <div class="corrected">"I don't get the 'Stateless' part. If there's a DB, doesn't that mean the system has
+            state?"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"I don't get..."</strong> is a common, casual way to say "I don't understand."</li>
+                <li><strong>"The 'Stateless' part"</strong> refers to the specific term causing confusion.</li>
+                <li><strong>"Doesn't that mean..."</strong> is used to challenge a premise based on your reasoning.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"복잡한 시스템에서는 어쩔 수 없이 Compute Engine을 써야하는 것이군"</div>
+        <div class="corrected">"I see. So for complex systems, using Compute Engine is inevitable."</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"I see"</strong> acknowledges the new information.</li>
+                <li><strong>"Inevitable"</strong> or <strong>"Unavoidable"</strong> captures "어쩔 수 없이" (have no choice).
+                </li>
+                <li>Alternative: <em>"So, complex systems leave us no choice but to use Compute Engine."</em></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"is it gitignored?"</div>
+        <div class="corrected">"Is it gitignored?"</div>
+        <div class="explanation">
+            <ul>
+                <li>Capitalize the first letter to form a proper question.</li>
+                <li>Otherwise, the phrasing is fine and idiomatic for asking if a file is excluded from git.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"근데, CloudRun이랑 다른 인스턴스 관리 기능이랑 뭐가 다른거야?"</div>
+        <div class="corrected">"By the way, what's the difference between Cloud Run and other instance management
+            services?"</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"By the way"</strong> is a good way to transition to a new topic ("근데").</li>
+                <li><strong>"Instance management services"</strong> is better than "features" when comparing cloud
+                    products (like Compute Engine).</li>
+                <li>You could also ask: <em>"How does Cloud Run differ from managing raw instances?"</em></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"check this and where can I find the api instance in google cloud that looks succeeded in
+            cloud ?"</div>
+        <div class="corrected">"Please check this error. Also, where can I find the API instance in the Google Cloud
+            Console, as it seems to have been deployed successfully?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"check this" &rarr; "Please check this error" (Polite request).</li>
+                <li>"that looks succeeded" &rarr; "as it seems to have been deployed successfully" (More natural
+                    phrasing for verifying status).</li>
+                <li>"in google cloud" &rarr; "in the Google Cloud Console" (Specific location).</li>
+            </ul>
+        </div>
+    </div>
+
+
+    <div class="correction-card">
+        <div class="original">"how about add \"node scripts/generate-env-yaml.js api/.env api/env.yaml\" into the
+            deploy:mvp script or its sh file"</div>
+        <div class="corrected">"How about adding `node scripts/generate-env-yaml.js api/.env api/env.yaml` to the
+            `deploy:mvp` script?"</div>
+        <div class="explanation">
+            <ul>
+                <li>Use "adding" with an -ing form after "How about."</li>
+                <li>Wrap the command and script name in backticks for clarity.</li>
+                <li>Simplify the ending to avoid the extra "or its sh file."</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"이건된다. 혹은 하면 된다"</div>
+        <div class="corrected">"This works. Or, if I try it, it will work." / "It ends up working out, even in ways I
+            didn’t expect."</div>
+        <div class="explanation">
+            <ul>
+                <li>Captures the nuance of initial uncertainty but eventual success, sometimes through unexpected means.
+                </li>
+                <li>Alternative: "I’m not sure at first, but it always comes together—often in ways I didn’t
+                    anticipate."</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"내가 만약 그녀에게 그얘기를 한다는 난 정말 개야"</div>
+        <div class="corrected">"I'd be a total jerk if I told her that."</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>Meaning:</strong> The Korean metaphor "dog" here translates best to "jerk," "scumbag," or
+                    "piece of trash"—someone who acts selfishly despite knowing it hurts others.</li>
+                <li><strong>Alternative:</strong> "It would be incredibly selfish of me to say that to her." (More
+                    descriptive).</li>
+                <li><strong>Nuance:</strong> This captures the feeling that saying it would be a low, contemptible act
+                    done only to satisfy your own urge to speak.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"still waiting"</div>
+        <div class="corrected">"I'm still waiting." or "It's still running."</div>
+        <div class="explanation">
+            <ul>
+                <li>"Still waiting" is a sentence fragment. Adding the subject "I" or "It" makes it a complete sentence.
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"What is patching?"</div>
+        <div class="corrected">Technical Term: <strong>Patching</strong></div>
+        <div class="explanation">
+            <ul>
+                <li>In this context (Cloud SQL), it means <strong>updating the configuration</strong> of an existing
+                    resource without deleting and recreating it.</li>
+                <li>Specifically, we are "patching" (modifying) the <em>Authorized Networks</em> setting to allow
+                    connections.</li>
+                <li>Generally, "to patch" means to apply a fix or update to software.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"should I rerun teh yarn deploy:mvp"</div>
+        <div class="corrected">"Should I rerun `yarn deploy:mvp`?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"teh" -> "the" (typo).</li>
+                <li>Including the command in backticks or quotes makes it clearer.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">": fourth time"</div>
+        <div class="corrected">"It's the fourth time." or "This is my fourth attempt."</div>
+        <div class="explanation">
+            <ul>
+                <li>"fourth time" is a fragment. Using a full sentence clarifies the context (frustration vs. counting).
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Third time's the charm! 🤞"</div>
+        <div class="corrected">"Third time's the charm!" (Idiom)</div>
+        <div class="explanation">
+            <ul>
+                <li>Used when two attempts have failed, and you hope the third will succeed.</li>
+                <li>It's a perfect usage here!</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"ok"</div>
+        <div class="corrected">"Okay, proceed." or "Sounds good."</div>
+        <div class="explanation">
+            <ul>
+                <li>"ok" is acceptable but very informal. "Sounds good" confirms agreement more politely.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">": check this"</div>
+        <div class="corrected">"Please check this." or "Could you investigate this error?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"check this" is a command. "Please investigate" or "Look into" is more distinct for complex errors.
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"check it again"</div>
+        <div class="corrected">"Please check it again." or "Could you take another look?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"check it again" is an imperative command. "Please" converts it to a polite request.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"should we run again?"</div>
+        <div class="corrected">"Should we run it again?" or "Shall I try running it again?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"run again" needs an object (it).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"check again"</div>
+        <div class="corrected">"Please check again." or "Can you review the new errors?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"check again" is terse. "Please" adds politeness.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"So don't we need to run this script and others: fifa-world-cup-2026 and etc?"</div>
+        <div class="corrected">"Don't we need to run these scripts as well, such as the fifa-world-cup-2026 value?" or
+            "Shouldn't we exclude these scripts from the build?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"don't we need to run" is valid, but the user likely implies "Should these even be
+                    compiled/checked?". The intent is about why they are causing errors if they are just scripts.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"shouldn't we fix this error?"</div>
+        <div class="corrected">"Shouldn't we fix these errors?" or "We need to fix these errors, right?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"this error" -> "these errors" (There are multiple TypeScript errors).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">": check the errors"</div>
+        <div class="corrected">"Please check the errors." or "Can you help troubleshoot these errors?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"check the errors" is an imperative fragment. Adding "Please" makes it polite.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"how can I get web url for my web server?"</div>
+        <div class="corrected">"How can I get the URL for my web server?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"web url" -> "the URL" (Article usage).</li>
+                <li>"for my web server" -> "for my web server" (Correct).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">": check this"</div>
+        <div class="corrected">"Please check this." or "Could you look at this error?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"check this" is an imperative fragment. Adding "Please" makes it polite.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"For the cloud?"</div>
+        <div class="corrected">"Is this for the cloud environment?" or "Does this target the cloud database?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"For the cloud?" is a context-dependent fragment. A complete question clarifies the intent.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I forget where should I run this script: ./scripts/setup-cloud-db.sh"</div>
+        <div class="corrected">"I forgot where I should run this script: ./scripts/setup-cloud-db.sh." or "I forgot:
+            where should I run...?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"I forget" -> "I forgot" (Past tense is usually more appropriate for something that slipped your
+                    mind).</li>
+                <li>"where should I run" -> "where I should run" (Indirect question word order).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"check the errors and the last question"</div>
+        <div class="corrected">"Please check the errors and answer the last question."</div>
+        <div class="explanation">
+            <ul>
+                <li>"check the errors" -> "Please check the errors" (Polite request).</li>
+                <li>"the last question" -> "answer the last question" (Clarify the action needed).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"But it will be used in deploy-mvp.sh"</div>
+        <div class="corrected">"But it will describe being used in the deploy-mvp.sh script." or "But deploy-mvp.sh
+            will use it."</div>
+        <div class="explanation">
+            <ul>
+                <li>"it will be used" is correct passive voice, but specifying "deploy-mvp.sh will use it" (active) is
+                    often clearer.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"how can I check the DATABASE_URL is used normally?"</div>
+        <div class="corrected">"How can I check if the DATABASE_URL is working correctly?" or "How can I verify that the
+            DATABASE_URL is valid?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"used normally" is a bit vague. "Working correctly" or "valid" is standard technical phrasing.</li>
+                <li>"check the DATABASE_URL is..." -> "check IF the DATABASE_URL is..." (Subordinate clause).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"yarn create-cloud-db is completed. how can I get DATABASE_URL?"</div>
+        <div class="corrected">"The 'yarn create-cloud-db' command has completed. How can I obtain (or construct) the
+            DATABASE_URL?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"is completed" -> "has completed" (Action is finished).</li>
+                <li>"get DATABASE_URL" -> "obtain/construct the DATABASE_URL" (More precise verbs).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"If we use DATABASE_URL do we need CLOUD_SQL_ROOT_PASSWORD?"</div>
+        <div class="corrected">"If we use DATABASE_URL, do we still need CLOUD_SQL_ROOT_PASSWORD?"</div>
+        <div class="explanation">
+            <ul>
+                <li>Added comma after introductory clause "If we use DATABASE_URL".</li>
+                <li>Added "still" to emphasize the question about necessity.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"so simplify the deploy-mvp.sh"</div>
+        <div class="corrected">"So, please simplify the deploy-mvp.sh script."</div>
+        <div class="explanation">
+            <ul>
+                <li>"simplify the [file]" -> "simplify the [file] script" (Clarifies object).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"OK I will use DATABASE_URL for both local server and cloud server. so simplify the
+            .env"</div>
+        <div class="corrected">"OK, I will use DATABASE_URL for both the local and cloud servers. So, please simplify
+            the
+            .env file."</div>
+        <div class="explanation">
+            <ul>
+                <li>"both local server and cloud server" -> "both the local and cloud servers" (Parallel structure and
+                    articles).</li>
+                <li>"simplify the .env" -> "simplify the .env file" (Complete sentence structure).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"NO I don't insist. But this part should be change anyway..."</div>
+        <div class="corrected">"No, I don't insist. But this part should be changed anyway..."</div>
+        <div class="explanation">
+            <ul>
+                <li>"should be change" -> "should be changed" (Passive voice requires past participle).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I think we should use other name like CLOUD_SQL_URL for DATABASE_URL for Cloud Run
+            setting in this..."</div>
+        <div class="corrected">"I think we should use a different name, like CLOUD_SQL_URL, instead of DATABASE_URL for
+            the Cloud Run setting in this command..."</div>
+        <div class="explanation">
+            <ul>
+                <li>"use other name" -> "use a different name" (More standard).</li>
+                <li>"for DATABASE_URL" -> "instead of DATABASE_URL" (Clarifies substitution).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"it's running now, how can i find it's nomally created in Google Cloud console or some
+            commands?"</div>
+        <div class="corrected">"It's running now. How can I verify that it was successfully created in the Google Cloud
+            Console, or are there commands to check?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"find it's nomally created" -> "verify that it was successfully created" (More precise).</li>
+                <li>"in Google Cloud console or some commands" -> "in the Google Cloud Console, or are there commands to
+                    check?" (Split for clarity).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"./scripts/setup-cloud-db.sh: is it also called in local command ?"</div>
+        <div class="corrected">"Is ./scripts/setup-cloud-db.sh also used for local commands?" or "Does the local
+            command also call ./scripts/setup-cloud-db.sh?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"is it also called in" -> "Is it also used for" (More natural).</li>
+                <li>"in local command" -> "for local commands" (Preposition fix).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"revert it"</div>
+        <div class="corrected">"Please revert it." or "Can you revert changes?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"revert it" is an imperative command. Adding "Please" makes it polite.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I think the scripts have too many scripts and folder so can you combine some int market
+            creation and cloud setup folder"</div>
+        <div class="corrected">"I think there are too many scripts and folders. Could you combine some into a 'market
+            creation' or 'cloud setup' folder?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"the scripts have too many scripts" -> "there are too many scripts" (Avoiding repetition).</li>
+                <li>"combine some int" -> "combine some into" (Typo fix).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Can you add the steps to README.md in api folder for later use?"</div>
+        <div class="corrected">"Could you add the steps to the README.md in the api folder for future reference?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"Can you add" -> "Could you add" (Polite request).</li>
+                <li>"in api folder" -> "in the api folder" (Definite article).</li>
+                <li>"for later use" -> "for future reference" (Common idiomatic expression for documentation).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"add also a script in package.json"</div>
+        <div class="corrected">"Please also add a script to package.json."</div>
+        <div class="explanation">
+            <ul>
+                <li>"add also a script" -> "Please also add a script" (Word order: "also" usually comes before the verb
+                    or between aux/main verb).</li>
+                <li>"in package.json" -> "to package.json" (Adding something *to* a file, though *in* is acceptable).
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"add script for gcloud sql instances create ... and I will add for password for root in
+            .env what would be the best name for that?"</div>
+        <div class="corrected">"Please add a script for `gcloud sql instances create...`. I will add the root password
+            to
+            .env; what would be the best variable name for that?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"add script for" -> "Please add a script for" (Polite request).</li>
+                <li>"add for password" -> "add the root password" (Remove extra 'for').</li>
+                <li>"best name" -> "best variable name" (More specific).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"POSTGRES_15 is great?"</div>
+        <div class="corrected">"Is POSTGRES_15 a good choice?" or "Is Postgres 15 recommended?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"X is great?" is a statement with a question mark. "Is X a good choice?" is a standard question
+                    structure.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"But you said this: It sets the DATABASE_URL environment variable."</div>
+        <div class="corrected">"But you said (that) it sets the DATABASE_URL environment variable."</div>
+        <div class="explanation">
+            <ul>
+                <li>"you said this: [Statement]" -> "you said that [Statement]" (Indirect speech is smoother).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"You mean we don't need to set DATABASE_URL in .env?"</div>
+        <div class="corrected">"Do you mean (that) we don't need to set DATABASE_URL in the .env file?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"You mean..." works in conversation, but "Do you mean..." is the proper question form.</li>
+                <li>"in .env" -> "in the .env file" (Specific file reference).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Yeah, and add the contect for the running script."</div>
+        <div class="corrected">"Yes, and please add the context (or instructions) for running the script."</div>
+        <div class="explanation">
+            <ul>
+                <li>"contect" is likely a typo for "context" or "content".</li>
+                <li>"add [typo] for..." -> "add instructions for..." is usually what is meant when asking for
+                    documentation.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I think the add script for seeding market. Would it be run on cloud from local
+            terminal?"</div>
+        <div class="corrected">"I think we should add a script for seeding the market. Would it run on the cloud from
+            the
+            local terminal?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"I think the add script" -> "I think we should add a script" (Action-oriented).</li>
+                <li>"Would it be run on cloud" -> "Would it run on the cloud" (More natural phrasing).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"should that be done after Deployment Commands?"</div>
+        <div class="corrected">"Should that be done after the deployment commands?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"should that be done" -> "Should that be done" (Capitalize first letter).</li>
+                <li>"after Deployment Commands" -> "after the deployment commands" (Add definitive article, lowercase
+                    unless referring to a specific Title).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I will create Cloud SQL. Show me how to do that and can I set what kind of database we
+            use in Cloud SQL like Postgresql?"</div>
+        <div class="corrected">"I'm going to create a Cloud SQL instance. Could you show me how to do that? Also, can I
+            choose the database type, such as PostgreSQL?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"I will create Cloud SQL" -> "create a Cloud SQL instance" (more precise terminology).</li>
+                <li>"can I set what kind of database" -> "choose the database type" or "specify the database engine".
+                </li>
+                <li>"like Postgresql" -> "such as PostgreSQL" (PostgreSQL is the proper capitalization).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"The order is reversed in cloud workflow. right?"</div>
+        <div class="corrected">"The order is reversed in the cloud workflow, right?" or "Is the order reversed in the
+            cloud workflow?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"The order is reversed" is a statement. To ask for confirmation, add ", right?" or invert the
+                    subject
+                    and verb ("Is the order...").</li>
+                <li>"in cloud workflow" -> "in the cloud workflow" (requires definite article).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I don't understand. 'yarn fresh-start' is done before yarn dev. so how do we start the
+            cloud server"</div>
+        <div class="corrected">"I don't understand. 'yarn fresh-start' runs before 'yarn dev', so how do we start the
+            cloud
+            server?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"is done" -> "runs" or "is executed" (active verbs are often better for code commands).</li>
+                <li>Added comma before "so" (conjunction connecting two independent clauses).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"how about add for that into package.json. Is it a good practice or is it good to remain
+            as
+            it is?"</div>
+        <div class="corrected">"How about adding that to package.json? Is it good practice, or is it better to leave it
+            as
+            is?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"add for that" -> "adding that" (gerund form is better here).</li>
+                <li>"remain as it is" -> "leave it as is" (more natural idiomatic expression).</li>
+                <li>Structure: "Is it X or Y?" requires parallel structures (e.g., "Is it good practice... or is it
+                    better...").</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"is it good to remvoe unused project?"</div>
+        <div class="corrected">"Is it a good idea to remove unused projects?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"remvoe" -> "remove" (typo).</li>
+                <li>"is it good" -> "is it a good idea" or "is it recommended" is more natural.</li>
+                <li>"unused project" -> "unused projects" (plural usually implies generally, singular implies a specific
+                    one).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"how can I handle this shortley witiout any complex process?"</div>
+        <div class="corrected">"How can I handle this quickly without any complex process?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"shortley" -> "shortly" (meaning "soon") or "briefly" (meaning "concisely"). But "quickly" is best
+                    here.</li>
+                <li>"witiout" -> "without" (typo).</li>
+                <li>"Handle" is fine, but "complete" or "resolve" might be more precise.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"You should add how to solve the problem also with the problem itself"</div>
+        <div class="corrected">"You should include the solution alongside the problem description."</div>
+        <div class="explanation">
+            <ul>
+                <li>"How to solve the problem" can be shortened to "the solution".</li>
+                <li>"Also with" is understandable, but "alongside" or "together with" flows better.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Last one on the top. OK?"</div>
+        <div class="corrected">"The latest one should be at the top. Okay?" / "Newest entries go on top. Okay?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"Last" can mean "final" or "previous". "Latest" or "Newest" clearly means "most recent".</li>
+                <li>"On the top" is fine, but "At the top" is slightly more common for document structure.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"[Error Log] : check this error"</div>
+        <div class="corrected">"Could you please check this error?" / "How do I fix this error?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"check this error" is a direct command. It is acceptable in a working relationship, but polite forms
+                    like "Could you..." are better.</li>
+                <li><b>Technical Fix:</b> The error <code>MarketStatus</code> not found usually means the Prisma client
+                    is out of sync. Run <code>npx prisma generate</code>.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"npm package version 0.9.1 in the sentens is right which I meant the sdk version?"</div>
+        <div class="corrected">"Is 'npm package version 0.9.1' correct in the sentence if I meant the SDK version?"
+        </div>
+        <div class="explanation">
+            <ul>
+                <li>"sentens" -> "sentence" (typo).</li>
+                <li>Structure: "Is [phrase] correct...?" is the standard way to ask for grammar checks.</li>
+                <li><b>Answer:</b> Yes, "npm package version 0.9.1" is perfectly correct. You can also say "SDK version
+                    0.9.1" to be more specific.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I am using yalc now but can you change the nostra-server to use npm package
+            versioned.0.9.1 instead of yarc"</div>
+        <div class="corrected">"I am currently using yalc, but could you update nostra-server to use npm package version
+            0.9.1 instead of yalc?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"versioned.0.9.1" -> "version 0.9.1".</li>
+                <li>"yarc" -> "yalc" (typo).</li>
+                <li>"change... to use" is fine, but "update... to use" is also good.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"checn eng only"</div>
+        <div class="corrected">"Check English only." / "Please just check the English."</div>
+        <div class="explanation">
+            <ul>
+                <li>"checn" is a typo for "check".</li>
+                <li>"eng" is common shorthand for "English".</li>
+                <li>The user likely meant "Don't run the code/command, just check the English grammar."</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I am using yalc now but can you change the nostra-server to use npm package
+            versioned.0.9.1 instead of yarc: check this one"</div>
+        <div class="corrected">"I am currently using yalc, but could you change nostra-server to use the npm package
+            version 0.9.1 instead? Also, please check this sentence."</div>
+        <div class="explanation">
+            <ul>
+                <li>"versioned.0.9.1" -> "version 0.9.1".</li>
+                <li>"yarc" -> "yalc" (typo).</li>
+                <li>"check this one" is okay informally, but "please check this sentence" is clearer.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"no check my previous eng"</div>
+        <div class="corrected">"No, please check my previous English." / "No, I meant for you to check my previous
+            English request."</div>
+        <div class="explanation">
+            <ul>
+                <li>"No check" sounds like a command to NOT check.</li>
+                <li>"Please check" or "I meant..." clarifies the intent to have the previous text reviewed.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Currently, the UI is very similar to Kalshi, especially the Yes/No buttons."</div>
+        <div class="corrected">"Differentiate UI from Kalshi (especially Yes/No buttons)."</div>
+        <div class="explanation">
+            <ul>
+                <li>The original sentence is a <b>statement of fact</b> (observation), but the list contains <b>action
+                        items</b> (features to build).</li>
+                <li>To match the style, turn it into an action: "Differentiate..." or "Redesign..."</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"The word format is right?"</div>
+        <div class="corrected">"Is the word 'format' correct here?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"<b>Format</b>" usually refers to visual layout (e.g., bold, italics, spacing, bullet points).</li>
+                <li>"<b>Phrasing</b>" or "<b>Style</b>" is better when discussing word choice or grammatical structure
+                    (e.g., using "Define..." vs "We need to define...").</li>
+                <li>So, "The <b>phrasing</b> does not align..." would be more precise.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"the format of 'we need to define blah blah' does not aligned with other sentences or
+            items"</div>
+        <div class="corrected">"The format of 'we need to define...' does not align with the other sentences or items."
+        </div>
+        <div class="explanation">
+            <ul>
+                <li>"does not aligned" -> "does not align" (Grammar: "do/does/did" is followed by the base form of the
+                    verb).</li>
+                <li>Capitalized the first letter for verified sentence structure.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"We need to define the categories and specify which items are included in each."</div>
+        <div class="corrected">"Define categories and specify the items included in each."</div>
+        <div class="explanation">
+            <ul>
+                <li>Changed from a statement of need ("We need to...") to an imperative instruction ("Define...") to
+                    match the consistency of other list items in the document.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Category should be defined about which category items are included."</div>
+        <div class="corrected">"We need to define the categories and specify which items are included in each."</div>
+        <div class="explanation">
+            <ul>
+                <li>"Category should be defined about..." -> "We need to define the categories..." (Active voice is
+                    clearer).</li>
+                <li>"about which category items are included" -> "and specify which items are included in each" (More
+                    precise).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Currentlty thu UI is very similar to Kashi, especially the Yes/No button."</div>
+        <div class="corrected">"Currently, the UI is very similar to Kalshi, especially the Yes/No buttons."</div>
+        <div class="explanation">
+            <ul>
+                <li>"Currentlty" -> "Currently" (Typo).</li>
+                <li>"thu" -> "the" (Typo).</li>
+                <li>"Kashi" -> "Kalshi" (Competitor name correction).</li>
+                <li>"Yes/No button" -> "Yes/No buttons" (Plural, as there are usually two).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"This is 문서 정리 작업 for coworking with new member."</div>
+        <div class="corrected">"This task involves organizing documentation to facilitate collaboration with a new team
+            member."</div>
+        <div class="explanation">
+            <ul>
+                <li>"문서 정리 작업" -> "organizing documentation" (natural translation).</li>
+                <li>"coworking with" -> "collaboration with" (more suitable for project work).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"There are two things that should be done at the desk and not at the desk like change code
+            and plan how to do something."</div>
+        <div class="corrected">"There are two types of tasks: those that should be done at the desk, like coding, and
+            those that should be done away from the desk, like planning."</div>
+        <div class="explanation">
+            <ul>
+                <li>"Two things" -> "Two types of tasks" (more specific).</li>
+                <li>"not at the desk" -> "away from the desk" (better phrasing).</li>
+                <li>"change code" and "plan..." -> "coding" and "planning" (parallel structure).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Kalshi should be in the last"</div>
+        <div class="corrected">"Kalshi should be last" or "Kalshi should be at the end."</div>
+        <div class="explanation">
+            <ul>
+                <li>"in the last" usually refers to time (e.g., "in the last week").</li>
+                <li>For position/order, use "last" (adjective) or "at the end" (prepositional phrase).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"SEtting link to a all sentences are weird, add new link word like Hording Rewards and
+            Liquidity Rewards. 아예 separate items in the cell."</div>
+        <div class="corrected">"Setting the link on the entire sentence looks weird; please add link text like 'Holding
+            Rewards' and 'Liquidity Rewards'. Separate the items completely within the cell."</div>
+        <div class="explanation">
+            <ul>
+                <li>"SEtting link to a all sentences" -> "Setting the link on the entire sentence".</li>
+                <li>"Hording Rewards" -> "Holding Rewards" (Typo).</li>
+                <li>"아예 (a-ye)" -> "rather", "instead", or "completely".</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"fo polymarke fee"</div>
+        <div class="corrected">"for Polymarket fee"</div>
+        <div class="explanation">
+            <ul>
+                <li>"fo" is a typo for "for".</li>
+                <li>"Polymarket" should be capitalized (Proper Noun).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"The source mean..."</div>
+        <div class="corrected">"The source means..."</div>
+        <div class="explanation">
+            <ul>
+                <li>Subject-verb agreement: "Source" is singular, so use "means".</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"show me commit message"</div>
+        <div class="corrected">"Show me the commit message." or "Draft a commit message for me."</div>
+        <div class="explanation">
+            <ul>
+                <li>"commit message" usually requires an article ("the" or "a").</li>
+                <li>If asking for a draft, "Draft a commit message" is more precise.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"merge these commits... and don't commit"</div>
+        <div class="corrected">"Squash these commits... and leave the changes staged."</div>
+        <div class="explanation">
+            <ul>
+                <li>"merge" (in git history context) -> "squash" (combine multiple commits into one).</li>
+                <li>"don't commit" -> "leave the changes staged" (describes the desired state after reset/squash).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"recalc all the thing"</div>
+        <div class="corrected">"Recalculate everything." or "Recalculate all the values."</div>
+        <div class="explanation">
+            <ul>
+                <li>"recalc" is informal for "recalculate".</li>
+                <li>"all the thing" -> "everything" (idiomatic) or "all the things" (plural).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Change the France Yes to France No token in the test"</div>
+        <div class="corrected">"Change 'France Yes' to 'France No' token in the test case."</div>
+        <div class="explanation">
+            <ul>
+                <li>"Change the France Yes to France No" -> "Change 'France Yes' to 'France No'" (Use quotes for
+                    specific token names/values for clarity).</li>
+                <li>"in the test" -> "in the test case" (Optional, but more specific).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Trader 1 create a market... Trader 1 buy 10 dollar worth..."</div>
+        <div class="corrected">"Trader 1 creates a market... Trader 1 buys $10 worth..."</div>
+        <div class="explanation">
+            <ul>
+                <li>"create" -> "creates" (Subject 'Trader 1' is singular third-person).</li>
+                <li>"buy" -> "buys" (Same reason).</li>
+                <li>"10 dollar worth" -> "$10 worth" (Standard notation).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"We have 50 percent of probabilities for each outcome."</div>
+        <div class="corrected">"Each outcome has a 50% probability." or "We have 50% probability for each outcome."
+        </div>
+        <div class="explanation">
+            <ul>
+                <li>"percent of probabilities" -> "percent probability" or just "% probability".</li>
+                <li>"We have" is okay, but "Each outcome has" is more direct.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"After resolving of Brazil winning, what would be the claim and total amount of position
+            for each trader including Admin."</div>
+        <div class="corrected">"After resolving the market as 'Brazil Wins', what would be the claim amount and total
+            position value for each trader, including the Admin?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"resolving of Brazil winning" -> "resolving as 'Brazil Wins'" (more standard phrasing for market
+                    resolution).</li>
+                <li>"claim and total amount of position" -> "claim amount and total position value" (more precise
+                    terms).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"yeap every time."</div>
+        <div class="corrected">"Yes, every time."</div>
+        <div class="explanation">
+            <ul>
+                <li>"yeap" is an informal spelling (often "yep" or "yup"). "Yes" is standard.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"You don't need to push for the nostra-server and nostra-contracts, which I will do when
+            needed"</div>
+        <div class="corrected">"You don't need to push changes for nostra-server and nostra-contracts; I will do that
+            when needed."</div>
+        <div class="explanation">
+            <ul>
+                <li>"push for" -> "push changes for" (more precise in git context).</li>
+                <li>"which I will do" -> "I will do that" (independent clause after semicolon is clearer here).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"make the rebalance have 1000 usdc from 10000 usdc and change the test-plan.md to be
+            aligned to the change amount of USDC and move it to the /Users/jay/work/nostra-server/docs/test folder"
+        </div>
+        <div class="corrected">"Change the rebalance amount to 1,000 USDC (from 10,000 USDC), update test-plan.md to
+            align with this change, and move it to the /Users/jay/work/nostra-server/docs/test folder."</div>
+        <div class="explanation">
+            <ul>
+                <li>"make the rebalance have" -> "Change the rebalance amount to" (more direct verbs).</li>
+                <li>"from 10000 usdc" -> "(from 10,000 USDC)" (parentheses help separate the old from new).</li>
+                <li>"aligned to the change amount" -> "align with this change" (more idiomatic).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Add links about desing.html, eng.html future-plan.htm plan.html summary.html task.md into
+            the index.html"</div>
+        <div class="corrected">"Add links for design.html, eng.html, future-plan.html, plan.html, summary.html, and
+            task.md to index.html."</div>
+        <div class="explanation">
+            <ul>
+                <li>"links about [files]" -> "links for [files]" or "links to [files]".</li>
+                <li>"into the index.html" -> "to index.html" (often 'add to' is sufficient).</li>
+                <li>Typo: "desing.html" -> "design.html".</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"add pages for each section that show all the content card and the index.html show the
+            latest content cards like 9 and go to section page for more content cards"</div>
+        <div class="corrected">"Add pages for each section that show all content cards. The index.html should show the
+            latest cards (e.g., 9) and link to the section page for more."</div>
+        <div class="explanation">
+            <ul>
+                <li>Long sentence split for clarity.</li>
+                <li>"show all the content card" -> "show all content cards" (plural).</li>
+                <li>"go to section page" -> "link to the section page" (describing the action of the UI).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I want that to be the thies in order. English Learning & Corrections"</div>
+        <div class="corrected">"I want 'English Learning & Corrections' to be third in order."</div>
+        <div class="explanation">
+            <ul>
+                <li>"thies" -> "third" (typo).</li>
+                <li>"in order" placement is fine.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I mean to change the /Users/jay/work/task/index.html"</div>
+        <div class="corrected">"I meant to change /Users/jay/work/task/index.html." or "I intend to change..."</div>
+        <div class="explanation">
+            <ul>
+                <li>"I mean to" (present) implies intent for the future. "I meant to" (past) implies clarifying a past
+                    action/mistake. Context dependent.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"It's error occurred when a user try to claim their winning amount in the My Position
+            page."</div>
+        <div class="corrected">"An error occurred when a user tried to claim their winnings on the My Positions page."
+        </div>
+        <div class="explanation">
+            <ul>
+                <li>"It's error occurred" -> "An error occurred" ('It's' is not needed; use indefinite article 'An').
+                </li>
+                <li>"try" -> "tried" (past tense for describing a past event).</li>
+                <li>"winning amount" -> "winnings" (more natural/idiomatic).</li>
+                <li>"in the My Position page" -> "on the My Positions page" (use 'on' for pages; 'Positions' is plural
+                    in the actual page name).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"It worked before the current update which is not committed yet."</div>
+        <div class="corrected">"It worked before the current update, which has not been committed yet."</div>
+        <div class="explanation">
+            <ul>
+                <li>"which is not committed" -> "which has not been committed" (present perfect passive for an action
+                    that is still relevant now).</li>
+                <li>Added a comma before "which" for proper non-restrictive clause punctuation.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I think it's related to some batch related code."</div>
+        <div class="corrected">"I think it's related to some batch-related code."</div>
+        <div class="explanation">
+            <ul>
+                <li>"batch related" -> "batch-related" (hyphenate compound adjectives before a noun).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Can you check it? Let's talk about the cause."</div>
+        <div class="corrected">"Could you check it? Let's discuss the cause."</div>
+        <div class="explanation">
+            <ul>
+                <li>"Can you" -> "Could you" (more polite request).</li>
+                <li>"talk about" -> "discuss" (more formal/professional).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Check the /Users/jay/work/task/nostra/task.md"</div>
+        <div class="corrected">"Please check the file at /Users/jay/work/task/nostra/task.md"</div>
+        <div class="explanation">
+            <ul>
+                <li>Added "Please" for politeness.</li>
+                <li>Added "the file at" for clarity when referring to a file path.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Should I restart api server for the last fix?"</div>
+        <div class="corrected">"Should I restart the API server for the last fix?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"api server" -> "the API server" (requires definitive article 'the' as it refers to a specific
+                    server; 'API' should be capitalized).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Why does the finalization fail in only the created market from the page"</div>
+        <div class="corrected">"Why does finalization fail only for markets created via the page?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"fail in only the created market" -> "fail only for markets created" (better preposition: for).</li>
+                <li>"created market from the page" -> "markets created via the page" (idiomatic).</li>
+            </ul>
+        </div>
+    </div>
+    </ul>
+    </div>
+    </div>
+    <div class="original">"So did you fix the bug?"</div>
+    <div class="corrected">"So, have you fixed the bug?"</div>
+    <div class="explanation">
+        <ul>
+            <li>"So did you" -> "So, have you" (comma for pause, present perfect for current status).</li>
+            <li>"did you fix" is also valid, but "have you fixed" emphasizes the completion state.</li>
+        </ul>
+    </div>
+    </div>
+    <div class="original">"Remove any title like "English Correction" in the file, I want just the content.: check
+        it again"</div>
+    <div class="corrected">"Remove any title like 'English Correction' from the file; I want just the content.
+        Please check it again."</div>
+    <div class="explanation">
+        <ul>
+            <li>"check it again" -> "Please check it again" (politeness).</li>
+            <li>Combined the user's instruction with the specific request.</li>
+        </ul>
+    </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"The market created by the creation page doesn't work but other markets created in script
+            work very well in trading yes token."</div>
+        <div class="corrected">"Markets created via the creation page don't work, but other markets created via scripts
+            work very well for trading YES tokens."</div>
+        <div class="explanation">
+            <ul>
+                <li>"market created by the creation page" -> "Markets created via the creation page" (plural
+                    generalization).</li>
+                <li>"created in script" -> "created via scripts".</li>
+                <li>"in trading yes token" -> "for trading YES tokens".</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Why>"</div>
+        <div class="corrected">"Why is this happening?" or "Why?"</div>
+        <div class="explanation">
+            <ul>
+                <li>"Why>" appears to be a typo for "Why?".</li>
+                <li>In context of an error, "Why is this happening?" is a natural way to ask for the cause.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Check the last eng라도"</div>
+        <div class="corrected">"Check the last English correction at least."</div>
+        <div class="explanation">
+            <ul>
+                <li>"eng라도" (eng-rado) means "English at least" or "even just English".</li>
+                <li>"Check the last" is incomplete without specifying what to check.</li>
+                <li>Full sentence: "Please check the last English correction, at least."</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Why you don't 지키다 to this rule..."</div>
+        <div class="corrected">"Why aren't you following this rule..."</div>
+        <div class="explanation">
+            <ul>
+                <li>"Why you don't" -> "Why aren't you".</li>
+                <li>"지키다 (jikida)" -> "following" or "keeping".</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"We need to establish the fee policy so can you add to
+            /Users/jay/work/task/nostra/future-plan.html about that with current implementation."</div>
+        <div class="corrected">"We need to establish the fee policy. Could you add the current implementation details
+            regarding this to `/Users/jay/work/task/nostra/future-plan.html`?"</div>
+        <div class="explanation">
+            <ul>
+                <li>Split into two sentences for better flow.</li>
+                <li>"add to [file] about that" -> "add ... details regarding this to [file]".</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"A creator would have some fee?"</div>
+        <div class="corrected">"Would a creator receive some kind of fee?"</div>
+        <div class="explanation">
+            <ul>
+                <li>Phrased as a complete question for better clarity.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I'm just asking the process after admin resolving the market a user creates. Admin
+            creates a market on behalf of a user so user don't pay any fee for creating a market. So when the market is
+            finalized, all the remaining tokens converts to USDC and goes to the admin. I want the algorithm. Just
+            asking I tell you algain"</div>
+        <div class="corrected">"I'm asking about the process after an admin resolves a market created by a user. Since
+            the admin creates the market on the user's behalf (so the user doesn't pay a fee), is it true that when the
+            market is finalized, all remaining tokens are converted to USDC and returned to the admin? I'd like to
+            confirm the algorithm. I'm just asking to clarify."</div>
+        <div class="explanation">
+            <ul>
+                <li>"resolving the market a user creates" -> "resolves a market created by a user".</li>
+                <li>"user don't pay" -> "user doesn't pay".</li>
+                <li>"tokens converts" -> "tokens are converted".</li>
+                <li>"tell you algain" -> "tell you again" (typo) or rephrased for clarity ("just asking to clarify").
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I'm running the script now. I just want to know why the three markets don't show the logo
+            images"</div>
+        <div class="corrected">"I'm running the script now. I'd just like to know why those three markets aren't showing
+            their logo images."</div>
+        <div class="explanation">
+            <ul>
+                <li>"why the three markets don't show" -> "why those three markets aren't showing" (more natural ongoing
+                    state).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"what should I do. restart api server?"</div>
+        <div class="corrected">"What should I do? Should I restart the API server?"</div>
+        <div class="explanation">
+            <ul>
+                <li>Added capitalization and question marks.</li>
+                <li>Clarified the second part as a full question.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Check the file creating the markets. I think the uploads folder have image files
+            normally"</div>
+        <div class="corrected">"Please check the market creation script. I believe the image files are usually in the
+            uploads folder."</div>
+        <div class="explanation">
+            <ul>
+                <li>"file creating the markets" -> "market creation script" (more precise).</li>
+                <li>"uploads folder have" -> "uploads folder has" (singular subject congruence) or "files are in the
+                    uploads folder".</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Advanced Design about AI Boost Market Creation..."</div>
+        <div class="corrected">"Advanced Design for AI Boost Market Creation..."</div>
+        <div class="explanation">
+            <ul>
+                <li>(Previous correction retained for history, moved down)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Add this to future plan: I want the AI boosting market creation..."</div>
+        <div class="corrected">"Add this to the future plan: I want an AI-boosted market creation feature..."</div>
+        <div class="explanation">
+            <ul>
+                <li>(Previous correction retained for history, moved down)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Hey, but do we need to remove all files in the thumbnails folder too?..."</div>
+        <div class="corrected">"Hey, but do we need to remove all the files in the thumbnails folder too..."</div>
+        <div class="explanation">
+            <ul>
+                <li>(Previous correction retained for history, moved down)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I move all the thumbnail files to folder opf..."</div>
+        <div class="corrected">"I've moved all the thumbnail files to the folders in..."</div>
+        <div class="explanation">
+            <ul>
+                <li>(Previous correction retained for history, moved down)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"Move the files in the thumbnails folder to each relating folder..."</div>
+        <div class="corrected">"Move the files from the thumbnails folder to their corresponding folders..."</div>
+        <div class="explanation">
+            <ul>
+                <li>(Previous correction retained for history, moved down)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"But you did not user original thumbnail files for each market..."</div>
+        <div class="corrected">"But you did not use the original thumbnail files for each market..."</div>
+        <div class="explanation">
+            <ul>
+                <li>(Previous correction retained for history, moved down)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"why not check"</div>
+        <div class="corrected">"Why didn't you check?" / "Why not check it?"</div>
+        <div class="explanation">
+            <ul>
+                <li>Subject and auxiliary verbs (did you / do you) are needed for a complete question.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="correction-card">
+        <div class="original">"I'm stumped. FML."</div>
+        <div class="corrected">"I'm stumped. FML." ✓ (Perfect!)</div>
+        <div class="explanation">
+            <ul>
+                <li><strong>"I'm stumped"</strong> is excellent idiomatic English meaning "I'm stuck and don't know how
+                    to proceed."</li>
+                <li><strong>"FML"</strong> (informal acronym for "F*** My Life") is commonly used to express
+                    frustration. Very natural in casual/developer contexts.</li>
+                <li><strong>Alternative professional options:</strong>
+                    <ul>
+                        <li>"I'm at my wit's end."</li>
+                        <li>"I've hit a wall."</li>
+                        <li>"I'm completely stuck on this."</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+
+
+
+
+</body>
+
+</html>
