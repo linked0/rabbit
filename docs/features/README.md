@@ -33,29 +33,6 @@ their rows below are now the live status. The PoCs hub they all plug into is tra
 | _PoCs hub_ | `/poc` | [pocs-hub.md](pocs-hub.md) — consolidated demo menu wrapping Hyperliquid Trading, PBS, AP2, and AA under one top-menu item | ✅ Done — shipped 2026-08-03, routes moved `/etc` → `/poc`; cards registered in [`lib/poc-cards.ts`](../../lib/poc-cards.ts) |
 
 
-### 📇 PoCs 카탈로그로 옮겨간 항목 (2026-08-11)
-
-아래 항목들은 **[PoCs 허브](https://www.jaylabs.xyz/poc)의 카드가 정본**이 되었다. 카드마다
-상세 페이지(`/poc/<key>`)가 있고, 카드 데이터(`lib/poc-cards.ts`) 한 곳만 고치면 목록·상세·
-허브가 함께 바뀐다. 이 표에 같은 내용을 남겨 두면 두 벌이 갈라지므로, 여기서는 **어디로
-갔는지만** 남기고 내용은 옮겼다.
-
-| 옮겨간 항목 | 카드 |
-|---|---|
-| Game (Unity WebGL 트랙) | [/poc/game](https://www.jaylabs.xyz/poc/game) |
-| Zapier MCP | [/poc/zapier-mcp](https://www.jaylabs.xyz/poc/zapier-mcp) |
-| Solana | [/poc/solana](https://www.jaylabs.xyz/poc/solana) |
-| ERC-8141 | [/poc/erc-8141](https://www.jaylabs.xyz/poc/erc-8141) |
-| DSRV Portal (기관 커스터디) | [/poc/dsrv-portal](https://www.jaylabs.xyz/poc/dsrv-portal) |
-| PET Clean Room (FHE) | [/poc/pet-clean-room](https://www.jaylabs.xyz/poc/pet-clean-room) |
-| KB Hybrid Payment | [/poc/kb-hybrid-payment](https://www.jaylabs.xyz/poc/kb-hybrid-payment) |
-| CRE × Cloud | [/poc/cre-cloud](https://www.jaylabs.xyz/poc/cre-cloud) |
-| Thirdweb | [/poc/thirdweb](https://www.jaylabs.xyz/poc/thirdweb) |
-| Merkle vs Verkle | [/poc/merkle-vs-verkle](https://www.jaylabs.xyz/poc/merkle-vs-verkle) |
-| Linera Microchains | [/poc/linera-microchains](https://www.jaylabs.xyz/poc/linera-microchains) |
-| Web Stack Layers | [/poc/web-stack-layers](https://www.jaylabs.xyz/poc/web-stack-layers) |
-| TIL | [/poc](https://www.jaylabs.xyz/poc) 안 섹션으로 흡수 · 알고리즘 노트는 [/algorithms](https://www.jaylabs.xyz/algorithms) |
-
 **Legend:** ✅ Done · 🟡 In progress / partial / stale · ⬜ To do · 🔄 Ongoing · 📎 Reference only ·
 🚫 Not pursuing · 🗒️ Design (not yet approved to build).
 

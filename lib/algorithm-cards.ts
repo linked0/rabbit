@@ -13,10 +13,10 @@ import { TIL_CARDS } from "./til-cards";
 /// 알고리즘/수학 허브로 보낼 카드 키.
 /// LMSR 카드는 여기서 뺐다 (jay, 2026-08-11) — 라이브로 간다. 남은 둘은 아직 만들지 않은
 /// 수학 노트라, 결과적으로 알고리즘 허브는 "이해했지만 아직 코드가 없는 것"이 됐다.
-export const ALGORITHM_KEYS = [
-  "geometric-series-dcf",
-  "amortized-potential-function",
-] as const;
+// 알고리즘 상단 메뉴가 제거되면서(2026-08-11) 분기 대상이 없다 — 세 카드는 /poc 로 돌아왔고,
+// 문서 색인의 Algorithms 섹션이 그 주제의 정본이다. 파일을 지우지 않고 빈 배열로 두는 이유는
+// 나중에 다시 가르고 싶을 때 여기 키만 넣으면 되기 때문이다.
+export const ALGORITHM_KEYS = [] as const;
 
 const keySet = new Set<string>(ALGORITHM_KEYS);
 

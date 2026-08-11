@@ -32,9 +32,8 @@ const MENU: NavItem[] = [
   // ⚠️ 새 메뉴는 `ALLOW_LIVE=true` 가 있어야 뜬다 — .env.local 에 넣었고, deploy.sh 가
   // ALLOW_* 를 전부 Cloud Run env 로 전달하므로 배포 시 자동으로 따라간다.
   { href: "/live", ko: "라이브", en: "Live", code: "LIVE", pub: true },
-  // 알고리즘 — 수학·알고리즘 노트 (2026-08-11, jay). 예전 TIL 카드 중 두 장이 여기로.
-  // ⚠️ `ALLOW_ALGORITHMS=true` 필요 — LIVE 와 같은 게이트다.
-  { href: "/algorithms", ko: "알고리즘", en: "Algorithms", code: "ALGORITHMS", pub: true },
+  // 알고리즘 상단 메뉴는 제거 (2026-08-11, jay) — 수학·알고리즘 노트는 데모가 아니라 문서라,
+  // 문서 색인(docs/index.html)의 Algorithms 섹션이 정본이 됐다. 카드는 /poc 로 돌아온다.
   // TIL 메뉴는 제거 — /poc 안의 섹션으로 흡수했다 (2026-08-11, jay). /til 은 /poc 로
   // 리다이렉트하고, 상세(/til/lmsr-hybrid-amm)는 그대로 살아 있다.
   // AP2(Stripe 정산 데모)도 마켓·XYZ와 같은 이유로 PoCs 허브 카드로 통합 (2026-08-04, jay) —
