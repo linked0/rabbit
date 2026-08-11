@@ -91,7 +91,9 @@ export default function ProfileLinks({ lang }: { lang: Lang }) {
           <path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v18H5.5A1.5 1.5 0 0 1 4 19.5z" />
           <path d="M8 7.5h7M8 11h7" />
         </svg>
-        <span>{pick(lang, "지식", "knowledge")}</span>
+        {/* 다른 칩들이 핸들(linked0, linked0@me.com)이라 번역되지 않는다 — 이것만 언어에
+            따라 바뀌면 줄 전체의 규칙이 깨진다 (jay, 2026-08-11). 항상 "knowledge". */}
+        <span>knowledge</span>
       </a>
     </div>
   );
