@@ -234,9 +234,10 @@ export const POC_CARDS: DemoCard[] = [
       "An agent that wakes on a timer, decides on its own whether to spend, and cannot exceed the mandate it was given.",
     descriptionKo:
       "타이머에 깨어나 스스로 지출 여부를 판단하고, 받은 위임을 넘길 수 없는 에이전트.",
-    // 라이브 (jay, 2026-08-11). ⚠️ 페이지 상단 배너는 여전히 "아직 아무것도 돌지 않습니다"
-    // 라고 말한다 — 카드와 페이지가 서로 다른 말을 하고 있으니 둘 중 하나를 맞춰야 한다.
-    status: "live",
+    // 목업으로 되돌림 (jay, 2026-08-11 저녁). 잠깐 라이브였지만 페이지 배너는 계속
+    // "아직 아무것도 돌지 않습니다"였다 — 각본만 도는 목업이 맞고, 이제 카드와 페이지가
+    // 같은 말을 한다. /live 에서 빠지고 /poc 에 목업 배지로 돌아간다.
+    status: "soon",
     href: "/poc/agent",
     howTo:
       "A mockup, not a running agent — no chain, no wallet. Step through the scripted ticks to see the shape: the skips, the two bounded payments, and what happens after the mandate expires.",

@@ -8,10 +8,14 @@ export default function Card({
   card,
   lang,
   noteLabel = { en: "How to run", ko: "실행 방법" },
+  from,
 }: {
   card: DemoCard;
   lang: Lang;
   noteLabel?: { en: string; ko: string };
+  // 어느 허브에서 열렸는지 — 상세 페이지의 BackLink 가 온 곳으로 돌려보내는 데 쓴다
+  // ("live" 만 존재, 2026-08-11). 기본 허브(/poc)는 BackLink 기본값과 같아 표시가 필요 없다.
+  from?: "live";
 }) {
   const isLive = card.status === "live";
   // 아직 "soon"인데 열어볼 페이지는 있는 경우 = 논의용 목업 (/poc/agent, 2026-08-06).
@@ -19,7 +23,7 @@ export default function Card({
   // 눌린다는 걸 아무도 모른다. 그래서 세 번째 상태를 만든다 — 눌리지만 라이브는 아니다.
   // 전용 페이지가 없는 카드도 상세로 간다 — /poc/[key] 가 카드 데이터를 그대로 펼친다
   // (jay, 2026-08-11). 이 fallback 이 생기면서 "눌리지 않는 카드"는 사라졌다.
-  const href = card.href ?? `/poc/${card.key}`;
+  const href = (card.href ?? `/poc/${card.key}`) + (from ? `?from=${from}` : "");
   // 배지는 여전히 card.href 로 판단한다 — fallback 상세만 있는 카드는 "목업"이 아니라
   // "준비 중"이다. 열리는 것과 만들어진 것은 다른 이야기다.
   const isPreview = !isLive && !!card.href;

@@ -143,3 +143,13 @@
 **Change:** ① `app/til/lmsr-hybrid-amm/page.tsx` 뒤로가기를 기본값(← PoCs, `/poc`)으로. ② `middleware.ts` PUBLIC_PATHS 에 `/game` 추가. ③ `scripts/generate-pocs-html.mjs` 신규 — `docs/index.html` 의 POCS:BEGIN/END 마커 사이(컴팩트 카드, Algorithms 앞)와 `docs/pocs.html`(전체 내용, read-the-docs 포맷) 둘 다 생성. `pnpm docs:pocs` 로 재생성.
 
 **Result:** 로컬 검증 — `/game` 비로그인 200(전엔 /login 302), TIL 상세 뒤로가기 `<a href="/poc">PoCs</a>`, pocs.html 에 17개 카드 전부. main 머지·Cloud Run 배포는 이 항목 아래 작업으로 진행.
+
+### 자율 결제 에이전트 → 목업 복귀 + 라이브발 상세의 뒤로가기를 "← 라이브"로
+
+**Cause:** jay 지시 둘 — ① 자율 결제 에이전트를 PoCs 목업으로 되돌릴 것(카드는 라이브인데 페이지 배너는 "아직 안 돈다"고 말하던 모순의 해소), ② 라이브에서 연 상세 페이지의 뒤로가기가 "← PoCs"로 나가는 문제(Toss 스크린샷)를 고칠 것.
+
+**Reasoning:** 라이브는 필터라 같은 상세가 여러 허브에서 열린다 — 뒤로가기를 페이지에 하드코딩하는 한 어느 한쪽은 늘 틀린다. 허브가 출처를 알려주는 게 맞다: 카드 링크에 `?from=live` 를 실어 보내고, BackLink 가 그걸 읽어 온 곳으로 돌려보낸다. `useSearchParams` 는 클라이언트 훅이라 BackLink 를 서버 껍데기(Suspense) + 클라이언트 분기(BackLinkClient)로 쪼갰다 — 정적 프리렌더에서도 빌드가 깨지지 않게.
+
+**Change:** ① `lib/poc-cards.ts` agent 카드 `status: "live"` → `"soon"`(href 유지 → 목업 배지, /live 에서 빠짐). ② `app/BackLinkClient.tsx` 신규 — `from=live` 면 `/live`·"라이브"로 오버라이드. ③ `app/BackLink.tsx` 는 Suspense 래퍼로. ④ `DemoCard` 에 `from` prop, `/live` 페이지가 카드·피처드 링크에 `?from=live` 부여. ⑤ `pnpm docs:pocs` 재생성(18카드 — agent 편입).
+
+**Result:** 로컬 확인 — `/poc/toss` "← PoCs", `/poc/toss?from=live`·`/market?from=live`·`/til/lmsr-hybrid-amm?from=live` 전부 "← 라이브", `/live` 에서 agent 카드 제거·`/poc` 에 목업 배지. `next build` 통과. (검증 교훈: `<a>` 안 텍스트는 React 가 `<!-- -->` 로 쪼개므로 단순 정규식 grep 이 상단 메뉴 링크를 뒤로가기로 오인했다 — "← " 포함 패턴으로 다시 확인함.)

@@ -40,7 +40,7 @@ export default function LivePage() {
         {featured?.href && (
           <section className="panel">
             <h2>{pick(lang, "피처드", "Featured")}</h2>
-            <Link href={featured.href} className="kpi featured-card featured-card-poc">
+            <Link href={`${featured.href}?from=live`} className="kpi featured-card featured-card-poc">
               <div className="featured-mark-wrap">
                 <SessionKeyMark />
               </div>
@@ -62,7 +62,7 @@ export default function LivePage() {
 
         <div className="poc-grid">
           {rest.map((card) => (
-            <Card key={card.key} card={card} lang={lang} />
+            <Card key={card.key} card={card} lang={lang} from="live" />
           ))}
         </div>
       </main>
