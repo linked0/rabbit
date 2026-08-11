@@ -87,8 +87,8 @@ a real latency fix, not just better loading UI; (2) optimistic UI updates on sub
 (standard DEX/trading pattern) so the remaining single confirmation feels instant; (3) SSE
 staged-progress explicitly deprioritized — only worth building if #1 turns out
 insufficient in practice. Full writeup:
-<a href="../tasks/details/jul-22-trade-resolution-latency-ux.html">details/jul-22-trade-resolution-latency-ux.md</a>,
-linked from <a href="../tasks/jun-19-verex-design.html">jun-19-verex-design.md</a> as Task 4.</p>
+<a href="" data-missing="../tasks/details/jul-22-trade-resolution-latency-ux.md">details/jul-22-trade-resolution-latency-ux.md</a>,
+linked from <a href="" data-missing="../tasks/jun-19-verex-design.md">jun-19-verex-design.md</a> as Task 4.</p>
 <h3>Task 4, part 1+2 implemented + verified: demo-wallet pre-warming + optimistic trade UI</h3>
 <p>jay approved the design and added a scope clarification: pre-funding via seed only makes
 sense for demo wallets (intrinsically not real users) — a real deposit flow for actual
@@ -115,7 +115,7 @@ directly in the browser.</p>
 <h3>Task 4: documented next-phase plan, no code change</h3>
 <p>jay asked to make trading&#39;s remaining few-seconds wait vs. resolution&#39;s untouched
 few-seconds wait explicit, then to write down what&#39;s next. Added a &quot;Next phase&quot; section to
-<a href="../tasks/details/jul-22-trade-resolution-latency-ux.html">jul-22-trade-resolution-latency-ux.md</a>:
+<a href="" data-missing="../tasks/details/jul-22-trade-resolution-latency-ux.md">jul-22-trade-resolution-latency-ux.md</a>:
 (1) optimistic UI in <code>ResolvePanel</code> — same pattern as <code>TradePanel</code>, small/self-contained,
 next thing to build when jay says go; (2) SSE staged progress — still conditional on #1
 proving insufficient; (3) a real-user deposit flow, flagged as a distinct, explicitly
@@ -134,7 +134,7 @@ billable resources instead of updating the live one.</p>
 <li>Corrected <code>scripts/deploy.env</code> to the real resource names + <code>VEREX_CHAIN_ID=11155111</code>.</li>
 <li>Added a <code>SKIP_SEED</code> flag to <code>deploy.sh</code> — re-running <code>seed.ts</code>&#39;s on-chain calls against
 an already-prepared backbone reverts (same non-idempotency documented in
-<a href="../tasks/details/jul-22-trade-resolution-latency-ux.html">jul-22-trade-resolution-latency-ux.md</a>),
+<a href="" data-missing="../tasks/details/jul-22-trade-resolution-latency-ux.md">jul-22-trade-resolution-latency-ux.md</a>),
 so avoided a second real contract deployment entirely.</li>
 <li>Created the 3 missing chain secrets (<code>verex-rpc-url-verex</code>, <code>verex-operator-key-verex</code>,
 <code>verex-demo-mnemonic-verex</code>) from the same values already in <code>packages/api/.env</code>.</li>
@@ -170,8 +170,8 @@ independently deployed backbone, making <code>SKIP_SEED</code> a break-glass too
 normal deploy path. No changes made to today&#39;s live deploy — open question left for jay on
 whether to redo it now with a dedicated backbone or leave it until production exists. Full
 writeup:
-<a href="../tasks/details/jul-22-per-environment-contract-isolation.html">details/jul-22-per-environment-contract-isolation.md</a>,
-linked from <a href="../tasks/jun-19-verex-design.html">jun-19-verex-design.md</a> as Task 5.</p>
+<a href="" data-missing="../tasks/details/jul-22-per-environment-contract-isolation.md">details/jul-22-per-environment-contract-isolation.md</a>,
+linked from <a href="" data-missing="../tasks/jun-19-verex-design.md">jun-19-verex-design.md</a> as Task 5.</p>
 <h3>Fixed: BUY broken on the live test server (<code>next.config.js</code> rewrites baked build-time URL)</h3>
 <p>jay hit <code>&quot;Unexpected token &#39;I&#39;, &quot;Internal S&quot;... is not valid JSON&quot;</code> clicking Buy on the
 live test server. Traced it to <code>verex-web</code>&#39;s own Cloud Run logs (not <code>verex-api</code>&#39;s — the
@@ -183,7 +183,7 @@ build stage never sees) — so the rewrite destination permanently baked in its 
 Invisible in local dev only because that exact fallback happens to be where the local API
 actually runs — same bug, coincidentally correct value.</p>
 <p>Fix: replaced the <code>rewrites()</code> proxy with a Route Handler
-(<a href="../../../../packages/web/src/app/backend/%5B...path%5D/route.ts">backend/[...path]/route.ts</a>)
+(<a href="https://github.com/linked0/rabbit/blob/main/packages/web/src/app/backend/%5B...path%5D/route.ts">backend/[...path]/route.ts</a>)
 that reads <code>process.env.API_URL</code> fresh on every request — true runtime evaluation, not
 build-time. Added a try/catch around the proxy fetch so an unreachable API returns a clean
 502 instead of an unhandled rejection. Verified rigorously before redeploying: built the
@@ -195,7 +195,7 @@ the actual <code>/backend/*</code> path: GET markets, GET wallet, and a live BUY
 the exact request that was failing in jay&#39;s screenshot.</p>
 <h3>Task map: marked actually-completed tasks as done</h3>
 <p>jay asked to reflect which tasks are actually done in
-<a href="../tasks/jun-19-verex-design.html">jun-19-verex-design.md</a>&#39;s task map, not just &quot;designed.&quot;
+<a href="" data-missing="../tasks/jun-19-verex-design.md">jun-19-verex-design.md</a>&#39;s task map, not just &quot;designed.&quot;
 Updated: Task 2 (deploy) → done for Cloud Run/Cloud SQL/chain-live, domain mapping still
 explicitly called out as not done; Task 3 (portfolio/resolution) → done, matching its
 details doc&#39;s own status; Task 4 (latency UX) → marked partial (items 1-2 done, 3-4 not);

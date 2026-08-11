@@ -45,7 +45,7 @@ docs.</li>
 <a href="archive/2026-08-06-current-plan-ap2-toss-aa.html">archive/2026-08-06-current-plan-ap2-toss-aa.md</a>.
 Nothing was deleted; the finished rows moved to the features table.</li>
 <li><strong>Design source:</strong> <a href="../features/agentic-aa.html">../features/agentic-aa.md</a> (4 pillars, ERC-8021,
-WalletChan) · scenario prose in <a href="../../../../lib/agent-scenarios.ts"><code>lib/agent-scenarios.ts</code></a>.</li>
+WalletChan) · scenario prose in <a href="https://github.com/linked0/rabbit/blob/main/lib/agent-scenarios.ts"><code>lib/agent-scenarios.ts</code></a>.</li>
 <li><strong>Status:</strong> ⬜ Not started — design below, no code yet.</li>
 </ul>
 <h2>Table of contents <a id="toc"></a></h2>
@@ -67,7 +67,7 @@ its own whether to act, and when it acts, <strong>pays from a mandate it cannot 
 a button; it is a <strong>live journal</strong> of the agent&#39;s decisions, including the ticks where it decided
 <em>not</em> to spend, and the ticks after the mandate expires where it fails harmlessly.</p>
 <p>This makes live the <code>scheduled-operator</code> scenario already written in
-<a href="../../../../lib/agent-scenarios.ts"><code>lib/agent-scenarios.ts</code></a> — today it is prose next to a diagram; the
+<a href="https://github.com/linked0/rabbit/blob/main/lib/agent-scenarios.ts"><code>lib/agent-scenarios.ts</code></a> — today it is prose next to a diagram; the
 task is to make it a thing that is actually running while nobody is watching.</p>
 <p><strong>History:</strong> this doc stays short on purpose — for the blow-by-blow of what got built on a given
 day, follow <code>docs/history/YYYY-MM-DD-rabbit-history.md</code> (latest:
@@ -76,9 +76,9 @@ day, follow <code>docs/history/YYYY-MM-DD-rabbit-history.md</code> (latest:
 <a href="../history/2026-08-05-rabbit-history.html">08-05</a>).</p>
 <p><strong>Resume point (2026-08-06):</strong> plan + a discussion mockup on branch <strong><code>claude/agentic-aa-plan</code></strong>
 (committed and pushed). What exists: the <strong><code>agent</code> PoC card</strong> in
-<a href="../../../../lib/poc-cards.ts"><code>lib/poc-cards.ts</code></a> (status <code>soon</code> + <code>href</code>, so it renders with a &quot;Mock&quot;
+<a href="https://github.com/linked0/rabbit/blob/main/lib/poc-cards.ts"><code>lib/poc-cards.ts</code></a> (status <code>soon</code> + <code>href</code>, so it renders with a &quot;Mock&quot;
 badge and still opens), and <strong><code>/poc/agent</code></strong> — a hand-written 7-tick script walked by a &quot;next tick&quot;
-button, no chain/wallet/scheduler (<a href="../../../../app/poc/agent">app/poc/agent/</a>). Nothing about the real
+button, no chain/wallet/scheduler (<a href="https://github.com/linked0/rabbit/blob/main/app/poc/agent">app/poc/agent/</a>). Nothing about the real
 agent is built.</p>
 <p>Next step: settle <a href="#s4">§4&#39;s open decisions</a> (<strong>D2 key custody blocks M1</strong>; D1 gas, D3 scheduler
 host, D4 journal storage), then M1. The mock&#39;s own four questions — journal columns, choice of
@@ -87,7 +87,7 @@ signal, how much the visitor drives, how to live with expiry — are listed at t
 <h2>1. Why this, and not more pillars <a id="s1"></a></h2>
 <p><sub><a href="#toc">↑ TOC</a></sub></p>
 <p>jay&#39;s own point, 2026-08-05, recorded in
-<a href="../../../../app/poc/aa/AgenticPillars.tsx"><code>AgenticPillars.tsx</code></a>&#39;s header comment:</p>
+<a href="https://github.com/linked0/rabbit/blob/main/app/poc/aa/AgenticPillars.tsx"><code>AgenticPillars.tsx</code></a>&#39;s header comment:</p>
 <blockquote>
 <p>everything below is started by a human pressing a button — the capability is right, the autonomy
 isn&#39;t. Until there&#39;s a decision loop, &quot;AA for agents&quot; is the accurate name.</p>
@@ -262,37 +262,37 @@ All built and committed — no work owed here, listed so a cold session knows wh
 </thead>
 <tbody><tr>
 <td>Session key grant + bounded spend (ERC-7715/7710, <code>@metamask/smart-accounts-kit</code>)</td>
-<td><a href="../../../../app/poc/aa/SessionKeyDemo.tsx">app/poc/aa/SessionKeyDemo.tsx</a></td>
+<td><a href="https://github.com/linked0/rabbit/blob/main/app/poc/aa/SessionKeyDemo.tsx">app/poc/aa/SessionKeyDemo.tsx</a></td>
 <td>✅ the mandate mechanics M1 reuses</td>
 </tr>
 <tr>
 <td>Sponsored tx + batch tx (ERC-4337, thirdweb)</td>
-<td><a href="../../../../app/poc/aa/AgenticPillars.tsx">app/poc/aa/AgenticPillars.tsx</a></td>
+<td><a href="https://github.com/linked0/rabbit/blob/main/app/poc/aa/AgenticPillars.tsx">app/poc/aa/AgenticPillars.tsx</a></td>
 <td>✅ relevant to <a href="#s4">D1</a> only</td>
 </tr>
 <tr>
 <td>EIP-7702 account inspector</td>
-<td><a href="../../../../app/poc/7702">app/poc/7702/</a></td>
+<td><a href="https://github.com/linked0/rabbit/blob/main/app/poc/7702">app/poc/7702/</a></td>
 <td>✅ read-only, no wallet needed</td>
 </tr>
 <tr>
 <td>Four agent scenarios (prose + diagrams)</td>
-<td><a href="../../../../lib/agent-scenarios.ts">lib/agent-scenarios.ts</a></td>
+<td><a href="https://github.com/linked0/rabbit/blob/main/lib/agent-scenarios.ts">lib/agent-scenarios.ts</a></td>
 <td>✅ <code>scheduled-operator</code> is what §2 makes live</td>
 </tr>
 <tr>
 <td>AP2 — Stripe settlement (USD)</td>
-<td><a href="../../../../app/poc/ap2">app/poc/ap2/</a></td>
+<td><a href="https://github.com/linked0/rabbit/blob/main/app/poc/ap2">app/poc/ap2/</a></td>
 <td>✅ shipped</td>
 </tr>
 <tr>
 <td>Toss Payments — KRW settlement</td>
-<td><a href="../../../../app/poc/toss">app/poc/toss/</a></td>
+<td><a href="https://github.com/linked0/rabbit/blob/main/app/poc/toss">app/poc/toss/</a></td>
 <td>✅ shipped</td>
 </tr>
 <tr>
 <td>PoCs hub + card registry</td>
-<td><a href="../../../../app/poc/page.tsx">app/poc/page.tsx</a>, <a href="../../../../lib/poc-cards.ts">lib/poc-cards.ts</a></td>
+<td><a href="https://github.com/linked0/rabbit/blob/main/app/poc/page.tsx">app/poc/page.tsx</a>, <a href="https://github.com/linked0/rabbit/blob/main/lib/poc-cards.ts">lib/poc-cards.ts</a></td>
 <td>✅ <code>agent</code> card added 08-06 (<code>soon</code>). M3 flips it to <code>live</code> with <code>href</code>/<code>date</code> and adds a <code>middleware.ts</code> PUBLIC_PATHS entry</td>
 </tr>
 </tbody></table>

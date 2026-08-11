@@ -51,7 +51,7 @@ Google as <a href="mailto:linked0@gmail.com">linked0@gmail.com</a>, on both loca
 Cloud Run, so the same edit covers the deployed service — the flags were what hid those four items,
 not the owner check. Non-<code>pub</code> items still require owner login, so they appear only for
 <code>linked0@gmail.com</code> (<code>ALLOWED_EMAILS</code>).</p>
-<p>Local needed no change: <code>menuVisible()</code> in <a href="../../../../app/Nav.tsx">app/Nav.tsx</a> short-circuits to <code>true</code>
+<p>Local needed no change: <code>menuVisible()</code> in <a href="https://github.com/linked0/rabbit/blob/main/app/Nav.tsx">app/Nav.tsx</a> short-circuits to <code>true</code>
 when <code>appMode() !== &quot;cloud&quot;</code>, so local already shows the full menu. Left <code>ALLOW_VEREX=false</code> — Verex
 was deliberately removed from <code>MENU</code> on 2026-07-25 in favour of the featured card on the home page,
 so the flag is inert.</p>
@@ -59,9 +59,9 @@ so the flag is inert.</p>
 <p>jay clarified the ask — the full menu should appear <strong>only</strong> for <code>linked0@gmail.com</code>, on local as
 well as the server. Two blanket local exemptions were doing the opposite:</p>
 <ul>
-<li><a href="../../../../auth.ts">auth.ts</a> <code>isOwnerEmail()</code> returned <code>true</code> for any logged-in user outside cloud
+<li><a href="https://github.com/linked0/rabbit/blob/main/auth.ts">auth.ts</a> <code>isOwnerEmail()</code> returned <code>true</code> for any logged-in user outside cloud
 mode. Now it checks <code>ALLOWED_EMAILS</code> alone, in every mode.</li>
-<li><a href="../../../../app/Nav.tsx">app/Nav.tsx</a> <code>menuVisible()</code> short-circuited to <code>true</code> outside cloud mode.
+<li><a href="https://github.com/linked0/rabbit/blob/main/app/Nav.tsx">app/Nav.tsx</a> <code>menuVisible()</code> short-circuited to <code>true</code> outside cloud mode.
 Removed, so local runs the same <code>ALLOW_*</code> + <code>pub</code>/owner gate as production.</li>
 </ul>
 <p>Deliberate consequence: the <code>LOCAL_PASSWORD</code> credentials login (<code>local@rabbit</code>) is no longer an
@@ -73,7 +73,7 @@ nothing else.</p>
 <h3>Nav: &quot;Sign in&quot; wrapped to two lines in the top bar</h3>
 <p>With every menu item visible the top bar ran out of room and the button rendered as &quot;Sign / in&quot;
 (jay&#39;s screenshot). Added <code>white-space: nowrap</code> to <code>button.ghost, a.ghost</code> in
-<a href="../../../../app/globals.css">app/globals.css</a> — min-content then equals the text width, so flex can&#39;t
+<a href="https://github.com/linked0/rabbit/blob/main/app/globals.css">app/globals.css</a> — min-content then equals the text width, so flex can&#39;t
 squeeze it further.</p>
 <h3>Root cause hunt: production Google login fails with <code>error=Configuration</code></h3>
 <p>jay hit <code>Server error / There is a problem with the server configuration</code> at
@@ -104,7 +104,7 @@ route works; the Server Action path does not.</p>
 Server Action.</p>
 <h3>Fix: call signIn() from the client, not from a Server Action</h3>
 <p>Replaced the <code>&quot;use server&quot;</code> form on the login page with
-<a href="../../../../app/login/GoogleSignInButton.tsx">app/login/GoogleSignInButton.tsx</a> — a client component
+<a href="https://github.com/linked0/rabbit/blob/main/app/login/GoogleSignInButton.tsx">app/login/GoogleSignInButton.tsx</a> — a client component
 calling <code>signIn(&quot;google&quot;, { callbackUrl })</code> from <code>next-auth/react</code>. That helper walks the stock
 Auth.js path (<code>GET /api/auth/csrf</code> → <code>POST /api/auth/signin/google</code>), which is the path already
 measured as working in production: a curl run through it sets and reads the PKCE cookie and gets
@@ -114,7 +114,7 @@ the verifier never survives the trip to Google.</p>
 login that works.</p>
 <h3>ROOT CAUSE: Firebase Hosting strips cookies from GET requests to Cloud Run</h3>
 <p>Instrumented instead of guessing — added <code>debug: process.env.AUTH_DEBUG === &quot;true&quot;</code> to
-<a href="../../../../auth.ts">auth.ts</a> and set <code>AUTH_DEBUG=true</code> on the service. Auth.js then logs
+<a href="https://github.com/linked0/rabbit/blob/main/auth.ts">auth.ts</a> and set <code>AUTH_DEBUG=true</code> on the service. Auth.js then logs
 <code>USE_PKCECODEVERIFIER</code> with the cookie value it actually received. Two requests <strong>0.2 s apart,
 same curl cookie jar, identical <code>Cookie:</code> header on the wire</strong>:</p>
 <table>
@@ -140,7 +140,7 @@ same curl cookie jar, identical <code>Cookie:</code> header on the wire</strong>
 <code>www.jaylabs.xyz</code> with the same jar return two <em>different</em> tokens, neither matching the cookie —
 so the app never sees it. The same call direct to Cloud Run returns the jar&#39;s token exactly.</p>
 <p><strong>Firebase Hosting forwards only the <code>__session</code> cookie to a Cloud Run rewrite; everything else is
-stripped from GET requests.</strong> <a href="../../../../firebase.json">firebase.json</a> rewrites <code>**</code> to the <code>rabbit</code>
+stripped from GET requests.</strong> <a href="https://github.com/linked0/rabbit/blob/main/firebase.json">firebase.json</a> rewrites <code>**</code> to the <code>rabbit</code>
 service, so every page load and every OAuth callback arrives cookie-less. That breaks two things,
 not one: the PKCE verifier on the callback (the visible error) and the session cookie on every
 subsequent page load. Auth.js cannot work behind this setup at all — which is why login has never
@@ -171,7 +171,7 @@ moves it back.</li>
 <li>Repointed DNS: <code>www.jaylabs.xyz. CNAME ghs.googlehosted.com.</code> (was <code>doubletree-498007.web.app.</code>).
 The zone <code>jaylabs-xyz</code> is Cloud DNS in this same project, so this was a gcloud call, not a
 registrar visit — an earlier note claiming otherwise was wrong.</li>
-<li><a href="../../../../firebase.json">firebase.json</a> rewrite region → <code>asia-northeast1</code>, so the <code>*.web.app</code> URL
+<li><a href="https://github.com/linked0/rabbit/blob/main/firebase.json">firebase.json</a> rewrite region → <code>asia-northeast1</code>, so the <code>*.web.app</code> URL
 doesn&#39;t dangle at a deleted service.</li>
 <li>Deleted the Seoul service, last, once Tokyo was verified.</li>
 </ul>
@@ -189,18 +189,18 @@ once is the behaviour we wanted.</p>
 <h3>Login: return to the page you came from, drop the password login, add a way out</h3>
 <p>Three asks from jay in one pass.</p>
 <ul>
-<li><strong>Return-to-previous-page.</strong> <a href="../../../../middleware.ts">middleware.ts</a> now attaches
+<li><strong>Return-to-previous-page.</strong> <a href="https://github.com/linked0/rabbit/blob/main/middleware.ts">middleware.ts</a> now attaches
 <code>?callbackUrl=&lt;original path&gt;</code> when it bounces you to <code>/login</code>, and
-<a href="../../../../app/SignInLink.tsx">app/SignInLink.tsx</a> (new client component — the server-rendered <code>Nav</code>
+<a href="https://github.com/linked0/rabbit/blob/main/app/SignInLink.tsx">app/SignInLink.tsx</a> (new client component — the server-rendered <code>Nav</code>
 can&#39;t read the current path) does the same for the top-bar link. The login page feeds that into
 <code>signIn(&quot;google&quot;, { redirectTo })</code>, falling back to <code>/summary</code>. New
-<a href="../../../../lib/callback-url.ts">lib/callback-url.ts</a> sanitises the value: the query string is
+<a href="https://github.com/linked0/rabbit/blob/main/lib/callback-url.ts">lib/callback-url.ts</a> sanitises the value: the query string is
 attacker-controlled, so anything not a same-site absolute path — <code>//evil.com</code>, <code>/\evil.com</code>,
 absolute URLs — is dropped rather than turned into an open redirect.
 <code>SignInLink</code> deliberately uses only <code>usePathname()</code>, not <code>useSearchParams()</code>, because the latter
 demands a Suspense boundary and would push the whole layout to client-side rendering.</li>
-<li><strong>Password login removed.</strong> Deleted the <code>Credentials</code> provider from <a href="../../../../auth.ts">auth.ts</a> and
-the password form from <a href="../../../../app/login/page.tsx">app/login/page.tsx</a>. Once owner status became
+<li><strong>Password login removed.</strong> Deleted the <code>Credentials</code> provider from <a href="https://github.com/linked0/rabbit/blob/main/auth.ts">auth.ts</a> and
+the password form from <a href="https://github.com/linked0/rabbit/blob/main/app/login/page.tsx">app/login/page.tsx</a>. Once owner status became
 allowlist-only, <code>local@rabbit</code> could never be an owner — the form only produced a signed-in
 session with no permissions. Updated <a href="../../README.html">README.md</a> and <code>.env.example</code> so they stop
 telling you to set <code>LOCAL_PASSWORD</code>. If Google credentials are missing the page now says so
@@ -217,7 +217,7 @@ password input. <code>npx next build</code> passes.</p>
 It meant the owner had to type <code>/login</code> by hand on the server before any owner-only menu appeared —
 real friction for the one person the site is built for. Access control is <code>ALLOWED_EMAILS</code> plus the
 middleware guard; hiding the button was never the thing enforcing it.
-<a href="../../../../app/Nav.tsx">app/Nav.tsx</a></p>
+<a href="https://github.com/linked0/rabbit/blob/main/app/Nav.tsx">app/Nav.tsx</a></p>
 
   </article>
 </div>

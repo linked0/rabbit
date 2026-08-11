@@ -36,6 +36,11 @@ function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// GitHub Pages 는 docs/ 만 서빙한다. 그래서 문서가 소스 코드를 가리키면(../../lib/foo.ts)
+// 로컬에선 열리지만 배포된 사이트에선 전부 404 였다 — 2026-08-11 기준 125건.
+// 저장소 blob URL 로 바꾼다: 깨지지 않을 뿐 아니라 실제로 더 쓸모 있다(줄 번호·이력·blame).
+const GITHUB_BLOB = 'https://github.com/linked0/rabbit/blob/main';
+
 function rewriteLinks(html, mdAbsPath, outAbsPath) {
   const mdDir = path.dirname(mdAbsPath);
   const outDir = path.dirname(outAbsPath);
@@ -43,20 +48,43 @@ function rewriteLinks(html, mdAbsPath, outAbsPath) {
     if (url === '' || /^([a-z][a-z0-9+.-]*:)/i.test(url) || url.startsWith('#') || url.startsWith('/')) {
       return match;
     }
+    // Jekyll 템플릿 변수가 그대로 남은 경로 — 이 생성기는 Jekyll 이 아니라 치환되지 않는다.
+    // content/profile/*.md 가 다른 사이트에서 옮겨오며 딸려온 것들(2026-08-11).
+    url = url.replace(/\{\{\s*site\.baseurl\s*\}\}\/?/g, '');
+
     const [urlPath, hash] = url.split('#');
     if (!urlPath) return match;
+    const suffix = hash ? '#' + hash : '';
+
+    // 저장소 밖을 가리키는 링크는 링크로 만들지 않는다. 형제 저장소(~/work/verex)의
+    // 마크다운을 함께 렌더하면서 그쪽 상대경로가 그대로 남아 생긴 것들 — 배포된 사이트에는
+    // 그 파일이 존재할 수 없다 (2026-08-11, 52건).
+    {
+      const abs = path.resolve(mdDir, urlPath);
+      if (!abs.startsWith(REPO_ROOT + path.sep)) {
+        return `${attr}="" data-missing="${escapeHtml(urlPath)}"`;
+      }
+    }
 
     if (/\.md$/i.test(urlPath)) {
       const targetAbs = path.resolve(mdDir, urlPath);
-      if (!targetAbs.startsWith(REPO_ROOT + path.sep)) return match;
-      const mirroredOut = toOutputPath(targetAbs);
-      const rel = path.relative(outDir, mirroredOut);
-      return `${attr}="${rel}${hash ? '#' + hash : ''}"`;
+      // 가리키는 문서가 없으면 링크를 만들지 않는다 — 지워지거나 이름이 바뀐 설계 문서를
+      // 가리키는 링크가 133건 있었다. 죽은 링크보다 "링크가 아님"이 정직하다.
+      if (!fs.existsSync(targetAbs)) return `${attr}="" data-missing="${escapeHtml(urlPath)}"`;
+      const rel = path.relative(outDir, toOutputPath(targetAbs));
+      return `${attr}="${rel}${suffix}"`;
     }
 
     const targetAbs = path.resolve(mdDir, urlPath);
+    // docs/ 밖(소스 코드 등)이면 저장소 링크로.
+    const docsRoot = path.join(REPO_ROOT, 'docs');
+    if (targetAbs.startsWith(REPO_ROOT + path.sep) && !targetAbs.startsWith(docsRoot + path.sep)) {
+      const relFromRoot = path.relative(REPO_ROOT, targetAbs).split(path.sep).join('/');
+      return `${attr}="${GITHUB_BLOB}/${relFromRoot}${suffix}"`;
+    }
+    if (!fs.existsSync(targetAbs)) return `${attr}="" data-missing="${escapeHtml(urlPath)}"`;
     const rel = path.relative(outDir, targetAbs);
-    return `${attr}="${rel}${hash ? '#' + hash : ''}"`;
+    return `${attr}="${rel}${suffix}"`;
   });
 }
 

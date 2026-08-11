@@ -43,14 +43,14 @@ branch, based on yesterday&#39;s unmerged <code>claude/work-2026-07-21</code> / 
 <p>First cut used a single comma-list (<code>CLOUD_HIDDEN_MENUS</code>); jay found that error-prone, so switched to
 <strong>one boolean env flag per menu</strong>.</p>
 <ul>
-<li><a href="../../../../app/NavLinks.tsx">app/NavLinks.tsx</a>: <code>NavItem</code> gains <code>code?: string</code>.</li>
-<li><a href="../../../../app/Nav.tsx">app/Nav.tsx</a>: each MENU item has a <code>code</code> (HOME/CHAT/GAME/MARKET/AP2/XYZ/
+<li><a href="https://github.com/linked0/rabbit/blob/main/app/NavLinks.tsx">app/NavLinks.tsx</a>: <code>NavItem</code> gains <code>code?: string</code>.</li>
+<li><a href="https://github.com/linked0/rabbit/blob/main/app/Nav.tsx">app/Nav.tsx</a>: each MENU item has a <code>code</code> (HOME/CHAT/GAME/MARKET/AP2/XYZ/
 JAYVERSE/VEREX/PORTFOLIO). New <code>menuAllowed(item)</code>: <strong>local</strong> mode always shows; <strong>cloud</strong> mode
 shows only when <code>process.env[&quot;ALLOW_&quot;+code] === &quot;true&quot;</code>. <code>authOnly</code> (Portfolio) preserved.</li>
 <li><strong>Semantics = default-HIDE (allow-list)</strong> — per jay&#39;s follow-up: an unconfigured or <strong>later-added</strong>
 menu is hidden on cloud by default, so new menus never leak to production; only <code>ALLOW_&lt;CODE&gt;=true</code>
 opts a menu in. (First pass defaulted to show; flipped.)</li>
-<li>Documented all flags in <a href="../../../../.env.example">.env.example</a> + <a href="../../../../.env.local">.env.local</a>; existing
+<li>Documented all flags in <a href="https://github.com/linked0/rabbit/blob/main/.env.example">.env.example</a> + <a href="https://github.com/linked0/rabbit/blob/main/.env.local">.env.local</a>; existing
 menus set to <code>=true</code> so current cloud visibility is preserved.</li>
 <li><strong>Verified:</strong> <code>tsc</code> exit 0; <code>/market</code> + <code>/</code> render all menus in local mode, no console errors;
 predicate unit-checked (cloud: <code>=true</code>→shown, unset/later-added→hidden, no-code→hidden; local→always shown).</li>
@@ -58,7 +58,7 @@ predicate unit-checked (cloud: <code>=true</code>→shown, unset/later-added→h
 </ul>
 <h3>Fix: forward ALLOW_* menu flags to Cloud Run on deploy</h3>
 <p>Caught during a deploy question: <code>.env.local</code> is gitignored (not in the image), and
-<a href="../../../../scripts/deploy.sh">scripts/deploy.sh</a>&#39;s <code>gcloud run deploy --set-env-vars</code> did <strong>not</strong> include
+<a href="https://github.com/linked0/rabbit/blob/main/scripts/deploy.sh">scripts/deploy.sh</a>&#39;s <code>gcloud run deploy --set-env-vars</code> did <strong>not</strong> include
 any <code>ALLOW_*</code>. With default-HIDE semantics that means <strong>every menu would be hidden on cloud</strong>.
 <code>deploy.sh</code> already <code>source .env.local</code>, so the flags are in the shell env — added a loop that
 collects all <code>ALLOW_*</code> vars and appends them to <code>--set-env-vars</code>, so a menu&#39;s flag (including any
@@ -72,14 +72,14 @@ runtime env applies. Same branch <code>claude/work-2026-07-22</code>.</p>
 (<code>rabbit.jaylabs.xyz</code>) showing the ALLOW_*-filtered subset. Since one Cloud Run service can&#39;t serve
 two menu configs, they must be <strong>separate services</strong>.</p>
 <ul>
-<li><a href="../../../../app/Nav.tsx">app/Nav.tsx</a>: <code>menuAllowed</code> now short-circuits to &quot;show all&quot; when
+<li><a href="https://github.com/linked0/rabbit/blob/main/app/Nav.tsx">app/Nav.tsx</a>: <code>menuAllowed</code> now short-circuits to &quot;show all&quot; when
 <code>MENU_SHOW_ALL === &quot;true&quot;</code> (in addition to local mode); otherwise the prod ALLOW_* filter applies.</li>
-<li><a href="../../../../scripts/deploy.sh">scripts/deploy.sh</a>: takes a target arg — <code>./scripts/deploy.sh test</code>
+<li><a href="https://github.com/linked0/rabbit/blob/main/scripts/deploy.sh">scripts/deploy.sh</a>: takes a target arg — <code>./scripts/deploy.sh test</code>
 (default) deploys <code>$SERVICE</code> (rabbit) with <code>MENU_SHOW_ALL=true</code>; <code>./scripts/deploy.sh prod</code> deploys
 <code>$PROD_SERVICE</code> (rabbit-prod) with <code>MENU_SHOW_ALL=false</code> (ALLOW_* filter). All <code>$SERVICE</code> refs →
 <code>$DEPLOY_SERVICE</code>; <code>MENU_SHOW_ALL</code> added to <code>--set-env-vars</code>; AUTH_URL uses <code>$PROD_URL</code> (custom
 domain) for prod when set, else the run.app URL.</li>
-<li><a href="../../../../scripts/deploy.env.example">scripts/deploy.env.example</a>: added <code>PROD_SERVICE</code>, <code>PROD_URL</code>.</li>
+<li><a href="https://github.com/linked0/rabbit/blob/main/scripts/deploy.env.example">scripts/deploy.env.example</a>: added <code>PROD_SERVICE</code>, <code>PROD_URL</code>.</li>
 <li><strong>Verified:</strong> <code>bash -n</code> OK; target logic (test→all/rabbit, prod→filtered/rabbit-prod, bad-arg→usage
 error); <code>tsc</code> exit 0; predicate (test/cloud+MENU_SHOW_ALL→all shown, prod/cloud→ALLOW_* filter,
 local→all). Local <code>/market</code> unaffected, no console errors. Same branch.</li>
@@ -93,9 +93,9 @@ nav shows <strong>all 8 menus</strong>, confirming the test-server show-all path
 git commit — <code>--source .</code> deploys the working tree directly.)</p>
 <h3>UI: remove home &quot;jaylabs&quot; section + vivid Verex nav CTA</h3>
 <ul>
-<li><a href="../../../../app/home/page.tsx">app/home/page.tsx</a>: removed the &quot;jaylabs&quot; panel (the <code>→ Verex</code> card) —
+<li><a href="https://github.com/linked0/rabbit/blob/main/app/home/page.tsx">app/home/page.tsx</a>: removed the &quot;jaylabs&quot; panel (the <code>→ Verex</code> card) —
 home now goes profile → Projects directly.</li>
-<li><a href="../../../../app/NavLinks.tsx">app/NavLinks.tsx</a> + <a href="../../../../app/globals.css">app/globals.css</a>: external nav
+<li><a href="https://github.com/linked0/rabbit/blob/main/app/NavLinks.tsx">app/NavLinks.tsx</a> + <a href="https://github.com/linked0/rabbit/blob/main/app/globals.css">app/globals.css</a>: external nav
 links get a <code>nav-cta</code> class → <strong>Verex ↗</strong> is now a vivid indigo→violet gradient pill (white text,
 soft glow) so it stands out from the neutral nav. <code>tsc</code> exit 0; verified local render (section gone,
 Verex vivid), no console errors. Then redeployed to the test server (<code>deploy.sh test</code>).</li>
@@ -103,25 +103,25 @@ Verex vivid), no console errors. Then redeployed to the test server (<code>deplo
 <h3>UI: restyle top-right nav cluster (avatar dropdown + segmented toggles + wrap fix)</h3>
 <p>The 로그인/사용자 cluster looked bad (esp. 로그아웃 wrapping vertically). Reworked it:</p>
 <ul>
-<li><strong>Wrap bug fix:</strong> <code>white-space: nowrap</code> on <code>button</code> in <a href="../../../../app/globals.css">app/globals.css</a> — 버튼
+<li><strong>Wrap bug fix:</strong> <code>white-space: nowrap</code> on <code>button</code> in <a href="https://github.com/linked0/rabbit/blob/main/app/globals.css">app/globals.css</a> — 버튼
 글자가 세로로 쪼개지던 문제 해결.</li>
 <li><strong>Segmented toggles:</strong> EN + theme toggles wrapped in a single <code>.seg</code> pill (shared border + divider)
-in <a href="../../../../app/Nav.tsx">app/Nav.tsx</a>.</li>
-<li><strong>Avatar dropdown</strong> (<a href="../../../../app/UserMenu.tsx">app/UserMenu.tsx</a>, new client component): the 👤 emoji +
+in <a href="https://github.com/linked0/rabbit/blob/main/app/Nav.tsx">app/Nav.tsx</a>.</li>
+<li><strong>Avatar dropdown</strong> (<a href="https://github.com/linked0/rabbit/blob/main/app/UserMenu.tsx">app/UserMenu.tsx</a>, new client component): the 👤 emoji +
 email + sign-out are replaced by one <strong>gradient-avatar button</strong> (user initial, indigo→violet to
 match Verex) that opens a dropdown with the email + 로그아웃. Outside-click / ESC to close. Sign-out
-runs via a new server action <a href="../../../../app/auth-actions.ts">app/auth-actions.ts</a> (<code>signOutAction</code>).</li>
+runs via a new server action <a href="https://github.com/linked0/rabbit/blob/main/app/auth-actions.ts">app/auth-actions.ts</a> (<code>signOutAction</code>).</li>
 <li><strong>Verified:</strong> <code>tsc</code> exit 0; segmented toggle pill renders, no console errors. The avatar dropdown
 needs a logged-in view to see (not verified in-browser — I don&#39;t enter the login password). Not
 committed; not deployed. Same branch <code>claude/work-2026-07-22</code>.</li>
 </ul>
 <h3>Feature: language toggle + language-aware content on project pages</h3>
-<p>Project detail pages (<a href="../../../../app/home/%5Bslug%5D/page.tsx">app/home/[slug]/page.tsx</a>) had <strong>no Nav</strong> (so
+<p>Project detail pages (<a href="https://github.com/linked0/rabbit/blob/main/app/home/%5Bslug%5D/page.tsx">app/home/[slug]/page.tsx</a>) had <strong>no Nav</strong> (so
 no language toggle) and rendered a single markdown body. Fixed both:</p>
 <ul>
 <li>Added <code>&lt;Nav /&gt;</code> → the full language/theme toggle + menu now appear on every project page; localized
 the &quot;← Home&quot; label via <code>pick(getLang(), …)</code>.</li>
-<li><a href="../../../../lib/posts.ts">lib/posts.ts</a>: each post file actually contains <strong>both</strong> languages — English
+<li><a href="https://github.com/linked0/rabbit/blob/main/lib/posts.ts">lib/posts.ts</a>: each post file actually contains <strong>both</strong> languages — English
 on top, a <code>## Korean Version</code> heading, then Korean. <code>getPostHtml(slug, lang)</code> now <strong>splits at that
 marker</strong> and renders only the selected language: <code>en</code> = text before the marker (with the
 &quot;Read the Korean version here&quot; <code>&lt;div&gt;</code> link and trailing <code>---</code> stripped), <code>ko</code> = text after it.
@@ -134,9 +134,9 @@ nav + &quot;← Home&quot;/&quot;← 홈&quot; switch too. No console errors. No
 <p>The home page chrome switched with the toggle but its <strong>content</strong> (heading, tagline, project
 titles/descriptions, &quot;Projects&quot;, read time) stayed English. Made it bilingual:</p>
 <ul>
-<li><a href="../../../../lib/home-content.ts">lib/home-content.ts</a>: added <code>headingKo</code>/<code>taglineKo</code> to <code>PROFILE</code> and
+<li><a href="https://github.com/linked0/rabbit/blob/main/lib/home-content.ts">lib/home-content.ts</a>: added <code>headingKo</code>/<code>taglineKo</code> to <code>PROFILE</code> and
 optional <code>titleKo</code>/<code>descriptionKo</code> to each project (Korean translations for all 7).</li>
-<li><a href="../../../../app/home/page.tsx">app/home/page.tsx</a>: <code>getLang()</code> + <code>pick()</code> for heading, tagline,
+<li><a href="https://github.com/linked0/rabbit/blob/main/app/home/page.tsx">app/home/page.tsx</a>: <code>getLang()</code> + <code>pick()</code> for heading, tagline,
 &quot;프로젝트&quot;/&quot;Projects&quot;, per-project title &amp; description (fallback to English via <code>?? title</code>), and read
 time (<code>2 min</code>→<code>2분</code>).</li>
 <li><strong>Verified:</strong> <code>tsc</code> exit 0; Korean shows 안녕하세요…/프로젝트/Bosagora 메인넷/2분, English shows Hello…/Projects/
@@ -144,15 +144,15 @@ Bosagora Mainnet/2 min. Not committed; not deployed. Same branch <code>claude/wo
 </ul>
 <h3>Content: remove Uniswap project, sort newest-first, add Prediction Market (Nostra)</h3>
 <ul>
-<li>Removed <code>uniswap-v2-hardhat</code> from the project list (<a href="../../../../lib/home-content.ts">lib/home-content.ts</a>);
+<li>Removed <code>uniswap-v2-hardhat</code> from the project list (<a href="https://github.com/linked0/rabbit/blob/main/lib/home-content.ts">lib/home-content.ts</a>);
 its <code>.md</code> left in place (route now 404s, unlinked).</li>
 <li>Home page now sorts projects <strong>newest-first</strong> (<code>b.date.localeCompare(a.date)</code>) in
-<a href="../../../../app/home/page.tsx">app/home/page.tsx</a>.</li>
+<a href="https://github.com/linked0/rabbit/blob/main/app/home/page.tsx">app/home/page.tsx</a>.</li>
 <li>Added <strong>Prediction Market (Nostra)</strong> as the newest project (jay&#39;s request): solo full-stack build,
 <strong>2025.08 ~ 2026.02</strong>, source <a href="https://nostra-web-...run.app">https://nostra-web-...run.app</a> (a Polymarket-style prediction market —
 wallet trading on Yes/No outcomes across Politics/Finance/Sports/Crypto/etc.). New
 <a href="../../content/profile/prediction-market.html">content/profile/prediction-market.md</a> (EN + <code>## Korean Version</code>), a branded SVG thumbnail
-<a href="../../../../public/profile/prediction-market.svg">public/profile/prediction-market.svg</a>, and the list
+<a href="https://github.com/linked0/rabbit/blob/main/public/profile/prediction-market.svg">public/profile/prediction-market.svg</a>, and the list
 entry (titleKo &quot;Prediction Market 개발&quot;). Content is a rough draft (jay to review/adjust).</li>
 <li><strong>Verified:</strong> <code>tsc</code> exit 0; home lists it first with the NOSTRA thumbnail, detail page renders the
 EN body (KO splits on toggle). Not committed; not deployed. Same branch.</li>

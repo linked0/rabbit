@@ -47,7 +47,7 @@
 </ul>
 <h3>Verex Task 1: basic prediction-market web UI (DB-only)</h3>
 <ul>
-<li>Implemented the Polymarket-style web UI per <a href="../tasks/jun-19-verex-design.html"><code>docs/tasks/jun-19-verex-design.md</code></a> on branch <code>claude/jun-19-verex</code>; <strong>DB-only — no smart-contract integration yet</strong> (per spec).</li>
+<li>Implemented the Polymarket-style web UI per <a href="" data-missing="../tasks/jun-19-verex-design.md"><code>docs/tasks/jun-19-verex-design.md</code></a> on branch <code>claude/jun-19-verex</code>; <strong>DB-only — no smart-contract integration yet</strong> (per spec).</li>
 <li><strong>API (<code>packages/api</code>, Fastify + Prisma):</strong> switched from contract-backed to <strong>Postgres-backed</strong> — added <code>prisma/schema.prisma</code> (<code>Market</code> + <code>Outcome</code>, categorical = N outcomes), a Prisma client (<code>src/db.ts</code>), DB-backed endpoints <code>GET /markets</code> (<code>?category=</code>), <code>GET /markets/:slug</code>, <code>GET /categories</code>, plus CORS; dropped the <code>@verex/sdk</code> dependency for v1.</li>
 <li><strong>Seed (<code>prisma/seed.ts</code>):</strong> 10 categorical markets across Politics, Sports, Crypto, Economy, Geopolitics with <strong>static seeded prices</strong> (idempotent re-seed). <strong>Web (<code>packages/web</code>, Next.js 14):</strong> homepage (category tabs, featured market, market grid) + market detail page (<code>/market/[slug]</code>) with outcome probability bars, reading the API via <code>NEXT_PUBLIC_API_URL</code>; plain CSS (no Tailwind), pages <code>force-dynamic</code>.</li>
 <li><strong>Verified:</strong> <code>pnpm --filter @verex/api build</code> and <code>pnpm --filter @verex/web build</code> both pass; live UI not run here (needs the DB, deferred to deploy).</li>
@@ -59,8 +59,8 @@
 </ul>
 <h3>Local dev tooling + learning docs</h3>
 <ul>
-<li>Added <a href="../../../../scripts/dev-local.sh"><code>scripts/dev-local.sh</code></a> — one command for local setup (Docker Postgres → <code>prisma db push</code> → seed 10 markets → write local <code>.env</code> files).</li>
-<li>Added a &quot;Run the web UI locally / Deploy&quot; section in the README and an educational <a href="../../scripts/README.html"><code>scripts/README.md</code></a> explaining every Docker / Postgres / GCP command.</li>
+<li>Added <a href="https://github.com/linked0/rabbit/blob/main/scripts/dev-local.sh"><code>scripts/dev-local.sh</code></a> — one command for local setup (Docker Postgres → <code>prisma db push</code> → seed 10 markets → write local <code>.env</code> files).</li>
+<li>Added a &quot;Run the web UI locally / Deploy&quot; section in the README and an educational <a href="" data-missing="../../scripts/README.md"><code>scripts/README.md</code></a> explaining every Docker / Postgres / GCP command.</li>
 </ul>
 <h3>Bug fix: API 500 — <code>Environment variable not found: DATABASE_URL</code></h3>
 <ul>

@@ -37,7 +37,7 @@
   <article>
 <h1>2026-07-07 — rabbit history</h1>
 <blockquote>
-<p>Source: <a href="../tasks/jun-30-rabbit-design.html">tasks/jun-30-rabbit-design.md §3</a> (Market page);
+<p>Source: <a href="" data-missing="../tasks/jun-30-rabbit-design.md">tasks/jun-30-rabbit-design.md §3</a> (Market page);
 the git-maintenance and port-change entries have no task file (direct requests from jay).</p>
 </blockquote>
 <h3>Git: commit staged docs to main and push (+ stale lock cleanup)</h3>
@@ -56,7 +56,7 @@ README. Verified <code>pnpm dev</code> serves HTTP 200 on 3100. Dockerfile untou
 Follow-up for jay: add <code>http://localhost:3100/api/auth/callback/google</code> to Google OAuth
 authorized redirect URIs (cloud mode only; local password mode unaffected).</p>
 <h3>Market page: Hyperliquid BTC orderbook + indices (design §3)</h3>
-<p>Source: <a href="../tasks/jun-30-rabbit-design.html">tasks/jun-30-rabbit-design.md §3</a>. Implemented the
+<p>Source: <a href="" data-missing="../tasks/jun-30-rabbit-design.md">tasks/jun-30-rabbit-design.md §3</a>. Implemented the
 first cut per jay&#39;s decisions (REST poll, BTC perp): <code>fetchL2Book</code> in <code>lib/hyperliquid.ts</code>,
 public <code>app/api/orderbook</code> proxy, <code>OrderBook.tsx</code> polling every 5s, <code>/market</code> = book + reused
 <code>IndexCards</code>. Decision: <code>/api/indices</code> and <code>/api/orderbook</code> made public in <code>middleware.ts</code> —
@@ -64,7 +64,7 @@ public <code>app/api/orderbook</code> proxy, <code>OrderBook.tsx</code> polling 
 cached 60s, so no key-quota risk). Verified logged-out on the dev server; WS + market picker
 deferred as designed.</p>
 <h3>Research: perp trading from /market with MetaMask (design §3 addendum)</h3>
-<p>Source: <a href="../tasks/jun-30-rabbit-design.html">tasks/jun-30-rabbit-design.md §3</a> (summary appended
+<p>Source: <a href="" data-missing="../tasks/jun-30-rabbit-design.md">tasks/jun-30-rabbit-design.md §3</a> (summary appended
 there). Key findings (verified against Hyperliquid docs): auth = EIP-712 signatures only (no API
 key); funding = USDC on Arbitrum via bridge, testnet faucet for dev; two signing models — per-order
 MetaMask popups vs a one-time-approved <strong>agent wallet</strong> (trades only, cannot withdraw). Open
@@ -75,7 +75,7 @@ Verified ETC is live on Hyperliquid (~$7.02) before switching. Side fix: orderbo
 formatter now uses 5 significant figures (HL price rule) instead of 2 decimals, which would have
 collapsed ETC&#39;s 4-decimal ticks. Verified <code>/market</code> renders ETC book on the dev server.</p>
 <h3>Decision: perp trading = direct signing first, agent wallet later (Task 3-P2)</h3>
-<p>Source: jay, recorded in <a href="../tasks/jun-30-rabbit-design.html">tasks/jun-30-rabbit-design.md §3</a>.
+<p>Source: jay, recorded in <a href="" data-missing="../tasks/jun-30-rabbit-design.md">tasks/jun-30-rabbit-design.md §3</a>.
 Phase 2a = MetaMask popup per order (no stored keys); Phase 2b = agent wallet swap-in reusing
 2a&#39;s order form/exchange client. Remaining open: testnet-only first cut, agent-key storage (2b).</p>
 <h3>Milestone: HL-TEST funded — testnet mock USDC secured (jay)</h3>
@@ -168,13 +168,13 @@ Hyperliquid testnet. Phase 2a is now unblocked on the funding side.</p>
 </tr>
 </tbody></table>
 <h3>Design: staging domain staging.rabbit.jaylabs.xyz (new §11)</h3>
-<p>Source: jay&#39;s request; design in <a href="../tasks/jun-30-rabbit-design.html">tasks/jun-30-rabbit-design.md §11</a>.
+<p>Source: jay&#39;s request; design in <a href="" data-missing="../tasks/jun-30-rabbit-design.md">tasks/jun-30-rabbit-design.md §11</a>.
 Gotcha (verified in GCP docs): Cloud Run built-in domain mapping does not support asia-northeast3
 (Seoul) — the rabbit service&#39;s region. Recommended path: Firebase Hosting rewrite → Cloud Run
 (<del>free, any region); LB (</del>$18+/mo) and region move rejected as overkill/lossy.</p>
 <h3>Spec: Phase 2a perp trading written into design §3 (Task 3-P2)</h3>
 <p>Source: jay&#39;s go-ahead; spec appended under Task 3-P2 in
-<a href="../tasks/jun-30-rabbit-design.html">tasks/jun-30-rabbit-design.md §3</a>. Key spec decisions:
+<a href="" data-missing="../tasks/jun-30-rabbit-design.md">tasks/jun-30-rabbit-design.md §3</a>. Key spec decisions:
 client-side-only signing via a maintained TS SDK (no hand-rolled msgpack/EIP-712, no server
 proxy); split networks — display stays on mainnet <code>HL_API_URL</code>, trading gets
 <code>NEXT_PUBLIC_HL_TRADE_API</code> (testnet); funding via HL testnet faucet (clarified: Alchemy/Sepolia

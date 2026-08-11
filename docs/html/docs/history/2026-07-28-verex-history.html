@@ -37,8 +37,8 @@
   <article>
 <h1>2026-07-28 — verex history</h1>
 <blockquote>
-<p>Source docs: <a href="../tasks/jul-28-verex.html"><code>docs/tasks/jul-28-verex.md</code></a> (task spec) →
-<a href="../tasks/jul-28-verex-design.html"><code>docs/tasks/jul-28-verex-design.md</code></a> (design written today).</p>
+<p>Source docs: <a href="" data-missing="../tasks/jul-28-verex.md"><code>docs/tasks/jul-28-verex.md</code></a> (task spec) →
+<a href="" data-missing="../tasks/jul-28-verex-design.md"><code>docs/tasks/jul-28-verex-design.md</code></a> (design written today).</p>
 </blockquote>
 <h3>Jul-28 features implemented — CLOB, multi-outcome groups, async settlement, create-market, how-to guide</h3>
 <p>All four tasks landed on <code>claude/jul-28-features</code> (11 feature commits, per the approved rev-2
@@ -101,7 +101,7 @@ settlement via <code>CTFExchange.matchOrders</code> through the ChainJob queue, 
 ladder-posting market maker, and group Σ=1 now holds at the MM&#39;s renormalized quote centers.
 Also recorded: option (a) grouped binaries ✅, Cloud Run <code>--no-cpu-throttling</code>+<code>min-instances 1</code> ✅,
 anyone can create markets ✅, fee policy deferred to jay ✅.
-(Source: <a href="../tasks/jul-28-verex-design.html">jul-28-verex-design.md</a>, jay&#39;s inline comments.)</p>
+(Source: <a href="" data-missing="../tasks/jul-28-verex-design.md">jul-28-verex-design.md</a>, jay&#39;s inline comments.)</p>
 <h3>Root cause: local seed failed with <code>returned no data (&quot;0x&quot;)</code> — Sepolia addresses leaked into the local backbone</h3>
 <p><code>seed.ts:51</code> loads <code>packages/contracts/.env</code> as a fallback, which still held
 <code>USDC_ADDR</code>/<code>CTF_ADDR</code>/<code>EXCHANGE_ADDR</code> from the jul-22 Sepolia deploy (identical to the <code>test</code>
@@ -121,7 +121,7 @@ with its exact error message and fix. (Source: jay&#39;s request in conversation
 are superseded by the jul-28 async-settlement design (Task C); task 5 is satisfied by the
 committed <code>deployments.json</code> manifest + <code>VEREX_DEPLOY_TARGET</code> preflight; task 2&#39;s domain gap
 closed via Firebase Hosting (<code>5278191</code>, <code>9921e23</code>).
-(Source: <a href="../tasks/jun-19-verex-design.html">jun-19-verex-design.md</a>.)</p>
+(Source: <a href="" data-missing="../tasks/jun-19-verex-design.md">jun-19-verex-design.md</a>.)</p>
 <h3>Footer branding: profile avatar swapped in as jaylabs.png</h3>
 <p>Replaced the footer &quot;powered by&quot; image with jay&#39;s profile avatar (from the rabbit repo):
 old logo kept as <code>jaylabs-old.png</code>, avatar now <code>jaylabs.png</code>, <code>layout.tsx</code> unchanged in the end.

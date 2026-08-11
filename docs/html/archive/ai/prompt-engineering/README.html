@@ -73,7 +73,7 @@ on one task: a first-pass Solidity security screen.</p>
 <p>Add one few-shot example (a safe function → &quot;no finding&quot;) so the model answers
 &quot;no vulnerability&quot; in the <strong>same XML format</strong>.</p>
 </blockquote>
-<p>This is implemented in <a href="../../../../../archive/ai/prompt-engineering/audit_prompt.py"><code>audit_prompt.py</code></a>: the <code>deposit()</code> exemplar
+<p>This is implemented in <a href="https://github.com/linked0/rabbit/blob/main/archive/ai/prompt-engineering/audit_prompt.py"><code>audit_prompt.py</code></a>: the <code>deposit()</code> exemplar
 is primed as a <code>user</code>/<code>assistant</code> message pair before the real question. Without it,
 a 70B local model tends to <strong>hallucinate a finding for clean code</strong> just to fill the
 <code>&lt;finding&gt;</code> schema. The exemplar shows that <code>severity=none</code> with an empty <code>&lt;line/&gt;</code> is

@@ -20,31 +20,41 @@ their rows below are now the live status. The PoCs hub they all plug into is tra
 | Home | `/` | [main-page.md](main-page.md) | ✅ Done — `/` rewrites to `app/home/page.tsx` |
 | Portfolio & Market | `/portfolio` + `/market` | [portfolio-and-market.md](portfolio-and-market.md) | 🟡 Stale row — already split into **Portfolio** (`/portfolio`, ✅ done) and **Market** (`/market`, 🟡 in progress — Hyperliquid trading, see the doc); this table's Menu column needs a nav-update pass to reflect the split as two rows |
 | AI Chat | `/chat` | [ai-chat.md](ai-chat.md) — full design incl. Auth+LLM gating and KB-via-MCP+RAG | 🟡 Route exists but was **dropped from the top nav** (2026-08-01, folded into Home); gating/BYO-key ⬜ · KB-RAG ⬜ · Ask-about-me ✅ · Jay Chat public surface ✅ |
-| Game | `/game` | [game.md](game.md) | 🟡 In progress — `/game` is a 2D-canvas placeholder ("Coin Catcher"), Unity WebGL embed not built yet |
 | AP2 Test | `/poc/ap2` | [ap2-test.md](ap2-test.md) — build detail in the [archived plan §2](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s2) | ✅ Done — Stripe Checkout settlement example (test mode), server-side `payment_status` verification; moved from `/ap2` to `/poc/ap2` |
 | XYZ Demo | `/xyz` | [xyz-demo.md](xyz-demo.md) | 🟡 In progress — C2 bundle-submit + C4 PBS relay dashboard live; other items pending |
-| JayVerse | `/jayverse` | [jayverse.md](jayverse.md) | ⬜ To do — "Coming soon" stub, Gravia-style dashboard not built |
 | Verex | ↗ external | [verex-link.md](verex-link.md) | ✅ Done, but **not as designed here** — the nav item was removed (2026-07-25); replaced with a featured card on the Home page (`app/home/page.tsx`, `lib/verex.ts`) instead of a top-menu external link |
 | _UI/UX_ | — | [ui-ux.md](ui-ux.md) — 디자인 접근법: frontend-design 스킬 + UI/UX Pro Max + 6단계 빌드 워크플로 | 🔄 Ongoing — applied per-feature, not a single deliverable |
 | _Cross-cutting_ | — | [common.md](common.md) — navigation/top-menu (Common #1) + CI/CD (Common #2) | 🟡 Partial — Nav restructure done (`app/Nav.tsx`, owner/public gating); **CI/CD not found** — no `.github/workflows/` directory exists in the repo despite `common.md` describing a `deploy.yml` |
-| _DSRV Portal_ | — (backlog) | [dsrv-portal.md](dsrv-portal.md) — institutional custody study (MPC · approval flow · AA · AML) + no-VASP PoC items | ⬜ To do (backlog) — not yet scheduled |
-| _PET Clean Room_ | — (backlog) | [pet-clean-room.md](pet-clean-room.md) — homomorphic-encryption data clean room study (DESILO/국립암센터 case) + hands-on FHE PoC items | ⬜ To do (backlog) — not yet scheduled |
-| _Zapier MCP_ | `/etc/zapier` (planned) | [zapier-mcp.md](zapier-mcp.md) — sample page: agent triggers real app actions (Gmail/Notion/Slack) via Zapier MCP | ⬜ To do — not yet scheduled |
 | _Agentic AA — building blocks_ | `/poc/aa` | [agentic-aa.md](agentic-aa.md) — session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix | 🟡 Built — ① session key (ERC-7715/7710) + ②③ sponsored/batch tx (thirdweb 4337) live; ④ KYA stayed an explainer card (ERC-8004 testnet registry unverified). All human-triggered — that gap is what the row below addresses |
 | _Agentic AA — autonomy loop_ | `/poc/agent` (planned) | **[current-plan.md](../tasks/current-plan.md)** — the only task tracked there | ⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes `lib/agent-scenarios.ts`'s `scheduled-operator` actually run |
 | _EIP-7702 inspector_ | `/poc/7702` | [erc-8141.md](erc-8141.md) is the *native*-AA sibling study; this page is the app-layer inspector | ✅ Done — read-only `eth_getCode` account inspector (plain EOA / 7702-delegated / contract), no wallet required |
-| _Solana_ | `/etc/solana` (planned) | [solana.md](solana.md) — Solana integration study + sample Anchor program (counter → SPL escrow) on devnet, called from a demo page | ⬜ To do — not yet scheduled |
-| _KB Hybrid Payment_ | — (reference only) | [kb-hybrid-payment-flow.md](kb-hybrid-payment-flow.md) — flow map: TradFi card rail (ISO 8583) × on-chain settlement (Avalanche subnet); no dev item | 📎 Reference only |
-| _CRE × Cloud_ | — (reference only) | [cre-cloud.md](cre-cloud.md) — 4 hybrid patterns (RWA servicing · PoR · DvP · AI prediction-market settlement): cloud = private truth, CRE = verified bridge, chain = settlement | 📎 Reference only |
-| _Thirdweb_ | — (reference only) | [thirdweb.md](thirdweb.md) — full-stack Web3 platform survey (contracts · Connect wallets/AA · Engine backend tx · Unity SDK); breadth-over-best-parts tradeoff; touchpoints: agentic-aa, ap2 backend tx, Unity track | 📎 Reference only — not scheduled |
-| _ERC-8141_ | — (knowledge page, planned) | [erc-8141.md](erc-8141.md) — native account-abstraction study: Frame Transactions (`0x06`), the protocol-native sibling of the app-layer AA work (see [current-plan.md §3](../tasks/current-plan.md#s3)) | ⬜ To do — not yet scheduled |
 | _Toss Payments_ | `/poc/toss` | [toss-payments.md](toss-payments.md) — KRW settlement example, counterpart to the AP2 Stripe example | ✅ Done — standalone page (not an `/ap2` extension); test-mode client/secret keys. Detail in the [archived plan §7](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s7) |
 | _Staging Domain_ | — (infra, not a menu item) | [staging-domain.md](staging-domain.md) — `staging.rabbit.jaylabs.xyz` via Firebase Hosting rewrite | 🚫 Not pursuing |
-| _Merkle vs Verkle_ | — (reference only) | [../knowledge/merkle-vs-verkle.html](../knowledge/merkle-vs-verkle.html) — proof-size comparison, Ethereum's Verge context | 📎 Reference only |
-| _Linera Microchains_ | — (reference only) | [../knowledge/linera-microchains.html](../knowledge/linera-microchains.html) — blockspace-contention + per-user microchain model | 📎 Reference only |
-| _Web Stack Layers_ | — (reference only) | [../knowledge/web-stack-layers.html](../knowledge/web-stack-layers.html) — 5-layer map with a rabbit overlay | 📎 Reference only |
 | _PoCs hub_ | `/poc` | [pocs-hub.md](pocs-hub.md) — consolidated demo menu wrapping Hyperliquid Trading, PBS, AP2, and AA under one top-menu item | ✅ Done — shipped 2026-08-03, routes moved `/etc` → `/poc`; cards registered in [`lib/poc-cards.ts`](../../lib/poc-cards.ts) |
-| _TIL ("Today I Learned")_ | `/til` (building) | `lib/til-cards.ts` — same card format as the PoCs hub (`app/DemoCard.tsx`, shared type `lib/demo-cards.ts`). Code demos re-implementing something from a day's learning (math formula, algorithm, or a recommended-service integration) — not a sync of jay's private daily report file | 🟡 In progress — 3 seed cards, all "Coming soon" pending jay filling in the actual code; building on branch `claude/pocs-hub`. Build log: [2026-08-03 history](../history/2026-08-03-rabbit-history.md) (search "TIL") |
+
+
+### 📇 PoCs 카탈로그로 옮겨간 항목 (2026-08-11)
+
+아래 항목들은 **[PoCs 허브](https://www.jaylabs.xyz/poc)의 카드가 정본**이 되었다. 카드마다
+상세 페이지(`/poc/<key>`)가 있고, 카드 데이터(`lib/poc-cards.ts`) 한 곳만 고치면 목록·상세·
+허브가 함께 바뀐다. 이 표에 같은 내용을 남겨 두면 두 벌이 갈라지므로, 여기서는 **어디로
+갔는지만** 남기고 내용은 옮겼다.
+
+| 옮겨간 항목 | 카드 |
+|---|---|
+| Game (Unity WebGL 트랙) | [/poc/game](https://www.jaylabs.xyz/poc/game) |
+| Zapier MCP | [/poc/zapier-mcp](https://www.jaylabs.xyz/poc/zapier-mcp) |
+| Solana | [/poc/solana](https://www.jaylabs.xyz/poc/solana) |
+| ERC-8141 | [/poc/erc-8141](https://www.jaylabs.xyz/poc/erc-8141) |
+| DSRV Portal (기관 커스터디) | [/poc/dsrv-portal](https://www.jaylabs.xyz/poc/dsrv-portal) |
+| PET Clean Room (FHE) | [/poc/pet-clean-room](https://www.jaylabs.xyz/poc/pet-clean-room) |
+| KB Hybrid Payment | [/poc/kb-hybrid-payment](https://www.jaylabs.xyz/poc/kb-hybrid-payment) |
+| CRE × Cloud | [/poc/cre-cloud](https://www.jaylabs.xyz/poc/cre-cloud) |
+| Thirdweb | [/poc/thirdweb](https://www.jaylabs.xyz/poc/thirdweb) |
+| Merkle vs Verkle | [/poc/merkle-vs-verkle](https://www.jaylabs.xyz/poc/merkle-vs-verkle) |
+| Linera Microchains | [/poc/linera-microchains](https://www.jaylabs.xyz/poc/linera-microchains) |
+| Web Stack Layers | [/poc/web-stack-layers](https://www.jaylabs.xyz/poc/web-stack-layers) |
+| TIL | [/poc](https://www.jaylabs.xyz/poc) 안 섹션으로 흡수 · 알고리즘 노트는 [/algorithms](https://www.jaylabs.xyz/algorithms) |
 
 **Legend:** ✅ Done · 🟡 In progress / partial / stale · ⬜ To do · 🔄 Ongoing · 📎 Reference only ·
 🚫 Not pursuing · 🗒️ Design (not yet approved to build).

@@ -37,10 +37,10 @@
   <article>
 <h1>2026-07-07 — verex history</h1>
 <blockquote>
-<p>관련 문서: <a href="../tasks/jun-19-verex-design.html">tasks/jun-19-verex-design.md</a> (Task 1 빌드 + Task 2 staging 준비의 스펙) ·
-<a href="../features/account-abstraction.html">features/account-abstraction.md</a> ·
+<p>관련 문서: <a href="" data-missing="../tasks/jun-19-verex-design.md">tasks/jun-19-verex-design.md</a> (Task 1 빌드 + Task 2 staging 준비의 스펙) ·
+<a href="" data-missing="../features/account-abstraction.md">features/account-abstraction.md</a> ·
 <a href="../features/README.html">features/README.md §11.4</a> ·
-<a href="../analysis/erc-6900-vs-7579-research.html">analysis/erc-6900-vs-7579-research.md</a></p>
+<a href="" data-missing="../analysis/erc-6900-vs-7579-research.md">analysis/erc-6900-vs-7579-research.md</a></p>
 </blockquote>
 <h3>AA: 모듈러 계정 표준 feature spec 추가 (ERC-6900 vs ERC-7579 → 7579 권고)</h3>
 <p>ERC-6900 vs ERC-7579 비교 리서치를 <code>docs/analysis/erc-6900-vs-7579-research.md</code>로 정리하고,
@@ -56,13 +56,13 @@ anvil에 backbone 배포 + 마켓별 prepareCondition/registerToken/유동성 sp
 저장. (3) <strong>실거래</strong>: Buy/Sell마다 진짜 CTFExchange.fillOrder tx — 유저(데모 anvil 계정, 키는 서버)가
 maker 서명, operator(계정 0)가 인벤토리로 체결. 선형 가격 임팩트(L=2000 USDC) + Trade/PricePoint
 미러. 검증: UI에서 $10 BUY → tx receipt status 1 확인 (block 51). MetaMask/wagmi 실지갑 경로는 S7 AA
-트랙으로 유보. Source: <a href="../tasks/jun-19-verex-design.html">jun-19-verex-design.md</a> Task 1 + 채팅 지시.</p>
+트랙으로 유보. Source: <a href="" data-missing="../tasks/jun-19-verex-design.md">jun-19-verex-design.md</a> Task 1 + 채팅 지시.</p>
 <h3>Task 2 준비: GCP 셋업 요약 + 클라우드 체인 결정 항목 신설</h3>
 <p>design 파일에 Task 2 addendum 추가 — jay가 할 일(체인 옵션 결정, GCP 프로젝트/빌링, DNS 레코드,
 testnet ETH, OAuth URI, 비용 승인) vs Claude가 할 일(Cloud SQL, verex-api/web 2개 Cloud Run 서비스,
 deploy.sh, 도메인 매핑, testnet 배포) 분리. <strong>신규 blocker</strong>: 실컨트랙트 도입으로 클라우드의 체인
 위치 결정 필요 — (a) Base Sepolia testnet(권장) / (b) hosted anvil / (c) DB-only fallback.
-Source: <a href="../tasks/jun-19-verex-design.html">jun-19-verex-design.md</a> Task 2 addendum.</p>
+Source: <a href="" data-missing="../tasks/jun-19-verex-design.md">jun-19-verex-design.md</a> Task 2 addendum.</p>
 <h3>Staging 배포 준비 완료 — deploy.sh 갱신 + DB-only 모드 + /backend 프록시 (jay 실행 예정)</h3>
 <p>기존 v1 deploy.sh를 현 구현에 맞게 확장: (1) <strong>API 이미지</strong> — api가 workspace 패키지 @verex/sdk에
 의존하게 되어 <code>--source packages/api</code> 불가 → repo-root 컨텍스트 빌드(<code>packages/api/Dockerfile.cloud</code></p>
@@ -87,7 +87,7 @@ Source: 채팅 질문 중 dig로 확인 (별도 spec 문서 없음).</p>
 서비스 존재 확인 → 도메인 매핑 생성(소유권 미검증 시 Search Console 안내 출력) → 매핑이 요구하는
 레코드 조회 → Cloud DNS 존 탐색 → 레코드 upsert. jay의 gcloud 인증으로 실행하므로 자격증명 공유
 불필요. 전제: verex-web 서비스가 먼저 배포돼 있어야 함 (Task 2 deploy.sh 이후 실행).
-Source: <a href="../tasks/jun-19-verex-design.html">jun-19-verex-design.md</a> Task 2 addendum.</p>
+Source: <a href="" data-missing="../tasks/jun-19-verex-design.md">jun-19-verex-design.md</a> Task 2 addendum.</p>
 <h3>DeployCTF.s.sol: 배포 후 CLI용 export 명령 로그 추가</h3>
 <p>배포 끝에 <code>export USDC_ADDR=... CTF_ADDR=... EXCHANGE_ADDR=...</code> 한 줄을 복사-붙여넣기 가능한
 형태로 출력하게 함 — packages/cli가 이 env 3개를 읽으므로 수동 복사 단계 제거. anvil dry-run으로
@@ -111,7 +111,7 @@ Source: 이 파일의 위 엔트리들이 각 커밋의 상세.</p>
 리서치 후 shadcn/ui + Tailwind로 제안 (copy-in 소유권 → 자체 identity 분기 용이, jay 기존 경험).
 이전 회사에서 shadcn으로 Polymarket류 UI를 만든 이력 관련 리스크는 &quot;레이아웃 유사&quot;가 아니라
 &quot;코드/에셋 재사용 + 고용계약 조항&quot;이 실제 노출점 — clean-room 재구축, identity 차별화, provenance
-기록, 계약서 확인 체크리스트로 정리. Source: <a href="../tasks/jun-19-verex-design.html">jun-19-verex-design.md Task 1 addendum</a>.</p>
+기록, 계약서 확인 체크리스트로 정리. Source: <a href="" data-missing="../tasks/jun-19-verex-design.md">jun-19-verex-design.md Task 1 addendum</a>.</p>
 
   </article>
 </div>

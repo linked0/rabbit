@@ -40,7 +40,7 @@
 <p>Source docs for today&#39;s work:</p>
 <ul>
 <li>Feature design → <a href="../features/ai-chat.html">docs/features/ai-chat.md</a> (§ &quot;Ask about me (RAG)&quot;)</li>
-<li>Task design → <a href="../tasks/jun-30-rabbit-design.html">docs/tasks/jun-30-rabbit-design.md</a> (§5b)</li>
+<li>Task design → <a href="" data-missing="../tasks/jun-30-rabbit-design.md">docs/tasks/jun-30-rabbit-design.md</a> (§5b)</li>
 <li>Main design → <a href="../rabbit-design.html">docs/rabbit-design.md</a></li>
 </ul>
 </blockquote>
@@ -110,7 +110,7 @@ its test-server branch too (cloud → always <code>https://verex.jaylabs.xyz</co
 No source doc — direct chat request.</p>
 <h3>Top menu + routes are owner-only, except Market and XYZ</h3>
 <p>Per jay: the allowed top menu should appear only when <strong>his</strong> Google account is signed in.
-Added <code>isOwnerEmail()</code> to <a href="../../../../auth.ts">auth.ts</a> (reuses the existing <code>ALLOWED_EMAILS</code>
+Added <code>isOwnerEmail()</code> to <a href="https://github.com/linked0/rabbit/blob/main/auth.ts">auth.ts</a> (reuses the existing <code>ALLOWED_EMAILS</code>
 allowlist; empty list = local dev, any login counts as owner) and used it in two places so
 menu and routing can&#39;t drift apart:</p>
 <ul>
@@ -125,10 +125,10 @@ so hiding a menu item was cosmetic — the URL still worked. Now hidden means un
 Verified signed-out on <code>:3100</code>: nav renders only 홈 / 마켓 / XYZ 데모.</p>
 <h3><a href="http://www.jaylabs.xyz">www.jaylabs.xyz</a> → Cloud Run <code>rabbit</code> (Firebase Hosting rewrite)</h3>
 <p>Implemented the custom domain the <a href="../tasks/jun-19-rabbit-design.html">jun-19 design</a> Phase 2
-planned, using the workaround that <a href="../tasks/jun-30-rabbit-design.html">jun-30 design §11</a>
+planned, using the workaround that <a href="" data-missing="../tasks/jun-30-rabbit-design.md">jun-30 design §11</a>
 recommended: Cloud Run&#39;s built-in domain mapping still doesn&#39;t support <code>asia-northeast3</code>, so
 traffic goes through a Firebase Hosting rewrite (<code>** → rabbit</code>, asia-northeast3) — the same
-route <a href="../../../verex/docs/history/2026-07-25-verex-history.md">verex.jaylabs.xyz</a> took today.</p>
+route <a href="" data-missing="../../../verex/docs/history/2026-07-25-verex-history.md">verex.jaylabs.xyz</a> took today.</p>
 <p>New <code>scripts/setup-domain-firebase.sh</code> (idempotent, REST-only — no firebase CLI), ported from
 verex&#39;s, plus <code>firebase.json</code> / <code>.firebaserc</code> as the CLI-readable mirror. Hosting site is the
 default <code>doubletree-498007</code>; the <code>jaylabs-xyz</code> zone lives in <strong>that same project</strong> this time

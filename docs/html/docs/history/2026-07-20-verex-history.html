@@ -166,7 +166,7 @@ and a <code>detail</code> field in the error response. Verified live: an oversiz
 <code>detail: &quot;SafeMath: subtraction overflow&quot;</code>; normal trades unchanged. (Side effect of the
 test: wallet #9 holds ~51k faucet USDC until the next re-seed — not visible in the UI.)</p>
 <h3>Design: portfolio page + market resolution</h3>
-<p>Per jay&#39;s request, wrote <a href="../tasks/details/jul-20-portfolio-resolution-design.html">tasks/details/jul-20-portfolio-resolution-design.md</a>
+<p>Per jay&#39;s request, wrote <a href="" data-missing="../tasks/details/jul-20-portfolio-resolution-design.md">tasks/details/jul-20-portfolio-resolution-design.md</a>
 (moved into the new <code>details/</code> folder per jay; linked as Task 3 in the jun-19 design&#39;s task map):
 (1) Portfolio page for demo wallets (positions + redeem), (2) resolution as inline admin
 controls on the market page when operator #0 is the active wallet — recommended over a
@@ -175,7 +175,7 @@ already has <code>reportPayouts</code>/<code>redeem</code> (proven in the CLI de
 <code>Market.status</code>/<code>resolvedOutcomeId</code> — the work is API routes + UI wiring, plus a missing
 trade guard for resolved markets. Design only; implementation awaiting jay&#39;s go.</p>
 <h3>Built: portfolio page + market resolution (+P&amp;L per jay&#39;s addendum)</h3>
-<p>Implemented <a href="../tasks/details/jul-20-portfolio-resolution-design.html">tasks/details/jul-20-portfolio-resolution-design.md</a>.
+<p>Implemented <a href="" data-missing="../tasks/details/jul-20-portfolio-resolution-design.md">tasks/details/jul-20-portfolio-resolution-design.md</a>.
 API: <code>resolve.ts</code> (<code>POST /markets/:slug/resolve</code> operator-only via <code>reportPayouts</code>,
 <code>POST /redeem</code> clearing both index sets), walletSummary extended with costBasis/pnl
 (Σ BUY − Σ SELL from Trade) + marketStatus/won; trade-guard for non-OPEN markets already

@@ -140,17 +140,17 @@ python 03_multihead_causal.py  # causal mask + multi-head + 길이² 비용
 </tr>
 </thead>
 <tbody><tr>
-<td><a href="../../../../../archive/ai/attention-study/01_self_attention.py"><code>01_self_attention.py</code></a></td>
+<td><a href="https://github.com/linked0/rabbit/blob/main/archive/ai/attention-study/01_self_attention.py"><code>01_self_attention.py</code></a></td>
 <td>수식 그대로 구현</td>
 <td><code>Q·Kᵀ/√d_k → softmax → ·V</code>, 가중치 행 합=1</td>
 </tr>
 <tr>
-<td><a href="../../../../../archive/ai/attention-study/02_softmax_lmsr.py"><code>02_softmax_lmsr.py</code></a></td>
+<td><a href="https://github.com/linked0/rabbit/blob/main/archive/ai/attention-study/02_softmax_lmsr.py"><code>02_softmax_lmsr.py</code></a></td>
 <td>softmax 온도 = 민감도</td>
 <td><strong><code>p_i = softmax(q_i/b)</code></strong> 와 동일 구조</td>
 </tr>
 <tr>
-<td><a href="../../../../../archive/ai/attention-study/03_multihead_causal.py"><code>03_multihead_causal.py</code></a></td>
+<td><a href="https://github.com/linked0/rabbit/blob/main/archive/ai/attention-study/03_multihead_causal.py"><code>03_multihead_causal.py</code></a></td>
 <td>causal mask + multi-head</td>
 <td>미래 차단, 다관점 병렬, <strong>O(n²) 비용</strong></td>
 </tr>
@@ -183,7 +183,7 @@ prompt/gen 토큰 수와 tok/s를 보며 &quot;attention이 모든 토큰 쌍을
 <ul>
 <li>MLX는 <strong>통합 메모리</strong>라 GPU 전송 없이 추론.</li>
 <li>포맷이 <strong>GGUF(Ollama)와 다르며</strong> <code>mlx-community</code> 리포에서 받는다.</li>
-<li>(Day 2 폴더: <a href="../../../../../archive/ai/mlx-study"><code>../mlx-study</code></a>)</li>
+<li>(Day 2 폴더: <a href="https://github.com/linked0/rabbit/blob/main/archive/ai/mlx-study"><code>../mlx-study</code></a>)</li>
 </ul>
 <hr>
 <h2>7. 다음 단계 (Day 4 이후 후보)</h2>
