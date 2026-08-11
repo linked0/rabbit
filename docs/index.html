@@ -283,6 +283,91 @@
                 </div>
             </div>
 
+            <!-- PoCs — 앱의 PoCs 상단 메뉴(/poc)와 같은 카드 목록 (2026-08-11, jay).
+                 마커 사이는 scripts/generate-pocs-html.mjs 가 lib/poc-cards.ts 에서 다시 만든다.
+                 손으로 고치지 말 것 — 카드가 바뀌면 `pnpm docs:pocs` 를 다시 돌린다.
+                 (TIL 라벨 표류 같은 실패를 막으려고 소스를 한 곳으로 묶었다.) -->
+            <!-- POCS:BEGIN -->
+            <div class="section">
+                <h2 class="section-title">PoCs</h2>
+                <div class="grid">
+                    <a href="https://www.jaylabs.xyz/poc/dvt" class="card" style="border-left: 4px solid #6366f1;">
+                        <span class="card-title">DVT in the protocol <span class="badge" style="background: #6366f122; color: #6366f1;">MOCK</span></span>
+                        <span class="card-path">Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/oz-relayer" class="card" style="border-left: 4px solid #6366f1;">
+                        <span class="card-title">OpenZeppelin Relayer &amp; Monitor <span class="badge" style="background: #6366f122; color: #6366f1;">MOCK</span></span>
+                        <span class="card-path">The managed service shut down; the tools were opened. Self-hosted transaction plumbing and on-chain alerting.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/game" class="card" style="border-left: 4px solid #6366f1;">
+                        <span class="card-title">Game — Unity WebGL track <span class="badge" style="background: #6366f122; color: #6366f1;">MOCK</span></span>
+                        <span class="card-path">A 2D canvas placeholder today; the Unity WebGL embed is the actual goal.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/dsrv-portal" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">Institutional custody study <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">MPC · approval flows · AA · AML — and which parts are buildable without a VASP licence.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/pet-clean-room" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">PET clean room (FHE) <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">Homomorphic encryption for data that cannot leave its owner — a hands-on study.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/merkle-vs-verkle" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">Merkle vs Verkle <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">Why proof size, not hashing speed, is what decides whether stateless clients are possible.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/linera-microchains" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">Linera microchains <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">One chain per user — removing blockspace contention instead of pricing it.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/web-stack-layers" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">Web stack layers <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">A five-layer map of the stack, with this project overlaid on it.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/kb-hybrid-payment" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">KB hybrid payment flow <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">A card rail (ISO 8583) meeting on-chain settlement — where the two systems actually touch.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/cre-cloud" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">CRE × Cloud — four hybrid patterns <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">Cloud holds the private truth, CRE is the verified bridge, the chain settles.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/thirdweb" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">Thirdweb — platform survey <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">Contracts, wallets/AA, backend tx, Unity SDK — breadth bought with best-in-class parts.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/solana" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">Solana <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">EVM-vs-Solana study + a sample Anchor program on devnet.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/zapier-mcp" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">Zapier MCP <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">Agent triggers real SaaS actions (Gmail/Notion/Slack) via Zapier's MCP tools.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/erc-8141" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">ERC-8141 <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">Native account-abstraction explainer — Ethereum's protocol-level Frame Transactions.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/geometric-series-dcf" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">Geometric series → DCF valuation <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">Sum of a geometric series, applied to perpetuity/Gordon-formula valuation.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/amortized-potential-function" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">Amortized analysis via potential functions <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">Proving O(1) amortized cost for dynamic-array doubling with a potential function.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/moralis-wallet-api" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">Moralis — wallet snapshot via API <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">Querying balance/net-worth for an address with Moralis's Wallet API.</span>
+                    </a>
+                </div>
+                <div style="text-align: right; margin-top: 12px;">
+                    <a href="pocs.html"
+                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">View
+                        All PoCs &rarr;</a>
+                </div>
+            </div>
+            <!-- POCS:END -->
+
             <!-- Algorithms — 앱의 /algorithms 상단 메뉴를 여기로 옮겼다 (2026-08-11, jay).
                  수학·알고리즘 노트는 문서이지 데모가 아니라, 앱 메뉴보다 이 색인에 산다. -->
             <div class="section">
