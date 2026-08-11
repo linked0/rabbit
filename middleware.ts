@@ -6,8 +6,9 @@ import { auth, isOwnerEmail } from "@/auth";
 const PUBLIC_PATHS = new Set([
   "/",
   "/login",
-  "/poc", // PoCs 허브 — Market/XYZ 를 여기로 통합 (Nav pub, 2026-08-03)
-  "/til", // TIL 허브 — Today I Learned, PoCs와 같은 카드 포맷 (Nav pub, 2026-08-03)
+  "/live", // 라이브 허브 — 돌아가는 카드만 (Nav pub, 2026-08-11)
+  "/poc", // PoCs 허브 — 만들고 있는 것 + TIL 섹션 (Nav pub, 2026-08-03)
+  "/til", // → /poc 리다이렉트 (2026-08-11). 공유된 링크가 /login 으로 튀지 않도록 공개 유지.
   "/market", // 공개 시세만 — 메뉴에선 PoCs 허브 카드로만 노출 (라우트는 그대로 공개)
   "/xyz", // C4 관찰자 대시보드 — 공개 데이터만 (메뉴에선 PoCs 허브 카드로만 노출)
   "/api/relay", // /xyz 용 공개 relay 프록시 (키 불필요)
@@ -24,6 +25,9 @@ const PUBLIC_PATHS = new Set([
   // 자율 결제 에이전트 — 아직 구현 전이라 각본만 도는 목업. 카드가 "준비 중"이라 허브에서
   // 링크되지 않고 URL로만 들어온다. 논의 중 공유하려면 로그인 없이 열려야 해서 공개로 둔다.
   "/poc/agent",
+  // OpenZeppelin Relayer·Monitor — 역시 각본만 도는 목업. 카드에서 링크되므로 공개가 아니면
+  // 허브에서 눌렀을 때 /login 으로 튄다 (2026-08-11에 실제로 그랬다).
+  "/poc/oz-relayer",
   // TIL 상세 — LMSR/하이브리드 AMM 정독 노트. 읽기 전용 정적 페이지라 /til 과 함께 공개.
   "/til/lmsr-hybrid-amm",
   // /poc/aa 의 에이전트 시나리오 상세 — 정적 설명 페이지. 허용 목록은 명시적으로 유지하는 게
