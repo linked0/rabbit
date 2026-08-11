@@ -20,7 +20,9 @@ export default function LmsrPage() {
     <>
       <Nav />
       <main>
-        <BackLink lang={lang} href="/til" ko="TIL" en="TIL" />
+        {/* TIL 허브가 /poc 로 흡수된 뒤(2026-08-11)에도 "← TIL"(→ /til → /poc 리다이렉트)로
+            남아 있었다 — 존재하지 않는 메뉴를 가리키는 라벨. 기본값(← PoCs)으로 되돌린다. */}
+        <BackLink lang={lang} />
         <h1>{t("LMSR과 하이브리드 AMM", "LMSR & the hybrid AMM")}</h1>
         <p className="sub">
           {t(

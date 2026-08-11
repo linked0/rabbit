@@ -123,3 +123,23 @@
 - **D6 후보 — x402 정산 경로.** x402는 보통 ERC-3009 `transferWithAuthorization`으로 정산하는데, 그 서명은 USDC를 **직접** 때리므로 DelegationManager를 거치지 않는다 → **caveat 강제기가 하나도 실행되지 않는다.** 한도·만료가 전부 우회된다. 온체인 강제를 지키려면 `redeemDelegations` 경로로 결제하고 txHash를 증빙으로 제시해야 한다(~12초 확정 대기, 20분 신선도 창 대비 무의미한 비용). 튜토리얼을 따라가면 자연히 우회 경로를 고르게 되므로 명시적 결정이 필요하다.
 - **`allowedTargets`의 확장성.** 목업은 수취인 1개다. 실제 뉴스 구매는 발행사 다수 → x402 facilitator 하나를 허용(대상 1, 상인 다수, 대신 라우팅 신뢰가 facilitator로 이동)하거나 N개를 허용하고 N+1마다 재부여. **숫자를 조이는 것으로 확장되지 않는 유일한 caveat**이라 M1 전에 정할 것.
 - **트리거 재검토.** 페이지가 이미 묻는 질문("가격이 맞는 방아쇠인가")에 대해: 시간에 민감한 유료 기사 구매가 ETH/USD보다 낫다. 산 것이 곧 결제의 목적이라 "투자 전략이 아니다"라는 부인이 필요 없고, 건너뜀 행이 사람이 평가할 수 있는 판단("너무 비싸다", "이미 있다")이 된다. 다만 신선도 창이 20분이면 **5분 틱이 곧 지연 예산**이 되어, 타이머 구동에서 이벤트 구동으로 바뀐다.
+
+### 라이브 카드 상세의 "← TIL" 뒤로가기 — 허브 제거가 남긴 고아 라벨 (조사만, 수정 전)
+
+**Cause:** jay 지적 — `/live`에서 LMSR 카드를 열면 상세 페이지 뒤로가기가 "← TIL"인데, TIL은 오늘 상단 메뉴에서 제거된 허브다. 링크가 잘못된 곳이 많아 보인다는 보고.
+
+**Reasoning:** 로컬(3100)·운영(www.jaylabs.xyz) 전 링크를 크롤로 확인 — 404는 0개. 문제는 깨진 링크가 아니라 **뒤로가기가 부모 허브를 하드코딩**하는 설계다. 오늘 "라이브는 카테고리가 아니라 필터"로 바꾸면서 같은 카드가 여러 허브(라이브·PoCs)에서 열리게 됐는데, BackLink는 여전히 허브 하나를 고정으로 가리킨다. TIL 상세는 `href="/til"`(→ `/poc` 리다이렉트)이라 라벨까지 죽은 메뉴를 가리킨다.
+
+**Change:** 없음 — 조사 단계. 발견 사항: ① `app/til/lmsr-hybrid-amm/page.tsx:23` `← TIL` → 존재하지 않는 허브, 클릭 시 `/poc` 착지. ② `/market`·`/xyz`·`/poc/*` 상세도 `/live`에서 들어와도 전부 "← PoCs"로 돌아감. ③ 보너스: `/poc`의 게임 카드는 비로그인 방문자에게 보이는데 `/game`은 middleware 공개 목록에 없어 클릭하면 `/login`으로 튐(oz-relayer 때와 같은 실패 유형).
+
+**Result:** 수정안 제시 후 jay 결정 대기 — 최소안은 TIL 상세 뒤로가기를 "← PoCs"(`/poc`)로 고치고 게임 카드를 공개 여부와 일치시키는 것, 근본안은 허브 카드가 `?from=<hub>`을 넘겨 BackLink가 온 곳으로 돌려보내는 것.
+
+### 뒤로가기·/game 수정 + Workspace Index 에 PoCs 섹션 (jay 승인 — main 머지·배포까지)
+
+**Cause:** 위 조사 항목에 대해 jay 가 수정을 승인했고, 추가로 문서 색인(Workspace Index)에 PoCs 섹션과 "View All PoCs" 페이지를 요청했다 (PoCs 섹션은 Algorithms 앞).
+
+**Reasoning:** 뒤로가기는 최소안(← PoCs)으로 — `?from=<hub>` 구조안은 이번 요청 범위가 아니다. `/game` 은 oz-relayer 전례를 따라 라우트를 공개한다(카드가 공개면 라우트도 공개). PoCs 문서는 손으로 쓰지 않고 `lib/poc-cards.ts` 에서 생성한다 — TIL 라벨 표류와 같은 "두 표면이 갈라지는" 실패를 소스 단일화로 막기 위해. lib/*.ts 는 확장자 없는 import 라 Node 가 직접 못 읽어, 기존 devDep 인 tsc 로 CJS 임시 컴파일 후 require 하는 방식을 골랐다(새 의존성 0).
+
+**Change:** ① `app/til/lmsr-hybrid-amm/page.tsx` 뒤로가기를 기본값(← PoCs, `/poc`)으로. ② `middleware.ts` PUBLIC_PATHS 에 `/game` 추가. ③ `scripts/generate-pocs-html.mjs` 신규 — `docs/index.html` 의 POCS:BEGIN/END 마커 사이(컴팩트 카드, Algorithms 앞)와 `docs/pocs.html`(전체 내용, read-the-docs 포맷) 둘 다 생성. `pnpm docs:pocs` 로 재생성.
+
+**Result:** 로컬 검증 — `/game` 비로그인 200(전엔 /login 302), TIL 상세 뒤로가기 `<a href="/poc">PoCs</a>`, pocs.html 에 17개 카드 전부. main 머지·Cloud Run 배포는 이 항목 아래 작업으로 진행.
