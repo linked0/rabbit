@@ -1,23 +1,33 @@
 // Jay Chat — public, keyless "About Jay" persona chat (docs/features/ai-chat.md).
-// Separate from the private lib/ai.ts general chat: dedicated API key, always-on
-// About-me persona (never general-purpose), and its own cost/abuse guardrails,
+// 사이트의 유일한 챗 (2026-08-12): 오너 전용 일반 챗(/chat + lib/ai.ts)은 안 쓰여서 삭제됨.
+// Always-on About-me persona (never general-purpose) + its own cost/abuse guardrails,
 // since this endpoint is reachable by anyone with no login.
 
-import type { ChatMessage } from "@/lib/ai";
+export type ChatMessage = {
+  role: "user" | "assistant" | "system";
+  content: string;
+};
 
-const OPENAI_MODEL = "gpt-4o-mini";
+// Qwen Flash via DashScope's OpenAI-compatible endpoint (2026-08-12, was gpt-4o-mini).
+// Same wire format as OpenAI, ~45% cheaper per typical turn ($0.05/$0.40 vs $0.15/$0.60
+// per 1M in/out) — which is what pays for the 3× budget raise below. International
+// endpoint (Singapore); the mainland variant is dashscope.aliyuncs.com.
+const QWEN_MODEL = "qwen-flash";
+const QWEN_ENDPOINT = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions";
 const MAX_OUTPUT_TOKENS = 500; // caps cost per request even under abuse
 
 // --- Hourly global token budget ---
 // In-memory, resets every hour, shared across all visitors (not per-visitor — a
 // deliberate v1 simplification since real traffic is rare right now; see
 // docs/features/ai-chat.md for the tradeoff). This is a soft safety net, not the
-// hard guarantee — the real backstop is the OpenAI account-level spending cap
-// (set separately in the OpenAI dashboard for the dedicated key below).
-// 150k/hour ≈ 60+ questions with the history trimming in the route (~2.3k tokens each).
-// The old 30k died at ~question 11: the client resends the whole conversation every turn, so
-// cost grew quadratically — question 20 cost 8× question 1 (measured, 2026-08-02).
-const HOURLY_TOKEN_BUDGET = Number(process.env.JAY_CHAT_HOURLY_TOKEN_BUDGET ?? 150000);
+// hard guarantee — the real backstop is the provider-side spending limit
+// (set in the Alibaba Cloud Model Studio console for the dedicated key below).
+// 450k/hour ≈ 190+ questions with the history trimming in the route (~2.3k tokens each).
+// Raised 3× from 150k on the Qwen switch (2026-08-12): the cheaper per-token price keeps
+// the absolute worst-case monthly ceiling near what 150k cost on gpt-4o-mini (~$40 vs ~$27).
+// History: the original 30k died at ~question 11 — the client resends the whole conversation
+// every turn, so cost grew quadratically; question 20 cost 8× question 1 (measured, 2026-08-02).
+const HOURLY_TOKEN_BUDGET = Number(process.env.JAY_CHAT_HOURLY_TOKEN_BUDGET ?? 450000);
 let windowStart = Date.now();
 let tokensUsedThisHour = 0;
 
@@ -57,31 +67,32 @@ export function burstLimited(ip: string): boolean {
   return entry.count > BURST_LIMIT_PER_MINUTE;
 }
 
-// --- Dedicated OpenAI call (streaming, with usage capture) ---
-// Separate API key from the private chat's AI_API_KEY, on purpose (see security
-// discussion in docs/history) — if this key is ever abused, it can be revoked on
-// its own without touching the owner's private chat.
+// --- Qwen call (streaming, with usage capture) ---
+// 키는 AI_API_KEY 하나로 통일 (jay, 2026-08-12) — 원래는 공개 엔드포인트 전용 키를 따로
+// 뒀지만(남용 시 단독 폐기), 유일하게 남은 다른 소비자였던 오너 전용 챗을 삭제하면서
+// 격리로 얻는 게 없어졌다. 이제 이 키를 쓰는 곳은 Jay Chat 뿐이라 폐기해도 다른 기능이
+// 죽지 않는다. 값은 DashScope(Model Studio) API 키.
 export async function streamJayChat(
   messages: ChatMessage[]
 ): Promise<ReadableStream<Uint8Array>> {
-  const key = process.env.JAY_CHAT_OPENAI_API_KEY;
-  if (!key) throw new Error("JAY_CHAT_OPENAI_API_KEY가 설정되지 않았습니다.");
+  const key = process.env.AI_API_KEY;
+  if (!key) throw new Error("AI_API_KEY가 설정되지 않았습니다.");
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await fetch(QWEN_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      model: OPENAI_MODEL,
+      model: QWEN_MODEL,
       messages,
       max_tokens: MAX_OUTPUT_TOKENS,
       stream: true,
       stream_options: { include_usage: true },
     }),
   });
-  if (!res.ok || !res.body) throw new Error(`OpenAI 오류: HTTP ${res.status}`);
+  if (!res.ok || !res.body) throw new Error(`Qwen 오류: HTTP ${res.status}`);
 
   const decoder = new TextDecoder();
   const encoder = new TextEncoder();

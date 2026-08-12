@@ -29,7 +29,7 @@ const MENU: NavItem[] = [
   // 먼저고, 라이브는 그중 완성된 것을 모아 보여주는 쪽이다.
   { href: "/poc", ko: "PoCs", en: "PoCs", code: "ETC", pub: true },
   // 라이브 — 실제로 돌아가는 카드만. /poc 는 만들고 있는 것과 계획을 맡는다.
-  // ⚠️ 새 메뉴는 `ALLOW_LIVE=true` 가 있어야 뜬다 — .env.local 에 넣었고, deploy.sh 가
+  // ⚠️ 새 메뉴는 `ALLOW_LIVE=true` 가 있어야 뜬다 — .env 에 넣었고, deploy.sh 가
   // ALLOW_* 를 전부 Cloud Run env 로 전달하므로 배포 시 자동으로 따라간다.
   { href: "/live", ko: "라이브", en: "Live", code: "LIVE", pub: true },
   // 알고리즘 상단 메뉴는 제거 (2026-08-11, jay) — 수학·알고리즘 노트는 데모가 아니라 문서라,

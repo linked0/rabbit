@@ -44,18 +44,31 @@ of opening up `/chat` itself — see "Jay Chat" below.
 ## Jay Chat — public surface (✅ implemented, 2026-08-01)
 
 **What:** the nav item (formerly "AI Chat") is renamed **"Jay Chat"**, points at a new public page
-`/jay-chat`, and is `pub: true` — visible and usable by logged-out visitors. `/chat` itself is
-unchanged (still owner-only, still general-purpose + the `👤 About Hyunjae` toggle) — Jay Chat is
-an isolated build, not a retrofit, so there's zero risk to the existing private chat.
+`/jay-chat`, and is `pub: true` — visible and usable by logged-out visitors. `/chat` itself was
+unchanged at the time (owner-only, general-purpose + the `👤 About Hyunjae` toggle) — Jay Chat was
+an isolated build, not a retrofit, so there was zero risk to the existing private chat.
+
+> **2026-08-12 — private chat deleted.** jay stopped using `/chat`, so the owner-only general chat
+> (`app/chat/`, `app/api/chat/`, `lib/ai.ts` incl. the Ollama local path) was removed. Jay Chat is
+> now the site's only chat, and the "dedicated key" isolation below collapsed into a single
+> `AI_API_KEY` (DashScope/Qwen) — with no second consumer, a separate key no longer isolated
+> anything. `ChatMessage` moved into `lib/jay-chat.ts`.
+
+**Model:** **Qwen Flash** via DashScope's OpenAI-compatible endpoint (switched from `gpt-4o-mini`
+2026-08-12 — same wire format, ~45% cheaper per typical turn, which funded a 3× budget raise).
 
 **How it stays safe as a public, keyless endpoint:**
-- **Dedicated API key** (`JAY_CHAT_OPENAI_API_KEY`, separate from `AI_API_KEY`) — revocable on its
-  own if ever abused, without touching the owner's private chat.
+- **API key** — historically a dedicated key (`JAY_CHAT_OPENAI_API_KEY`), separate from the
+  private chat's `AI_API_KEY` so abuse could be revoked without killing the owner's chat. Since
+  the private chat's deletion (2026-08-12) there is no second consumer to protect, so Jay Chat
+  simply reads `AI_API_KEY` — still revocable freely, since nothing else uses it.
 - **Always-on persona, never general chat** — `/api/jay-chat` (`app/api/jay-chat/route.ts`) always
   injects `buildAboutMeSystemMessage()` itself; there's no client-supplied toggle to turn it off,
   so the endpoint can't be repurposed as a free general-purpose proxy.
-- **Hourly global token budget** (`lib/jay-chat.ts`, in-memory, default 30k tokens/hr, env
-  `JAY_CHAT_HOURLY_TOKEN_BUDGET`) — shared across all visitors, not per-visitor. A deliberate v1
+- **Hourly global token budget** (`lib/jay-chat.ts`, in-memory, default 450k tokens/hr — was 30k,
+  then 150k after the quadratic-history measurement of 2026-08-02, then 3× on the cheaper Qwen
+  switch 2026-08-12; env `JAY_CHAT_HOURLY_TOKEN_BUDGET`) — shared across all visitors, not
+  per-visitor. A deliberate v1
   simplification (jay's call, 2026-08-01): real traffic is rare right now, so the downside (one
   active conversation could exhaust the shared hour) is low-probability, and splitting per-visitor
   later is a small, contained change if traffic ever picks up. Checked before every request, so
@@ -64,8 +77,9 @@ an isolated build, not a retrofit, so there's zero risk to the existing private 
   just protects server stability from one script hammering it with simultaneous requests.
 - **Request caps** — max 20 messages/conversation, max 2000 chars/message, max 500 output tokens —
   bound worst-case cost per request.
-- **OpenAI account-level hard spending cap** — set on the dedicated key in the OpenAI dashboard, as
-  the final backstop regardless of any bug in the app's own limiting logic.
+- **Provider-level hard spending cap** — set on the dedicated key in the provider console (Alibaba
+  Cloud Model Studio since the Qwen switch; formerly the OpenAI dashboard), as the final backstop
+  regardless of any bug in the app's own limiting logic.
 
 **Corpus expansion:** `content/profile/github-summary.md` added (real data, GitHub's public API,
 no auth needed) — picked up automatically by the existing `markdownChunks()` loader, no code

@@ -78,7 +78,7 @@ export default function PerpClient() {
         <h2>내 ETH-PERP 포지션</h2>
         {!data?.address ? (
           <p className="muted">
-            <code>HL_ACCOUNT_ADDRESS</code>(공개 지갑 주소)를 <code>.env.local</code>에 설정하면
+            <code>HL_ACCOUNT_ADDRESS</code>(공개 지갑 주소)를 <code>.env</code>에 설정하면
             포지션이 표시됩니다. <b>서명 키는 필요 없습니다</b> (읽기 전용).
           </p>
         ) : !data.user || data.user.positions.length === 0 ? (
