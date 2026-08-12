@@ -130,6 +130,16 @@ PROMPT_POOL 7→29개(ko/en 병렬) — Verex·Nostra·Bosagora·BC카드·DAO·
 <li><strong>Result:</strong> <code>tsc --noEmit</code> 통과. 2600자 어시스턴트 히스토리 + 새 질문 요청이 400 대신
 정상 스트리밍되는 것을 배포 후 확인 (아래 검증).</li>
 </ul>
+<h3>Jay Chat: 한국어 이름 &quot;이현재&quot; 고정</h3>
+<ul>
+<li><strong>Cause:</strong> jay 스크린샷 — 연락 방법 답변이 &quot;하현재씨&quot;로 시작 (성 환각).</li>
+<li><strong>Reasoning:</strong> 시스템 프롬프트가 이름을 PROFILE.name(&quot;Hyunjae Lee&quot;, 영문)으로만 전달 —
+한국어 답변에서 모델이 &quot;Lee&quot;를 스스로 음차하다 성을 지어냈다. 이름을 양 언어로,
+사실로 명시하고 &quot;항상 이현재로 쓸 것&quot;을 지시하면 해결 (jay: &quot;답변을 &#39;이현재는&#39;로 고정&quot;).</li>
+<li><strong>Change:</strong> <code>lib/about-me.ts</code> 시스템 메시지 서두에 이름 규칙 추가 — 한국어 이현재 /
+영문 Hyunjae Lee, 한국어 답변에선 반드시 &quot;이현재&quot;, 다른 성 변형 금지.</li>
+<li><strong>Result:</strong> 배포 후 프로덕션에서 연락·경력 질문 재현 — &quot;이현재&quot; 정상 표기 확인 (아래).</li>
+</ul>
 
   </article>
 </div>
