@@ -431,16 +431,19 @@ a.ghost:hover {
   color: var(--muted-foreground);
   background: var(--muted-surface);
 }
-/* 목업은 눌린다 — 회색 배지는 "아직 없음"으로 읽혀서 아무도 누르지 않는다 (jay, 2026-08-11).
-   초록(라이브)과 구분되되 회색보다 눈에 띄어야 하므로, 사이트가 이미 쓰는 인디고를 준다. */
-.poc-badge-mock {
-  color: #3f36e2;
-  background: color-mix(in srgb, #3f36e2 12%, transparent);
+/* 완료 — 사고 실험·구현이 끝났지만 상시 데모는 아닌 상태 (jay, 2026-08-12).
+   초록(라이브)·인디고(목업)와 구분되는 하늘색 — "끝났다"는 차분한 확정의 톤. */
+.poc-badge-done {
+  color: #0284c7;
+  background: color-mix(in srgb, #0284c7 12%, transparent);
 }
-:root[data-theme="dark"] .poc-badge-mock {
-  color: #8b84ff; /* 어두운 배경에서 #3f36e2 는 읽히지 않는다 — plink-mail 과 같은 처리 */
-  background: color-mix(in srgb, #8b84ff 16%, transparent);
+:root[data-theme="dark"] .poc-badge-done {
+  color: #38bdf8; /* 어두운 배경에서 #0284c7 은 읽히지 않는다 — plink-mail 과 같은 처리 */
+  background: color-mix(in srgb, #38bdf8 16%, transparent);
 }
+/* .poc-badge-mock(인디고, 2026-08-11) 은 삭제 — "soon + 페이지 있음 = 목업"이라는 추론을
+   버리면서 목업 상태 자체가 사라졌다 (jay, 2026-08-12). 되살리려면 이 규칙과 DemoCard 의
+   분기를 함께 복원할 것. 색은 #3f36e2 / 다크 #8b84ff 였다. */
 .poc-howto {
   margin-top: 10px;
   padding-top: 10px;

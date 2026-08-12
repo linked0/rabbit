@@ -234,10 +234,11 @@ export const POC_CARDS: DemoCard[] = [
       "An agent that wakes on a timer, decides on its own whether to spend, and cannot exceed the mandate it was given.",
     descriptionKo:
       "타이머에 깨어나 스스로 지출 여부를 판단하고, 받은 위임을 넘길 수 없는 에이전트.",
-    // 목업으로 되돌림 (jay, 2026-08-11 저녁). 잠깐 라이브였지만 페이지 배너는 계속
-    // "아직 아무것도 돌지 않습니다"였다 — 각본만 도는 목업이 맞고, 이제 카드와 페이지가
-    // 같은 말을 한다. /live 에서 빠지고 /poc 에 목업 배지로 돌아간다.
-    status: "soon",
+    // 라이브(2026-08-11 아침) → 목업(같은 날 저녁) → 완료(2026-08-12, jay). 라이브가 아닌 건
+    // 그대로다 — 체인도 지갑도 없는 각본이니까. 다만 "준비 중"도 아니다: 사고 실험과 목업
+    // 구현이 끝났고 더 만들 계획이 없다. done 이 그 상태를 가리키는 이름이다.
+    status: "done",
+    date: "2026-08-12",
     href: "/poc/agent",
     howTo:
       "A mockup, not a running agent — no chain, no wallet. Step through the scripted ticks to see the shape: the skips, the two bounded payments, and what happens after the mandate expires.",
@@ -280,7 +281,9 @@ export const POC_CARDS: DemoCard[] = [
       "The managed service shut down; the tools were opened. Self-hosted transaction plumbing and on-chain alerting.",
     descriptionKo:
       "서비스는 죽고, 도구는 열렸다 — 셀프호스팅 트랜잭션 배관과 온체인 감시.",
-    status: "soon",
+    // done (jay, 2026-08-12): 사고 실험과 구현을 마쳤다 — 상시 구동 데모가 아니라 완결된 검토.
+    status: "done",
+    date: "2026-08-12", // 완결 선언일 — done 카드의 정렬 기준
     href: "/poc/oz-relayer",
     // 카드 그리드용 한 줄 — 세 질문은 페이지로 내렸다 (jay, 2026-08-11: 너무 장황함).
     howTo: "A thought experiment against verex's ChainJob worker: what a Relayer deletes, and what has to stay.",
@@ -359,7 +362,11 @@ export const POC_CARDS: DemoCard[] = [
     titleKo: "게임 — Unity WebGL 트랙",
     description: "A 2D canvas placeholder today; the Unity WebGL embed is the actual goal.",
     descriptionKo: "지금은 2D 캔버스 자리표시자 — 진짜 목표는 Unity WebGL 임베드.",
-    status: "soon",
+    // done (jay, 2026-08-12): 지금 열리는 캔버스 게임까지가 이 카드의 결과물이다.
+    // ⚠️ 아래 howItWorks 는 여전히 Unity 트랙을 "아직 시작 전"이라고 말한다 — 배지와 본문이
+    // 다른 말을 하는 상태라, 문구를 손보려면 jay 확인이 필요하다 (2026-08-11 agent 카드와 같은 계열).
+    status: "done",
+    date: "2026-08-12",
     href: "/game",
     howTo: "Open it and play the placeholder. The card is honest that the real track hasn't started.",
     howToKo: "열어서 자리표시자를 해보면 됩니다. 진짜 트랙은 아직 시작 전이라는 걸 카드가 그대로 말합니다.",

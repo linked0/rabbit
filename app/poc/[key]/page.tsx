@@ -40,7 +40,7 @@ export default function CardDetailPage({ params }: { params: { key: string } }) 
         <h1>{pick(lang, card.titleKo, card.title)}</h1>
         <p className="sub">{pick(lang, card.descriptionKo, card.description)}</p>
 
-        {card.status !== "live" && (
+        {card.status === "soon" && (
           <div
             className="panel"
             style={{ marginTop: 16, borderColor: "#f59e0b", borderWidth: 2, borderStyle: "solid" }}
