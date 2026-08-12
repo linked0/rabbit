@@ -60,3 +60,18 @@
   `packages/web/.env` 로 병합 후 삭제, `scripts/dev-local.sh` 자동 생성 경로도 `.env` 로.
 - **Result:** 두 저장소 모두 `git check-ignore` 로 `.env` 무시 확인. `env.local` 참조 잔존 0건
   (역사적 문서 제외).
+
+### Jay Chat: 출력 상한 500→1000 + 예시 질문 풀 7→29개
+
+- **Cause:** jay 스크린샷 — 한국어 경력 요약 답변이 "Sapiens AI (202"에서 뚝 잘림
+  (`MAX_OUTPUT_TOKENS = 500`, finish_reason=length; 한국어는 1–1.5자당 1토큰이라 목록형
+  답변이 상한에 걸림). 추가 요청: 예시 질문 20개 이상 + 학력(대학·전공·학번)·블록체인
+  세부 경력 질문 포함.
+- **Reasoning:** 500 상한은 gpt-4o-mini 시절 비용 방어 — Qwen Flash 단가($0.40/M 출력)에선
+  1000토큰 = $0.0004라 의미가 없고 총량은 시간당 예산(450k)이 묶는다. 질문 풀은 기존 설계
+  (3개 노출, 물으면 교체) 유지한 채 풀만 확장. 학력·경력 데이터는 resume-career.md 에
+  이미 있어 코퍼스 추가는 불필요 — 질문 칩만 추가하면 된다.
+- **Change:** `lib/jay-chat.ts` MAX_OUTPUT_TOKENS 500→1000. `app/JayChatClient.tsx`
+  PROMPT_POOL 7→29개(ko/en 병렬) — Verex·Nostra·Bosagora·BC카드·DAO·NFT·보안·L2·
+  학력(대학/전공/학번) 등 코퍼스가 답할 수 있는 범위로 선정.
+- **Result:** `tsc --noEmit` 통과, 머지·배포 (jay 승인, "you can merge it and deploy").

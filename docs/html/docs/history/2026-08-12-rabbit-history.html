@@ -100,6 +100,21 @@ README·코드 주석의 경로 표기 일괄 수정. verex 는 <code>packages/w
 <li><strong>Result:</strong> 두 저장소 모두 <code>git check-ignore</code> 로 <code>.env</code> 무시 확인. <code>env.local</code> 참조 잔존 0건
 (역사적 문서 제외).</li>
 </ul>
+<h3>Jay Chat: 출력 상한 500→1000 + 예시 질문 풀 7→29개</h3>
+<ul>
+<li><strong>Cause:</strong> jay 스크린샷 — 한국어 경력 요약 답변이 &quot;Sapiens AI (202&quot;에서 뚝 잘림
+(<code>MAX_OUTPUT_TOKENS = 500</code>, finish_reason=length; 한국어는 1–1.5자당 1토큰이라 목록형
+답변이 상한에 걸림). 추가 요청: 예시 질문 20개 이상 + 학력(대학·전공·학번)·블록체인
+세부 경력 질문 포함.</li>
+<li><strong>Reasoning:</strong> 500 상한은 gpt-4o-mini 시절 비용 방어 — Qwen Flash 단가($0.40/M 출력)에선
+1000토큰 = $0.0004라 의미가 없고 총량은 시간당 예산(450k)이 묶는다. 질문 풀은 기존 설계
+(3개 노출, 물으면 교체) 유지한 채 풀만 확장. 학력·경력 데이터는 resume-career.md 에
+이미 있어 코퍼스 추가는 불필요 — 질문 칩만 추가하면 된다.</li>
+<li><strong>Change:</strong> <code>lib/jay-chat.ts</code> MAX_OUTPUT_TOKENS 500→1000. <code>app/JayChatClient.tsx</code>
+PROMPT_POOL 7→29개(ko/en 병렬) — Verex·Nostra·Bosagora·BC카드·DAO·NFT·보안·L2·
+학력(대학/전공/학번) 등 코퍼스가 답할 수 있는 범위로 선정.</li>
+<li><strong>Result:</strong> <code>tsc --noEmit</code> 통과, 머지·배포 (jay 승인, &quot;you can merge it and deploy&quot;).</li>
+</ul>
 
   </article>
 </div>

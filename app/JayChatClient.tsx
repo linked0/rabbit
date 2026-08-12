@@ -64,6 +64,10 @@ export default function JayChatClient() {
   // A pool rather than a fixed trio: once a question has been asked it drops out and the next
   // one from the pool takes its place, so the suggestions stay useful for the whole
   // conversation instead of going stale (2026-08-03, jay).
+  // 7개 → 29개로 확장 (jay, 2026-08-12) — 한 번에 보이는 건 여전히 3개지만, 물을 때마다
+  // 새 질문이 채워지므로 풀이 클수록 대화가 오래 신선하다. 질문은 코퍼스(이력서·프로젝트
+  // 문서)가 답할 수 있는 범위로 고른다 — 학력(대학·전공·학번)과 블록체인 세부 경력 포함
+  // (jay 요청, resume-career.md 에 이미 있는 내용).
   const PROMPT_POOL =
     lang === "ko"
       ? [
@@ -74,6 +78,28 @@ export default function JayChatClient() {
           "가장 큰 강점은 뭔가요?",
           "블록체인은 언제부터 했나요?",
           "지금은 어디서 일하나요?",
+          "Verex는 어떤 프로젝트인가요?",
+          "스마트 컨트랙트 경험을 알려주세요",
+          "합의 알고리즘을 개발한 적이 있나요?",
+          "DAO 관련 작업을 했나요?",
+          "NFT 마켓플레이스 경험이 있나요?",
+          "보안 관련 경험은 어떤가요?",
+          "zkSync 같은 L2도 다뤄봤나요?",
+          "모바일·임베디드 경력도 있나요?",
+          "어떤 프로그래밍 언어를 쓰나요?",
+          "팀을 리드해본 적이 있나요?",
+          "요즘은 무엇을 만들고 있나요?",
+          "AI 관련 작업도 하나요?",
+          "사이드 프로젝트는 뭐가 있나요?",
+          "가장 자랑스러운 프로젝트는 뭔가요?",
+          "협업 스타일은 어떤가요?",
+          "이 사이트는 어떻게 만들어졌나요?",
+          "어느 대학교를 나왔나요?",
+          "전공이 뭐였나요?",
+          "학번이 어떻게 되나요?",
+          "Bosagora 메인넷에서 무슨 일을 했나요?",
+          "BC카드 블록체인 프로젝트는 뭐였나요?",
+          "Nostra는 어떤 프로젝트인가요?",
         ]
       : [
           "Summarize his career.",
@@ -83,6 +109,28 @@ export default function JayChatClient() {
           "What is his greatest strength?",
           "When did he start working in blockchain?",
           "Where does he work now?",
+          "What is Verex?",
+          "Tell me about his smart contract experience.",
+          "Has he built consensus algorithms?",
+          "Has he worked on DAOs?",
+          "Has he built an NFT marketplace?",
+          "What about security experience?",
+          "Has he worked with L2s like zkSync?",
+          "Does he have mobile or embedded experience?",
+          "What programming languages does he use?",
+          "Has he led teams?",
+          "What is he building these days?",
+          "Does he also work with AI?",
+          "What are his side projects?",
+          "Which project is he most proud of?",
+          "What is his working style like?",
+          "How was this site built?",
+          "Which university did he attend?",
+          "What was his major?",
+          "What year did he enter university?",
+          "What did he do on the Bosagora mainnet?",
+          "What was the BC Card blockchain project?",
+          "What is Nostra?",
         ];
   const VISIBLE_PROMPTS = 3;
   const examplePrompts = PROMPT_POOL.filter((p) => !asked.includes(p)).slice(0, VISIBLE_PROMPTS);

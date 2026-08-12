@@ -14,7 +14,10 @@ export type ChatMessage = {
 // endpoint (Singapore); the mainland variant is dashscope.aliyuncs.com.
 const QWEN_MODEL = "qwen-flash";
 const QWEN_ENDPOINT = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions";
-const MAX_OUTPUT_TOKENS = 500; // caps cost per request even under abuse
+// 500 → 1000 (jay, 2026-08-12): 한국어는 1–1.5자당 1토큰이라 경력 요약 같은 목록형 답변이
+// 500에서 단어 중간에 잘렸다. Qwen Flash 출력 단가($0.40/M)에선 1000토큰이 $0.0004 —
+// 비용 방어는 어차피 시간당 예산이 하고, 이 값은 요청 하나의 상한만 잡으면 된다.
+const MAX_OUTPUT_TOKENS = 1000;
 
 // --- Hourly global token budget ---
 // In-memory, resets every hour, shared across all visitors (not per-visitor — a
