@@ -356,29 +356,9 @@ export const POC_CARDS: DemoCard[] = [
   // 이기도 하다면, 읽기 자료를 숨기는 쪽이 오히려 목록을 좁게 만든다.
   // 대신 status 로 구분한다 — 참조 카드는 href 가 없어 "준비 중" 회색 배지로 남고,
   // 눌리는 목업(인디고)과 섞이지 않는다.
-  {
-    key: "game",
-    title: "Game — Unity WebGL track",
-    titleKo: "게임 — Unity WebGL 트랙",
-    description: "A 2D canvas placeholder today; the Unity WebGL embed is the actual goal.",
-    descriptionKo: "지금은 2D 캔버스 자리표시자 — 진짜 목표는 Unity WebGL 임베드.",
-    // done (jay, 2026-08-12): 지금 열리는 캔버스 게임까지가 이 카드의 결과물이다.
-    // ⚠️ 아래 howItWorks 는 여전히 Unity 트랙을 "아직 시작 전"이라고 말한다 — 배지와 본문이
-    // 다른 말을 하는 상태라, 문구를 손보려면 jay 확인이 필요하다 (2026-08-11 agent 카드와 같은 계열).
-    status: "done",
-    date: "2026-08-12",
-    href: "/game",
-    howTo: "Open it and play the placeholder. The card is honest that the real track hasn't started.",
-    howToKo: "열어서 자리표시자를 해보면 됩니다. 진짜 트랙은 아직 시작 전이라는 걸 카드가 그대로 말합니다.",
-    purpose:
-      "The only non-financial surface in this catalogue, and the one that would exercise a completely different toolchain: Unity's WebGL build target embedded in a Next.js route, with the browser bridge that implies. Kept as a card rather than quietly dropped because the gap between “a canvas game exists” and “Unity ships to this route” is the whole work, and hiding it would make the placeholder read as the deliverable.",
-    purposeKo:
-      "이 카탈로그에서 유일하게 금융이 아닌 표면이고, 완전히 다른 툴체인을 쓰게 되는 항목입니다 — Unity의 WebGL 빌드 타깃을 Next.js 라우트에 임베드하고, 그에 따르는 브라우저 브리지를 붙이는 일. 조용히 지우지 않고 카드로 남긴 이유는 「캔버스 게임이 있다」와 「Unity가 이 라우트로 나간다」 사이의 간극이 곧 작업 전체이기 때문입니다. 숨기면 자리표시자가 결과물처럼 읽힙니다.",
-    howItWorks:
-      "Today: a small 2D canvas game (\"Coin Catcher\") rendered client-side, with no build step beyond the app itself. Planned: a Unity project exported to WebGL, its loader and data files served as static assets, and a thin JS bridge so the page can pass state in and read results out. Not started — the placeholder is not a prototype of the Unity path, it is a different thing occupying the route.",
-    howItWorksKo:
-      "지금: 클라이언트에서 그리는 작은 2D 캔버스 게임(\"Coin Catcher\") — 앱 외에 별도 빌드 단계가 없습니다. 계획: Unity 프로젝트를 WebGL로 export 하고, 로더와 데이터 파일을 정적 자산으로 서빙하며, 페이지가 상태를 넣고 결과를 읽을 수 있도록 얇은 JS 브리지를 붙입니다. 아직 시작 전입니다 — 자리표시자는 Unity 경로의 프로토타입이 아니라, 그 라우트를 차지하고 있는 다른 물건입니다.",
-  },
+  // 게임(Unity WebGL) 카드는 제거 (jay, 2026-08-12) — /game 라우트와 상단 메뉴는 그대로 살아
+  // 있고, PoCs 목록에서만 뺀다. 이 목록은 "무엇을 만들고 있나"를 답하는데, 캔버스
+  // 자리표시자와 Unity 트랙은 그 질문에 서로 다른 답을 해서 배지 하나로 정리되지 않았다.
   {
     key: "dsrv-portal",
     title: "Institutional custody study",
