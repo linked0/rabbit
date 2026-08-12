@@ -1,6 +1,5 @@
-import type { ChatMessage } from "@/lib/ai";
 import { buildAboutMeSystemMessage } from "@/lib/about-me";
-import { streamJayChat, budgetExhausted, burstLimited } from "@/lib/jay-chat";
+import { streamJayChat, budgetExhausted, burstLimited, type ChatMessage } from "@/lib/jay-chat";
 import { notifyChatStart, notifyChatMilestone } from "@/lib/visitor-notify";
 
 // Public, keyless "About Jay" persona endpoint — no login required (see middleware.ts

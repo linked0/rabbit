@@ -10,7 +10,7 @@ import { PROFILE, PROJECTS } from "@/lib/home-content";
 import { POC_CARDS } from "@/lib/poc-cards";
 import { TIL_CARDS } from "@/lib/til-cards";
 import type { DemoCard } from "@/lib/demo-cards";
-import type { ChatMessage } from "@/lib/ai";
+import type { ChatMessage } from "@/lib/jay-chat";
 
 // A labeled unit of knowledge about Hyunjae. `source` shows up in the grounded
 // context so the model (and a curious reader) can see where a fact came from.

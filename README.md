@@ -11,20 +11,20 @@
 
 ```bash
 pnpm install                      # 의존성 설치
-cp .env.example .env.local        # 환경변수 — 아래 "로그인" 참고해 채우기
+cp .env.example .env        # 환경변수 — 아래 "로그인" 참고해 채우기
 pnpm db:generate                  # Prisma 클라이언트 생성
 ```
 
 ### 로그인
 로컬·운영 모두 **Google 로그인 하나뿐**이다 (2026-07-27 — `LOCAL_PASSWORD` 비밀번호 로그인 삭제).
-`.env.local`에 `AUTH_SECRET`(`npx auth secret`), `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`,
+`.env`에 `AUTH_SECRET`(`npx auth secret`), `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`,
 `ALLOWED_EMAILS`(접근 허용 이메일, 콤마 구분)를 넣는다. 로컬에서 쓰려면 OAuth 클라이언트에
 `http://localhost:3100/api/auth/callback/google` 리디렉션 URI 가 등록돼 있어야 한다.
 
 ### DB (투자입력·포트폴리오용 — Postgres)
 ```bash
 docker run -d --name rabbit-pg -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=rabbit -p 5432:5432 postgres:16
-# .env.local → DATABASE_URL=postgresql://postgres:dev@localhost:5432/rabbit
+# .env → DATABASE_URL=postgresql://postgres:dev@localhost:5432/rabbit
 pnpm db:push                      # Trade 테이블 생성 (이력 필요 시 pnpm db:migrate)
 ```
 

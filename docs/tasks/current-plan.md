@@ -160,7 +160,7 @@ layer, if at all.
 - **A little Sepolia ETH** for the session account, if [D1](#s4) goes as recommended.
 - **Scheduler access** for [D3](#s4), once chosen.
 - Everything else (`SEPOLIA_RPC`, thirdweb client ID, Stripe/Toss test keys) is already in
-  `.env.local` — see the [archived plan §1](archive/2026-08-06-current-plan-ap2-toss-aa.md) for
+  `.env` — see the [archived plan §1](archive/2026-08-06-current-plan-ap2-toss-aa.md) for
   where each came from.
 
 ## 6. What this demo does *not* prove <a id="s6"></a>

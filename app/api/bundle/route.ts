@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   const { rpc, key, names } = envFor(net);
   if (!rpc || !key)
     return NextResponse.json(
-      { error: `서버에 ${names} 가 설정되지 않았습니다 (.env.local).` },
+      { error: `서버에 ${names} 가 설정되지 않았습니다 (.env).` },
       { status: 503 }
     );
 
