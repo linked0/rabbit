@@ -251,6 +251,12 @@
             <div class="section">
                 <h2 class="section-title">Logs</h2>
                 <div class="grid">
+                    <!-- 최신 6개만 (jay, 2026-08-12) — 전체는 "All Logs" 가 맡는다. 새 로그를
+                         맨 위에 넣으면 맨 아래 카드를 지운다. -->
+                    <a href="html/docs/history/2026-08-12-rabbit-history.html" class="card" style="border-left: 4px solid #16a34a;">
+                        <span class="card-title">Rabbit &mdash; Jay Chat on Qwen Flash, Cloud Run Capped, Env Unified (Aug 12) <span class="badge" style="background: rgba(34,197,94,0.2); color: #16a34a;">FEATURE</span></span>
+                        <span class="card-path">html/docs/history/2026-08-12-rabbit-history.html</span>
+                    </a>
                     <a href="html/docs/history/2026-08-11-verex-history.html" class="card" style="border-left: 4px solid #d97706;">
                         <span class="card-title">Verex &mdash; Prod Ghost Balances Root Cause + Chain Architecture Docs (Aug 11) <span class="badge" style="background: rgba(245,158,11,0.2); color: #d97706;">REFACTOR</span></span>
                         <span class="card-path">html/docs/history/2026-08-11-verex-history.html</span>
@@ -271,22 +277,6 @@
                         <span class="card-title">Verex &mdash; UMA Market Seeding + One-Command Adapter Deploy (Aug 6) <span class="badge" style="background: rgba(34,197,94,0.2); color: #16a34a;">FEATURE</span></span>
                         <span class="card-path">html/docs/history/2026-08-06-verex-history.html</span>
                     </a>
-                    <a href="html/docs/history/2026-08-06-rabbit-history.html" class="card" style="border-left: 4px solid #d97706;">
-                        <span class="card-title">Rabbit &mdash; Plan Rescoped to Agentic AA Autonomous Loop (Aug 6) <span class="badge" style="background: rgba(245,158,11,0.2); color: #d97706;">REFACTOR</span></span>
-                        <span class="card-path">html/docs/history/2026-08-06-rabbit-history.html</span>
-                    </a>
-                    <a href="html/docs/history/2026-08-05-verex-history.html" class="card" style="border-left: 4px solid #16a34a;">
-                        <span class="card-title">Verex &mdash; UMA Adapter Deploy Script + Manifest Recording Fix (Aug 5) <span class="badge" style="background: rgba(34,197,94,0.2); color: #16a34a;">FEATURE</span></span>
-                        <span class="card-path">html/docs/history/2026-08-05-verex-history.html</span>
-                    </a>
-                    <a href="html/docs/history/2026-08-05-rabbit-history.html" class="card" style="border-left: 4px solid #16a34a;">
-                        <span class="card-title">Rabbit &mdash; AA Session-Key Demo Polish + MetaMask Connect Flow (Aug 5) <span class="badge" style="background: rgba(34,197,94,0.2); color: #16a34a;">FEATURE</span></span>
-                        <span class="card-path">html/docs/history/2026-08-05-rabbit-history.html</span>
-                    </a>
-                    <a href="html/docs/history/2026-08-04-verex-history.html" class="card" style="border-left: 4px solid #16a34a;">
-                        <span class="card-title">Verex &mdash; Web Dark Mode + KO/EN Switch, LMSR Math Landed (Aug 4) <span class="badge" style="background: rgba(34,197,94,0.2); color: #16a34a;">FEATURE</span></span>
-                        <span class="card-path">html/docs/history/2026-08-04-verex-history.html</span>
-                    </a>
                 </div>
                 <div style="text-align: right; margin-top: 12px;">
                     <a href="html/docs/logs/summary.html"
@@ -303,21 +293,21 @@
             <div class="section">
                 <h2 class="section-title">PoCs</h2>
                 <div class="grid">
-                    <a href="https://www.jaylabs.xyz/poc/dvt" class="card" style="border-left: 4px solid #6366f1;">
-                        <span class="card-title">DVT in the protocol <span class="badge" style="background: #6366f122; color: #6366f1;">MOCK</span></span>
-                        <span class="card-path">Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/agent" class="card" style="border-left: 4px solid #6366f1;">
-                        <span class="card-title">Autonomous payment agent <span class="badge" style="background: #6366f122; color: #6366f1;">MOCK</span></span>
+                    <a href="https://www.jaylabs.xyz/poc/agent" class="card" style="border-left: 4px solid #0284c7;">
+                        <span class="card-title">Autonomous payment agent <span class="badge" style="background: #0284c722; color: #0284c7;">DONE</span></span>
                         <span class="card-path">An agent that wakes on a timer, decides on its own whether to spend, and cannot exceed the mandate it was given.</span>
                     </a>
-                    <a href="https://www.jaylabs.xyz/poc/oz-relayer" class="card" style="border-left: 4px solid #6366f1;">
-                        <span class="card-title">OpenZeppelin Relayer &amp; Monitor <span class="badge" style="background: #6366f122; color: #6366f1;">MOCK</span></span>
+                    <a href="https://www.jaylabs.xyz/poc/oz-relayer" class="card" style="border-left: 4px solid #0284c7;">
+                        <span class="card-title">OpenZeppelin Relayer &amp; Monitor <span class="badge" style="background: #0284c722; color: #0284c7;">DONE</span></span>
                         <span class="card-path">The managed service shut down; the tools were opened. Self-hosted transaction plumbing and on-chain alerting.</span>
                     </a>
-                    <a href="https://www.jaylabs.xyz/game" class="card" style="border-left: 4px solid #6366f1;">
-                        <span class="card-title">Game — Unity WebGL track <span class="badge" style="background: #6366f122; color: #6366f1;">MOCK</span></span>
+                    <a href="https://www.jaylabs.xyz/game" class="card" style="border-left: 4px solid #0284c7;">
+                        <span class="card-title">Game — Unity WebGL track <span class="badge" style="background: #0284c722; color: #0284c7;">DONE</span></span>
                         <span class="card-path">A 2D canvas placeholder today; the Unity WebGL embed is the actual goal.</span>
+                    </a>
+                    <a href="https://www.jaylabs.xyz/poc/dvt" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">DVT in the protocol <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
+                        <span class="card-path">Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.</span>
                     </a>
                     <a href="https://www.jaylabs.xyz/poc/dsrv-portal" class="card" style="border-left: 4px solid #64748b;">
                         <span class="card-title">Institutional custody study <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
@@ -326,54 +316,6 @@
                     <a href="https://www.jaylabs.xyz/poc/pet-clean-room" class="card" style="border-left: 4px solid #64748b;">
                         <span class="card-title">PET clean room (FHE) <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
                         <span class="card-path">Homomorphic encryption for data that cannot leave its owner — a hands-on study.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/merkle-vs-verkle" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Merkle vs Verkle <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">Why proof size, not hashing speed, is what decides whether stateless clients are possible.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/linera-microchains" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Linera microchains <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">One chain per user — removing blockspace contention instead of pricing it.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/web-stack-layers" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Web stack layers <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">A five-layer map of the stack, with this project overlaid on it.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/kb-hybrid-payment" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">KB hybrid payment flow <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">A card rail (ISO 8583) meeting on-chain settlement — where the two systems actually touch.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/cre-cloud" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">CRE × Cloud — four hybrid patterns <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">Cloud holds the private truth, CRE is the verified bridge, the chain settles.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/thirdweb" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Thirdweb — platform survey <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">Contracts, wallets/AA, backend tx, Unity SDK — breadth bought with best-in-class parts.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/solana" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Solana <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">EVM-vs-Solana study + a sample Anchor program on devnet.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/zapier-mcp" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Zapier MCP <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">Agent triggers real SaaS actions (Gmail/Notion/Slack) via Zapier's MCP tools.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/erc-8141" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">ERC-8141 <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">Native account-abstraction explainer — Ethereum's protocol-level Frame Transactions.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/geometric-series-dcf" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Geometric series → DCF valuation <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">Sum of a geometric series, applied to perpetuity/Gordon-formula valuation.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/amortized-potential-function" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Amortized analysis via potential functions <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">Proving O(1) amortized cost for dynamic-array doubling with a potential function.</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/moralis-wallet-api" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Moralis — wallet snapshot via API <span class="badge" style="background: #64748b22; color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">Querying balance/net-worth for an address with Moralis's Wallet API.</span>
                     </a>
                 </div>
                 <div style="text-align: right; margin-top: 12px;">
@@ -384,31 +326,83 @@
             </div>
             <!-- POCS:END -->
 
-            <!-- Algorithms — 앱의 /algorithms 상단 메뉴를 여기로 옮겼다 (2026-08-11, jay).
-                 수학·알고리즘 노트는 문서이지 데모가 아니라, 앱 메뉴보다 이 색인에 산다. -->
+            <!-- Algorithms — 개발자 지식 100 커리큘럼 (2026-08-12, jay).
+                 마커 사이는 scripts/generate-curriculum-html.mjs 가
+                 docs/knowledge/dev-100-curriculum.md 에서 다시 만든다. 손으로 고치지 말 것 —
+                 커리큘럼 md 를 고치고 `pnpm docs:curriculum` 을 돌린다. -->
+            <!-- ALGOS:BEGIN -->
             <div class="section">
                 <h2 class="section-title">Algorithms</h2>
                 <div class="grid">
-                    <a href="https://www.jaylabs.xyz/poc/geometric-series-dcf" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Geometric series &rarr; DCF valuation <span class="badge" style="background: rgba(100,116,139,0.2); color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">S = a / (1 &minus; r) &rarr; Gordon Growth perpetuity, the terminal value in a DCF</span>
+                    <a href="html/docs/algorithms/amortized-potential-function.html" class="card" style="border-left: 4px solid #0284c7;">
+                        <span class="card-title">분할상환분석 심화 <span class="badge" style="background: #0284c733; color: #0284c7;">DONE</span></span>
+                        <span class="card-path">A. 고급 알고리즘·자료구조 (Day 1–19)</span>
                     </a>
-                    <a href="https://www.jaylabs.xyz/poc/amortized-potential-function" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Amortized analysis via potential functions <span class="badge" style="background: rgba(100,116,139,0.2); color: #64748b;">PLANNED</span></span>
-                        <span class="card-path">Proving O(1) amortized cost for dynamic-array doubling</span>
+                    <a href="html/docs/algorithms/balanced-trees-concurrency.html" class="card" style="border-left: 4px solid #0284c7;">
+                        <span class="card-title">균형 트리 계열 비교 <span class="badge" style="background: #0284c733; color: #0284c7;">DONE</span></span>
+                        <span class="card-path">A. 고급 알고리즘·자료구조 (Day 1–19)</span>
                     </a>
-                    <!-- 아직 페이지가 없는 항목은 링크로 만들지 않는다 — 죽은 링크보다
-                         "링크가 아님"이 정직하다 (2026-08-11). -->
-                    <a href="html/docs/algorithms/supply-demand-equilibrium.html" class="card" style="border-left: 4px solid #0d9488;">
-                        <span class="card-title">공급&middot;수요&middot;시장균형 &mdash; 가격은 계산되는 게 아니라 발견된다 <span class="badge" style="background: rgba(100,116,139,0.2); color: #64748b;">DAY 8/50</span></span>
-                        <span class="card-path">공급곡선이 수직선이면 충격이 전부 가격으로 간다 &mdash; 가스비 변동성의 정체</span>
+                    <a href="topics/algorithms-3.html" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">영속(persistent) 자료구조와 구조 공유 <span class="badge" style="background: #64748b33; color: #64748b;">DAY 3/100</span></span>
+                        <span class="card-path">A. 고급 알고리즘·자료구조 (Day 1–19)</span>
                     </a>
-                    <a href="html/docs/algorithms/balanced-trees-concurrency.html" class="card" style="border-left: 4px solid #0d9488;">
-                        <span class="card-title">Red-Black vs B+Tree vs Skip List &mdash; 동시성 관점 <span class="badge" style="background: rgba(100,116,139,0.2); color: #64748b;">DAY 2/100</span></span>
-                        <span class="card-path">비용은 탐색이 아니라 재균형 &mdash; Skip List 는 회전을 확률로 없앤다</span>
+                    <a href="topics/algorithms-4.html" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">함수형 업데이트와 상태 diff <span class="badge" style="background: #64748b33; color: #64748b;">DAY 4/100</span></span>
+                        <span class="card-path">A. 고급 알고리즘·자료구조 (Day 1–19)</span>
+                    </a>
+                    <a href="topics/algorithms-5.html" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">트라이 계열 심화 <span class="badge" style="background: #64748b33; color: #64748b;">DAY 5/100</span></span>
+                        <span class="card-path">A. 고급 알고리즘·자료구조 (Day 1–19)</span>
+                    </a>
+                    <a href="topics/algorithms-6.html" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">확률적 자료구조 <span class="badge" style="background: #64748b33; color: #64748b;">DAY 6/100</span></span>
+                        <span class="card-path">A. 고급 알고리즘·자료구조 (Day 1–19)</span>
                     </a>
                 </div>
+                <div style="text-align: right; margin-top: 12px;">
+                    <a href="algorithms.html"
+                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">View All Algorithms &rarr;</a>
+                </div>
             </div>
+            <!-- ALGOS:END -->
+
+            <!-- Math — 매일의 수학 50 커리큘럼. 위와 같은 생성기·같은 규칙
+                 (원본: docs/knowledge/math-50-curriculum.md). -->
+            <!-- MATH:BEGIN -->
+            <div class="section">
+                <h2 class="section-title">Math</h2>
+                <div class="grid">
+                    <a href="html/docs/algorithms/geometric-series-dcf.html" class="card" style="border-left: 4px solid #0284c7;">
+                        <span class="card-title">수열·급수·시그마 <span class="badge" style="background: #0284c733; color: #0284c7;">DONE</span></span>
+                        <span class="card-path">시작 — 값의 시간가치와 시장 (Day 1–2)</span>
+                    </a>
+                    <a href="html/docs/algorithms/supply-demand-equilibrium.html" class="card" style="border-left: 4px solid #0284c7;">
+                        <span class="card-title">공급·수요·효용·시장균형 <span class="badge" style="background: #0284c733; color: #0284c7;">DONE</span></span>
+                        <span class="card-path">시작 — 값의 시간가치와 시장 (Day 1–2)</span>
+                    </a>
+                    <a href="topics/math-3.html" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">명제논리·집합·함수·관계 <span class="badge" style="background: #64748b33; color: #64748b;">DAY 3/51</span></span>
+                        <span class="card-path">7월 — 이산수학·논리 (Day 3–10)</span>
+                    </a>
+                    <a href="topics/math-4.html" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">귀납법/구조적 재귀 <span class="badge" style="background: #64748b33; color: #64748b;">DAY 4/51</span></span>
+                        <span class="card-path">7월 — 이산수학·논리 (Day 3–10)</span>
+                    </a>
+                    <a href="topics/math-5.html" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">그래프 기초(DAG·트리·해시 링크) <span class="badge" style="background: #64748b33; color: #64748b;">DAY 5/51</span></span>
+                        <span class="card-path">7월 — 이산수학·논리 (Day 3–10)</span>
+                    </a>
+                    <a href="topics/math-6.html" class="card" style="border-left: 4px solid #64748b;">
+                        <span class="card-title">비둘기집 원리 <span class="badge" style="background: #64748b33; color: #64748b;">DAY 6/51</span></span>
+                        <span class="card-path">7월 — 이산수학·논리 (Day 3–10)</span>
+                    </a>
+                </div>
+                <div style="text-align: right; margin-top: 12px;">
+                    <a href="math.html"
+                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">View All Math &rarr;</a>
+                </div>
+            </div>
+            <!-- MATH:END -->
 
             <!-- Knowledge Base -->
             <div class="section">

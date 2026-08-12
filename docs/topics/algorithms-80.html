@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day 80 — 외부 정렬·병합 전략과 병렬 정렬 (TAOCP 3권)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-done { flex:0 0 auto; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 80</p>
+  <article>
+      <h1>외부 정렬·병합 전략과 병렬 정렬 (TAOCP 3권) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 80 / 100 &middot; E. 데이터·스토리지 엔진 (Day 69–81)</p>
+      <p class="lead">인덱서 재구성의 실제 병목</p>
+      <h2>개념</h2>
+      <p>외부 정렬은 데이터가 메모리보다 클 때 쓰는 방법으로, 메모리에 들어가는 크기의 런(run)을 만들어 정렬해 디스크에 쓰는 단계와 이 런들을 다방향 병합으로 합치는 단계로 나뉜다. 병합 차수 k를 키우면 필요한 패스 수가 런 개수에 대한 log_k로 줄지만, 런마다 입력 버퍼를 나눠 가져야 해서 버퍼가 작아지면 순차 읽기 효율이 떨어지는 트레이드오프가 있다. 런 생성 단계에서 replacement selection을 쓰면 평균적으로 메모리 크기보다 긴 런을 만들 수 있어 런 개수 자체를 줄일 수 있다. 병렬 정렬은 데이터를 나눠 각각 정렬한 뒤 병합하거나, 샘플링으로 분할 경계를 정해 각 파티션을 독립적으로 정렬하는 sample sort 방식을 쓰며, 이때 실제 병목은 비교 연산이 아니라 메모리 대역폭과 데이터 이동량이다. 즉 외부·병렬 정렬의 비용 모델은 비교 횟수가 아니라 전송한 블록 수와 바이트 수로 세워야 한다.</p>
+      <p>인덱스 재구축, 대용량 조인, 로그 재처리처럼 메모리를 넘는 정렬은 실무에서 자주 나오고, 여기서 성능을 가르는 것은 알고리즘 선택보다 버퍼 크기와 병합 차수 설정이다.</p>
+      <h2>코드 · 수식</h2>
+      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <h2>연습</h2>
+      <p>메모리보다 큰 파일을 제한된 버퍼로 정렬하는 외부 정렬을 직접 구현하고, 병합 차수를 바꿔가며 총 실행 시간과 실제 읽고 쓴 바이트 수를 측정해 최적점을 찾아보라.</p>
+      <h2>실무 · Verex 연결</h2>
+      <p>체인 이벤트를 제네시스부터 재인덱싱할 때 블록·로그 키 정렬이 실제 병목이 되며, 배치 크기와 병합 차수 튜닝이 전체 재구성 소요 시간을 결정한다.</p>
+      <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/dev-100-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
+    </article>
+  <div class="pager"><a href="algorithms-79.html">&larr; 79. 캐시 일관성·무효화·스탬피드 방지</a><a href="algorithms-81.html">81. [복습] 데이터 모델이 성능을 정한다 &rarr;</a></div>
+</div>
+</body>
+</html>

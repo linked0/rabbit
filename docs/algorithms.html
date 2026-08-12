@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algorithms — 개발자 지식 100</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-done { flex:0 0 auto; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="index.html">Rabbit</a>
+      <span class="rail-sub">Algorithms &mdash; 100 topics, 2 done</span>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter algorithms" aria-label="Filter algorithms" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" data-group>
+        <p class="nav-group-label">A. 고급 알고리즘·자료구조 (Day 1–19)</p>
+        <ul>
+        <li><a class="nav-link" href="#algorithms-1" data-key="algorithms-1"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>분할상환분석 심화</span></a></li>
+        <li><a class="nav-link" href="#algorithms-2" data-key="algorithms-2"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>균형 트리 계열 비교</span></a></li>
+        <li><a class="nav-link" href="#algorithms-3" data-key="algorithms-3"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">3</span>영속(persistent) 자료구조와 구조 공유</span></a></li>
+        <li><a class="nav-link" href="#algorithms-4" data-key="algorithms-4"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">4</span>함수형 업데이트와 상태 diff</span></a></li>
+        <li><a class="nav-link" href="#algorithms-5" data-key="algorithms-5"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">5</span>트라이 계열 심화</span></a></li>
+        <li><a class="nav-link" href="#algorithms-6" data-key="algorithms-6"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">6</span>확률적 자료구조</span></a></li>
+        <li><a class="nav-link" href="#algorithms-7" data-key="algorithms-7"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">7</span>스트리밍/스케치 알고리즘</span></a></li>
+        <li><a class="nav-link" href="#algorithms-8" data-key="algorithms-8"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">8</span>순서 통계</span></a></li>
+        <li><a class="nav-link" href="#algorithms-9" data-key="algorithms-9"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">9</span>문자열 인덱스</span></a></li>
+        <li><a class="nav-link" href="#algorithms-10" data-key="algorithms-10"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">10</span>세그먼트 트리 심화</span></a></li>
+        <li><a class="nav-link" href="#algorithms-11" data-key="algorithms-11"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">11</span>위상정렬·DAG 스케줄링</span></a></li>
+        <li><a class="nav-link" href="#algorithms-12" data-key="algorithms-12"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">12</span>최대 유량·최소 컷과 매칭</span></a></li>
+        <li><a class="nav-link" href="#algorithms-13" data-key="algorithms-13"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">13</span>선형계획과 쌍대성 직관</span></a></li>
+        <li><a class="nav-link" href="#algorithms-14" data-key="algorithms-14"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">14</span>랜덤화·근사 알고리즘</span></a></li>
+        <li><a class="nav-link" href="#algorithms-15" data-key="algorithms-15"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">15</span>온라인 알고리즘과 경쟁비</span></a></li>
+        <li><a class="nav-link" href="#algorithms-16" data-key="algorithms-16"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">16</span>NP-난해와 환원</span></a></li>
+        <li><a class="nav-link" href="#algorithms-17" data-key="algorithms-17"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">17</span>병렬 알고리즘 모델</span></a></li>
+        <li><a class="nav-link" href="#algorithms-18" data-key="algorithms-18"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">18</span>조합 생성·그레이 코드·순열 열거 (TAOCP 4권)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-19" data-key="algorithms-19"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">19</span>[복습] 알고리즘 선택의 실전 기준표</span></a></li>
+        </ul>
+      </div>
+      <div class="nav-group" data-group>
+        <p class="nav-group-label">B. 컴파일러·런타임·VM (Day 20–35)</p>
+        <ul>
+        <li><a class="nav-link" href="#algorithms-20" data-key="algorithms-20"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">20</span>IR과 SSA 형식</span></a></li>
+        <li><a class="nav-link" href="#algorithms-21" data-key="algorithms-21"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">21</span>데이터플로 분석</span></a></li>
+        <li><a class="nav-link" href="#algorithms-22" data-key="algorithms-22"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">22</span>레지스터 할당(그래프 컬러링)과 스필 비용</span></a></li>
+        <li><a class="nav-link" href="#algorithms-23" data-key="algorithms-23"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">23</span>인라이닝·루프 변환·자동 벡터화</span></a></li>
+        <li><a class="nav-link" href="#algorithms-24" data-key="algorithms-24"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">24</span>JIT 계층화·워밍업·역최적화(deopt)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-25" data-key="algorithms-25"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">25</span>스택 머신 vs 레지스터 머신</span></a></li>
+        <li><a class="nav-link" href="#algorithms-26" data-key="algorithms-26"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">26</span>가스 회계 설계</span></a></li>
+        <li><a class="nav-link" href="#algorithms-27" data-key="algorithms-27"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">27</span>EVM 인터프리터 내부</span></a></li>
+        <li><a class="nav-link" href="#algorithms-28" data-key="algorithms-28"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">28</span>WASM 실행 모델과 샌드박싱 경계</span></a></li>
+        <li><a class="nav-link" href="#algorithms-29" data-key="algorithms-29"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">29</span>GC 심화</span></a></li>
+        <li><a class="nav-link" href="#algorithms-30" data-key="algorithms-30"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">30</span>Rust 소유권·차용 검사기 내부(NLL)와 우회 패턴</span></a></li>
+        <li><a class="nav-link" href="#algorithms-31" data-key="algorithms-31"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">31</span>메모리 할당자 설계</span></a></li>
+        <li><a class="nav-link" href="#algorithms-32" data-key="algorithms-32"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">32</span>FFI·ABI 경계와 안전성(패닉·정렬·수명)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-33" data-key="algorithms-33"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">33</span>결정론적 실행</span></a></li>
+        <li><a class="nav-link" href="#algorithms-34" data-key="algorithms-34"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">34</span>형식 검증</span></a></li>
+        <li><a class="nav-link" href="#algorithms-35" data-key="algorithms-35"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">35</span>[복습] 실행 계층 지도 한 장으로</span></a></li>
+        </ul>
+      </div>
+      <div class="nav-group" data-group>
+        <p class="nav-group-label">C. 동시성·성능 엔지니어링 (Day 36–51)</p>
+        <ul>
+        <li><a class="nav-link" href="#algorithms-36" data-key="algorithms-36"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">36</span>메모리 모델과 원자성 순서</span></a></li>
+        <li><a class="nav-link" href="#algorithms-37" data-key="algorithms-37"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">37</span>락프리·wait-free, ABA 문제, 해저드 포인터·에포크 회수</span></a></li>
+        <li><a class="nav-link" href="#algorithms-38" data-key="algorithms-38"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">38</span>RCU</span></a></li>
+        <li><a class="nav-link" href="#algorithms-39" data-key="algorithms-39"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">39</span>false sharing·캐시라인 정렬·NUMA 지역성</span></a></li>
+        <li><a class="nav-link" href="#algorithms-40" data-key="algorithms-40"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">40</span>브랜치 예측·프리페치·데이터 지향 설계</span></a></li>
+        <li><a class="nav-link" href="#algorithms-41" data-key="algorithms-41"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">41</span>커널 바이패스와 zero-copy</span></a></li>
+        <li><a class="nav-link" href="#algorithms-42" data-key="algorithms-42"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">42</span>이벤트 루프 vs 스레드 vs 액터 모델</span></a></li>
+        <li><a class="nav-link" href="#algorithms-43" data-key="algorithms-43"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">43</span>백프레셔와 큐 이론</span></a></li>
+        <li><a class="nav-link" href="#algorithms-44" data-key="algorithms-44"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">44</span>테일 레이턴시</span></a></li>
+        <li><a class="nav-link" href="#algorithms-45" data-key="algorithms-45"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">45</span>프로파일링 심화</span></a></li>
+        <li><a class="nav-link" href="#algorithms-46" data-key="algorithms-46"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">46</span>벤치마크 방법론</span></a></li>
+        <li><a class="nav-link" href="#algorithms-47" data-key="algorithms-47"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">47</span>eBPF로 프로덕션 관측</span></a></li>
+        <li><a class="nav-link" href="#algorithms-48" data-key="algorithms-48"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">48</span>분산 트레이싱과 샘플링 전략</span></a></li>
+        <li><a class="nav-link" href="#algorithms-49" data-key="algorithms-49"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">49</span>용량 계획·SLO와 에러 예산</span></a></li>
+        <li><a class="nav-link" href="#algorithms-50" data-key="algorithms-50"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">50</span>카오스 엔지니어링·장애 주입 설계</span></a></li>
+        <li><a class="nav-link" href="#algorithms-51" data-key="algorithms-51"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">51</span>[복습] 성능 예산 문서 쓰기</span></a></li>
+        </ul>
+      </div>
+      <div class="nav-group" data-group>
+        <p class="nav-group-label">D. 분산시스템·합의 (Day 52–68)</p>
+        <ul>
+        <li><a class="nav-link" href="#algorithms-52" data-key="algorithms-52"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">52</span>일관성 모델 지도</span></a></li>
+        <li><a class="nav-link" href="#algorithms-53" data-key="algorithms-53"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">53</span>논리 시계·벡터 시계·하이브리드 논리 시계(HLC)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-54" data-key="algorithms-54"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">54</span>Raft 심화</span></a></li>
+        <li><a class="nav-link" href="#algorithms-55" data-key="algorithms-55"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">55</span>Multi-Paxos·Flexible Paxos</span></a></li>
+        <li><a class="nav-link" href="#algorithms-56" data-key="algorithms-56"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">56</span>비잔틴 정족수(3f+1)와 PBFT</span></a></li>
+        <li><a class="nav-link" href="#algorithms-57" data-key="algorithms-57"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">57</span>DAG 합의</span></a></li>
+        <li><a class="nav-link" href="#algorithms-58" data-key="algorithms-58"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">58</span>나카모토 합의의 확률적 최종성과 selfish mining</span></a></li>
+        <li><a class="nav-link" href="#algorithms-59" data-key="algorithms-59"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">59</span>Casper FFG + LMD-GHOST</span></a></li>
+        <li><a class="nav-link" href="#algorithms-60" data-key="algorithms-60"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">60</span>싱글슬롯 파이널리티와 서명 집계 병목</span></a></li>
+        <li><a class="nav-link" href="#algorithms-61" data-key="algorithms-61"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">61</span>데이터 가용성 샘플링과 소거부호(Reed-Solomon)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-62" data-key="algorithms-62"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">62</span>라이트 클라이언트와 상태 없는(stateless) 검증</span></a></li>
+        <li><a class="nav-link" href="#algorithms-63" data-key="algorithms-63"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">63</span>크로스체인 신뢰 가정 분류</span></a></li>
+        <li><a class="nav-link" href="#algorithms-64" data-key="algorithms-64"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">64</span>시퀀서 분산화와 강제 포함(force inclusion)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-65" data-key="algorithms-65"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">65</span>사기 증명 vs 유효성 증명의 게임 이론</span></a></li>
+        <li><a class="nav-link" href="#algorithms-66" data-key="algorithms-66"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">66</span>PBS·MEV 경매·타이밍 게임</span></a></li>
+        <li><a class="nav-link" href="#algorithms-67" data-key="algorithms-67"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">67</span>멱등성과 &quot;정확히 한 번&quot;</span></a></li>
+        <li><a class="nav-link" href="#algorithms-68" data-key="algorithms-68"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">68</span>[복습] 장애 모델과 신뢰 가정을 먼저 쓰는 습관</span></a></li>
+        </ul>
+      </div>
+      <div class="nav-group" data-group>
+        <p class="nav-group-label">E. 데이터·스토리지 엔진 (Day 69–81)</p>
+        <ul>
+        <li><a class="nav-link" href="#algorithms-69" data-key="algorithms-69"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">69</span>MVCC 내부와 스냅샷 격리의 이상현상(write skew)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-70" data-key="algorithms-70"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">70</span>WAL·그룹 커밋·fsync 비용</span></a></li>
+        <li><a class="nav-link" href="#algorithms-71" data-key="algorithms-71"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">71</span>LSM 트리 튜닝</span></a></li>
+        <li><a class="nav-link" href="#algorithms-72" data-key="algorithms-72"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">72</span>B+트리 vs LSM</span></a></li>
+        <li><a class="nav-link" href="#algorithms-73" data-key="algorithms-73"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">73</span>상태 트리 저장 문제</span></a></li>
+        <li><a class="nav-link" href="#algorithms-74" data-key="algorithms-74"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">74</span>프루닝·아카이브·스냅 싱크</span></a></li>
+        <li><a class="nav-link" href="#algorithms-75" data-key="algorithms-75"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">75</span>인덱싱 파이프라인 설계</span></a></li>
+        <li><a class="nav-link" href="#algorithms-76" data-key="algorithms-76"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">76</span>컬럼 스토어와 벡터화 실행(OLAP)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-77" data-key="algorithms-77"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">77</span>스트리밍 처리 의미론</span></a></li>
+        <li><a class="nav-link" href="#algorithms-78" data-key="algorithms-78"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">78</span>벡터 DB와 ANN 인덱스(HNSW·IVF-PQ)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-79" data-key="algorithms-79"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">79</span>캐시 일관성·무효화·스탬피드 방지</span></a></li>
+        <li><a class="nav-link" href="#algorithms-80" data-key="algorithms-80"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">80</span>외부 정렬·병합 전략과 병렬 정렬 (TAOCP 3권)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-81" data-key="algorithms-81"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">81</span>[복습] 데이터 모델이 성능을 정한다</span></a></li>
+        </ul>
+      </div>
+      <div class="nav-group" data-group>
+        <p class="nav-group-label">F. 암호학·ZK (Day 82–96)</p>
+        <ul>
+        <li><a class="nav-link" href="#algorithms-82" data-key="algorithms-82"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">82</span>랜덤 오라클·길이 연장 공격·도메인 분리</span></a></li>
+        <li><a class="nav-link" href="#algorithms-83" data-key="algorithms-83"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">83</span>HMAC·AEAD와 nonce 오용 저항</span></a></li>
+        <li><a class="nav-link" href="#algorithms-84" data-key="algorithms-84"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">84</span>난수 생성과 CSPRNG 품질 (TAOCP 2권)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-85" data-key="algorithms-85"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">85</span>서명 스킴 비교</span></a></li>
+        <li><a class="nav-link" href="#algorithms-86" data-key="algorithms-86"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">86</span>임계 서명·MPC·분산 키 생성(DKG)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-87" data-key="algorithms-87"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">87</span>커밋먼트</span></a></li>
+        <li><a class="nav-link" href="#algorithms-88" data-key="algorithms-88"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">88</span>다중정밀 산술(bignum)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-89" data-key="algorithms-89"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">89</span>고정소수점 산술과 반올림 정책</span></a></li>
+        <li><a class="nav-link" href="#algorithms-90" data-key="algorithms-90"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">90</span>유한체·다항식 산술과 NTT 구현 관점</span></a></li>
+        <li><a class="nav-link" href="#algorithms-91" data-key="algorithms-91"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">91</span>산술화</span></a></li>
+        <li><a class="nav-link" href="#algorithms-92" data-key="algorithms-92"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">92</span>다항식 IOP</span></a></li>
+        <li><a class="nav-link" href="#algorithms-93" data-key="algorithms-93"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">93</span>재귀 증명과 증명 집계</span></a></li>
+        <li><a class="nav-link" href="#algorithms-94" data-key="algorithms-94"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">94</span>프라이버시 프리미티브</span></a></li>
+        <li><a class="nav-link" href="#algorithms-95" data-key="algorithms-95"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">95</span>포스트퀀텀 전환은 암호가 아니라 조정(coordination) 문제</span></a></li>
+        <li><a class="nav-link" href="#algorithms-96" data-key="algorithms-96"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">96</span>[복습] 검증 가능한 시스템 설계 체크리스트</span></a></li>
+        </ul>
+      </div>
+      <div class="nav-group" data-group>
+        <p class="nav-group-label">G. AI 엔지니어링 (Day 97–100)</p>
+        <ul>
+        <li><a class="nav-link" href="#algorithms-97" data-key="algorithms-97"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">97</span>트랜스포머 계산 구조·KV 캐시·추론 서빙(연속 배칭·PagedAttention)…</span></a></li>
+        <li><a class="nav-link" href="#algorithms-98" data-key="algorithms-98"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">98</span>RAG 설계·리트리버 품질 지표와 평가 하네스(골든·프로퍼티·회귀)</span></a></li>
+        <li><a class="nav-link" href="#algorithms-99" data-key="algorithms-99"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">99</span>에이전트 루프 설계</span></a></li>
+        <li><a class="nav-link" href="#algorithms-100" data-key="algorithms-100"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">100</span>[Final] 내 스택의 ADR + 위협 모델 한 편 쓰기</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="index.html">&larr; Workspace Index</a></div>
+  </aside>
+
+  <main class="content">
+    <div class="src">Source: docs/knowledge/dev-100-curriculum.md (auto-generated by scripts/generate-curriculum-html.mjs — edit the curriculum, not this file)</div>
+    <article>
+      <h1>📖 개발자 지식 100 — 고급 커리큘럼 (2026 H2)</h1>
+      <p>8년차가 <strong>이미 아는 기초(정렬·기본 자료구조·BFS/DFS·기본 DP)는 제외</strong>하고, 프로토콜·시스템·AI 엔지니어링의 <strong>고급 주제 100개</strong>를 하루 1개씩. *(2026-07-30 Jay 지시로 신설 — 구 &quot;매일의 알고리즘(CLRS)&quot; 트랙 종료·흡수.)*</p>
+      <p><strong>운영</strong>: 매일 리포트 <code>2 Basic Knowledge</code> 안에서 1개. 완료-게이트(체크해야 다음 Day, 미체크면 반복).</p>
+      <p><strong>분량</strong>: 개념 1개 + 코드/수식 10~25줄 + 연습 1개 + 실무·Verex 연결 1줄. &quot;존재를 알고 필요할 때 꺼내 쓰는&quot; 수준이 멈춤선.</p>
+      <p class="meta">2 / 100 done</p>
+    </article>
+    <article>
+      <h1>A. 고급 알고리즘·자료구조 (Day 1–19)</h1>
+      <ul class="topics">
+        <li id="algorithms-1"><span class="topic-no">1</span><span class="topic-text"><a href="html/docs/algorithms/amortized-potential-function.html">분할상환분석 심화 — 포텐셜 함수(potential method)로 비용 증명하기</a> <span class="badge topic-done" style="background:#0284c722; color:#0284c7;">DONE</span></span></li>
+        <li id="algorithms-2"><span class="topic-no">2</span><span class="topic-text"><a href="html/docs/algorithms/balanced-trees-concurrency.html">균형 트리 계열 비교 — Red-Black vs B+Tree vs Skip List (동시성 관점)</a> <span class="badge topic-done" style="background:#0284c722; color:#0284c7;">DONE</span></span></li>
+        <li id="algorithms-3"><span class="topic-no">3</span><span class="topic-text"><a href="topics/algorithms-3.html">영속(persistent) 자료구조와 구조 공유 — 불변 상태의 O(log n) 갱신</a></span></li>
+        <li id="algorithms-4"><span class="topic-no">4</span><span class="topic-text"><a href="topics/algorithms-4.html">함수형 업데이트와 상태 diff — copy-on-write의 실제 비용</a></span></li>
+        <li id="algorithms-5"><span class="topic-no">5</span><span class="topic-text"><a href="topics/algorithms-5.html">트라이 계열 심화 — 패트리샤 vs MPT vs Verkle (증명 크기 대 갱신 비용)</a></span></li>
+        <li id="algorithms-6"><span class="topic-no">6</span><span class="topic-text"><a href="topics/algorithms-6.html">확률적 자료구조 — Bloom·Cuckoo·Count-Min·HyperLogLog</a></span></li>
+        <li id="algorithms-7"><span class="topic-no">7</span><span class="topic-text"><a href="topics/algorithms-7.html">스트리밍/스케치 알고리즘 — heavy hitters, 근사 분위수</a></span></li>
+        <li id="algorithms-8"><span class="topic-no">8</span><span class="topic-text"><a href="topics/algorithms-8.html">순서 통계 — Quickselect·중위수의 중위수(결정론적 선택)</a></span></li>
+        <li id="algorithms-9"><span class="topic-no">9</span><span class="topic-text"><a href="topics/algorithms-9.html">문자열 인덱스 — 서픽스 배열·오토마톤 (로그·트레이스 검색)</a></span></li>
+        <li id="algorithms-10"><span class="topic-no">10</span><span class="topic-text"><a href="topics/algorithms-10.html">세그먼트 트리 심화 — lazy propagation·영속 세그먼트 트리</a></span></li>
+        <li id="algorithms-11"><span class="topic-no">11</span><span class="topic-text"><a href="topics/algorithms-11.html">위상정렬·DAG 스케줄링 → <strong>BAL 병렬 실행 스케줄의 수학</strong></a></span></li>
+        <li id="algorithms-12"><span class="topic-no">12</span><span class="topic-text"><a href="topics/algorithms-12.html">최대 유량·최소 컷과 매칭 — 자원 배분 문제의 원형</a></span></li>
+        <li id="algorithms-13"><span class="topic-no">13</span><span class="topic-text"><a href="topics/algorithms-13.html">선형계획과 쌍대성 직관 — 경매·MEV 배분의 언어</a></span></li>
+        <li id="algorithms-14"><span class="topic-no">14</span><span class="topic-text"><a href="topics/algorithms-14.html">랜덤화·근사 알고리즘 — LP 완화와 랜덤 라운딩</a></span></li>
+        <li id="algorithms-15"><span class="topic-no">15</span><span class="topic-text"><a href="topics/algorithms-15.html">온라인 알고리즘과 경쟁비 — 캐시 교체·실시간 경매</a></span></li>
+        <li id="algorithms-16"><span class="topic-no">16</span><span class="topic-text"><a href="topics/algorithms-16.html">NP-난해와 환원 — 언제 포기하고 근사로 갈지 판단하기</a></span></li>
+        <li id="algorithms-17"><span class="topic-no">17</span><span class="topic-text"><a href="topics/algorithms-17.html">병렬 알고리즘 모델 — work-span, Amdahl vs Gustafson</a></span></li>
+        <li id="algorithms-18"><span class="topic-no">18</span><span class="topic-text"><a href="topics/algorithms-18.html">조합 생성·그레이 코드·순열 열거 (TAOCP 4권) — 테스트 벡터·퍼징·상태 공간 탐색의 도구</a></span></li>
+        <li id="algorithms-19"><span class="topic-no">19</span><span class="topic-text"><a href="topics/algorithms-19.html">[복습] 알고리즘 선택의 실전 기준표</a></span></li>
+      </ul>
+    </article>
+    <article>
+      <h1>B. 컴파일러·런타임·VM (Day 20–35)</h1>
+      <ul class="topics">
+        <li id="algorithms-20"><span class="topic-no">20</span><span class="topic-text"><a href="topics/algorithms-20.html">IR과 SSA 형식 — 최적화가 가능해지는 표현</a></span></li>
+        <li id="algorithms-21"><span class="topic-no">21</span><span class="topic-text"><a href="topics/algorithms-21.html">데이터플로 분석 — 상수 전파·죽은 코드 제거</a></span></li>
+        <li id="algorithms-22"><span class="topic-no">22</span><span class="topic-text"><a href="topics/algorithms-22.html">레지스터 할당(그래프 컬러링)과 스필 비용</a></span></li>
+        <li id="algorithms-23"><span class="topic-no">23</span><span class="topic-text"><a href="topics/algorithms-23.html">인라이닝·루프 변환·자동 벡터화</a></span></li>
+        <li id="algorithms-24"><span class="topic-no">24</span><span class="topic-text"><a href="topics/algorithms-24.html">JIT 계층화·워밍업·역최적화(deopt)</a></span></li>
+        <li id="algorithms-25"><span class="topic-no">25</span><span class="topic-text"><a href="topics/algorithms-25.html">스택 머신 vs 레지스터 머신 → EVM과 WASM의 설계 차이</a></span></li>
+        <li id="algorithms-26"><span class="topic-no">26</span><span class="topic-text"><a href="topics/algorithms-26.html">가스 회계 설계 — 비용 모델과 DoS 저항</a></span></li>
+        <li id="algorithms-27"><span class="topic-no">27</span><span class="topic-text"><a href="topics/algorithms-27.html">EVM 인터프리터 내부 — JUMPDEST 분석·메모리 확장 비용</a></span></li>
+        <li id="algorithms-28"><span class="topic-no">28</span><span class="topic-text"><a href="topics/algorithms-28.html">WASM 실행 모델과 샌드박싱 경계</a></span></li>
+        <li id="algorithms-29"><span class="topic-no">29</span><span class="topic-text"><a href="topics/algorithms-29.html">GC 심화 — 증분·병행·리전 기반(ZGC·Go)</a></span></li>
+        <li id="algorithms-30"><span class="topic-no">30</span><span class="topic-text"><a href="topics/algorithms-30.html">Rust 소유권·차용 검사기 내부(NLL)와 우회 패턴</a></span></li>
+        <li id="algorithms-31"><span class="topic-no">31</span><span class="topic-text"><a href="topics/algorithms-31.html">메모리 할당자 설계 — jemalloc·mimalloc의 아이디어</a></span></li>
+        <li id="algorithms-32"><span class="topic-no">32</span><span class="topic-text"><a href="topics/algorithms-32.html">FFI·ABI 경계와 안전성(패닉·정렬·수명)</a></span></li>
+        <li id="algorithms-33"><span class="topic-no">33</span><span class="topic-text"><a href="topics/algorithms-33.html">결정론적 실행 — 부동소수점·시간·난수 봉인하기</a></span></li>
+        <li id="algorithms-34"><span class="topic-no">34</span><span class="topic-text"><a href="topics/algorithms-34.html">형식 검증 — SAT/BDD·SMT·심볼릭 실행(Foundry invariant·Halmos) (TAOCP 4권 SAT 접목)</a></span></li>
+        <li id="algorithms-35"><span class="topic-no">35</span><span class="topic-text"><a href="topics/algorithms-35.html">[복습] 실행 계층 지도 한 장으로</a></span></li>
+      </ul>
+    </article>
+    <article>
+      <h1>C. 동시성·성능 엔지니어링 (Day 36–51)</h1>
+      <ul class="topics">
+        <li id="algorithms-36"><span class="topic-no">36</span><span class="topic-text"><a href="topics/algorithms-36.html">메모리 모델과 원자성 순서 — acquire/release/seq_cst</a></span></li>
+        <li id="algorithms-37"><span class="topic-no">37</span><span class="topic-text"><a href="topics/algorithms-37.html">락프리·wait-free, ABA 문제, 해저드 포인터·에포크 회수</a></span></li>
+        <li id="algorithms-38"><span class="topic-no">38</span><span class="topic-text"><a href="topics/algorithms-38.html">RCU — 읽기 최적화의 정석</a></span></li>
+        <li id="algorithms-39"><span class="topic-no">39</span><span class="topic-text"><a href="topics/algorithms-39.html">false sharing·캐시라인 정렬·NUMA 지역성</a></span></li>
+        <li id="algorithms-40"><span class="topic-no">40</span><span class="topic-text"><a href="topics/algorithms-40.html">브랜치 예측·프리페치·데이터 지향 설계</a></span></li>
+        <li id="algorithms-41"><span class="topic-no">41</span><span class="topic-text"><a href="topics/algorithms-41.html">커널 바이패스와 zero-copy — io_uring</a></span></li>
+        <li id="algorithms-42"><span class="topic-no">42</span><span class="topic-text"><a href="topics/algorithms-42.html">이벤트 루프 vs 스레드 vs 액터 모델</a></span></li>
+        <li id="algorithms-43"><span class="topic-no">43</span><span class="topic-text"><a href="topics/algorithms-43.html">백프레셔와 큐 이론 — Little's law로 용량 계산</a></span></li>
+        <li id="algorithms-44"><span class="topic-no">44</span><span class="topic-text"><a href="topics/algorithms-44.html">테일 레이턴시 — hedged request·load shedding</a></span></li>
+        <li id="algorithms-45"><span class="topic-no">45</span><span class="topic-text"><a href="topics/algorithms-45.html">프로파일링 심화 — 플레임그래프·perf·PMU 카운터</a></span></li>
+        <li id="algorithms-46"><span class="topic-no">46</span><span class="topic-text"><a href="topics/algorithms-46.html">벤치마크 방법론 — 워밍업·분산·회귀 자동 감지</a></span></li>
+        <li id="algorithms-47"><span class="topic-no">47</span><span class="topic-text"><a href="topics/algorithms-47.html">eBPF로 프로덕션 관측</a></span></li>
+        <li id="algorithms-48"><span class="topic-no">48</span><span class="topic-text"><a href="topics/algorithms-48.html">분산 트레이싱과 샘플링 전략</a></span></li>
+        <li id="algorithms-49"><span class="topic-no">49</span><span class="topic-text"><a href="topics/algorithms-49.html">용량 계획·SLO와 에러 예산</a></span></li>
+        <li id="algorithms-50"><span class="topic-no">50</span><span class="topic-text"><a href="topics/algorithms-50.html">카오스 엔지니어링·장애 주입 설계</a></span></li>
+        <li id="algorithms-51"><span class="topic-no">51</span><span class="topic-text"><a href="topics/algorithms-51.html">[복습] 성능 예산 문서 쓰기</a></span></li>
+      </ul>
+    </article>
+    <article>
+      <h1>D. 분산시스템·합의 (Day 52–68)</h1>
+      <ul class="topics">
+        <li id="algorithms-52"><span class="topic-no">52</span><span class="topic-text"><a href="topics/algorithms-52.html">일관성 모델 지도 — 선형화·직렬성·인과·최종</a></span></li>
+        <li id="algorithms-53"><span class="topic-no">53</span><span class="topic-text"><a href="topics/algorithms-53.html">논리 시계·벡터 시계·하이브리드 논리 시계(HLC)</a></span></li>
+        <li id="algorithms-54"><span class="topic-no">54</span><span class="topic-text"><a href="topics/algorithms-54.html">Raft 심화 — 멤버십 변경·로그 압축·읽기 보장</a></span></li>
+        <li id="algorithms-55"><span class="topic-no">55</span><span class="topic-text"><a href="topics/algorithms-55.html">Multi-Paxos·Flexible Paxos — 정족수 설계의 자유도</a></span></li>
+        <li id="algorithms-56"><span class="topic-no">56</span><span class="topic-text"><a href="topics/algorithms-56.html">비잔틴 정족수(3f+1)와 PBFT → HotStuff → Tendermint 계보</a></span></li>
+        <li id="algorithms-57"><span class="topic-no">57</span><span class="topic-text"><a href="topics/algorithms-57.html">DAG 합의 — Narwhal·Bullshark 계열의 분리(멤풀/합의)</a></span></li>
+        <li id="algorithms-58"><span class="topic-no">58</span><span class="topic-text"><a href="topics/algorithms-58.html">나카모토 합의의 확률적 최종성과 selfish mining</a></span></li>
+        <li id="algorithms-59"><span class="topic-no">59</span><span class="topic-text"><a href="topics/algorithms-59.html">Casper FFG + LMD-GHOST — 재조직(reorg)의 조건</a></span></li>
+        <li id="algorithms-60"><span class="topic-no">60</span><span class="topic-text"><a href="topics/algorithms-60.html">싱글슬롯 파이널리티와 서명 집계 병목</a></span></li>
+        <li id="algorithms-61"><span class="topic-no">61</span><span class="topic-text"><a href="topics/algorithms-61.html">데이터 가용성 샘플링과 소거부호(Reed-Solomon)</a></span></li>
+        <li id="algorithms-62"><span class="topic-no">62</span><span class="topic-text"><a href="topics/algorithms-62.html">라이트 클라이언트와 상태 없는(stateless) 검증</a></span></li>
+        <li id="algorithms-63"><span class="topic-no">63</span><span class="topic-text"><a href="topics/algorithms-63.html">크로스체인 신뢰 가정 분류 — 브릿지 vs 인텐트 vs 라이트클라이언트</a></span></li>
+        <li id="algorithms-64"><span class="topic-no">64</span><span class="topic-text"><a href="topics/algorithms-64.html">시퀀서 분산화와 강제 포함(force inclusion)</a></span></li>
+        <li id="algorithms-65"><span class="topic-no">65</span><span class="topic-text"><a href="topics/algorithms-65.html">사기 증명 vs 유효성 증명의 게임 이론</a></span></li>
+        <li id="algorithms-66"><span class="topic-no">66</span><span class="topic-text"><a href="topics/algorithms-66.html">PBS·MEV 경매·타이밍 게임</a></span></li>
+        <li id="algorithms-67"><span class="topic-no">67</span><span class="topic-text"><a href="topics/algorithms-67.html">멱등성과 &quot;정확히 한 번&quot; — 아웃박스 패턴</a></span></li>
+        <li id="algorithms-68"><span class="topic-no">68</span><span class="topic-text"><a href="topics/algorithms-68.html">[복습] 장애 모델과 신뢰 가정을 먼저 쓰는 습관</a></span></li>
+      </ul>
+    </article>
+    <article>
+      <h1>E. 데이터·스토리지 엔진 (Day 69–81)</h1>
+      <ul class="topics">
+        <li id="algorithms-69"><span class="topic-no">69</span><span class="topic-text"><a href="topics/algorithms-69.html">MVCC 내부와 스냅샷 격리의 이상현상(write skew)</a></span></li>
+        <li id="algorithms-70"><span class="topic-no">70</span><span class="topic-text"><a href="topics/algorithms-70.html">WAL·그룹 커밋·fsync 비용</a></span></li>
+        <li id="algorithms-71"><span class="topic-no">71</span><span class="topic-text"><a href="topics/algorithms-71.html">LSM 트리 튜닝 — 컴팩션·쓰기 증폭·읽기 증폭</a></span></li>
+        <li id="algorithms-72"><span class="topic-no">72</span><span class="topic-text"><a href="topics/algorithms-72.html">B+트리 vs LSM → 이더리움 클라이언트의 DB 선택</a></span></li>
+        <li id="algorithms-73"><span class="topic-no">73</span><span class="topic-text"><a href="topics/algorithms-73.html">상태 트리 저장 문제 — flat DB·경로 기반 스토리지</a></span></li>
+        <li id="algorithms-74"><span class="topic-no">74</span><span class="topic-text"><a href="topics/algorithms-74.html">프루닝·아카이브·스냅 싱크</a></span></li>
+        <li id="algorithms-75"><span class="topic-no">75</span><span class="topic-text"><a href="topics/algorithms-75.html">인덱싱 파이프라인 설계 — 재생 가능성(replayability)</a></span></li>
+        <li id="algorithms-76"><span class="topic-no">76</span><span class="topic-text"><a href="topics/algorithms-76.html">컬럼 스토어와 벡터화 실행(OLAP)</a></span></li>
+        <li id="algorithms-77"><span class="topic-no">77</span><span class="topic-text"><a href="topics/algorithms-77.html">스트리밍 처리 의미론 — 워터마크·정확히 한 번</a></span></li>
+        <li id="algorithms-78"><span class="topic-no">78</span><span class="topic-text"><a href="topics/algorithms-78.html">벡터 DB와 ANN 인덱스(HNSW·IVF-PQ)</a></span></li>
+        <li id="algorithms-79"><span class="topic-no">79</span><span class="topic-text"><a href="topics/algorithms-79.html">캐시 일관성·무효화·스탬피드 방지</a></span></li>
+        <li id="algorithms-80"><span class="topic-no">80</span><span class="topic-text"><a href="topics/algorithms-80.html">외부 정렬·병합 전략과 병렬 정렬 (TAOCP 3권) — 인덱서 재구성의 실제 병목</a></span></li>
+        <li id="algorithms-81"><span class="topic-no">81</span><span class="topic-text"><a href="topics/algorithms-81.html">[복습] 데이터 모델이 성능을 정한다</a></span></li>
+      </ul>
+    </article>
+    <article>
+      <h1>F. 암호학·ZK (Day 82–96)</h1>
+      <ul class="topics">
+        <li id="algorithms-82"><span class="topic-no">82</span><span class="topic-text"><a href="topics/algorithms-82.html">랜덤 오라클·길이 연장 공격·도메인 분리</a></span></li>
+        <li id="algorithms-83"><span class="topic-no">83</span><span class="topic-text"><a href="topics/algorithms-83.html">HMAC·AEAD와 nonce 오용 저항 → <strong>웹훅 서명 검증</strong></a></span></li>
+        <li id="algorithms-84"><span class="topic-no">84</span><span class="topic-text"><a href="topics/algorithms-84.html">난수 생성과 CSPRNG 품질 (TAOCP 2권) — 통계적 검정·시드 관리, nonce 재사용 사고의 상류</a></span></li>
+        <li id="algorithms-85"><span class="topic-no">85</span><span class="topic-text"><a href="topics/algorithms-85.html">서명 스킴 비교 — ECDSA·EdDSA·Schnorr·BLS와 위조 함정</a></span></li>
+        <li id="algorithms-86"><span class="topic-no">86</span><span class="topic-text"><a href="topics/algorithms-86.html">임계 서명·MPC·분산 키 생성(DKG)</a></span></li>
+        <li id="algorithms-87"><span class="topic-no">87</span><span class="topic-text"><a href="topics/algorithms-87.html">커밋먼트 — Pedersen·KZG·FRI</a></span></li>
+        <li id="algorithms-88"><span class="topic-no">88</span><span class="topic-text"><a href="topics/algorithms-88.html">다중정밀 산술(bignum) — Montgomery·Barrett 리덕션 (TAOCP 2권), EC·ZK 구현의 실제 병목</a></span></li>
+        <li id="algorithms-89"><span class="topic-no">89</span><span class="topic-text"><a href="topics/algorithms-89.html">고정소수점 산술과 반올림 정책 — 불변식을 지키는 반올림 방향(dust leak 방지), LMSR의 exp/ln 근사 오차 상한</a></span></li>
+        <li id="algorithms-90"><span class="topic-no">90</span><span class="topic-text"><a href="topics/algorithms-90.html">유한체·다항식 산술과 NTT 구현 관점</a></span></li>
+        <li id="algorithms-91"><span class="topic-no">91</span><span class="topic-text"><a href="topics/algorithms-91.html">산술화 — R1CS·AIR·PLONKish</a></span></li>
+        <li id="algorithms-92"><span class="topic-no">92</span><span class="topic-text"><a href="topics/algorithms-92.html">다항식 IOP — 증명 크기 대 검증 시간 트레이드오프</a></span></li>
+        <li id="algorithms-93"><span class="topic-no">93</span><span class="topic-text"><a href="topics/algorithms-93.html">재귀 증명과 증명 집계</a></span></li>
+        <li id="algorithms-94"><span class="topic-no">94</span><span class="topic-text"><a href="topics/algorithms-94.html">프라이버시 프리미티브 — 링 서명·nullifier·스텔스 주소</a></span></li>
+        <li id="algorithms-95"><span class="topic-no">95</span><span class="topic-text"><a href="topics/algorithms-95.html">포스트퀀텀 전환은 암호가 아니라 조정(coordination) 문제</a></span></li>
+        <li id="algorithms-96"><span class="topic-no">96</span><span class="topic-text"><a href="topics/algorithms-96.html">[복습] 검증 가능한 시스템 설계 체크리스트</a></span></li>
+      </ul>
+    </article>
+    <article>
+      <h1>G. AI 엔지니어링 (Day 97–100)</h1>
+      <ul class="topics">
+        <li id="algorithms-97"><span class="topic-no">97</span><span class="topic-text"><a href="topics/algorithms-97.html">트랜스포머 계산 구조·KV 캐시·추론 서빙(연속 배칭·PagedAttention)과 양자화·증류·LoRA 트레이드오프</a></span></li>
+        <li id="algorithms-98"><span class="topic-no">98</span><span class="topic-text"><a href="topics/algorithms-98.html">RAG 설계·리트리버 품질 지표와 평가 하네스(골든·프로퍼티·회귀)</a></span></li>
+        <li id="algorithms-99"><span class="topic-no">99</span><span class="topic-text"><a href="topics/algorithms-99.html">에이전트 루프 설계 — 도구 권한·게이트·재시도, 데이터·모델 프로비넌스</a></span></li>
+        <li id="algorithms-100"><span class="topic-no">100</span><span class="topic-text"><a href="topics/algorithms-100.html">[Final] 내 스택의 ADR + 위협 모델 한 편 쓰기</a></span></li>
+      </ul>
+    </article>
+  </main>
+</div>
+<script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    const first = order.find((k) => seen.has(k));
+    for (const a of spied) a.classList.toggle('active', a.dataset.key === first);
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) io.observe(el);
+  }
+</script>
+</body>
+</html>

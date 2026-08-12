@@ -7,7 +7,9 @@ export type DemoCard = {
   titleKo: string;
   description: string;
   descriptionKo: string;
-  status: "live" | "soon";
+  // "done" (2026-08-12, jay): 사고 실험·구현이 끝났지만 상시 구동 데모는 아닌 것 —
+  // "라이브"(지금 돌아감)도 "준비 중"(아직 안 만듦)도 아닌 세 번째 완결 상태.
+  status: "live" | "soon" | "done";
   href?: string; // omitted while "soon" and no page exists yet
   // 구현 날짜 (YYYY-MM-DD) — 카드 정렬 기준 (jay, 2026-08-06). "카드를 만든 날"이 아니라
   // "그 데모가 실제로 동작하게 된 날"을 적는다 — 예를 들어 AP2는 "곧 공개" 스텁이 6월부터
@@ -40,8 +42,10 @@ export type DemoDiagram = {
 // 날짜가 없는 카드(아직 구현 전)는 날짜가 있는 카드 뒤로 가고, 자기들끼리는 배열 순서 유지.
 // 상태와 날짜만 보므로, 카드가 바뀌어도 배열 순서를 손으로 맞출 필요는 여전히 없다.
 export function sortDemoCards(cards: DemoCard[]): DemoCard[] {
+  // live → done → soon: 동작하는 것, 끝난 것, 아직인 것 순.
+  const rank = { live: 0, done: 1, soon: 2 } as const;
   return [...cards].sort((a, b) => {
-    if (a.status !== b.status) return a.status === "live" ? -1 : 1;
+    if (a.status !== b.status) return rank[a.status] - rank[b.status];
     if (a.date && b.date) return b.date.localeCompare(a.date); // ISO 문자열이라 사전순 = 시간순
     if (a.date) return -1;
     if (b.date) return 1;

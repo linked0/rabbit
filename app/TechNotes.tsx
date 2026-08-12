@@ -18,12 +18,17 @@ export default function TechNotes({ cards, lang }: { cards: DemoCard[]; lang: La
       </p>
       {cards.map((card) => {
         const isLive = card.status === "live";
+        const isDone = card.status === "done";
         return (
           <div key={card.key} className="panel" style={{ marginTop: 16 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
               <strong>{pick(lang, card.titleKo, card.title)}</strong>
-              <span className={`poc-badge ${isLive ? "poc-badge-live" : "poc-badge-soon"}`}>
-                {isLive ? pick(lang, "라이브", "Live") : pick(lang, "준비 중", "Planned")}
+              <span className={`poc-badge ${isLive ? "poc-badge-live" : isDone ? "poc-badge-done" : "poc-badge-soon"}`}>
+                {isLive
+                  ? pick(lang, "라이브", "Live")
+                  : isDone
+                    ? pick(lang, "완료", "Done")
+                    : pick(lang, "준비 중", "Planned")}
               </span>
             </div>
             <p style={{ marginTop: 10 }}>

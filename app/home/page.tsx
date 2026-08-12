@@ -83,7 +83,9 @@ export default function HomePage() {
                 <div className="label">
                   {poc.status === "live"
                     ? pick(lang, "PoC · 라이브", "PoC · Live")
-                    : pick(lang, "PoC · 목업", "PoC · Mock")}
+                    : poc.status === "done"
+                      ? pick(lang, "PoC · 완료", "PoC · Done")
+                      : pick(lang, "PoC · 준비 중", "PoC · Coming soon")}
                 </div>
                 <div className="value" style={{ fontSize: 18 }}>
                   {pick(lang, poc.titleKo, poc.title)}

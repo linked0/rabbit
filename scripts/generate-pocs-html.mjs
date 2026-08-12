@@ -13,6 +13,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
+// 페이지 껍데기(레일+본문 레이아웃)는 algorithms.html·math.html 과 공유한다 — scripts/rtd-shell.mjs.
+import { renderRtdPage, escapeHtml } from './rtd-shell.mjs';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..');
 const INDEX_HTML = path.join(REPO_ROOT, 'docs', 'index.html');
@@ -38,20 +40,25 @@ const { sortDemoCards } = require_(path.join(TMP_DIR, 'demo-cards.js'));
 fs.rmSync(TMP_DIR, { recursive: true, force: true });
 
 // 앱의 /poc 페이지와 같은 목록·순서 (app/poc/page.tsx): 라이브는 /live 허브 소관이라 뺀다.
+// 한 목록으로 합친다 (jay, 2026-08-12) — 앱은 이미 두 소스를 그리드 하나에 그리는데
+// (2026-08-11: "제목만 다른 두 그리드는 다른 물건이라는 신호를 준다") 문서에만 PoCs ·
+// Algorithms & Notes 구분이 남아 있었다. 순서는 앱과 같게: PoC 카드 먼저, 그다음 알고리즘.
 const cards = [
   ...sortDemoCards(POC_CARDS.filter((c) => c.status !== 'live')),
   ...sortDemoCards(TIL_REMAINING.filter((c) => c.status !== 'live')),
 ];
 
-function escapeHtml(s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+// 묶음 없이 한 목록 (jay, 2026-08-12) — PoCs/Done 으로 갈랐다가 다시 합쳤다. 18장짜리
+// 목록에서 소제목 두 개는 구조라기보다 방해였고, 상태는 색 점이 이미 말한다.
+// 대신 항목마다 번호를 매긴다: "몇 개 중 몇 번째"가 보이면 목록의 길이가 가늠된다.
+const numbered = cards.map((c, i) => ({ ...c, no: i + 1 }));
 
-// DemoCard.tsx 와 같은 3분법: 라이브 / 목업(전용 페이지 있음) / 준비 중.
-// 여기는 라이브가 이미 걸러졌으니 목업·준비 중 둘만 나온다.
+// DemoCard.tsx 와 같은 구분 — 오직 status 로만 정한다 (2026-08-12). "href 가 있으면 목업"
+// 이라는 추론은 지웠다: DVT 는 읽을 페이지가 있어도 계획이고, 게임·에이전트는 완료다.
+// 여기는 라이브가 이미 걸러졌으니 완료·준비 중 둘만 나온다.
 function badge(card) {
-  return card.href
-    ? { label: 'MOCK', color: '#6366f1' }
+  return card.status === 'done'
+    ? { label: 'DONE', color: '#0284c7' }
     : { label: 'PLANNED', color: '#64748b' };
 }
 
@@ -59,7 +66,11 @@ function badge(card) {
 const cardUrl = (card) => SITE + (card.href ?? `/poc/${card.key}`);
 
 // ── 1) index.html 의 PoCs 섹션 ──────────────────────────────────────────────
+// 인덱스에는 상위 6장만 (jay, 2026-08-12) — 전체 목록은 pocs.html("View All PoCs")이 맡는다.
+// 정렬이 live→done→soon + 날짜순이라, 6장은 "가장 완성됐고 가장 최근인" 카드들이 된다.
+const INDEX_CARD_LIMIT = 6;
 const sectionCards = cards
+  .slice(0, INDEX_CARD_LIMIT)
   .map((c) => {
     const b = badge(c);
     return `                    <a href="${cardUrl(c)}" class="card" style="border-left: 4px solid ${b.color};">
@@ -91,73 +102,63 @@ if (marked === index && !index.includes('<!-- POCS:BEGIN -->')) {
 }
 fs.writeFileSync(INDEX_HTML, marked, 'utf8');
 
-// ── 2) docs/pocs.html — read-the-docs 포맷 전체 목록 ───────────────────────
-// 페이지 틀·스타일은 generate-docs-html.mjs 의 renderPage 와 같은 모양을 유지한다.
-const articles = cards
+// ── 2) docs/pocs.html — 읽기 문서(read-the-docs) 레이아웃 ───────────────────
+// 좌측 고정 레일에 **전체 항목**을 싣고 본문은 오른쪽 (jay, 2026-08-12, verex /docs 레퍼런스).
+// 인덱스가 6장만 보여주게 된 뒤로 이 페이지가 "전부 있는 곳"이 됐고, 상단 TOC 하나로는
+// 18개를 훑기 어렵다 — 레일은 어디까지 왔든 목록이 눈앞에 남는다.
+const navGroups = [
+  {
+    label: `All PoCs (${numbered.length})`,
+    items: numbered.map((c) => {
+      const b = badge(c);
+      // 상태는 큰 색 점 하나로만 말한다 (jay, 2026-08-12) — 글자 배지는 뺐다. 목록이 조용해지고
+      // 완료(하늘)는 점 색만으로 충분히 눈에 띈다. 라벨은 hover 툴팁(title)으로 남겨 둔다.
+      return {
+        anchor: c.key,
+        text: `<span class="topic-no">${c.no}</span>${escapeHtml(c.title)}`,
+        color: b.color,
+        statusLabel: b.label,
+      };
+    }),
+  },
+];
+
+const articles = numbered
   .map((c) => {
     const b = badge(c);
     const diagramNote = c.diagrams?.length
-      ? `<p class="meta">${c.diagrams.length} diagram(s) on the live page.</p>`
+      ? `      <p class="meta">${c.diagrams.length} diagram(s) on the live page.</p>`
       : '';
-    return `  <article id="${c.key}">
-    <h1>${escapeHtml(c.title)} <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></h1>
-    <p class="lead">${escapeHtml(c.description)}</p>
-    <p class="meta">${escapeHtml(c.howTo)}</p>
-    <h2>Why</h2>
-    <p>${escapeHtml(c.purpose ?? '')}</p>
-    <h2>How it works</h2>
-    <p>${escapeHtml(c.howItWorks ?? '')}</p>
-    ${diagramNote}
-    <p><a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a></p>
-  </article>`;
+    return `    <article id="${c.key}">
+      <h1><span class="topic-no">${c.no}</span>${escapeHtml(c.title)} <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></h1>
+      <p class="lead">${escapeHtml(c.description)}</p>
+      <p class="meta">${escapeHtml(c.howTo)}</p>
+      <h2>Why</h2>
+      <p>${escapeHtml(c.purpose ?? '')}</p>
+      <h2>How it works</h2>
+      <p>${escapeHtml(c.howItWorks ?? '')}</p>
+${diagramNote}
+      <p><a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a></p>
+    </article>`;
   })
   .join('\n');
 
-const toc = cards
-  .map((c) => `    <li><a href="#${c.key}">${escapeHtml(c.title)}</a></li>`)
-  .join('\n');
-
-const page = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PoCs — All Contents</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root { --bg:#f8fafc; --card:#fff; --text:#0f172a; --text2:#475569; --accent:#0ea5e9; --border:#e2e8f0; }
-  * { box-sizing: border-box; }
-  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.7; margin:0; padding:0; }
-  .wrap { max-width: 820px; margin:0 auto; padding: 28px 18px 80px; }
-  .back { display:inline-block; margin-bottom:18px; color:var(--accent); text-decoration:none; font-size:0.92rem; font-weight:500; }
-  .src { font-family: ui-monospace, monospace; font-size:0.78rem; color:var(--text2); margin-bottom:20px; word-break:break-all; }
-  article { background: var(--card); border:1px solid var(--border); border-radius:14px; padding: 24px 22px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom: 22px; }
-  article h1 { margin-top: 0; font-size:1.35rem; line-height:1.3; }
-  h2 { font-size:1.05rem; line-height:1.3; margin: 18px 0 6px; }
-  a { color: var(--accent); word-break: break-word; }
-  p { margin: 8px 0; word-wrap: break-word; }
-  .lead { color: var(--text2); font-style: italic; }
-  .meta { font-size: 0.85rem; color: var(--text2); }
-  .badge { font-size: 0.62em; font-weight: 700; padding: 2px 8px; border-radius: 999px; vertical-align: middle; letter-spacing: 0.04em; }
-  .toc { background: var(--card); border:1px solid var(--border); border-radius:14px; padding: 18px 22px; margin-bottom: 22px; }
-  .toc ul { margin: 8px 0 0; padding-left: 20px; }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <a class="back" href="index.html">&larr; Index</a>
-  <div class="src">Source: lib/poc-cards.ts, lib/algorithm-cards.ts (auto-generated by scripts/generate-pocs-html.mjs &mdash; edit the card data, not this file)</div>
-  <div class="toc">
-    <strong>PoCs — everything on the <a href="${SITE}/poc">PoCs menu</a>, full contents (${cards.length})</strong>
-    <ul>
-${toc}
-    </ul>
-  </div>
-${articles}
-</div>
-</body>
-</html>
-`;
-fs.writeFileSync(OUT_HTML, page, 'utf8');
-console.log(`PoCs: index section (${cards.length} cards) + docs/pocs.html updated`);
+fs.writeFileSync(
+  OUT_HTML,
+  renderRtdPage({
+    title: 'PoCs — All Contents',
+    railTitle: 'Rabbit',
+    railTitleHref: 'index.html',
+    railSub: `PoCs &mdash; all contents (${cards.length})`,
+    filterPlaceholder: 'Filter PoCs',
+    navGroups,
+    railFoot: `<a href="index.html">&larr; Workspace Index</a> &middot; <a href="${SITE}/poc">Live PoCs menu</a>`,
+    srcLine:
+      'Source: lib/poc-cards.ts, lib/algorithm-cards.ts (auto-generated by scripts/generate-pocs-html.mjs — edit the card data, not this file)',
+    contentHtml: articles,
+  }),
+  'utf8'
+);
+console.log(
+  `PoCs: index section (${Math.min(cards.length, INDEX_CARD_LIMIT)}/${cards.length} cards) + docs/pocs.html (${cards.length} in sidebar) updated`
+);
