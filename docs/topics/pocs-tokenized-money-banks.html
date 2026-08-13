@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Zapier MCP — PoCs</title>
+<title>Tokenized Money for Banks — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -138,142 +138,30 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Zapier MCP</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Tokenized Money for Banks</p>
   <article>
-      <h1><span class="topic-no">15</span>Zapier MCP <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">Agent triggers real SaaS actions (Gmail/Notion/Slack) via Zapier's MCP tools.</p>
-      <p class="meta">Not yet scoped.</p>
+      <h1><span class="topic-no">2</span>Tokenized Money for Banks <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></h1>
+      <p class="lead">Tempo Research's primer on the three product families banks can use to put a settlement asset onchain — tokenized deposits, first-party stablecoins, and third-party stablecoins — and the Basel LCR/NSFR cost each one hard-codes.</p>
+      <p class="meta">Reading notes — no demo, no wallet needed.</p>
       <h2>Why</h2>
-      <p>Consuming someone else's MCP server (Zapier's, exposing 8,000+ app integrations as tools) rather than building one from scratch — the &quot;client&quot; side of the same protocol this project's own knowledge-base work explores from the &quot;server&quot; side.</p>
+      <p>A structured way to read every &quot;bank issues a stablecoin&quot; headline: the report separates three genuinely different balance-sheet moves that get talked about as one thing, and shows why a bank ends up needing all three rather than picking a winner. Useful background for anything touching bank-adjacent stablecoin rails or institutional settlement design.</p>
       <h2>How it works</h2>
-      <p>Planned: a server-side route holds the Zapier MCP connection (URL + auth token, never exposed to the browser) and either forwards tool calls through the Anthropic API's native MCP connector, or acts as a generic MCP client via @modelcontextprotocol/sdk, listing available tools and executing whichever the model selects — scoped to an explicit allowlist of safe actions (e.g. &quot;send email to self&quot;) to avoid handing an agent unrestricted access to real accounts. Not yet built.</p>
-      <h2>Related code</h2>
-      <pre><code># Zapier MCP — consuming someone else's MCP server as a client. Simulates an event
-# trigger being matched to an allowlisted rule, which then invokes an MCP-style tool.
-
-from dataclasses import dataclass
-from typing import Callable
-
-
-@dataclass
-class Rule:
-    event_type: str
-    tool_name: str
-    handler: Callable[[dict], str]
-
-
-def send_email_to_self(payload: dict) -&gt; str:
-    return f&quot;[Gmail MCP tool] sent '{payload['subject']}' to self&quot;
-
-
-def create_notion_page(payload: dict) -&gt; str:
-    return f&quot;[Notion MCP tool] created page '{payload['title']}'&quot;
-
-
-# Explicit allowlist — same safety boundary the card's howItWorks names: an agent
-# only gets tools for actions that were pre-approved, never unrestricted account access.
-ALLOWED_RULES = [
-    Rule(event_type=&quot;new_lead&quot;, tool_name=&quot;gmail.send_email&quot;, handler=send_email_to_self),
-    Rule(event_type=&quot;new_task&quot;, tool_name=&quot;notion.create_page&quot;, handler=create_notion_page),
-]
-
-
-def match_rule(event_type: str) -&gt; Rule | None:
-    return next((r for r in ALLOWED_RULES if r.event_type == event_type), None)
-
-
-def dispatch(event_type: str, payload: dict) -&gt; str:
-    rule = match_rule(event_type)
-    if rule is None:
-        return f&quot;[blocked] no allowlisted rule for event '{event_type}'&quot;
-    result = rule.handler(payload)
-    return f&quot;trigger={event_type} -&gt; tool={rule.tool_name} -&gt; {result}&quot;
-
-
-if __name__ == &quot;__main__&quot;:
-    print(&quot;Zapier MCP — event trigger -&gt; matched rule -&gt; MCP tool invocation\n&quot;)
-
-    events = [
-        (&quot;new_lead&quot;, {&quot;subject&quot;: &quot;Follow up with Acme Corp&quot;}),
-        (&quot;new_task&quot;, {&quot;title&quot;: &quot;Draft Q3 roadmap&quot;}),
-        (&quot;delete_account&quot;, {&quot;user_id&quot;: &quot;123&quot;}),  # not allowlisted
-    ]
-
-    for event_type, payload in events:
-        print(dispatch(event_type, payload))
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/zapier-mcp.py">docs/code/pocs/zapier-mcp.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/zapier-mcp">Open on jaylabs.xyz &rarr;</a></p>
+      <p>Three families, each a different trade on the balance sheet. (1) Tokenized deposits — the claim stays a deposit, just wrapped in a token; cheapest Basel treatment (25% LCR runoff, 50% NSFR ASF for the permissioned variant) but narrow reach — JPMD on Base is the live example. (2) First-party stablecoins — the bank issues against a segregated reserve pool; the claim converts from deposit to redemption contract, which is the expensive move: LCR runoff jumps from 25% to 100%, NSFR ASF drops from 50% to 0%, and it can be issued on the parent's own balance sheet, through a licensed subsidiary, or through a bank consortium. (3) Third-party stablecoins — the bank doesn't issue at all, just facilitates access (prefunded inventory or a deposit-secured loan) to reach venues that don't accept bank-claim tokens, at the cost of the claim leaving the bank's balance sheet entirely. The report's core claim: these aren't competing options, they're complementary — a single institutional client might use a tokenized deposit for intra-network settlement, a first-party stablecoin for treasury rebalancing, and a third-party stablecoin to hedge weekend exposure on Hyperliquid-style venues, so a bank offering only one can't fully serve them. Source: https://research.4pillars.io/en/research/tokenized-money-for-banks</p>
+      <p><a href="https://www.jaylabs.xyz/poc/tokenized-money-banks">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">15</span>Zapier MCP <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">에이전트가 Zapier MCP 툴로 실제 SaaS 액션(Gmail/Notion/Slack)을 실행.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <h1><span class="topic-no">2</span>은행을 위한 토큰화된 화폐 <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></h1>
+      <p class="lead">은행이 결제 자산을 온체인에 올릴 때 쓸 수 있는 세 가지 상품군 — 토큰화 예금, 1자 발행 스테이블코인, 3자 스테이블코인 — 과 각각이 하드코딩하는 바젤 LCR/NSFR 비용을 정리한 Tempo Research 리포트.</p>
+      <p class="meta">정독 노트 — 데모 없음, 지갑 불필요.</p>
       <h2>왜</h2>
-      <p>직접 구축하는 대신 다른 곳의 MCP 서버(8,000개 이상의 앱 연동을 툴로 노출하는 Zapier)를 소비하는 쪽 — 이 프로젝트의 지식베이스 작업이 &quot;서버&quot; 쪽에서 다루는 것과 같은 프로토콜을 &quot;클라이언트&quot; 쪽에서 탐구합니다.</p>
+      <p>&quot;은행이 스테이블코인을 발행한다&quot;는 헤드라인들을 구조적으로 읽는 방법 — 하나로 뭉뚱그려 얘기되는 세 가지 실제로 다른 대차대조표 움직임을 분리하고, 은행이 왜 하나를 고르는 대신 셋 다 필요하게 되는지 보여준다. 은행 인접 스테이블코인 레일이나 기관 결제 설계를 건드리는 작업에 유용한 배경지식.</p>
       <h2>동작 방식</h2>
-      <p>계획: 서버 라우트가 Zapier MCP 연결(URL + 인증 토큰, 브라우저에 절대 노출 안 함)을 들고 있고, Anthropic API의 네이티브 MCP 커넥터로 툴 호출을 전달하거나, @modelcontextprotocol/sdk로 직접 범용 MCP 클라이언트 역할을 하며 사용 가능한 툴 목록을 보여주고 모델이 선택한 것을 실행합니다 — 에이전트에게 실제 계정에 대한 무제한 접근을 주지 않도록 안전한 액션(예: &quot;내게 이메일 보내기&quot;)만 명시적으로 허용 목록에 넣습니다. 아직 미구현.</p>
-      <h2>관련 코드</h2>
-      <pre><code># Zapier MCP — consuming someone else's MCP server as a client. Simulates an event
-# trigger being matched to an allowlisted rule, which then invokes an MCP-style tool.
-
-from dataclasses import dataclass
-from typing import Callable
-
-
-@dataclass
-class Rule:
-    event_type: str
-    tool_name: str
-    handler: Callable[[dict], str]
-
-
-def send_email_to_self(payload: dict) -&gt; str:
-    return f&quot;[Gmail MCP tool] sent '{payload['subject']}' to self&quot;
-
-
-def create_notion_page(payload: dict) -&gt; str:
-    return f&quot;[Notion MCP tool] created page '{payload['title']}'&quot;
-
-
-# Explicit allowlist — same safety boundary the card's howItWorks names: an agent
-# only gets tools for actions that were pre-approved, never unrestricted account access.
-ALLOWED_RULES = [
-    Rule(event_type=&quot;new_lead&quot;, tool_name=&quot;gmail.send_email&quot;, handler=send_email_to_self),
-    Rule(event_type=&quot;new_task&quot;, tool_name=&quot;notion.create_page&quot;, handler=create_notion_page),
-]
-
-
-def match_rule(event_type: str) -&gt; Rule | None:
-    return next((r for r in ALLOWED_RULES if r.event_type == event_type), None)
-
-
-def dispatch(event_type: str, payload: dict) -&gt; str:
-    rule = match_rule(event_type)
-    if rule is None:
-        return f&quot;[blocked] no allowlisted rule for event '{event_type}'&quot;
-    result = rule.handler(payload)
-    return f&quot;trigger={event_type} -&gt; tool={rule.tool_name} -&gt; {result}&quot;
-
-
-if __name__ == &quot;__main__&quot;:
-    print(&quot;Zapier MCP — event trigger -&gt; matched rule -&gt; MCP tool invocation\n&quot;)
-
-    events = [
-        (&quot;new_lead&quot;, {&quot;subject&quot;: &quot;Follow up with Acme Corp&quot;}),
-        (&quot;new_task&quot;, {&quot;title&quot;: &quot;Draft Q3 roadmap&quot;}),
-        (&quot;delete_account&quot;, {&quot;user_id&quot;: &quot;123&quot;}),  # not allowlisted
-    ]
-
-    for event_type, payload in events:
-        print(dispatch(event_type, payload))
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/zapier-mcp.py">docs/code/pocs/zapier-mcp.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/zapier-mcp">Open on jaylabs.xyz &rarr;</a></p>
+      <p>세 개의 상품군, 각각 대차대조표에서 다른 트레이드를 만든다. (1) 토큰화 예금 — 청구권은 여전히 예금이고 토큰으로 감싸기만 함; 바젤 처리가 가장 저렴(퍼미션드 변형은 LCR 유출 25%, NSFR ASF 50%)하지만 도달 범위가 좁음 — Base 위의 JPMD가 실제 사례. (2) 1자 발행 스테이블코인 — 은행이 분리된 준비금 풀을 대가로 발행; 청구권이 예금에서 상환 계약으로 바뀌는 게 비싼 지점이다: LCR 유출이 25%→100%로, NSFR ASF가 50%→0%로 바뀌고, 모회사 자체 대차대조표·인가받은 자회사·은행 컨소시엄 중 하나로 발행 가능. (3) 3자 스테이블코인 — 은행이 아예 발행하지 않고 접근만 중개(선충전 재고 또는 예금 담보 대출)해서 은행 청구 토큰을 받지 않는 venue에 도달하되, 대가로 청구권이 은행 대차대조표를 완전히 떠난다. 리포트의 핵심 주장: 이 셋은 경쟁 관계가 아니라 상호보완적이다 — 한 기관 고객이 네트워크 내 결제엔 토큰화 예금을, 트레저리 리밸런싱엔 1자 스테이블코인을, Hyperliquid류 venue의 주말 익스포저 헤지엔 3자 스테이블코인을 동시에 쓸 수 있어, 하나만 제공하는 은행은 그 고객을 완전히 커버할 수 없다. 출처: https://research.4pillars.io/en/research/tokenized-money-for-banks</p>
+      <p><a href="https://www.jaylabs.xyz/poc/tokenized-money-banks">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-solana.html">&larr; 14. Solana</a><a href="pocs-erc-8141.html">16. ERC-8141 &rarr;</a></div>
+  <div class="pager"><a href="pocs-agents-computer-use.html">&larr; 1. Can Agents Use a Computer Yet?</a><a href="../topics/pocs-dvt.html">3. DVT in the protocol &rarr;</a></div>
 </div>
 </body>
 </html>

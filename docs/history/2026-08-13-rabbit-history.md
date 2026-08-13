@@ -78,3 +78,10 @@
 **Reasoning:** Math Day 3는 이미 손으로 쓴 상세 페이지(`docs/topics/math-3.html`, href로 직접 지정)가 있었지만 ✅ 표시만 빠져 있던 상태 — 내용 추가 없이 완료 표시만 필요. DVT PoC 카드도 읽기 노트(`docs/topics/pocs-dvt.html`)는 이미 완성돼 있었고 `status: "soon"`(목업 배지)만 남아 있던 상태.
 **Change:** `docs/knowledge/math-50-curriculum.md` Day 3에 ✅ 추가. `lib/poc-cards.ts`의 `dvt` 카드 `status: "soon"` → `"done"`, `date`를 오늘(2026-08-13)로 갱신(CLAUDE.md의 "done 전환 시 date 갱신" 규칙).
 **Result:** `docs/math.html`·`docs/pocs.html` 재생성 후 두 항목 모두 DONE 배지로 노출 확인. `tsc` 통과.
+
+### PoCs 상단에 외부 리서치 정독 노트 2건 추가 — DVT를 3번으로 밀어냄
+
+**Cause:** jay가 `/Users/jay/work/temp`에 저장해 둔 파일 두 개(a16z 뉴스레터 "Can Agents Use a Computer Yet?" mhtml, Tempo Research "Tokenized Money for Banks" PDF)를 PoCs 목록 상단 항목으로 만들고 출처 링크도 넣어 달라고 요청, 동시에 "DVT in the protocol이 3번이 되어야 한다"고 지정.
+**Reasoning:** PoCs 목록의 번호는 `sortDemoCards()`가 매기고(같은 status면 date 내림차순, 같은 date면 배열 순서 유지) DVT가 `status:"done", date:"2026-08-13"`로 이미 1번을 차지하고 있었으므로, 같은 status·같은 date로 새 카드 둘을 `dvt` 항목보다 배열상 앞에 넣기만 하면 안정 정렬(stable sort)로 정확히 1·2번이 되고 DVT가 자동으로 3번으로 밀림 — 별도 순번 필드를 손댈 필요가 없었다. PDF는 poppler(`brew install poppler`)로 텍스트 추출, mhtml은 Python `email` 모듈로 멀티파트를 파싱해 가장 큰 `text/html` 파트를 뽑아 태그를 벗겼다. `DemoCard`엔 출처 URL을 위한 전용 필드가 없어 DVT 카드의 관례(정독 노트 = `status:"done"`, purpose·howItWorks에 실제 내용 요약)를 따르되, `howItWorks`/`howItWorksKo` 문장 끝에 "Source: <url>"/"출처: <url>"을 평문으로 덧붙였다(다른 필드처럼 escapeHtml되는 자리라 링크 태그를 심어도 그대로 이스케이프되어 보일 것이었음).
+**Change:** `lib/poc-cards.ts`에 `agents-computer-use`, `tokenized-money-banks` 두 카드를 `dvt` 항목 바로 앞에 추가(둘 다 `status:"done"`, `date:"2026-08-13"`, 원문 요약 + 출처 URL 포함). `pnpm docs:pocs`로 `docs/pocs.html`·`docs/index.html`·`docs/topics/pocs-*.html` 재생성.
+**Result:** 생성된 목록에서 1=Can Agents Use a Computer Yet?, 2=Tokenized Money for Banks, 3=DVT in the protocol 순서 확인. 두 상세 페이지 모두 영/한 본문에 출처 URL 노출 확인. `tsc --noEmit` 통과, 태그 짝·로컬 링크 전수 확인(기존 `docs/index.html` `&lt;div&gt;` 불일치는 이번 변경 이전부터 있던 것으로 재확인, 무관).
