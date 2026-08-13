@@ -13,12 +13,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-// 페이지 껍데기(레일+본문 레이아웃)는 algorithms.html·math.html 과 공유한다 — scripts/rtd-shell.mjs.
-import { renderRtdPage, escapeHtml } from './rtd-shell.mjs';
+// 페이지 껍데기(레일+본문 레이아웃, 항목 상세 페이지)는 algorithms.html·math.html 과
+// 공유한다 — scripts/rtd-shell.mjs.
+import { renderRtdPage, renderTopicPage, escapeHtml } from './rtd-shell.mjs';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..');
 const INDEX_HTML = path.join(REPO_ROOT, 'docs', 'index.html');
 const OUT_HTML = path.join(REPO_ROOT, 'docs', 'pocs.html');
+const TOPICS_DIR = path.join(REPO_ROOT, 'docs', 'topics'); // 항목별 상세 페이지 (Algorithms·Math 와 같은 디렉터리)
 const TMP_DIR = path.join(REPO_ROOT, '.pocs-cards-tmp');
 const SITE = 'https://www.jaylabs.xyz';
 
@@ -64,6 +66,95 @@ function badge(card) {
 
 // 전용 페이지가 없어도 /poc/[key] 상세가 항상 있다 (2026-08-11) — 죽은 링크가 안 생긴다.
 const cardUrl = (card) => SITE + (card.href ?? `/poc/${card.key}`);
+
+// 로컬 상세 페이지 — docsHref(손으로 쓴 노트)가 있으면 그쪽이 정본, 없으면 아래에서
+// 자동 생성하는 docs/topics/pocs-<key>.html (jay, 2026-08-13: "detail page link 추가하고
+// detail page 자체도 만들어야 한다" — Algorithms·Math 와 같은 2단 구조: 목록 + 상세).
+const detailHref = (card) => card.docsHref ?? `topics/pocs-${card.key}.html`;
+
+function readCodeSnippet(key) {
+  try {
+    return fs.readFileSync(path.join(REPO_ROOT, 'docs', 'code', 'pocs', `${key}.py`), 'utf8');
+  } catch {
+    return null;
+  }
+}
+
+// ── 0) 항목별 상세 페이지 (docs/topics/pocs-<key>.html) ─────────────────────
+// docsHref 가 있는 카드(예: isaac-groot)는 손으로 쓴 노트가 정본이라 건너뛴다.
+// 나머지는 카드 데이터(purpose·howItWorks·diagrams·관련 코드)로 상세 페이지를 만든다 —
+// Algorithms·Math 의 docs/topics/*.html 스텁 생성과 같은 패턴.
+// topics/ 안에서 이웃 항목으로 가는 링크 — docsHref 카드는 그 경로를(../ 접두, 절대
+// URL 이면 그대로), 아니면 이번에 만드는 형제 파일명을 쓴다 (Algorithms·Math 의
+// itemUrl 과 같은 규칙).
+function topicPagerHref(card) {
+  if (card.docsHref) return /^https?:\/\//.test(card.docsHref) ? card.docsHref : `../${card.docsHref}`;
+  return `pocs-${card.key}.html`;
+}
+
+fs.mkdirSync(TOPICS_DIR, { recursive: true });
+const written = new Set();
+for (const [idx, c] of numbered.entries()) {
+  if (c.docsHref) continue;
+  const fname = `pocs-${c.key}.html`;
+  written.add(fname);
+  const b = badge(c);
+  const prev = numbered[idx - 1];
+  const next = numbered[idx + 1];
+  const diagramNote = c.diagrams?.length
+    ? `      <p class="meta">${c.diagrams.length} diagram(s) on the live page.</p>\n`
+    : '';
+  const code = readCodeSnippet(c.key);
+  const codeHtml = code
+    ? `      <h2>Related code</h2>\n      <pre><code>${escapeHtml(code)}</code></pre>\n      <p class="code-link"><a href="../code/pocs/${c.key}.py">docs/code/pocs/${c.key}.py</a></p>\n`
+    : '';
+  const codeHtmlKo = code
+    ? `      <h2>관련 코드</h2>\n      <pre><code>${escapeHtml(code)}</code></pre>\n      <p class="code-link"><a href="../code/pocs/${c.key}.py">docs/code/pocs/${c.key}.py</a></p>\n`
+    : '';
+  const openLink = `<a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a>`;
+  // 이중언어 — 영어 먼저, 한국어 나중 (jay, 2026-08-13). 카드 데이터에 이미 있는 *Ko
+  // 필드를 그대로 쓴다 — 번역을 새로 짓지 않는다.
+  fs.writeFileSync(
+    path.join(TOPICS_DIR, fname),
+    renderTopicPage({
+      title: `${c.title} — PoCs`,
+      crumbHtml: `<a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ${escapeHtml(c.title)}`,
+      bodyHtml: `  <article>
+      <h1><span class="topic-no">${c.no}</span>${escapeHtml(c.title)} <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></h1>
+      <p class="lead">${escapeHtml(c.description)}</p>
+      <p class="meta">${escapeHtml(c.howTo)}</p>
+      <h2>Why</h2>
+      <p>${escapeHtml(c.purpose ?? '')}</p>
+      <h2>How it works</h2>
+      <p>${escapeHtml(c.howItWorks ?? '')}</p>
+${diagramNote}${codeHtml}      <p>${openLink}</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">${c.no}</span>${escapeHtml(c.titleKo)} <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></h1>
+      <p class="lead">${escapeHtml(c.descriptionKo)}</p>
+      <p class="meta">${escapeHtml(c.howToKo)}</p>
+      <h2>왜</h2>
+      <p>${escapeHtml(c.purposeKo ?? '')}</p>
+      <h2>동작 방식</h2>
+      <p>${escapeHtml(c.howItWorksKo ?? '')}</p>
+${diagramNote}${codeHtmlKo}      <p>${openLink}</p>
+    </article>`,
+      pagerHtml: `${
+        prev ? `<a href="${escapeHtml(topicPagerHref(prev))}">&larr; ${prev.no}. ${escapeHtml(prev.title)}</a>` : '<span></span>'
+      }${
+        next ? `<a href="${escapeHtml(topicPagerHref(next))}">${next.no}. ${escapeHtml(next.title)} &rarr;</a>` : '<span></span>'
+      }`,
+    }),
+    'utf8'
+  );
+}
+// 이번에 쓴 파일만 남긴다 — 카드에 docsHref 를 나중에 붙이거나 순서가 바뀌면 예전 스텁이
+// "지워진 항목의 페이지"로 남는 걸 막는다 (Algorithms·Math 스텁 생성과 같은 이유).
+for (const f of fs.readdirSync(TOPICS_DIR)) {
+  if (f.startsWith('pocs-') && !written.has(f)) fs.rmSync(path.join(TOPICS_DIR, f));
+}
 
 // ── 1) index.html 의 PoCs 섹션 ──────────────────────────────────────────────
 // 인덱스에는 상위 6장만 (jay, 2026-08-12) — 전체 목록은 pocs.html("View All PoCs")이 맡는다.
@@ -123,25 +214,42 @@ const navGroups = [
   },
 ];
 
-const articles = numbered
+// 원래 있던 lead(description) + Why(purpose)가 좋았다 (jay, 2026-08-13) — 코드·How it
+// works만 상세로 옮기고, "무엇을·왜 중요한지"는 목록에 그대로 남긴다. Algorithms·Math
+// 목록도 같은 두 줄(요약+Why) 포맷을 쓴다. "내용이 너무 단순하다"는 후속 피드백에 맞춰
+// Why 는 한 문장이 아니라 n 문장(기본 2개)까지 가져온다.
+const firstSentences = (s, n = 2) => {
+  const parts = (s ?? '').match(/[^.]*\.(\s|$)/g);
+  if (!parts) return s ?? '';
+  return parts.slice(0, n).join('').trim();
+};
+
+const rows = numbered
   .map((c) => {
     const b = badge(c);
-    const diagramNote = c.diagrams?.length
-      ? `      <p class="meta">${c.diagrams.length} diagram(s) on the live page.</p>`
-      : '';
-    return `    <article id="${c.key}">
-      <h1><span class="topic-no">${c.no}</span>${escapeHtml(c.title)} <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></h1>
-      <p class="lead">${escapeHtml(c.description)}</p>
-      <p class="meta">${escapeHtml(c.howTo)}</p>
-      <h2>Why</h2>
-      <p>${escapeHtml(c.purpose ?? '')}</p>
-      <h2>How it works</h2>
-      <p>${escapeHtml(c.howItWorks ?? '')}</p>
-${diagramNote}
-      <p><a href="${c.docsHref ?? cardUrl(c)}">${c.docsHref ? 'Detail' : 'Open on jaylabs.xyz'} &rarr;</a></p>
-    </article>`;
+    const mark = ` <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span>`;
+    const links = `<a href="${detailHref(c)}">Detail &rarr;</a> &middot; <a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a>`;
+    // How it works — 상세 페이지의 howItWorks 필드를 그대로 복사한다 (jay, 2026-08-13:
+    // "add why and how it works to the list page, not move — just copy it"). 상세
+    // 페이지는 전체 문단을 그대로 유지한다.
+    const how = firstSentences(c.howItWorks, 2);
+    const howHtml = how ? `\n          <p class="topic-how"><strong>How it works:</strong> ${escapeHtml(how)}</p>` : '';
+    const why = firstSentences(c.purpose, 2);
+    const whyHtml = why ? `\n          <p class="topic-why"><strong>Why:</strong> ${escapeHtml(why)}</p>` : '';
+    return `        <li id="${c.key}">
+          <div class="topic-head"><span class="topic-no">${c.no}</span><span class="topic-title">${escapeHtml(c.title)}</span>${mark}</div>
+          <p class="topic-summary">${escapeHtml(c.description)}</p>${howHtml}${whyHtml}
+          <p class="topic-link">${links}</p>
+        </li>`;
   })
   .join('\n');
+
+const contentHtml = `    <article>
+      <h1>All PoCs</h1>
+      <ul class="topics">
+${rows}
+      </ul>
+    </article>`;
 
 fs.writeFileSync(
   OUT_HTML,
@@ -155,7 +263,7 @@ fs.writeFileSync(
     railFoot: `<a href="index.html">&larr; Workspace Index</a> &middot; <a href="${SITE}/poc">Live PoCs menu</a>`,
     srcLine:
       'Source: lib/poc-cards.ts, lib/algorithm-cards.ts (auto-generated by scripts/generate-pocs-html.mjs — edit the card data, not this file)',
-    contentHtml: articles,
+    contentHtml,
   }),
   'utf8'
 );

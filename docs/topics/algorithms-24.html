@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 24 — JIT 계층화·워밍업·역최적화(deopt)</title>
+<title>Day 24 — JIT Tiering, Warmup, and Deoptimization (Deopt)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,60 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 24</p>
   <article>
+      <h1>JIT Tiering, Warmup, and Deoptimization (Deopt) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 24 / 100 &middot; B. Compilers, Runtimes &amp; VMs (Day 20-35)</p>
+      <h2>Concept</h2>
+      <p>Modern VMs don't optimize all code from the start — they use a tiered strategy. Code first runs on an interpreter or a fast-emitting baseline compiler while the VM collects call counts, loop-iteration counts, and type profiles; only hot code that crosses a threshold gets recompiled by the optimizing compiler. The optimizing tier uses the profile to make assumptions such as &quot;this argument is always an integer&quot; or &quot;this call target is always the same function,&quot; inlining and specializing on those assumptions, and it embeds guards in the code to check them. When a guard fails, deoptimization (deopt) kicks in, rolling the optimized frame's state back into an interpreter frame and continuing execution on the slow path. This is why programs have a low-performance warmup period at the start, and why, if assumptions keep breaking, repeated recompilation and deopt can make performance fall off a cliff.</p>
+      <p>A microbenchmark that ignores warmup produces numbers far slower or faster than reality and leads to the wrong optimization decisions. It's also common in practice for a single polymorphic object shape used at one call site to push a hot loop into deopt, dropping throughput by several times.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># JIT 계층화·워밍업·역최적화(deopt) — 호출 횟수로 티어를 올리고, 타입 가정이 깨지면 deopt한다.
+
+class JitFunction:
+    def __init__(self, threshold=5):
+        self.call_count = 0
+        self.threshold = threshold
+        self.tier = &quot;interpreter&quot;
+        self.assumed_type = None
+        self.deopt_count = 0
+
+    def call(self, x):
+        self.call_count += 1
+        if self.tier == &quot;interpreter&quot; and self.call_count &gt;= self.threshold:
+            self.tier = &quot;optimized&quot;
+            self.assumed_type = type(x)          # 관측한 타입으로 특수화(가정 수립)
+
+        if self.tier == &quot;optimized&quot;:
+            if type(x) is not self.assumed_type:  # guard 실패
+                self.tier = &quot;interpreter&quot;          # deopt: 인터프리터 프레임으로 복귀
+                self.deopt_count += 1
+                self.assumed_type = None
+                self.call_count = 0
+            else:
+                return x * 2                       # 특수화된 빠른 경로
+        return x * 2                                # 일반(느린) 경로
+
+fn = JitFunction(threshold=3)
+trace = []
+for x in [1, 2, 3, 4, 5, &quot;oops&quot;, 6, 7, 8, 9]:
+    tier_before = fn.tier
+    result = fn.call(x)
+    trace.append((x, tier_before, fn.tier, result))
+
+for x, before, after, result in trace:
+    marker = &quot; &lt;- DEOPT&quot; if before == &quot;optimized&quot; and after == &quot;interpreter&quot; else &quot;&quot;
+    print(f&quot;call({x!r:&gt;7}): tier {before:&gt;11} -&gt; {after:&lt;11} result={result}{marker}&quot;)
+print(f&quot;\n총 deopt 횟수: {fn.deopt_count}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-24.py">docs/code/algorithms/algorithms-24.py</a></p>
+      <h2>Exercise</h2>
+      <p>In Node.js, benchmark a hot function called with a single type only, versus calling it with a mix of differently-shaped objects partway through, and check the recompilation/deopt logs with <code>--trace-deopt</code> and <code>--trace-opt</code>.</p>
+      <h2>Practical Connection</h2>
+      <p>A hot loop written in TypeScript, like the Verex matching engine's, needs to keep order-object shapes consistent to stay in the optimized tier, and when benchmarking, the warmup period needs to be discarded for the p99 numbers to mean anything.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>JIT 계층화·워밍업·역최적화(deopt) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 24 / 100 &middot; B. 컴파일러·런타임·VM (Day 20–35)</p>
 
@@ -115,7 +192,45 @@
       <p>현대 VM은 모든 코드를 처음부터 최적화하지 않고 계층화(tiered) 전략을 쓴다. 처음에는 인터프리터나 빠르게 뱉는 베이스라인 컴파일러로 실행하면서 호출 횟수·루프 반복 수·타입 프로파일을 수집하고, 임계치를 넘은 hot 코드만 최적화 컴파일러로 다시 컴파일한다. 최적화 단계는 프로파일을 근거로 &quot;이 인자는 항상 정수다&quot;, &quot;이 호출 대상은 항상 같은 함수다&quot; 같은 가정을 세워 인라인·특수화하고, 그 가정을 검사하는 guard를 코드에 심는다. guard가 깨지면 역최적화(deopt)가 일어나 최적화 프레임의 상태를 인터프리터 프레임으로 되돌리고 느린 경로에서 실행을 이어간다. 그래서 프로그램 초반에는 성능이 낮은 워밍업 구간이 존재하고, 가정이 계속 깨지면 재컴파일과 deopt가 반복되며 성능이 절벽처럼 떨어질 수 있다.</p>
       <p>워밍업을 무시한 마이크로벤치마크는 실제보다 훨씬 느리거나 빠른 값을 내놓아 잘못된 최적화 결정을 유도한다. 또 한 곳에서 다형적으로 쓰이는 객체 모양 하나 때문에 hot loop가 deopt에 빠져 처리량이 몇 배 떨어지는 일이 실제로 자주 생긴다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># JIT 계층화·워밍업·역최적화(deopt) — 호출 횟수로 티어를 올리고, 타입 가정이 깨지면 deopt한다.
+
+class JitFunction:
+    def __init__(self, threshold=5):
+        self.call_count = 0
+        self.threshold = threshold
+        self.tier = &quot;interpreter&quot;
+        self.assumed_type = None
+        self.deopt_count = 0
+
+    def call(self, x):
+        self.call_count += 1
+        if self.tier == &quot;interpreter&quot; and self.call_count &gt;= self.threshold:
+            self.tier = &quot;optimized&quot;
+            self.assumed_type = type(x)          # 관측한 타입으로 특수화(가정 수립)
+
+        if self.tier == &quot;optimized&quot;:
+            if type(x) is not self.assumed_type:  # guard 실패
+                self.tier = &quot;interpreter&quot;          # deopt: 인터프리터 프레임으로 복귀
+                self.deopt_count += 1
+                self.assumed_type = None
+                self.call_count = 0
+            else:
+                return x * 2                       # 특수화된 빠른 경로
+        return x * 2                                # 일반(느린) 경로
+
+fn = JitFunction(threshold=3)
+trace = []
+for x in [1, 2, 3, 4, 5, &quot;oops&quot;, 6, 7, 8, 9]:
+    tier_before = fn.tier
+    result = fn.call(x)
+    trace.append((x, tier_before, fn.tier, result))
+
+for x, before, after, result in trace:
+    marker = &quot; &lt;- DEOPT&quot; if before == &quot;optimized&quot; and after == &quot;interpreter&quot; else &quot;&quot;
+    print(f&quot;call({x!r:&gt;7}): tier {before:&gt;11} -&gt; {after:&lt;11} result={result}{marker}&quot;)
+print(f&quot;\n총 deopt 횟수: {fn.deopt_count}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-24.py">docs/code/algorithms/algorithms-24.py</a></p>
       <h2>연습</h2>
       <p>Node.js에서 hot 함수 하나를 단일 타입으로만 호출한 경우와 중간에 다른 모양의 객체를 섞어 호출한 경우를 각각 벤치마크하고, <code>--trace-deopt</code>와 <code>--trace-opt</code>로 재컴파일·deopt 로그를 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

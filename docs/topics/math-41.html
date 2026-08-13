@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 41 — 마르코프 체인(개념)</title>
+<title>Day 41 — LMSR / Market Scoring Rules (Connection to Verex)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,21 +131,115 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 41</p>
   <article>
-      <h1>마르코프 체인(개념) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 41 / 51 &middot; 11월 — 확률·통계·금융수학 (Day 35–42)</p>
+      <h1>LMSR / Market Scoring Rules (Connection to Verex) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 41 / 52 &middot; November — Probability, Statistics &amp; Financial Math (Day 35-43)</p>
+      <h2>Concept</h2>
+      <p>A market scoring rule turns a proper scoring rule into an automated market maker, where participants update the current distribution toward their own beliefs and are rewarded for the improvement they contribute. LMSR is derived from the logarithmic scoring rule: for each outcome it defines a cost function over the vector q of quantities sold so far, in log-sum-exp form. The cost of a trade is the difference between the cost function's value after the trade and before it, so path independence holds — the total cost to reach the same final state is the same regardless of the path taken. The instantaneous price is the partial derivative of the cost function, which takes the softmax form of quantities divided by the liquidity parameter, so prices always sum to 1 and can be read as probabilities. A larger liquidity parameter reduces price movement for the same trade size, but it also raises the upper bound on the market maker's maximum possible loss — and that bound is always finite.</p>
+      <p>Because LMSR always quotes a price even without a counter order, it's used for bootstrapping initial liquidity, and choosing the liquidity parameter is a direct trade-off between slippage and the operating loss budget.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># LMSR/마켓 스코어링(Verex 연결) — 로그-합-지수 비용함수와 경로독립적 가격
+# C(q) = b*ln(sum(exp(q_i/b))), price_i = exp(q_i/b) / sum(exp(q_j/b))  (softmax)
+
+import math
+
+def cost(q, b):
+    m = max(q)  # 오버플로 방지를 위한 log-sum-exp 안정화 트릭
+    return b * (m / b + math.log(sum(math.exp((qi - m) / b) for qi in q)))
+
+def prices(q, b):
+    m = max(q)
+    exps = [math.exp((qi - m) / b) for qi in q]
+    s = sum(exps)
+    return [e / s for e in exps]
+
+b = 100.0  # 유동성 파라미터: 클수록 가격 변동은 완만해지고 손실 상한은 커진다
+q = [0.0, 0.0]  # 두 결과(YES/NO) 초기 보유 수량, 시작 가격은 각각 0.5
+
+print(&quot;초기 가격:&quot;, [round(p, 4) for p in prices(q, b)])
+
+def buy(q, b, outcome, shares):
+    before = cost(q, b)
+    q2 = list(q)
+    q2[outcome] += shares
+    after = cost(q2, b)
+    return q2, after - before  # 지불해야 할 비용
+
+# YES에 20주 매수
+q, paid = buy(q, b, 0, 20)
+print(f&quot;YES 20주 매수 비용 = {paid:.4f}, 매수 후 가격 = {[round(p,4) for p in prices(q, b)]}&quot;)
+
+# 같은 거래를 유동성이 작은 마켓(b=20)에서 하면 가격이 훨씬 크게 움직인다
+q_small, paid_small = buy([0.0, 0.0], 20.0, 0, 20)
+print(f&quot;[b=20] 같은 20주 매수 비용 = {paid_small:.4f}, 가격 = {[round(p,4) for p in prices(q_small, 20.0)]}&quot;)
+
+# 마켓 메이커의 최대 손실 상한은 b*ln(결과 수)로 유한하다
+worst_case_loss = b * math.log(len(q))
+print(f&quot;b={b}일 때 마켓 메이커 최대 손실 상한 = {worst_case_loss:.4f}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-41.py">docs/code/math/math-41.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement the LMSR cost function and price function in code for a two-outcome market, vary the liquidity parameter, and simulate the average fill price and cumulative maximum loss for buying the same quantity — tabulate the results.</p>
+      <h2>Practical Connection</h2>
+      <p>Since Verex uses LMSR alongside a CLOB, the real implementation questions are: at what point does the market maker's price diverge from the order book's best quote, and how do you compute log-sum-exp safely in fixed-point arithmetic so that rounding error doesn't accumulate systematically against the market maker.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1>LMSR/마켓 스코어링(Verex 연결) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 41 / 52 &middot; 11월 — 확률·통계·금융수학 (Day 35–43)</p>
 
       <h2>개념</h2>
-      <p>마르코프 체인은 다음 상태의 확률분포가 현재 상태에만 의존하고 그 이전 경로에는 의존하지 않는 확률 과정이다. 유한 상태에서는 전이확률 행렬 P로 전부 기술되고, n단계 후 분포는 초기 분포에 P의 n제곱을 곱한 것이 된다. 정상분포는 자기 자신을 다시 만들어 내는 분포로, 체인이 기약(irreducible)이고 비주기적(aperiodic)이면 정상분포가 유일하고 초기 상태와 무관하게 그 분포로 수렴한다. 수렴 속도는 P의 두 번째로 큰 고유값 크기와 관련되며, 이것이 혼합 시간의 개념이다. 흡수 상태가 있는 체인에서는 정상분포 대신 흡수 확률과 기대 도달 시간이 관심 대상이 된다.</p>
-      <p>대기열 길이, 재시도 상태, 노드 동기화 단계처럼 &quot;현재 상태에서 다음이 결정되는&quot; 시스템의 장기 거동을 시뮬레이션 없이 계산할 수 있게 해 준다.</p>
+      <p>마켓 스코어링 규칙은 적정 스코어링 규칙을 자동화된 마켓 메이커로 바꾼 것으로, 참여자가 현재 분포를 자기 믿음으로 갱신하고 그 개선분만큼 보상받는 구조다. LMSR은 로그 스코어링 규칙에서 유도되며, 각 결과에 대해 지금까지 팔린 수량 벡터 q에 대한 비용함수를 로그-합-지수 형태로 정의한다. 어떤 거래의 비용은 거래 후 비용함수 값에서 거래 전 값을 뺀 차이이므로, 같은 최종 상태에 도달하는 모든 경로의 총비용이 동일한 경로 독립성이 성립한다. 순간 가격은 비용함수의 편미분이고 이는 수량을 유동성 파라미터로 나눈 값의 softmax 형태여서, 가격들의 합이 항상 1이 되어 확률로 해석된다. 유동성 파라미터가 클수록 같은 거래량에 대한 가격 변동이 작아지지만 마켓 메이커가 감수하는 최대 손실의 상한은 커지며, 이 상한은 유한하게 정해진다.</p>
+      <p>LMSR은 상대 주문이 없어도 항상 호가를 제시하므로 초기 유동성 부트스트래핑에 쓰이고, 유동성 파라미터 선택이 곧 슬리피지와 운영 손실 예산 사이의 직접적인 교환이 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># LMSR/마켓 스코어링(Verex 연결) — 로그-합-지수 비용함수와 경로독립적 가격
+# C(q) = b*ln(sum(exp(q_i/b))), price_i = exp(q_i/b) / sum(exp(q_j/b))  (softmax)
+
+import math
+
+def cost(q, b):
+    m = max(q)  # 오버플로 방지를 위한 log-sum-exp 안정화 트릭
+    return b * (m / b + math.log(sum(math.exp((qi - m) / b) for qi in q)))
+
+def prices(q, b):
+    m = max(q)
+    exps = [math.exp((qi - m) / b) for qi in q]
+    s = sum(exps)
+    return [e / s for e in exps]
+
+b = 100.0  # 유동성 파라미터: 클수록 가격 변동은 완만해지고 손실 상한은 커진다
+q = [0.0, 0.0]  # 두 결과(YES/NO) 초기 보유 수량, 시작 가격은 각각 0.5
+
+print(&quot;초기 가격:&quot;, [round(p, 4) for p in prices(q, b)])
+
+def buy(q, b, outcome, shares):
+    before = cost(q, b)
+    q2 = list(q)
+    q2[outcome] += shares
+    after = cost(q2, b)
+    return q2, after - before  # 지불해야 할 비용
+
+# YES에 20주 매수
+q, paid = buy(q, b, 0, 20)
+print(f&quot;YES 20주 매수 비용 = {paid:.4f}, 매수 후 가격 = {[round(p,4) for p in prices(q, b)]}&quot;)
+
+# 같은 거래를 유동성이 작은 마켓(b=20)에서 하면 가격이 훨씬 크게 움직인다
+q_small, paid_small = buy([0.0, 0.0], 20.0, 0, 20)
+print(f&quot;[b=20] 같은 20주 매수 비용 = {paid_small:.4f}, 가격 = {[round(p,4) for p in prices(q_small, 20.0)]}&quot;)
+
+# 마켓 메이커의 최대 손실 상한은 b*ln(결과 수)로 유한하다
+worst_case_loss = b * math.log(len(q))
+print(f&quot;b={b}일 때 마켓 메이커 최대 손실 상한 = {worst_case_loss:.4f}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-41.py">docs/code/math/math-41.py</a></p>
       <h2>연습</h2>
-      <p>상태 서너 개짜리 전이 행렬을 하나 만들고, 행렬 거듭제곱으로 얻은 분포와 고유벡터로 구한 정상분포가 일치하는지 그리고 몇 단계 만에 근접하는지 확인해 보기.</p>
+      <p>두 결과 마켓에 대해 LMSR 비용함수와 가격 함수를 코드로 구현하고, 유동성 파라미터를 바꿔 가며 같은 수량 매수 시의 평균 체결가와 누적 최대 손실을 시뮬레이션해 표로 정리하라.</p>
       <h2>실무 · Verex 연결</h2>
-      <p>블록 확정 과정이나 재조직 깊이 분포, 트랜잭션이 대기풀에서 포함되기까지의 단계를 상태 전이로 모델링하면, 대기 시간의 기대값과 꼬리를 근사할 수 있다.</p>
+      <p>Verex가 LMSR과 CLOB를 함께 쓰는 이상, 어느 시점에 마켓 메이커 가격이 오더북 최우선 호가와 어긋나는지, 그리고 고정소수점 연산에서 로그-합-지수를 안전하게 계산하며 반올림 오차가 마켓 메이커에 불리하게만 쌓이도록 만드는지가 실제 구현 쟁점이다.</p>
       <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
     </article>
-  <div class="pager"><a href="math-40.html">&larr; 40. LMSR/마켓 스코어링(Verex 연결)</a><a href="math-42.html">42. 상관관계와 공적분(가볍게) &rarr;</a></div>
+  <div class="pager"><a href="math-40.html">&larr; 40. VaR·꼬리리스크</a><a href="math-42.html">42. 마르코프 체인(개념) &rarr;</a></div>
 </div>
 </body>
 </html>

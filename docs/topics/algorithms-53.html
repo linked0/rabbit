@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 53 — 논리 시계·벡터 시계·하이브리드 논리 시계(HLC)</title>
+<title>Day 53 — Logical Clocks, Vector Clocks, and Hybrid Logical Clocks (HLC)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,71 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 53</p>
   <article>
+      <h1>Logical Clocks, Vector Clocks, and Hybrid Logical Clocks (HLC) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 53 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>In a distributed setting you can't assume a fully synchronized global physical clock, so event order is defined through causality instead. A Lamport clock has each node keep a counter, incrementing it on every local event and updating it to max(mine, received)+1 on message receipt; if a causes b, then C(a) &lt; C(b) is guaranteed, but the converse doesn't hold, so it can't distinguish concurrency. A vector clock carries an array of counters, one per node, and can precisely tell whether two events are causally ordered or concurrent — but its metadata size scales with the number of nodes, hurting scalability. A hybrid logical clock (HLC) combines physical time and a logical counter into one value, producing a monotonically increasing timestamp that stays close to physical time without violating causality. Because causal order survives clock skew and the value stays close to a human-readable time, HLCs are used as version timestamps in distributed databases.</p>
+      <p>Sorting logs from multiple nodes by physical time can make cause and effect look reversed, and whether you can even detect concurrent-update conflicts ultimately comes down to which clock you use.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 논리 시계·벡터 시계 — 벡터 시계로 두 이벤트가 인과적으로 순서가 있는지, 동시(concurrent)인지 판별한다.
+# Lamport 시계는 동시성을 구분 못하지만, 벡터 시계는 노드별 카운터 배열로 정확히 판별한다.
+
+class VectorClock:
+    def __init__(self, node_id, n_nodes):
+        self.node_id = node_id
+        self.clock = [0] * n_nodes
+
+    def local_event(self):
+        self.clock[self.node_id] += 1
+        return tuple(self.clock)
+
+    def send(self):
+        self.clock[self.node_id] += 1
+        return tuple(self.clock)
+
+    def receive(self, remote_clock):
+        self.clock = [max(a, b) for a, b in zip(self.clock, remote_clock)]
+        self.clock[self.node_id] += 1
+        return tuple(self.clock)
+
+def compare(vc_a, vc_b):
+    &quot;&quot;&quot;a &lt;= b 성분별 비교로 인과 순서 또는 동시성을 판별&quot;&quot;&quot;
+    le = all(a &lt;= b for a, b in zip(vc_a, vc_b))
+    ge = all(a &gt;= b for a, b in zip(vc_a, vc_b))
+    if vc_a == vc_b:
+        return &quot;동일 이벤트&quot;
+    if le:
+        return &quot;a -&gt; b (a가 b의 원인)&quot;
+    if ge:
+        return &quot;b -&gt; a (b가 a의 원인)&quot;
+    return &quot;concurrent (동시, 인과관계 없음)&quot;
+
+n = 3
+node0, node1, node2 = VectorClock(0, n), VectorClock(1, n), VectorClock(2, n)
+
+e1 = node0.local_event()              # node0: [1,0,0]
+msg = node0.send()                    # node0: [2,0,0]
+e2 = node1.receive(msg)                # node1: [2,1,0] &lt;- node0 인과적으로 앞섬
+e3 = node2.local_event()              # node2: [0,0,1] &lt;- node0/node1과 무관하게 독립 발생
+
+print(f&quot;e1 (node0 local)      = {e1}&quot;)
+print(f&quot;e2 (node1, e1 이후 수신) = {e2}&quot;)
+print(f&quot;e3 (node2 독립 이벤트)   = {e3}&quot;)
+
+print(f&quot;\ncompare(e1, e2) = {compare(e1, e2)}&quot;)  # e1이 e2의 원인
+print(f&quot;compare(e1, e3) = {compare(e1, e3)}&quot;)  # concurrent
+print(f&quot;compare(e2, e3) = {compare(e2, e3)}&quot;)  # concurrent
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-53.py">docs/code/algorithms/algorithms-53.py</a></p>
+      <h2>Exercise</h2>
+      <p>Write a simulation of 3 nodes exchanging messages, attach both a Lamport clock and a vector clock to the same run, and find event pairs that only the vector clock identifies as concurrent.</p>
+      <h2>Practical Connection</h2>
+      <p>In a matching service where multiple instances accept orders, determining which order came first by each server's physical clock gets the order reversed by skew, which is exactly why you need a single sequencer or a causal timestamp like HLC.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>논리 시계·벡터 시계·하이브리드 논리 시계(HLC) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 53 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
 
@@ -115,7 +203,56 @@
       <p>분산 환경에서는 완전히 동기화된 전역 물리 시계를 가정할 수 없으므로 사건의 순서를 인과관계로 정의한다. Lamport 논리 시계는 각 노드가 카운터를 유지해 로컬 이벤트마다 증가시키고 메시지 수신 시 max(내 값, 받은 값)+1로 갱신하며, a가 b의 원인이면 C(a) &lt; C(b)를 보장하지만 역은 성립하지 않아 동시성을 구분하지 못한다. 벡터 시계는 노드 수만큼의 카운터 배열을 들고 다녀 두 사건이 인과적으로 앞뒤인지 아니면 동시(concurrent)인지를 정확히 판별하지만, 메타데이터 크기가 노드 수에 비례해 확장성이 떨어진다. 하이브리드 논리 시계(HLC)는 물리 시각과 논리 카운터를 한 값으로 결합해, 인과성을 어기지 않으면서도 물리 시각에 가깝게 유지되는 단조 증가 타임스탬프를 만든다. HLC는 클럭 스큐가 있어도 인과 순서가 깨지지 않고 사람이 읽을 수 있는 시각에 근접한다는 점 때문에 분산 데이터베이스의 버전 타임스탬프로 쓰인다.</p>
       <p>여러 노드의 로그를 물리 시각으로 정렬하면 원인과 결과가 뒤집혀 보이고, 동시 갱신 충돌을 탐지할지 말지도 결국 어떤 시계를 쓰느냐에서 갈리기 때문이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 논리 시계·벡터 시계 — 벡터 시계로 두 이벤트가 인과적으로 순서가 있는지, 동시(concurrent)인지 판별한다.
+# Lamport 시계는 동시성을 구분 못하지만, 벡터 시계는 노드별 카운터 배열로 정확히 판별한다.
+
+class VectorClock:
+    def __init__(self, node_id, n_nodes):
+        self.node_id = node_id
+        self.clock = [0] * n_nodes
+
+    def local_event(self):
+        self.clock[self.node_id] += 1
+        return tuple(self.clock)
+
+    def send(self):
+        self.clock[self.node_id] += 1
+        return tuple(self.clock)
+
+    def receive(self, remote_clock):
+        self.clock = [max(a, b) for a, b in zip(self.clock, remote_clock)]
+        self.clock[self.node_id] += 1
+        return tuple(self.clock)
+
+def compare(vc_a, vc_b):
+    &quot;&quot;&quot;a &lt;= b 성분별 비교로 인과 순서 또는 동시성을 판별&quot;&quot;&quot;
+    le = all(a &lt;= b for a, b in zip(vc_a, vc_b))
+    ge = all(a &gt;= b for a, b in zip(vc_a, vc_b))
+    if vc_a == vc_b:
+        return &quot;동일 이벤트&quot;
+    if le:
+        return &quot;a -&gt; b (a가 b의 원인)&quot;
+    if ge:
+        return &quot;b -&gt; a (b가 a의 원인)&quot;
+    return &quot;concurrent (동시, 인과관계 없음)&quot;
+
+n = 3
+node0, node1, node2 = VectorClock(0, n), VectorClock(1, n), VectorClock(2, n)
+
+e1 = node0.local_event()              # node0: [1,0,0]
+msg = node0.send()                    # node0: [2,0,0]
+e2 = node1.receive(msg)                # node1: [2,1,0] &lt;- node0 인과적으로 앞섬
+e3 = node2.local_event()              # node2: [0,0,1] &lt;- node0/node1과 무관하게 독립 발생
+
+print(f&quot;e1 (node0 local)      = {e1}&quot;)
+print(f&quot;e2 (node1, e1 이후 수신) = {e2}&quot;)
+print(f&quot;e3 (node2 독립 이벤트)   = {e3}&quot;)
+
+print(f&quot;\ncompare(e1, e2) = {compare(e1, e2)}&quot;)  # e1이 e2의 원인
+print(f&quot;compare(e1, e3) = {compare(e1, e3)}&quot;)  # concurrent
+print(f&quot;compare(e2, e3) = {compare(e2, e3)}&quot;)  # concurrent
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-53.py">docs/code/algorithms/algorithms-53.py</a></p>
       <h2>연습</h2>
       <p>노드 3개가 메시지를 주고받는 시뮬레이션을 짜서 같은 실행에 Lamport 시계와 벡터 시계를 동시에 붙이고, 벡터 시계로만 동시성이라고 판별되는 사건 쌍을 찾아보기.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 47 — eBPF로 프로덕션 관측</title>
+<title>Day 47 — Observing Production with eBPF</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,66 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 47</p>
   <article>
+      <h1>Observing Production with eBPF <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 47 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>eBPF is a sandboxed VM that runs safely inside the kernel. When a user-written program is loaded into the kernel, a verifier statically checks termination and memory-access safety; only programs that pass are JIT-compiled and attached to kprobes, uprobes, tracepoints, perf events, network hooks, and the like. The program and userspace exchange data through shared structures called maps (hash maps, arrays, ring buffers, etc.). The key benefit is being able to observe a running system's internal events without writing a new kernel module or restarting/recompiling the application. Higher-level tools like bpftrace and BCC wrap this whole process down to a one-line script.</p>
+      <p>It's nearly the only way to trace a latency spike or a specific syscall bottleneck in production that won't reproduce elsewhere, without a code change or redeploy, and it reaches layers that application logs never touch.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># eBPF로 프로덕션 관측 — 커널 프로브가 이벤트를 map에 쌓고, 유저스페이스가 읽어 히스토그램을 낸다.
+# 실제 커널 훅 대신 &quot;probe가 이벤트를 map에 기록한다&quot;는 구조만 순수 파이썬으로 흉내낸다.
+
+import random
+from collections import defaultdict
+
+random.seed(1)
+
+class EbpfMap:
+    &quot;&quot;&quot;kprobe/tracepoint가 기록하는 공유 map(dict)을 흉내&quot;&quot;&quot;
+    def __init__(self):
+        self.hist = defaultdict(int)  # latency bucket(us, 로그 스케일) -&gt; count
+
+    def record(self, latency_us):
+        bucket = 1
+        while bucket * 2 &lt;= latency_us:
+            bucket *= 2
+        self.hist[bucket] += 1
+
+def bpftrace_like_probe(events, ebpf_map):
+    &quot;&quot;&quot;실제로는 커널이 syscall 진입/종료 시각차를 계산해 넣어주는 부분을 시뮬레이션&quot;&quot;&quot;
+    for latency_us in events:
+        ebpf_map.record(latency_us)
+
+# 유휴 상태: 대부분 짧은 지연
+idle_events = [max(1, int(random.gauss(50, 15))) for _ in range(200)]
+# 부하 상태: 디스크 I/O 경합으로 꼬리가 길어짐
+loaded_events = [max(1, int(random.gauss(50, 15))) for _ in range(200)]
+loaded_events += [int(random.gauss(4000, 800)) for _ in range(20)]  # I/O 경합 스파이크
+
+idle_map = EbpfMap()
+loaded_map = EbpfMap()
+bpftrace_like_probe(idle_events, idle_map)
+bpftrace_like_probe(loaded_events, loaded_map)
+
+def print_hist(name, m):
+    print(f&quot;--- {name} (syscall latency, us, log2 bucket) ---&quot;)
+    for bucket in sorted(m.hist):
+        print(f&quot;  &lt;= {bucket:5d}us : {'#' * m.hist[bucket]} ({m.hist[bucket]})&quot;)
+
+print_hist(&quot;idle&quot;, idle_map)
+print_hist(&quot;loaded&quot;, loaded_map)
+print(&quot;\n부하 상태에서 4000us대 버킷이 새로 등장 -&gt; 재배포 없이 I/O 경합 구간을 특정.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-47.py">docs/code/algorithms/algorithms-47.py</a></p>
+      <h2>Exercise</h2>
+      <p>Use a one-line bpftrace script to pull a histogram of disk I/O latency or syscall call counts for a specific process, and compare it under load versus idle.</p>
+      <h2>Practical Connection</h2>
+      <p>When sync stalls on a blockchain node, or tail latency in Verex's backend API, come from the filesystem or network stack rather than application code, this lets you narrow down the cause with evidence instead of guessing.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>eBPF로 프로덕션 관측 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 47 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
 
@@ -115,7 +198,51 @@
       <p>eBPF는 커널 안에서 안전하게 실행되는 샌드박스 VM이다. 사용자가 작성한 작은 프로그램을 커널에 로드하면 verifier가 종료성과 메모리 접근 안전성을 정적으로 검증하고, 통과한 프로그램만 JIT 컴파일되어 kprobe, uprobe, tracepoint, perf 이벤트, 네트워크 훅 등에 붙어 실행된다. 프로그램과 유저스페이스는 map이라는 공유 자료구조(해시맵, 배열, 링버퍼 등)로 데이터를 주고받는다. 커널 모듈을 새로 짜거나 애플리케이션을 재시작·재컴파일하지 않고도 실행 중인 시스템의 내부 이벤트를 관측할 수 있다는 것이 핵심 이점이다. bpftrace나 BCC 같은 상위 도구가 이 과정을 스크립트 한 줄 수준으로 감싸 준다.</p>
       <p>프로덕션에서 재현되지 않는 지연 스파이크나 특정 syscall 병목을 코드 수정·재배포 없이, 그리고 애플리케이션 로그에 없는 계층까지 내려가 볼 수 있는 거의 유일한 수단이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># eBPF로 프로덕션 관측 — 커널 프로브가 이벤트를 map에 쌓고, 유저스페이스가 읽어 히스토그램을 낸다.
+# 실제 커널 훅 대신 &quot;probe가 이벤트를 map에 기록한다&quot;는 구조만 순수 파이썬으로 흉내낸다.
+
+import random
+from collections import defaultdict
+
+random.seed(1)
+
+class EbpfMap:
+    &quot;&quot;&quot;kprobe/tracepoint가 기록하는 공유 map(dict)을 흉내&quot;&quot;&quot;
+    def __init__(self):
+        self.hist = defaultdict(int)  # latency bucket(us, 로그 스케일) -&gt; count
+
+    def record(self, latency_us):
+        bucket = 1
+        while bucket * 2 &lt;= latency_us:
+            bucket *= 2
+        self.hist[bucket] += 1
+
+def bpftrace_like_probe(events, ebpf_map):
+    &quot;&quot;&quot;실제로는 커널이 syscall 진입/종료 시각차를 계산해 넣어주는 부분을 시뮬레이션&quot;&quot;&quot;
+    for latency_us in events:
+        ebpf_map.record(latency_us)
+
+# 유휴 상태: 대부분 짧은 지연
+idle_events = [max(1, int(random.gauss(50, 15))) for _ in range(200)]
+# 부하 상태: 디스크 I/O 경합으로 꼬리가 길어짐
+loaded_events = [max(1, int(random.gauss(50, 15))) for _ in range(200)]
+loaded_events += [int(random.gauss(4000, 800)) for _ in range(20)]  # I/O 경합 스파이크
+
+idle_map = EbpfMap()
+loaded_map = EbpfMap()
+bpftrace_like_probe(idle_events, idle_map)
+bpftrace_like_probe(loaded_events, loaded_map)
+
+def print_hist(name, m):
+    print(f&quot;--- {name} (syscall latency, us, log2 bucket) ---&quot;)
+    for bucket in sorted(m.hist):
+        print(f&quot;  &lt;= {bucket:5d}us : {'#' * m.hist[bucket]} ({m.hist[bucket]})&quot;)
+
+print_hist(&quot;idle&quot;, idle_map)
+print_hist(&quot;loaded&quot;, loaded_map)
+print(&quot;\n부하 상태에서 4000us대 버킷이 새로 등장 -&gt; 재배포 없이 I/O 경합 구간을 특정.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-47.py">docs/code/algorithms/algorithms-47.py</a></p>
       <h2>연습</h2>
       <p>bpftrace 한 줄짜리로 특정 프로세스의 디스크 I/O 지연이나 특정 syscall 호출 횟수를 히스토그램으로 뽑고, 부하를 준 상태와 유휴 상태를 비교해 보라.</p>
       <h2>실무 · Verex 연결</h2>

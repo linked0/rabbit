@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 4 — 함수형 업데이트와 상태 diff</title>
+<title>Day 4 — Functional Updates and State Diffing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,90 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 4</p>
   <article>
+      <h1>Functional Updates and State Diffing <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 4 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>A functional update leaves the existing data structure untouched and instead returns a new version that reflects only the change. The key technique that makes this cheap is path copying: only the nodes along the path from the root to the modification point are copied, while the rest of the subtrees are shared by pointer with the previous version (structural sharing). In balanced trees or trie-based structures like HAMTs, the path length is O(log n), so a single update is bounded by O(log n) node copies. But the real cost hides not in the asymptotic complexity but in the constant factor. Every update allocates new nodes, which increases allocation and GC pressure, and scatters nodes across the heap, which hurts cache locality due to more pointer chasing. On the upside, since the previous version stays intact, diffing two versions can skip entire subtrees whose references are identical and only walk the parts that actually changed.</p>
+      <p>In frontend and state-machine code that relies on immutable state, it's common to assume &quot;copying is O(log n), so it's basically free&quot; — and then watch throughput collapse under GC spikes and cache misses. On the flip side, the fact that diffing can be done by reference comparison is exactly what justifies re-render and change-propagation optimizations.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 4: 함수형 업데이트와 상태 diff — copy-on-write의 실제 비용
+# 불변 이진트리(배열)를 path copying으로 갱신하고, 두 버전의 diff를 노드 공유 여부로 빠르게 계산한다.
+
+class Leaf:
+    __slots__ = (&quot;value&quot;,)
+    def __init__(self, value):
+        self.value = value
+
+class Branch:
+    __slots__ = (&quot;left&quot;, &quot;right&quot;)
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+def build(values):
+    if len(values) == 1:
+        return Leaf(values[0])
+    mid = len(values) // 2
+    return Branch(build(values[:mid]), build(values[mid:]))
+
+def update(node, index, value, size):
+    if size == 1:
+        return Leaf(value)
+    half = size // 2
+    if index &lt; half:
+        return Branch(update(node.left, index, value, half), node.right)   # right는 그대로 공유
+    return Branch(node.left, update(node.right, index - half, value, size - half))
+
+def collect(node, out):
+    if isinstance(node, Leaf):
+        out.append(node.value)
+    else:
+        collect(node.left, out)
+        collect(node.right, out)
+
+def count_leaves(node):
+    return 1 if isinstance(node, Leaf) else count_leaves(node.left) + count_leaves(node.right)
+
+def diff(a, b, offset, changed):
+    if a is b:
+        return                       # 포인터가 같으면 서브트리 전체가 동일 -&gt; 즉시 종료
+    if isinstance(a, Leaf):
+        if a.value != b.value:
+            changed.append(offset)
+        return
+    mid = offset + count_leaves(a.left)
+    diff(a.left, b.left, offset, changed)
+    diff(a.right, b.right, mid, changed)
+
+n = 8
+v0 = build(list(range(n)))
+v1 = update(v0, 5, 999, n)
+v2 = update(v1, 2, -1, n)
+
+out0, out1, out2 = [], [], []
+collect(v0, out0); collect(v1, out1); collect(v2, out2)
+print(&quot;v0 =&quot;, out0)
+print(&quot;v1 (index5 갱신) =&quot;, out1)
+print(&quot;v2 (v1에서 index2 갱신) =&quot;, out2)
+
+changed01 = []
+diff(v0, v1, 0, changed01)
+print(&quot;v0 -&gt; v1 diff =&quot;, changed01, &quot;, left 서브트리 공유:&quot;, v0.left is v1.left)
+
+changed12 = []
+diff(v1, v2, 0, changed12)
+print(&quot;v1 -&gt; v2 diff =&quot;, changed12, &quot;, right 서브트리 공유:&quot;, v1.right is v2.right)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-4.py">docs/code/algorithms/algorithms-4.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement a hash map three ways — (1) full copy on every update, (2) HAMT-style path copying, and (3) a mutable map — and measure execution time, allocation volume, and GC time over 100,000 insertions to compare them.</p>
+      <h2>Practical Connection</h2>
+      <p>The EVM stacks state changes in a journal for snapshot/rollback on revert, and the state trie itself produces a new root every block via path copying — a direct on-chain instance of a copy-on-write structure. Verex's in-memory order book runs into the same trade-off when designing snapshot-based rollback or per-version diff transmission.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>함수형 업데이트와 상태 diff <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 4 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">copy-on-write의 실제 비용</p>
@@ -115,7 +222,75 @@
       <p>함수형 업데이트는 기존 자료구조를 변형하지 않고 변경분만 반영한 새 버전을 만들어 반환하는 방식이다. 이를 값싸게 하는 핵심 기법이 path copying으로, 루트에서 수정 지점까지의 경로에 있는 노드만 복사하고 나머지 서브트리는 이전 버전과 포인터로 공유한다(structural sharing). 균형 트리나 HAMT 같은 트라이 계열에서는 경로 길이가 O(log n)이므로 한 번의 업데이트 비용도 O(log n) 노드 복사로 억제된다. 대신 진짜 비용은 점근 복잡도가 아니라 상수항에 숨어 있다. 업데이트마다 새 노드를 할당하므로 allocation·GC 압력이 커지고, 노드가 힙에 흩어져 포인터 추적이 늘어나 캐시 지역성이 나빠진다. 반면 이전 버전이 그대로 남으므로 두 버전의 diff는 참조가 같은 서브트리를 통째로 건너뛰며 변경된 부분만 훑을 수 있다.</p>
       <p>불변 상태를 쓰는 프론트엔드·상태머신 코드에서 &quot;복사는 O(log n)이니 공짜&quot;라고 믿다가 GC 스파이크와 캐시 미스로 처리량이 무너지는 일이 흔하다. 반대로 diff를 참조 비교로 처리할 수 있다는 점은 리렌더·변경 전파 최적화의 근거가 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 4: 함수형 업데이트와 상태 diff — copy-on-write의 실제 비용
+# 불변 이진트리(배열)를 path copying으로 갱신하고, 두 버전의 diff를 노드 공유 여부로 빠르게 계산한다.
+
+class Leaf:
+    __slots__ = (&quot;value&quot;,)
+    def __init__(self, value):
+        self.value = value
+
+class Branch:
+    __slots__ = (&quot;left&quot;, &quot;right&quot;)
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+def build(values):
+    if len(values) == 1:
+        return Leaf(values[0])
+    mid = len(values) // 2
+    return Branch(build(values[:mid]), build(values[mid:]))
+
+def update(node, index, value, size):
+    if size == 1:
+        return Leaf(value)
+    half = size // 2
+    if index &lt; half:
+        return Branch(update(node.left, index, value, half), node.right)   # right는 그대로 공유
+    return Branch(node.left, update(node.right, index - half, value, size - half))
+
+def collect(node, out):
+    if isinstance(node, Leaf):
+        out.append(node.value)
+    else:
+        collect(node.left, out)
+        collect(node.right, out)
+
+def count_leaves(node):
+    return 1 if isinstance(node, Leaf) else count_leaves(node.left) + count_leaves(node.right)
+
+def diff(a, b, offset, changed):
+    if a is b:
+        return                       # 포인터가 같으면 서브트리 전체가 동일 -&gt; 즉시 종료
+    if isinstance(a, Leaf):
+        if a.value != b.value:
+            changed.append(offset)
+        return
+    mid = offset + count_leaves(a.left)
+    diff(a.left, b.left, offset, changed)
+    diff(a.right, b.right, mid, changed)
+
+n = 8
+v0 = build(list(range(n)))
+v1 = update(v0, 5, 999, n)
+v2 = update(v1, 2, -1, n)
+
+out0, out1, out2 = [], [], []
+collect(v0, out0); collect(v1, out1); collect(v2, out2)
+print(&quot;v0 =&quot;, out0)
+print(&quot;v1 (index5 갱신) =&quot;, out1)
+print(&quot;v2 (v1에서 index2 갱신) =&quot;, out2)
+
+changed01 = []
+diff(v0, v1, 0, changed01)
+print(&quot;v0 -&gt; v1 diff =&quot;, changed01, &quot;, left 서브트리 공유:&quot;, v0.left is v1.left)
+
+changed12 = []
+diff(v1, v2, 0, changed12)
+print(&quot;v1 -&gt; v2 diff =&quot;, changed12, &quot;, right 서브트리 공유:&quot;, v1.right is v2.right)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-4.py">docs/code/algorithms/algorithms-4.py</a></p>
       <h2>연습</h2>
       <p>해시맵을 (1) 매번 전체 복사, (2) HAMT식 path copying, (3) 가변 맵 세 가지로 구현해 10만 회 삽입 시 실행 시간·할당량·GC 시간을 측정해 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 30 — Rust 소유권·차용 검사기 내부(NLL)와 우회 패턴</title>
+<title>Day 30 — Rust Ownership, the Borrow Checker (NLL), and Workaround Patterns</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,86 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 30</p>
   <article>
+      <h1>Rust Ownership, the Borrow Checker (NLL), and Workaround Patterns <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 30 / 100 &middot; B. Compilers, Runtimes &amp; VMs (Day 20-35)</p>
+      <h2>Concept</h2>
+      <p>Rust's ownership model gives every value a single unique owner, and the owner freeing its resources when it goes out of scope guarantees memory safety at compile time without a GC. The borrow checker adds to this a rule that disallows aliasing and mutation at the same time, enforcing that at any given moment there are either multiple immutable references or exactly one mutable reference, never both. NLL (Non-Lexical Lifetimes) computes a borrow's valid range not as the entire lexical scope but as the point in the control-flow graph where that reference is last used, letting code that's actually safe but used to be rejected compile. Even so, there are structures the checker can't prove safe — self-referential structures, cyclic graphs, shared mutable state — and for those you fall back to an arena that uses indices instead of references, Rc and RefCell that push the check to runtime, per-field split borrows, or, as a last resort, unsafe encapsulated behind a safe API.</p>
+      <p>When you build a node, an indexer, or a ZK tool in Rust, a large share of the time goes not into logic but into fighting the borrow checker, and knowing the workaround patterns lets you sidestep that fight at the design stage.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Rust 소유권·차용 검사기 우회 패턴 — RefCell류 런타임 검사와 arena(인덱스) 패턴을 파이썬으로 흉내낸다.
+
+class BorrowError(Exception):
+    pass
+
+class RefCell:
+    # aliasing XOR mutation 규칙(불변 차용 다수 OR 가변 차용 단 하나)을
+    # 컴파일 타임이 아니라 런타임에 검사로 옮긴 패턴
+    def __init__(self, value):
+        self._value = value
+        self._shared_borrows = 0
+        self._mut_borrowed = False
+
+    def borrow(self):
+        if self._mut_borrowed:
+            raise BorrowError(&quot;이미 가변 차용 중인데 불변 차용 시도&quot;)
+        self._shared_borrows += 1
+        return self._value
+
+    def release_borrow(self):
+        self._shared_borrows -= 1
+
+    def borrow_mut(self):
+        if self._mut_borrowed or self._shared_borrows &gt; 0:
+            raise BorrowError(&quot;다른 차용이 있는데 가변 차용 시도&quot;)
+        self._mut_borrowed = True
+
+    def set(self, value):
+        if not self._mut_borrowed:
+            raise BorrowError(&quot;가변 차용 없이 값 변경 시도&quot;)
+        self._value = value
+        self._mut_borrowed = False
+
+cell = RefCell(10)
+v1, v2 = cell.borrow(), cell.borrow()      # 불변 차용은 여러 개 동시에 허용
+print(&quot;동시 불변 차용:&quot;, v1, v2)
+try:
+    cell.borrow_mut()                      # 불변 차용이 살아있는데 가변 차용 시도 -&gt; 위반
+except BorrowError as e:
+    print(&quot;차단됨:&quot;, e)
+cell.release_borrow(); cell.release_borrow()
+cell.borrow_mut()
+cell.set(20)
+print(&quot;가변 차용 해제 후 값 변경 성공:&quot;, cell._value)
+
+# arena(인덱스) 패턴: 참조 대신 정수 인덱스로 구조를 표현해 차용 문제 자체를 피한다
+class Arena:
+    def __init__(self):
+        self.nodes = []  # (value, children_indices)
+
+    def add(self, value, children=()):
+        self.nodes.append((value, list(children)))
+        return len(self.nodes) - 1  # 인덱스를 &quot;참조&quot;처럼 반환
+
+    def sum_subtree(self, idx):
+        value, children = self.nodes[idx]
+        return value + sum(self.sum_subtree(c) for c in children)
+
+arena = Arena()
+leaf1 = arena.add(1)
+leaf2 = arena.add(2)
+root = arena.add(10, children=[leaf1, leaf2])
+print(&quot;arena 트리 합:&quot;, arena.sum_subtree(root))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-30.py">docs/code/algorithms/algorithms-30.py</a></p>
+      <h2>Exercise</h2>
+      <p>Build a reference-based tree or linked list, deliberately run into a compile failure, then reimplement the same structure once with Vec-index-based references and once with Rc&lt;RefCell&lt;..&gt;&gt;, and note what moved from a compile-time check to a runtime check.</p>
+      <h2>Practical Connection</h2>
+      <p>Ownership and aliasing rules remain a valid design principle outside of Rust too — they're directly useful for reframing concurrency bugs caused by shared mutable state in Go or TypeScript around the question &quot;who owns this data?&quot;</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>Rust 소유권·차용 검사기 내부(NLL)와 우회 패턴 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 30 / 100 &middot; B. 컴파일러·런타임·VM (Day 20–35)</p>
 
@@ -115,7 +218,71 @@
       <p>Rust의 소유권은 모든 값에 유일한 소유자를 두고 소유자가 스코프를 벗어날 때 자원을 해제해, GC 없이 컴파일 타임에 메모리 안전을 보장하는 규칙이다. 차용 검사기는 여기에 aliasing과 mutation을 동시에 허용하지 않는 규칙을 더해, 같은 시점에 다수의 불변 참조 또는 단 하나의 가변 참조만 존재하도록 강제한다. NLL(Non-Lexical Lifetimes)은 차용의 유효 구간을 렉시컬 스코프 끝까지가 아니라 제어 흐름 그래프상 그 참조가 마지막으로 쓰이는 지점까지로 계산해, 안전한데도 거부되던 코드를 통과시킨다. 그럼에도 검사기가 증명하지 못하는 구조(자기 참조, 순환 그래프, 공유 가변 상태)가 남고, 이때는 참조 대신 인덱스를 쓰는 arena 방식, Rc와 RefCell로 검사를 런타임으로 옮기는 방식, 필드별 분리 차용, 마지막 수단으로 unsafe를 안전한 API 뒤에 캡슐화하는 방식을 쓴다.</p>
       <p>Rust로 노드, 인덱서, ZK 도구를 만들면 시간의 상당 부분이 로직이 아니라 차용 검사기와의 싸움에 들어가고, 우회 패턴을 알면 설계 단계에서 그 싸움 자체를 피할 수 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Rust 소유권·차용 검사기 우회 패턴 — RefCell류 런타임 검사와 arena(인덱스) 패턴을 파이썬으로 흉내낸다.
+
+class BorrowError(Exception):
+    pass
+
+class RefCell:
+    # aliasing XOR mutation 규칙(불변 차용 다수 OR 가변 차용 단 하나)을
+    # 컴파일 타임이 아니라 런타임에 검사로 옮긴 패턴
+    def __init__(self, value):
+        self._value = value
+        self._shared_borrows = 0
+        self._mut_borrowed = False
+
+    def borrow(self):
+        if self._mut_borrowed:
+            raise BorrowError(&quot;이미 가변 차용 중인데 불변 차용 시도&quot;)
+        self._shared_borrows += 1
+        return self._value
+
+    def release_borrow(self):
+        self._shared_borrows -= 1
+
+    def borrow_mut(self):
+        if self._mut_borrowed or self._shared_borrows &gt; 0:
+            raise BorrowError(&quot;다른 차용이 있는데 가변 차용 시도&quot;)
+        self._mut_borrowed = True
+
+    def set(self, value):
+        if not self._mut_borrowed:
+            raise BorrowError(&quot;가변 차용 없이 값 변경 시도&quot;)
+        self._value = value
+        self._mut_borrowed = False
+
+cell = RefCell(10)
+v1, v2 = cell.borrow(), cell.borrow()      # 불변 차용은 여러 개 동시에 허용
+print(&quot;동시 불변 차용:&quot;, v1, v2)
+try:
+    cell.borrow_mut()                      # 불변 차용이 살아있는데 가변 차용 시도 -&gt; 위반
+except BorrowError as e:
+    print(&quot;차단됨:&quot;, e)
+cell.release_borrow(); cell.release_borrow()
+cell.borrow_mut()
+cell.set(20)
+print(&quot;가변 차용 해제 후 값 변경 성공:&quot;, cell._value)
+
+# arena(인덱스) 패턴: 참조 대신 정수 인덱스로 구조를 표현해 차용 문제 자체를 피한다
+class Arena:
+    def __init__(self):
+        self.nodes = []  # (value, children_indices)
+
+    def add(self, value, children=()):
+        self.nodes.append((value, list(children)))
+        return len(self.nodes) - 1  # 인덱스를 &quot;참조&quot;처럼 반환
+
+    def sum_subtree(self, idx):
+        value, children = self.nodes[idx]
+        return value + sum(self.sum_subtree(c) for c in children)
+
+arena = Arena()
+leaf1 = arena.add(1)
+leaf2 = arena.add(2)
+root = arena.add(10, children=[leaf1, leaf2])
+print(&quot;arena 트리 합:&quot;, arena.sum_subtree(root))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-30.py">docs/code/algorithms/algorithms-30.py</a></p>
       <h2>연습</h2>
       <p>참조 기반 트리나 연결 리스트를 만들어 일부러 컴파일 실패를 겪은 뒤, 같은 구조를 Vec 인덱스 기반과 Rc&lt;RefCell&lt;..&gt;&gt; 기반으로 각각 다시 구현하고 무엇이 컴파일 타임 검사에서 런타임 검사로 옮겨갔는지 정리하라.</p>
       <h2>실무 · Verex 연결</h2>

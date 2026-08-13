@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 66 — PBS·MEV 경매·타이밍 게임</title>
+<title>Day 66 — PBS, MEV Auctions, and Timing Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,55 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 66</p>
   <article>
+      <h1>PBS, MEV Auctions, and Timing Games <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 66 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>MEV is the excess value that can be extracted by controlling which transactions get included in a block, their order, or their exclusion. Proposer-Builder Separation splits block assembly (the builder) from block proposal (the validator): the proposer signs a header without seeing the block's contents and takes whichever block carries the highest bid — on Ethereum this is widely implemented off-chain, routed through relays. Builders collect bundles from searchers to maximize a block's value, and hand a large share of that value back to the proposer as a bid, forming an auction. Timing games are when a proposer deliberately delays its proposal as late as possible within its slot to collect more MEV — an incentive problem that eats into block propagation slack and hurts network stability.</p>
+      <p>DEX and prediction-market user orders are prime sandwich/backrun targets, and settlement transactions can have their inclusion timing manipulated too — if defenses aren't built into the protocol from the start, they can't be bolted on later.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># PBS·MEV 경매·타이밍 게임 — 빌더들이 블록 가치를 놓고 입찰하고, 제안자는 슬롯 안에서 제안 시점을 늦춰 더 높은 입찰을 노린다.
+# 타이밍 게임은 &quot;늦게 낼수록 입찰가는 오르지만 슬롯을 놓칠 확률도 오른다&quot;는 트레이드오프를 기대값으로 최적화한다.
+
+import random
+random.seed(7)
+
+def builder_bids(round_num):
+    # 서처 번들이 쌓일수록 빌더 입찰가가 오른다고 가정
+    return [round(random.uniform(0.5, 1.0) * (1 + 0.05 * round_num), 3) for _ in range(4)]
+
+print(&quot;=== PBS 경매: 라운드마다 빌더 4곳이 입찰, 제안자는 최고가만 채택 ===&quot;)
+for round_num in range(3):
+    bids = builder_bids(round_num)
+    print(f&quot;라운드 {round_num}: 빌더 입찰 {bids} → 채택 입찰 {max(bids)}&quot;)
+
+print(&quot;\n=== 타이밍 게임: 슬롯(12초) 안에서 제안 시점 t를 늦출수록 입찰가는 오르지만 놓칠 확률도 오른다 ===&quot;)
+SLOT_SECONDS = 12
+
+def bid_at(t):
+    return 1.0 + 0.15 * t                      # 늦게 제안할수록 더 많은 번들을 모아 입찰가 상승
+
+def miss_probability(t):
+    return min(0.9, (t / SLOT_SECONDS) ** 2)    # 마감에 가까울수록 네트워크 전파 실패 위험 급증
+
+best_t, best_ev = 0, -1
+for t in range(0, SLOT_SECONDS + 1):
+    ev = bid_at(t) * (1 - miss_probability(t))
+    if ev &gt; best_ev:
+        best_t, best_ev = t, ev
+    print(f&quot;t={t:2d}s  입찰가={bid_at(t):.2f}  놓칠확률={miss_probability(t):.2%}  기대수익={ev:.3f}&quot;)
+
+print(f&quot;\n기대수익 최대화 제안 시점: t={best_t}s (기대수익={best_ev:.3f}) — 무한정 늦추는 게 최선이 아니다&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-66.py">docs/code/algorithms/algorithms-66.py</a></p>
+      <h2>Exercise</h2>
+      <p>Work out an actual sandwich scenario for your own market with real numbers, then compare whether a slippage cap, commit-reveal, or a private relay would actually be effective at mitigating it.</p>
+      <h2>Practical Connection</h2>
+      <p>Verex's LMSR price depends on execution order, so front-running is structurally possible, and orders placed right before an oracle result is finalized are similarly an MEV target — this ties directly into settlement timing and order-disclosure design.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>PBS·MEV 경매·타이밍 게임 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 66 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
 
@@ -115,7 +187,40 @@
       <p>MEV는 블록 안에서 트랜잭션의 포함 여부·순서·검열을 조정해 뽑아낼 수 있는 초과 가치를 말한다. Proposer-Builder Separation은 블록을 조립하는 빌더와 블록을 제안하는 검증자를 분리해, 제안자가 블록 내용을 보지 않은 채 헤더에 서명하고 가장 높은 입찰가의 블록을 받도록 하는 구조다(이더리움에서는 릴레이를 거치는 오프체인 형태로 널리 쓰인다). 빌더는 서처들이 보낸 번들을 모아 블록 가치를 최대화하고 그 상당 부분을 입찰가로 제안자에게 지급하는 경매가 형성된다. 타이밍 게임은 제안자가 슬롯 안에서 제안을 최대한 늦춰 MEV를 더 모으려는 행위로, 블록 전파 여유를 깎아 네트워크 안정성을 해치는 유인 문제다.</p>
       <p>DEX와 예측시장의 사용자 주문은 샌드위치·백런의 표적이고 정산 트랜잭션도 포함 시점이 조작될 수 있어, 프로토콜 설계 단계에서 방어를 넣지 않으면 나중에 막을 수 없다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># PBS·MEV 경매·타이밍 게임 — 빌더들이 블록 가치를 놓고 입찰하고, 제안자는 슬롯 안에서 제안 시점을 늦춰 더 높은 입찰을 노린다.
+# 타이밍 게임은 &quot;늦게 낼수록 입찰가는 오르지만 슬롯을 놓칠 확률도 오른다&quot;는 트레이드오프를 기대값으로 최적화한다.
+
+import random
+random.seed(7)
+
+def builder_bids(round_num):
+    # 서처 번들이 쌓일수록 빌더 입찰가가 오른다고 가정
+    return [round(random.uniform(0.5, 1.0) * (1 + 0.05 * round_num), 3) for _ in range(4)]
+
+print(&quot;=== PBS 경매: 라운드마다 빌더 4곳이 입찰, 제안자는 최고가만 채택 ===&quot;)
+for round_num in range(3):
+    bids = builder_bids(round_num)
+    print(f&quot;라운드 {round_num}: 빌더 입찰 {bids} → 채택 입찰 {max(bids)}&quot;)
+
+print(&quot;\n=== 타이밍 게임: 슬롯(12초) 안에서 제안 시점 t를 늦출수록 입찰가는 오르지만 놓칠 확률도 오른다 ===&quot;)
+SLOT_SECONDS = 12
+
+def bid_at(t):
+    return 1.0 + 0.15 * t                      # 늦게 제안할수록 더 많은 번들을 모아 입찰가 상승
+
+def miss_probability(t):
+    return min(0.9, (t / SLOT_SECONDS) ** 2)    # 마감에 가까울수록 네트워크 전파 실패 위험 급증
+
+best_t, best_ev = 0, -1
+for t in range(0, SLOT_SECONDS + 1):
+    ev = bid_at(t) * (1 - miss_probability(t))
+    if ev &gt; best_ev:
+        best_t, best_ev = t, ev
+    print(f&quot;t={t:2d}s  입찰가={bid_at(t):.2f}  놓칠확률={miss_probability(t):.2%}  기대수익={ev:.3f}&quot;)
+
+print(f&quot;\n기대수익 최대화 제안 시점: t={best_t}s (기대수익={best_ev:.3f}) — 무한정 늦추는 게 최선이 아니다&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-66.py">docs/code/algorithms/algorithms-66.py</a></p>
       <h2>연습</h2>
       <p>자신의 시장에서 발생할 샌드위치 시나리오를 실제 수치로 계산해보고, 슬리피지 한도·커밋리빌·프라이빗 릴레이 중 어떤 완화책이 실효가 있는지 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

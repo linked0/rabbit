@@ -24,6 +24,9 @@ COPY --from=builder /app/public ./public
 # content/ — Jay Chat's RAG corpus depth (content/profile/*.md). Without this the
 # About-me feature still works from lib/home-content.ts, just without the markdown depth.
 COPY --from=builder /app/content ./content
+# docs/code/ — per-PoC-card runnable snippets that TechNotes.tsx reads at request time
+# (jay, 2026-08-13). Only this subfolder, not all of docs/ — same "exact output paths" rule.
+COPY --from=builder /app/docs/code ./docs/code
 EXPOSE 8080
 ENV PORT=8080
 CMD ["node", "server.js"]

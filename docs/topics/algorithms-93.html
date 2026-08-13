@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 93 — 재귀 증명과 증명 집계</title>
+<title>Day 93 — Recursive proofs and proof aggregation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,66 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 93</p>
   <article>
+      <h1>Recursive proofs and proof aggregation <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 93 / 100 &middot; F. Cryptography &amp; ZK (Day 82-96)</p>
+      <h2>Concept</h2>
+      <p>A recursive proof proves the very fact that some other proof passed verification, by expressing the proof-verification algorithm as a circuit and then proving the execution of that circuit. This lets you fold an arbitrarily long computation, or the state transitions across many blocks, into a single small proof, so verification cost becomes independent of the length of the original computation. Proof aggregation bundles multiple independent proofs to cut verification cost overall; it's sometimes implemented via recursion, and sometimes via cheaper techniques like batch verification or linear combinations of commitments. The key practical constraint is how cheaply that proof system's verifier can be expressed inside a circuit, which is why curve choice and proof-friendly hash function choice matter so much. The essence of the technique is an asymmetry of cost: the prover gets heavier while the verifier becomes extremely light.</p>
+      <p>This structure is exactly why a rollup can settle enormous numbers of transactions with a single verification on L1, and why a light client can catch up on a long history at low cost.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 재귀 증명과 증명 집계 — 여러 스텝의 증명을 접어 &quot;이전까지 전부 유효했음&quot;을
+# 상수 크기 하나로 압축하는 폴딩(재귀 검증)을 해시 체인으로 단순화해 시연.
+# (실제 SNARK 재귀와 달리 여기선 검증도 재실행하지만, 접힘/집계의 구조만 보여주는 예시)
+
+import hashlib
+
+def h(*parts: bytes) -&gt; bytes:
+    m = hashlib.sha256()
+    for p in parts:
+        m.update(p)
+    return m.digest()
+
+def step_proof(prev_proof: bytes, statement: bytes) -&gt; bytes:
+    # &quot;이 스텝이 유효하다&quot;는 증명을 이전 증명과 접어(fold) 하나의 값으로 만든다
+    return h(prev_proof, statement)
+
+def verify_chain(genesis: bytes, statements: list, final_proof: bytes) -&gt; bool:
+    # 재귀 증명이라면 검증자는 final_proof 하나만 확인하면 되지만,
+    # 여기서는 폴딩 구조 설명을 위해 재실행으로 대신 확인한다.
+    acc = genesis
+    for s in statements:
+        acc = step_proof(acc, s)
+    return acc == final_proof
+
+genesis = h(b&quot;genesis&quot;)
+statements = [f&quot;tx-{i}&quot;.encode() for i in range(5)]
+
+# 증명자: 각 스텝을 순서대로 접어 하나의 집계 증명(final_proof)을 만든다
+acc = genesis
+individual_sizes = 0
+for s in statements:
+    acc = step_proof(acc, s)
+    individual_sizes += len(acc)
+final_proof = acc
+
+print(&quot;스텝 수:&quot;, len(statements))
+print(&quot;집계 전 개별 증명 총 크기(byte):&quot;, individual_sizes)
+print(&quot;집계된 최종 증명 크기(byte):&quot;, len(final_proof), &quot;← 스텝 수와 무관하게 일정&quot;)
+print(&quot;최종 증명 검증 결과:&quot;, verify_chain(genesis, statements, final_proof))
+
+tampered = statements.copy()
+tampered[2] = b&quot;tx-2-tampered&quot;
+print(&quot;중간 statement 조작 시 검증 실패:&quot;, not verify_chain(genesis, tampered, final_proof))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-93.py">docs/code/algorithms/algorithms-93.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick one ZK framework, generate a proof for a tiny circuit, then write a circuit that verifies that proof to run one round of recursion — measure how proof size and proving time each change.</p>
+      <h2>Practical Connection</h2>
+      <p>When Verex runs on an L2 or trusts an L2's settlement, the user's basis for trusting finality ultimately comes down to this one act of proof verification, and the proof-generation cycle directly shows up as withdrawal/settlement latency.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>재귀 증명과 증명 집계 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 93 / 100 &middot; F. 암호학·ZK (Day 82–96)</p>
 
@@ -115,7 +198,51 @@
       <p>재귀 증명은 어떤 증명이 검증을 통과했다는 사실 자체를 다시 증명하는 기법으로, 증명 검증 알고리즘을 회로로 표현한 뒤 그 회로의 실행을 증명하는 방식으로 구현한다. 이렇게 하면 임의로 긴 계산이나 여러 블록의 상태 전이를 하나의 작은 증명으로 접을 수 있어, 검증 비용이 원래 계산의 길이와 무관해진다. 증명 집계는 여러 개의 독립적인 증명을 묶어 검증 비용을 줄이는 것으로, 재귀로 구현하기도 하고 배치 검증이나 커밋먼트의 선형 결합 같은 더 값싼 방법을 쓰기도 한다. 실무의 핵심 제약은 그 증명 시스템의 검증기를 회로 안에서 얼마나 싸게 표현할 수 있는가이며, 그래서 곡선 선택이나 증명 친화적 해시 함수 선택이 중요해진다. 이 기술의 본질은 비용의 비대칭으로, 증명자는 무거워지고 검증자는 극단적으로 가벼워진다.</p>
       <p>롤업이 수많은 트랜잭션을 L1에서 한 번의 검증으로 정산하고 라이트클라이언트가 긴 히스토리를 작은 비용으로 따라잡을 수 있는 근거가 바로 이 구조이기 때문이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 재귀 증명과 증명 집계 — 여러 스텝의 증명을 접어 &quot;이전까지 전부 유효했음&quot;을
+# 상수 크기 하나로 압축하는 폴딩(재귀 검증)을 해시 체인으로 단순화해 시연.
+# (실제 SNARK 재귀와 달리 여기선 검증도 재실행하지만, 접힘/집계의 구조만 보여주는 예시)
+
+import hashlib
+
+def h(*parts: bytes) -&gt; bytes:
+    m = hashlib.sha256()
+    for p in parts:
+        m.update(p)
+    return m.digest()
+
+def step_proof(prev_proof: bytes, statement: bytes) -&gt; bytes:
+    # &quot;이 스텝이 유효하다&quot;는 증명을 이전 증명과 접어(fold) 하나의 값으로 만든다
+    return h(prev_proof, statement)
+
+def verify_chain(genesis: bytes, statements: list, final_proof: bytes) -&gt; bool:
+    # 재귀 증명이라면 검증자는 final_proof 하나만 확인하면 되지만,
+    # 여기서는 폴딩 구조 설명을 위해 재실행으로 대신 확인한다.
+    acc = genesis
+    for s in statements:
+        acc = step_proof(acc, s)
+    return acc == final_proof
+
+genesis = h(b&quot;genesis&quot;)
+statements = [f&quot;tx-{i}&quot;.encode() for i in range(5)]
+
+# 증명자: 각 스텝을 순서대로 접어 하나의 집계 증명(final_proof)을 만든다
+acc = genesis
+individual_sizes = 0
+for s in statements:
+    acc = step_proof(acc, s)
+    individual_sizes += len(acc)
+final_proof = acc
+
+print(&quot;스텝 수:&quot;, len(statements))
+print(&quot;집계 전 개별 증명 총 크기(byte):&quot;, individual_sizes)
+print(&quot;집계된 최종 증명 크기(byte):&quot;, len(final_proof), &quot;← 스텝 수와 무관하게 일정&quot;)
+print(&quot;최종 증명 검증 결과:&quot;, verify_chain(genesis, statements, final_proof))
+
+tampered = statements.copy()
+tampered[2] = b&quot;tx-2-tampered&quot;
+print(&quot;중간 statement 조작 시 검증 실패:&quot;, not verify_chain(genesis, tampered, final_proof))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-93.py">docs/code/algorithms/algorithms-93.py</a></p>
       <h2>연습</h2>
       <p>ZK 프레임워크 하나를 골라 아주 작은 회로의 증명을 만든 뒤 그 증명을 검증하는 회로를 다시 작성해 재귀 한 단계를 돌리고, 증명 크기와 증명 시간이 각각 어떻게 변하는지 측정하기.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 44 — 군론 기초(순환군·이산로그)</title>
+<title>Day 44 — Number Theory and Modular Arithmetic</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,21 +131,109 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 44</p>
   <article>
-      <h1>군론 기초(순환군·이산로그) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 44 / 51 &middot; 12월 — 암호학·정보이론 (Day 43–51)</p>
+      <h1>Number Theory and Modular Arithmetic <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 44 / 52 &middot; December — Cryptography &amp; Information Theory (Day 44-52)</p>
+      <h2>Concept</h2>
+      <p>Modular arithmetic identifies integers by their remainder modulo n; addition, subtraction, and multiplication are all compatible with the remainder operation, but division is only defined when an inverse exists. a has a multiplicative inverse mod n if and only if gcd(a, n) = 1, and that inverse can be obtained via the extended Euclidean algorithm by solving ax + ny = 1. When n is a prime p, every nonzero element has an inverse, making it a finite field; by Fermat's little theorem, a^(p-1) ≡ 1 (mod p), so the inverse can also be computed as a^(p-2). Euler's theorem generalizes this: whenever gcd(a, n) = 1, a^φ(n) ≡ 1 (mod n), which is the basis for how exponents are handled in RSA-type systems. The Chinese Remainder Theorem states that a system of congruences over pairwise coprime moduli has a unique solution modulo their product, and it's used to split large-number arithmetic into computations over smaller moduli.</p>
+      <p>Elliptic curve operations, hash-to-field, and ZK circuit arithmetic all run over finite fields, so without understanding modular inverses and overflow handling you can't judge either the correctness or the performance of cryptographic code.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 정수론·모듈러 산술 — 확장 유클리드로 모듈러 역원 구하기 + 페르마 소정리로 교차검증
+# ax + ny = gcd(a, n) 을 풀어 gcd=1이면 x가 곧 a의 (mod n) 역원이다.
+
+def ext_gcd(a, n):
+    &quot;&quot;&quot;확장 유클리드: (g, x, y) with a*x + n*y = g = gcd(a, n).&quot;&quot;&quot;
+    old_r, r = a, n
+    old_x, x = 1, 0
+    old_y, y = 0, 1
+    while r != 0:
+        q = old_r // r
+        old_r, r = r, old_r - q * r
+        old_x, x = x, old_x - q * x
+        old_y, y = y, old_y - q * y
+    return old_r, old_x, old_y
+
+def mod_inverse(a, n):
+    g, x, _ = ext_gcd(a, n)
+    if g != 1:
+        raise ValueError(f&quot;{a}는 mod {n}에서 역원이 없음 (gcd={g})&quot;)
+    return x % n
+
+p = 1_000_000_007  # 큰 소수
+for a in (3, 12345, 999_999_999):
+    inv = mod_inverse(a, p)
+    check = (a * inv) % p
+    fermat_inv = pow(a, p - 2, p)  # 페르마 소정리: a^(p-2) ≡ a^-1 (mod p)
+    print(f&quot;a={a:&gt;10}  ext_gcd 역원={inv:&gt;10}  a*inv mod p={check}  &quot;
+          f&quot;페르마 역원과 일치={inv == fermat_inv}&quot;)
+
+# 소수가 아닌 법에서는 gcd(a,n)=1일 때만 역원이 존재함을 확인
+n = 20
+for a in range(1, n):
+    from math import gcd
+    if gcd(a, n) == 1:
+        print(f&quot;mod {n}: a={a} 역원={mod_inverse(a, n)}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-44.py">docs/code/math/math-44.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement the extended Euclidean algorithm yourself to find the inverse of a modulo an arbitrary prime p, then compute the same value as a^(p-2) mod p and confirm the two results match.</p>
+      <h2>Practical Connection</h2>
+      <p>The reason Solidity fixed-point math uses patterns like mulDiv — multiplying before dividing — and the fact that division over a finite field is really multiplication by an inverse, connect directly to both the precision design of LMSR price calculations and the code that verifies them.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1>정수론·모듈러 산술 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 44 / 52 &middot; 12월 — 암호학·정보이론 (Day 44–52)</p>
 
       <h2>개념</h2>
-      <p>군은 결합법칙, 항등원, 역원을 갖춘 이항 연산이 있는 집합이고, 하나의 원소 g의 거듭제곱만으로 전체가 생성되면 순환군이라 하며 g를 생성원이라 부른다. 유한군에서 원소의 위수는 그 원소가 만드는 순환 부분군의 크기이고, Lagrange 정리에 의해 부분군의 크기는 항상 전체 군의 크기를 나눈다. 이산로그 문제는 순환군에서 g와 h = g^x가 주어졌을 때 지수 x를 찾는 문제로, 지수 계산은 반복 제곱으로 빠른 반면 역방향은 적절히 고른 군에서 어렵다고 믿어지는 비대칭성이 공개키 암호의 토대다. 다만 어려움은 군의 선택에 달려 있어, 곱셈군의 크기가 작은 소인수만으로 분해되면 Pohlig-Hellman으로 문제가 잘게 쪼개지므로 군의 위수가 큰 소수여야 한다. 타원곡선 군은 같은 보안 수준에서 원소 표현이 짧아 실무에서 널리 쓰인다.</p>
-      <p>서명이나 커밋먼트를 다룰 때 스칼라를 군의 위수로 모듈러 연산해야 하는데, 이 구조를 모르면 위수 초과 스칼라나 소부분군(small subgroup) 점을 검사 없이 받아들이는 취약점을 만든다.</p>
+      <p>모듈러 산술은 정수를 법 n으로 나눈 나머지로 동일시하는 체계로, 덧셈·뺄셈·곱셈은 나머지 연산과 잘 호환되지만 나눗셈은 역원이 존재할 때만 정의된다. a가 법 n에서 곱셈 역원을 가질 필요충분조건은 gcd(a, n) = 1이며, 그 역원은 확장 유클리드 알고리즘으로 ax + ny = 1을 풀어 얻는다. n이 소수 p이면 0이 아닌 모든 원소가 역원을 가져 유한체가 되고, 페르마의 소정리에 의해 a^(p-1) ≡ 1 (mod p)이므로 역원을 a^(p-2)로도 구할 수 있다. 오일러 정리는 이를 일반화해 gcd(a, n) = 1일 때 a^φ(n) ≡ 1 (mod n)을 주며, 이것이 RSA류 시스템에서 지수를 다루는 근거다. 중국인의 나머지 정리는 서로소인 법들에 대한 합동식 체계가 그 곱을 법으로 유일한 해를 가짐을 말해 주고, 큰 수 연산을 작은 법들로 쪼개 계산하는 데 쓰인다.</p>
+      <p>타원곡선 연산, 해시-투-필드, ZK 회로의 산술이 전부 유한체 위에서 돌아가므로, 모듈러 역원과 오버플로 처리를 이해하지 못하면 암호 코드의 정확성도 성능도 판단할 수 없다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 정수론·모듈러 산술 — 확장 유클리드로 모듈러 역원 구하기 + 페르마 소정리로 교차검증
+# ax + ny = gcd(a, n) 을 풀어 gcd=1이면 x가 곧 a의 (mod n) 역원이다.
+
+def ext_gcd(a, n):
+    &quot;&quot;&quot;확장 유클리드: (g, x, y) with a*x + n*y = g = gcd(a, n).&quot;&quot;&quot;
+    old_r, r = a, n
+    old_x, x = 1, 0
+    old_y, y = 0, 1
+    while r != 0:
+        q = old_r // r
+        old_r, r = r, old_r - q * r
+        old_x, x = x, old_x - q * x
+        old_y, y = y, old_y - q * y
+    return old_r, old_x, old_y
+
+def mod_inverse(a, n):
+    g, x, _ = ext_gcd(a, n)
+    if g != 1:
+        raise ValueError(f&quot;{a}는 mod {n}에서 역원이 없음 (gcd={g})&quot;)
+    return x % n
+
+p = 1_000_000_007  # 큰 소수
+for a in (3, 12345, 999_999_999):
+    inv = mod_inverse(a, p)
+    check = (a * inv) % p
+    fermat_inv = pow(a, p - 2, p)  # 페르마 소정리: a^(p-2) ≡ a^-1 (mod p)
+    print(f&quot;a={a:&gt;10}  ext_gcd 역원={inv:&gt;10}  a*inv mod p={check}  &quot;
+          f&quot;페르마 역원과 일치={inv == fermat_inv}&quot;)
+
+# 소수가 아닌 법에서는 gcd(a,n)=1일 때만 역원이 존재함을 확인
+n = 20
+for a in range(1, n):
+    from math import gcd
+    if gcd(a, n) == 1:
+        print(f&quot;mod {n}: a={a} 역원={mod_inverse(a, n)}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-44.py">docs/code/math/math-44.py</a></p>
       <h2>연습</h2>
-      <p>작은 소수 p에 대해 곱셈군의 생성원을 찾아 모든 원소의 위수를 나열하고 Lagrange 정리를 확인한 뒤, 같은 군에서 이산로그를 브루트포스로 풀어 크기 의존성을 체감해 볼 것.</p>
+      <p>확장 유클리드 알고리즘을 직접 구현해 임의의 소수 p에 대해 a의 역원을 구하고, 같은 값을 a^(p-2) mod p로도 계산해 두 결과가 일치하는지 확인해 보라.</p>
       <h2>실무 · Verex 연결</h2>
-      <p>이더리움 서명이 쓰는 secp256k1은 소수 위수의 순환군이며, 서명 스칼라를 그 위수로 정규화하지 않으면 서명 malleability나 nonce 관련 키 유출 같은 실제 사고로 이어진다.</p>
+      <p>Solidity에서 고정소수점 계산을 할 때 mulDiv 같은 패턴으로 곱셈을 먼저 하고 나누는 이유, 그리고 유한체 위의 나눗셈이 실제로는 역원 곱셈이라는 사실은 LMSR 가격 계산의 정밀도 설계와 검증 코드 양쪽에 직접 연결된다.</p>
       <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
     </article>
-  <div class="pager"><a href="math-43.html">&larr; 43. 정수론·모듈러 산술</a><a href="math-45.html">45. ECC·디지털 서명 &rarr;</a></div>
+  <div class="pager"><a href="math-43.html">&larr; 43. 상관관계와 공적분(가볍게)</a><a href="math-45.html">45. 군론 기초(순환군·이산로그) &rarr;</a></div>
 </div>
 </body>
 </html>

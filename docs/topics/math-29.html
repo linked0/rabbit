@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 29 — Gradient Descent / Convex 직관</title>
+<title>Day 29 — Gradient Descent and Convex Intuition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,86 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 29</p>
   <article>
+      <h1>Gradient Descent and Convex Intuition <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 29 / 52 &middot; October — Calculus &amp; Optimization (Day 27-34)</p>
+      <h2>Concept</h2>
+      <p>Gradient descent is an optimization method that exploits the fact that the gradient of the objective function points in the direction of steepest ascent, and repeatedly moves a step of size equal to the learning rate in the opposite direction. A function is convex if the line segment joining any two points in its domain always lies on or above the function's graph; this property guarantees that a local minimum is also the global minimum, and that a point where the gradient is zero is optimal. For a smooth convex function whose gradient is L-Lipschitz continuous, choosing a learning rate at or below 1/L guarantees convergence, and adding strong convexity yields a faster, exponentially decaying error rate. A learning rate that's too large causes divergence, one that's too small is slow, and poor conditioning causes zig-zagging in narrow, elongated valleys — which is why techniques like momentum, adaptive learning rates, and preconditioning are used to mitigate it.</p>
+      <p>In numerical optimization beyond machine learning — market-making parameter tuning, calibration — you need to tell whether a failure to converge comes from the problem's non-convexity or from a learning-rate/conditioning issue.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 29 — Gradient Descent / Convex 직관
+# 볼록함수 f(x) = (x - 3)^2 위에서 경사하강법을 돌려 최소점 x=3 으로 수렴하는 과정을 본다.
+
+def f(x):
+    return (x - 3) ** 2
+
+
+def f_prime(x):
+    return 2 * (x - 3)
+
+
+x = 10.0  # 시작점
+learning_rate = 0.1
+history = [x]
+
+for step in range(30):
+    grad = f_prime(x)
+    x = x - learning_rate * grad
+    history.append(x)
+
+print(&quot;경사하강 진행 (x, f(x)):&quot;)
+for i in [0, 1, 2, 5, 10, 20, len(history) - 1]:
+    xi = history[i]
+    print(f&quot;  step {i:2d}: x = {xi:.6f}, f(x) = {f(xi):.8f}&quot;)
+
+print(f&quot;\n최종 x = {history[-1]:.6f} (참값 x* = 3)&quot;)
+print(f&quot;최종 f(x) = {f(history[-1]):.10f} (참값 f(x*) = 0)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-29.py">docs/code/math/math-29.py</a></p>
+      <h2>Exercise</h2>
+      <p>Construct a 2D quadratic function with a deliberately poor condition number, run both plain and momentum-based gradient descent on it across several learning rates, and compare the iteration counts and trajectories visually.</p>
+      <h2>Practical Connection</h2>
+      <p>The LMSR cost function is convex, so properties like well-defined prices and a bounded loss follow directly from convexity, and this same optimization toolkit is exactly what you use when calibrating parameters against real data.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>Gradient Descent / Convex 직관 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 29 / 51 &middot; 10월 — 미적분·최적화 (Day 27–34)</p>
+      <p class="meta">Math &middot; Day 29 / 52 &middot; 10월 — 미적분·최적화 (Day 27–34)</p>
 
       <h2>개념</h2>
       <p>경사하강법은 목적함수의 기울기가 가장 가파른 상승 방향임을 이용해, 그 반대 방향으로 학습률만큼 이동하기를 반복하는 최적화 방법이다. 볼록함수는 정의역의 두 점을 잇는 선분이 항상 함수 그래프 위에 있는 함수이며, 이 성질 덕분에 국소 최소점이 곧 전역 최소점이고 기울기가 0인 점이 최적해가 된다. 기울기가 L-립시츠 연속인 매끄러운 볼록함수에서는 학습률을 1/L 이하로 잡으면 수렴이 보장되고, 강볼록성까지 있으면 오차가 기하급수적으로 줄어드는 더 빠른 속도를 얻는다. 학습률이 너무 크면 발산하고 너무 작으면 느리며, 조건수가 나쁘면 좁고 긴 골짜기에서 지그재그로 진동한다. 이를 완화하려고 모멘텀, 적응적 학습률, 전처리 같은 기법을 쓴다.</p>
       <p>머신러닝뿐 아니라 시장조성 파라미터 튜닝이나 캘리브레이션 같은 수치 최적화에서, 수렴하지 않는 원인이 문제의 비볼록성인지 학습률·조건수 문제인지 구분해야 한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 29 — Gradient Descent / Convex 직관
+# 볼록함수 f(x) = (x - 3)^2 위에서 경사하강법을 돌려 최소점 x=3 으로 수렴하는 과정을 본다.
+
+def f(x):
+    return (x - 3) ** 2
+
+
+def f_prime(x):
+    return 2 * (x - 3)
+
+
+x = 10.0  # 시작점
+learning_rate = 0.1
+history = [x]
+
+for step in range(30):
+    grad = f_prime(x)
+    x = x - learning_rate * grad
+    history.append(x)
+
+print(&quot;경사하강 진행 (x, f(x)):&quot;)
+for i in [0, 1, 2, 5, 10, 20, len(history) - 1]:
+    xi = history[i]
+    print(f&quot;  step {i:2d}: x = {xi:.6f}, f(x) = {f(xi):.8f}&quot;)
+
+print(f&quot;\n최종 x = {history[-1]:.6f} (참값 x* = 3)&quot;)
+print(f&quot;최종 f(x) = {f(history[-1]):.10f} (참값 f(x*) = 0)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-29.py">docs/code/math/math-29.py</a></p>
       <h2>연습</h2>
       <p>2차원 이차함수의 조건수를 크게 만들어 놓고 경사하강법을 순수 버전과 모멘텀 버전으로 돌려, 학습률을 바꿔가며 반복 횟수와 궤적을 그림으로 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

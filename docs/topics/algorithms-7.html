@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 7 — 스트리밍/스케치 알고리즘</title>
+<title>Day 7 — Streaming and Sketch Algorithms</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,58 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 7</p>
   <article>
+      <h1>Streaming and Sketch Algorithms <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 7 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>Streaming algorithms scan the data just once (or a few times) sequentially and produce an approximate answer using far less space than the input size. Since getting an exact answer requires memory proportional to the number of distinct elements — a proven lower bound — streaming algorithms instead use sketch data structures that take error and failure-probability parameters and give a probabilistic guarantee. Heavy-hitters detection (finding the most frequent elements) is solved either Misra-Gries style, keeping a fixed number of counters and decrementing them all in batches, or Count-Min Sketch style, adding into a 2D grid of counters via several hash functions and using the minimum as the estimate. Approximate quantiles are answered by structures like t-digest or KLL, which hierarchically compress the samples and answer a requested quantile within an error bound. What all of these share is mergeability — partial sketches computed on different machines can be combined, which is what makes them usable in a distributed setting.</p>
+      <p>When you need real-time answers — top users, p99 latency — over data like logs, metrics, or order flow that you can't afford to store in full, exact aggregation is the first thing to run out of memory.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 7: 스트리밍/스케치 알고리즘 — Misra-Gries로 heavy hitter 근사 탐지
+# 고정 개수 카운터만 유지하며 스트림을 한 번 훑어 빈도 상위 원소를 근사한다.
+
+import random
+from collections import Counter
+
+def misra_gries(stream, k):
+    counters = {}
+    for item in stream:
+        if item in counters:
+            counters[item] += 1
+        elif len(counters) &lt; k - 1:
+            counters[item] = 1
+        else:
+            for key in list(counters):
+                counters[key] -= 1
+                if counters[key] == 0:
+                    del counters[key]
+    return counters
+
+random.seed(0)
+heavy = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;]
+stream = []
+for _ in range(3000):
+    if random.random() &lt; 0.6:
+        stream.append(random.choice(heavy))        # 60%는 소수의 heavy hitter
+    else:
+        stream.append(f&quot;noise-{random.randint(0, 500)}&quot;)
+
+exact = Counter(stream)
+approx = misra_gries(stream, k=10)
+
+print(&quot;정확 카운트 상위 5개 :&quot;, exact.most_common(5))
+print(&quot;Misra-Gries 근사 결과(카운터 &lt;=9개) :&quot;, approx)
+print(&quot;실제 heavy hitter(A,B,C)가 근사 결과에 모두 포함:&quot;, all(h in approx for h in heavy))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-7.py">docs/code/algorithms/algorithms-7.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement a Count-Min Sketch, run it over a real log stream, and tabulate how the overestimation error shrinks as you vary the width, compared against the exact count.</p>
+      <h2>Practical Connection</h2>
+      <p>This applies directly to running continuous aggregation for a node operator — top callers per RPC method, top gas-consuming contracts — or to cheaply monitoring the fill-latency quantiles of Verex's order flow.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>스트리밍/스케치 알고리즘 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 7 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">heavy hitters, 근사 분위수</p>
@@ -115,7 +190,43 @@
       <p>스트리밍 알고리즘은 데이터를 한 번(또는 몇 번) 순차적으로만 훑으면서, 입력 크기보다 훨씬 작은 공간으로 근사 답을 내는 알고리즘이다. 정확한 답을 내려면 서로 다른 원소 수에 비례하는 메모리가 필요하다는 하한이 있기 때문에, 대신 오차와 실패확률을 파라미터로 받아 확률적 보장을 주는 스케치 자료구조를 쓴다. heavy hitters(빈도 상위 원소 찾기)는 Misra-Gries처럼 카운터를 고정 개수만 유지하며 일괄 감소시키는 방식이나, Count-Min Sketch처럼 여러 해시 함수로 2차원 카운터 배열에 더하고 최솟값을 추정치로 쓰는 방식으로 푼다. 근사 분위수는 t-digest, KLL 같은 구조가 표본을 계층적으로 압축해 원하는 분위수를 오차 범위 안에서 답한다. 공통 성질은 스케치가 병합 가능(mergeable)해서 분산 환경에서 부분 스케치를 합칠 수 있다는 점이다.</p>
       <p>로그·메트릭·주문 흐름처럼 전량 저장이 불가능한 데이터에서 상위 사용자, p99 지연 같은 값을 실시간으로 알아야 할 때 정확 집계는 메모리에서 먼저 무너진다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 7: 스트리밍/스케치 알고리즘 — Misra-Gries로 heavy hitter 근사 탐지
+# 고정 개수 카운터만 유지하며 스트림을 한 번 훑어 빈도 상위 원소를 근사한다.
+
+import random
+from collections import Counter
+
+def misra_gries(stream, k):
+    counters = {}
+    for item in stream:
+        if item in counters:
+            counters[item] += 1
+        elif len(counters) &lt; k - 1:
+            counters[item] = 1
+        else:
+            for key in list(counters):
+                counters[key] -= 1
+                if counters[key] == 0:
+                    del counters[key]
+    return counters
+
+random.seed(0)
+heavy = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;]
+stream = []
+for _ in range(3000):
+    if random.random() &lt; 0.6:
+        stream.append(random.choice(heavy))        # 60%는 소수의 heavy hitter
+    else:
+        stream.append(f&quot;noise-{random.randint(0, 500)}&quot;)
+
+exact = Counter(stream)
+approx = misra_gries(stream, k=10)
+
+print(&quot;정확 카운트 상위 5개 :&quot;, exact.most_common(5))
+print(&quot;Misra-Gries 근사 결과(카운터 &lt;=9개) :&quot;, approx)
+print(&quot;실제 heavy hitter(A,B,C)가 근사 결과에 모두 포함:&quot;, all(h in approx for h in heavy))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-7.py">docs/code/algorithms/algorithms-7.py</a></p>
       <h2>연습</h2>
       <p>Count-Min Sketch를 직접 구현해 실제 로그 스트림에 돌리고, 정확 카운트와 비교해 폭(width)을 바꿔가며 과대추정 오차가 어떻게 줄어드는지 표로 만들어 보라.</p>
       <h2>실무 · Verex 연결</h2>

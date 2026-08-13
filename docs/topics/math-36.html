@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 36 — 로그수익률·변동성(σ)</title>
+<title>Day 36 — Log Returns and Volatility (σ)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,84 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 36</p>
   <article>
+      <h1>Log Returns and Volatility (σ) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 36 / 52 &middot; November — Probability, Statistics &amp; Financial Math (Day 35-43)</p>
+      <h2>Concept</h2>
+      <p>Log return is defined as the natural logarithm of the ratio of consecutive prices, ln(P_t/P_{t-1}). Unlike simple returns, log returns add up over consecutive periods, which makes multi-period aggregation easy, treats gains and losses symmetrically, and is nearly identical to the simple return when the value itself is small. Volatility σ is the standard deviation of these returns; under the assumption that returns are independent and identically distributed, it scales with the square root of the time period, so short-interval volatility is converted to a longer horizon by multiplying by the square root of the number of periods. Real financial time series don't fully satisfy that assumption — they show fat tails and volatility clustering — which is why realized volatility computed from historical data differs from the implied volatility backed out of option prices. The choice of sample window length and observation frequency has a large effect on the estimate.</p>
+      <p>Risk limits, margin, and pricing models all rest on volatility figures, but mechanically applying square-root-of-time scaling systematically underestimates tail risk. Knowing which assumptions a given number rests on is the whole point.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 36 — 로그수익률·변동성(σ)
+# 짧은 가격 시계열에서 로그수익률을 계산하고 표준편차(변동성)를 구한 뒤, 기간 환산을 보여준다.
+
+import math
+
+prices = [100.0, 101.5, 99.8, 102.3, 103.0, 101.0, 104.5, 103.8, 106.0, 105.2]
+
+log_returns = [math.log(prices[i] / prices[i - 1]) for i in range(1, len(prices))]
+
+n = len(log_returns)
+mean_r = sum(log_returns) / n
+variance = sum((r - mean_r) ** 2 for r in log_returns) / (n - 1)  # 표본분산 (n-1)
+daily_vol = math.sqrt(variance)
+
+print(&quot;가격:&quot;, prices)
+print(&quot;\n일별 로그수익률:&quot;)
+for i, r in enumerate(log_returns, start=1):
+    print(f&quot;  day {i}: {r:+.5f}&quot;)
+
+print(f&quot;\n평균 로그수익률 = {mean_r:.5f}&quot;)
+print(f&quot;일간 변동성(σ_daily) = {daily_vol:.5f}&quot;)
+
+# 연환산: iid 가정 아래 변동성은 기간 수의 제곱근에 비례
+trading_days = 252
+annual_vol = daily_vol * math.sqrt(trading_days)
+print(f&quot;연환산 변동성(σ_annual, sqrt(252) 법칙) = {annual_vol:.5f} ({annual_vol*100:.2f}%)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-36.py">docs/code/math/math-36.py</a></p>
+      <h2>Exercise</h2>
+      <p>Take a daily closing-price series for any asset, compute log returns, derive the standard deviation and its square-root-time-scaled value, then compare the frequency of extreme moves the normal-distribution assumption predicts against what actually occurred.</p>
+      <h2>Practical Connection</h2>
+      <p>Prediction-market prices are probabilities bounded between 0 and 1, so log returns don't apply directly, but converting to log-odds aligns with the way LMSR prices respond linearly to holdings — giving volatility analysis a natural coordinate system.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>로그수익률·변동성(σ) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 36 / 51 &middot; 11월 — 확률·통계·금융수학 (Day 35–42)</p>
+      <p class="meta">Math &middot; Day 36 / 52 &middot; 11월 — 확률·통계·금융수학 (Day 35–43)</p>
 
       <h2>개념</h2>
       <p>로그수익률은 연속된 가격의 비를 자연로그로 취한 값 ln(P_t/P_{t-1})로 정의된다. 단순수익률과 달리 기간을 이어 붙일 때 단순 덧셈이 되어 다기간 집계가 쉽고, 상승과 하락이 대칭적으로 표현되며 값이 작을 때는 단순수익률과 거의 같다. 변동성 σ는 이 수익률의 표준편차이며, 수익률이 독립동일분포라는 가정 아래에서는 기간 길이의 제곱근에 비례해 커지므로 짧은 주기 변동성에 기간 수의 제곱근을 곱해 환산한다. 실제 금융 시계열은 이 가정을 잘 만족하지 않아 두꺼운 꼬리와 변동성 군집이 나타나고, 그래서 과거 데이터로 계산한 실현 변동성과 옵션 가격에서 역산한 내재 변동성이 서로 다르다. 추정할 때는 표본 구간 길이와 관측 주기 선택이 결과를 크게 좌우한다.</p>
       <p>리스크 한도, 마진, 가격 모델이 모두 변동성 수치 위에 서 있는데 제곱근 스케일링을 기계적으로 적용하면 꼬리 위험을 체계적으로 과소평가한다. 어떤 가정에서 나온 숫자인지 아는 것이 핵심이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 36 — 로그수익률·변동성(σ)
+# 짧은 가격 시계열에서 로그수익률을 계산하고 표준편차(변동성)를 구한 뒤, 기간 환산을 보여준다.
+
+import math
+
+prices = [100.0, 101.5, 99.8, 102.3, 103.0, 101.0, 104.5, 103.8, 106.0, 105.2]
+
+log_returns = [math.log(prices[i] / prices[i - 1]) for i in range(1, len(prices))]
+
+n = len(log_returns)
+mean_r = sum(log_returns) / n
+variance = sum((r - mean_r) ** 2 for r in log_returns) / (n - 1)  # 표본분산 (n-1)
+daily_vol = math.sqrt(variance)
+
+print(&quot;가격:&quot;, prices)
+print(&quot;\n일별 로그수익률:&quot;)
+for i, r in enumerate(log_returns, start=1):
+    print(f&quot;  day {i}: {r:+.5f}&quot;)
+
+print(f&quot;\n평균 로그수익률 = {mean_r:.5f}&quot;)
+print(f&quot;일간 변동성(σ_daily) = {daily_vol:.5f}&quot;)
+
+# 연환산: iid 가정 아래 변동성은 기간 수의 제곱근에 비례
+trading_days = 252
+annual_vol = daily_vol * math.sqrt(trading_days)
+print(f&quot;연환산 변동성(σ_annual, sqrt(252) 법칙) = {annual_vol:.5f} ({annual_vol*100:.2f}%)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-36.py">docs/code/math/math-36.py</a></p>
       <h2>연습</h2>
       <p>임의의 자산 일별 종가 시계열로 로그수익률을 계산해 표준편차와 제곱근 스케일 환산값을 구하고, 정규분포 가정에서 기대되는 극단값 빈도와 실제 빈도를 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

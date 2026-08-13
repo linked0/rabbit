@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 9 — 카운팅 원리(순열·조합·이항계수)</title>
+<title>Day 9 — Counting Principles: Permutations, Combinations, and Binomial Coefficients</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,94 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 9</p>
   <article>
+      <h1>Counting Principles: Permutations, Combinations, and Binomial Coefficients <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 9 / 52 &middot; July — Discrete Math &amp; Logic (Day 3-10)</p>
+      <h2>Concept</h2>
+      <p>Counting rests on two rules: mutually exclusive choices add (the sum rule), and independent sequential steps multiply (the product rule). The number of ways to pick k items from n, order-sensitive, is the permutation count n!/(n-k)!, and order-insensitive, it's the binomial coefficient C(n,k) = n!/(k!(n-k)!). The binomial coefficients are exactly the expansion coefficients of (x+y)^n, and Pascal's identity C(n,k) = C(n-1,k-1) + C(n-1,k) falls straight out of a combinatorial argument splitting on &quot;cases that include a particular element vs. cases that don't.&quot; When repetition is allowed or conditions overlap, this extends to combinations with repetition and inclusion-exclusion, and counting problems are usually half-solved just by first defining what counts as &quot;the same.&quot;</p>
+      <p>Real-world calculations like counting an algorithm's cases, estimating hash collision probability, or designing random sampling all rest on these basic rules, and getting them wrong throws off the entire probability estimate.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 카운팅 원리(순열·조합·이항계수) — nPr, nCr 을 직접 구현해 math.perm/math.comb 와 대조하고,
+# 파스칼 항등식 C(n,k) = C(n-1,k-1) + C(n-1,k) 도 조합적으로 검증.
+
+import math
+from itertools import permutations, combinations
+
+def n_perm(n, r):
+    return math.factorial(n) // math.factorial(n - r)
+
+def n_comb(n, r):
+    return math.factorial(n) // (math.factorial(r) * math.factorial(n - r))
+
+n, r = 8, 3
+my_perm, my_comb = n_perm(n, r), n_comb(n, r)
+print(f&quot;P({n},{r}) 직접계산={my_perm}  math.perm={math.perm(n, r)}  일치? {my_perm == math.perm(n, r)}&quot;)
+print(f&quot;C({n},{r}) 직접계산={my_comb}  math.comb={math.comb(n, r)}  일치? {my_comb == math.comb(n, r)}&quot;)
+
+# 실제로 나열해서 개수를 세어도 같은지 확인 (작은 n으로).
+items = list(range(5))
+listed_perm = len(list(permutations(items, 3)))
+listed_comb = len(list(combinations(items, 3)))
+print(f&quot;\n{items} 에서 3개 뽑기: 나열해서 센 순열 수={listed_perm} (공식={n_perm(5,3)}), &quot;
+      f&quot;조합 수={listed_comb} (공식={n_comb(5,3)})&quot;)
+
+# 파스칼 항등식: 특정 원소를 포함하는 경우(C(n-1,k-1)) + 포함하지 않는 경우(C(n-1,k))
+for n in (6, 9, 12):
+    for k in range(1, n):
+        lhs = math.comb(n, k)
+        rhs = math.comb(n - 1, k - 1) + math.comb(n - 1, k)
+        assert lhs == rhs, f&quot;파스칼 항등식 불일치: n={n}, k={k}&quot;
+print(&quot;\n파스칼 항등식 C(n,k)=C(n-1,k-1)+C(n-1,k) 모든 표본에서 성립 확인 완료.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-9.py">docs/code/math/math-9.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement C(n,k) two ways — as DP on Pascal's identity, and via the multiplicative formula — compare how overflow and precision diverge for large n, and prove the identity by hand with a combinatorial argument.</p>
+      <h2>Practical Connection</h2>
+      <p>This is the most basic tool for counting outcome combinations in a prediction market, computing the probability that a set of nodes reaches quorum, or working the hash-collision birthday problem.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>카운팅 원리(순열·조합·이항계수) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 9 / 51 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
+      <p class="meta">Math &middot; Day 9 / 52 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
 
       <h2>개념</h2>
       <p>카운팅의 토대는 두 규칙이다. 서로 배타적인 선택지는 더하고(합의 법칙), 독립적으로 이어지는 단계는 곱한다(곱의 법칙). 순서를 구분해 n개 중 k개를 뽑는 순열의 수는 n!/(n-k)!이고, 순서를 구분하지 않는 조합의 수는 이항계수 C(n,k)=n!/(k!(n-k)!)이다. 이항계수는 (x+y)^n의 전개 계수와 같고, 파스칼 항등식 C(n,k)=C(n-1,k-1)+C(n-1,k)는 '특정 원소를 포함하는 경우와 포함하지 않는 경우'로 나눈 조합적 논증에서 바로 나온다. 중복을 허용하거나 조건이 겹칠 때는 중복조합과 포함배제 원리로 확장하며, 카운팅 문제는 대개 '무엇을 같다고 볼 것인가'를 먼저 정의하는 데서 절반이 풀린다.</p>
       <p>알고리즘의 경우의 수 분석, 해시 충돌 확률, 무작위 샘플링 설계 같은 실무 계산이 전부 이 기본 규칙 위에 서 있고, 여기서 어긋나면 확률 추정 전체가 틀어진다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 카운팅 원리(순열·조합·이항계수) — nPr, nCr 을 직접 구현해 math.perm/math.comb 와 대조하고,
+# 파스칼 항등식 C(n,k) = C(n-1,k-1) + C(n-1,k) 도 조합적으로 검증.
+
+import math
+from itertools import permutations, combinations
+
+def n_perm(n, r):
+    return math.factorial(n) // math.factorial(n - r)
+
+def n_comb(n, r):
+    return math.factorial(n) // (math.factorial(r) * math.factorial(n - r))
+
+n, r = 8, 3
+my_perm, my_comb = n_perm(n, r), n_comb(n, r)
+print(f&quot;P({n},{r}) 직접계산={my_perm}  math.perm={math.perm(n, r)}  일치? {my_perm == math.perm(n, r)}&quot;)
+print(f&quot;C({n},{r}) 직접계산={my_comb}  math.comb={math.comb(n, r)}  일치? {my_comb == math.comb(n, r)}&quot;)
+
+# 실제로 나열해서 개수를 세어도 같은지 확인 (작은 n으로).
+items = list(range(5))
+listed_perm = len(list(permutations(items, 3)))
+listed_comb = len(list(combinations(items, 3)))
+print(f&quot;\n{items} 에서 3개 뽑기: 나열해서 센 순열 수={listed_perm} (공식={n_perm(5,3)}), &quot;
+      f&quot;조합 수={listed_comb} (공식={n_comb(5,3)})&quot;)
+
+# 파스칼 항등식: 특정 원소를 포함하는 경우(C(n-1,k-1)) + 포함하지 않는 경우(C(n-1,k))
+for n in (6, 9, 12):
+    for k in range(1, n):
+        lhs = math.comb(n, k)
+        rhs = math.comb(n - 1, k - 1) + math.comb(n - 1, k)
+        assert lhs == rhs, f&quot;파스칼 항등식 불일치: n={n}, k={k}&quot;
+print(&quot;\n파스칼 항등식 C(n,k)=C(n-1,k-1)+C(n-1,k) 모든 표본에서 성립 확인 완료.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-9.py">docs/code/math/math-9.py</a></p>
       <h2>연습</h2>
       <p>C(n,k)를 파스칼 항등식 기반 DP와 곱셈식 기반 두 방식으로 구현해, 큰 n에서 오버플로와 정밀도가 어떻게 달라지는지 비교하고 조합적 논증으로 항등식을 손으로 증명하라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 80 — 외부 정렬·병합 전략과 병렬 정렬 (TAOCP 3권)</title>
+<title>Day 80 — External Sorting, Merge Strategies, and Parallel Sort (TAOCP Vol. 3) — The Real Bottleneck in Indexer Rebuilds</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,56 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 80</p>
   <article>
+      <h1>External Sorting, Merge Strategies, and Parallel Sort (TAOCP Vol. 3) — The Real Bottleneck in Indexer Rebuilds <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 80 / 100 &middot; E. Data &amp; Storage Engines (Day 69-81)</p>
+      <h2>Concept</h2>
+      <p>External sorting is used when data doesn't fit in memory: it splits into a run-generation phase, where memory-sized runs are sorted and written to disk, and a merge phase, where those runs are combined via k-way merging. Raising the merge fan-in k shrinks the number of passes needed — it's log base k of the number of runs — but each run needs its own input buffer, so a bigger k means smaller per-run buffers and worse sequential-read efficiency; that's the tradeoff. Using replacement selection during run generation can produce runs longer than memory on average, which cuts the number of runs outright. Parallel sorting either splits the data, sorts each part, and merges, or uses sample sort — sampling to pick partition boundaries and sorting each partition independently — and in both cases the real bottleneck is memory bandwidth and data movement, not comparisons. In other words, the cost model for external and parallel sorting should be built on blocks and bytes transferred, not comparison count.</p>
+      <p>Sorts that exceed memory come up constantly in practice — index rebuilds, large joins, log reprocessing — and what actually decides performance there is buffer size and merge fan-in, not algorithm choice.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 외부 정렬 — 메모리에 다 못 올리는 데이터를 런(run)으로 쪼개 정렬 후 k-way 병합한다.
+# 비용은 비교 횟수가 아니라 &quot;몇 번 디스크를 훑는가(패스 수)&quot;로 세는 게 핵심이다.
+
+import heapq
+import random
+
+random.seed(1)
+data = random.sample(range(1000), 37)     # &quot;디스크에 있는&quot; 전체 데이터
+MEMORY_CAPACITY = 6                        # 메모리에 한 번에 올릴 수 있는 크기
+
+def make_sorted_runs(data, capacity):
+    runs = []
+    for i in range(0, len(data), capacity):
+        chunk = data[i:i + capacity]
+        runs.append(sorted(chunk))         # 런 하나 = 메모리에 올려 정렬 후 &quot;디스크&quot;에 기록
+    return runs
+
+def k_way_merge(runs):
+    # heapq.merge 는 여러 정렬된 이터러블을 O(N log k) 로 병합한다 (k = 런 개수)
+    return list(heapq.merge(*runs))
+
+runs = make_sorted_runs(data, MEMORY_CAPACITY)
+merged = k_way_merge(runs)
+
+import math
+num_passes = math.ceil(math.log(len(runs), MEMORY_CAPACITY)) if len(runs) &gt; 1 else 1
+
+print(&quot;input size:&quot;, len(data), &quot;| memory capacity:&quot;, MEMORY_CAPACITY)
+print(&quot;number of sorted runs:&quot;, len(runs))
+for i, r in enumerate(runs):
+    print(f&quot;  run {i}: {r}&quot;)
+print(&quot;merged result is sorted:&quot;, merged == sorted(data))
+print(&quot;approx merge passes needed (log_k of run count):&quot;, num_passes)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-80.py">docs/code/algorithms/algorithms-80.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement external sort over a file larger than memory using a fixed buffer, then vary the merge fan-in and measure total runtime and actual bytes read/written to find the optimum.</p>
+      <h2>Practical Connection</h2>
+      <p>Re-indexing chain events from genesis makes sorting block/log keys a real bottleneck, and tuning batch size and merge fan-in there determines the total re-sync time.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>외부 정렬·병합 전략과 병렬 정렬 (TAOCP 3권) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 80 / 100 &middot; E. 데이터·스토리지 엔진 (Day 69–81)</p>
       <p class="lead">인덱서 재구성의 실제 병목</p>
@@ -115,7 +188,41 @@
       <p>외부 정렬은 데이터가 메모리보다 클 때 쓰는 방법으로, 메모리에 들어가는 크기의 런(run)을 만들어 정렬해 디스크에 쓰는 단계와 이 런들을 다방향 병합으로 합치는 단계로 나뉜다. 병합 차수 k를 키우면 필요한 패스 수가 런 개수에 대한 log_k로 줄지만, 런마다 입력 버퍼를 나눠 가져야 해서 버퍼가 작아지면 순차 읽기 효율이 떨어지는 트레이드오프가 있다. 런 생성 단계에서 replacement selection을 쓰면 평균적으로 메모리 크기보다 긴 런을 만들 수 있어 런 개수 자체를 줄일 수 있다. 병렬 정렬은 데이터를 나눠 각각 정렬한 뒤 병합하거나, 샘플링으로 분할 경계를 정해 각 파티션을 독립적으로 정렬하는 sample sort 방식을 쓰며, 이때 실제 병목은 비교 연산이 아니라 메모리 대역폭과 데이터 이동량이다. 즉 외부·병렬 정렬의 비용 모델은 비교 횟수가 아니라 전송한 블록 수와 바이트 수로 세워야 한다.</p>
       <p>인덱스 재구축, 대용량 조인, 로그 재처리처럼 메모리를 넘는 정렬은 실무에서 자주 나오고, 여기서 성능을 가르는 것은 알고리즘 선택보다 버퍼 크기와 병합 차수 설정이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 외부 정렬 — 메모리에 다 못 올리는 데이터를 런(run)으로 쪼개 정렬 후 k-way 병합한다.
+# 비용은 비교 횟수가 아니라 &quot;몇 번 디스크를 훑는가(패스 수)&quot;로 세는 게 핵심이다.
+
+import heapq
+import random
+
+random.seed(1)
+data = random.sample(range(1000), 37)     # &quot;디스크에 있는&quot; 전체 데이터
+MEMORY_CAPACITY = 6                        # 메모리에 한 번에 올릴 수 있는 크기
+
+def make_sorted_runs(data, capacity):
+    runs = []
+    for i in range(0, len(data), capacity):
+        chunk = data[i:i + capacity]
+        runs.append(sorted(chunk))         # 런 하나 = 메모리에 올려 정렬 후 &quot;디스크&quot;에 기록
+    return runs
+
+def k_way_merge(runs):
+    # heapq.merge 는 여러 정렬된 이터러블을 O(N log k) 로 병합한다 (k = 런 개수)
+    return list(heapq.merge(*runs))
+
+runs = make_sorted_runs(data, MEMORY_CAPACITY)
+merged = k_way_merge(runs)
+
+import math
+num_passes = math.ceil(math.log(len(runs), MEMORY_CAPACITY)) if len(runs) &gt; 1 else 1
+
+print(&quot;input size:&quot;, len(data), &quot;| memory capacity:&quot;, MEMORY_CAPACITY)
+print(&quot;number of sorted runs:&quot;, len(runs))
+for i, r in enumerate(runs):
+    print(f&quot;  run {i}: {r}&quot;)
+print(&quot;merged result is sorted:&quot;, merged == sorted(data))
+print(&quot;approx merge passes needed (log_k of run count):&quot;, num_passes)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-80.py">docs/code/algorithms/algorithms-80.py</a></p>
       <h2>연습</h2>
       <p>메모리보다 큰 파일을 제한된 버퍼로 정렬하는 외부 정렬을 직접 구현하고, 병합 차수를 바꿔가며 총 실행 시간과 실제 읽고 쓴 바이트 수를 측정해 최적점을 찾아보라.</p>
       <h2>실무 · Verex 연결</h2>

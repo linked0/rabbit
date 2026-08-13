@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 24 — 수치선형대수(조건수)</title>
+<title>Day 24 — Numerical Linear Algebra (Condition Number)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,82 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 24</p>
   <article>
+      <h1>Numerical Linear Algebra (Condition Number) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 24 / 52 &middot; September — Linear Algebra (Day 18-26)</p>
+      <h2>Concept</h2>
+      <p>The condition number expresses how much a relative error in the input gets amplified into a relative error in the output; for a linear system Ax = b, it's defined as κ(A) = ||A|| · ||A⁻¹||. Under the 2-norm, this equals the ratio of the largest to the smallest singular value, σ_max/σ_min, so the closer A is to being singular, the larger the condition number. The relative error of the solution is bounded roughly by the condition number times the relative error of the input, so a condition number on the order of 10^k means you can expect to lose about k significant digits. The key distinction is that the condition number is a property of the problem itself, separate from numerical stability, which is a property of the algorithm. In other words, even a backward-stable algorithm can't produce an accurate answer if the problem itself is ill-conditioned — in that case you need a model-level response like regularization or reformulation.</p>
+      <p>If regression or optimization results wobble wildly with tiny changes in the data, it's more likely that the problem itself is ill-conditioned than a code bug — and the appropriate response is completely different in each case.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 수치선형대수(조건수) — κ(A) = σ_max/σ_min 이 클수록 입력의 작은 오차가
+# 해의 큰 오차로 증폭됨을 잘 조건화된 행렬과 거의 특이한 행렬을 비교해 확인한다.
+
+import numpy as np
+
+A_good = np.array([[2.0, 0.0], [0.0, 3.0]])          # 축이 직교, 스케일도 비슷 → 잘 조건화됨
+A_bad = np.array([[1.0, 1.0], [1.0, 1.0001]])         # 두 행이 거의 평행 → 특이행렬에 근접
+
+b = np.array([1.0, 1.0])
+b_perturbed = b + np.array([1e-4, -1e-4])  # b에 아주 작은 오차 주입
+
+for name, A in [(&quot;잘 조건화됨&quot;, A_good), (&quot;거의 특이 (ill-conditioned)&quot;, A_bad)]:
+    cond = np.linalg.cond(A)
+    x = np.linalg.solve(A, b)
+    x_perturbed = np.linalg.solve(A, b_perturbed)
+
+    rel_input_err = np.linalg.norm(b_perturbed - b) / np.linalg.norm(b)
+    rel_output_err = np.linalg.norm(x_perturbed - x) / np.linalg.norm(x)
+
+    print(f&quot;[{name}] κ(A) = {cond:.2f}&quot;)
+    print(f&quot;  입력 상대오차 = {rel_input_err:.2e}&quot;)
+    print(f&quot;  출력(해) 상대오차 = {rel_output_err:.2e}  (κ(A) * 입력오차 ≈ {cond * rel_input_err:.2e})&quot;)
+    print(f&quot;  증폭 배율 = {rel_output_err / rel_input_err:.2f}\n&quot;)
+
+print(&quot;→ 조건수가 큰 A_bad에서 동일한 입력 오차가 훨씬 크게 증폭됨을 확인 — 문제 자체의 성질이지 알고리즘 탓이 아니다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-24.py">docs/code/math/math-24.py</a></p>
+      <h2>Exercise</h2>
+      <p>Solve Ax = b using increasingly large Hilbert matrices, print out both the condition number and the actual relative error together, and check whether the two grow in step with each other.</p>
+      <h2>Practical Connection</h2>
+      <p>In AMM curves or LMSR price calculations, when the liquidity parameter is small or probabilities approach 0/1, exponential and logarithmic terms can blow up, producing the same kind of amplification — so fixed-point implementations need to bound the input range and rearrange formulas into numerically stable forms.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>수치선형대수(조건수) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 24 / 51 &middot; 9월 — 선형대수 (Day 18–26)</p>
+      <p class="meta">Math &middot; Day 24 / 52 &middot; 9월 — 선형대수 (Day 18–26)</p>
 
       <h2>개념</h2>
       <p>조건수는 입력의 상대 오차가 출력의 상대 오차로 얼마나 증폭되는지를 나타내는 양이며, 선형계 Ax = b에서는 κ(A) = ||A|| · ||A⁻¹||로 정의된다. 2-노름에서는 이 값이 최대 특이값과 최소 특이값의 비 σ_max/σ_min와 같고, 따라서 A가 특이행렬에 가까울수록 조건수가 커진다. 해의 상대 오차는 대략 조건수 곱하기 입력의 상대 오차로 상계되므로, 조건수가 10^k 규모면 유효 자릿수를 약 k자리 잃는다고 볼 수 있다. 중요한 구분은 조건수가 문제 자체의 성질이라는 점이며, 알고리즘의 성질인 수치 안정성과는 별개다. 즉 후방 안정적인 알고리즘을 써도 문제가 ill-conditioned하면 정확한 답을 얻을 수 없고, 이때는 정규화나 재정식화 같은 모델 수준의 대응이 필요하다.</p>
       <p>회귀나 최적화에서 결과가 데이터의 미세한 변화에 요동친다면 코드 버그가 아니라 설계된 문제 자체가 ill-conditioned일 가능성이 높고, 대응 방법이 완전히 다르다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 수치선형대수(조건수) — κ(A) = σ_max/σ_min 이 클수록 입력의 작은 오차가
+# 해의 큰 오차로 증폭됨을 잘 조건화된 행렬과 거의 특이한 행렬을 비교해 확인한다.
+
+import numpy as np
+
+A_good = np.array([[2.0, 0.0], [0.0, 3.0]])          # 축이 직교, 스케일도 비슷 → 잘 조건화됨
+A_bad = np.array([[1.0, 1.0], [1.0, 1.0001]])         # 두 행이 거의 평행 → 특이행렬에 근접
+
+b = np.array([1.0, 1.0])
+b_perturbed = b + np.array([1e-4, -1e-4])  # b에 아주 작은 오차 주입
+
+for name, A in [(&quot;잘 조건화됨&quot;, A_good), (&quot;거의 특이 (ill-conditioned)&quot;, A_bad)]:
+    cond = np.linalg.cond(A)
+    x = np.linalg.solve(A, b)
+    x_perturbed = np.linalg.solve(A, b_perturbed)
+
+    rel_input_err = np.linalg.norm(b_perturbed - b) / np.linalg.norm(b)
+    rel_output_err = np.linalg.norm(x_perturbed - x) / np.linalg.norm(x)
+
+    print(f&quot;[{name}] κ(A) = {cond:.2f}&quot;)
+    print(f&quot;  입력 상대오차 = {rel_input_err:.2e}&quot;)
+    print(f&quot;  출력(해) 상대오차 = {rel_output_err:.2e}  (κ(A) * 입력오차 ≈ {cond * rel_input_err:.2e})&quot;)
+    print(f&quot;  증폭 배율 = {rel_output_err / rel_input_err:.2f}\n&quot;)
+
+print(&quot;→ 조건수가 큰 A_bad에서 동일한 입력 오차가 훨씬 크게 증폭됨을 확인 — 문제 자체의 성질이지 알고리즘 탓이 아니다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-24.py">docs/code/math/math-24.py</a></p>
       <h2>연습</h2>
       <p>크기를 키운 힐베르트 행렬로 Ax = b를 풀어 조건수와 실제 상대 오차를 함께 출력하고, 둘의 증가가 대응하는지 확인해 볼 것.</p>
       <h2>실무 · Verex 연결</h2>

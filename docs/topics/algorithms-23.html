@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 23 — 인라이닝·루프 변환·자동 벡터화</title>
+<title>Day 23 — Inlining, Loop Transformations, and Auto-Vectorization</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,70 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 23</p>
   <article>
+      <h1>Inlining, Loop Transformations, and Auto-Vectorization <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 23 / 100 &middot; B. Compilers, Runtimes &amp; VMs (Day 20-35)</p>
+      <h2>Concept</h2>
+      <p>Inlining is the transformation that replaces a function call with the callee's body; the bigger payoff isn't removing call overhead itself but eliminating the call boundary, which unlocks follow-on optimizations like constant propagation and dead-code elimination. The trade-off is larger code size and more instruction-cache pressure, so compilers decide whether to inline using heuristics based on function size and call frequency. Loop transformations include unrolling, loop-invariant code motion (LICM), loop interchange, fusion and fission, and tiling; their common goal is to improve locality and instruction-level parallelism without breaking data dependencies. Auto-vectorization is the transformation that packs loop iterations with no cross-iteration dependencies into SIMD instructions, but it frequently fails because of possible pointer aliasing, irregular control flow, and the constraint that floating-point associativity must not be changed. So whether vectorization actually happened shouldn't be guessed — it needs to be confirmed from the compiler's optimization report or the generated assembly.</p>
+      <p>When a hot loop doesn't speed up as expected, the cause is usually not the algorithm but vectorization failing to kick in, or inlining being blocked so that every downstream optimization falls through.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 인라이닝·루프 변환·자동 벡터화 — LICM(불변식 끌어올리기)과 루프 언롤링이 연산 횟수를 어떻게 줄이는지 센다.
+
+def naive_scale_shift(xs, a, b):
+    ops = 0
+    out = []
+    for x in xs:
+        invariant = a * b + 1     # 매 반복 다시 계산됨 (루프 불변식인데 안 끌어올림)
+        ops += 2
+        out.append(x + invariant)
+        ops += 1
+    return out, ops
+
+def licm_scale_shift(xs, a, b):
+    ops = 0
+    invariant = a * b + 1         # 루프 밖으로 한 번만 끌어올림
+    ops += 2
+    out = []
+    for x in xs:
+        out.append(x + invariant)
+        ops += 1
+    return out, ops
+
+def unrolled_sum(xs, factor=4):
+    # 루프를 factor개씩 묶어 반복 증분/조건 검사 오버헤드를 줄인다 (unrolling)
+    total, n, i, iterations = 0, len(xs), 0, 0
+    while i + factor &lt;= n:
+        total += xs[i] + xs[i + 1] + xs[i + 2] + xs[i + 3]
+        i += factor
+        iterations += 1
+    while i &lt; n:
+        total += xs[i]
+        i += 1
+        iterations += 1
+    return total, iterations
+
+xs = list(range(1, 21))
+r1, ops1 = naive_scale_shift(xs, 3, 5)
+r2, ops2 = licm_scale_shift(xs, 3, 5)
+assert r1 == r2
+
+total_unrolled, iters = unrolled_sum(xs, factor=4)
+assert sum(xs) == total_unrolled
+
+print(f&quot;결과 동일: {r1 == r2}, naive 연산수={ops1}, LICM 연산수={ops2} &quot;
+      f&quot;(불변식 재계산 {len(xs) - 1}회 절약)&quot;)
+print(f&quot;합계={total_unrolled}: naive 반복수={len(xs)}, unrolled(factor=4) 반복수={iters} &quot;
+      f&quot;(루프 오버헤드 ~{len(xs) - iters}회 절약)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-23.py">docs/code/algorithms/algorithms-23.py</a></p>
+      <h2>Exercise</h2>
+      <p>Write a simple array-sum loop and compile it with optimization-report flags on, then compare whether SIMD instructions appear in the assembly before and after telling the compiler the pointers don't alias.</p>
+      <h2>Practical Connection</h2>
+      <p>When looking at the performance of a matching engine or a signature-verification loop written in Go, this leads directly to the habit of checking the compiler's output for the inlining budget and whether bounds-check elimination happened.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>인라이닝·루프 변환·자동 벡터화 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 23 / 100 &middot; B. 컴파일러·런타임·VM (Day 20–35)</p>
 
@@ -115,7 +202,55 @@
       <p>인라이닝은 함수 호출을 피호출 함수의 본문으로 치환하는 변환으로, 호출 오버헤드 제거 자체보다 호출 경계를 없애 상수 전파·죽은 코드 제거 같은 후속 최적화를 열어 주는 효과가 더 크다. 대신 코드 크기가 늘어 명령어 캐시 압박이 생기므로 컴파일러는 함수 크기와 호출 빈도 휴리스틱으로 인라인 여부를 결정한다. 루프 변환에는 unrolling, 루프 불변식 끌어올리기(LICM), 루프 교환, 융합과 분할, 타일링이 있고 공통 목적은 데이터 의존성을 깨지 않으면서 지역성과 명령어 수준 병렬성을 높이는 것이다. 자동 벡터화는 반복 간 의존이 없는 루프를 SIMD 명령으로 묶는 변환인데, 포인터 앨리어싱 가능성, 불규칙한 제어 흐름, 부동소수점 결합법칙을 바꿔서는 안 된다는 제약 때문에 자주 실패한다. 따라서 벡터화가 걸렸는지는 추측하지 말고 컴파일러의 최적화 리포트나 생성된 어셈블리로 확인해야 한다.</p>
       <p>핫 루프가 기대만큼 안 빨라지는 원인은 대개 알고리즘이 아니라 벡터화가 걸리지 않았거나 인라인이 막혀 후속 최적화가 전부 무산된 것이기 때문이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 인라이닝·루프 변환·자동 벡터화 — LICM(불변식 끌어올리기)과 루프 언롤링이 연산 횟수를 어떻게 줄이는지 센다.
+
+def naive_scale_shift(xs, a, b):
+    ops = 0
+    out = []
+    for x in xs:
+        invariant = a * b + 1     # 매 반복 다시 계산됨 (루프 불변식인데 안 끌어올림)
+        ops += 2
+        out.append(x + invariant)
+        ops += 1
+    return out, ops
+
+def licm_scale_shift(xs, a, b):
+    ops = 0
+    invariant = a * b + 1         # 루프 밖으로 한 번만 끌어올림
+    ops += 2
+    out = []
+    for x in xs:
+        out.append(x + invariant)
+        ops += 1
+    return out, ops
+
+def unrolled_sum(xs, factor=4):
+    # 루프를 factor개씩 묶어 반복 증분/조건 검사 오버헤드를 줄인다 (unrolling)
+    total, n, i, iterations = 0, len(xs), 0, 0
+    while i + factor &lt;= n:
+        total += xs[i] + xs[i + 1] + xs[i + 2] + xs[i + 3]
+        i += factor
+        iterations += 1
+    while i &lt; n:
+        total += xs[i]
+        i += 1
+        iterations += 1
+    return total, iterations
+
+xs = list(range(1, 21))
+r1, ops1 = naive_scale_shift(xs, 3, 5)
+r2, ops2 = licm_scale_shift(xs, 3, 5)
+assert r1 == r2
+
+total_unrolled, iters = unrolled_sum(xs, factor=4)
+assert sum(xs) == total_unrolled
+
+print(f&quot;결과 동일: {r1 == r2}, naive 연산수={ops1}, LICM 연산수={ops2} &quot;
+      f&quot;(불변식 재계산 {len(xs) - 1}회 절약)&quot;)
+print(f&quot;합계={total_unrolled}: naive 반복수={len(xs)}, unrolled(factor=4) 반복수={iters} &quot;
+      f&quot;(루프 오버헤드 ~{len(xs) - iters}회 절약)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-23.py">docs/code/algorithms/algorithms-23.py</a></p>
       <h2>연습</h2>
       <p>단순 배열 합산 루프를 작성해 최적화 리포트 옵션과 함께 컴파일하고, 포인터에 앨리어싱 없음을 알려 주기 전후로 어셈블리에 SIMD 명령이 생기는지 비교하기.</p>
       <h2>실무 · Verex 연결</h2>

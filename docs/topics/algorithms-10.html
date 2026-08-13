@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 10 — 세그먼트 트리 심화</title>
+<title>Day 10 — Advanced Segment Trees</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,70 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 10</p>
   <article>
+      <h1>Advanced Segment Trees <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 10 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>A segment tree is a binary-tree structure that answers queries and updates over an associative operation on array ranges (sum, min, gcd, and so on) in O(log n). Lazy propagation handles whole-range updates by storing, at each node, a pending operation that hasn't yet been pushed down to its children, and only pushing it down when that child is actually visited — which keeps range updates at O(log n) too. For this to work, pending operations must be composable, and it must be defined how they affect a node's stored value depending on the range size (for a range-add, for instance, you add delta times the range length to the sum). A persistent segment tree creates only the O(log n) nodes along the root-to-leaf path on each update and shares the rest of the subtrees with the previous version via path copying, preserving every past version at only O(log n) extra space per update. That makes it possible to query any past version, which is widely used for finding the k-th element or computing a rank within a range.</p>
+      <p>For state aggregation that needs rollback or point-in-time snapshots, and for workloads with heavy range updates, a naive implementation collapses under O(n) cost per update.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 10: 세그먼트 트리 심화 — Lazy Propagation으로 구간 갱신·구간 합을 O(log n)에 처리
+# 보류값(lazy)을 노드에 쌓아두고 실제 방문 시점에만 자식으로 밀어내려 구간 갱신 비용을 낮춘다.
+
+class LazySegTree:
+    def __init__(self, n):
+        self.sum = [0] * (4 * n)
+        self.lazy = [0] * (4 * n)
+
+    def _push_down(self, node, lo, hi):
+        if self.lazy[node] == 0:
+            return
+        mid = (lo + hi) // 2
+        for child, clo, chi in ((node * 2, lo, mid), (node * 2 + 1, mid + 1, hi)):
+            self.lazy[child] += self.lazy[node]
+            self.sum[child] += self.lazy[node] * (chi - clo + 1)
+        self.lazy[node] = 0
+
+    def range_add(self, node, lo, hi, l, r, delta):
+        if r &lt; lo or hi &lt; l:
+            return
+        if l &lt;= lo and hi &lt;= r:
+            self.sum[node] += delta * (hi - lo + 1)
+            self.lazy[node] += delta
+            return
+        self._push_down(node, lo, hi)
+        mid = (lo + hi) // 2
+        self.range_add(node * 2, lo, mid, l, r, delta)
+        self.range_add(node * 2 + 1, mid + 1, hi, l, r, delta)
+        self.sum[node] = self.sum[node * 2] + self.sum[node * 2 + 1]
+
+    def range_sum(self, node, lo, hi, l, r):
+        if r &lt; lo or hi &lt; l:
+            return 0
+        if l &lt;= lo and hi &lt;= r:
+            return self.sum[node]
+        self._push_down(node, lo, hi)
+        mid = (lo + hi) // 2
+        return (self.range_sum(node * 2, lo, mid, l, r) +
+                self.range_sum(node * 2 + 1, mid + 1, hi, l, r))
+
+n = 10
+tree = LazySegTree(n)
+tree.range_add(1, 0, n - 1, 2, 5, 3)   # 인덱스 2~5에 +3
+tree.range_add(1, 0, n - 1, 0, 9, 1)   # 전체 구간에 +1
+print(&quot;구간 합 [0,9] =&quot;, tree.range_sum(1, 0, n - 1, 0, 9), &quot;(기대값: 3*4 + 1*10 = 22)&quot;)
+print(&quot;구간 합 [2,5] =&quot;, tree.range_sum(1, 0, n - 1, 2, 5), &quot;(기대값: (3+1)*4 = 16)&quot;)
+print(&quot;구간 합 [6,9] =&quot;, tree.range_sum(1, 0, n - 1, 6, 9), &quot;(기대값: 1*4 = 4)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-10.py">docs/code/algorithms/algorithms-10.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement a lazy segment tree that supports range-add and range-sum, then build a persistent version of the same operations, and cross-check queries against arbitrary past versions with randomized tests against a brute-force reference.</p>
+      <h2>Practical Connection</h2>
+      <p>When an indexer has to roll back to the aggregated state at a specific block height due to a chain reorg, a version-sharing structure lets it maintain snapshots at O(log n) cost instead of copying everything.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>세그먼트 트리 심화 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 10 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">lazy propagation·영속 세그먼트 트리</p>
@@ -115,7 +202,55 @@
       <p>세그먼트 트리는 배열 구간에 대해 결합법칙이 성립하는 연산(합, 최솟값, gcd 등)을 O(log n)에 질의·갱신하는 이진 트리 구조다. Lazy propagation은 구간 전체를 갱신할 때 각 노드에 &quot;아직 자식에게 내려보내지 않은 연산&quot;을 보류값으로 저장하고, 그 자식을 실제로 방문하는 시점에 밀어내려 구간 갱신도 O(log n)에 처리한다. 이 기법이 성립하려면 보류 연산끼리 합성 가능해야 하고, 구간 크기에 따라 노드 값에 어떻게 반영되는지가 정의되어야 한다(예: 구간 덧셈이면 합에 delta 곱하기 구간 길이를 더한다). 영속(persistent) 세그먼트 트리는 갱신 시 루트에서 잎까지의 경로에 있는 O(log n)개 노드만 새로 만들고 나머지 서브트리는 이전 버전과 공유하는 path copying 기법으로, 모든 과거 버전을 O(log n) 추가 공간에 보존한다. 덕분에 임의 시점 버전에 대한 질의가 가능해져 구간 내 k번째 원소나 랭크 질의에 널리 쓰인다.</p>
       <p>롤백이나 시점 스냅샷이 필요한 상태 집계, 그리고 구간 갱신이 대량으로 들어오는 워크로드에서 naive 구현은 갱신당 O(n)으로 무너진다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 10: 세그먼트 트리 심화 — Lazy Propagation으로 구간 갱신·구간 합을 O(log n)에 처리
+# 보류값(lazy)을 노드에 쌓아두고 실제 방문 시점에만 자식으로 밀어내려 구간 갱신 비용을 낮춘다.
+
+class LazySegTree:
+    def __init__(self, n):
+        self.sum = [0] * (4 * n)
+        self.lazy = [0] * (4 * n)
+
+    def _push_down(self, node, lo, hi):
+        if self.lazy[node] == 0:
+            return
+        mid = (lo + hi) // 2
+        for child, clo, chi in ((node * 2, lo, mid), (node * 2 + 1, mid + 1, hi)):
+            self.lazy[child] += self.lazy[node]
+            self.sum[child] += self.lazy[node] * (chi - clo + 1)
+        self.lazy[node] = 0
+
+    def range_add(self, node, lo, hi, l, r, delta):
+        if r &lt; lo or hi &lt; l:
+            return
+        if l &lt;= lo and hi &lt;= r:
+            self.sum[node] += delta * (hi - lo + 1)
+            self.lazy[node] += delta
+            return
+        self._push_down(node, lo, hi)
+        mid = (lo + hi) // 2
+        self.range_add(node * 2, lo, mid, l, r, delta)
+        self.range_add(node * 2 + 1, mid + 1, hi, l, r, delta)
+        self.sum[node] = self.sum[node * 2] + self.sum[node * 2 + 1]
+
+    def range_sum(self, node, lo, hi, l, r):
+        if r &lt; lo or hi &lt; l:
+            return 0
+        if l &lt;= lo and hi &lt;= r:
+            return self.sum[node]
+        self._push_down(node, lo, hi)
+        mid = (lo + hi) // 2
+        return (self.range_sum(node * 2, lo, mid, l, r) +
+                self.range_sum(node * 2 + 1, mid + 1, hi, l, r))
+
+n = 10
+tree = LazySegTree(n)
+tree.range_add(1, 0, n - 1, 2, 5, 3)   # 인덱스 2~5에 +3
+tree.range_add(1, 0, n - 1, 0, 9, 1)   # 전체 구간에 +1
+print(&quot;구간 합 [0,9] =&quot;, tree.range_sum(1, 0, n - 1, 0, 9), &quot;(기대값: 3*4 + 1*10 = 22)&quot;)
+print(&quot;구간 합 [2,5] =&quot;, tree.range_sum(1, 0, n - 1, 2, 5), &quot;(기대값: (3+1)*4 = 16)&quot;)
+print(&quot;구간 합 [6,9] =&quot;, tree.range_sum(1, 0, n - 1, 6, 9), &quot;(기대값: 1*4 = 4)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-10.py">docs/code/algorithms/algorithms-10.py</a></p>
       <h2>연습</h2>
       <p>구간 덧셈과 구간 합을 지원하는 lazy 세그먼트 트리를 구현한 뒤, 같은 연산을 영속 버전으로도 만들어 임의 과거 버전 질의 결과를 무작위 테스트로 브루트포스와 대조 검증하라.</p>
       <h2>실무 · Verex 연결</h2>

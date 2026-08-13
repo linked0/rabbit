@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 45 — 프로파일링 심화</title>
+<title>Day 45 — Advanced Profiling — Flame Graphs, perf, and PMU Counters</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,80 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 45</p>
   <article>
+      <h1>Advanced Profiling — Flame Graphs, perf, and PMU Counters <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 45 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>Profiling splits broadly into instrumentation, which hooks into code, and sampling, which periodically samples the running state; perf is a sampling tool that uses the kernel's perf_events to trigger an interrupt on a timer or PMU event overflow and collect the call stack at that moment. A flame graph is a picture built by folding collected stacks that share the same prefix together — the y-axis is stack depth, and the x-axis width is only the share of samples that stack accounted for, not a time axis. So a wide frame should be read as &quot;code that got sampled often, i.e., occupied a lot of CPU,&quot; not as &quot;a section that took a long time.&quot; The PMU is a set of hardware counters built into the CPU that count events like cycles, instructions, cache-misses, and branch-misses; from these you can compute IPC and tell whether a bottleneck is instruction supply, memory access, or branch misprediction. Stack collection depends on preconditions like maintaining the frame pointer or DWARF unwinding, and a broken stack in an optimized build — which distorts the graph itself — is the most common pitfall in practice.</p>
+      <p>Optimizing by guesswork usually fixes the wrong spot, and CPU-bound versus memory-bound problems have completely different fixes. Counters and flame graphs force that distinction to be made from data.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 프로파일링 심화 — perf 처럼 &quot;일정 주기마다 인터럽트를 걸어 콜스택을 표본화&quot;하는 걸 signal 타이머로 재현한다.
+# 플레임그래프의 너비는 &quot;오래 걸린 구간&quot;이 아니라 &quot;표본에서 자주 잡힌 스택(=CPU 를 많이 먹은 코드)&quot;임에 유의.
+
+import signal
+from collections import Counter
+
+samples = []  # 각 표본: 인터럽트가 걸린 순간의 콜스택(튜플)
+
+def on_timer_tick(signum, frame):    # perf_events 의 오버플로 인터럽트 핸들러에 해당
+    stack = []
+    f = frame
+    while f is not None:
+        stack.append(f.f_code.co_name)
+        f = f.f_back
+    samples.append(tuple(reversed(stack)))
+
+def cache_miss_heavy(n):        # 캐시 미스가 잦다고 가정한(=CPU 를 오래 점유하는) 함수
+    total = 0
+    for i in range(n):
+        total += i * i
+    return total
+
+def branch_miss_heavy(n):       # 분기 예측 실패가 잦다고 가정한 함수
+    total = 0
+    for i in range(n):
+        total += -i if i % 7 == 0 else i
+    return total
+
+def workload():
+    cache_miss_heavy(3_000_000)   # 실행 시간이 더 긴 쪽 -&gt; 표본에서 더 넓은 프레임을 차지해야 정상
+    branch_miss_heavy(500_000)
+
+signal.signal(signal.SIGVTALRM, on_timer_tick)          # CPU(가상) 시간 기준 인터럽트 등록
+signal.setitimer(signal.ITIMER_VIRTUAL, 0.001, 0.001)    # 1ms 주기 샘플링 (perf -F 1000 과 같은 아이디어)
+try:
+    workload()
+finally:
+    signal.setitimer(signal.ITIMER_VIRTUAL, 0)            # 타이머 해제
+    signal.signal(signal.SIGVTALRM, signal.SIG_DFL)
+
+# 플레임그래프 접기(fold): 같은 스택 경로를 하나로 묶어 등장 횟수(=CPU 점유 비율 proxy)를 센다.
+folded = Counter(&quot;;&quot;.join(s) for s in samples if s)
+total_samples = sum(folded.values())
+
+print(&quot;folded stacks (flamegraph 입력 포맷과 동일한 'stack;stack;...;count'):&quot;)
+for stack, count in folded.most_common(5):
+    pct = count / total_samples * 100 if total_samples else 0
+    print(f&quot;  {count:&gt;4} ({pct:4.1f}%)  {stack}&quot;)
+
+cache_related = sum(c for s, c in folded.items() if &quot;cache_miss_heavy&quot; in s)
+branch_related = sum(c for s, c in folded.items() if &quot;branch_miss_heavy&quot; in s)
+
+print(&quot;\ntotal samples captured:&quot;, total_samples)
+print(&quot;cache_miss_heavy 가 차지한 표본 비율:&quot;, f&quot;{cache_related / total_samples:.0%}&quot; if total_samples else &quot;n/a&quot;)
+print(&quot;branch_miss_heavy 가 차지한 표본 비율:&quot;, f&quot;{branch_related / total_samples:.0%}&quot; if total_samples else &quot;n/a&quot;)
+print(&quot;-&gt; 실행 시간이 더 긴 함수가 더 넓은 프레임(더 많은 표본)을 차지한다:&quot;,
+      cache_related &gt;= branch_related)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-45.py">docs/code/algorithms/algorithms-45.py</a></p>
+      <h2>Exercise</h2>
+      <p>Build one program that deliberately causes lots of cache misses through array traversal and another that deliberately causes branch mispredictions, then use perf to measure IPC, cache-misses, and branch-misses on each and see how the two bottlenecks look different in the counters.</p>
+      <h2>Practical Connection</h2>
+      <p>When a Go-based indexer or matching engine hits a throughput ceiling, this is exactly what's used to determine whether the cause is genuine computation volume or the data structure's memory locality.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>프로파일링 심화 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 45 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
       <p class="lead">플레임그래프·perf·PMU 카운터</p>
@@ -115,7 +212,65 @@
       <p>프로파일링은 크게 코드에 훅을 심는 계측(instrumentation)과 주기적으로 실행 상태를 표본화하는 샘플링으로 나뉘고, perf는 커널의 perf_events를 통해 타이머나 PMU 이벤트 오버플로 시점에 인터럽트를 걸어 콜스택을 수집하는 샘플링 도구다. 플레임그래프는 수집된 스택들을 동일 접두사끼리 접어(fold) 그린 그림으로, y축은 스택 깊이이고 x축 너비는 그 스택이 표본에서 차지한 비율일 뿐 시간 축이 아니다. 따라서 넓은 프레임은 '오래 걸린 구간'이 아니라 '표본에서 자주 잡힌, 즉 CPU를 많이 점유한 코드'로 읽어야 한다. PMU는 CPU 내장 하드웨어 카운터로 cycles, instructions, cache-misses, branch-misses 같은 이벤트를 세며, 이로부터 IPC를 계산해 병목이 명령어 공급 쪽인지 메모리 접근 쪽인지 분기 예측 실패 쪽인지 구분할 수 있다. 스택 수집은 frame pointer 유지나 DWARF 언와인딩 같은 전제가 필요해서, 최적화 빌드에서 스택이 끊기면 그래프 자체가 왜곡된다는 점이 실무에서 가장 흔한 함정이다.</p>
       <p>추측으로 최적화하면 대개 엉뚱한 곳을 고치게 되고, 특히 CPU 바운드와 메모리 바운드는 해법이 완전히 다르다. 카운터와 플레임그래프는 그 구분을 데이터로 강제한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 프로파일링 심화 — perf 처럼 &quot;일정 주기마다 인터럽트를 걸어 콜스택을 표본화&quot;하는 걸 signal 타이머로 재현한다.
+# 플레임그래프의 너비는 &quot;오래 걸린 구간&quot;이 아니라 &quot;표본에서 자주 잡힌 스택(=CPU 를 많이 먹은 코드)&quot;임에 유의.
+
+import signal
+from collections import Counter
+
+samples = []  # 각 표본: 인터럽트가 걸린 순간의 콜스택(튜플)
+
+def on_timer_tick(signum, frame):    # perf_events 의 오버플로 인터럽트 핸들러에 해당
+    stack = []
+    f = frame
+    while f is not None:
+        stack.append(f.f_code.co_name)
+        f = f.f_back
+    samples.append(tuple(reversed(stack)))
+
+def cache_miss_heavy(n):        # 캐시 미스가 잦다고 가정한(=CPU 를 오래 점유하는) 함수
+    total = 0
+    for i in range(n):
+        total += i * i
+    return total
+
+def branch_miss_heavy(n):       # 분기 예측 실패가 잦다고 가정한 함수
+    total = 0
+    for i in range(n):
+        total += -i if i % 7 == 0 else i
+    return total
+
+def workload():
+    cache_miss_heavy(3_000_000)   # 실행 시간이 더 긴 쪽 -&gt; 표본에서 더 넓은 프레임을 차지해야 정상
+    branch_miss_heavy(500_000)
+
+signal.signal(signal.SIGVTALRM, on_timer_tick)          # CPU(가상) 시간 기준 인터럽트 등록
+signal.setitimer(signal.ITIMER_VIRTUAL, 0.001, 0.001)    # 1ms 주기 샘플링 (perf -F 1000 과 같은 아이디어)
+try:
+    workload()
+finally:
+    signal.setitimer(signal.ITIMER_VIRTUAL, 0)            # 타이머 해제
+    signal.signal(signal.SIGVTALRM, signal.SIG_DFL)
+
+# 플레임그래프 접기(fold): 같은 스택 경로를 하나로 묶어 등장 횟수(=CPU 점유 비율 proxy)를 센다.
+folded = Counter(&quot;;&quot;.join(s) for s in samples if s)
+total_samples = sum(folded.values())
+
+print(&quot;folded stacks (flamegraph 입력 포맷과 동일한 'stack;stack;...;count'):&quot;)
+for stack, count in folded.most_common(5):
+    pct = count / total_samples * 100 if total_samples else 0
+    print(f&quot;  {count:&gt;4} ({pct:4.1f}%)  {stack}&quot;)
+
+cache_related = sum(c for s, c in folded.items() if &quot;cache_miss_heavy&quot; in s)
+branch_related = sum(c for s, c in folded.items() if &quot;branch_miss_heavy&quot; in s)
+
+print(&quot;\ntotal samples captured:&quot;, total_samples)
+print(&quot;cache_miss_heavy 가 차지한 표본 비율:&quot;, f&quot;{cache_related / total_samples:.0%}&quot; if total_samples else &quot;n/a&quot;)
+print(&quot;branch_miss_heavy 가 차지한 표본 비율:&quot;, f&quot;{branch_related / total_samples:.0%}&quot; if total_samples else &quot;n/a&quot;)
+print(&quot;-&gt; 실행 시간이 더 긴 함수가 더 넓은 프레임(더 많은 표본)을 차지한다:&quot;,
+      cache_related &gt;= branch_related)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-45.py">docs/code/algorithms/algorithms-45.py</a></p>
       <h2>연습</h2>
       <p>의도적으로 캐시 미스가 많은 배열 순회 프로그램과 분기 예측이 실패하는 프로그램을 각각 만들고, perf로 IPC와 cache-misses, branch-misses를 재서 두 병목이 카운터 상에서 어떻게 다르게 보이는지 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 88 — 다중정밀 산술(bignum)</title>
+<title>Day 88 — Multi-Precision Arithmetic (Bignum) — Montgomery and Barrett Reduction (TAOCP Vol. 2), the Real Bottleneck in EC/ZK Implementations</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,62 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 88</p>
   <article>
+      <h1>Multi-Precision Arithmetic (Bignum) — Montgomery and Barrett Reduction (TAOCP Vol. 2), the Real Bottleneck in EC/ZK Implementations <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 88 / 100 &middot; F. Cryptography &amp; ZK (Day 82-96)</p>
+      <h2>Concept</h2>
+      <p>Multi-precision arithmetic represents integers larger than a machine word as an array of words and operates on them; in cryptographic implementations, the most expensive operation is modular multiplication. Division is far slower than multiplication, so avoiding actual division in modular reduction is the key optimization. Montgomery reduction picks a power of two R coprime with the modulus, moves numbers into Montgomery representation, and then performs reduction using only multiplications and shifts to effectively multiply by R's inverse. Because the representation conversion itself has a cost, it pays off when you do many multiplications under the same modulus in a row, as in modular exponentiation. Barrett reduction precomputes an approximation of the modulus's reciprocal and replaces division with multiplication and shifts; it has no representation conversion, so it suits one-off reductions. Either way, timing differences from conditional branches can leak secret values, so constant-time implementations are required.</p>
+      <p>A large share of the time spent verifying an elliptic-curve signature or generating a ZK proof goes into field multiplication, so the representation and reduction choice at this layer directly decides throughput and gas cost.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 다중정밀 산술(bignum) — Barrett 리덕션을 직접 구현해 나눗셈 없이 모듈러 축약을 하고,
+# 파이썬 내장 % 연산과 결과가 일치하는지 검증한다 (Montgomery와 대비되는 단발성 리덕션 기법).
+
+def barrett_precompute(modulus, k):
+    &quot;&quot;&quot;mu = floor(4^k / modulus) 를 미리 계산 — 이후 리덕션에서 나눗셈 대신 시프트+곱셈만 쓴다.&quot;&quot;&quot;
+    return (1 &lt;&lt; (2 * k)) // modulus
+
+def barrett_reduce(x, modulus, k, mu):
+    &quot;&quot;&quot;x &lt; modulus^2 가정. 나눗셈 없이 근사 몫을 구하고 보정한다.&quot;&quot;&quot;
+    q_hat = (x * mu) &gt;&gt; (2 * k)
+    r = x - q_hat * modulus
+    while r &gt;= modulus:      # 근사 오차 보정 (최대 2번이면 충분함이 알려져 있다)
+        r -= modulus
+    while r &lt; 0:
+        r += modulus
+    return r
+
+MODULUS = (1 &lt;&lt; 61) - 1   # 토이 소수 모듈러스 (61비트)
+K = MODULUS.bit_length()
+MU = barrett_precompute(MODULUS, K)
+
+import random
+random.seed(7)
+mismatches = 0
+for _ in range(2000):
+    a = random.getrandbits(60)
+    b = random.getrandbits(60)
+    product = a * b                      # 모듈러 곱셈에서 실제로 리덕션이 필요한 값
+    expected = product % MODULUS         # 파이썬 내장 나눗셈 기반 리덕션
+    got = barrett_reduce(product, MODULUS, K, MU)
+    if got != expected:
+        mismatches += 1
+
+print(&quot;modulus:&quot;, MODULUS, &quot;| k (bit length):&quot;, K)
+print(&quot;precomputed mu = floor(4^k / modulus):&quot;, MU)
+print(&quot;random trials:&quot;, 2000, &quot;| mismatches vs builtin %:&quot;, mismatches)
+print(&quot;Barrett reduction matches builtin modulo:&quot;, mismatches == 0)
+print(&quot;note: Montgomery reduction instead converts to a special representation&quot;)
+print(&quot;      once and amortizes it over many multiplications (e.g. modexp loops).&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-88.py">docs/code/algorithms/algorithms-88.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement modular multiplication over a prime modulus using 64-bit word arrays, once with naive division and once with Montgomery reduction, then compare their runtime performing the same modular exponentiation.</p>
+      <h2>Practical Connection</h2>
+      <p>This layer's cost structure is exactly why Ethereum's pairing and modular-exponentiation precompiles exist, why they're priced the way they are, and where an off-chain proof generator's bottleneck actually sits.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>다중정밀 산술(bignum) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 88 / 100 &middot; F. 암호학·ZK (Day 82–96)</p>
       <p class="lead">Montgomery·Barrett 리덕션 (TAOCP 2권), EC·ZK 구현의 실제 병목</p>
@@ -115,7 +194,47 @@
       <p>다중정밀 산술은 기계어 워드보다 큰 정수를 워드 배열로 표현해 연산하는 기법이며, 암호 구현에서 가장 비싼 연산은 모듈러 곱셈이다. 나눗셈은 곱셈보다 훨씬 느리므로 모듈러 리덕션에서 실제 나눗셈을 피하는 것이 핵심 최적화다. Montgomery 리덕션은 모듈러스와 서로소인 2의 거듭제곱 R을 잡아 수를 Montgomery 표현으로 옮긴 뒤, 곱셈과 시프트만으로 R의 역원을 곱한 결과를 얻어 리덕션을 수행한다. 표현 변환에 비용이 들기 때문에 지수승처럼 같은 모듈러스에서 곱셈을 연달아 할 때 유리하다. Barrett 리덕션은 모듈러스의 역수 근사값을 미리 계산해 두고 나눗셈을 곱셈과 시프트로 대체하며, 표현 변환이 없어 단발성 리덕션에 적합하다. 어느 쪽이든 조건 분기로 인한 실행 시간 차이가 비밀값을 흘릴 수 있으므로 상수 시간 구현이 요구된다.</p>
       <p>타원곡선 서명 검증이나 ZK 증명 생성 시간의 상당 부분이 필드 곱셈에 들어가므로, 이 계층의 표현과 리덕션 선택이 곧 처리량과 가스 비용을 결정한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 다중정밀 산술(bignum) — Barrett 리덕션을 직접 구현해 나눗셈 없이 모듈러 축약을 하고,
+# 파이썬 내장 % 연산과 결과가 일치하는지 검증한다 (Montgomery와 대비되는 단발성 리덕션 기법).
+
+def barrett_precompute(modulus, k):
+    &quot;&quot;&quot;mu = floor(4^k / modulus) 를 미리 계산 — 이후 리덕션에서 나눗셈 대신 시프트+곱셈만 쓴다.&quot;&quot;&quot;
+    return (1 &lt;&lt; (2 * k)) // modulus
+
+def barrett_reduce(x, modulus, k, mu):
+    &quot;&quot;&quot;x &lt; modulus^2 가정. 나눗셈 없이 근사 몫을 구하고 보정한다.&quot;&quot;&quot;
+    q_hat = (x * mu) &gt;&gt; (2 * k)
+    r = x - q_hat * modulus
+    while r &gt;= modulus:      # 근사 오차 보정 (최대 2번이면 충분함이 알려져 있다)
+        r -= modulus
+    while r &lt; 0:
+        r += modulus
+    return r
+
+MODULUS = (1 &lt;&lt; 61) - 1   # 토이 소수 모듈러스 (61비트)
+K = MODULUS.bit_length()
+MU = barrett_precompute(MODULUS, K)
+
+import random
+random.seed(7)
+mismatches = 0
+for _ in range(2000):
+    a = random.getrandbits(60)
+    b = random.getrandbits(60)
+    product = a * b                      # 모듈러 곱셈에서 실제로 리덕션이 필요한 값
+    expected = product % MODULUS         # 파이썬 내장 나눗셈 기반 리덕션
+    got = barrett_reduce(product, MODULUS, K, MU)
+    if got != expected:
+        mismatches += 1
+
+print(&quot;modulus:&quot;, MODULUS, &quot;| k (bit length):&quot;, K)
+print(&quot;precomputed mu = floor(4^k / modulus):&quot;, MU)
+print(&quot;random trials:&quot;, 2000, &quot;| mismatches vs builtin %:&quot;, mismatches)
+print(&quot;Barrett reduction matches builtin modulo:&quot;, mismatches == 0)
+print(&quot;note: Montgomery reduction instead converts to a special representation&quot;)
+print(&quot;      once and amortizes it over many multiplications (e.g. modexp loops).&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-88.py">docs/code/algorithms/algorithms-88.py</a></p>
       <h2>연습</h2>
       <p>64비트 워드 배열로 소수 모듈러스 위의 곱셈을 구현하되 단순 나눗셈 방식과 Montgomery 방식을 각각 만들고, 같은 모듈러 거듭제곱을 수행해 실행 시간을 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

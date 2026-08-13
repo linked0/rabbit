@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 39 — false sharing·캐시라인 정렬·NUMA 지역성</title>
+<title>Day 39 — False Sharing, Cache-Line Alignment, and NUMA Locality</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,62 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 39</p>
   <article>
+      <h1>False Sharing, Cache-Line Alignment, and NUMA Locality <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 39 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>CPUs move memory in cache-line units (typically 64 bytes), so even two logically unrelated variables that happen to sit on the same line end up fighting over ownership of that line every time a different core writes to it. That's false sharing, and it shows up as a throughput collapse with no lock and no data race in sight. The fix is to align per-core counters or state on cache-line boundaries and separate them with padding. On NUMA systems there's an additional layer: access latency and bandwidth depend on which socket the memory is physically attached to, so locality — keeping a thread and the data it touches on the same node — matters. Neither problem shows up in algorithmic complexity; both only show up in measured scalability curves.</p>
+      <p>This is the classic reason throughput drops as you add more cores, and looking at a profiler's per-function time alone won't reveal the cause.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># false sharing·캐시라인 정렬 — 무관한 변수가 같은 64바이트 캐시라인에 있으면 코어끼리 그 라인 소유권을 계속 뺏고 뺏긴다.
+# 해결책은 코어별 카운터를 캐시라인 경계(보통 64B)로 패딩해 서로 다른 라인에 떨어뜨리는 것. (구조 시연 — 실측 타이밍은 생략)
+
+import ctypes
+
+CACHE_LINE = 64
+NUM_CORES = 4
+
+# 패딩 없는 버전: int64 카운터 4개가 한 캐시라인(64B = int64 8개)에 다 들어가 서로 겹친다.
+class UnpaddedCounters(ctypes.Structure):
+    _fields_ = [(f&quot;c{i}&quot;, ctypes.c_int64) for i in range(NUM_CORES)]
+
+# 패딩 버전: 카운터마다 캐시라인 크기만큼 자리를 배정해 서로 다른 라인에 놓는다.
+class PaddedCounter(ctypes.Structure):
+    _fields_ = [(&quot;value&quot;, ctypes.c_int64), (&quot;_pad&quot;, ctypes.c_uint8 * (CACHE_LINE - 8))]
+
+class PaddedCounters(ctypes.Structure):
+    _fields_ = [(f&quot;c{i}&quot;, PaddedCounter) for i in range(NUM_CORES)]
+
+unpadded = UnpaddedCounters()
+padded = PaddedCounters()
+
+def cache_line_of(struct_instance, field_owner, field_name):
+    base = ctypes.addressof(struct_instance)
+    offset = field_owner.__dict__[field_name].offset
+    return (base + offset) // CACHE_LINE
+
+unpadded_lines = {cache_line_of(unpadded, UnpaddedCounters, f&quot;c{i}&quot;) for i in range(NUM_CORES)}
+padded_lines = {cache_line_of(padded, PaddedCounters, f&quot;c{i}&quot;) for i in range(NUM_CORES)}
+
+# 각 코어가 자기 카운터만 증가시키는 워크로드를 흉내낸다 (정오만 확인, 실측 타이밍은 재지 않음).
+for i in range(NUM_CORES):
+    setattr(unpadded, f&quot;c{i}&quot;, i * 1_000_000)
+    getattr(padded, f&quot;c{i}&quot;).value = i * 1_000_000
+
+print(&quot;struct size — unpadded:&quot;, ctypes.sizeof(unpadded), &quot;bytes  padded:&quot;, ctypes.sizeof(padded), &quot;bytes&quot;)
+print(&quot;distinct cache lines — unpadded:&quot;, len(unpadded_lines), &quot;/&quot;, NUM_CORES, &quot;counters share&quot;, unpadded_lines)
+print(&quot;distinct cache lines — padded  :&quot;, len(padded_lines), &quot;/&quot;, NUM_CORES, &quot;counters&quot;)
+print(&quot;padding gives every core its own cache line:&quot;, len(padded_lines) == NUM_CORES)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-39.py">docs/code/algorithms/algorithms-39.py</a></p>
+      <h2>Exercise</h2>
+      <p>Allocate an array of counters, one per core, have each thread increment only its own index, and compare throughput between an unpadded version and a cache-line-aligned version.</p>
+      <h2>Practical Connection</h2>
+      <p>When parsing/validating chain data in parallel or splitting an order book into shards per core, if per-shard state isn't separated at cache-line granularity, the gains from parallelizing evaporate.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>false sharing·캐시라인 정렬·NUMA 지역성 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 39 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
 
@@ -115,7 +194,47 @@
       <p>CPU는 메모리를 캐시라인 단위(보통 64바이트)로 주고받으므로, 논리적으로 무관한 두 변수라도 같은 라인에 있으면 서로 다른 코어의 쓰기가 그 라인의 소유권을 계속 뺏고 뺏기는 상태가 된다. 이것이 false sharing이며, 락도 없고 데이터 경쟁도 없는데 처리량만 급락하는 형태로 나타난다. 해결책은 코어별로 갱신되는 카운터나 상태를 캐시라인 경계에 정렬하고 패딩으로 분리하는 것이다. NUMA 시스템에서는 한 걸음 더 나아가, 메모리가 어느 소켓에 붙어 있느냐에 따라 접근 지연과 대역폭이 달라지므로 스레드와 그 스레드가 만지는 데이터를 같은 노드에 두는 지역성이 중요해진다. 두 문제 모두 알고리즘 복잡도에는 나타나지 않고 오직 실측 확장성 곡선에서만 드러난다.</p>
       <p>코어를 늘렸는데 처리량이 오히려 떨어지는 전형적 원인이고, 프로파일러의 함수별 시간만 봐서는 원인이 보이지 않는다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># false sharing·캐시라인 정렬 — 무관한 변수가 같은 64바이트 캐시라인에 있으면 코어끼리 그 라인 소유권을 계속 뺏고 뺏긴다.
+# 해결책은 코어별 카운터를 캐시라인 경계(보통 64B)로 패딩해 서로 다른 라인에 떨어뜨리는 것. (구조 시연 — 실측 타이밍은 생략)
+
+import ctypes
+
+CACHE_LINE = 64
+NUM_CORES = 4
+
+# 패딩 없는 버전: int64 카운터 4개가 한 캐시라인(64B = int64 8개)에 다 들어가 서로 겹친다.
+class UnpaddedCounters(ctypes.Structure):
+    _fields_ = [(f&quot;c{i}&quot;, ctypes.c_int64) for i in range(NUM_CORES)]
+
+# 패딩 버전: 카운터마다 캐시라인 크기만큼 자리를 배정해 서로 다른 라인에 놓는다.
+class PaddedCounter(ctypes.Structure):
+    _fields_ = [(&quot;value&quot;, ctypes.c_int64), (&quot;_pad&quot;, ctypes.c_uint8 * (CACHE_LINE - 8))]
+
+class PaddedCounters(ctypes.Structure):
+    _fields_ = [(f&quot;c{i}&quot;, PaddedCounter) for i in range(NUM_CORES)]
+
+unpadded = UnpaddedCounters()
+padded = PaddedCounters()
+
+def cache_line_of(struct_instance, field_owner, field_name):
+    base = ctypes.addressof(struct_instance)
+    offset = field_owner.__dict__[field_name].offset
+    return (base + offset) // CACHE_LINE
+
+unpadded_lines = {cache_line_of(unpadded, UnpaddedCounters, f&quot;c{i}&quot;) for i in range(NUM_CORES)}
+padded_lines = {cache_line_of(padded, PaddedCounters, f&quot;c{i}&quot;) for i in range(NUM_CORES)}
+
+# 각 코어가 자기 카운터만 증가시키는 워크로드를 흉내낸다 (정오만 확인, 실측 타이밍은 재지 않음).
+for i in range(NUM_CORES):
+    setattr(unpadded, f&quot;c{i}&quot;, i * 1_000_000)
+    getattr(padded, f&quot;c{i}&quot;).value = i * 1_000_000
+
+print(&quot;struct size — unpadded:&quot;, ctypes.sizeof(unpadded), &quot;bytes  padded:&quot;, ctypes.sizeof(padded), &quot;bytes&quot;)
+print(&quot;distinct cache lines — unpadded:&quot;, len(unpadded_lines), &quot;/&quot;, NUM_CORES, &quot;counters share&quot;, unpadded_lines)
+print(&quot;distinct cache lines — padded  :&quot;, len(padded_lines), &quot;/&quot;, NUM_CORES, &quot;counters&quot;)
+print(&quot;padding gives every core its own cache line:&quot;, len(padded_lines) == NUM_CORES)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-39.py">docs/code/algorithms/algorithms-39.py</a></p>
       <h2>연습</h2>
       <p>코어 수만큼의 카운터를 배열로 두고 각 스레드가 자기 인덱스만 증가시키는 벤치를 만든 뒤, 패딩 없는 버전과 캐시라인 정렬 버전의 처리량을 비교해 보기.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 26 — 최소제곱법(Least Squares)</title>
+<title>Day 26 — Least Squares</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,84 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 26</p>
   <article>
+      <h1>Least Squares <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 26 / 52 &middot; September — Linear Algebra (Day 18-26)</p>
+      <h2>Concept</h2>
+      <p>Least squares is a method for an overdetermined system Ax=b — where there are more equations than unknowns and no exact solution exists — that finds the x minimizing the Euclidean norm of the residual, ||Ax-b||. Geometrically, this is the same as projecting b orthogonally onto the column space of A, and at the optimum the residual is orthogonal to the column space. Using this orthogonality condition yields the normal equations AᵀAx = Aᵀb, and the solution is unique when A's columns are linearly independent. Numerically, however, forming AᵀA directly squares the condition number and loses precision, so in practice it's safer to solve via QR decomposition or SVD. When the columns are nearly dependent or the data is noisy, adding a regularization term, as in ridge regression, stabilizes the solution.</p>
+      <p>Nearly every task that fits data to a model — regression, calibration, sensor correction — is least squares, and carelessly using the normal equations is a common source of coefficients that wobble due to condition-number issues. Understanding why the residual must be orthogonal also makes diagnosing results easier.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 최소제곱법(Least Squares) — 과결정계 Ax=b를 lstsq로 풀고, 정규방정식 AᵀAx=Aᵀb 및
+# &quot;잔차는 열공간과 직교한다&quot;는 기하적 성질을 직접 검증한다.
+
+import numpy as np
+
+# 직선 y = a*x + c 를 5개의 잡음 섞인 점에 최소제곱으로 맞추는 과결정계 (미지수 2개, 식 5개)
+x_data = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+y_data = np.array([1.1, 2.9, 4.8, 7.2, 8.9])  # 대략 y ≈ 2x + 1 근처의 잡음 데이터
+
+A = np.column_stack([x_data, np.ones_like(x_data)])  # [a, c]를 구하기 위한 설계행렬
+b = y_data
+
+x_lstsq, residuals, rank, sv = np.linalg.lstsq(A, b, rcond=None)
+a_hat, c_hat = x_lstsq
+print(f&quot;lstsq 해: y ≈ {a_hat:.4f}*x + {c_hat:.4f}&quot;)
+
+# 정규방정식으로 직접 풀어서 lstsq 결과와 일치하는지 확인 (교육적 검증용, 실무는 lstsq/QR 권장)
+x_normal_eq = np.linalg.solve(A.T @ A, A.T @ b)
+print(f&quot;정규방정식(AᵀAx=Aᵀb) 해: {x_normal_eq}&quot;)
+print(f&quot;lstsq와 일치? {np.allclose(x_lstsq, x_normal_eq)}&quot;)
+
+# 기하적 성질: 최적점에서 잔차 벡터는 A의 열공간과 직교 → Aᵀ(Ax-b) ≈ 0
+residual = A @ x_lstsq - b
+orthogonality = A.T @ residual
+print(f&quot;\n잔차 벡터: {np.round(residual, 4)}&quot;)
+print(f&quot;Aᵀ·잔차 (열공간과의 직교성, ≈0이어야 함): {np.round(orthogonality, 10)}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-26.py">docs/code/math/math-26.py</a></p>
+      <h2>Exercise</h2>
+      <p>Deliberately construct a matrix with a large condition number, compute the least-squares solution three ways — solving the normal equations directly, via QR, and via SVD — and compare the error against the true value for each.</p>
+      <h2>Practical Connection</h2>
+      <p>In Verex, fitting LMSR's liquidity parameter or a slippage/fee model to historical trade data, or regressing gas cost against block parameters, all apply the same least-squares procedure and the same condition-number cautions.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>최소제곱법(Least Squares) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 26 / 51 &middot; 9월 — 선형대수 (Day 18–26)</p>
+      <p class="meta">Math &middot; Day 26 / 52 &middot; 9월 — 선형대수 (Day 18–26)</p>
 
       <h2>개념</h2>
       <p>최소제곱법은 방정식 수가 미지수 수보다 많아 정확한 해가 없는 과결정 연립방정식 Ax=b에서, 잔차의 유클리드 노름 ||Ax-b||를 최소로 만드는 x를 구하는 방법이다. 기하학적으로 이는 b를 A의 열공간 위로 정사영하는 것과 같고, 최적점에서 잔차는 열공간과 직교한다. 이 직교 조건을 쓰면 정규방정식 AᵀAx = Aᵀb가 나오며, A의 열이 일차독립이면 해는 유일하다. 다만 수치적으로 AᵀA를 직접 만드는 것은 조건수를 제곱시켜 정밀도를 잃으므로, 실무에서는 QR 분해나 SVD로 푸는 편이 안전하다. 열이 거의 종속이거나 잡음이 큰 경우에는 릿지처럼 정규화 항을 더해 해를 안정시킨다.</p>
       <p>회귀·캘리브레이션·센서 보정 등 데이터를 모델에 맞추는 거의 모든 작업이 최소제곱이며, 정규방정식을 무심코 쓰다 조건수 문제로 계수가 요동치는 사고가 흔하다. 잔차가 왜 직교해야 하는지를 알면 결과 진단도 쉬워진다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 최소제곱법(Least Squares) — 과결정계 Ax=b를 lstsq로 풀고, 정규방정식 AᵀAx=Aᵀb 및
+# &quot;잔차는 열공간과 직교한다&quot;는 기하적 성질을 직접 검증한다.
+
+import numpy as np
+
+# 직선 y = a*x + c 를 5개의 잡음 섞인 점에 최소제곱으로 맞추는 과결정계 (미지수 2개, 식 5개)
+x_data = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+y_data = np.array([1.1, 2.9, 4.8, 7.2, 8.9])  # 대략 y ≈ 2x + 1 근처의 잡음 데이터
+
+A = np.column_stack([x_data, np.ones_like(x_data)])  # [a, c]를 구하기 위한 설계행렬
+b = y_data
+
+x_lstsq, residuals, rank, sv = np.linalg.lstsq(A, b, rcond=None)
+a_hat, c_hat = x_lstsq
+print(f&quot;lstsq 해: y ≈ {a_hat:.4f}*x + {c_hat:.4f}&quot;)
+
+# 정규방정식으로 직접 풀어서 lstsq 결과와 일치하는지 확인 (교육적 검증용, 실무는 lstsq/QR 권장)
+x_normal_eq = np.linalg.solve(A.T @ A, A.T @ b)
+print(f&quot;정규방정식(AᵀAx=Aᵀb) 해: {x_normal_eq}&quot;)
+print(f&quot;lstsq와 일치? {np.allclose(x_lstsq, x_normal_eq)}&quot;)
+
+# 기하적 성질: 최적점에서 잔차 벡터는 A의 열공간과 직교 → Aᵀ(Ax-b) ≈ 0
+residual = A @ x_lstsq - b
+orthogonality = A.T @ residual
+print(f&quot;\n잔차 벡터: {np.round(residual, 4)}&quot;)
+print(f&quot;Aᵀ·잔차 (열공간과의 직교성, ≈0이어야 함): {np.round(orthogonality, 10)}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-26.py">docs/code/math/math-26.py</a></p>
       <h2>연습</h2>
       <p>의도적으로 조건수가 큰 행렬을 만들어 정규방정식 직접 풀이, QR, SVD 세 방법으로 최소제곱해를 구하고 참값 대비 오차를 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

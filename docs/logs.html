@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>로그 — 전체</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="index.html">Rabbit</a>
+      <span class="rail-sub">로그 &mdash; 전체 항목 (56)</span>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="로그 검색" aria-label="로그 검색" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" data-group>
+        <p class="nav-group-label">전체 로그 (56)</p>
+        <ul>
+        <li><a class="nav-link" href="#2026-08-13-rabbit-history.md" data-key="2026-08-13-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">1</span>2026-08-13 — rabbit 작업 이력</span></a></li>
+        <li><a class="nav-link" href="#2026-08-12-rabbit-history.md" data-key="2026-08-12-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">2</span>2026-08-12 — rabbit 작업 이력</span></a></li>
+        <li><a class="nav-link" href="#2026-08-11-verex-history.md" data-key="2026-08-11-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">3</span>2026-08-11 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-08-11-rabbit-history.md" data-key="2026-08-11-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">4</span>2026-08-11 — rabbit</span></a></li>
+        <li><a class="nav-link" href="#2026-08-10-verex-history.md" data-key="2026-08-10-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">5</span>2026-08-10 — verex</span></a></li>
+        <li><a class="nav-link" href="#2026-08-07-verex-history.md" data-key="2026-08-07-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">6</span>2026-08-07 — verex</span></a></li>
+        <li><a class="nav-link" href="#2026-08-06-verex-history.md" data-key="2026-08-06-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">7</span>2026-08-06 — verex</span></a></li>
+        <li><a class="nav-link" href="#2026-08-06-rabbit-history.md" data-key="2026-08-06-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">8</span>2026-08-06 — rabbit</span></a></li>
+        <li><a class="nav-link" href="#2026-08-05-verex-history.md" data-key="2026-08-05-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">9</span>2026-08-05 — verex</span></a></li>
+        <li><a class="nav-link" href="#2026-08-05-rabbit-history.md" data-key="2026-08-05-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">10</span>2026-08-05 — rabbit</span></a></li>
+        <li><a class="nav-link" href="#2026-08-04-verex-history.md" data-key="2026-08-04-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">11</span>2026-08-04 — verex</span></a></li>
+        <li><a class="nav-link" href="#2026-08-04-rabbit-history.md" data-key="2026-08-04-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">12</span>2026-08-04 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-08-03-verex-history.md" data-key="2026-08-03-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">13</span>2026-08-03 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-08-03-rabbit-history.md" data-key="2026-08-03-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">14</span>2026-08-03 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-08-02-verex-history.md" data-key="2026-08-02-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">15</span>2026-08-02 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-08-02-rabbit-history.md" data-key="2026-08-02-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">16</span>2026-08-02 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-08-01-verex-history.md" data-key="2026-08-01-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">17</span>2026-08-01 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-08-01-rabbit-history.md" data-key="2026-08-01-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">18</span>2026-08-01 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-30-rabbit-history.md" data-key="2026-07-30-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">19</span>2026-07-30 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-29-verex-history.md" data-key="2026-07-29-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">20</span>2026-07-29 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-29-rabbit-history.md" data-key="2026-07-29-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">21</span>2026-07-29 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-28-verex-history.md" data-key="2026-07-28-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">22</span>2026-07-28 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-27-verex-history.md" data-key="2026-07-27-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">23</span>2026-07-27 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-27-rabbit-history.md" data-key="2026-07-27-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">24</span>2026-07-27 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-25-verex-history.md" data-key="2026-07-25-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">25</span>2026-07-25 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-25-rabbit-history.md" data-key="2026-07-25-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">26</span>2026-07-25 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-22-verex-history.md" data-key="2026-07-22-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">27</span>2026-07-22 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-22-rabbit-history.md" data-key="2026-07-22-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">28</span>2026-07-22 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-21-verex-history.md" data-key="2026-07-21-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">29</span>2026-07-21 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-21-rabbit-history.md" data-key="2026-07-21-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">30</span>2026-07-21 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-20.md" data-key="2026-07-20.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">31</span>2026-07-20</span></a></li>
+        <li><a class="nav-link" href="#2026-07-20-verex-history.md" data-key="2026-07-20-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">32</span>2026-07-20 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-20-rabbit-history.md" data-key="2026-07-20-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">33</span>2026-07-20 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-17-verex-history.md" data-key="2026-07-17-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">34</span>2026-07-17 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-17-rabbit-history.md" data-key="2026-07-17-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">35</span>2026-07-17 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-07-verex-history.md" data-key="2026-07-07-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">36</span>2026-07-07 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-07-rabbit-history.md" data-key="2026-07-07-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">37</span>2026-07-07 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-06-verex-history.md" data-key="2026-07-06-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">38</span>2026-07-06 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-02-verex-history.md" data-key="2026-07-02-verex-history.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">39</span>2026-07-02 — verex history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-02-rabbit-history.md" data-key="2026-07-02-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">40</span>2026-07-02 — rabbit history</span></a></li>
+        <li><a class="nav-link" href="#2026-07-01-task-history.md" data-key="2026-07-01-task-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">41</span>2026-07-01 — task history</span></a></li>
+        <li><a class="nav-link" href="#2026-06-30-rabbit-history.md" data-key="2026-06-30-rabbit-history.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">42</span>2026-06-30 — rabbit</span></a></li>
+        <li><a class="nav-link" href="#2026-06-29-rabbit.md" data-key="2026-06-29-rabbit.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">43</span>2026-06-29 — rabbit</span></a></li>
+        <li><a class="nav-link" href="#2026-06-26-rabbit.md" data-key="2026-06-26-rabbit.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">44</span>2026-06-26 — rabbit</span></a></li>
+        <li><a class="nav-link" href="#2026-06-24.md" data-key="2026-06-24.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">45</span>2026-06-24</span></a></li>
+        <li><a class="nav-link" href="#2026-06-24-verex.md" data-key="2026-06-24-verex.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">46</span>verex</span></a></li>
+        <li><a class="nav-link" href="#2026-06-22.md" data-key="2026-06-22.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">47</span>2026-06-22</span></a></li>
+        <li><a class="nav-link" href="#2026-06-18.md" data-key="2026-06-18.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">48</span>2026-06-18</span></a></li>
+        <li><a class="nav-link" href="#2026-06-17-icon-game-and-google-login-fix.md" data-key="2026-06-17-icon-game-and-google-login-fix.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">49</span>2026-06-17 — Icon, game page, top-menu, and Google-login fix</span></a></li>
+        <li><a class="nav-link" href="#2026-06-16.md" data-key="2026-06-16.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">50</span>2026-06-16</span></a></li>
+        <li><a class="nav-link" href="#2026-06-12-deploy-troubleshooting.md" data-key="2026-06-12-deploy-troubleshooting.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">51</span>2026-06-12 — Cloud Run 첫 배포 트러블슈팅 기록</span></a></li>
+        <li><a class="nav-link" href="#2026-05-27-s2.4-sdk-cli-migration.md" data-key="2026-05-27-s2.4-sdk-cli-migration.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">52</span>S2.4 — SDK + CLI migration to CTF stack (2026-05-27)</span></a></li>
+        <li><a class="nav-link" href="#2026-05-26-s2-fillorder-e2e.md" data-key="2026-05-26-s2-fillorder-e2e.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">53</span>S2 — CTF Exchange `fillOrder` end-to-end (2026-05-26)</span></a></li>
+        <li><a class="nav-link" href="#2026-05-13-s2-implementation-and-oracle-progression.md" data-key="2026-05-13-s2-implementation-and-oracle-progression.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">54</span>S2 Implementation (S2.1 + S2.2) + Oracle Progression Refinement (2026-05-13)</span></a></li>
+        <li><a class="nav-link" href="#2026-05-11-plan-restructure-and-gnosis-research.md" data-key="2026-05-11-plan-restructure-and-gnosis-research.md"><span class="nav-dot" style="background:#16a34a;" title="Rabbit"></span><span class="nav-text"><span class="topic-no">55</span>Plan Restructure (S2 = CTF) + Gnosis CTF Research Note (2026-05-11)</span></a></li>
+        <li><a class="nav-link" href="#2026-05-07-phase1-w1-implementation.md" data-key="2026-05-07-phase1-w1-implementation.md"><span class="nav-dot" style="background:#d97706;" title="Verex"></span><span class="nav-text"><span class="topic-no">56</span>Phase 1 — W1 Implementation (2026-05-07)</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="index.html">&larr; 워크스페이스 인덱스</a></div>
+  </aside>
+
+  <main class="content">
+    <div class="src">원본: docs/history/*.md (scripts/generate-logs-html.mjs 로 자동 생성 — 이 파일이 아니라 히스토리 파일을 수정할 것)</div>
+    <article>
+      <h1>전체 로그</h1>
+      <p>일일 작업 이력 — <code>docs/history/</code> 아래 모든 항목, 최신순.</p>
+      <ul class="topics no-divider">
+        <li id="2026-08-13-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">1</span><span class="topic-title">2026-08-13 — rabbit 작업 이력</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-08-13</p>
+          <ul class="topic-brief">
+            <li>docs/index.html 자기참조 링크에 target=&quot;_blank&quot; 추가</li>
+            <li>PoCs 카탈로그에 학습 백로그 10개 추가 (Notion 큐)</li>
+            <li>PoCs에 로보틱스/AI 트랙 첫 항목(NVIDIA Isaac GR00T) 추가 — jay 직접 작성</li>
+            <li>Algorithms·Math·PoCs 전 항목에 &quot;관련 코드&quot; 추가 (185개 파이썬 파일)</li>
+            <li class="meta">+3개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-13-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-12-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">2</span><span class="topic-title">2026-08-12 — rabbit 작업 이력</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-08-12</p>
+          <ul class="topic-brief">
+            <li>Cloud Run max-instances 1로 고정 (라이브 + deploy.sh)</li>
+            <li>Jay Chat: gpt-4o-mini → Qwen Flash 전환 + 쿼터 3× (150k→450k/시간)</li>
+            <li>오너 전용 챗 삭제 + LLM 키를 AI_API_KEY 하나로 통일 (위 Qwen 항목 일부 대체)</li>
+            <li>.env.local → .env 통일 (rabbit + verex)</li>
+            <li class="meta">+10개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-12-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-11-verex-history.md">
+          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">2026-08-11 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-08-11</p>
+          <ul class="topic-brief">
+            <li>Prod ghost balances: root cause is pre-nonce markets on a persistent chain, not the DB</li>
+            <li>Docs site: new &quot;Architecture: web, API &amp; Sepolia&quot; page (/docs/chain)</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-11-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-11-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">4</span><span class="topic-title">2026-08-11 — rabbit</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-08-11</p>
+          <ul class="topic-brief">
+            <li>PoC 카드 추가: OpenZeppelin Relayer · Monitor</li>
+            <li>/poc/agent: &quot;거의 모두가 틀리는 여섯 가지&quot; 패널 추가</li>
+            <li>목업 배지를 회색에서 인디고로</li>
+            <li>/poc/oz-relayer 목업 페이지 + 정산 큐 시뮬레이터</li>
+            <li class="meta">+11개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-11-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-10-verex-history.md">
+          <div class="topic-head"><span class="topic-no">5</span><span class="topic-title">2026-08-10 — verex</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-08-10</p>
+          <ul class="topic-brief">
+            <li>Split the UMA runbook by environment: uma-local-demo.md extracted</li>
+            <li>local-testing.md §5 had gone stale — the mock oracle inverted its claims</li>
+            <li>/create: &quot;Binary market&quot; checkbox auto-fills Yes/No</li>
+            <li>Finding: `closesAt` is never enforced — markets stay tradable past their end time</li>
+            <li class="meta">+14개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-10-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-07-verex-history.md">
+          <div class="topic-head"><span class="topic-no">6</span><span class="topic-title">2026-08-07 — verex</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-08-07</p>
+          <ul class="topic-brief">
+            <li>First real staging-deploy workflow run: three latent CI bugs</li>
+            <li>Direct deploy instead of CI (jay's call), seed rides along</li>
+            <li>Dispute simulation: only half the worst case is simulatable — and no dispute page</li>
+            <li>Walkable dispute scenarios: mock oracle with a demo-wallet jury</li>
+            <li class="meta">+2개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-07-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-06-verex-history.md">
+          <div class="topic-head"><span class="topic-no">7</span><span class="topic-title">2026-08-06 — verex</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-08-06</p>
+          <ul class="topic-brief">
+            <li>Fund operator with WETH for UMA bonds</li>
+            <li>Seed had no UMA market at all</li>
+            <li>One-command adapter deploy, and the UMA runbook split out</li>
+            <li>Staging UMA adapter is live — and the manifest alone could not prove it</li>
+            <li class="meta">+12개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-06-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-06-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">8</span><span class="topic-title">2026-08-06 — rabbit</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-08-06</p>
+          <ul class="topic-brief">
+            <li>current-plan.md 교체 — AP2/Toss/AA 구성요소 → Agentic AA 자율 루프</li>
+            <li>자율 루프 데모의 핵심 설계 — &quot;건너뛴 판단&quot;과 &quot;만료 후 실패&quot;를 보여주는 게 본체</li>
+            <li>PoCs 카드 추가(`agent`) + 카드 정렬 기준을 구현 날짜로</li>
+            <li>`/poc/agent` 논의용 목업 — 만들기 전에 화면 모양을 두고 이야기하기</li>
+            <li class="meta">+11개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-06-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-05-verex-history.md">
+          <div class="topic-head"><span class="topic-no">9</span><span class="topic-title">2026-08-05 — verex</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-08-05</p>
+          <ul class="topic-brief">
+            <li>Confirm `claude/happy-booth-746fe1` was merged</li>
+            <li>UMA adapter: deploy script, manifest recording, and the procedure</li>
+            <li>`save-deployment` would have silently erased the adapter record</li>
+            <li>Deleted forge's historical Sepolia broadcast artifacts by accident</li>
+            <li class="meta">+2개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-05-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-05-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">10</span><span class="topic-title">2026-08-05 — rabbit</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-08-05</p>
+          <ul class="topic-brief">
+            <li>AA 세션 키 데모: 테스트 준비물(테스트 USDC + 세션 계정 가스)을 페이지에 명시</li>
+            <li>준비물 안내에서 단계 번호 대신 버튼 이름으로 지칭</li>
+            <li>MetaMask 기존 연결 자동 인식 + connect/disconnect 버튼 분리</li>
+            <li>/etc/aa 부제 정정 — 세 표준의 역할을 분리</li>
+            <li class="meta">+11개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-05-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-04-verex-history.md">
+          <div class="topic-head"><span class="topic-no">11</span><span class="topic-title">2026-08-04 — verex</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-08-04</p>
+          <ul class="topic-brief">
+            <li>Web chrome: dark mode + Korean/English switching</li>
+            <li>Docs section: Guide → Docs, plus a technical-background whitepaper</li>
+            <li>LMSR pricing module — wave 1 Phase A, math landed and verified (not yet wired)</li>
+            <li>WIF setup script — gate G2 prepared (authoring only, not run)</li>
+            <li class="meta">+6개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-04-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-04-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">12</span><span class="topic-title">2026-08-04 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-08-04</p>
+          <ul class="topic-brief">
+            <li>Add Toss Payments (§7) as an active task in current-plan.md</li>
+            <li>Fill in Stripe / thirdweb / Toss keys in .env.local</li>
+            <li>Build §2 AP2 (Stripe), §7 (Toss), §3+§6 (AA) — full implementation</li>
+            <li>Add portfolio-facing &quot;Technical Notes&quot; to PoCs/TIL hubs (purpose, how-it-works, flow diagrams)</li>
+            <li class="meta">+5개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-04-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-03-verex-history.md">
+          <div class="topic-head"><span class="topic-no">13</span><span class="topic-title">2026-08-03 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-08-03</p>
+          <ul class="topic-brief">
+            <li>deploy: staging brought up + redeployed to `main` @ 33252ff</li>
+            <li>docs(tasks): scope-table status audit in current-plan.md</li>
+            <li>docs(features): README roadmap status refresh (S1–S10 audited)</li>
+            <li>analysis: AMM curve slippage simulation → LMSR recommended</li>
+            <li class="meta">+9개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-03-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-03-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">14</span><span class="topic-title">2026-08-03 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-08-03</p>
+          <ul class="topic-brief">
+            <li>docs(plan): add task-status summary table to current-plan.md</li>
+            <li>docs(plan): correct 4 statuses against actual codebase evidence</li>
+            <li>feat(plan): add §22 ERC-8141 and §23 Toss Payments tasks</li>
+            <li>docs(features): add Status column to the Feature Designs IA table</li>
+            <li class="meta">+11개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-03-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-02-verex-history.md">
+          <div class="topic-head"><span class="topic-no">15</span><span class="topic-title">2026-08-02 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-08-02</p>
+          <ul class="topic-brief">
+            <li>feat(web): Telegram notification on home page visits</li>
+            <li>feat(notify): project emoji prefix on Telegram messages</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-02-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-02-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">16</span><span class="topic-title">2026-08-02 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-08-02</p>
+          <ul class="topic-brief">
+            <li>feat(notify): project emoji prefix on Telegram messages</li>
+            <li>feat(notify): ping when a conversation passes 10 questions</li>
+            <li>fix(jay-chat): three separate walls all landed at ~question 11</li>
+            <li>fix(rag): Korean compound words never matched — and a regression I caused</li>
+            <li class="meta">+4개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-02-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-01-verex-history.md">
+          <div class="topic-head"><span class="topic-no">17</span><span class="topic-title">2026-08-01 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-08-01</p>
+          <ul class="topic-brief">
+            <li>feat: Telegram notifications on trade/faucet/resolve</li>
+            <li>deploy: wire the Telegram bot token through Secret Manager</li>
+            <li>deploy: scoped deploy to staging + prod, verified live</li>
+            <li>fix(web): /portfolio (and /create) served frozen placeholder HTML forever</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-01-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-08-01-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">18</span><span class="topic-title">2026-08-01 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-08-01</p>
+          <ul class="topic-brief">
+            <li>docs: render all markdown docs to browsable HTML under docs/html/</li>
+            <li>docs: scope correction — keep the Verex README copy inside rabbit, not in verex</li>
+            <li>chore: pre-commit hook to auto-convert only changed .md files</li>
+            <li>docs(index): fix Current Projects — feature roadmap doc, not root README</li>
+            <li class="meta">+17개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-08-01-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-30-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">19</span><span class="topic-title">2026-07-30 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-30</p>
+          <ul class="topic-brief">
+            <li>docs index: remove the &quot;Nostra - Core&quot; section</li>
+            <li>docs index: self-link to the file's local path under the title</li>
+            <li>docs index: dot link after the Knowledge Base title</li>
+            <li>docs index: revert the Knowledge Base dot link</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-30-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-29-verex-history.md">
+          <div class="topic-head"><span class="topic-no">20</span><span class="topic-title">2026-07-29 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-29</p>
+          <ul class="topic-brief">
+            <li>Staging deploy: jul-28 branch live on Cloud Run + Sepolia</li>
+            <li>Market detail logo + edit page (image URL / rules / category)</li>
+            <li>Follow-up: market editing flipped to operator-only</li>
+            <li>Fix: homepage Featured card ignored the edited image URL</li>
+            <li class="meta">+10개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-29-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-29-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">21</span><span class="topic-title">2026-07-29 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-29</p>
+          <ul class="topic-brief">
+            <li>VerexBall: spin 30% faster</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-29-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-28-verex-history.md">
+          <div class="topic-head"><span class="topic-no">22</span><span class="topic-title">2026-07-28 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-28</p>
+          <ul class="topic-brief">
+            <li>Jul-28 features implemented — CLOB, multi-outcome groups, async settlement, create-market, how-to guide</li>
+            <li>Jul-28 features: design doc drafted, awaiting jay's approval</li>
+            <li>Decision: multi-outcome = N grouped binary conditions, not one N-slot condition</li>
+            <li>Decision: group prices renormalized deterministically (Σ = 1), diverging from the reference</li>
+            <li class="meta">+8개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-28-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-27-verex-history.md">
+          <div class="topic-head"><span class="topic-no">23</span><span class="topic-title">2026-07-27 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-27</p>
+          <ul class="topic-brief">
+            <li>Runbook: add §7 production deploy (test/prod separation)</li>
+            <li>Decision: fresh operator key per environment</li>
+            <li>Gotcha: domain mapping + re-deploy footguns captured in §7</li>
+            <li>Runbook split: prod gets its own file + wrapper script (jay's request)</li>
+            <li class="meta">+14개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-27-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-27-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">24</span><span class="topic-title">2026-07-27 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-27</p>
+          <ul class="topic-brief">
+            <li>Menu: open every top-menu item to the owner on local and cloud</li>
+            <li>Owner gate: one rule for local and cloud, no local free pass</li>
+            <li>Nav: &quot;Sign in&quot; wrapped to two lines in the top bar</li>
+            <li>Root cause hunt: production Google login fails with `error=Configuration`</li>
+            <li class="meta">+5개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-27-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-25-verex-history.md">
+          <div class="topic-head"><span class="topic-no">25</span><span class="topic-title">2026-07-25 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-25</p>
+          <ul class="topic-brief">
+            <li>verex.jaylabs.xyz went live — via Firebase Hosting rewrite, not Cloud Run domain mapping</li>
+            <li>What was done (all REST via gcloud token — no firebase CLI installed)</li>
+            <li>verex.jaylabs.xyz LIVE ✅ + decision: current env = TEST, new PROD env to be built</li>
+            <li>Footer: &quot;powered by JayLabs&quot; → www.jaylabs.xyz</li>
+            <li class="meta">+4개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-25-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-25-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">26</span><span class="topic-title">2026-07-25 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-25</p>
+          <ul class="topic-brief">
+            <li>AI Chat: &quot;Ask about me&quot; RAG mode</li>
+            <li>Decision: RAG over fine-tuning (why)</li>
+            <li>Design coupling: About-me RAG (§5b) ↔ Auth + LLM gating (§2)</li>
+            <li>Doc: GCP instance sizing &amp; cost added to ai-chat.md</li>
+            <li class="meta">+19개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-25-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-22-verex-history.md">
+          <div class="topic-head"><span class="topic-no">27</span><span class="topic-title">2026-07-22 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-22</p>
+          <ul class="topic-brief">
+            <li>testnet-deploy.md: single-address balance check instead of a 5-address loop</li>
+            <li>check-demo-balance.ts: script to spot-check demo-wallet ETH balances</li>
+            <li>seed.ts: auto-load USDC_ADDR/CTF_ADDR/EXCHANGE_ADDR from packages/contracts/.env</li>
+            <li>testnet-deploy.md: documented what running the seed command does to existing data</li>
+            <li class="meta">+7개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-22-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-22-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">28</span><span class="topic-title">2026-07-22 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-22</p>
+          <ul class="topic-brief">
+            <li>Feature: per-menu cloud visibility flags (`ALLOW_&lt;CODE&gt;`)</li>
+            <li>Fix: forward ALLOW_* menu flags to Cloud Run on deploy</li>
+            <li>Feature: two-target deploy (test = all menus, prod = filtered)</li>
+            <li>Deploy: test server to Cloud Run</li>
+            <li class="meta">+5개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-22-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-21-verex-history.md">
+          <div class="topic-head"><span class="topic-no">29</span><span class="topic-title">2026-07-21 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-21</p>
+          <ul class="topic-brief">
+            <li>Portfolio: click-to-view P&amp;L breakdown popup on Activity REDEEM rows</li>
+            <li>Portfolio: move the popup's click target to the REDEEM chip itself</li>
+            <li>New logo: probability-coin mark replaces the plain &quot;V&quot; badge</li>
+            <li>Market cards: per-market thumbnail image</li>
+            <li class="meta">+18개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-21-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-21-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">30</span><span class="topic-title">2026-07-21 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-21</p>
+          <ul class="topic-brief">
+            <li>Market: Hyperliquid testnet TradePanel (Phase 2a, MetaMask signing)</li>
+            <li>UI: shadcn-inspired restyle of the whole app (CSS-only)</li>
+            <li>UI: fancier top nav — sticky glassy header + active-page pill</li>
+            <li>Fix: TradePanel reads Spot + Perp balance (0-balance confusion)</li>
+            <li class="meta">+6개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-21-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-20.md">
+          <div class="topic-head"><span class="topic-no">31</span><span class="topic-title">2026-07-20</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-20</p>
+          <ul class="topic-brief">
+            <li>Rabbit state audit: recent docs and commits</li>
+            <li>Hyperliquid: add advanced market and trading design</li>
+            <li>Git: continue Hyperliquid work on the existing branch</li>
+            <li>Solana hackathon design: move into task details</li>
+            <li class="meta">+9개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-20.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-20-verex-history.md">
+          <div class="topic-head"><span class="topic-no">32</span><span class="topic-title">2026-07-20 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-20</p>
+          <ul class="topic-brief">
+            <li>README: single current run flow, v1 section removed</li>
+            <li>seed: pre-fund demo wallets #1–5 with 1,000 USDC (verified live, re-runnable)</li>
+            <li>Root cause: fillOrder revert after re-seed = stale ChainConfig cache; fix in chain.ts</li>
+            <li>API: surface revert reasons in /trade errors</li>
+            <li class="meta">+7개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-20-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-20-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">33</span><span class="topic-title">2026-07-20 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-20</p>
+          <ul class="topic-brief">
+            <li>Pages: rename docs/know.html → docs/index.html</li>
+            <li>Gotcha: Pages deploys from gh-pages, not main</li>
+            <li>Hackathon entry: CarrotPay idea + design doc</li>
+            <li>Fix back-links after the rename</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-20-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-17-verex-history.md">
+          <div class="topic-head"><span class="topic-no">34</span><span class="topic-title">2026-07-17 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-17</p>
+          <ul class="topic-brief">
+            <li>hybrid-amm-clob: add extreme-probability slippage section + dev items</li>
+            <li>features: add &quot;Markets as tokens&quot; composability item</li>
+            <li>features: add Zod runtime-validation item</li>
+            <li>features README: surface extreme-probability handling in the category index</li>
+            <li class="meta">+1개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-17-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-17-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">35</span><span class="topic-title">2026-07-17 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-17</p>
+          <ul class="topic-brief">
+            <li>features: add DSRV Portal study/PoC item</li>
+            <li>tasks: add TOC to the design file (all sections back-linked)</li>
+            <li>features + tasks: add CRE × cloud hybrid use-cases item (design §21)</li>
+            <li>knowledge + tasks: add 5-layer web-stack map (design §20)</li>
+            <li class="meta">+16개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-17-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-07-verex-history.md">
+          <div class="topic-head"><span class="topic-no">36</span><span class="topic-title">2026-07-07 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-07</p>
+          <ul class="topic-brief">
+            <li>AA: 모듈러 계정 표준 feature spec 추가 (ERC-6900 vs ERC-7579 → 7579 권고)</li>
+            <li>Task 1 대개편: shadcn UI + 실컨트랙트 거래 (jun-19 design Task 1 + &quot;real contract&quot; 지시)</li>
+            <li>Task 2 준비: GCP 셋업 요약 + 클라우드 체인 결정 항목 신설</li>
+            <li>Staging 배포 준비 완료 — deploy.sh 갱신 + DB-only 모드 + /backend 프록시 (jay 실행 예정)</li>
+            <li class="meta">+7개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-07-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-07-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">37</span><span class="topic-title">2026-07-07 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-07</p>
+          <ul class="topic-brief">
+            <li>Git: commit staged docs to main and push (+ stale lock cleanup)</li>
+            <li>Port: move dev/prod server 3000 → 3100 (verex conflict)</li>
+            <li>Market page: Hyperliquid BTC orderbook + indices (design §3)</li>
+            <li>Research: perp trading from /market with MetaMask (design §3 addendum)</li>
+            <li class="meta">+6개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-07-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-06-verex-history.md">
+          <div class="topic-head"><span class="topic-no">38</span><span class="topic-title">2026-07-06 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-06</p>
+          <ul class="topic-brief">
+            <li>AA: 모듈러 계정 표준 feature spec 추가 (ERC-6900 vs ERC-7579 → 7579 권고)</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-06-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-02-verex-history.md">
+          <div class="topic-head"><span class="topic-no">39</span><span class="topic-title">2026-07-02 — verex history</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-07-02</p>
+          <ul class="topic-brief">
+            <li>Git worktree: add agent-2 worktree at /Users/jay/work-agent-2/verex</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-02-verex-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-02-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">40</span><span class="topic-title">2026-07-02 — rabbit history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-02</p>
+          <ul class="topic-brief">
+            <li>Repo rename: task → rabbit (GitHub + local)</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-02-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-07-01-task-history.md">
+          <div class="topic-head"><span class="topic-no">41</span><span class="topic-title">2026-07-01 — task history</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-07-01</p>
+          <ul class="topic-brief">
+            <li>tasks doc — DONE/TODO status lines</li>
+            <li>New Third — ETC → JayVerse</li>
+            <li>JayVerse rename — propagate the menu name</li>
+            <li>App — apply ETC → JayVerse (menu + route)</li>
+            <li class="meta">+5개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-07-01-task-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-06-30-rabbit-history.md">
+          <div class="topic-head"><span class="topic-no">42</span><span class="topic-title">2026-06-30 — rabbit</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-06-30</p>
+          <ul class="topic-brief">
+            <li>Task 1 — split &quot;Portfolio &amp; Market&quot; into Portfolio + Market; reorder menu</li>
+            <li>Task 4 — Knowledge page serves `know.html`</li>
+            <li>Fix — Portfolio menu item hidden until login</li>
+            <li>Knowledge cleanup — move leftover root files to docs/archive/</li>
+            <li class="meta">+2개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-06-30-rabbit-history.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-06-29-rabbit.md">
+          <div class="topic-head"><span class="topic-no">43</span><span class="topic-title">2026-06-29 — rabbit</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-06-29</p>
+          <ul class="topic-brief">
+            <li>Design: fold jun-30 §9 answers into decisions (ERC = 7702)</li>
+            <li>Decision: menu order — Home = `/`, Verex trailing external link</li>
+            <li>Design refine: Local LLM available in local mode (not disabled outright)</li>
+            <li>Design: create jun-30-rabbit-design.md from the Jun-30 task list</li>
+            <li class="meta">+16개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-06-29-rabbit.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-06-26-rabbit.md">
+          <div class="topic-head"><span class="topic-no">44</span><span class="topic-title">2026-06-26 — rabbit</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-06-26</p>
+          <ul class="topic-brief">
+            <li>rabbit — jun-19 Task 1–6 구현 (브랜치 `claude/jun-19-rabbit`)</li>
+            <li>테스트 — 페이지별 필요 조건</li>
+            <li>에러 &amp; 수정 (작업 중)</li>
+            <li>pnpm 11.5 — `ERR_PNPM_IGNORED_BUILDS` (Prisma)</li>
+            <li class="meta">+7개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-06-26-rabbit.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-06-24.md">
+          <div class="topic-head"><span class="topic-no">45</span><span class="topic-title">2026-06-24</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-06-24</p>
+          <ul class="topic-brief">
+            <li>sub-agents.md: add OneNote MCP setup section</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-06-24.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-06-24-verex.md">
+          <div class="topic-head"><span class="topic-no">46</span><span class="topic-title">verex</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-06-24</p>
+          <ul class="topic-brief">
+            <li>Verex Task 1: basic prediction-market web UI (DB-only)</li>
+            <li>Verex Task 2 prep: deploy scaffolding</li>
+            <li>Local dev tooling + learning docs</li>
+            <li>Bug fix: API 500 — `Environment variable not found: DATABASE_URL`</li>
+            <li class="meta">+5개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-06-24-verex.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-06-22.md">
+          <div class="topic-head"><span class="topic-no">47</span><span class="topic-title">2026-06-22</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-06-22</p>
+          <ul class="topic-brief">
+            <li>ai/litellm-routing: local↔cloud model routing example</li>
+            <li>math Day 3/50: limits &amp; continuity</li>
+            <li>math: add pyproject.toml + Setup &amp; Run docs</li>
+            <li>.gitignore: ignore .venv</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-06-22.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-06-18.md">
+          <div class="topic-head"><span class="topic-no">48</span><span class="topic-title">2026-06-18</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-06-18</p>
+          <ul class="topic-brief">
+            <li>Handbook: workflow rename + feature-design process (PR #10)</li>
+            <li>Rabbit: feature design drafts (PR #10)</li>
+            <li>Related: rabbit-hole repo</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-06-18.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-06-17-icon-game-and-google-login-fix.md">
+          <div class="topic-head"><span class="topic-no">49</span><span class="topic-title">2026-06-17 — Icon, game page, top-menu, and Google-login fix</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-06-17</p>
+          <ul class="topic-brief">
+            <li>Features</li>
+            <li>#1 Web page icon</li>
+            <li>#2 Game page + consistent top menu</li>
+            <li>Bug fix: favicon blocked by middleware</li>
+            <li class="meta">+4개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-06-17-icon-game-and-google-login-fix.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-06-16.md">
+          <div class="topic-head"><span class="topic-no">50</span><span class="topic-title">2026-06-16</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-06-16</p>
+          <ul class="topic-brief">
+            <li>ai/prompt-engineering: Day 7 few-shot auditor exercise</li>
+            <li>math: Day 2 exponents &amp; logarithms</li>
+            <li>ai/prompt-engineering: fix ModuleNotFoundError (ollama)</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-06-16.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-06-12-deploy-troubleshooting.md">
+          <div class="topic-head"><span class="topic-no">51</span><span class="topic-title">2026-06-12 — Cloud Run 첫 배포 트러블슈팅 기록</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-06-12</p>
+          <ul class="topic-brief">
+            <li>1. 빌드 실패 — `ERR_UNKNOWN_BUILTIN_MODULE: node:sqlite`</li>
+            <li>2. 리비전 생성 실패 — Secret Manager `Permission denied`</li>
+            <li>3. 운영 Google 로그인 차단 — `Error 400: redirect_uri_mismatch`</li>
+            <li>예방 조치</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-06-12-deploy-troubleshooting.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-05-27-s2.4-sdk-cli-migration.md">
+          <div class="topic-head"><span class="topic-no">52</span><span class="topic-title">S2.4 — SDK + CLI migration to CTF stack (2026-05-27)</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-05-27</p>
+          <ul class="topic-brief">
+            <li>1. 결과 요약</li>
+            <li>2. SDK 신규 구조</li>
+            <li>2.1 핵심 설계 결정 (사후 정리)</li>
+            <li>2.2 EIP-712 parity 검증 (S2.4의 핵심 risk 해소)</li>
+            <li class="meta">+9개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-05-27-s2.4-sdk-cli-migration.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-05-26-s2-fillorder-e2e.md">
+          <div class="topic-head"><span class="topic-no">53</span><span class="topic-title">S2 — CTF Exchange `fillOrder` end-to-end (2026-05-26)</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-05-26</p>
+          <ul class="topic-brief">
+            <li>1. 결과 요약</li>
+            <li>2. `test/CTFFillOrder.t.sol` 상세</li>
+            <li>2.1 왜 별도 테스트 파일</li>
+            <li>2.2 6 테스트 구조</li>
+            <li class="meta">+15개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-05-26-s2-fillorder-e2e.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-05-13-s2-implementation-and-oracle-progression.md">
+          <div class="topic-head"><span class="topic-no">54</span><span class="topic-title">S2 Implementation (S2.1 + S2.2) + Oracle Progression Refinement (2026-05-13)</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-05-13</p>
+          <ul class="topic-brief">
+            <li>1. 결과 요약</li>
+            <li>2. S2.1 — Foundry CTF cycle 테스트 상세</li>
+            <li>2.1 통합 전략</li>
+            <li>2.2 테스트 구조</li>
+            <li class="meta">+19개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-05-13-s2-implementation-and-oracle-progression.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-05-11-plan-restructure-and-gnosis-research.md">
+          <div class="topic-head"><span class="topic-no">55</span><span class="topic-title">Plan Restructure (S2 = CTF) + Gnosis CTF Research Note (2026-05-11)</span> <span class="badge" style="background:#16a34a22; color:#16a34a;">Rabbit</span></div>
+          <p class="meta">2026-05-11</p>
+          <ul class="topic-brief">
+            <li>1. 결정 + 그 이유 — 한눈에</li>
+            <li>2. `docs/plan/README.md` — 섹션별 변경</li>
+            <li>3. `docs/plan/gnosis-ctf-research.md` — 신규</li>
+            <li>4. Q&amp;A 세션 — 부수적으로 다룬 개념들</li>
+            <li class="meta">+3개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-05-11-plan-restructure-and-gnosis-research.html">상세 &rarr;</a></p>
+        </li>
+        <li id="2026-05-07-phase1-w1-implementation.md">
+          <div class="topic-head"><span class="topic-no">56</span><span class="topic-title">Phase 1 — W1 Implementation (2026-05-07)</span> <span class="badge" style="background:#d9770622; color:#d97706;">Verex</span></div>
+          <p class="meta">2026-05-07</p>
+          <ul class="topic-brief">
+            <li>1. 결과 (마일스톤 검증)</li>
+            <li>2. 변경된 파일 목록</li>
+            <li>3. 컨트랙트 설계</li>
+            <li>3.1 Market.sol (per-market 컨트랙트)</li>
+            <li class="meta">+24개 더</li>
+          </ul>
+          <p class="topic-link"><a href="html/docs/history/2026-05-07-phase1-w1-implementation.html">상세 &rarr;</a></p>
+        </li>
+      </ul>
+    </article>
+  </main>
+</div>
+<script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    const first = order.find((k) => seen.has(k));
+    for (const a of spied) a.classList.toggle('active', a.dataset.key === first);
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) io.observe(el);
+  }
+</script>
+</body>
+</html>

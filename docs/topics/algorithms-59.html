@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 59 — Casper FFG + LMD-GHOST</title>
+<title>Day 59 — Casper FFG + LMD-GHOST — The Conditions for Reorganization</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,67 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 59</p>
   <article>
+      <h1>Casper FFG + LMD-GHOST — The Conditions for Reorganization <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 59 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>Ethereum's consensus splits into two parts: LMD-GHOST is the fork-choice rule that decides which chain to follow, and Casper FFG is the rule layered on top that grants finality. LMD-GHOST counts only each validator's most recent vote and picks the head by descending into the subtree with the greatest weight. Casper FFG votes on checkpoints at epoch boundaries: once two-thirds or more of stake supports a given link, that checkpoint becomes justified, and once a chain of justifications holds, it becomes finalized. Reorganizations naturally occur only within the not-yet-finalized region, arising from network delay, validator dropout, or voting timing when the majority weight shows up late. Reverting a finalized checkpoint requires contradictory votes, which is punished by slashing — this is what's known as accountable safety.</p>
+      <p>This is where the answer to &quot;how many blocks do I need to wait before it's safe&quot; comes from, and treating pre-finality data as if it were already final leaves state out of sync when a reorg happens.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Casper FFG + LMD-GHOST — 체크포인트가 스테이크 2/3 이상의 지지를 받으면 justified,
+# 연속된 justification이 성립하면 finalized. finalize 전 구간에서만 reorg가 일어난다.
+
+class Checkpoint:
+    def __init__(self, epoch, parent=None):
+        self.epoch = epoch
+        self.parent = parent
+        self.justified = False
+        self.finalized = False
+
+def cast_votes(checkpoint, stake_fraction_voting):
+    &quot;&quot;&quot;스테이크의 stake_fraction_voting 만큼이 이 체크포인트로의 링크에 투표&quot;&quot;&quot;
+    checkpoint.justified = stake_fraction_voting &gt;= (2 / 3)
+    if checkpoint.justified and checkpoint.parent and checkpoint.parent.justified:
+        # 부모도 justified고, 부모-&gt;자신 링크가 justified면 부모가 finalized 됨
+        checkpoint.parent.finalized = True
+
+genesis = Checkpoint(0)
+genesis.justified = True  # genesis는 항상 justified로 취급
+
+epoch1 = Checkpoint(1, parent=genesis)
+epoch2 = Checkpoint(2, parent=epoch1)
+epoch3 = Checkpoint(3, parent=epoch2)
+
+# 정상 케이스: 매 에포크 2/3 이상 투표
+cast_votes(epoch1, stake_fraction_voting=0.90)
+cast_votes(epoch2, stake_fraction_voting=0.85)
+
+print(&quot;정상 진행:&quot;)
+for cp in [genesis, epoch1, epoch2]:
+    print(f&quot;  epoch {cp.epoch}: justified={cp.justified}, finalized={cp.finalized}&quot;)
+
+# 문제 케이스: epoch3는 네트워크 지연으로 2/3 미달 -&gt; justified 실패
+cast_votes(epoch3, stake_fraction_voting=0.55)
+print(f&quot;\nepoch 3: justified={epoch3.justified}, finalized={epoch3.finalized} &quot;
+      f&quot;(2/3 미달 -&gt; 아직 확정 안 됨, 이 구간은 reorg 가능)&quot;)
+
+# LMD-GHOST 헤드 선택: justified 여부와 무관하게 최근 투표 가중치가 큰 서브트리를 따라간다
+votes_on_epoch2_children = {&quot;blockA(epoch3)&quot;: 0.55, &quot;blockB(epoch3, competing)&quot;: 0.30}
+head = max(votes_on_epoch2_children, key=votes_on_epoch2_children.get)
+print(f&quot;\nLMD-GHOST 헤드 선택 (epoch2 이후 미확정 구간): &quot;
+      f&quot;{votes_on_epoch2_children} -&gt; head = {head}&quot;)
+print(&quot;-&gt; finalized 체크포인트(epoch1, epoch2)는 슬래싱 없이는 뒤집을 수 없지만,&quot;)
+print(&quot;   미확정 헤드는 투표 가중치가 바뀌면 자연스럽게 reorg 될 수 있다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-59.py">docs/code/algorithms/algorithms-59.py</a></p>
+      <h2>Exercise</h2>
+      <p>Query the beacon chain API for the justified and finalized checkpoints of a recent epoch along with the current head slot, and convert the gap between head and finality into a time unit.</p>
+      <h2>Practical Connection</h2>
+      <p>A system like Verex that combines on-chain settlement with off-chain indexing needs to decide when to treat an event as final, and that threshold is exactly what bounds the scope of rollback logic when a reorg occurs.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>Casper FFG + LMD-GHOST <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 59 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
       <p class="lead">재조직(reorg)의 조건</p>
@@ -115,7 +199,52 @@
       <p>이더리움의 합의는 두 요소로 나뉘는데, LMD-GHOST는 어느 체인을 따를지 고르는 포크 선택 규칙이고 Casper FFG는 그 위에서 최종성을 부여하는 규칙이다. LMD-GHOST는 각 검증자의 가장 최근 투표만 세어 가중치가 가장 큰 서브트리를 따라 내려가며 헤드를 정한다. Casper FFG는 에포크 경계의 체크포인트를 대상으로 투표하며, 스테이크의 3분의 2 이상이 어떤 링크를 지지하면 그 체크포인트가 justified 되고, 연속된 justification이 성립하면 finalized 된다. 재조직은 아직 finalize되지 않은 구간에서만 자연스럽게 일어나며, 네트워크 지연·검증자 이탈·투표 타이밍 때문에 다수 가중치가 늦게 드러날 때 발생한다. finalized 체크포인트를 뒤집으려면 서로 모순되는 투표가 필요하고, 이는 슬래싱으로 처벌되는 책임 있는 안전성(accountable safety) 구조이다.</p>
       <p>&quot;몇 블록 기다려야 안전한가&quot;라는 질문의 답이 여기서 나오고, 확정 전 데이터를 확정된 것처럼 다루면 reorg 때 상태가 어긋난다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Casper FFG + LMD-GHOST — 체크포인트가 스테이크 2/3 이상의 지지를 받으면 justified,
+# 연속된 justification이 성립하면 finalized. finalize 전 구간에서만 reorg가 일어난다.
+
+class Checkpoint:
+    def __init__(self, epoch, parent=None):
+        self.epoch = epoch
+        self.parent = parent
+        self.justified = False
+        self.finalized = False
+
+def cast_votes(checkpoint, stake_fraction_voting):
+    &quot;&quot;&quot;스테이크의 stake_fraction_voting 만큼이 이 체크포인트로의 링크에 투표&quot;&quot;&quot;
+    checkpoint.justified = stake_fraction_voting &gt;= (2 / 3)
+    if checkpoint.justified and checkpoint.parent and checkpoint.parent.justified:
+        # 부모도 justified고, 부모-&gt;자신 링크가 justified면 부모가 finalized 됨
+        checkpoint.parent.finalized = True
+
+genesis = Checkpoint(0)
+genesis.justified = True  # genesis는 항상 justified로 취급
+
+epoch1 = Checkpoint(1, parent=genesis)
+epoch2 = Checkpoint(2, parent=epoch1)
+epoch3 = Checkpoint(3, parent=epoch2)
+
+# 정상 케이스: 매 에포크 2/3 이상 투표
+cast_votes(epoch1, stake_fraction_voting=0.90)
+cast_votes(epoch2, stake_fraction_voting=0.85)
+
+print(&quot;정상 진행:&quot;)
+for cp in [genesis, epoch1, epoch2]:
+    print(f&quot;  epoch {cp.epoch}: justified={cp.justified}, finalized={cp.finalized}&quot;)
+
+# 문제 케이스: epoch3는 네트워크 지연으로 2/3 미달 -&gt; justified 실패
+cast_votes(epoch3, stake_fraction_voting=0.55)
+print(f&quot;\nepoch 3: justified={epoch3.justified}, finalized={epoch3.finalized} &quot;
+      f&quot;(2/3 미달 -&gt; 아직 확정 안 됨, 이 구간은 reorg 가능)&quot;)
+
+# LMD-GHOST 헤드 선택: justified 여부와 무관하게 최근 투표 가중치가 큰 서브트리를 따라간다
+votes_on_epoch2_children = {&quot;blockA(epoch3)&quot;: 0.55, &quot;blockB(epoch3, competing)&quot;: 0.30}
+head = max(votes_on_epoch2_children, key=votes_on_epoch2_children.get)
+print(f&quot;\nLMD-GHOST 헤드 선택 (epoch2 이후 미확정 구간): &quot;
+      f&quot;{votes_on_epoch2_children} -&gt; head = {head}&quot;)
+print(&quot;-&gt; finalized 체크포인트(epoch1, epoch2)는 슬래싱 없이는 뒤집을 수 없지만,&quot;)
+print(&quot;   미확정 헤드는 투표 가중치가 바뀌면 자연스럽게 reorg 될 수 있다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-59.py">docs/code/algorithms/algorithms-59.py</a></p>
       <h2>연습</h2>
       <p>비콘 체인 API로 최근 에포크의 justified·finalized 체크포인트와 현재 헤드 슬롯을 조회해, 헤드와 최종성 사이의 거리를 시간 단위로 환산해 보기.</p>
       <h2>실무 · Verex 연결</h2>

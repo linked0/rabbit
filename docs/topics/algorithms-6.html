@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 6 — 확률적 자료구조</title>
+<title>Day 6 — Probabilistic Data Structures</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,60 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 6</p>
   <article>
+      <h1>Probabilistic Data Structures <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 6 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>Probabilistic data structures trade an exact answer for a bounded error, in exchange for a large reduction in memory. A Bloom filter tests set membership using a bit array and k hash functions; it can produce false positives but never false negatives, and doesn't support deletion. A Cuckoo filter instead stores a short fingerprint of the element in one of two candidate buckets, which lets it support deletion. A Count-Min sketch estimates frequencies using a grid of counters indexed by several hash rows; collisions can cause it to overestimate, but never underestimate. HyperLogLog estimates the cardinality (count of distinct elements) by recording, across many buckets, the maximum number of leading zero bits seen in a hash value — using almost constant memory.</p>
+      <p>In places like logs, mempools, or caches where the element count runs into the hundreds of millions, holding an exact set or counter blows the memory budget before anything else fails.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 6: 확률적 자료구조 — Bloom Filter로 집합 포함 여부를 확률적으로 판정
+# 비트 배열 + k개의 해시로 원소를 삽입하고, 거짓 양성(false positive)이 실제로 발생함을 확인한다.
+
+import hashlib
+
+class BloomFilter:
+    def __init__(self, size, k):
+        self.size = size
+        self.k = k
+        self.bits = [0] * size
+
+    def _hashes(self, item):
+        for i in range(self.k):
+            h = hashlib.sha256(f&quot;{i}:{item}&quot;.encode()).digest()
+            yield int.from_bytes(h, &quot;big&quot;) % self.size
+
+    def add(self, item):
+        for idx in self._hashes(item):
+            self.bits[idx] = 1
+
+    def might_contain(self, item):
+        return all(self.bits[idx] for idx in self._hashes(item))
+
+bf = BloomFilter(size=64, k=3)
+inserted = [f&quot;tx-{i}&quot; for i in range(20)]
+for item in inserted:
+    bf.add(item)
+
+checked, false_positives = 2000, 0
+for i in range(checked):
+    probe = f&quot;probe-{i}&quot;
+    if probe not in inserted and bf.might_contain(probe):
+        false_positives += 1
+
+print(f&quot;삽입 원소 {len(inserted)}개, 비트 배열 크기 {bf.size}, 해시 개수 {bf.k}&quot;)
+print(f&quot;might_contain('tx-5') = {bf.might_contain('tx-5')} (실제 포함 원소 -&gt; 항상 True)&quot;)
+print(f&quot;거짓 양성 {false_positives} / {checked}회 (비율 {false_positives / checked:.3%})&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-6.py">docs/code/algorithms/algorithms-6.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement a Bloom filter and, by varying the bit count m and the number of hash functions k, compare the measured false-positive rate against the theoretical value.</p>
+      <h2>Practical Connection</h2>
+      <p>Bloom-style filters are used in P2P gossip to avoid re-propagating transaction or block hashes that have already been seen, and Verex could apply the same idea as a cheap first-pass filter for event logs or order IDs it has already processed.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>확률적 자료구조 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 6 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">Bloom·Cuckoo·Count-Min·HyperLogLog</p>
@@ -115,7 +192,45 @@
       <p>확률적 자료구조는 정확한 답 대신 제한된 오차를 허용하는 대가로 메모리를 크게 줄이는 구조다. Bloom filter는 비트 배열과 k개의 해시 함수를 써서 원소 포함 여부를 판정하며, 거짓 양성은 있지만 거짓 음성은 없고 원소 삭제도 되지 않는다. Cuckoo filter는 원소 대신 짧은 지문(fingerprint)을 두 후보 버킷 중 하나에 넣는 방식이라 삭제를 지원한다. Count-Min sketch는 여러 해시 행의 카운터 배열로 빈도를 추정하며, 충돌 때문에 과대추정은 하지만 과소추정은 하지 않는다. HyperLogLog는 해시값의 선행 0 개수 최대치를 여러 버킷에 나눠 기록해 서로 다른 원소의 개수(카디널리티)를 거의 상수 메모리로 추정한다.</p>
       <p>로그·멤풀·캐시처럼 원소가 수억 개인 곳에서 정확한 집합이나 카운터를 그대로 들고 있으면 메모리가 먼저 터진다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 6: 확률적 자료구조 — Bloom Filter로 집합 포함 여부를 확률적으로 판정
+# 비트 배열 + k개의 해시로 원소를 삽입하고, 거짓 양성(false positive)이 실제로 발생함을 확인한다.
+
+import hashlib
+
+class BloomFilter:
+    def __init__(self, size, k):
+        self.size = size
+        self.k = k
+        self.bits = [0] * size
+
+    def _hashes(self, item):
+        for i in range(self.k):
+            h = hashlib.sha256(f&quot;{i}:{item}&quot;.encode()).digest()
+            yield int.from_bytes(h, &quot;big&quot;) % self.size
+
+    def add(self, item):
+        for idx in self._hashes(item):
+            self.bits[idx] = 1
+
+    def might_contain(self, item):
+        return all(self.bits[idx] for idx in self._hashes(item))
+
+bf = BloomFilter(size=64, k=3)
+inserted = [f&quot;tx-{i}&quot; for i in range(20)]
+for item in inserted:
+    bf.add(item)
+
+checked, false_positives = 2000, 0
+for i in range(checked):
+    probe = f&quot;probe-{i}&quot;
+    if probe not in inserted and bf.might_contain(probe):
+        false_positives += 1
+
+print(f&quot;삽입 원소 {len(inserted)}개, 비트 배열 크기 {bf.size}, 해시 개수 {bf.k}&quot;)
+print(f&quot;might_contain('tx-5') = {bf.might_contain('tx-5')} (실제 포함 원소 -&gt; 항상 True)&quot;)
+print(f&quot;거짓 양성 {false_positives} / {checked}회 (비율 {false_positives / checked:.3%})&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-6.py">docs/code/algorithms/algorithms-6.py</a></p>
       <h2>연습</h2>
       <p>Bloom filter를 직접 구현해 비트 수 m과 해시 개수 k를 바꿔가며 실측 거짓 양성률을 이론값과 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

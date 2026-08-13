@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 75 — 인덱싱 파이프라인 설계</title>
+<title>Day 75 — Designing an Indexing Pipeline — Replayability</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,60 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 75</p>
   <article>
+      <h1>Designing an Indexing Pipeline — Replayability <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 75 / 100 &middot; E. Data &amp; Storage Engines (Day 69-81)</p>
+      <h2>Concept</h2>
+      <p>An indexing pipeline reads a chain's blocks, logs, and traces and transforms them into a queryable form; replayability is the property that running the whole thing again from the raw source data, at any time, reaches the exact same result. Achieving this requires the transformation logic to be a deterministic pure function — inputs that change on re-run, like the current time, randomness, or external API responses, must never enter the transformation. Progress should be represented as a cursor, such as (block number, log index), and writes must be idempotent, so that restarting after an interruption picks back up without duplication or gaps. Chains undergo reorgs, so results for unfinalized ranges must be stored together with their block hash so they can be rolled back and reprocessed; only ranges past finality are treated as immutable. In the end, replayability is a design that buys an operational freedom: the ability to throw away the data and rebuild it whenever the schema or the logic changes.</p>
+      <p>Indexers get their bugs fixed and their schemas changed often; without replayability, you end up hand-patching historical data — a special kind of hell. Skip reorg handling and wrong data sits there silently.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 인덱싱 파이프라인 설계 — 재생 가능성(replayability) — 동일 입력을 두 번 인덱싱해도 같은 결과가 나오고, reorg 시 롤백·재처리된다.
+# 커서(블록번호, 로그인덱스)로 진행 상태를 추적하고 쓰기를 멱등하게 만들어, 중단 후 재시작·재구성이 안전하도록 한다.
+
+def index_blocks(blocks, table=None):
+    table = table if table is not None else {}
+    for b in blocks:
+        for log in b[&quot;logs&quot;]:
+            key = (b[&quot;number&quot;], log[&quot;index&quot;])          # 커서 = (블록번호, 로그인덱스) → 자연스러운 멱등 키
+            table[key] = {&quot;block_hash&quot;: b[&quot;hash&quot;], &quot;value&quot;: log[&quot;value&quot;]}
+    return table
+
+def reorg_rollback(table, from_block):
+    # 확정되지 않은 구간을 되돌린다: from_block 이상인 항목을 모두 제거
+    stale_keys = [k for k in table if k[0] &gt;= from_block]
+    for k in stale_keys:
+        del table[k]
+    return len(stale_keys)
+
+chain_v1 = [
+    {&quot;number&quot;: 0, &quot;hash&quot;: &quot;0xa0&quot;, &quot;logs&quot;: [{&quot;index&quot;: 0, &quot;value&quot;: 100}]},
+    {&quot;number&quot;: 1, &quot;hash&quot;: &quot;0xa1&quot;, &quot;logs&quot;: [{&quot;index&quot;: 0, &quot;value&quot;: 200}]},
+    {&quot;number&quot;: 2, &quot;hash&quot;: &quot;0xa2&quot;, &quot;logs&quot;: [{&quot;index&quot;: 0, &quot;value&quot;: 300}]},
+]
+
+table_a = index_blocks(chain_v1)
+table_b = index_blocks(chain_v1)   # 같은 구간을 처음부터 다시 인덱싱
+
+print(&quot;두 번 인덱싱한 결과가 동일한가:&quot;, table_a == table_b)
+
+# 블록 2가 reorg로 다른 해시·값으로 교체되었다고 가정
+removed = reorg_rollback(table_a, from_block=2)
+chain_v2_block2 = {&quot;number&quot;: 2, &quot;hash&quot;: &quot;0xb2-reorged&quot;, &quot;logs&quot;: [{&quot;index&quot;: 0, &quot;value&quot;: 999}]}
+index_blocks([chain_v2_block2], table=table_a)
+
+print(f&quot;reorg 롤백: 블록 2 이상 {removed}개 항목 제거 후 재처리&quot;)
+print(&quot;reorg 이후 블록 2 상태:&quot;, table_a[(2, 0)])
+print(&quot;블록 0,1은 그대로 유지:&quot;, table_a[(0, 0)], table_a[(1, 0)])
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-75.py">docs/code/algorithms/algorithms-75.py</a></p>
+      <h2>Exercise</h2>
+      <p>Build a test that indexes an arbitrary block range twice and checks the final tables are byte-for-byte identical, then swap in different hashes for the last few blocks and verify that reorg rollback actually works.</p>
+      <h2>Practical Connection</h2>
+      <p>If Verex indexes order, fill, and settlement events to show users their positions and P&amp;L, without replayability, every time the calculation logic gets fixed, past balances are left wrong.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>인덱싱 파이프라인 설계 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 75 / 100 &middot; E. 데이터·스토리지 엔진 (Day 69–81)</p>
       <p class="lead">재생 가능성(replayability)</p>
@@ -115,7 +192,45 @@
       <p>인덱싱 파이프라인은 체인의 블록·로그·트레이스를 읽어 쿼리 가능한 형태로 변환해 저장하는 시스템이고, 재생 가능성은 원본 데이터로부터 언제든 처음부터 다시 돌려도 동일한 결과에 도달하는 성질을 뜻한다. 이를 얻으려면 변환 로직이 결정론적 순수 함수여야 하며, 현재 시각·난수·외부 API 응답처럼 재실행 시 달라지는 입력이 변환 안에 들어가면 안 된다. 진행 상태는 (블록 번호, 로그 인덱스) 같은 커서로 표현하고 쓰기는 멱등해야, 중단 후 재시작이 중복이나 누락 없이 이어진다. 체인은 재구성(reorg)이 일어나므로 확정되지 않은 구간의 결과는 블록 해시를 함께 저장해 되돌리거나 재처리할 수 있어야 하고, 확정 이후 구간만 불변으로 취급한다. 결국 재생 가능성은 '스키마나 로직이 바뀌었을 때 데이터를 버리고 다시 만들 수 있는가'라는 운영상의 자유를 사는 설계다.</p>
       <p>인덱서는 버그 수정이나 스키마 변경이 잦은데, 재생이 불가능하면 과거 데이터를 손으로 패치하는 지옥에 들어간다. reorg 처리를 빠뜨리면 조용히 틀린 데이터가 남는다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 인덱싱 파이프라인 설계 — 재생 가능성(replayability) — 동일 입력을 두 번 인덱싱해도 같은 결과가 나오고, reorg 시 롤백·재처리된다.
+# 커서(블록번호, 로그인덱스)로 진행 상태를 추적하고 쓰기를 멱등하게 만들어, 중단 후 재시작·재구성이 안전하도록 한다.
+
+def index_blocks(blocks, table=None):
+    table = table if table is not None else {}
+    for b in blocks:
+        for log in b[&quot;logs&quot;]:
+            key = (b[&quot;number&quot;], log[&quot;index&quot;])          # 커서 = (블록번호, 로그인덱스) → 자연스러운 멱등 키
+            table[key] = {&quot;block_hash&quot;: b[&quot;hash&quot;], &quot;value&quot;: log[&quot;value&quot;]}
+    return table
+
+def reorg_rollback(table, from_block):
+    # 확정되지 않은 구간을 되돌린다: from_block 이상인 항목을 모두 제거
+    stale_keys = [k for k in table if k[0] &gt;= from_block]
+    for k in stale_keys:
+        del table[k]
+    return len(stale_keys)
+
+chain_v1 = [
+    {&quot;number&quot;: 0, &quot;hash&quot;: &quot;0xa0&quot;, &quot;logs&quot;: [{&quot;index&quot;: 0, &quot;value&quot;: 100}]},
+    {&quot;number&quot;: 1, &quot;hash&quot;: &quot;0xa1&quot;, &quot;logs&quot;: [{&quot;index&quot;: 0, &quot;value&quot;: 200}]},
+    {&quot;number&quot;: 2, &quot;hash&quot;: &quot;0xa2&quot;, &quot;logs&quot;: [{&quot;index&quot;: 0, &quot;value&quot;: 300}]},
+]
+
+table_a = index_blocks(chain_v1)
+table_b = index_blocks(chain_v1)   # 같은 구간을 처음부터 다시 인덱싱
+
+print(&quot;두 번 인덱싱한 결과가 동일한가:&quot;, table_a == table_b)
+
+# 블록 2가 reorg로 다른 해시·값으로 교체되었다고 가정
+removed = reorg_rollback(table_a, from_block=2)
+chain_v2_block2 = {&quot;number&quot;: 2, &quot;hash&quot;: &quot;0xb2-reorged&quot;, &quot;logs&quot;: [{&quot;index&quot;: 0, &quot;value&quot;: 999}]}
+index_blocks([chain_v2_block2], table=table_a)
+
+print(f&quot;reorg 롤백: 블록 2 이상 {removed}개 항목 제거 후 재처리&quot;)
+print(&quot;reorg 이후 블록 2 상태:&quot;, table_a[(2, 0)])
+print(&quot;블록 0,1은 그대로 유지:&quot;, table_a[(0, 0)], table_a[(1, 0)])
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-75.py">docs/code/algorithms/algorithms-75.py</a></p>
       <h2>연습</h2>
       <p>임의 블록 구간을 두 번 인덱싱해도 최종 테이블이 바이트 단위로 같아지는지 확인하는 테스트를 만들고, 마지막 몇 블록을 다른 해시로 바꿔 넣어 reorg 롤백이 실제로 동작하는지 검증하라.</p>
       <h2>실무 · Verex 연결</h2>

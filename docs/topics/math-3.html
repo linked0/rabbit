@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 3 — 명제논리·집합·함수·관계</title>
+<title>Day 3 — Propositional Logic, Sets, Functions, and Relations</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,102 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 3</p>
   <article>
+      <h1>Propositional Logic, Sets, Functions, and Relations <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 3 / 52 &middot; July — Discrete Math &amp; Logic (Day 3-10)</p>
+      <h2>Concept</h2>
+      <p>Propositional logic consists of propositions with truth values combined with connectives (∧, ∨, ¬, →, ↔); the key points are that the implication p→q is vacuously true whenever p is false, and its contrapositive ¬q→¬p is always logically equivalent. Sets are collections of elements using notation like ∈, ⊆, ∪, ∩, complement, and Cartesian product; the quantifiers ∀ and ∃ swap when negated, with the inner proposition also negated (¬∀x P(x) ≡ ∃x ¬P(x)). A relation is defined as a subset of the Cartesian product A×B; if it has all three of reflexivity, symmetry, and transitivity, it's an equivalence relation that partitions the set into disjoint equivalence classes, and if it has reflexivity, antisymmetry, and transitivity, it's a partial order. A function is a special relation that maps each element of the domain to exactly one value, and the distinctions between injective, surjective, and bijective are the basis for comparing sizes and for the existence of an inverse function. This notation isn't content in itself so much as the language for reading every definition and proof that follows, so the goal is to practice translating symbols back into sentences.</p>
+      <p>Papers, specs, and formal verification documents are all written in this notation, so failing to read the symbols leads to misreading an algorithm's preconditions and the scope of its guarantees.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 명제논리·집합·함수·관계 — 함의(→)의 대우(¬q→¬p)가 항상 동치임을 진리표로 확인.
+# 곱집합의 부분집합으로서의 &quot;관계&quot;와, 정의역 원소마다 값이 유일한 &quot;함수&quot;도 함께 점검.
+
+def implies(p, q):
+    return (not p) or q
+
+def contrapositive(p, q):
+    return implies(not q, not p)
+
+# p -&gt; q 와 그 대우 ¬q -&gt; ¬p 가 모든 진리값 조합에서 같은지 확인 (진리표 4행)
+rows = [(p, q) for p in (False, True) for q in (False, True)]
+same = all(implies(p, q) == contrapositive(p, q) for p, q in rows)
+print(&quot;p→q ≡ ¬q→¬p (모든 행 일치)?&quot;, same)
+for p, q in rows:
+    print(f&quot;  p={p!s:5} q={q!s:5} p→q={implies(p,q)!s:5} ¬q→¬p={contrapositive(p,q)}&quot;)
+
+# 관계 R ⊆ A×B: A×B 의 부분집합이면 뭐든 관계다.
+A = {1, 2, 3}
+B = {&quot;a&quot;, &quot;b&quot;}
+R = {(1, &quot;a&quot;), (2, &quot;b&quot;), (2, &quot;a&quot;)}
+print(&quot;\nR ⊆ A×B ?&quot;, R.issubset({(a, b) for a in A for b in B}))
+
+# 함수는 &quot;정의역의 각 원소가 정확히 하나의 값&quot;을 갖는 특수한 관계.
+def is_function(rel, domain):
+    seen = {}
+    for a, b in rel:
+        if a in seen and seen[a] != b:
+            return False
+        seen[a] = b
+    return set(seen.keys()) == domain
+
+f_ok = {(1, &quot;a&quot;), (2, &quot;b&quot;), (3, &quot;a&quot;)}      # 1-&gt;a, 2-&gt;b, 3-&gt;a : 함수
+f_bad = {(1, &quot;a&quot;), (1, &quot;b&quot;), (2, &quot;a&quot;)}     # 1이 두 값을 가짐: 함수 아님
+print(&quot;f_ok 는 함수?&quot;, is_function(f_ok, A))
+print(&quot;f_bad 는 함수?&quot;, is_function(f_bad, A))
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-3.py">docs/code/math/math-3.py</a></p>
+      <h2>Exercise</h2>
+      <p>Formalize five sentences like &quot;verification passes for every valid signature&quot; using quantifiers and logical connectives, then write out both the negation and the contrapositive of each, in symbols and in English.</p>
+      <h2>Practical Connection</h2>
+      <p>If you write a smart contract invariant (e.g., &quot;the sum of position tokens issued across all markets equals the collateral balance&quot;) precisely in ∀ form, you can carry it directly into a test property or a formal verification spec.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>명제논리·집합·함수·관계 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 3 / 51 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
+      <p class="meta">Math &middot; Day 3 / 52 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
       <p class="lead">표기법만 읽으면 끝</p>
       <h2>개념</h2>
       <p>명제논리는 참·거짓 값을 갖는 명제와 결합자(∧, ∨, ¬, →, ↔)로 이루어지며, 특히 함의 p→q는 p가 거짓이면 무조건 참이라는 점과 그 대우 ¬q→¬p가 항상 동치라는 점이 핵심이다. 집합은 원소의 모임으로 ∈, ⊆, ∪, ∩, 여집합, 곱집합 같은 표기를 쓰고, 한정기호 ∀와 ∃는 부정할 때 서로 뒤바뀌며 안쪽 명제가 부정된다(¬∀x P(x) ≡ ∃x ¬P(x)). 관계는 곱집합 A×B의 부분집합으로 정의되며, 반사·대칭·추이 세 성질을 모두 가지면 동치관계가 되어 집합을 서로소인 동치류로 분할하고, 반사·반대칭·추이를 가지면 부분순서가 된다. 함수는 정의역의 각 원소에 정확히 하나의 값을 대응시키는 특수한 관계이며, 단사(injective)·전사(surjective)·전단사(bijective)의 구분이 크기 비교와 역함수 존재의 기준이 된다. 이 표기법들은 그 자체가 내용이라기보다 이후의 모든 정의와 증명을 읽는 언어이므로, 기호를 문장으로 바꿔 읽는 훈련이 목표다.</p>
       <p>논문·명세·정형 검증 문서는 전부 이 표기로 쓰여 있어서, 기호를 못 읽으면 알고리즘의 전제 조건과 보장 범위를 오해하게 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 명제논리·집합·함수·관계 — 함의(→)의 대우(¬q→¬p)가 항상 동치임을 진리표로 확인.
+# 곱집합의 부분집합으로서의 &quot;관계&quot;와, 정의역 원소마다 값이 유일한 &quot;함수&quot;도 함께 점검.
+
+def implies(p, q):
+    return (not p) or q
+
+def contrapositive(p, q):
+    return implies(not q, not p)
+
+# p -&gt; q 와 그 대우 ¬q -&gt; ¬p 가 모든 진리값 조합에서 같은지 확인 (진리표 4행)
+rows = [(p, q) for p in (False, True) for q in (False, True)]
+same = all(implies(p, q) == contrapositive(p, q) for p, q in rows)
+print(&quot;p→q ≡ ¬q→¬p (모든 행 일치)?&quot;, same)
+for p, q in rows:
+    print(f&quot;  p={p!s:5} q={q!s:5} p→q={implies(p,q)!s:5} ¬q→¬p={contrapositive(p,q)}&quot;)
+
+# 관계 R ⊆ A×B: A×B 의 부분집합이면 뭐든 관계다.
+A = {1, 2, 3}
+B = {&quot;a&quot;, &quot;b&quot;}
+R = {(1, &quot;a&quot;), (2, &quot;b&quot;), (2, &quot;a&quot;)}
+print(&quot;\nR ⊆ A×B ?&quot;, R.issubset({(a, b) for a in A for b in B}))
+
+# 함수는 &quot;정의역의 각 원소가 정확히 하나의 값&quot;을 갖는 특수한 관계.
+def is_function(rel, domain):
+    seen = {}
+    for a, b in rel:
+        if a in seen and seen[a] != b:
+            return False
+        seen[a] = b
+    return set(seen.keys()) == domain
+
+f_ok = {(1, &quot;a&quot;), (2, &quot;b&quot;), (3, &quot;a&quot;)}      # 1-&gt;a, 2-&gt;b, 3-&gt;a : 함수
+f_bad = {(1, &quot;a&quot;), (1, &quot;b&quot;), (2, &quot;a&quot;)}     # 1이 두 값을 가짐: 함수 아님
+print(&quot;f_ok 는 함수?&quot;, is_function(f_ok, A))
+print(&quot;f_bad 는 함수?&quot;, is_function(f_bad, A))
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-3.py">docs/code/math/math-3.py</a></p>
       <h2>연습</h2>
       <p>'모든 유효한 서명에 대해 검증이 통과한다' 같은 문장 다섯 개를 한정기호와 논리 결합자로 형식화한 뒤, 각각의 부정과 대우를 기호와 한국어 문장으로 함께 써 보라.</p>
       <h2>실무 · Verex 연결</h2>

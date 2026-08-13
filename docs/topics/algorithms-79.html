@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 79 — 캐시 일관성·무효화·스탬피드 방지</title>
+<title>Day 79 — Cache Consistency, Invalidation, and Stampede Prevention</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,78 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 79</p>
   <article>
+      <h1>Cache Consistency, Invalidation, and Stampede Prevention <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 79 / 100 &middot; E. Data &amp; Storage Engines (Day 69-81)</p>
+      <h2>Concept</h2>
+      <p>A cache starts carrying a consistency problem the moment the source of truth and the copy diverge; policies broadly split into expiration-based (TTL) and invalidation-based (delete or update on write). Updating the cache on the write path can let concurrent writes land out of order and leave a stale value behind, so deleting is usually safer than updating. A cache stampede happens when a popular key expires and many requests hit the origin simultaneously, which can momentarily take the origin down. The countermeasures are single-flight (letting only one request query the origin), adding random jitter to expiration times, proactive early recomputation before expiry, and stale-while-revalidate (serving the stale value briefly while a refresh is in flight). Whichever policy you pick, you first have to define 'how much staleness is acceptable' before a choice is even possible.</p>
+      <p>A large share of outages don't come from missing a cache — they come from the cache emptying all at once and the backend collapsing under the exposed load.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 캐시 일관성·무효화·스탬피드 방지 — TTL 만료 순간 다수 요청이 몰리는 스탬피드를
+# single-flight(락)로 한 요청만 원본을 조회하게 막는 것을 시연한다.
+
+import time
+import threading
+
+origin_calls = 0
+origin_lock = threading.Lock()
+
+def slow_origin_fetch(key):
+    global origin_calls
+    with origin_lock:
+        origin_calls += 1
+    time.sleep(0.05)  # 원본 DB/서비스 호출을 흉내
+    return f&quot;value-for-{key}&quot;
+
+class SingleFlightCache:
+    def __init__(self):
+        self.store = {}       # key -&gt; (value, expires_at)
+        self.inflight = {}    # key -&gt; threading.Event (동시 요청 합류용)
+        self.lock = threading.Lock()
+
+    def get(self, key, ttl=1.0):
+        with self.lock:
+            entry = self.store.get(key)
+            if entry and entry[1] &gt; time.time():
+                return entry[0]
+            if key in self.inflight:
+                event = self.inflight[key]
+            else:
+                event = threading.Event()
+                self.inflight[key] = event
+                event = None  # 이 스레드가 원본을 조회할 담당자
+        if event is not None:
+            event.wait()
+            return self.store[key][0]
+        value = slow_origin_fetch(key)
+        with self.lock:
+            self.store[key] = (value, time.time() + ttl)
+            waiter = self.inflight.pop(key)
+            waiter.set()
+        return value
+
+cache = SingleFlightCache()
+results = []
+def worker():
+    results.append(cache.get(&quot;hot-key&quot;))
+
+threads = [threading.Thread(target=worker) for _ in range(20)]
+for t in threads: t.start()
+for t in threads: t.join()
+
+print(&quot;concurrent requests:&quot;, len(threads))
+print(&quot;origin fetches actually made:&quot;, origin_calls)  # 1 이어야 stampede 방지 성공
+print(&quot;all results identical:&quot;, len(set(results)) == 1)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-79.py">docs/code/algorithms/algorithms-79.py</a></p>
+      <h2>Exercise</h2>
+      <p>Build a load test that hits the same key concurrently, then compare origin query counts and p99 latency between a plain TTL cache and one using single-flight.</p>
+      <h2>Practical Connection</h2>
+      <p>Values like prices, order-book snapshots, or oracle responses — where the origin is expensive and access is concentrated — carry the highest stampede risk, and here 'acceptable staleness' maps directly to the price accuracy users actually see.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>캐시 일관성·무효화·스탬피드 방지 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 79 / 100 &middot; E. 데이터·스토리지 엔진 (Day 69–81)</p>
 
@@ -115,7 +210,63 @@
       <p>캐시는 원본과 사본이 갈라지는 순간부터 일관성 문제를 안고 시작하며, 정책은 크게 만료 기반(TTL)과 무효화 기반(쓰기 시 삭제·갱신)으로 나뉜다. 쓰기 경로에서 캐시를 갱신하면 동시 쓰기 순서가 뒤바뀌어 오래된 값이 남을 수 있어, 보통은 갱신보다 삭제가 더 안전하다. 캐시 스탬피드는 인기 키가 만료되는 순간 다수 요청이 동시에 원본으로 몰리는 현상으로, 원본이 순간적으로 무너질 수 있다. 대응은 단일 비행(single-flight)으로 한 요청만 원본을 조회하게 하거나, 만료 시각에 무작위 지터를 주거나, 만료 전에 미리 갱신하는 조기 재계산, 그리고 갱신 중 낡은 값을 잠시 제공하는 stale-while-revalidate이다. 어떤 정책이든 &quot;허용 가능한 낡음의 정도&quot;를 먼저 정의해야 선택이 가능하다.</p>
       <p>장애의 상당수는 캐시가 없어서가 아니라 캐시가 한꺼번에 비면서 뒤쪽 시스템이 무너지는 형태로 발생한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 캐시 일관성·무효화·스탬피드 방지 — TTL 만료 순간 다수 요청이 몰리는 스탬피드를
+# single-flight(락)로 한 요청만 원본을 조회하게 막는 것을 시연한다.
+
+import time
+import threading
+
+origin_calls = 0
+origin_lock = threading.Lock()
+
+def slow_origin_fetch(key):
+    global origin_calls
+    with origin_lock:
+        origin_calls += 1
+    time.sleep(0.05)  # 원본 DB/서비스 호출을 흉내
+    return f&quot;value-for-{key}&quot;
+
+class SingleFlightCache:
+    def __init__(self):
+        self.store = {}       # key -&gt; (value, expires_at)
+        self.inflight = {}    # key -&gt; threading.Event (동시 요청 합류용)
+        self.lock = threading.Lock()
+
+    def get(self, key, ttl=1.0):
+        with self.lock:
+            entry = self.store.get(key)
+            if entry and entry[1] &gt; time.time():
+                return entry[0]
+            if key in self.inflight:
+                event = self.inflight[key]
+            else:
+                event = threading.Event()
+                self.inflight[key] = event
+                event = None  # 이 스레드가 원본을 조회할 담당자
+        if event is not None:
+            event.wait()
+            return self.store[key][0]
+        value = slow_origin_fetch(key)
+        with self.lock:
+            self.store[key] = (value, time.time() + ttl)
+            waiter = self.inflight.pop(key)
+            waiter.set()
+        return value
+
+cache = SingleFlightCache()
+results = []
+def worker():
+    results.append(cache.get(&quot;hot-key&quot;))
+
+threads = [threading.Thread(target=worker) for _ in range(20)]
+for t in threads: t.start()
+for t in threads: t.join()
+
+print(&quot;concurrent requests:&quot;, len(threads))
+print(&quot;origin fetches actually made:&quot;, origin_calls)  # 1 이어야 stampede 방지 성공
+print(&quot;all results identical:&quot;, len(set(results)) == 1)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-79.py">docs/code/algorithms/algorithms-79.py</a></p>
       <h2>연습</h2>
       <p>동일 키를 동시에 조회하는 부하 테스트를 만들어, 단순 TTL 캐시와 single-flight을 적용한 캐시의 원본 조회 횟수와 p99를 비교해 보기.</p>
       <h2>실무 · Verex 연결</h2>

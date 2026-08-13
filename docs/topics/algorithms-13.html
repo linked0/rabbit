@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 13 — 선형계획과 쌍대성 직관</title>
+<title>Day 13 — Linear Programming and Duality Intuition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,65 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 13</p>
   <article>
+      <h1>Linear Programming and Duality Intuition <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 13 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>Linear programming (LP) maximizes or minimizes a linear objective function subject to linear inequality constraints; the feasible region is a convex polytope, and if an optimum exists, it's achieved at one of its vertices. Every LP has a paired dual problem: weak duality says any feasible dual solution bounds the primal optimum, and strong duality says that when both sides are feasible, the two optimal values coincide. A dual variable represents the shadow price of its constraint — how much the objective improves if that constraint is relaxed by one unit. Complementary slackness ties the two together: a constraint with slack left over has a shadow price of 0, and any constraint with a positive price must be tight. So in an allocation problem, the primal answers who gets how much, while the dual simultaneously produces the prices that support that allocation.</p>
+      <p>In problems that divide up a scarce resource — auctions, blockspace allocation — the proof that an allocation is optimal and the price charged to participants come out of the same dual structure, and knowing that is what lets you settle an argument with numbers instead of opinions.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 13: 선형계획과 쌍대성 직관 — 경매·배분 문제의 원문제/쌍대문제
+# 2변수 LP를 꼭짓점 열거로 풀고, 쌍대 LP도 같은 방식으로 풀어 강쌍대성(최적값 일치)을 확인한다.
+
+def line_intersections(constraints):
+    pts = []
+    for i in range(len(constraints)):
+        for j in range(i + 1, len(constraints)):
+            a1, b1, _, c1 = constraints[i]
+            a2, b2, _, c2 = constraints[j]
+            det = a1 * b2 - a2 * b1
+            if abs(det) &lt; 1e-9:
+                continue
+            pts.append(((c1 * b2 - c2 * b1) / det, (a1 * c2 - a2 * c1) / det))
+    return pts
+
+def feasible(pt, constraints, tol=1e-6):
+    x, y = pt
+    for a, b, op, c in constraints:
+        val = a * x + b * y
+        if op == &quot;&lt;=&quot; and val &gt; c + tol:
+            return False
+        if op == &quot;&gt;=&quot; and val &lt; c - tol:
+            return False
+    return True
+
+def solve_lp_2d(constraints, obj, maximize):
+    candidates = [p for p in line_intersections(constraints) if feasible(p, constraints)]
+    key = lambda p: obj[0] * p[0] + obj[1] * p[1]
+    best = max(candidates, key=key) if maximize else min(candidates, key=key)
+    return best, key(best)
+
+# 원문제: maximize x + 2y  s.t.  x+y&lt;=4, x+3y&lt;=6, x,y&gt;=0  (자원 배분: 두 재화를 두 제약 아래 최대화)
+primal_constraints = [(1, 1, &quot;&lt;=&quot;, 4), (1, 3, &quot;&lt;=&quot;, 6), (1, 0, &quot;&gt;=&quot;, 0), (0, 1, &quot;&gt;=&quot;, 0)]
+p_pt, p_val = solve_lp_2d(primal_constraints, (1, 2), maximize=True)
+
+# 쌍대문제: minimize 4u + 6v  s.t.  u+v&gt;=1, u+3v&gt;=2, u,v&gt;=0  (쌍대변수 = 각 제약의 잠재가격)
+dual_constraints = [(1, 1, &quot;&gt;=&quot;, 1), (1, 3, &quot;&gt;=&quot;, 2), (1, 0, &quot;&gt;=&quot;, 0), (0, 1, &quot;&gt;=&quot;, 0)]
+d_pt, d_val = solve_lp_2d(dual_constraints, (4, 6), maximize=False)
+
+print(f&quot;원문제 최적해 (x,y) = ({p_pt[0]:.2f}, {p_pt[1]:.2f}), 최적값 = {p_val:.2f}&quot;)
+print(f&quot;쌍대문제 최적해 (u,v) = ({d_pt[0]:.2f}, {d_pt[1]:.2f}), 최적값 = {d_val:.2f}&quot;)
+print(f&quot;강쌍대성 확인 (원문제 최적값 == 쌍대문제 최적값): {abs(p_val - d_val) &lt; 1e-6}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-13.py">docs/code/algorithms/algorithms-13.py</a></p>
+      <h2>Exercise</h2>
+      <p>Formulate a small allocation problem with 5 to 10 bids as an LP, solve it with a solver, extract the dual values, then slightly relax one constraint and confirm the change in the objective matches its dual value.</p>
+      <h2>Practical Connection</h2>
+      <p>Batching orders and matching them at a single uniform clearing price can be expressed as an LP where the dual price is exactly that clearing price — a useful exercise for re-reading Verex's CLOB matching logic through an optimization lens.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>선형계획과 쌍대성 직관 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 13 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">경매·MEV 배분의 언어</p>
@@ -115,7 +197,50 @@
       <p>선형계획(LP)은 선형 부등식 제약 아래에서 선형 목적함수를 최대화하거나 최소화하는 문제이며, 실행가능 영역은 볼록 다면체이고 최적해가 존재하면 그 꼭짓점에서 달성된다. 모든 LP에는 짝이 되는 쌍대(dual) 문제가 있고, 약쌍대성은 임의의 쌍대 실행가능해가 원문제 최적값의 한계를 준다는 것, 강쌍대성은 양쪽이 모두 실행가능하면 두 최적값이 일치한다는 것이다. 쌍대 변수는 각 제약의 잠재가격(shadow price), 즉 그 제약을 한 단위 완화했을 때 목적값이 얼마나 개선되는지를 뜻한다. 상보여유 조건은 여유가 남는 제약의 잠재가격은 0이고, 양의 가격이 붙은 제약은 반드시 타이트하다는 관계를 말한다. 그래서 배분 문제에서 원문제는 누구에게 얼마를 줄지를, 쌍대는 그 배분을 뒷받침하는 가격을 동시에 내놓는다.</p>
       <p>경매나 블록스페이스 배분처럼 희소 자원을 나누는 문제에서, 배분의 최적성 증명과 참가자에게 물릴 가격이 같은 쌍대 구조에서 나온다는 사실을 알아야 논쟁을 수치로 끝낼 수 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 13: 선형계획과 쌍대성 직관 — 경매·배분 문제의 원문제/쌍대문제
+# 2변수 LP를 꼭짓점 열거로 풀고, 쌍대 LP도 같은 방식으로 풀어 강쌍대성(최적값 일치)을 확인한다.
+
+def line_intersections(constraints):
+    pts = []
+    for i in range(len(constraints)):
+        for j in range(i + 1, len(constraints)):
+            a1, b1, _, c1 = constraints[i]
+            a2, b2, _, c2 = constraints[j]
+            det = a1 * b2 - a2 * b1
+            if abs(det) &lt; 1e-9:
+                continue
+            pts.append(((c1 * b2 - c2 * b1) / det, (a1 * c2 - a2 * c1) / det))
+    return pts
+
+def feasible(pt, constraints, tol=1e-6):
+    x, y = pt
+    for a, b, op, c in constraints:
+        val = a * x + b * y
+        if op == &quot;&lt;=&quot; and val &gt; c + tol:
+            return False
+        if op == &quot;&gt;=&quot; and val &lt; c - tol:
+            return False
+    return True
+
+def solve_lp_2d(constraints, obj, maximize):
+    candidates = [p for p in line_intersections(constraints) if feasible(p, constraints)]
+    key = lambda p: obj[0] * p[0] + obj[1] * p[1]
+    best = max(candidates, key=key) if maximize else min(candidates, key=key)
+    return best, key(best)
+
+# 원문제: maximize x + 2y  s.t.  x+y&lt;=4, x+3y&lt;=6, x,y&gt;=0  (자원 배분: 두 재화를 두 제약 아래 최대화)
+primal_constraints = [(1, 1, &quot;&lt;=&quot;, 4), (1, 3, &quot;&lt;=&quot;, 6), (1, 0, &quot;&gt;=&quot;, 0), (0, 1, &quot;&gt;=&quot;, 0)]
+p_pt, p_val = solve_lp_2d(primal_constraints, (1, 2), maximize=True)
+
+# 쌍대문제: minimize 4u + 6v  s.t.  u+v&gt;=1, u+3v&gt;=2, u,v&gt;=0  (쌍대변수 = 각 제약의 잠재가격)
+dual_constraints = [(1, 1, &quot;&gt;=&quot;, 1), (1, 3, &quot;&gt;=&quot;, 2), (1, 0, &quot;&gt;=&quot;, 0), (0, 1, &quot;&gt;=&quot;, 0)]
+d_pt, d_val = solve_lp_2d(dual_constraints, (4, 6), maximize=False)
+
+print(f&quot;원문제 최적해 (x,y) = ({p_pt[0]:.2f}, {p_pt[1]:.2f}), 최적값 = {p_val:.2f}&quot;)
+print(f&quot;쌍대문제 최적해 (u,v) = ({d_pt[0]:.2f}, {d_pt[1]:.2f}), 최적값 = {d_val:.2f}&quot;)
+print(f&quot;강쌍대성 확인 (원문제 최적값 == 쌍대문제 최적값): {abs(p_val - d_val) &lt; 1e-6}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-13.py">docs/code/algorithms/algorithms-13.py</a></p>
       <h2>연습</h2>
       <p>입찰 5~10건짜리 소규모 배분 문제를 LP로 세워 solver로 풀고 쌍대값을 뽑은 뒤, 제약 하나를 아주 조금 완화했을 때 목적값 변화가 그 쌍대값과 일치하는지 확인하기.</p>
       <h2>실무 · Verex 연결</h2>

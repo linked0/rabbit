@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 60 — 싱글슬롯 파이널리티와 서명 집계 병목</title>
+<title>Day 60 — Single-Slot Finality and the Signature-Aggregation Bottleneck</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,51 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 60</p>
   <article>
+      <h1>Single-Slot Finality and the Signature-Aggregation Bottleneck <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 60 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>Ethereum's finality currently gets confirmed by accumulating epoch-scale votes over multiple slots, so it takes on the order of several minutes from a block's inclusion to its final confirmation. Single-slot finality (SSF) is a research direction aiming to gather the full validator set's votes within a single slot and finalize that slot's block immediately. The bottleneck lies less in the consensus rule itself than in systems engineering: when the validator count is very large, all signatures have to be collected, aggregated, verified, and propagated within the slot time. BLS signatures can aggregate many signatures into one, but the network propagation through an aggregation tree and the cost of handling the bitfield that records who participated both remain. So the discussion also includes reducing the validator count, hierarchical committee-based aggregation, and replacing aggregate verification with a proof.</p>
+      <p>Finality latency directly determines the safety threshold for bridge confirmation, exchange deposit crediting, and on-chain settlement, so it flows straight into service design.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 싱글슬롯 파이널리티와 서명 집계 병목 — 검증자 수가 늘수록 서명 집계·전파 비용이 커져
+# 슬롯 시간 예산을 넘길 수 있음을 간단한 비용 모델로 보여준다.
+
+SLOT_BUDGET_MS = 4000  # 예: 4초 슬롯
+
+def aggregation_cost_ms(n_validators, per_signature_cost_us=2.0, tree_fanout=64):
+    &quot;&quot;&quot;BLS 서명 집계 비용을 흉내: 서명 검증/병합 비용 + 계층적 집계 트리를 통과하는 라운드 수&quot;&quot;&quot;
+    merge_cost_ms = (n_validators * per_signature_cost_us) / 1000
+    import math
+    # 위원회 기반 계층적 집계: fanout마다 한 라운드, 각 라운드에 고정 전파 지연이 붙는다
+    rounds = max(1, math.ceil(math.log(n_validators, tree_fanout))) if n_validators &gt; 1 else 1
+    propagation_ms_per_round = 150
+    return merge_cost_ms + rounds * propagation_ms_per_round, rounds
+
+print(f&quot;슬롯 예산: {SLOT_BUDGET_MS}ms\n&quot;)
+for n_validators in [1_000, 100_000, 1_000_000, 2_000_000]:
+    cost_ms, rounds = aggregation_cost_ms(n_validators)
+    remaining = SLOT_BUDGET_MS - cost_ms
+    status = &quot;여유 있음&quot; if remaining &gt; 0 else &quot;슬롯 예산 초과!&quot;
+    print(f&quot;검증자 {n_validators:&gt;9,}명: 집계 비용 ≈ {cost_ms:7.1f}ms &quot;
+          f&quot;(전파 {rounds}라운드) -&gt; 잔여 {remaining:7.1f}ms -&gt; {status}&quot;)
+
+print(&quot;\n완화 방향 비교 (2,000,000 검증자 기준):&quot;)
+baseline_cost, _ = aggregation_cost_ms(2_000_000, tree_fanout=64)
+committee_cost, rounds = aggregation_cost_ms(2_000_000 // 100, tree_fanout=64)  # 위원회로 1/100 축소
+print(f&quot;  전체 검증자 직접 집계: {baseline_cost:.1f}ms&quot;)
+print(f&quot;  위원회(1/100) 기반 집계: {committee_cost:.1f}ms (라운드 {rounds}) &quot;
+      f&quot;-&gt; 슬롯 예산 내로 줄어듦: {committee_cost &lt; SLOT_BUDGET_MS}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-60.py">docs/code/algorithms/algorithms-60.py</a></p>
+      <h2>Exercise</h2>
+      <p>Using the beacon chain API, directly measure how long it takes a specific transaction's block to reach justified and then finalized status after inclusion, and compare that against the confirmation threshold your own service uses.</p>
+      <h2>Practical Connection</h2>
+      <p>A prediction market doing on-chain settlement, like Verex, has to decide how many confirmations out to treat a result as final — understanding finality's precise meaning and its actual latency is what lets you balance reorg risk against user wait time.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>싱글슬롯 파이널리티와 서명 집계 병목 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 60 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
 
@@ -115,7 +183,36 @@
       <p>이더리움의 파이널리티는 현재 여러 슬롯에 걸친 에폭 단위 투표 누적으로 확정되므로, 블록이 포함된 뒤 최종 확정까지 수 분 수준의 시간이 걸린다. 싱글슬롯 파이널리티(SSF)는 한 슬롯 안에서 전체 검증자 집합의 투표를 모아 그 슬롯의 블록을 즉시 확정하려는 연구 방향이다. 병목은 합의 규칙 자체보다 시스템 공학 쪽에 있는데, 검증자 수가 매우 많을 때 슬롯 시간 안에 모든 서명을 수집·집계·검증하고 전파해야 하기 때문이다. BLS 서명은 다수를 하나로 집계할 수 있지만, 집계 트리를 통과하는 네트워크 전파와 누가 참여했는지를 나타내는 비트필드 처리 비용이 그대로 남는다. 그래서 검증자 수를 줄이는 방향, 위원회 기반 계층적 집계, 집계 검증을 증명으로 대체하는 접근 등이 함께 논의된다.</p>
       <p>파이널리티 지연은 브리지 확정, 거래소 입금 인정, 온체인 정산의 안전 기준을 직접 결정하는 값이라 서비스 설계에 그대로 반영된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 싱글슬롯 파이널리티와 서명 집계 병목 — 검증자 수가 늘수록 서명 집계·전파 비용이 커져
+# 슬롯 시간 예산을 넘길 수 있음을 간단한 비용 모델로 보여준다.
+
+SLOT_BUDGET_MS = 4000  # 예: 4초 슬롯
+
+def aggregation_cost_ms(n_validators, per_signature_cost_us=2.0, tree_fanout=64):
+    &quot;&quot;&quot;BLS 서명 집계 비용을 흉내: 서명 검증/병합 비용 + 계층적 집계 트리를 통과하는 라운드 수&quot;&quot;&quot;
+    merge_cost_ms = (n_validators * per_signature_cost_us) / 1000
+    import math
+    # 위원회 기반 계층적 집계: fanout마다 한 라운드, 각 라운드에 고정 전파 지연이 붙는다
+    rounds = max(1, math.ceil(math.log(n_validators, tree_fanout))) if n_validators &gt; 1 else 1
+    propagation_ms_per_round = 150
+    return merge_cost_ms + rounds * propagation_ms_per_round, rounds
+
+print(f&quot;슬롯 예산: {SLOT_BUDGET_MS}ms\n&quot;)
+for n_validators in [1_000, 100_000, 1_000_000, 2_000_000]:
+    cost_ms, rounds = aggregation_cost_ms(n_validators)
+    remaining = SLOT_BUDGET_MS - cost_ms
+    status = &quot;여유 있음&quot; if remaining &gt; 0 else &quot;슬롯 예산 초과!&quot;
+    print(f&quot;검증자 {n_validators:&gt;9,}명: 집계 비용 ≈ {cost_ms:7.1f}ms &quot;
+          f&quot;(전파 {rounds}라운드) -&gt; 잔여 {remaining:7.1f}ms -&gt; {status}&quot;)
+
+print(&quot;\n완화 방향 비교 (2,000,000 검증자 기준):&quot;)
+baseline_cost, _ = aggregation_cost_ms(2_000_000, tree_fanout=64)
+committee_cost, rounds = aggregation_cost_ms(2_000_000 // 100, tree_fanout=64)  # 위원회로 1/100 축소
+print(f&quot;  전체 검증자 직접 집계: {baseline_cost:.1f}ms&quot;)
+print(f&quot;  위원회(1/100) 기반 집계: {committee_cost:.1f}ms (라운드 {rounds}) &quot;
+      f&quot;-&gt; 슬롯 예산 내로 줄어듦: {committee_cost &lt; SLOT_BUDGET_MS}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-60.py">docs/code/algorithms/algorithms-60.py</a></p>
       <h2>연습</h2>
       <p>비콘 체인 API로 특정 트랜잭션이 포함된 뒤 그 블록이 justified와 finalized 상태에 도달하기까지 걸린 시간을 직접 측정하고, 자기 서비스가 쓰는 확정 기준과 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 99 — 에이전트 루프 설계</title>
+<title>Day 99 — Agent loop design — tool permissions, gates, and retries; data and model provenance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,70 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 99</p>
   <article>
+      <h1>Agent loop design — tool permissions, gates, and retries; data and model provenance <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 99 / 100 &middot; G. AI Engineering (Day 97-100)</p>
+      <h2>Concept</h2>
+      <p>An agent loop is the control structure where a model calls tools, feeds the results back in as input, and repeats until it reaches its goal. Because this loop is inherently non-deterministic, safety has to come from system-level constraints wrapped around the loop, not from the model's own judgment. Concretely, that means granting least privilege per tool, putting an explicit gate — approval, dry run, or a limit — in front of any irreversible action, capping iteration count and cost, and having a retry policy that distinguishes failure types. Retries should only be applied automatically to tools that are guaranteed idempotent, or the same side effect ends up executing twice. Data and model provenance means keeping a traceable record of exactly which inputs and which model version produced a given decision — a prerequisite for debugging after the fact and for accountability.</p>
+      <p>You can't stop an agent from ever being wrong; what determines whether it's actually operable is whether a mistake can be undone and whether you can tell what caused it.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 에이전트 루프 설계 — 읽기 전용/쓰기 도구를 분리하고, 쓰기 도구에는 승인 게이트 +
+# 멱등 키를 붙여 &quot;재시도가 부작용을 중복 실행하지 않는지&quot; 검증하는 최소 예시.
+
+executed_writes = {}  # idempotency_key -&gt; result (실제로 실행된 부작용의 기록)
+call_log = []
+
+def read_balance(account):  # 읽기 전용 도구: 언제 재시도해도 안전
+    call_log.append((&quot;read&quot;, account))
+    return {&quot;acct-1&quot;: 100}.get(account, 0)
+
+def send_payment(account, amount, idempotency_key, approved):
+    # 되돌릴 수 없는 행위 -&gt; 승인 게이트 필수
+    if not approved:
+        raise PermissionError(&quot;승인 게이트 미통과: 결제 도구는 approved=True 필요&quot;)
+    if idempotency_key in executed_writes:
+        return executed_writes[idempotency_key]  # 재시도여도 재실행하지 않고 이전 결과 반환
+    call_log.append((&quot;write&quot;, account, amount))
+    result = {&quot;status&quot;: &quot;sent&quot;, &quot;account&quot;: account, &quot;amount&quot;: amount}
+    executed_writes[idempotency_key] = result
+    return result
+
+def agent_step_with_retry(tool_fn, *args, max_retries=3, **kwargs):
+    for attempt in range(max_retries):
+        try:
+            return tool_fn(*args, **kwargs)
+        except PermissionError:
+            raise  # 권한 실패는 재시도로 해결되지 않음 -&gt; 즉시 중단
+        except Exception:
+            if attempt == max_retries - 1:
+                raise
+    return None
+
+balance = agent_step_with_retry(read_balance, &quot;acct-1&quot;)
+print(&quot;잔고 조회:&quot;, balance)
+
+key = &quot;payment-req-42&quot;  # 이 요청 전체를 대표하는 멱등 키 (네트워크 재시도에도 동일)
+r1 = agent_step_with_retry(send_payment, &quot;acct-1&quot;, 10, key, True)
+r2 = agent_step_with_retry(send_payment, &quot;acct-1&quot;, 10, key, True)  # 네트워크 재시도 흉내
+print(&quot;첫 결제 호출:&quot;, r1)
+print(&quot;재시도 호출(동일 idempotency_key):&quot;, r2)
+write_calls = [c for c in call_log if c[0] == &quot;write&quot;]
+print(&quot;실제로 실행된 write 부작용 횟수:&quot;, len(write_calls), &quot;(재시도에도 1회만 실행됨)&quot;)
+
+try:
+    send_payment(&quot;acct-1&quot;, 999, &quot;payment-req-99&quot;, approved=False)
+except PermissionError as e:
+    print(&quot;승인 없는 결제 시도 차단:&quot;, e)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-99.py">docs/code/algorithms/algorithms-99.py</a></p>
+      <h2>Exercise</h2>
+      <p>Build a simple agent loop that separates tools into read-only and write, attach an approval gate, a call cap, and an idempotency key to the write tools, and verify that a retry doesn't cause duplicate execution.</p>
+      <h2>Practical Connection</h2>
+      <p>A tool that sends on-chain transactions is the textbook example of an irreversible action — without gates like pre-signing simulation, an amount cap, and nonce management, a single automatic retry becomes a duplicate transaction.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>에이전트 루프 설계 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 99 / 100 &middot; G. AI 엔지니어링 (Day 97–100)</p>
       <p class="lead">도구 권한·게이트·재시도, 데이터·모델 프로비넌스</p>
@@ -115,7 +202,55 @@
       <p>에이전트 루프는 모델이 도구를 호출하고 결과를 다시 입력으로 받아 목표에 도달할 때까지 반복하는 제어 구조이다. 이 루프는 본질적으로 비결정적이므로, 안전성은 모델의 판단이 아니라 루프를 감싸는 시스템 쪽 제약으로 확보해야 한다. 구체적으로는 도구별 최소 권한 부여, 되돌릴 수 없는 행위 앞의 명시적 게이트(승인·드라이런·한도), 반복 횟수와 비용 상한, 그리고 실패 유형을 구분한 재시도 정책이 필요하다. 재시도는 멱등성이 보장되는 도구에만 자동으로 적용해야 하며, 그렇지 않으면 같은 부작용이 중복 실행된다. 데이터·모델 프로비넌스는 어떤 입력과 어떤 모델 버전으로 그 결정이 나왔는지 추적 가능하게 남기는 것으로, 사후 디버깅과 책임 규명의 전제 조건이다.</p>
       <p>에이전트가 틀리는 것 자체는 막을 수 없고, 틀렸을 때 되돌릴 수 있는지와 무엇 때문에 틀렸는지 알 수 있는지가 실제 운영 가능 여부를 가른다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 에이전트 루프 설계 — 읽기 전용/쓰기 도구를 분리하고, 쓰기 도구에는 승인 게이트 +
+# 멱등 키를 붙여 &quot;재시도가 부작용을 중복 실행하지 않는지&quot; 검증하는 최소 예시.
+
+executed_writes = {}  # idempotency_key -&gt; result (실제로 실행된 부작용의 기록)
+call_log = []
+
+def read_balance(account):  # 읽기 전용 도구: 언제 재시도해도 안전
+    call_log.append((&quot;read&quot;, account))
+    return {&quot;acct-1&quot;: 100}.get(account, 0)
+
+def send_payment(account, amount, idempotency_key, approved):
+    # 되돌릴 수 없는 행위 -&gt; 승인 게이트 필수
+    if not approved:
+        raise PermissionError(&quot;승인 게이트 미통과: 결제 도구는 approved=True 필요&quot;)
+    if idempotency_key in executed_writes:
+        return executed_writes[idempotency_key]  # 재시도여도 재실행하지 않고 이전 결과 반환
+    call_log.append((&quot;write&quot;, account, amount))
+    result = {&quot;status&quot;: &quot;sent&quot;, &quot;account&quot;: account, &quot;amount&quot;: amount}
+    executed_writes[idempotency_key] = result
+    return result
+
+def agent_step_with_retry(tool_fn, *args, max_retries=3, **kwargs):
+    for attempt in range(max_retries):
+        try:
+            return tool_fn(*args, **kwargs)
+        except PermissionError:
+            raise  # 권한 실패는 재시도로 해결되지 않음 -&gt; 즉시 중단
+        except Exception:
+            if attempt == max_retries - 1:
+                raise
+    return None
+
+balance = agent_step_with_retry(read_balance, &quot;acct-1&quot;)
+print(&quot;잔고 조회:&quot;, balance)
+
+key = &quot;payment-req-42&quot;  # 이 요청 전체를 대표하는 멱등 키 (네트워크 재시도에도 동일)
+r1 = agent_step_with_retry(send_payment, &quot;acct-1&quot;, 10, key, True)
+r2 = agent_step_with_retry(send_payment, &quot;acct-1&quot;, 10, key, True)  # 네트워크 재시도 흉내
+print(&quot;첫 결제 호출:&quot;, r1)
+print(&quot;재시도 호출(동일 idempotency_key):&quot;, r2)
+write_calls = [c for c in call_log if c[0] == &quot;write&quot;]
+print(&quot;실제로 실행된 write 부작용 횟수:&quot;, len(write_calls), &quot;(재시도에도 1회만 실행됨)&quot;)
+
+try:
+    send_payment(&quot;acct-1&quot;, 999, &quot;payment-req-99&quot;, approved=False)
+except PermissionError as e:
+    print(&quot;승인 없는 결제 시도 차단:&quot;, e)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-99.py">docs/code/algorithms/algorithms-99.py</a></p>
       <h2>연습</h2>
       <p>간단한 에이전트 루프를 만들되 도구를 읽기 전용과 쓰기로 나누고, 쓰기 도구에는 승인 게이트·호출 상한·멱등 키를 붙여 재시도가 중복 실행을 만들지 않는지 검증해 보기.</p>
       <h2>실무 · Verex 연결</h2>

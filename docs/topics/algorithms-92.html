@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 92 — 다항식 IOP</title>
+<title>Day 92 — Polynomial IOPs — the trade-off between proof size and verification time</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,56 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 92</p>
   <article>
+      <h1>Polynomial IOPs — the trade-off between proof size and verification time <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 92 / 100 &middot; F. Cryptography &amp; ZK (Day 82-96)</p>
+      <h2>Concept</h2>
+      <p>A polynomial IOP (Interactive Oracle Proof) is an abstract protocol in which the prover submits polynomials as oracles and the verifier queries their evaluations at random points, reducing the correctness of a computation to a polynomial identity check. This abstraction layer discusses only completeness and soundness without using any real cryptography; once the oracles are replaced with an actual polynomial commitment scheme (PCS) and the protocol is made non-interactive via Fiat-Shamir, it becomes a concrete SNARK or STARK. That's why arithmetization (R1CS, PLONKish, AIR) is decoupled from the commitment scheme, and a system's proof size, verification time, proving time, and whether it needs a trusted setup are mostly determined by the choice of PCS. Pairing-based KZG has constant-size commitments and evaluation proofs with very fast verification, but it requires a structured trusted setup and isn't quantum-resistant. Hash-based FRI needs no trusted setup and relies only on hash assumptions, but trades that off for proof size and verification cost that grow poly-logarithmically.</p>
+      <p>On-chain verification cost scales almost directly with proof size and verifier computation, so choosing a proof system is really choosing your gas cost and trust assumptions at the same time.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 다항식 IOP — Schwartz-Zippel 보조정리: 서로 다른 두 다항식이 랜덤 점에서
+# 우연히 같은 값을 낼 확률은 차수/체 크기(p)에 비례해 작아진다 (증명 크기 vs 검증 시간의 근거).
+
+import random
+
+p = 65537  # 작은 소수 유한체 GF(p)
+
+def poly_eval(coeffs, x, p):
+    # Horner's method, mod p
+    result = 0
+    for c in reversed(coeffs):
+        result = (result * x + c) % p
+    return result
+
+def collision_rate(deg, trials, p):
+    f = [random.randrange(p) for _ in range(deg + 1)]
+    g = f.copy()
+    g[0] = (g[0] + 1) % p  # f - g 는 0이 아닌 차수 deg 다항식
+    hits = 0
+    for _ in range(trials):
+        r = random.randrange(p)
+        if poly_eval(f, r, p) == poly_eval(g, r, p):
+            hits += 1
+    return hits / trials
+
+trials = 20000
+for deg in (1, 8, 64):
+    rate = collision_rate(deg, trials, p)
+    bound = deg / p  # Schwartz-Zippel 상한: 최대 deg/|F| 확률로 충돌
+    print(f&quot;deg={deg:3d}  관측 충돌률={rate:.6f}  이론 상한(deg/p)={bound:.6f}&quot;)
+
+print(&quot;\n결론: 차수가 커질수록 충돌 확률 상한이 커지므로, 검증자가 신뢰할 수&quot;)
+print(&quot;있으려면 체 크기 p 를 다항식 차수보다 충분히 크게 잡아야 한다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-92.py">docs/code/algorithms/algorithms-92.py</a></p>
+      <h2>Exercise</h2>
+      <p>Experiment with the Schwartz-Zippel lemma over a small finite field, and check how the probability that two different polynomials happen to agree at a random point scales with their degree relative to the field size.</p>
+      <h2>Practical Connection</h2>
+      <p>Compressing large volumes of off-chain matching in a prediction market into an on-chain settlement requires rollup-style validity proofs, and choosing between KZG (small proofs, needs trusted setup) and FRI (transparent, larger proofs) simultaneously decides your settlement gas cost and your security assumptions.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>다항식 IOP <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 92 / 100 &middot; F. 암호학·ZK (Day 82–96)</p>
       <p class="lead">증명 크기 대 검증 시간 트레이드오프</p>
@@ -115,7 +188,41 @@
       <p>다항식 IOP(Interactive Oracle Proof)는 증명자가 다항식을 오라클로 제출하고 검증자가 무작위 점에서의 평가를 질의하는 추상 프로토콜로, 계산의 정당성을 다항식 항등식 검사로 환원한다. 이 추상 계층은 실제 암호를 쓰지 않고 완전성·건전성만 논하며, 오라클을 실제 다항식 커밋먼트 스킴(PCS)으로 바꾸고 Fiat-Shamir로 비대화형화하면 구체적인 SNARK/STARK가 된다. 그래서 산술화(R1CS, PLONKish, AIR)와 커밋먼트 방식이 분리되고, 시스템의 증명 크기·검증 시간·증명 시간·신뢰 설정 여부는 대부분 PCS 선택에서 갈린다. 페어링 기반 KZG는 커밋먼트와 평가 증명이 상수 크기이고 검증이 매우 빠르지만 구조화된 신뢰 설정이 필요하고 양자 내성이 없다. 해시 기반 FRI는 신뢰 설정이 필요 없고 해시 가정만 쓰지만 증명 크기와 검증 비용이 로그 제곱 규모로 커지는 트레이드오프를 갖는다.</p>
       <p>온체인 검증 비용은 증명 크기와 검증자 연산량에 거의 비례하므로, 어떤 증명 시스템을 쓰느냐가 곧 가스비와 신뢰 가정의 선택이 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 다항식 IOP — Schwartz-Zippel 보조정리: 서로 다른 두 다항식이 랜덤 점에서
+# 우연히 같은 값을 낼 확률은 차수/체 크기(p)에 비례해 작아진다 (증명 크기 vs 검증 시간의 근거).
+
+import random
+
+p = 65537  # 작은 소수 유한체 GF(p)
+
+def poly_eval(coeffs, x, p):
+    # Horner's method, mod p
+    result = 0
+    for c in reversed(coeffs):
+        result = (result * x + c) % p
+    return result
+
+def collision_rate(deg, trials, p):
+    f = [random.randrange(p) for _ in range(deg + 1)]
+    g = f.copy()
+    g[0] = (g[0] + 1) % p  # f - g 는 0이 아닌 차수 deg 다항식
+    hits = 0
+    for _ in range(trials):
+        r = random.randrange(p)
+        if poly_eval(f, r, p) == poly_eval(g, r, p):
+            hits += 1
+    return hits / trials
+
+trials = 20000
+for deg in (1, 8, 64):
+    rate = collision_rate(deg, trials, p)
+    bound = deg / p  # Schwartz-Zippel 상한: 최대 deg/|F| 확률로 충돌
+    print(f&quot;deg={deg:3d}  관측 충돌률={rate:.6f}  이론 상한(deg/p)={bound:.6f}&quot;)
+
+print(&quot;\n결론: 차수가 커질수록 충돌 확률 상한이 커지므로, 검증자가 신뢰할 수&quot;)
+print(&quot;있으려면 체 크기 p 를 다항식 차수보다 충분히 크게 잡아야 한다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-92.py">docs/code/algorithms/algorithms-92.py</a></p>
       <h2>연습</h2>
       <p>작은 유한체에서 Schwartz-Zippel 보조정리를 직접 실험해, 서로 다른 두 다항식이 랜덤 점에서 우연히 같은 값을 낼 확률이 차수/체 크기에 어떻게 비례하는지 확인해 볼 것.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 22 — 레지스터 할당(그래프 컬러링)과 스필 비용</title>
+<title>Day 22 — Register Allocation (Graph Coloring) and Spill Cost</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,67 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 22</p>
   <article>
+      <h1>Register Allocation (Graph Coloring) and Spill Cost <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 22 / 100 &middot; B. Compilers, Runtimes &amp; VMs (Day 20-35)</p>
+      <h2>Concept</h2>
+      <p>Register allocation is the stage that maps an intermediate representation with an unbounded number of virtual registers onto the k actual physical registers available. Treating each simultaneously live value as a vertex and connecting values whose live ranges overlap with an edge produces an interference graph, turning the problem into graph k-coloring; since k-coloring a general graph is NP-complete, compilers use Chaitin-style heuristics (push vertices with degree &lt; k onto a stack, then pop and color them back). A value that fails to get a color is spilled to memory, and spill cost is typically estimated with a heuristic like access count weighted by loop-nesting depth, divided by degree. In SSA form the interference graph is chordal, so optimal coloring is possible in polynomial time, which is why some modern compilers use SSA-based allocation or linear scan for JITs. So the core trade-off is allocation quality versus compile time.</p>
+      <p>Poor performance in a hot loop is often caused not by the algorithm but by register pressure causing spills and reloads, and recognizing this lets you respond at the source level — for example by inlining or shrinking variable live ranges.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 레지스터 할당(그래프 컬러링) — 간섭 그래프를 k개 물리 레지스터로 그리디 색칠하고, 실패하면 스필한다.
+
+interference = {
+    &quot;t1&quot;: {&quot;t2&quot;, &quot;t3&quot;},
+    &quot;t2&quot;: {&quot;t1&quot;, &quot;t3&quot;, &quot;t4&quot;},
+    &quot;t3&quot;: {&quot;t1&quot;, &quot;t2&quot;, &quot;t4&quot;},
+    &quot;t4&quot;: {&quot;t2&quot;, &quot;t3&quot;, &quot;t5&quot;},
+    &quot;t5&quot;: {&quot;t4&quot;},
+}
+spill_cost = {&quot;t1&quot;: 3, &quot;t2&quot;: 1, &quot;t3&quot;: 5, &quot;t4&quot;: 2, &quot;t5&quot;: 4}  # 접근횟수*중첩깊이 근사치
+K = 3  # 사용 가능한 물리 레지스터 수
+
+def simplify_order(graph, k):
+    g = {n: set(neigh) for n, neigh in graph.items()}
+    stack, spilled = [], []
+    while g:
+        low_degree = [n for n, neigh in g.items() if len(neigh) &lt; k]
+        if low_degree:
+            n = min(low_degree, key=lambda n: spill_cost[n])   # 차수&lt;k 정점을 스택으로
+        else:
+            n = min(g, key=lambda n: spill_cost[n] / max(1, len(g[n])))  # 잠재적 스필 후보
+            spilled.append(n)
+        stack.append(n)
+        for neigh in g.values():
+            neigh.discard(n)
+        del g[n]
+    return stack, spilled
+
+def color(order, graph, k):
+    colors = {}
+    for n in reversed(order):
+        used = {colors[m] for m in graph[n] if m in colors}
+        available = [c for c in range(k) if c not in used]
+        colors[n] = available[0] if available else None    # None = 실제 스필
+    return colors
+
+order, potential_spills = simplify_order(interference, K)
+colors = color(order, interference, K)
+
+print(f&quot;제거 순서(스택): {order}&quot;)
+print(f&quot;단계에서 걸러진 잠재 스필 후보: {potential_spills}&quot;)
+for t, c in colors.items():
+    where = f&quot;R{c}&quot; if c is not None else &quot;MEMORY(spill)&quot;
+    print(f&quot;  {t} -&gt; {where}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-22.py">docs/code/algorithms/algorithms-22.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick a small function, compile it at -O0 and -O2, compare the assembly, and count how the number of stack-slot accesses (spills/reloads) changes.</p>
+      <h2>Practical Connection</h2>
+      <p>The EVM is a stack machine rather than a register machine, so its 16-deep stack limit effectively creates the same kind of pressure — Solidity's &quot;stack too deep&quot; error is isomorphic to a spill that pushes local variables out to memory.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>레지스터 할당(그래프 컬러링)과 스필 비용 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 22 / 100 &middot; B. 컴파일러·런타임·VM (Day 20–35)</p>
 
@@ -115,7 +199,52 @@
       <p>레지스터 할당은 무한한 가상 레지스터를 갖는 중간 표현을 실제 물리 레지스터 개수 k개에 사상하는 단계다. 동시에 살아 있는(live) 값들을 정점으로, 생존 구간이 겹치는 쌍을 간선으로 하는 간섭 그래프(interference graph)를 만들면 문제는 그래프 k-컬러링이 되고, 일반 그래프의 k-컬러링은 NP-완전이므로 Chaitin류의 휴리스틱(차수 &lt; k인 정점을 스택에 밀어내고 되돌리며 색칠)을 쓴다. 색칠에 실패한 값은 메모리로 내보내는 스필(spill)을 하며, 스필 비용은 보통 접근 횟수를 반복문 중첩 깊이로 가중한 값을 차수로 나눈 형태의 휴리스틱으로 추정한다. SSA 형태에서는 간섭 그래프가 chordal이라 최적 색칠이 다항 시간에 가능해, 현대 컴파일러는 SSA 기반 할당이나 JIT용 linear scan을 쓰기도 한다. 즉 핵심 트레이드오프는 할당 품질과 컴파일 시간이다.</p>
       <p>핫 루프에서 성능이 안 나오는 원인이 알고리즘이 아니라 레지스터 압박에 의한 스필/리로드인 경우가 흔하고, 이를 알아야 인라이닝이나 변수 생존 구간을 줄이는 식의 소스 수준 대응을 할 수 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 레지스터 할당(그래프 컬러링) — 간섭 그래프를 k개 물리 레지스터로 그리디 색칠하고, 실패하면 스필한다.
+
+interference = {
+    &quot;t1&quot;: {&quot;t2&quot;, &quot;t3&quot;},
+    &quot;t2&quot;: {&quot;t1&quot;, &quot;t3&quot;, &quot;t4&quot;},
+    &quot;t3&quot;: {&quot;t1&quot;, &quot;t2&quot;, &quot;t4&quot;},
+    &quot;t4&quot;: {&quot;t2&quot;, &quot;t3&quot;, &quot;t5&quot;},
+    &quot;t5&quot;: {&quot;t4&quot;},
+}
+spill_cost = {&quot;t1&quot;: 3, &quot;t2&quot;: 1, &quot;t3&quot;: 5, &quot;t4&quot;: 2, &quot;t5&quot;: 4}  # 접근횟수*중첩깊이 근사치
+K = 3  # 사용 가능한 물리 레지스터 수
+
+def simplify_order(graph, k):
+    g = {n: set(neigh) for n, neigh in graph.items()}
+    stack, spilled = [], []
+    while g:
+        low_degree = [n for n, neigh in g.items() if len(neigh) &lt; k]
+        if low_degree:
+            n = min(low_degree, key=lambda n: spill_cost[n])   # 차수&lt;k 정점을 스택으로
+        else:
+            n = min(g, key=lambda n: spill_cost[n] / max(1, len(g[n])))  # 잠재적 스필 후보
+            spilled.append(n)
+        stack.append(n)
+        for neigh in g.values():
+            neigh.discard(n)
+        del g[n]
+    return stack, spilled
+
+def color(order, graph, k):
+    colors = {}
+    for n in reversed(order):
+        used = {colors[m] for m in graph[n] if m in colors}
+        available = [c for c in range(k) if c not in used]
+        colors[n] = available[0] if available else None    # None = 실제 스필
+    return colors
+
+order, potential_spills = simplify_order(interference, K)
+colors = color(order, interference, K)
+
+print(f&quot;제거 순서(스택): {order}&quot;)
+print(f&quot;단계에서 걸러진 잠재 스필 후보: {potential_spills}&quot;)
+for t, c in colors.items():
+    where = f&quot;R{c}&quot; if c is not None else &quot;MEMORY(spill)&quot;
+    print(f&quot;  {t} -&gt; {where}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-22.py">docs/code/algorithms/algorithms-22.py</a></p>
       <h2>연습</h2>
       <p>작은 함수 하나를 골라 <code>-O0</code>과 <code>-O2</code>로 컴파일한 어셈블리를 비교하고, 스택 슬롯 접근(스필/리로드) 개수가 어떻게 달라지는지 세어 볼 것.</p>
       <h2>실무 · Verex 연결</h2>

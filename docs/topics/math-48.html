@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 48 — 엔트로피·정보·코딩</title>
+<title>Day 48 — Pairings / KZG (Concept)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,21 +131,141 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 48</p>
   <article>
-      <h1>엔트로피·정보·코딩 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 48 / 51 &middot; 12월 — 암호학·정보이론 (Day 43–51)</p>
+      <h1>Pairings / KZG (Concept) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 48 / 52 &middot; December — Cryptography &amp; Information Theory (Day 44-52)</p>
+      <h2>Concept</h2>
+      <p>A pairing is a bilinear map that takes elements from two elliptic curve groups and produces an element in a third group, letting you check a multiplicative relationship between exponents (scalars) just by looking at the group elements. This makes it possible to verify multiplicative relationships between hidden values, and it's the basis for BLS signatures and the verification equations of several proof systems. A KZG commitment commits a single polynomial to one constant-size group element, and lets you open a claim like f(z) = y at any point z with a proof that is also constant size. The principle is that f(X) − y is divisible by (X − z); submitting a commitment to that quotient polynomial as the proof lets the verifier confirm the division relationship with a single pairing check. The cost is that KZG requires a trusted setup that produces a structured reference string, and the fundamental assumption behind this scheme is that a leak of the secret used in that setup would allow forged proofs.</p>
+      <p>A significant portion of recent Ethereum infrastructure — blob data commitments, rollup proofs, signature aggregation — is built on pairings and polynomial commitments, so you can't read the design docs without the concept; the trusted-setup assumption is also the system's actual trust boundary.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 페어링/KZG(개념) — f(X)-f(z)가 (X-z)로 나누어떨어진다는 인수정리가 KZG 증명의 핵심
+# 실제 KZG는 이 몫 다항식을 페어링 기반 커밋먼트로 압축하지만, 여기선 그 대수적 뼈대만 GF(p)에서 재현한다.
+
+p = 101  # 작은 소수 유한체
+
+def poly_eval(coeffs, x):
+    y = 0
+    for c in reversed(coeffs):
+        y = (y * x + c) % p
+    return y
+
+def poly_sub_const(coeffs, c):
+    out = coeffs[:]
+    out[0] = (out[0] - c) % p
+    return out
+
+def synthetic_division(coeffs, z):
+    &quot;&quot;&quot;(coeffs) / (X - z) 를 합성 나눗셈으로 계산. 몫의 계수와 나머지를 반환.&quot;&quot;&quot;
+    n = len(coeffs)
+    quotient = [0] * (n - 1)
+    remainder = coeffs[-1]
+    for i in range(n - 2, -1, -1):
+        quotient[i] = remainder % p
+        remainder = (coeffs[i] + remainder * z) % p
+    return quotient, remainder
+
+# 예시 다항식 f(X) = 5 + 3X + 2X^2 + X^3  (계수: [5,3,2,1], 상수항이 index 0)
+f = [5, 3, 2, 1]
+z = 7
+y = poly_eval(f, z)
+print(f&quot;f(X) = 5 + 3X + 2X^2 + X^3, z={z}  =&gt;  y = f(z) = {y}&quot;)
+
+# f(X) - y 는 반드시 (X - z)로 나누어떨어진다 (인수정리)
+f_minus_y = poly_sub_const(f, y)
+quotient, remainder = synthetic_division(f_minus_y, z)
+print(f&quot;몫 다항식 q(X) 계수 = {quotient}, 나머지 = {remainder}  (0이어야 정상)&quot;)
+assert remainder == 0
+
+# &quot;증명&quot;이 성립함을 재구성으로 검증: q(X)*(X - z) + y 를 다시 펼치면 f(X)와 완전히 같아야 한다
+def poly_mul(a, b):
+    out = [0] * (len(a) + len(b) - 1)
+    for i, ai in enumerate(a):
+        for j, bj in enumerate(b):
+            out[i + j] = (out[i + j] + ai * bj) % p
+    return out
+
+reconstructed = poly_mul(quotient, [(-z) % p, 1])  # (X - z) = [-z, 1]
+reconstructed[0] = (reconstructed[0] + y) % p
+print(&quot;재구성한 f(X) 계수:&quot;, reconstructed, &quot; 원본:&quot;, f, &quot; 일치:&quot;, reconstructed == f)
+print(&quot;\n실제 KZG는 이 q(X)를 SRS로 만든 상수크기 군 원소로 커밋하고, 검증자는 페어링 한 번으로&quot;)
+print(&quot;commit(f) - y*G1 == commit(q) * (tau - z)*G2 관계를 확인한다 (여기선 다항식 자체로 원리만 재현).&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-48.py">docs/code/math/math-48.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick a simple polynomial, actually divide f(X) − f(z) by (X − z) to get the quotient, explain using the factor theorem why the remainder is always zero, and write up why that quotient serves as a proof.</p>
+      <h2>Practical Connection</h2>
+      <p>If Verex posts data to an L2 or aggregates multiple signatures, the cost and trust assumptions of that path ultimately come from pairing-based commitment structures.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1>페어링/KZG(개념) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 48 / 52 &middot; 12월 — 암호학·정보이론 (Day 44–52)</p>
 
       <h2>개념</h2>
-      <p>한 사건의 정보량은 그 확률의 역수에 로그를 취한 값으로 정의되고, 엔트로피는 그 기대값이라 분포의 평균 불확실성을 나타낸다. 로그의 밑이 2이면 단위는 비트이고, 원소 수가 정해졌을 때 균등분포에서 엔트로피가 최대가 된다. 소스 코딩 정리에 따르면 무손실 부호의 평균 길이는 엔트로피보다 짧아질 수 없고, 허프만이나 산술부호화로 그 한계에 임의로 가깝게 접근할 수 있다. 상대 엔트로피(KL 발산)는 틀린 분포를 가정하고 부호화했을 때 치르는 추가 비용이고, 상호정보량은 한 변수를 알았을 때 줄어드는 다른 변수의 불확실성이다. 이 최대 엔트로피 관점이 키와 난수의 강도를 비트 수로 재는 기준이 된다.</p>
-      <p>압축의 이론적 한계, 시드·패스워드의 실제 엔트로피, 로그나 특징의 정보량 판단이 모두 여기 걸려 있어서, 엔트로피를 과대평가하면 안전하다고 착각한 난수를 쓰게 된다.</p>
+      <p>페어링은 두 타원곡선 군의 원소를 받아 세 번째 군의 원소를 내놓는 쌍선형 사상으로, 지수(스칼라)가 곱해지는 관계를 군 원소만 보고 확인할 수 있게 해 준다. 이 성질 덕분에 숨겨진 값들 사이의 곱셈 관계를 검증할 수 있고, BLS 서명이나 여러 증명 시스템의 검증식이 여기에 기반한다. KZG 커밋먼트는 다항식 하나를 상수 크기의 군 원소 하나로 커밋하고, 임의의 점 z에서 f(z)=y라는 사실을 역시 상수 크기의 증명으로 열 수 있게 한다. 원리는 f(X)−y가 (X−z)로 나누어떨어진다는 사실이며, 그 몫 다항식에 대한 커밋먼트를 증명으로 제출하면 검증자가 페어링 한 번으로 나눗셈 관계를 확인한다. 대가로 KZG는 구조화된 참조 문자열을 만드는 신뢰 설정이 필요하고, 그 설정에 쓰인 비밀이 유출되면 거짓 증명을 만들 수 있다는 점이 이 방식의 근본 가정이다.</p>
+      <p>블롭 데이터 커밋먼트, 롤업 증명, 서명 집계 등 최근 이더리움 인프라의 상당 부분이 페어링과 다항식 커밋먼트 위에 서 있어서, 개념 없이는 설계 문서를 읽을 수 없다. 신뢰 설정 가정은 시스템의 실제 신뢰 경계이기도 하다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 페어링/KZG(개념) — f(X)-f(z)가 (X-z)로 나누어떨어진다는 인수정리가 KZG 증명의 핵심
+# 실제 KZG는 이 몫 다항식을 페어링 기반 커밋먼트로 압축하지만, 여기선 그 대수적 뼈대만 GF(p)에서 재현한다.
+
+p = 101  # 작은 소수 유한체
+
+def poly_eval(coeffs, x):
+    y = 0
+    for c in reversed(coeffs):
+        y = (y * x + c) % p
+    return y
+
+def poly_sub_const(coeffs, c):
+    out = coeffs[:]
+    out[0] = (out[0] - c) % p
+    return out
+
+def synthetic_division(coeffs, z):
+    &quot;&quot;&quot;(coeffs) / (X - z) 를 합성 나눗셈으로 계산. 몫의 계수와 나머지를 반환.&quot;&quot;&quot;
+    n = len(coeffs)
+    quotient = [0] * (n - 1)
+    remainder = coeffs[-1]
+    for i in range(n - 2, -1, -1):
+        quotient[i] = remainder % p
+        remainder = (coeffs[i] + remainder * z) % p
+    return quotient, remainder
+
+# 예시 다항식 f(X) = 5 + 3X + 2X^2 + X^3  (계수: [5,3,2,1], 상수항이 index 0)
+f = [5, 3, 2, 1]
+z = 7
+y = poly_eval(f, z)
+print(f&quot;f(X) = 5 + 3X + 2X^2 + X^3, z={z}  =&gt;  y = f(z) = {y}&quot;)
+
+# f(X) - y 는 반드시 (X - z)로 나누어떨어진다 (인수정리)
+f_minus_y = poly_sub_const(f, y)
+quotient, remainder = synthetic_division(f_minus_y, z)
+print(f&quot;몫 다항식 q(X) 계수 = {quotient}, 나머지 = {remainder}  (0이어야 정상)&quot;)
+assert remainder == 0
+
+# &quot;증명&quot;이 성립함을 재구성으로 검증: q(X)*(X - z) + y 를 다시 펼치면 f(X)와 완전히 같아야 한다
+def poly_mul(a, b):
+    out = [0] * (len(a) + len(b) - 1)
+    for i, ai in enumerate(a):
+        for j, bj in enumerate(b):
+            out[i + j] = (out[i + j] + ai * bj) % p
+    return out
+
+reconstructed = poly_mul(quotient, [(-z) % p, 1])  # (X - z) = [-z, 1]
+reconstructed[0] = (reconstructed[0] + y) % p
+print(&quot;재구성한 f(X) 계수:&quot;, reconstructed, &quot; 원본:&quot;, f, &quot; 일치:&quot;, reconstructed == f)
+print(&quot;\n실제 KZG는 이 q(X)를 SRS로 만든 상수크기 군 원소로 커밋하고, 검증자는 페어링 한 번으로&quot;)
+print(&quot;commit(f) - y*G1 == commit(q) * (tau - z)*G2 관계를 확인한다 (여기선 다항식 자체로 원리만 재현).&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-48.py">docs/code/math/math-48.py</a></p>
       <h2>연습</h2>
-      <p>텍스트 파일의 문자 빈도로 엔트로피를 계산해 gzip 압축률과 비교하고, 니모닉 12단어가 갖는 엔트로피 비트 수를 직접 계산해보라.</p>
+      <p>작은 다항식 하나를 골라 f(X)−f(z)를 (X−z)로 실제로 나눠 몫을 구하고, 나머지가 항상 0이 되는 이유를 인수정리로 설명한 뒤 그 몫이 왜 증명 역할을 하는지 글로 정리하라.</p>
       <h2>실무 · Verex 연결</h2>
-      <p>개인키와 시드의 안전성은 결국 엔트로피 비트 수로 정의되며, LMSR 비용함수가 log-sum-exp 형태를 갖는 것도 엔트로피와 지수족이라는 같은 수학적 뿌리에서 나온다.</p>
+      <p>Verex가 L2에 데이터를 올리거나 다수 서명을 집계하는 경로를 쓴다면 그 비용과 신뢰 가정이 결국 페어링 기반 커밋먼트 구조에서 나온다.</p>
       <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
     </article>
-  <div class="pager"><a href="math-47.html">&larr; 47. 페어링/KZG(개념)</a><a href="math-49.html">49. 해시함수 설계 원리(스펀지·머클-담고르) &rarr;</a></div>
+  <div class="pager"><a href="math-47.html">&larr; 47. 라그랑주 보간 + Reed-Solomon (스레드 A 수확)</a><a href="math-49.html">49. 엔트로피·정보·코딩 &rarr;</a></div>
 </div>
 </body>
 </html>

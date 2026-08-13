@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thirdweb — platform survey — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Thirdweb — platform survey</p>
+  <article>
+      <h1><span class="topic-no">11</span>Thirdweb — platform survey <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">Contracts, wallets/AA, backend tx, Unity SDK — breadth bought with best-in-class parts.</p>
+      <p class="meta">Reference — docs/features/thirdweb.md. Already used in the AA card's pillars ②③.</p>
+      <h2>Why</h2>
+      <p>Not a neutral survey — this project already depends on it. The AA card's sponsored-gas and atomic-batch pillars run on thirdweb's 4337 stack, and the D1 gas decision on the agent PoC turns on exactly the tradeoff this note names: thirdweb gives you a paymaster, but only for a 4337 account, which is a different account type from the 7702/7710 one the mandate story is built on. Breadth is convenient right up to the point where one part has to be the best one.</p>
+      <h2>How it works</h2>
+      <p>Reading note across four surfaces (contract deploys, Connect wallets and account abstraction, Engine for backend-signed transactions, the Unity SDK), each rated against doing it directly. The touchpoints that matter here are named: the AA pillars already shipped, backend transactions for the AP2 path, and the Unity track the game card would need.</p>
+      <h2>Related code</h2>
+      <pre><code># Thirdweb — platform survey across four surfaces (contracts, Connect wallets/AA,
+# Engine backend tx, Unity SDK), each rated against doing it directly. Prints a
+# feature-comparison table from a dict of {feature: supported_bool}.
+
+SURFACES = {
+    &quot;Contract deploys&quot;: {
+        &quot;one-click deploy from templates&quot;: True,
+        &quot;custom Solidity, no thirdweb lock-in&quot;: True,
+        &quot;gas-optimized beyond OpenZeppelin defaults&quot;: False,
+    },
+    &quot;Connect (wallets / AA)&quot;: {
+        &quot;ERC-4337 smart accounts&quot;: True,
+        &quot;sponsored gas (paymaster)&quot;: True,
+        &quot;ERC-7702 / 7710 delegated accounts&quot;: False,  # different account type — the D1 gap
+    },
+    &quot;Engine (backend tx)&quot;: {
+        &quot;server-signed transactions&quot;: True,
+        &quot;managed key custody&quot;: True,
+        &quot;self-hosted signer, zero vendor dependency&quot;: False,
+    },
+    &quot;Unity SDK&quot;: {
+        &quot;in-game wallet connect&quot;: True,
+        &quot;NFT/inventory bridging&quot;: True,
+        &quot;console-platform support (parity with mobile/web)&quot;: False,
+    },
+}
+
+
+def coverage(features: dict) -&gt; float:
+    return sum(features.values()) / len(features)
+
+
+def print_table():
+    print(f&quot;{'Surface':&lt;26}{'Feature':&lt;45}{'Supported'}&quot;)
+    print(&quot;-&quot; * 80)
+    for surface, features in SURFACES.items():
+        for feature, supported in features.items():
+            mark = &quot;yes&quot; if supported else &quot;NO&quot;
+            print(f&quot;{surface:&lt;26}{feature:&lt;45}{mark}&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    print(&quot;Thirdweb platform survey — feature coverage by surface\n&quot;)
+    print_table()
+
+    print(&quot;\nCoverage ratio per surface:&quot;)
+    for surface, features in SURFACES.items():
+        print(f&quot;  {surface:&lt;26} {coverage(features):.0%}&quot;)
+
+    gaps = [
+        f&quot;{surface} / {feature}&quot;
+        for surface, features in SURFACES.items()
+        for feature, supported in features.items()
+        if not supported
+    ]
+    print(&quot;\nGaps where 'best-in-class' breaks (breadth's limit):&quot;)
+    for gap in gaps:
+        print(f&quot;  - {gap}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/pocs/thirdweb.py">docs/code/pocs/thirdweb.py</a></p>
+      <p><a href="https://www.jaylabs.xyz/poc/thirdweb">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">11</span>Thirdweb — 플랫폼 서베이 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">컨트랙트·지갑/AA·백엔드 tx·Unity SDK — 각 부문 1등을 내주고 산 넓이.</p>
+      <p class="meta">참조 — docs/features/thirdweb.md. AA 카드의 ②③ 요소에서 이미 쓰고 있습니다.</p>
+      <h2>왜</h2>
+      <p>중립적 서베이가 아닙니다 — 이 프로젝트가 이미 의존하고 있습니다. AA 카드의 가스 대납·원자적 배치 요소가 thirdweb의 4337 스택 위에서 돌고, 에이전트 PoC의 D1 가스 결정이 정확히 이 노트가 짚는 트레이드오프에 달려 있습니다: thirdweb은 paymaster를 주지만 **4337 계정에 한해서**이고, 그건 위임 서사가 딛고 선 7702/7710 계정과 다른 종류입니다. **넓이는 편리합니다 — 어느 한 부분이 반드시 최고여야 하는 지점 전까지는.**</p>
+      <h2>동작 방식</h2>
+      <p>네 표면(컨트랙트 배포, Connect 지갑·계정 추상화, 백엔드 서명 트랜잭션용 Engine, Unity SDK)에 걸친 정독 노트로, 각각을 직접 구현하는 경우와 견줍니다. 여기서 의미 있는 접점은 명시되어 있습니다 — 이미 나간 AA 요소들, AP2 경로의 백엔드 트랜잭션, 그리고 게임 카드가 필요로 할 Unity 트랙.</p>
+      <h2>관련 코드</h2>
+      <pre><code># Thirdweb — platform survey across four surfaces (contracts, Connect wallets/AA,
+# Engine backend tx, Unity SDK), each rated against doing it directly. Prints a
+# feature-comparison table from a dict of {feature: supported_bool}.
+
+SURFACES = {
+    &quot;Contract deploys&quot;: {
+        &quot;one-click deploy from templates&quot;: True,
+        &quot;custom Solidity, no thirdweb lock-in&quot;: True,
+        &quot;gas-optimized beyond OpenZeppelin defaults&quot;: False,
+    },
+    &quot;Connect (wallets / AA)&quot;: {
+        &quot;ERC-4337 smart accounts&quot;: True,
+        &quot;sponsored gas (paymaster)&quot;: True,
+        &quot;ERC-7702 / 7710 delegated accounts&quot;: False,  # different account type — the D1 gap
+    },
+    &quot;Engine (backend tx)&quot;: {
+        &quot;server-signed transactions&quot;: True,
+        &quot;managed key custody&quot;: True,
+        &quot;self-hosted signer, zero vendor dependency&quot;: False,
+    },
+    &quot;Unity SDK&quot;: {
+        &quot;in-game wallet connect&quot;: True,
+        &quot;NFT/inventory bridging&quot;: True,
+        &quot;console-platform support (parity with mobile/web)&quot;: False,
+    },
+}
+
+
+def coverage(features: dict) -&gt; float:
+    return sum(features.values()) / len(features)
+
+
+def print_table():
+    print(f&quot;{'Surface':&lt;26}{'Feature':&lt;45}{'Supported'}&quot;)
+    print(&quot;-&quot; * 80)
+    for surface, features in SURFACES.items():
+        for feature, supported in features.items():
+            mark = &quot;yes&quot; if supported else &quot;NO&quot;
+            print(f&quot;{surface:&lt;26}{feature:&lt;45}{mark}&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    print(&quot;Thirdweb platform survey — feature coverage by surface\n&quot;)
+    print_table()
+
+    print(&quot;\nCoverage ratio per surface:&quot;)
+    for surface, features in SURFACES.items():
+        print(f&quot;  {surface:&lt;26} {coverage(features):.0%}&quot;)
+
+    gaps = [
+        f&quot;{surface} / {feature}&quot;
+        for surface, features in SURFACES.items()
+        for feature, supported in features.items()
+        if not supported
+    ]
+    print(&quot;\nGaps where 'best-in-class' breaks (breadth's limit):&quot;)
+    for gap in gaps:
+        print(f&quot;  - {gap}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/pocs/thirdweb.py">docs/code/pocs/thirdweb.py</a></p>
+      <p><a href="https://www.jaylabs.xyz/poc/thirdweb">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-cre-cloud.html">&larr; 10. CRE × Cloud — four hybrid patterns</a><a href="pocs-solana.html">12. Solana &rarr;</a></div>
+</div>
+</body>
+</html>

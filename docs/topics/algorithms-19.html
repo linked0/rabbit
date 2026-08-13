@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 19 — [복습] 알고리즘 선택의 실전 기준표</title>
+<title>Day 19 — [Review] A Practical Checklist for Algorithm Selection</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,80 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 19</p>
   <article>
+      <h1>[Review] A Practical Checklist for Algorithm Selection <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 19 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>Algorithm choice isn't determined by asymptotic complexity alone — it depends on the combination of input size, data distribution, access pattern, memory hierarchy, update frequency, and worst-case versus average-case requirements. For example, when n is small, an O(n^2) algorithm with small constants beats O(n log n); when data is nearly sorted, an adaptive sort wins; and array-based structures with good cache locality often beat pointer-chasing structures in practice. If a workload is read-heavy, a static index is best; if write-heavy, a log-structured or amortization-friendly structure wins. If tail latency (p99) matters, avoid amortized algorithms that look good on average but are bad in the worst case. In the end, a checklist is a procedure: first identify which constraint dominates, then narrow to candidates that fit that constraint, and confirm with measurement.</p>
+      <p>Much of real-world performance trouble comes not from a wrong algorithm but from misidentifying the constraint, and that cost only shows up after the code has already hardened.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># [복습] 알고리즘 선택 실전 기준표 — 입력 크기별 정렬 비용과 접근 패턴(배열 vs 연결리스트)의 실측 차이를 비교한다.
+
+import time
+import random
+
+def insertion_sort(a):
+    a = a[:]
+    for i in range(1, len(a)):
+        key = a[i]
+        j = i - 1
+        while j &gt;= 0 and a[j] &gt; key:
+            a[j + 1] = a[j]
+            j -= 1
+        a[j + 1] = key
+    return a
+
+def timeit(fn, *args, repeat=1):
+    start = time.perf_counter()
+    for _ in range(repeat):
+        fn(*args)
+    return (time.perf_counter() - start) / repeat
+
+random.seed(42)
+small = [random.randint(0, 100) for _ in range(10)]
+large = [random.randint(0, 100) for _ in range(2000)]
+
+t_ins_small = timeit(insertion_sort, small, repeat=2000)
+t_sorted_small = timeit(sorted, small, repeat=2000)
+t_ins_large = timeit(insertion_sort, large, repeat=5)
+t_sorted_large = timeit(sorted, large, repeat=5)
+
+# 배열 순회(지역성 좋음) vs 연결 리스트류 포인터 추적(지역성 나쁨) 비교
+class Node:
+    __slots__ = (&quot;value&quot;, &quot;next&quot;)
+    def __init__(self, value, next=None):
+        self.value = value
+        self.next = next
+
+arr = list(range(100_000))
+head = None
+for v in reversed(arr):
+    head = Node(v, head)
+
+def sum_linked(n):
+    total = 0
+    while n:
+        total += n.value
+        n = n.next
+    return total
+
+t_array = timeit(sum, arr, repeat=20)
+t_linked = timeit(sum_linked, head, repeat=20)
+
+print(f&quot;n=10:   insertion_sort={t_ins_small * 1e6:.2f}us  builtin(Timsort)={t_sorted_small * 1e6:.2f}us&quot;)
+print(f&quot;n=2000: insertion_sort={t_ins_large * 1e3:.2f}ms  builtin(Timsort)={t_sorted_large * 1e3:.2f}ms&quot;)
+print(f&quot;n=100000 순회: array={t_array * 1e3:.3f}ms  linked-list={t_linked * 1e3:.3f}ms &quot;
+      f&quot;(연결리스트가 {t_linked / t_array:.1f}배 — 캐시 지역성 차이)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-19.py">docs/code/algorithms/algorithms-19.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick a hot path you wrote recently, tabulate its input size, read/write ratio, and tail-latency requirements, then fill in the same columns for your current data structure and two alternatives to compare them on equal footing.</p>
+      <h2>Practical Connection</h2>
+      <p>On-chain code has one more axis because gas is a direct cost of complexity, while off-chain indexers and matching engines are often dominated by tail latency and update frequency.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>[복습] 알고리즘 선택의 실전 기준표 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 19 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
 
@@ -115,7 +212,65 @@
       <p>알고리즘 선택은 점근 복잡도만으로 결정되지 않고, 입력 규모, 데이터 분포, 접근 패턴, 메모리 계층, 갱신 빈도, 최악 대 평균 요구사항이라는 축들의 조합으로 결정된다. 예를 들어 n이 작으면 상수가 작은 O(n^2)가 O(n log n)을 이기고, 데이터가 거의 정렬돼 있으면 적응적 정렬이 유리하며, 캐시 지역성이 좋은 배열 기반 구조가 포인터 추적 구조보다 실측에서 앞서는 일이 흔하다. 읽기 위주면 정적 인덱스, 쓰기 위주면 로그 구조나 상환 분석이 좋은 구조를 고른다. 지연시간 꼬리(p99)가 중요하면 평균이 좋아도 최악이 나쁜 상환 알고리즘은 피해야 한다. 결국 기준표란 &quot;어떤 제약이 지배적인가&quot;를 먼저 식별하고, 그 제약에 맞는 후보군으로 좁힌 뒤 실측으로 확정하는 절차이다.</p>
       <p>실무 성능 사고의 상당수는 잘못된 알고리즘이 아니라 제약을 잘못 짚은 선택에서 나오고, 그 비용은 코드가 굳은 뒤에 드러난다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># [복습] 알고리즘 선택 실전 기준표 — 입력 크기별 정렬 비용과 접근 패턴(배열 vs 연결리스트)의 실측 차이를 비교한다.
+
+import time
+import random
+
+def insertion_sort(a):
+    a = a[:]
+    for i in range(1, len(a)):
+        key = a[i]
+        j = i - 1
+        while j &gt;= 0 and a[j] &gt; key:
+            a[j + 1] = a[j]
+            j -= 1
+        a[j + 1] = key
+    return a
+
+def timeit(fn, *args, repeat=1):
+    start = time.perf_counter()
+    for _ in range(repeat):
+        fn(*args)
+    return (time.perf_counter() - start) / repeat
+
+random.seed(42)
+small = [random.randint(0, 100) for _ in range(10)]
+large = [random.randint(0, 100) for _ in range(2000)]
+
+t_ins_small = timeit(insertion_sort, small, repeat=2000)
+t_sorted_small = timeit(sorted, small, repeat=2000)
+t_ins_large = timeit(insertion_sort, large, repeat=5)
+t_sorted_large = timeit(sorted, large, repeat=5)
+
+# 배열 순회(지역성 좋음) vs 연결 리스트류 포인터 추적(지역성 나쁨) 비교
+class Node:
+    __slots__ = (&quot;value&quot;, &quot;next&quot;)
+    def __init__(self, value, next=None):
+        self.value = value
+        self.next = next
+
+arr = list(range(100_000))
+head = None
+for v in reversed(arr):
+    head = Node(v, head)
+
+def sum_linked(n):
+    total = 0
+    while n:
+        total += n.value
+        n = n.next
+    return total
+
+t_array = timeit(sum, arr, repeat=20)
+t_linked = timeit(sum_linked, head, repeat=20)
+
+print(f&quot;n=10:   insertion_sort={t_ins_small * 1e6:.2f}us  builtin(Timsort)={t_sorted_small * 1e6:.2f}us&quot;)
+print(f&quot;n=2000: insertion_sort={t_ins_large * 1e3:.2f}ms  builtin(Timsort)={t_sorted_large * 1e3:.2f}ms&quot;)
+print(f&quot;n=100000 순회: array={t_array * 1e3:.3f}ms  linked-list={t_linked * 1e3:.3f}ms &quot;
+      f&quot;(연결리스트가 {t_linked / t_array:.1f}배 — 캐시 지역성 차이)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-19.py">docs/code/algorithms/algorithms-19.py</a></p>
       <h2>연습</h2>
       <p>최근 직접 짠 핫 경로 하나를 골라 입력 규모·읽기쓰기 비율·꼬리지연 요구를 표로 적고, 현재 자료구조와 대안 두 개를 같은 기준으로 채워 비교해 보기.</p>
       <h2>실무 · Verex 연결</h2>

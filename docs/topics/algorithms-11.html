@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 11 — 위상정렬·DAG 스케줄링</title>
+<title>Day 11 — Topological Sort and DAG Scheduling</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,59 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 11</p>
   <article>
+      <h1>Topological Sort and DAG Scheduling <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 11 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>Topological sort orders the vertices of a directed acyclic graph (DAG) so that, for every edge u→v, u comes before v. Kahn's algorithm computes this in O(V+E) by queuing up vertices with in-degree 0 and, each time one is dequeued, decrementing the in-degree of its neighbors; if the queue empties while vertices remain, a cycle exists. From a scheduling angle, each step of the topological sort — the set of vertices whose in-degree hits 0 at the same time — can be grouped into one parallel layer, and the number of layers equals the length of the DAG's longest path. So even with infinite processors, the lower bound on execution time is the longest path, i.e. the critical path — this is the fundamental limit on parallel scheduling. In parallel transaction execution, the DAG's edges are defined by state-access conflicts (write-write or read-write on the same slot), and if the access lists are declared up front, this graph can be built statically before execution even starts.</p>
+      <p>Every design that tries to run transactions within a block in parallel eventually runs into the limit set by the conflict graph's longest path, so this calculation is what lets you estimate the maximum gain parallelization can actually deliver ahead of time.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 11: 위상정렬·DAG 스케줄링 — Kahn 알고리즘으로 순서·병렬 레이어·최장 경로를 구한다
+# 진입차수 0인 정점을 레이어 단위로 소진시키면 위상순서와 병렬 실행 스케줄이 동시에 나온다.
+
+from collections import defaultdict
+
+def topo_layers(nodes, edges):
+    graph = defaultdict(list)
+    indeg = {n: 0 for n in nodes}
+    for u, v in edges:
+        graph[u].append(v)
+        indeg[v] += 1
+
+    layer = [n for n in nodes if indeg[n] == 0]
+    layers, order, remaining = [], [], dict(indeg)
+    while layer:
+        layers.append(sorted(layer))
+        order.extend(layer)
+        next_layer = []
+        for u in layer:
+            for v in graph[u]:
+                remaining[v] -= 1
+                if remaining[v] == 0:
+                    next_layer.append(v)
+        layer = next_layer
+    if len(order) != len(nodes):
+        raise ValueError(&quot;사이클이 존재해 위상정렬 불가&quot;)
+    return order, layers
+
+# 트랜잭션 5개(A~E)가 스토리지 슬롯 접근으로 서로 의존(충돌)하는 상황을 DAG로 모델링
+nodes = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;]
+edges = [(&quot;A&quot;, &quot;C&quot;), (&quot;B&quot;, &quot;C&quot;), (&quot;C&quot;, &quot;D&quot;), (&quot;C&quot;, &quot;E&quot;)]   # A,B 끝나야 C 실행, C 끝나야 D,E 실행
+
+order, layers = topo_layers(nodes, edges)
+print(&quot;위상정렬 순서 =&quot;, order)
+print(&quot;병렬 실행 레이어 =&quot;, layers)
+print(f&quot;레이어 수(=최장 경로 길이) = {len(layers)} -&gt; {len(nodes)}개 트랜잭션을 {len(layers)}단계에 실행 가능&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-11.py">docs/code/algorithms/algorithms-11.py</a></p>
+      <h2>Exercise</h2>
+      <p>Write a program that takes an arbitrary list of transactions along with the storage keys each one reads and writes, builds the conflict DAG, and uses Kahn's algorithm to output the list of parallel layers and the longest-path length.</p>
+      <h2>Practical Connection</h2>
+      <p>When Verex's CLOB matching results get settled as multiple transactions, ones that only touch different markets or different position tokens are independent in the conflict graph — meaning they can be grouped into a parallel layer, with room to lower batch-processing cost.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>위상정렬·DAG 스케줄링 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 11 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
 
@@ -115,7 +191,44 @@
       <p>위상정렬은 방향 비순환 그래프(DAG)의 정점을 모든 간선 u→v에 대해 u가 v보다 앞서도록 나열하는 것이다. Kahn 알고리즘은 진입차수 0인 정점을 큐에 넣고 꺼낼 때마다 인접 정점의 진입차수를 줄이는 방식으로 O(V+E)에 이를 계산하며, 큐가 비었는데 남은 정점이 있으면 사이클이 존재한다는 뜻이다. 스케줄링 관점에서는 위상정렬의 각 단계, 즉 동시에 진입차수가 0이 되는 정점 집합을 하나의 병렬 레이어로 묶을 수 있고, 이때 레이어 수는 DAG의 최장 경로 길이와 같다. 따라서 프로세서가 무한히 많아도 실행 시간의 하한은 최장 경로(critical path)이며, 이것이 병렬 스케줄의 근본 한계다. 트랜잭션 병렬 실행에서 DAG의 간선은 상태 접근 충돌(같은 슬롯에 대한 write-write 또는 read-write)로 정의되고, 접근 목록이 사전에 선언되면 이 그래프를 실행 전에 정적으로 구성할 수 있다.</p>
       <p>블록 내 트랜잭션을 병렬로 돌리려는 모든 설계는 결국 '충돌 그래프의 최장 경로'라는 한계에 부딪히므로, 병렬화로 얻을 수 있는 최대 이득을 미리 추정하려면 이 계산이 필요하다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 11: 위상정렬·DAG 스케줄링 — Kahn 알고리즘으로 순서·병렬 레이어·최장 경로를 구한다
+# 진입차수 0인 정점을 레이어 단위로 소진시키면 위상순서와 병렬 실행 스케줄이 동시에 나온다.
+
+from collections import defaultdict
+
+def topo_layers(nodes, edges):
+    graph = defaultdict(list)
+    indeg = {n: 0 for n in nodes}
+    for u, v in edges:
+        graph[u].append(v)
+        indeg[v] += 1
+
+    layer = [n for n in nodes if indeg[n] == 0]
+    layers, order, remaining = [], [], dict(indeg)
+    while layer:
+        layers.append(sorted(layer))
+        order.extend(layer)
+        next_layer = []
+        for u in layer:
+            for v in graph[u]:
+                remaining[v] -= 1
+                if remaining[v] == 0:
+                    next_layer.append(v)
+        layer = next_layer
+    if len(order) != len(nodes):
+        raise ValueError(&quot;사이클이 존재해 위상정렬 불가&quot;)
+    return order, layers
+
+# 트랜잭션 5개(A~E)가 스토리지 슬롯 접근으로 서로 의존(충돌)하는 상황을 DAG로 모델링
+nodes = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;]
+edges = [(&quot;A&quot;, &quot;C&quot;), (&quot;B&quot;, &quot;C&quot;), (&quot;C&quot;, &quot;D&quot;), (&quot;C&quot;, &quot;E&quot;)]   # A,B 끝나야 C 실행, C 끝나야 D,E 실행
+
+order, layers = topo_layers(nodes, edges)
+print(&quot;위상정렬 순서 =&quot;, order)
+print(&quot;병렬 실행 레이어 =&quot;, layers)
+print(f&quot;레이어 수(=최장 경로 길이) = {len(layers)} -&gt; {len(nodes)}개 트랜잭션을 {len(layers)}단계에 실행 가능&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-11.py">docs/code/algorithms/algorithms-11.py</a></p>
       <h2>연습</h2>
       <p>임의의 트랜잭션 목록과 각 트랜잭션이 읽고 쓰는 스토리지 키 집합을 입력으로 받아 충돌 DAG를 만들고, Kahn 알고리즘으로 병렬 레이어 목록과 최장 경로 길이를 출력하는 프로그램을 작성해 보라.</p>
       <h2>실무 · Verex 연결</h2>

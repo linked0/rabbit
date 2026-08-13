@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 40 — 브랜치 예측·프리페치·데이터 지향 설계</title>
+<title>Day 40 — Branch Prediction, Prefetching, and Data-Oriented Design</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,60 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 40</p>
   <article>
+      <h1>Branch Prediction, Prefetching, and Data-Oriented Design <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 40 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>To keep the pipeline full, modern CPUs predict a branch's direction and target, and a misprediction costs a fair number of cycles to discard the wrongly-executed instructions and refill. Hardware prefetchers detect sequential access or a constant stride pattern and pull cache lines in ahead of time, so predictable access patterns run much faster than pointer-chasing ones. Data-oriented design is a methodology that reshapes data layout around this hardware reality — using an array of fields (SoA) instead of an array of objects (AoS), or grouping fields that are accessed together so more of each fetched cache line actually gets used. Techniques that eliminate branches altogether (conditional moves, branchless computation, sorting the input) live in the same territory. In the end, for code of the same complexity, performance is governed more by memory access pattern and predictability than by instruction count.</p>
+      <p>When measured performance differs by multiples despite identical complexity, the cause is usually cache misses and branch mispredictions — missing this sends hot-loop optimization in the wrong direction from the start.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 브랜치 예측·프리페치·데이터 지향 설계 — AoS(객체 배열) vs SoA(필드별 배열)로 캐시 활용률이 어떻게 달라지는지 구조로 보여준다.
+# SoA 는 &quot;합계를 구할 필드&quot;만 연속 메모리로 붙어 있어, 프리페처가 stride 패턴을 예측하기 쉽고 캐시 라인 낭비가 적다.
+
+class Particle:
+    __slots__ = (&quot;x&quot;, &quot;y&quot;, &quot;hp&quot;, &quot;team&quot;)
+    def __init__(self, x, y, hp, team):
+        self.x, self.y, self.hp, self.team = x, y, hp, team
+
+# AoS: 객체 배열 — hp 만 훑어도 x, y, team 까지 같은 캐시 라인에 끌려 들어와 낭비된다.
+aos = [Particle(x=i, y=i * 2, hp=100 - i, team=i % 2) for i in range(8)]
+
+def sum_hp_aos(particles):
+    return sum(p.hp for p in particles)  # 접근 패턴: 객체마다 점프하며 hp 필드만 뽑아씀 (포인터 추적에 가까움)
+
+# SoA: 필드별 배열 — hp 만 쓰는 질의는 hp 배열 하나만 순차로 읽으면 끝난다(=예측 가능한 stride 접근).
+soa = {
+    &quot;x&quot;: [i for i in range(8)],
+    &quot;y&quot;: [i * 2 for i in range(8)],
+    &quot;hp&quot;: [100 - i for i in range(8)],
+    &quot;team&quot;: [i % 2 for i in range(8)],
+}
+
+def sum_hp_soa(fields):
+    return sum(fields[&quot;hp&quot;])  # 접근 패턴: 연속 배열 순차 스캔 (하드웨어 프리페처가 가장 좋아하는 패턴)
+
+# 조건부 분기 없이 마스크 곱으로 team==0 인 hp 합만 뽑는 예 — 분기 예측 실패를 아예 피하는 기법의 축소판.
+def sum_hp_team0_branchless(fields):
+    return sum(hp * (1 - team) for hp, team in zip(fields[&quot;hp&quot;], fields[&quot;team&quot;]))
+
+aos_total = sum_hp_aos(aos)
+soa_total = sum_hp_soa(soa)
+team0_total = sum_hp_team0_branchless(soa)
+
+print(&quot;AoS sum(hp):&quot;, aos_total)
+print(&quot;SoA sum(hp):&quot;, soa_total, &quot; &lt;- 같은 결과, 다만 hp 배열만 순차 접근하면 됨&quot;)
+print(&quot;결과 일치:&quot;, aos_total == soa_total)
+print(&quot;branchless sum(hp) where team==0:&quot;, team0_total)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-40.py">docs/code/algorithms/algorithms-40.py</a></p>
+      <h2>Exercise</h2>
+      <p>Run the same conditional-branch loop over a sorted array and a randomly-ordered array, measure the execution time difference, and confirm with a profiler like perf that the branch-miss and cache-miss counters actually differ.</p>
+      <h2>Practical Connection</h2>
+      <p>In code that iterates over large numbers of the same struct, like an indexer's event-processing loop or an order book matching engine, laying data out as contiguous arrays instead of a pointer graph alone can make a large difference in throughput.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>브랜치 예측·프리페치·데이터 지향 설계 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 40 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
 
@@ -115,7 +192,45 @@
       <p>현대 CPU는 파이프라인을 비우지 않으려고 분기의 방향과 목적지를 예측하며, 예측이 틀리면 잘못 진행한 명령을 버리고 다시 채우는 데 상당한 사이클을 낭비한다. 하드웨어 프리페처는 순차 접근이나 일정한 stride 패턴을 감지해 캐시 라인을 미리 가져오므로, 예측 가능한 접근은 포인터를 따라가는 접근보다 훨씬 빠르다. 데이터 지향 설계는 이 하드웨어 특성에 맞춰 자료 배치를 바꾸는 방법론으로, 객체 배열(AoS) 대신 필드별 배열(SoA)을 쓰거나 함께 접근되는 필드를 모아 가져온 캐시 라인에서 실제로 쓰는 바이트 비율을 높인다. 분기 자체를 없애는 기법(조건부 이동, 분기 없는 계산, 입력 정렬)도 같은 맥락에 있다. 결국 같은 복잡도의 코드라도 성능은 명령어 개수보다 메모리 접근 패턴과 예측 가능성에 좌우된다.</p>
       <p>복잡도가 동일한데 실측이 몇 배 차이 나는 경우 원인은 대개 캐시 미스와 분기 오예측이며, 이걸 모르면 핫 루프 최적화의 방향을 처음부터 잘못 잡는다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 브랜치 예측·프리페치·데이터 지향 설계 — AoS(객체 배열) vs SoA(필드별 배열)로 캐시 활용률이 어떻게 달라지는지 구조로 보여준다.
+# SoA 는 &quot;합계를 구할 필드&quot;만 연속 메모리로 붙어 있어, 프리페처가 stride 패턴을 예측하기 쉽고 캐시 라인 낭비가 적다.
+
+class Particle:
+    __slots__ = (&quot;x&quot;, &quot;y&quot;, &quot;hp&quot;, &quot;team&quot;)
+    def __init__(self, x, y, hp, team):
+        self.x, self.y, self.hp, self.team = x, y, hp, team
+
+# AoS: 객체 배열 — hp 만 훑어도 x, y, team 까지 같은 캐시 라인에 끌려 들어와 낭비된다.
+aos = [Particle(x=i, y=i * 2, hp=100 - i, team=i % 2) for i in range(8)]
+
+def sum_hp_aos(particles):
+    return sum(p.hp for p in particles)  # 접근 패턴: 객체마다 점프하며 hp 필드만 뽑아씀 (포인터 추적에 가까움)
+
+# SoA: 필드별 배열 — hp 만 쓰는 질의는 hp 배열 하나만 순차로 읽으면 끝난다(=예측 가능한 stride 접근).
+soa = {
+    &quot;x&quot;: [i for i in range(8)],
+    &quot;y&quot;: [i * 2 for i in range(8)],
+    &quot;hp&quot;: [100 - i for i in range(8)],
+    &quot;team&quot;: [i % 2 for i in range(8)],
+}
+
+def sum_hp_soa(fields):
+    return sum(fields[&quot;hp&quot;])  # 접근 패턴: 연속 배열 순차 스캔 (하드웨어 프리페처가 가장 좋아하는 패턴)
+
+# 조건부 분기 없이 마스크 곱으로 team==0 인 hp 합만 뽑는 예 — 분기 예측 실패를 아예 피하는 기법의 축소판.
+def sum_hp_team0_branchless(fields):
+    return sum(hp * (1 - team) for hp, team in zip(fields[&quot;hp&quot;], fields[&quot;team&quot;]))
+
+aos_total = sum_hp_aos(aos)
+soa_total = sum_hp_soa(soa)
+team0_total = sum_hp_team0_branchless(soa)
+
+print(&quot;AoS sum(hp):&quot;, aos_total)
+print(&quot;SoA sum(hp):&quot;, soa_total, &quot; &lt;- 같은 결과, 다만 hp 배열만 순차 접근하면 됨&quot;)
+print(&quot;결과 일치:&quot;, aos_total == soa_total)
+print(&quot;branchless sum(hp) where team==0:&quot;, team0_total)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-40.py">docs/code/algorithms/algorithms-40.py</a></p>
       <h2>연습</h2>
       <p>정렬된 배열과 무작위 배열에 같은 조건 분기 루프를 돌려 실행 시간 차이를 재고, perf 같은 프로파일러로 branch-miss와 cache-miss 카운터가 실제로 다른지 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

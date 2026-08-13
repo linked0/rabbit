@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 8 — 순서 통계</title>
+<title>Day 8 — Order Statistics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,60 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 8</p>
   <article>
+      <h1>Order Statistics <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 8 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>An order statistic is the k-th smallest element an array would have if sorted, and the problem of finding just that element without sorting everything is called the selection problem. Quickselect reuses quicksort's partition step but only recurses into the side that contains the pivot, giving expected linear time — though a consistently bad pivot choice can degrade it to quadratic time in the worst case. Median-of-medians groups elements into blocks of 5, takes the median of each group, and then uses the median of those medians as the pivot, which guarantees that a fixed fraction of elements is eliminated at every step. That guarantee makes the recurrence solve to linear time even in the worst case, but the constant factor is large enough that it's slow in practice. So real implementations typically start with Quickselect and fall back to the deterministic median-of-medians selection once recursion depth crosses a threshold — the introselect pattern.</p>
+      <p>When you're computing p99 latency or pulling the top N items, sorting the entire array pays an unnecessary log-factor tax, while a naive Quickselect can be dragged into its worst case by adversarial input.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 8: 순서 통계 — Quickselect로 k번째로 작은 원소를 전체 정렬 없이 찾기
+# 퀵정렬의 분할을 재사용하되 필요한 한쪽 구간만 재귀해 기대 O(n) 시간에 선택한다.
+
+import random
+
+def quickselect(arr, k):
+    &quot;&quot;&quot;arr에서 k번째로 작은 원소(0-indexed)를 반환.&quot;&quot;&quot;
+    arr = arr[:]
+    lo, hi = 0, len(arr) - 1
+    while True:
+        if lo == hi:
+            return arr[lo]
+        pivot = arr[random.randint(lo, hi)]
+        lt, gt, i = lo, hi, lo
+        while i &lt;= gt:
+            if arr[i] &lt; pivot:
+                arr[i], arr[lt] = arr[lt], arr[i]
+                lt += 1; i += 1
+            elif arr[i] &gt; pivot:
+                arr[i], arr[gt] = arr[gt], arr[i]
+                gt -= 1
+            else:
+                i += 1
+        if k &lt; lt:
+            hi = lt - 1
+        elif k &gt; gt:
+            lo = gt + 1
+        else:
+            return pivot
+
+random.seed(3)
+data = [random.randint(0, 1000) for _ in range(1000)]
+k = 500
+result = quickselect(data, k)
+expected = sorted(data)[k]
+print(f&quot;데이터 {len(data)}개 중 {k}번째(0-indexed)로 작은 값 = {result}&quot;)
+print(f&quot;sorted()로 검증한 값 = {expected}, 일치 = {result == expected}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-8.py">docs/code/algorithms/algorithms-8.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement Quickselect to find the k-th element of an integer array, then count comparisons on a sorted input and an all-equal-values input, and plot those against a random-pivot version.</p>
+      <h2>Practical Connection</h2>
+      <p>Whether you're computing the median or a quantile of gas prices or order-book fill prices on-chain or off-chain, using a selection algorithm instead of sorting cuts the work and lets you state an explicit worst-case time bound against adversarial input.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>순서 통계 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 8 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">Quickselect·중위수의 중위수(결정론적 선택)</p>
@@ -115,7 +192,45 @@
       <p>순서 통계란 배열을 정렬했을 때 k번째로 작은 원소를 뜻하며, 전체 정렬 없이 그 원소만 찾는 문제를 선택 문제라 한다. Quickselect는 퀵정렬의 분할을 재사용하되 피벗이 속한 한쪽 구간만 재귀하므로 기대 시간이 선형이지만, 피벗이 계속 치우치면 최악에는 제곱 시간이 된다. 중위수의 중위수는 원소를 5개씩 묶어 각 그룹의 중위수를 구하고 그 중위수들의 중위수를 피벗으로 삼아, 매 단계에서 일정 비율 이상의 원소가 확실히 제거되도록 보장한다. 이 보장 덕분에 재귀식이 선형으로 풀려 최악에도 선형 시간이 되지만 상수 계수가 커서 실무에서는 느리다. 그래서 실제 구현은 보통 Quickselect로 시작해 재귀 깊이가 임계치를 넘으면 결정론적 선택으로 전환하는 introselect 방식을 쓴다.</p>
       <p>p99 지연을 계산하거나 상위 N개를 뽑는 작업에서 전체 정렬을 돌리면 불필요한 로그 배수를 지불하게 되고, 순진한 Quickselect는 적대적 입력에서 최악 케이스로 끌려갈 수 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 8: 순서 통계 — Quickselect로 k번째로 작은 원소를 전체 정렬 없이 찾기
+# 퀵정렬의 분할을 재사용하되 필요한 한쪽 구간만 재귀해 기대 O(n) 시간에 선택한다.
+
+import random
+
+def quickselect(arr, k):
+    &quot;&quot;&quot;arr에서 k번째로 작은 원소(0-indexed)를 반환.&quot;&quot;&quot;
+    arr = arr[:]
+    lo, hi = 0, len(arr) - 1
+    while True:
+        if lo == hi:
+            return arr[lo]
+        pivot = arr[random.randint(lo, hi)]
+        lt, gt, i = lo, hi, lo
+        while i &lt;= gt:
+            if arr[i] &lt; pivot:
+                arr[i], arr[lt] = arr[lt], arr[i]
+                lt += 1; i += 1
+            elif arr[i] &gt; pivot:
+                arr[i], arr[gt] = arr[gt], arr[i]
+                gt -= 1
+            else:
+                i += 1
+        if k &lt; lt:
+            hi = lt - 1
+        elif k &gt; gt:
+            lo = gt + 1
+        else:
+            return pivot
+
+random.seed(3)
+data = [random.randint(0, 1000) for _ in range(1000)]
+k = 500
+result = quickselect(data, k)
+expected = sorted(data)[k]
+print(f&quot;데이터 {len(data)}개 중 {k}번째(0-indexed)로 작은 값 = {result}&quot;)
+print(f&quot;sorted()로 검증한 값 = {expected}, 일치 = {result == expected}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-8.py">docs/code/algorithms/algorithms-8.py</a></p>
       <h2>연습</h2>
       <p>정수 배열에서 k번째 원소를 찾는 Quickselect를 직접 구현한 뒤, 정렬된 입력과 모두 같은 값인 입력에서 비교 횟수를 세어 무작위 피벗 버전과 그래프로 비교해 보라.</p>
       <h2>실무 · Verex 연결</h2>

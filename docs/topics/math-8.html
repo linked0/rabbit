@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 8 — 관계와 동치류</title>
+<title>Day 8 — Relations and Equivalence Classes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,112 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 8</p>
   <article>
+      <h1>Relations and Equivalence Classes <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 8 / 52 &middot; July — Discrete Math &amp; Logic (Day 3-10)</p>
+      <h2>Concept</h2>
+      <p>A binary relation on a set is defined as a subset of the Cartesian product — it enumerates which pairs of elements are related. A relation that satisfies reflexivity, symmetry, and transitivity all at once is an equivalence relation. An equivalence relation splits a set into disjoint equivalence classes, and conversely any partition defines an equivalence relation, so the two correspond one-to-one. The set of all equivalence classes is called the quotient set, and an operation defined on the quotient set is well-defined only if the result doesn't depend on which representative element you pick. Congruence modulo n on the integers is the canonical equivalence relation, and its equivalence classes are the residue classes.</p>
+      <p>Deciding what counts as &quot;the same&quot; is the essence of deduplication, cache keys, and replay protection, and if the criterion you pick breaks symmetry or transitivity, that's a bug waiting to happen.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 관계와 동치류 — 정수의 &quot;mod n 합동&quot;이 동치관계임을 반사·대칭·추이성으로 검증하고,
+# 그 동치류(잉여류)들이 원래 집합을 서로소인 조각들로 정확히 파티션함을 확인.
+
+MOD = 5
+universe = list(range(-6, 12))   # 동치관계 검증에 쓸 표본 집합
+
+def related(a, b):
+    return (a - b) % MOD == 0
+
+def is_reflexive(xs):
+    return all(related(x, x) for x in xs)
+
+def is_symmetric(xs):
+    return all(related(a, b) == related(b, a) for a in xs for b in xs)
+
+def is_transitive(xs):
+    return all(
+        not (related(a, b) and related(b, c)) or related(a, c)
+        for a in xs for b in xs for c in xs
+    )
+
+print(f&quot;mod {MOD} 합동 관계 검증 (표본 {len(universe)}개):&quot;)
+print(&quot;  반사성 :&quot;, is_reflexive(universe))
+print(&quot;  대칭성 :&quot;, is_symmetric(universe))
+print(&quot;  추이성 :&quot;, is_transitive(universe))
+
+# 동치류(잉여류) 계산: 같은 나머지를 갖는 원소끼리 묶는다.
+classes = {r: [] for r in range(MOD)}
+for x in universe:
+    classes[x % MOD].append(x)
+
+print(f&quot;\n{MOD}개의 동치류(잉여류)로 파티션:&quot;)
+for r, members in classes.items():
+    print(f&quot;  [{r}] = {members}&quot;)
+
+# 파티션 검증: 동치류들이 서로소이고, 합쳐서 universe 전체가 되는지.
+all_members = [x for members in classes.values() for x in members]
+pairwise_disjoint = len(all_members) == len(set(all_members))
+covers_universe = set(all_members) == set(universe)
+print(&quot;\n서로소(중복 없음)?&quot;, pairwise_disjoint, &quot; / 전체를 덮음?&quot;, covers_universe)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-8.py">docs/code/math/math-8.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick a criterion for treating two orders or transactions as &quot;the same,&quot; verify reflexivity, symmetry, and transitivity for it, and construct a counterexample where transitivity breaks.</p>
+      <h2>Practical Connection</h2>
+      <p>Transaction-hash- or nonce-based duplicate detection, and merging equivalent states in a state machine, are all instances of equivalence classes — and in Verex, the identifiers used to point at &quot;the same market&quot; or &quot;the same outcome&quot; are themselves a definition of what counts as equal.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>관계와 동치류 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 8 / 51 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
+      <p class="meta">Math &middot; Day 8 / 52 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
       <p class="lead">파티션으로 상태 그룹핑</p>
       <h2>개념</h2>
       <p>집합 위의 이항 관계는 곱집합의 부분집합으로 정의되며, 어떤 두 원소가 관계를 맺는지를 나열한 것이다. 반사성, 대칭성, 추이성을 모두 만족하는 관계를 동치관계라 한다. 동치관계는 집합을 서로소인 동치류들로 쪼개고, 반대로 임의의 파티션은 하나의 동치관계를 정의하므로 둘은 일대일로 대응한다. 동치류 전체의 집합을 몫집합이라 하며, 몫집합 위의 연산은 대표원을 무엇으로 고르든 결과가 같아야 잘 정의된다. 정수의 모듈로 n 합동이 대표적 동치관계이고 그 동치류가 잉여류다.</p>
       <p>무엇을 같은 것으로 볼지 정하는 일은 중복 제거, 캐시 키, 리플레이 방지 같은 설계의 본질이며, 기준이 대칭성이나 추이성을 깨면 그대로 버그가 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 관계와 동치류 — 정수의 &quot;mod n 합동&quot;이 동치관계임을 반사·대칭·추이성으로 검증하고,
+# 그 동치류(잉여류)들이 원래 집합을 서로소인 조각들로 정확히 파티션함을 확인.
+
+MOD = 5
+universe = list(range(-6, 12))   # 동치관계 검증에 쓸 표본 집합
+
+def related(a, b):
+    return (a - b) % MOD == 0
+
+def is_reflexive(xs):
+    return all(related(x, x) for x in xs)
+
+def is_symmetric(xs):
+    return all(related(a, b) == related(b, a) for a in xs for b in xs)
+
+def is_transitive(xs):
+    return all(
+        not (related(a, b) and related(b, c)) or related(a, c)
+        for a in xs for b in xs for c in xs
+    )
+
+print(f&quot;mod {MOD} 합동 관계 검증 (표본 {len(universe)}개):&quot;)
+print(&quot;  반사성 :&quot;, is_reflexive(universe))
+print(&quot;  대칭성 :&quot;, is_symmetric(universe))
+print(&quot;  추이성 :&quot;, is_transitive(universe))
+
+# 동치류(잉여류) 계산: 같은 나머지를 갖는 원소끼리 묶는다.
+classes = {r: [] for r in range(MOD)}
+for x in universe:
+    classes[x % MOD].append(x)
+
+print(f&quot;\n{MOD}개의 동치류(잉여류)로 파티션:&quot;)
+for r, members in classes.items():
+    print(f&quot;  [{r}] = {members}&quot;)
+
+# 파티션 검증: 동치류들이 서로소이고, 합쳐서 universe 전체가 되는지.
+all_members = [x for members in classes.values() for x in members]
+pairwise_disjoint = len(all_members) == len(set(all_members))
+covers_universe = set(all_members) == set(universe)
+print(&quot;\n서로소(중복 없음)?&quot;, pairwise_disjoint, &quot; / 전체를 덮음?&quot;, covers_universe)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-8.py">docs/code/math/math-8.py</a></p>
       <h2>연습</h2>
       <p>주문이나 트랜잭션을 같은 것으로 볼 기준을 하나 정해 반사·대칭·추이성을 각각 검증하고, 추이성이 깨지는 기준의 반례를 만들어보라.</p>
       <h2>실무 · Verex 연결</h2>

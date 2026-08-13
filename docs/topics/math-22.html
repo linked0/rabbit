@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 22 — 고유값/고유벡터</title>
+<title>Day 22 — Eigenvalues/Eigenvectors</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,90 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 22</p>
   <article>
+      <h1>Eigenvalues/Eigenvectors <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 22 / 52 &middot; September — Linear Algebra (Day 18-26)</p>
+      <h2>Concept</h2>
+      <p>For a square matrix A, a nonzero vector v satisfying Av = λv is called an eigenvector, and the scalar λ is its eigenvalue — meaning the linear transformation doesn't change direction along v, only scales its magnitude by a factor of λ. Eigenvalues are found as the roots of the characteristic equation det(A - λI) = 0; if the eigenvectors form a basis for the space, A can be diagonalized as A = PDP^(-1), which simplifies computing powers of A to simply raising the diagonal entries to that power. A real symmetric matrix always has real eigenvalues and a basis of mutually orthogonal eigenvectors (the spectral theorem), and matrices commonly encountered in practice, like covariance matrices, fall into this category. The magnitude of the eigenvalues governs growth and decay under repeated application of the transformation, so whether the spectral radius is less than 1 determines whether an iterative process converges.</p>
+      <p>The stationary distribution of a Markov chain, dimensionality reduction via PCA, the convergence condition of iterative numerical solvers, and structural analysis of graphs all reduce to eigenvalue problems.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 고유값/고유벡터 — Av = λv 를 수치로 검증하고, 대각화 A=PDP^-1 로 A^n 계산을 단순화한다.
+
+import numpy as np
+
+A = np.array([[4.0, 1.0], [2.0, 3.0]])
+
+eigvals, eigvecs = np.linalg.eig(A)
+print(&quot;A =\n&quot;, A)
+print(f&quot;\n고유값: {eigvals}&quot;)
+print(&quot;고유벡터(열 벡터):\n&quot;, eigvecs)
+
+# 검증: 각 고유쌍에 대해 Av == λv
+for i in range(len(eigvals)):
+    lam, v = eigvals[i], eigvecs[:, i]
+    lhs, rhs = A @ v, lam * v
+    print(f&quot;\nλ_{i}={lam:.4f}: Av={lhs}, λv={rhs}, 일치? {np.allclose(lhs, rhs)}&quot;)
+
+# 대각화: A = P D P^-1  →  A^n = P D^n P^-1 (대각원소만 거듭제곱하면 됨)
+P = eigvecs
+D = np.diag(eigvals)
+P_inv = np.linalg.inv(P)
+
+n = 5
+A_power_direct = np.linalg.matrix_power(A, n)
+A_power_via_diag = (P @ np.diag(eigvals ** n) @ P_inv).real
+
+print(f&quot;\nA^{n} 직접 계산:\n{A_power_direct}&quot;)
+print(f&quot;A^{n} 대각화로 계산 (P D^{n} P^-1):\n{np.round(A_power_via_diag, 6)}&quot;)
+print(f&quot;일치? {np.allclose(A_power_direct, A_power_via_diag)}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-22.py">docs/code/math/math-22.py</a></p>
+      <h2>Exercise</h2>
+      <p>Take a small transition matrix, repeatedly apply it, and observe the distribution converging — then check whether that limit matches the normalized eigenvector corresponding to eigenvalue 1.</p>
+      <h2>Practical Connection</h2>
+      <p>Eigendecomposing a covariance matrix built from multiple markets' prices or asset returns reveals that a small number of common factors explain most of the variation, which is used directly when aggregating the risk of correlated positions.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>고유값/고유벡터 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 22 / 51 &middot; 9월 — 선형대수 (Day 18–26)</p>
+      <p class="meta">Math &middot; Day 22 / 52 &middot; 9월 — 선형대수 (Day 18–26)</p>
 
       <h2>개념</h2>
       <p>정방행렬 A에 대해 Av = λv를 만족하는 영이 아닌 벡터 v를 고유벡터, 스칼라 λ를 고유값이라 하며, 이는 그 선형변환이 해당 방향으로는 방향을 바꾸지 않고 크기만 λ배로 늘리거나 줄인다는 뜻이다. 고유값은 특성방정식 det(A - λI) = 0의 근으로 구하고, 고유벡터가 공간의 기저를 이루면 A는 대각화되어 A = PDP^(-1) 꼴이 되며 이때 A의 거듭제곱 계산이 대각 원소의 거듭제곱으로 단순해진다. 실대칭행렬은 항상 실수 고유값과 서로 직교하는 고유벡터 기저를 가지며(스펙트럼 정리), 공분산행렬처럼 실무에서 자주 다루는 행렬이 여기에 속한다. 고유값의 절댓값은 변환을 반복 적용할 때의 성장과 감쇠를 지배하므로, 스펙트럼 반지름이 1보다 작은지가 반복 과정의 수렴 여부를 결정한다.</p>
       <p>마르코프 체인의 정상분포, PCA에 의한 차원 축소, 반복 수치해법의 수렴 조건, 그래프의 구조 분석이 모두 고유값 문제로 환원된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 고유값/고유벡터 — Av = λv 를 수치로 검증하고, 대각화 A=PDP^-1 로 A^n 계산을 단순화한다.
+
+import numpy as np
+
+A = np.array([[4.0, 1.0], [2.0, 3.0]])
+
+eigvals, eigvecs = np.linalg.eig(A)
+print(&quot;A =\n&quot;, A)
+print(f&quot;\n고유값: {eigvals}&quot;)
+print(&quot;고유벡터(열 벡터):\n&quot;, eigvecs)
+
+# 검증: 각 고유쌍에 대해 Av == λv
+for i in range(len(eigvals)):
+    lam, v = eigvals[i], eigvecs[:, i]
+    lhs, rhs = A @ v, lam * v
+    print(f&quot;\nλ_{i}={lam:.4f}: Av={lhs}, λv={rhs}, 일치? {np.allclose(lhs, rhs)}&quot;)
+
+# 대각화: A = P D P^-1  →  A^n = P D^n P^-1 (대각원소만 거듭제곱하면 됨)
+P = eigvecs
+D = np.diag(eigvals)
+P_inv = np.linalg.inv(P)
+
+n = 5
+A_power_direct = np.linalg.matrix_power(A, n)
+A_power_via_diag = (P @ np.diag(eigvals ** n) @ P_inv).real
+
+print(f&quot;\nA^{n} 직접 계산:\n{A_power_direct}&quot;)
+print(f&quot;A^{n} 대각화로 계산 (P D^{n} P^-1):\n{np.round(A_power_via_diag, 6)}&quot;)
+print(f&quot;일치? {np.allclose(A_power_direct, A_power_via_diag)}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-22.py">docs/code/math/math-22.py</a></p>
       <h2>연습</h2>
       <p>작은 전이행렬 하나를 잡아 거듭제곱을 반복하며 분포가 수렴하는 과정을 관찰하고, 그 수렴점이 고유값 1에 대응하는 고유벡터를 정규화한 것과 일치하는지 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 86 — 임계 서명·MPC·분산 키 생성(DKG)</title>
+<title>Day 86 — Threshold Signatures, MPC, and Distributed Key Generation (DKG)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,65 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 86</p>
   <article>
+      <h1>Threshold Signatures, MPC, and Distributed Key Generation (DKG) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 86 / 100 &middot; F. Cryptography &amp; ZK (Day 82-96)</p>
+      <h2>Concept</h2>
+      <p>A (t,n) threshold signature splits a private key into n shares such that any t or more must combine to produce a valid signature — the complete key never exists in one place at any point in time. The underlying idea is Shamir's secret sharing: distributing points on a degree-(t-1) polynomial lets any t points reconstruct the constant term (the secret), while t-1 points reveal nothing at all. DKG is a protocol where participants jointly generate a shared public key and their individual shares purely through interaction, with no trusted dealer, using verifiable secret sharing to filter out cheating participants. BLS signatures thresholdize naturally because keys and signatures simply add together, whereas ECDSA's multiplicative structure demands a far more complex MPC protocol. General MPC is the broader category — computing a joint function's result while each party's input stays hidden — and threshold signing is a special case of it.</p>
+      <p>The security of a bridge, custody, or oracle signer set ultimately comes down to how the key is split, and a large share of real incidents start from a single leaked key.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 임계 서명·MPC·DKG — Shamir 비밀 분산으로 (t, n) 임계 스킴의 핵심(다항식 보간)을 구현한다.
+# t개 지분이 모이면 비밀(상수항)을 복원하고, t-1개로는 아무 정보도 얻지 못함을 보인다. (교육용)
+
+import secrets
+
+PRIME = 2**127 - 1  # 큰 소수 체 (토이 규모)
+
+def make_shares(secret_value, t, n):
+    &quot;&quot;&quot;t-1차 다항식을 무작위 계수로 만들고, n개 지분 (x, f(x))을 반환한다.&quot;&quot;&quot;
+    coeffs = [secret_value] + [secrets.randbelow(PRIME) for _ in range(t - 1)]
+    def f(x):
+        return sum(c * pow(x, i, PRIME) for i, c in enumerate(coeffs)) % PRIME
+    return [(x, f(x)) for x in range(1, n + 1)]
+
+def lagrange_interpolate_at_zero(shares):
+    &quot;&quot;&quot;t개 지분 (x_i, y_i) 으로부터 f(0) = 비밀을 라그랑주 보간으로 복원한다.&quot;&quot;&quot;
+    secret = 0
+    for i, (xi, yi) in enumerate(shares):
+        num, den = 1, 1
+        for j, (xj, _) in enumerate(shares):
+            if i == j:
+                continue
+            num = (num * -xj) % PRIME
+            den = (den * (xi - xj)) % PRIME
+        secret = (secret + yi * num * pow(den, -1, PRIME)) % PRIME
+    return secret
+
+SECRET_KEY = 424242424242424242
+t, n = 3, 5  # (t,n) 임계: 5명 중 3명이 모여야 서명(복원) 가능
+
+shares = make_shares(SECRET_KEY, t, n)
+print(f&quot;generated {n} shares for a ({t},{n}) threshold scheme&quot;)
+print(&quot;shares:&quot;, shares)
+
+recovered_with_t = lagrange_interpolate_at_zero(shares[:t])
+print(f&quot;recovered with exactly t={t} shares:&quot;, recovered_with_t)
+print(&quot;matches original secret:&quot;, recovered_with_t == SECRET_KEY)
+
+# t-1개(부족한 지분)로 복원을 시도하면 완전히 다른(무의미한) 값이 나온다
+recovered_with_t_minus_1 = lagrange_interpolate_at_zero(shares[:t - 1] + [(999, 12345)])
+print(f&quot;attempting recovery with only t-1 shares gives garbage:&quot;, recovered_with_t_minus_1)
+print(&quot;=&gt; below threshold, the polynomial is underdetermined: any value is equally consistent&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-86.py">docs/code/algorithms/algorithms-86.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement Shamir's secret sharing over a small prime finite field, and confirm experimentally that t shares reconstruct the secret while t-1 shares leave every possible value equally plausible.</p>
+      <h2>Practical Connection</h2>
+      <p>If Verex puts oracle submission or settlement authority behind a threshold signature or multisig instead of a single EOA, one compromised key no longer translates directly into a manipulated market outcome.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>임계 서명·MPC·분산 키 생성(DKG) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 86 / 100 &middot; F. 암호학·ZK (Day 82–96)</p>
 
@@ -115,7 +197,50 @@
       <p>(t,n) 임계 서명은 비밀키를 n개 지분으로 나눠 t개 이상이 모여야 유효한 서명을 만들 수 있게 하는 방식으로, 어떤 시점에도 완전한 키가 한 곳에 존재하지 않는다. 원리는 Shamir 비밀 분산으로, t-1차 다항식 위의 점들을 배포하면 t개 점으로만 상수항(비밀)을 복원할 수 있고 t-1개로는 아무 정보도 얻지 못한다. DKG는 신뢰할 딜러 없이 참가자들이 상호작용만으로 공동 공개키와 각자의 지분을 만들어내는 프로토콜이며, 검증 가능한 비밀 분산을 써서 부정 참가자를 걸러낸다. BLS 서명은 키와 서명이 그대로 더해지는 성질 덕분에 임계화가 자연스럽지만, ECDSA는 곱셈 구조 때문에 훨씬 복잡한 MPC 프로토콜이 필요하다. 일반적인 MPC는 각자의 입력을 감춘 채 공동 함수의 결과만 계산하는 더 넓은 범주이고 임계 서명은 그 특수 사례로 볼 수 있다.</p>
       <p>브리지·커스터디·오라클 서명자 집합의 보안은 결국 키를 어떻게 나눠 갖느냐에 달려 있고, 실제 사고 상당수가 단일 키 유출에서 시작된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 임계 서명·MPC·DKG — Shamir 비밀 분산으로 (t, n) 임계 스킴의 핵심(다항식 보간)을 구현한다.
+# t개 지분이 모이면 비밀(상수항)을 복원하고, t-1개로는 아무 정보도 얻지 못함을 보인다. (교육용)
+
+import secrets
+
+PRIME = 2**127 - 1  # 큰 소수 체 (토이 규모)
+
+def make_shares(secret_value, t, n):
+    &quot;&quot;&quot;t-1차 다항식을 무작위 계수로 만들고, n개 지분 (x, f(x))을 반환한다.&quot;&quot;&quot;
+    coeffs = [secret_value] + [secrets.randbelow(PRIME) for _ in range(t - 1)]
+    def f(x):
+        return sum(c * pow(x, i, PRIME) for i, c in enumerate(coeffs)) % PRIME
+    return [(x, f(x)) for x in range(1, n + 1)]
+
+def lagrange_interpolate_at_zero(shares):
+    &quot;&quot;&quot;t개 지분 (x_i, y_i) 으로부터 f(0) = 비밀을 라그랑주 보간으로 복원한다.&quot;&quot;&quot;
+    secret = 0
+    for i, (xi, yi) in enumerate(shares):
+        num, den = 1, 1
+        for j, (xj, _) in enumerate(shares):
+            if i == j:
+                continue
+            num = (num * -xj) % PRIME
+            den = (den * (xi - xj)) % PRIME
+        secret = (secret + yi * num * pow(den, -1, PRIME)) % PRIME
+    return secret
+
+SECRET_KEY = 424242424242424242
+t, n = 3, 5  # (t,n) 임계: 5명 중 3명이 모여야 서명(복원) 가능
+
+shares = make_shares(SECRET_KEY, t, n)
+print(f&quot;generated {n} shares for a ({t},{n}) threshold scheme&quot;)
+print(&quot;shares:&quot;, shares)
+
+recovered_with_t = lagrange_interpolate_at_zero(shares[:t])
+print(f&quot;recovered with exactly t={t} shares:&quot;, recovered_with_t)
+print(&quot;matches original secret:&quot;, recovered_with_t == SECRET_KEY)
+
+# t-1개(부족한 지분)로 복원을 시도하면 완전히 다른(무의미한) 값이 나온다
+recovered_with_t_minus_1 = lagrange_interpolate_at_zero(shares[:t - 1] + [(999, 12345)])
+print(f&quot;attempting recovery with only t-1 shares gives garbage:&quot;, recovered_with_t_minus_1)
+print(&quot;=&gt; below threshold, the polynomial is underdetermined: any value is equally consistent&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-86.py">docs/code/algorithms/algorithms-86.py</a></p>
       <h2>연습</h2>
       <p>작은 소수 유한체 위에서 Shamir 비밀 분산을 직접 구현해 t개 지분으로는 복원되고 t-1개로는 모든 값이 동일하게 그럴듯함을 실험으로 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 100 — [Final] 내 스택의 ADR + 위협 모델 한 편 쓰기</title>
+<title>Day 100 — [Final] Write one ADR plus one threat model for your own stack</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,65 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 100</p>
   <article>
+      <h1>[Final] Write one ADR plus one threat model for your own stack <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 100 / 100 &middot; G. AI Engineering (Day 97-100)</p>
+      <h2>Concept</h2>
+      <p>An ADR (Architecture Decision Record) briefly documents a single architectural decision — the context, the alternatives considered, the choice and its rationale, and the resulting consequences and accepted trade-offs; accumulating these records over time preserves why the system looks the way it does today. A threat model draws the assets that need protecting and the trust boundaries around them, then for each boundary lists what an attacker can do and what they're after, along with the mitigations and the residual risk that remains. What the two documents share is that they record the premises and the alternatives, not just the conclusion — which means that when a premise changes, there's an automatic signal that the decision needs to be revisited. What matters more than format is keeping the scope narrow — one decision, one system — so the document actually gets read all the way through.</p>
+      <p>An undocumented decision gets treated, a few months later, as an arbitrary constraint with no reason behind it and gets quietly reversed — and the threat it was blocking comes back to life along with it.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># [Final] 내 스택의 ADR + 위협 모델 한 편 쓰기 — 코드 대신, 채워 넣기만 하면 되는
+# ADR/위협 모델 템플릿을 구조화된 형태로 출력한다 (범위: 결정 하나, 시스템 하나로 좁힐 것).
+
+ADR_TEMPLATE = {
+    &quot;title&quot;: &quot;결정 제목 (예: '오라클 결과 확정 방식으로 낙관적 제안+이의제기 채택')&quot;,
+    &quot;context&quot;: &quot;왜 이 결정이 필요했는가 — 제약, 요구사항, 지금 상태&quot;,
+    &quot;alternatives&quot;: [&quot;검토한 대안 1과 기각 이유&quot;, &quot;검토한 대안 2와 기각 이유&quot;],
+    &quot;decision&quot;: &quot;실제 선택과 그 근거&quot;,
+    &quot;consequences&quot;: &quot;이 결정으로 생기는 결과와 감수하는 트레이드오프&quot;,
+}
+
+THREAT_MODEL_TEMPLATE = {
+    &quot;asset&quot;: &quot;보호해야 할 자산 (예: 사용자 예치금, 오라클 결과값, 개인키)&quot;,
+    &quot;trust_boundary&quot;: &quot;신뢰 경계가 어디인가 (예: 온체인 vs 오프체인, 컨트랙트 vs 오퍼레이터)&quot;,
+    &quot;attacker_capability&quot;: &quot;각 경계에서 공격자가 할 수 있는 것 (예: 트랜잭션 순서 조작, 오라클 값 지연)&quot;,
+    &quot;mitigation&quot;: &quot;대응책 (예: 이의제기 기간, 다중서명, 타임락)&quot;,
+    &quot;residual_risk&quot;: &quot;대응 후에도 남는 위험과, 그 위험을 누가 감수하는가&quot;,
+}
+
+def print_section(title, template):
+    print(f&quot;\n== {title} ==&quot;)
+    for key, value in template.items():
+        if isinstance(value, list):
+            print(f&quot;- {key}:&quot;)
+            for item in value:
+                print(f&quot;    · {item}&quot;)
+        else:
+            print(f&quot;- {key}: {value}&quot;)
+
+def check_completed(template):
+    # 빈 칸(placeholder 그대로) 없이 실제로 채워졌는지 확인하는 게이트
+    missing = [k for k, v in template.items() if not v]
+    return len(missing) == 0, missing
+
+print_section(&quot;ADR 템플릿&quot;, ADR_TEMPLATE)
+print_section(&quot;위협 모델 템플릿&quot;, THREAT_MODEL_TEMPLATE)
+
+adr_ok, adr_missing = check_completed(ADR_TEMPLATE)
+tm_ok, tm_missing = check_completed(THREAT_MODEL_TEMPLATE)
+print(f&quot;\nADR 작성 완료 게이트 통과: {adr_ok} (누락: {adr_missing})&quot;)
+print(f&quot;위협 모델 작성 완료 게이트 통과: {tm_ok} (누락: {tm_missing})&quot;)
+print(&quot;\n다음 100일 사이클로 넘어가기 전, 실제 값으로 위 두 템플릿을 채운 문서 한 편을 남길 것.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-100.py">docs/code/algorithms/algorithms-100.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick one decision from your own stack that was actually debated, write one ADR for it, then write one threat model for the same component covering assets, trust boundaries, attacker capabilities, mitigations, and residual risk.</p>
+      <h2>Practical Connection</h2>
+      <p>In a prediction market, trust assumptions concentrate around finalizing the oracle's result and settlement authority, so spelling out in a threat model who can change a result and under what conditions a dispute is possible makes both design discussions and audits much easier.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>[Final] 내 스택의 ADR + 위협 모델 한 편 쓰기 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 100 / 100 &middot; G. AI 엔지니어링 (Day 97–100)</p>
 
@@ -115,7 +197,50 @@
       <p>ADR(Architecture Decision Record)은 하나의 아키텍처 결정을 맥락, 검토한 대안, 선택과 근거, 그리고 그로 인한 결과와 감수한 트레이드오프로 짧게 기록하는 문서이며, 이런 기록을 시간순으로 누적해 시스템이 왜 지금 모습인지를 보존한다. 위협 모델은 보호해야 할 자산과 신뢰 경계를 그린 뒤, 각 경계에서 공격자가 무엇을 할 수 있고 무엇을 노리는지 열거하고 대응책과 남는 잔여 위험까지 명시하는 문서다. 두 문서의 공통점은 결론만이 아니라 전제와 대안을 남긴다는 점이고, 덕분에 전제가 바뀌면 그 결정을 다시 봐야 한다는 신호가 자동으로 생긴다. 형식보다 중요한 것은 범위를 결정 하나, 시스템 하나로 좁혀 실제로 끝까지 읽히는 분량을 유지하는 것이다.</p>
       <p>기록되지 않은 결정은 몇 달 뒤 이유 없는 제약으로 취급되어 조용히 뒤집히고, 그때 그 결정이 막고 있던 위협도 함께 되살아난다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># [Final] 내 스택의 ADR + 위협 모델 한 편 쓰기 — 코드 대신, 채워 넣기만 하면 되는
+# ADR/위협 모델 템플릿을 구조화된 형태로 출력한다 (범위: 결정 하나, 시스템 하나로 좁힐 것).
+
+ADR_TEMPLATE = {
+    &quot;title&quot;: &quot;결정 제목 (예: '오라클 결과 확정 방식으로 낙관적 제안+이의제기 채택')&quot;,
+    &quot;context&quot;: &quot;왜 이 결정이 필요했는가 — 제약, 요구사항, 지금 상태&quot;,
+    &quot;alternatives&quot;: [&quot;검토한 대안 1과 기각 이유&quot;, &quot;검토한 대안 2와 기각 이유&quot;],
+    &quot;decision&quot;: &quot;실제 선택과 그 근거&quot;,
+    &quot;consequences&quot;: &quot;이 결정으로 생기는 결과와 감수하는 트레이드오프&quot;,
+}
+
+THREAT_MODEL_TEMPLATE = {
+    &quot;asset&quot;: &quot;보호해야 할 자산 (예: 사용자 예치금, 오라클 결과값, 개인키)&quot;,
+    &quot;trust_boundary&quot;: &quot;신뢰 경계가 어디인가 (예: 온체인 vs 오프체인, 컨트랙트 vs 오퍼레이터)&quot;,
+    &quot;attacker_capability&quot;: &quot;각 경계에서 공격자가 할 수 있는 것 (예: 트랜잭션 순서 조작, 오라클 값 지연)&quot;,
+    &quot;mitigation&quot;: &quot;대응책 (예: 이의제기 기간, 다중서명, 타임락)&quot;,
+    &quot;residual_risk&quot;: &quot;대응 후에도 남는 위험과, 그 위험을 누가 감수하는가&quot;,
+}
+
+def print_section(title, template):
+    print(f&quot;\n== {title} ==&quot;)
+    for key, value in template.items():
+        if isinstance(value, list):
+            print(f&quot;- {key}:&quot;)
+            for item in value:
+                print(f&quot;    · {item}&quot;)
+        else:
+            print(f&quot;- {key}: {value}&quot;)
+
+def check_completed(template):
+    # 빈 칸(placeholder 그대로) 없이 실제로 채워졌는지 확인하는 게이트
+    missing = [k for k, v in template.items() if not v]
+    return len(missing) == 0, missing
+
+print_section(&quot;ADR 템플릿&quot;, ADR_TEMPLATE)
+print_section(&quot;위협 모델 템플릿&quot;, THREAT_MODEL_TEMPLATE)
+
+adr_ok, adr_missing = check_completed(ADR_TEMPLATE)
+tm_ok, tm_missing = check_completed(THREAT_MODEL_TEMPLATE)
+print(f&quot;\nADR 작성 완료 게이트 통과: {adr_ok} (누락: {adr_missing})&quot;)
+print(f&quot;위협 모델 작성 완료 게이트 통과: {tm_ok} (누락: {tm_missing})&quot;)
+print(&quot;\n다음 100일 사이클로 넘어가기 전, 실제 값으로 위 두 템플릿을 채운 문서 한 편을 남길 것.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-100.py">docs/code/algorithms/algorithms-100.py</a></p>
       <h2>연습</h2>
       <p>자기 스택에서 논쟁이 있었던 결정 하나를 골라 ADR 한 장을 쓰고, 같은 컴포넌트에 대해 자산·신뢰 경계·공격자 능력·대응책·잔여 위험을 담은 위협 모델 한 장을 이어서 작성하라.</p>
       <h2>실무 · Verex 연결</h2>

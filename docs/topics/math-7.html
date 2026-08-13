@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 7 — Big-O &amp; 가스</title>
+<title>Day 7 — Big-O and Gas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,102 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 7</p>
   <article>
+      <h1>Big-O and Gas <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 7 / 52 &middot; July — Discrete Math &amp; Logic (Day 3-10)</p>
+      <h2>Concept</h2>
+      <p>Big-O is an asymptotic upper bound describing how resource usage grows, within a constant factor, as input size grows — by definition it ignores constant multipliers and lower-order terms. Gas is the cost unit assigned to each operation in the EVM, and because transactions and blocks have gas limits, it means &quot;the price tag of finite computation.&quot; The decisive difference between the two concepts is that gas is a concrete price list that includes the constants, so operations with large constants — like storage writes or hashing — can dominate total cost even in the small-n regime. Conversely, an O(n) loop over an entire array becomes a DoS vector if an attacker can grow n, since it eventually hits the block gas limit and the function becomes permanently unexecutable. So on-chain cost analysis has to look at both asymptotic order and per-operation constants, and always ask which inputs are under attacker control.</p>
+      <p>In on-chain code, slow code doesn't just run slowly — it can simply fail to execute at all and lock up funds. An array loop that can grow without bound is a real, documented vulnerability class.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Big-O &amp; 가스 — &quot;점근 차수&quot;와 &quot;연산별 상수&quot;는 다르다는 걸 O(n) vs O(1) 조회 비교로 보여준다.
+# 참여자 목록을 루프로 순회(O(n))하는 정산과, 매핑으로 바로 조회(O(1))하는 정산을 비교.
+
+import time
+
+GAS_PER_ITER = 3       # 루프 한 바퀴 도는 데 드는 가스(단순화한 상수)
+GAS_PER_LOOKUP = 5      # 매핑(dict) 조회 1회 가스
+
+def settle_by_scan(balances: list, target_id: int) -&gt; int:
+    # O(n): 참여자 수만큼 전부 훑어야 target 을 찾는다 — 공격자가 n 을 키우면 가스가 비례 증가.
+    gas = 0
+    for pid, bal in balances:
+        gas += GAS_PER_ITER
+        if pid == target_id:
+            return gas
+    return gas
+
+def settle_by_map(balance_map: dict, target_id: int) -&gt; int:
+    # O(1): n 과 무관하게 상수 가스.
+    _ = balance_map[target_id]
+    return GAS_PER_LOOKUP
+
+for n in (10, 100, 1_000, 10_000, 100_000):
+    balances = [(i, 100) for i in range(n)]
+    balance_map = dict(balances)
+    target = n - 1   # 최악의 경우: 리스트 맨 끝
+
+    gas_scan = settle_by_scan(balances, target)
+    gas_map = settle_by_map(balance_map, target)
+    print(f&quot;n={n:&gt;7}  scan(O(n)) gas={gas_scan:&gt;7}  map(O(1)) gas={gas_map}&quot;)
+
+BLOCK_GAS_LIMIT = 30_000_000
+n_at_limit = BLOCK_GAS_LIMIT // GAS_PER_ITER
+print(f&quot;\n블록 가스 한도 {BLOCK_GAS_LIMIT:,} 기준, scan 방식은 참여자 수가 약 {n_at_limit:,} 명을&quot;)
+print(&quot;넘으면 트랜잭션 하나로 정산이 아예 불가능해진다 — O(1) map 방식은 n 과 무관하게 안전.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-7.py">docs/code/math/math-7.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement the same logic once as an O(n) array scan and once as an O(1) mapping lookup, measure gas as element count grows, and find roughly where n hits the block gas limit.</p>
+      <h2>Practical Connection</h2>
+      <p>If Verex settles by looping over a list of market participants or open orders, the settlement transaction starts failing as participants grow, so it needs to move to a constant-cost design like pull-based claims.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>Big-O &amp; 가스 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 7 / 51 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
+      <p class="meta">Math &middot; Day 7 / 52 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
       <p class="lead">&quot;가스=유한 계산의 가격&quot; 직관</p>
       <h2>개념</h2>
       <p>Big-O는 입력 크기가 커질 때 자원 사용량이 어떤 함수의 상수배 이내로 증가하는지를 나타내는 점근적 상한이며, 정의상 상수 배수와 낮은 차수 항을 무시한다. 가스는 EVM에서 각 연산에 매겨진 비용 단위이고, 트랜잭션과 블록에 가스 한도가 있어 유한한 계산량만 허용된다는 뜻에서 '유한 계산의 가격표'다. 두 개념의 결정적 차이는 가스가 상수까지 포함한 구체적 가격표라는 점이며, 그래서 스토리지 쓰기나 해시처럼 상수가 큰 연산이 n이 작은 구간에서도 전체 비용을 지배한다. 반대로 배열 전체를 도는 O(n) 루프는 n을 공격자가 키울 수 있으면 블록 가스 한도에 걸려 함수가 영구히 실행 불가능해지는 DoS 벡터가 된다. 따라서 온체인 비용 분석은 '점근 차수'와 '연산별 상수'를 함께 봐야 하고, 어느 입력이 공격자 통제 하에 있는지를 반드시 함께 따져야 한다.</p>
       <p>온체인 코드에서는 느린 코드가 그냥 느린 게 아니라 아예 실행되지 않고 자금을 묶어 버릴 수 있다. 무한정 길어질 수 있는 배열 순회는 실제 취약점 유형이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Big-O &amp; 가스 — &quot;점근 차수&quot;와 &quot;연산별 상수&quot;는 다르다는 걸 O(n) vs O(1) 조회 비교로 보여준다.
+# 참여자 목록을 루프로 순회(O(n))하는 정산과, 매핑으로 바로 조회(O(1))하는 정산을 비교.
+
+import time
+
+GAS_PER_ITER = 3       # 루프 한 바퀴 도는 데 드는 가스(단순화한 상수)
+GAS_PER_LOOKUP = 5      # 매핑(dict) 조회 1회 가스
+
+def settle_by_scan(balances: list, target_id: int) -&gt; int:
+    # O(n): 참여자 수만큼 전부 훑어야 target 을 찾는다 — 공격자가 n 을 키우면 가스가 비례 증가.
+    gas = 0
+    for pid, bal in balances:
+        gas += GAS_PER_ITER
+        if pid == target_id:
+            return gas
+    return gas
+
+def settle_by_map(balance_map: dict, target_id: int) -&gt; int:
+    # O(1): n 과 무관하게 상수 가스.
+    _ = balance_map[target_id]
+    return GAS_PER_LOOKUP
+
+for n in (10, 100, 1_000, 10_000, 100_000):
+    balances = [(i, 100) for i in range(n)]
+    balance_map = dict(balances)
+    target = n - 1   # 최악의 경우: 리스트 맨 끝
+
+    gas_scan = settle_by_scan(balances, target)
+    gas_map = settle_by_map(balance_map, target)
+    print(f&quot;n={n:&gt;7}  scan(O(n)) gas={gas_scan:&gt;7}  map(O(1)) gas={gas_map}&quot;)
+
+BLOCK_GAS_LIMIT = 30_000_000
+n_at_limit = BLOCK_GAS_LIMIT // GAS_PER_ITER
+print(f&quot;\n블록 가스 한도 {BLOCK_GAS_LIMIT:,} 기준, scan 방식은 참여자 수가 약 {n_at_limit:,} 명을&quot;)
+print(&quot;넘으면 트랜잭션 하나로 정산이 아예 불가능해진다 — O(1) map 방식은 n 과 무관하게 안전.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-7.py">docs/code/math/math-7.py</a></p>
       <h2>연습</h2>
       <p>같은 로직을 배열 순회 O(n)과 매핑 조회 O(1)로 두 벌 구현해 원소 수를 늘려 가며 가스를 측정하고, 블록 가스 한도에 걸리는 n이 어디쯤인지 찾아보라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 42 — 상관관계와 공적분(가볍게)</title>
+<title>Day 42 — Markov Chains (Concept)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,21 +131,143 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 42</p>
   <article>
-      <h1>상관관계와 공적분(가볍게) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 42 / 51 &middot; 11월 — 확률·통계·금융수학 (Day 35–42)</p>
+      <h1>Markov Chains (Concept) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 42 / 52 &middot; November — Probability, Statistics &amp; Financial Math (Day 35-43)</p>
+      <h2>Concept</h2>
+      <p>A Markov chain is a random process in which the distribution of the next state depends only on the current state, not on the path that led there. In the finite case it's fully described by a transition probability matrix P, and the distribution after n steps is the initial distribution multiplied by P raised to the n-th power. A stationary distribution is one that reproduces itself; if the chain is irreducible and aperiodic, the stationary distribution is unique and the chain converges to it regardless of the starting state. The rate of convergence is related to the magnitude of P's second-largest eigenvalue — this is the notion of mixing time. For chains with absorbing states, the quantities of interest are absorption probabilities and expected hitting times rather than a stationary distribution.</p>
+      <p>It lets you compute the long-run behavior of systems where &quot;the next state is determined by the current state&quot; — queue lengths, retry states, node synchronization stages — without simulation.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 마르코프 체인(개념) — 전이행렬의 거듭제곱 vs 정상분포(선형방정식) 비교
+# 행 i, 열 j = &quot;상태 i에서 상태 j로 갈 확률&quot; 관례(행 합=1). 분포는 행벡터로 다룬다:
+# dist_next[j] = sum_i dist[i] * P[i][j]
+
+def step(dist, P):
+    n = len(dist)
+    return [sum(dist[i] * P[i][j] for i in range(n)) for j in range(n)]
+
+# 상태: 0=pending, 1=included, 2=dropped (흡수상태가 있는 체인)
+P = [
+    [0.6, 0.3, 0.1],
+    [0.0, 1.0, 0.0],
+    [0.0, 0.0, 1.0],
+]
+
+dist = [1.0, 0.0, 0.0]  # 전부 pending에서 시작
+for t in range(1, 21):
+    dist = step(dist, P)
+    if t in (1, 2, 5, 10, 20):
+        print(f&quot;step={t:2}  분포(pending,included,dropped)={[round(x, 4) for x in dist]}&quot;)
+print(&quot;-&gt; 흡수상태(included/dropped)가 있으면 정상분포는 자명(전부 흡수)해진다.\n&quot;)
+
+# 흡수상태가 없는 기약·비주기(순환) 체인에서는 유일한 정상분포로 수렴한다
+Q = [
+    [0.5, 0.3, 0.2],
+    [0.2, 0.5, 0.3],
+    [0.3, 0.2, 0.5],
+]
+
+dist2 = [1.0, 0.0, 0.0]
+for _ in range(200):
+    dist2 = step(dist2, Q)
+print(&quot;Q를 200번 거듭제곱해 근사한 정상분포:&quot;, [round(x, 6) for x in dist2])
+
+# 정상분포는 pi = pi*Q, 즉 pi*(Q - I) = 0 을 만족하는 (좌)고유벡터다.
+# (Q^T - I)^T pi^T = 0 형태의 3x3 선형시스템을 세우고 정규화 조건으로 한 식을 교체해 가우스 소거로 검증
+n = 3
+A = [[Q[j][i] - (1.0 if i == j else 0.0) for j in range(n)] for i in range(n)]  # A @ pi = 0  &lt;=&gt;  pi*Q = pi
+A[-1] = [1.0, 1.0, 1.0]  # 정규화 행(합=1)으로 교체
+b = [0.0, 0.0, 1.0]
+
+M = [row[:] + [b[i]] for i, row in enumerate(A)]
+for col in range(n):
+    piv = max(range(col, n), key=lambda r: abs(M[r][col]))
+    M[col], M[piv] = M[piv], M[col]
+    for r in range(n):
+        if r != col:
+            factor = M[r][col] / M[col][col]
+            M[r] = [M[r][k] - factor * M[col][k] for k in range(n + 1)]
+pi = [M[i][-1] / M[i][i] for i in range(n)]
+print(&quot;선형방정식(고유벡터)으로 구한 정상분포 pi:&quot;, [round(x, 6) for x in pi])
+print(&quot;일치 여부:&quot;, all(abs(a - b) &lt; 1e-4 for a, b in zip(dist2, pi)))
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-42.py">docs/code/math/math-42.py</a></p>
+      <h2>Exercise</h2>
+      <p>Build a transition matrix for three or four states, and check whether the distribution obtained by matrix powers matches the stationary distribution obtained from eigenvectors, and how many steps it takes to converge.</p>
+      <h2>Practical Connection</h2>
+      <p>Modeling block finalization, reorg-depth distributions, or the stages a transaction goes through before being included in the mempool as state transitions lets you approximate the expected value and tail of waiting times.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1>마르코프 체인(개념) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 42 / 52 &middot; 11월 — 확률·통계·금융수학 (Day 35–43)</p>
 
       <h2>개념</h2>
-      <p>상관계수는 두 변수의 선형 동조 정도를 -1과 1 사이로 표준화한 값이며, 인과를 뜻하지 않고 비선형 관계도 제대로 잡지 못한다. 시계열에서는 두 계열이 각각 추세를 가질 경우 실제 관계가 없어도 상관과 회귀 계수가 크게 나오는 허위 회귀 문제가 생기므로, 수준(level)끼리의 상관은 그대로 믿기 어렵다. 공적분은 각 계열은 비정상(단위근을 가짐)이지만 둘의 어떤 선형결합은 정상이 되어 평균으로 회귀하는 관계를 말하며, 이는 두 계열 사이에 장기 균형이 존재한다는 진술이다. 실무 절차는 각 계열의 단위근을 검정하고, 공적분 관계를 추정한 뒤 그 잔차가 정상인지 검정하는 순서이며, 공적분이 성립하면 오차수정모형으로 단기 이탈이 균형으로 되돌아가는 속도를 모델링한다. 요약하면 상관은 동시적 움직임에 대한 진술이고 공적분은 장기 관계에 대한 진술이다.</p>
-      <p>페어 트레이딩, 헤지 비율 산정, 스테이블코인이나 LST의 페그 이탈 분석은 모두 두 계열의 수준이 장기적으로 붙어 있는지를 묻는 질문이라 상관이 아니라 공적분의 영역이다.</p>
+      <p>마르코프 체인은 다음 상태의 확률분포가 현재 상태에만 의존하고 그 이전 경로에는 의존하지 않는 확률 과정이다. 유한 상태에서는 전이확률 행렬 P로 전부 기술되고, n단계 후 분포는 초기 분포에 P의 n제곱을 곱한 것이 된다. 정상분포는 자기 자신을 다시 만들어 내는 분포로, 체인이 기약(irreducible)이고 비주기적(aperiodic)이면 정상분포가 유일하고 초기 상태와 무관하게 그 분포로 수렴한다. 수렴 속도는 P의 두 번째로 큰 고유값 크기와 관련되며, 이것이 혼합 시간의 개념이다. 흡수 상태가 있는 체인에서는 정상분포 대신 흡수 확률과 기대 도달 시간이 관심 대상이 된다.</p>
+      <p>대기열 길이, 재시도 상태, 노드 동기화 단계처럼 &quot;현재 상태에서 다음이 결정되는&quot; 시스템의 장기 거동을 시뮬레이션 없이 계산할 수 있게 해 준다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 마르코프 체인(개념) — 전이행렬의 거듭제곱 vs 정상분포(선형방정식) 비교
+# 행 i, 열 j = &quot;상태 i에서 상태 j로 갈 확률&quot; 관례(행 합=1). 분포는 행벡터로 다룬다:
+# dist_next[j] = sum_i dist[i] * P[i][j]
+
+def step(dist, P):
+    n = len(dist)
+    return [sum(dist[i] * P[i][j] for i in range(n)) for j in range(n)]
+
+# 상태: 0=pending, 1=included, 2=dropped (흡수상태가 있는 체인)
+P = [
+    [0.6, 0.3, 0.1],
+    [0.0, 1.0, 0.0],
+    [0.0, 0.0, 1.0],
+]
+
+dist = [1.0, 0.0, 0.0]  # 전부 pending에서 시작
+for t in range(1, 21):
+    dist = step(dist, P)
+    if t in (1, 2, 5, 10, 20):
+        print(f&quot;step={t:2}  분포(pending,included,dropped)={[round(x, 4) for x in dist]}&quot;)
+print(&quot;-&gt; 흡수상태(included/dropped)가 있으면 정상분포는 자명(전부 흡수)해진다.\n&quot;)
+
+# 흡수상태가 없는 기약·비주기(순환) 체인에서는 유일한 정상분포로 수렴한다
+Q = [
+    [0.5, 0.3, 0.2],
+    [0.2, 0.5, 0.3],
+    [0.3, 0.2, 0.5],
+]
+
+dist2 = [1.0, 0.0, 0.0]
+for _ in range(200):
+    dist2 = step(dist2, Q)
+print(&quot;Q를 200번 거듭제곱해 근사한 정상분포:&quot;, [round(x, 6) for x in dist2])
+
+# 정상분포는 pi = pi*Q, 즉 pi*(Q - I) = 0 을 만족하는 (좌)고유벡터다.
+# (Q^T - I)^T pi^T = 0 형태의 3x3 선형시스템을 세우고 정규화 조건으로 한 식을 교체해 가우스 소거로 검증
+n = 3
+A = [[Q[j][i] - (1.0 if i == j else 0.0) for j in range(n)] for i in range(n)]  # A @ pi = 0  &lt;=&gt;  pi*Q = pi
+A[-1] = [1.0, 1.0, 1.0]  # 정규화 행(합=1)으로 교체
+b = [0.0, 0.0, 1.0]
+
+M = [row[:] + [b[i]] for i, row in enumerate(A)]
+for col in range(n):
+    piv = max(range(col, n), key=lambda r: abs(M[r][col]))
+    M[col], M[piv] = M[piv], M[col]
+    for r in range(n):
+        if r != col:
+            factor = M[r][col] / M[col][col]
+            M[r] = [M[r][k] - factor * M[col][k] for k in range(n + 1)]
+pi = [M[i][-1] / M[i][i] for i in range(n)]
+print(&quot;선형방정식(고유벡터)으로 구한 정상분포 pi:&quot;, [round(x, 6) for x in pi])
+print(&quot;일치 여부:&quot;, all(abs(a - b) &lt; 1e-4 for a, b in zip(dist2, pi)))
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-42.py">docs/code/math/math-42.py</a></p>
       <h2>연습</h2>
-      <p>두 자산의 가격 시계열을 받아 로그 가격 수준의 상관과 로그 수익률의 상관을 각각 계산해 값이 얼마나 다른지 비교하고, 두 계열의 스프레드가 평균으로 회귀하는지 그려 확인하라.</p>
+      <p>상태 서너 개짜리 전이 행렬을 하나 만들고, 행렬 거듭제곱으로 얻은 분포와 고유벡터로 구한 정상분포가 일치하는지 그리고 몇 단계 만에 근접하는지 확인해 보기.</p>
       <h2>실무 · Verex 연결</h2>
-      <p>같은 사건을 다루는 서로 다른 마켓이나 상보적 아웃컴 토큰의 가격은 장기적으로 묶여 있어야 하므로, 스프레드가 평균 회귀하지 않는다면 유동성 부족이나 정산 조건 차이를 의심할 근거가 된다.</p>
+      <p>블록 확정 과정이나 재조직 깊이 분포, 트랜잭션이 대기풀에서 포함되기까지의 단계를 상태 전이로 모델링하면, 대기 시간의 기대값과 꼬리를 근사할 수 있다.</p>
       <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
     </article>
-  <div class="pager"><a href="math-41.html">&larr; 41. 마르코프 체인(개념)</a><a href="math-43.html">43. 정수론·모듈러 산술 &rarr;</a></div>
+  <div class="pager"><a href="math-41.html">&larr; 41. LMSR/마켓 스코어링(Verex 연결)</a><a href="math-43.html">43. 상관관계와 공적분(가볍게) &rarr;</a></div>
 </div>
 </body>
 </html>

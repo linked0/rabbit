@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 18 — 벡터·행렬·행렬곱·역행렬</title>
+<title>Day 18 — Vectors, Matrices, Matrix Multiplication, Inverse Matrices</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,92 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 18</p>
   <article>
+      <h1>Vectors, Matrices, Matrix Multiplication, Inverse Matrices <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 18 / 52 &middot; September — Linear Algebra (Day 18-26)</p>
+      <h2>Concept</h2>
+      <p>A vector is an element expressed in coordinates, and a matrix is a linear transformation written in coordinates with respect to a basis. Matrix multiplication is composition of transformations, so it's associative but generally not commutative; for an (m×n) matrix times an (n×p) matrix, the inner dimensions must match, and the naive computation cost is O(mnp). An inverse exists only for a square matrix that is invertible, which is equivalent to having a nonzero determinant — equivalently, to the columns being linearly independent. When solving a linear system Ax=b in actual numerical computation, it's faster and more stable to solve it directly via a method like LU decomposition rather than explicitly computing the inverse. For matrices with a large condition number, small input errors get amplified significantly in the solution.</p>
+      <p>If you can't read linear algebra notation, you effectively can't read optimization, statistics, or cryptography material at all — and overusing matrix inversion means blindly trusting numerically unstable results.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 벡터·행렬·행렬곱·역행렬 — numpy로 기본 연산과, AB != BA(비교환성), A@A^-1=I 를 확인한다.
+
+import numpy as np
+
+A = np.array([[1.0, 2.0], [3.0, 4.0]])
+B = np.array([[0.0, 1.0], [1.0, 0.0]])
+v = np.array([1.0, 2.0])
+
+print(&quot;A =\n&quot;, A)
+print(&quot;A @ v (선형변환으로서의 행렬-벡터곱) =&quot;, A @ v)
+
+AB = A @ B
+BA = B @ A
+print(&quot;\nA@B =\n&quot;, AB)
+print(&quot;B@A =\n&quot;, BA)
+commute = np.allclose(AB, BA)
+print(f&quot;A@B == B@A ? {commute} → 이 예처럼 행렬곱은 일반적으로 교환법칙이 성립하지 않는다&quot;)
+
+det_A = np.linalg.det(A)
+print(f&quot;\ndet(A) = {det_A:.4f} (0이 아니므로 A는 가역)&quot;)
+
+A_inv = np.linalg.inv(A)
+identity_check = A @ A_inv
+print(&quot;A @ A_inv =\n&quot;, np.round(identity_check, 10), &quot;→ 단위행렬 I 확인&quot;)
+
+# Ax = b 를 풀 때는 명시적 역행렬보다 solve()가 수치적으로 더 안정적이고 빠르다
+b = np.array([5.0, 10.0])
+x_via_solve = np.linalg.solve(A, b)
+x_via_inv = A_inv @ b
+print(f&quot;\nAx=b 해: solve()={x_via_solve}, inv()@b={x_via_inv} (둘 다 일치, solve가 권장 방식)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-18.py">docs/code/math/math-18.py</a></p>
+      <h2>Exercise</h2>
+      <p>Compute the product and inverse of a 2x2 and a 3x3 matrix by hand and check them against NumPy's output, then experiment with how much the error in the computed inverse grows for matrices with a large condition number.</p>
+      <h2>Practical Connection</h2>
+      <p>This is used directly in state-transition probability matrices, parameter estimation via regression, and market-maker parameter calibration; linear algebra over finite fields is also fundamental to cryptography and erasure-code implementations.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>벡터·행렬·행렬곱·역행렬 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 18 / 51 &middot; 9월 — 선형대수 (Day 18–26)</p>
+      <p class="meta">Math &middot; Day 18 / 52 &middot; 9월 — 선형대수 (Day 18–26)</p>
 
       <h2>개념</h2>
       <p>벡터는 좌표로 표현된 원소이고 행렬은 선형변환을 기저에 대해 좌표로 적은 것이다. 행렬곱은 변환의 합성이므로 결합법칙은 성립하지만 교환법칙은 일반적으로 성립하지 않으며, (m×n)과 (n×p)처럼 안쪽 차원이 맞아야 정의되고 순진한 계산 비용은 O(mnp)다. 역행렬은 정사각행렬이 가역일 때만 존재하고, 이는 행렬식이 0이 아니라는 것, 즉 열벡터들이 선형독립이라는 것과 동치다. 선형계 Ax=b를 풀 때 실제 수치계산에서는 역행렬을 명시적으로 구하기보다 LU 분해 같은 방법으로 바로 푸는 편이 빠르고 안정적이다. 조건수가 큰 행렬에서는 작은 입력 오차가 해에서 크게 증폭된다.</p>
       <p>선형대수 표기를 못 읽으면 최적화·통계·암호학 문서를 통째로 못 읽고, 역행렬을 남용하면 수치적으로 불안정한 결과를 그대로 신뢰하게 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 벡터·행렬·행렬곱·역행렬 — numpy로 기본 연산과, AB != BA(비교환성), A@A^-1=I 를 확인한다.
+
+import numpy as np
+
+A = np.array([[1.0, 2.0], [3.0, 4.0]])
+B = np.array([[0.0, 1.0], [1.0, 0.0]])
+v = np.array([1.0, 2.0])
+
+print(&quot;A =\n&quot;, A)
+print(&quot;A @ v (선형변환으로서의 행렬-벡터곱) =&quot;, A @ v)
+
+AB = A @ B
+BA = B @ A
+print(&quot;\nA@B =\n&quot;, AB)
+print(&quot;B@A =\n&quot;, BA)
+commute = np.allclose(AB, BA)
+print(f&quot;A@B == B@A ? {commute} → 이 예처럼 행렬곱은 일반적으로 교환법칙이 성립하지 않는다&quot;)
+
+det_A = np.linalg.det(A)
+print(f&quot;\ndet(A) = {det_A:.4f} (0이 아니므로 A는 가역)&quot;)
+
+A_inv = np.linalg.inv(A)
+identity_check = A @ A_inv
+print(&quot;A @ A_inv =\n&quot;, np.round(identity_check, 10), &quot;→ 단위행렬 I 확인&quot;)
+
+# Ax = b 를 풀 때는 명시적 역행렬보다 solve()가 수치적으로 더 안정적이고 빠르다
+b = np.array([5.0, 10.0])
+x_via_solve = np.linalg.solve(A, b)
+x_via_inv = A_inv @ b
+print(f&quot;\nAx=b 해: solve()={x_via_solve}, inv()@b={x_via_inv} (둘 다 일치, solve가 권장 방식)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-18.py">docs/code/math/math-18.py</a></p>
       <h2>연습</h2>
       <p>2×2와 3×3 행렬의 곱과 역행렬을 손으로 계산해 NumPy 결과와 대조하고, 조건수가 큰 행렬에서 역행렬 계산 오차가 얼마나 커지는지 실험하라.</p>
       <h2>실무 · Verex 연결</h2>

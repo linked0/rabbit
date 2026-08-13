@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 52 — 일관성 모델 지도</title>
+<title>Day 52 — A Map of Consistency Models — Linearizable, Serializable, Causal, Eventual</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,82 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 52</p>
   <article>
+      <h1>A Map of Consistency Models — Linearizable, Serializable, Causal, Eventual <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 52 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>A consistency model is a contract for how much reordering a system allows under concurrent access. Linearizability requires that each individual operation on a single object appear to take effect atomically at some point between its call and its response, in an order that respects real time. Serializability is a property of multi-object transactions: the result of concurrent execution just has to match some sequential execution — it doesn't require respecting real-time order. Causal consistency guarantees ordering only for writes that causally precede one another; concurrent writes may be seen in different orders on different nodes. Eventual consistency promises only that replicas converge at some point once updates stop arriving. Strict serializability, combining the two strongest properties, is the strongest of all — and the stronger the guarantee, the higher the cost in availability and latency, making this fundamentally a CAP/PACELC trade-off.</p>
+      <p>Bugs of the form &quot;I read right after I wrote, but the value isn't there&quot; usually come from a system actually being weaker than the model people assumed it guaranteed; choosing an unnecessarily strong model, conversely, just wastes latency and cost for nothing.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 일관성 모델 지도 — 선형화(linearizable) 읽기와 최종 일관성(eventual) 읽기를 토이 복제 카운터로 비교.
+# 선형화는 항상 최신 쓰기를 즉시 보고, 최종 일관성은 복제 지연 동안 stale read가 가능하다.
+
+import random
+
+random.seed(2)
+
+class LinearizableCounter:
+    &quot;&quot;&quot;단일 리더에게만 쓰고 읽는다 -&gt; 항상 최신 값 (선형화 가능)&quot;&quot;&quot;
+    def __init__(self):
+        self.value = 0
+
+    def write(self, delta):
+        self.value += delta
+
+    def read(self):
+        return self.value
+
+class EventuallyConsistentCounter:
+    &quot;&quot;&quot;리더에 쓰고, 복제본은 비동기로 지연 복제 -&gt; replica read는 stale할 수 있다&quot;&quot;&quot;
+    def __init__(self, replication_lag=2):
+        self.leader_value = 0
+        self.replica_value = 0
+        self.pending = []  # (도착까지 남은 tick, delta)
+        self.replication_lag = replication_lag
+
+    def write(self, delta):
+        self.leader_value += delta
+        self.pending.append([self.replication_lag, delta])
+
+    def tick(self):
+        &quot;&quot;&quot;시간 한 틱 진행: 복제 지연이 다 된 갱신을 replica에 반영&quot;&quot;&quot;
+        still_pending = []
+        for entry in self.pending:
+            entry[0] -= 1
+            if entry[0] &lt;= 0:
+                self.replica_value += entry[1]
+            else:
+                still_pending.append(entry)
+        self.pending = still_pending
+
+    def read_from_replica(self):
+        return self.replica_value
+
+lin = LinearizableCounter()
+ec = EventuallyConsistentCounter(replication_lag=2)
+
+lin.write(+1)
+ec.write(+1)
+
+print(&quot;write-then-read 직후:&quot;)
+print(f&quot;  linearizable read  = {lin.read()}   (항상 최신)&quot;)
+print(f&quot;  eventual read      = {ec.read_from_replica()}   (아직 복제 안 됨 -&gt; stale)&quot;)
+
+for t in range(1, 3):
+    ec.tick()
+    print(f&quot;  tick {t} 후 eventual read = {ec.read_from_replica()}&quot;)
+
+print(&quot;\n결론: 최종 일관성은 갱신이 멈추면 언젠가 수렴하지만, 그 사이엔 stale read를 감수해야 한다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-52.py">docs/code/algorithms/algorithms-52.py</a></p>
+      <h2>Exercise</h2>
+      <p>Reproduce a stale read for real by running a write-then-read scenario against a read replica with replication lag, then fix it to get read-your-writes via session pinning or reading from the leader.</p>
+      <h2>Practical Connection</h2>
+      <p>A blockchain's finalized chain effectively provides a global linearizable order, but pre-finality reorganization is possible, so an indexer or off-chain order book should treat pre-finality state as only eventually consistent and reflect it in settlement only after finality.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>일관성 모델 지도 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 52 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
       <p class="lead">선형화·직렬성·인과·최종</p>
@@ -115,7 +214,67 @@
       <p>일관성 모델은 동시 접근이 있을 때 시스템이 어떤 실행 순서까지 허용하는지를 정하는 계약이다. 선형화 가능성(linearizability)은 단일 객체에 대한 개별 연산이, 각자의 호출과 응답 사이 어느 시점에 원자적으로 일어난 것처럼 보이고 그 순서가 실시간 순서를 존중할 것을 요구한다. 직렬성(serializability)은 다중 객체 트랜잭션에 대한 성질로, 동시 실행 결과가 어떤 순차 실행과 같기만 하면 되고 실시간 순서는 요구하지 않는다. 인과 일관성(causal)은 인과적으로 선행하는 쓰기들만 순서를 보장하고 동시(concurrent) 쓰기는 노드마다 다른 순서로 봐도 되며, 최종 일관성(eventual)은 새 갱신이 멈추면 언젠가 복제본이 수렴한다는 것만 약속한다. 둘을 합친 strict serializability가 가장 강하고, 강해질수록 가용성과 지연 비용이 커지므로 CAP/PACELC 관점의 선택이 된다.</p>
       <p>&quot;읽었는데 방금 쓴 값이 없다&quot; 류의 버그는 대개 시스템이 약속한 모델을 실제보다 강하게 가정한 결과이고, 반대로 필요 이상으로 강한 모델을 고르면 지연과 비용을 그냥 낭비한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 일관성 모델 지도 — 선형화(linearizable) 읽기와 최종 일관성(eventual) 읽기를 토이 복제 카운터로 비교.
+# 선형화는 항상 최신 쓰기를 즉시 보고, 최종 일관성은 복제 지연 동안 stale read가 가능하다.
+
+import random
+
+random.seed(2)
+
+class LinearizableCounter:
+    &quot;&quot;&quot;단일 리더에게만 쓰고 읽는다 -&gt; 항상 최신 값 (선형화 가능)&quot;&quot;&quot;
+    def __init__(self):
+        self.value = 0
+
+    def write(self, delta):
+        self.value += delta
+
+    def read(self):
+        return self.value
+
+class EventuallyConsistentCounter:
+    &quot;&quot;&quot;리더에 쓰고, 복제본은 비동기로 지연 복제 -&gt; replica read는 stale할 수 있다&quot;&quot;&quot;
+    def __init__(self, replication_lag=2):
+        self.leader_value = 0
+        self.replica_value = 0
+        self.pending = []  # (도착까지 남은 tick, delta)
+        self.replication_lag = replication_lag
+
+    def write(self, delta):
+        self.leader_value += delta
+        self.pending.append([self.replication_lag, delta])
+
+    def tick(self):
+        &quot;&quot;&quot;시간 한 틱 진행: 복제 지연이 다 된 갱신을 replica에 반영&quot;&quot;&quot;
+        still_pending = []
+        for entry in self.pending:
+            entry[0] -= 1
+            if entry[0] &lt;= 0:
+                self.replica_value += entry[1]
+            else:
+                still_pending.append(entry)
+        self.pending = still_pending
+
+    def read_from_replica(self):
+        return self.replica_value
+
+lin = LinearizableCounter()
+ec = EventuallyConsistentCounter(replication_lag=2)
+
+lin.write(+1)
+ec.write(+1)
+
+print(&quot;write-then-read 직후:&quot;)
+print(f&quot;  linearizable read  = {lin.read()}   (항상 최신)&quot;)
+print(f&quot;  eventual read      = {ec.read_from_replica()}   (아직 복제 안 됨 -&gt; stale)&quot;)
+
+for t in range(1, 3):
+    ec.tick()
+    print(f&quot;  tick {t} 후 eventual read = {ec.read_from_replica()}&quot;)
+
+print(&quot;\n결론: 최종 일관성은 갱신이 멈추면 언젠가 수렴하지만, 그 사이엔 stale read를 감수해야 한다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-52.py">docs/code/algorithms/algorithms-52.py</a></p>
       <h2>연습</h2>
       <p>복제 지연이 있는 읽기 전용 레플리카에 write-then-read 시나리오를 걸어 stale read를 실제로 재현하고, read-your-writes를 세션 고정이나 리더 읽기로 고쳐 볼 것.</p>
       <h2>실무 · Verex 연결</h2>

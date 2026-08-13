@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 9 — 문자열 인덱스</title>
+<title>Day 9 — String Indexing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,49 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 9</p>
   <article>
+      <h1>String Indexing <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 9 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>A suffix array is an index that sorts all suffixes of a string lexicographically and stores just their starting positions in an array. Because it's sorted, an arbitrary pattern search can be done by binary search, and pairing it with an LCP array — the longest common prefix length between adjacent suffixes — lets you answer queries like repeated substrings or the count of distinct substrings in near-linear time. A suffix automaton (DAWG) encodes the same information as a state machine: it's the minimal deterministic automaton that recognizes every substring of the string, and its state count stays linear in the input length. An automaton can be built online, one character at a time, which makes it well suited to streaming, while a suffix array's compact memory footprint favors large static text. What both share at their core is turning &quot;scan for the pattern every time&quot; into &quot;preprocess the text once and answer queries in constant or logarithmic time.&quot;</p>
+      <p>When the text is fixed — logs, traces — but search happens over and over, a grep-style linear scan turns straight into a cost the moment the data grows.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 9: 문자열 인덱스 — 서픽스 배열로 부분 문자열 검색을 이분 탐색으로 처리
+# 모든 접미사를 정렬해 배열로 두면, 패턴 검색이 선형 스캔 대신 O(log n · m)에 끝난다.
+
+def build_suffix_array(text):
+    return sorted(range(len(text)), key=lambda i: text[i:])
+
+def search(text, sa, pattern):
+    lo, hi = 0, len(sa)
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if text[sa[mid]:sa[mid] + len(pattern)] &lt; pattern:
+            lo = mid + 1
+        else:
+            hi = mid
+    if lo == len(sa) or text[sa[lo]:sa[lo] + len(pattern)] != pattern:
+        return []
+    hits, i = [sa[lo]], lo + 1
+    while i &lt; len(sa) and text[sa[i]:sa[i] + len(pattern)] == pattern:
+        hits.append(sa[i]); i += 1
+    return sorted(hits)
+
+text = &quot;the quick brown fox jumps over the lazy dog the fox runs&quot;
+sa = build_suffix_array(text)
+print(&quot;서픽스 배열(앞 10개 시작 위치) =&quot;, sa[:10])
+for pattern in [&quot;fox&quot;, &quot;the&quot;, &quot;cat&quot;]:
+    print(f&quot;search('{pattern}') -&gt; 위치 {search(text, sa, pattern)}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-9.py">docs/code/algorithms/algorithms-9.py</a></p>
+      <h2>Exercise</h2>
+      <p>Build a suffix array plus LCP array for a 10MB log file, then run the same 1,000 substring queries via plain linear scan versus binary search over the suffix array, and compare the timings.</p>
+      <h2>Practical Connection</h2>
+      <p>When you're repeatedly searching node logs or transaction traces for a specific address, function selector, or event signature, building the index once is operationally far more stable than doing a full scan every time.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>문자열 인덱스 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 9 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">서픽스 배열·오토마톤 (로그·트레이스 검색)</p>
@@ -115,7 +181,34 @@
       <p>서픽스 배열은 문자열의 모든 접미사를 사전순으로 정렬한 뒤 그 시작 위치만 배열로 보관하는 인덱스이다. 정렬돼 있으므로 임의의 패턴 검색을 이분 탐색으로 처리할 수 있고, 인접한 접미사의 공통 접두사 길이를 담은 LCP 배열을 함께 두면 반복 부분문자열, 서로 다른 부분문자열 개수 같은 질의도 선형에 가깝게 풀린다. 서픽스 오토마톤(DAWG)은 같은 정보를 상태 기계로 표현한 것으로, 문자열의 모든 부분문자열을 인식하는 최소 결정적 오토마톤이며 상태 수가 입력 길이에 선형으로 유지된다. 오토마톤은 온라인으로 한 글자씩 추가하며 만들 수 있어 스트리밍에 유리하고, 서픽스 배열은 메모리가 조밀해 대용량 정적 텍스트에 유리하다. 둘 다 &quot;패턴을 매번 스캔한다&quot;를 &quot;텍스트를 한 번 전처리하고 질의는 상수·로그 시간에 답한다&quot;로 바꾸는 것이 본질이다.</p>
       <p>로그·트레이스처럼 텍스트는 고정돼 있는데 검색은 수없이 반복되는 상황에서, grep식 선형 스캔은 데이터가 커지는 순간 그대로 비용이 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 9: 문자열 인덱스 — 서픽스 배열로 부분 문자열 검색을 이분 탐색으로 처리
+# 모든 접미사를 정렬해 배열로 두면, 패턴 검색이 선형 스캔 대신 O(log n · m)에 끝난다.
+
+def build_suffix_array(text):
+    return sorted(range(len(text)), key=lambda i: text[i:])
+
+def search(text, sa, pattern):
+    lo, hi = 0, len(sa)
+    while lo &lt; hi:
+        mid = (lo + hi) // 2
+        if text[sa[mid]:sa[mid] + len(pattern)] &lt; pattern:
+            lo = mid + 1
+        else:
+            hi = mid
+    if lo == len(sa) or text[sa[lo]:sa[lo] + len(pattern)] != pattern:
+        return []
+    hits, i = [sa[lo]], lo + 1
+    while i &lt; len(sa) and text[sa[i]:sa[i] + len(pattern)] == pattern:
+        hits.append(sa[i]); i += 1
+    return sorted(hits)
+
+text = &quot;the quick brown fox jumps over the lazy dog the fox runs&quot;
+sa = build_suffix_array(text)
+print(&quot;서픽스 배열(앞 10개 시작 위치) =&quot;, sa[:10])
+for pattern in [&quot;fox&quot;, &quot;the&quot;, &quot;cat&quot;]:
+    print(f&quot;search('{pattern}') -&gt; 위치 {search(text, sa, pattern)}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-9.py">docs/code/algorithms/algorithms-9.py</a></p>
       <h2>연습</h2>
       <p>10MB짜리 로그 파일에 대해 서픽스 배열 + LCP를 만들고, 동일한 부분문자열 질의 1000개를 단순 스캔과 이분 탐색으로 각각 돌려 시간을 비교해 보기.</p>
       <h2>실무 · Verex 연결</h2>

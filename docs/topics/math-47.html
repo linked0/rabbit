@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 47 — 페어링/KZG(개념)</title>
+<title>Day 47 — Lagrange Interpolation + Reed-Solomon (Thread A Payoff)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,21 +131,137 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 47</p>
   <article>
-      <h1>페어링/KZG(개념) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 47 / 51 &middot; 12월 — 암호학·정보이론 (Day 43–51)</p>
+      <h1>Lagrange Interpolation + Reed-Solomon (Thread A Payoff) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 47 / 52 &middot; December — Cryptography &amp; Information Theory (Day 44-52)</p>
+      <h2>Concept</h2>
+      <p>Given k distinct points, a polynomial of degree at most k-1 is uniquely determined, and Lagrange interpolation constructs it explicitly by combining basis polynomials that equal 1 at one point and 0 at all the others. Reed-Solomon codes apply this fact directly to encoding: treat k data symbols as the coefficients of a polynomial, evaluate it at n distinct points, and use those values as the codeword — then any k of the n evaluations are enough to recover the original polynomial by interpolation. That makes it an MDS code with minimum distance n-k+1, able to recover from up to n-k erasures, and to correct errors at unknown positions up to half that many. The same structure underlies Shamir's secret sharing: put the secret in the constant term, hand out evaluations of a degree-(k-1) polynomial, and fewer than k shares reveal no information about the secret at all.</p>
+      <p>Using erasure codes instead of replication gets the same durability at a much lower storage cost, making it a fundamental tool for storage and transmission design; threshold signatures and data availability designs are both built on this same polynomial logic.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 라그랑주 보간 + Reed-Solomon — GF(p) 위에서 k=3,n=5 RS 인코딩 후 소실 2개 복구
+# k개의 점으로 차수 k-1 다항식이 유일 결정된다는 사실을 그대로 부호화/복호화에 사용한다.
+
+p = 97  # 작은 소수 유한체 GF(97)
+
+def gf_inv(x):
+    return pow(x, -1, p)
+
+def poly_eval(coeffs, x):
+    &quot;&quot;&quot;coeffs[i]는 x^i의 계수. Horner's method로 f(x) mod p 계산.&quot;&quot;&quot;
+    y = 0
+    for c in reversed(coeffs):
+        y = (y * x + c) % p
+    return y
+
+def lagrange_interpolate(points, x_target=0):
+    &quot;&quot;&quot;points = [(x_i, y_i), ...] 로부터 f(x_target)을 복원 (기본: 상수항 f(0)).&quot;&quot;&quot;
+    total = 0
+    for i, (xi, yi) in enumerate(points):
+        num, den = 1, 1
+        for j, (xj, _) in enumerate(points):
+            if i == j:
+                continue
+            num = (num * (x_target - xj)) % p
+            den = (den * (xi - xj)) % p
+        total = (total + yi * num * gf_inv(den)) % p
+    return total
+
+# 원본 데이터 3개 심볼(k=3)을 다항식 계수로 삼는다: f(x) = c0 + c1*x + c2*x^2
+secret_data = [17, 42, 5]  # c0=17(예: 복원 대상), c1=42, c2=5
+k, n = 3, 5
+
+# n=5개의 서로 다른 평가점(1..5)에서 계산한 값이 코드워드(RS 부호)
+codeword = [(x, poly_eval(secret_data, x)) for x in range(1, n + 1)]
+print(&quot;Reed-Solomon 코드워드 (x, f(x)):&quot;, codeword)
+
+# 5개 중 2개(x=2, x=4)가 소실됐다고 가정 — k=3개만 있으면 복원 가능해야 한다
+surviving = [pt for pt in codeword if pt[0] not in (2, 4)]
+print(&quot;소실 후 살아남은 점:&quot;, surviving)
+
+recovered_c0 = lagrange_interpolate(surviving, x_target=0)
+print(f&quot;라그랑주 보간으로 복원한 f(0)=c0: {recovered_c0}  (원본과 일치: {recovered_c0 == secret_data[0]})&quot;)
+
+# 전체 다항식(3개 계수) 자체도 세 점으로 완전히 복원되는지 확인 (x=0,1,2 세 지점에서 값 비교)
+for x_check in (0, 1, 2, 3, 4, 5):
+    original = poly_eval(secret_data, x_check)
+    via_interp = lagrange_interpolate(surviving, x_target=x_check)
+    assert original == via_interp
+print(&quot;모든 x에서 원본 다항식과 보간 결과 일치 (n-k=2개 소실까지 복구 가능, MDS 부호 성질).&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-47.py">docs/code/math/math-47.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement a k=3, n=5 Reed-Solomon encoder and a Lagrange-interpolation decoder over a small finite field, erase any two symbols, and confirm the original is recovered.</p>
+      <h2>Practical Connection</h2>
+      <p>Ethereum's blob data availability, KZG polynomial commitments, and threshold signatures for splitting oracle/relayer keys all use this interpolation-and-erasure-code structure, making it directly relevant background for designing Verex's oracle trust model.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1>라그랑주 보간 + Reed-Solomon (스레드 A 수확) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 47 / 52 &middot; 12월 — 암호학·정보이론 (Day 44–52)</p>
 
       <h2>개념</h2>
-      <p>페어링은 두 타원곡선 군의 원소를 받아 세 번째 군의 원소를 내놓는 쌍선형 사상으로, 지수(스칼라)가 곱해지는 관계를 군 원소만 보고 확인할 수 있게 해 준다. 이 성질 덕분에 숨겨진 값들 사이의 곱셈 관계를 검증할 수 있고, BLS 서명이나 여러 증명 시스템의 검증식이 여기에 기반한다. KZG 커밋먼트는 다항식 하나를 상수 크기의 군 원소 하나로 커밋하고, 임의의 점 z에서 f(z)=y라는 사실을 역시 상수 크기의 증명으로 열 수 있게 한다. 원리는 f(X)−y가 (X−z)로 나누어떨어진다는 사실이며, 그 몫 다항식에 대한 커밋먼트를 증명으로 제출하면 검증자가 페어링 한 번으로 나눗셈 관계를 확인한다. 대가로 KZG는 구조화된 참조 문자열을 만드는 신뢰 설정이 필요하고, 그 설정에 쓰인 비밀이 유출되면 거짓 증명을 만들 수 있다는 점이 이 방식의 근본 가정이다.</p>
-      <p>블롭 데이터 커밋먼트, 롤업 증명, 서명 집계 등 최근 이더리움 인프라의 상당 부분이 페어링과 다항식 커밋먼트 위에 서 있어서, 개념 없이는 설계 문서를 읽을 수 없다. 신뢰 설정 가정은 시스템의 실제 신뢰 경계이기도 하다.</p>
+      <p>서로 다른 k개의 점이 주어지면 차수가 k-1 이하인 다항식이 유일하게 결정되고, 라그랑주 보간은 각 점에서만 1이고 나머지 점에서 0이 되는 기저 다항식을 조합해 그 다항식을 명시적으로 구성한다. Reed-Solomon 부호는 이 사실을 그대로 부호화에 쓴다. k개의 데이터 심볼을 다항식의 계수로 보고 서로 다른 n개의 점에서 평가한 값을 코드워드로 삼으면, n개 중 임의의 k개만 살아남아도 보간으로 원래 다항식을 복원할 수 있다. 그래서 이 부호는 최소 거리가 n-k+1인 MDS 부호가 되어 최대 n-k개의 소실을 복구하고, 위치를 모르는 오류는 그 절반까지 정정한다. 같은 구조가 Shamir의 비밀 분산에도 쓰이는데, 비밀을 상수항에 두고 k-1차 다항식의 평가값을 나눠 주면 k개 미만의 조각은 비밀에 대해 아무 정보도 주지 않는다.</p>
+      <p>복제 대신 소실 부호를 쓰면 같은 내구성을 훨씬 적은 저장 비용으로 얻을 수 있어 스토리지·전송 설계의 기본 도구다. 또 임계 서명과 데이터 가용성 설계가 모두 이 다항식 논리 위에 서 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 라그랑주 보간 + Reed-Solomon — GF(p) 위에서 k=3,n=5 RS 인코딩 후 소실 2개 복구
+# k개의 점으로 차수 k-1 다항식이 유일 결정된다는 사실을 그대로 부호화/복호화에 사용한다.
+
+p = 97  # 작은 소수 유한체 GF(97)
+
+def gf_inv(x):
+    return pow(x, -1, p)
+
+def poly_eval(coeffs, x):
+    &quot;&quot;&quot;coeffs[i]는 x^i의 계수. Horner's method로 f(x) mod p 계산.&quot;&quot;&quot;
+    y = 0
+    for c in reversed(coeffs):
+        y = (y * x + c) % p
+    return y
+
+def lagrange_interpolate(points, x_target=0):
+    &quot;&quot;&quot;points = [(x_i, y_i), ...] 로부터 f(x_target)을 복원 (기본: 상수항 f(0)).&quot;&quot;&quot;
+    total = 0
+    for i, (xi, yi) in enumerate(points):
+        num, den = 1, 1
+        for j, (xj, _) in enumerate(points):
+            if i == j:
+                continue
+            num = (num * (x_target - xj)) % p
+            den = (den * (xi - xj)) % p
+        total = (total + yi * num * gf_inv(den)) % p
+    return total
+
+# 원본 데이터 3개 심볼(k=3)을 다항식 계수로 삼는다: f(x) = c0 + c1*x + c2*x^2
+secret_data = [17, 42, 5]  # c0=17(예: 복원 대상), c1=42, c2=5
+k, n = 3, 5
+
+# n=5개의 서로 다른 평가점(1..5)에서 계산한 값이 코드워드(RS 부호)
+codeword = [(x, poly_eval(secret_data, x)) for x in range(1, n + 1)]
+print(&quot;Reed-Solomon 코드워드 (x, f(x)):&quot;, codeword)
+
+# 5개 중 2개(x=2, x=4)가 소실됐다고 가정 — k=3개만 있으면 복원 가능해야 한다
+surviving = [pt for pt in codeword if pt[0] not in (2, 4)]
+print(&quot;소실 후 살아남은 점:&quot;, surviving)
+
+recovered_c0 = lagrange_interpolate(surviving, x_target=0)
+print(f&quot;라그랑주 보간으로 복원한 f(0)=c0: {recovered_c0}  (원본과 일치: {recovered_c0 == secret_data[0]})&quot;)
+
+# 전체 다항식(3개 계수) 자체도 세 점으로 완전히 복원되는지 확인 (x=0,1,2 세 지점에서 값 비교)
+for x_check in (0, 1, 2, 3, 4, 5):
+    original = poly_eval(secret_data, x_check)
+    via_interp = lagrange_interpolate(surviving, x_target=x_check)
+    assert original == via_interp
+print(&quot;모든 x에서 원본 다항식과 보간 결과 일치 (n-k=2개 소실까지 복구 가능, MDS 부호 성질).&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-47.py">docs/code/math/math-47.py</a></p>
       <h2>연습</h2>
-      <p>작은 다항식 하나를 골라 f(X)−f(z)를 (X−z)로 실제로 나눠 몫을 구하고, 나머지가 항상 0이 되는 이유를 인수정리로 설명한 뒤 그 몫이 왜 증명 역할을 하는지 글로 정리하라.</p>
+      <p>작은 유한체 위에서 k=3, n=5인 Reed-Solomon 인코더와 라그랑주 보간 디코더를 직접 구현해, 임의의 2개 심볼을 지운 뒤 원본이 복원되는지 확인하라.</p>
       <h2>실무 · Verex 연결</h2>
-      <p>Verex가 L2에 데이터를 올리거나 다수 서명을 집계하는 경로를 쓴다면 그 비용과 신뢰 가정이 결국 페어링 기반 커밋먼트 구조에서 나온다.</p>
+      <p>이더리움의 블롭 데이터 가용성과 KZG 다항식 커밋먼트, 오라클·릴레이어 키를 나눠 갖는 임계 서명이 모두 이 보간·소실 부호 구조를 쓰므로, Verex의 오라클 신뢰 모델을 설계할 때 직접적인 배경 지식이 된다.</p>
       <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
     </article>
-  <div class="pager"><a href="math-46.html">&larr; 46. 라그랑주 보간 + Reed-Solomon (스레드 A 수확)</a><a href="math-48.html">48. 엔트로피·정보·코딩 &rarr;</a></div>
+  <div class="pager"><a href="math-46.html">&larr; 46. ECC·디지털 서명</a><a href="math-48.html">48. 페어링/KZG(개념) &rarr;</a></div>
 </div>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 36 — 메모리 모델과 원자성 순서</title>
+<title>Day 36 — Memory Models and Atomic Ordering — acquire/release/seq_cst</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,56 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 36</p>
   <article>
+      <h1>Memory Models and Atomic Ordering — acquire/release/seq_cst <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 36 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>As long as single-thread semantics are preserved, CPUs and compilers are free to reorder memory accesses, so what other threads see, and in what order, is governed by the memory model. A relaxed atomic operation only guarantees the atomicity of the operation itself, not its ordering relative to surrounding accesses. When a release store pairs with an acquire load that reads its value, a happens-before relationship is established: everything written before the release becomes visible to code after the acquire. seq_cst goes further and guarantees a single global order across all seq_cst operations, making it the most expensive. Go doesn't expose these ordering options directly — it describes its memory model in terms of the happens-before rules created by channels, mutexes, and sync/atomic.</p>
+      <p>Getting ordering wrong usually still passes on x86, and only shows up under a weaker memory model like ARM or under heavy load, which makes it an extremely hard-to-reproduce bug.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 메모리 모델과 원자성 순서 — release/acquire 페어링이 만드는 happens-before 관계를 흉내낸다.
+# (Python 은 GIL 때문에 진짜 하드웨어 재배열은 안 보이지만, release-store -&gt; acquire-load 짝짓기 패턴 자체는 동일하다.)
+
+import threading
+
+data = 0
+ready = threading.Event()  # release/acquire 짝을 흉내내는 신호: set()=release, wait()=acquire
+observations = []
+
+def writer():
+    global data
+    data = 42                 # release 이전의 모든 쓰기는...
+    ready.set()                # ...release. 이 시점 이후 acquire 한 쪽에는 반드시 42가 보여야 한다.
+
+def reader():
+    ready.wait()               # acquire: release 이전의 모든 쓰기가 happens-before 로 보장되어 보인다.
+    observations.append(data)  # 만약 순서 보장이 없었다면(relaxed) 0을 볼 수도 있었다.
+
+# seq_cst 라면 여기에 더해 &quot;모든 스레드가 동의하는 단일 전역 순서&quot;까지 보장하지만, 비용이 가장 크다.
+runs_correct = 0
+for _ in range(1000):
+    data = 0
+    ready.clear()
+    t_r = threading.Thread(target=reader)
+    t_w = threading.Thread(target=writer)
+    t_r.start(); t_w.start()
+    t_r.join(); t_w.join()
+    if observations[-1] == 42:
+        runs_correct += 1
+
+print(&quot;total runs:&quot;, len(observations))
+print(&quot;runs where acquire correctly saw release's write:&quot;, runs_correct)
+print(&quot;release/acquire happens-before held every time:&quot;, runs_correct == len(observations))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-36.py">docs/code/algorithms/algorithms-36.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement the classic flag/data variable pattern once with relaxed and once with release/acquire ordering, run it millions of times on an ARM-family device, and count how often the ordering appears reversed.</p>
+      <h2>Practical Connection</h2>
+      <p>This is the correctness basis for lock-free queues and shared-state flags in high-performance server code — for Verex's in-memory order book shared across multiple goroutines, it's the standard for judging where atomic operations suffice and where a mutex becomes necessary.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>메모리 모델과 원자성 순서 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 36 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
       <p class="lead">acquire/release/seq_cst</p>
@@ -115,7 +188,41 @@
       <p>CPU와 컴파일러는 단일 스레드 의미가 보존되는 한 메모리 접근을 자유롭게 재배열하므로, 다른 스레드에 무엇이 어떤 순서로 보이는지는 메모리 모델이 규정한다. relaxed 원자 연산은 연산 자체의 원자성만 보장하고 주변 접근과의 순서는 보장하지 않는다. release 저장과 그 값을 읽은 acquire 로드가 짝을 이루면 release 이전의 모든 쓰기가 acquire 이후 코드에 보이는 happens-before 관계가 성립한다. seq_cst는 여기에 더해 모든 seq_cst 연산에 대한 단일 전역 순서를 보장하며 가장 비싸다. Go는 이런 순서 옵션을 직접 노출하지 않고 채널·뮤텍스·sync/atomic이 만드는 happens-before 규칙으로 메모리 모델을 기술한다.</p>
       <p>순서 지정을 잘못해도 x86에서는 대개 통과하고 ARM처럼 약한 메모리 모델이나 고부하에서만 드러나서, 재현이 극도로 어려운 버그가 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 메모리 모델과 원자성 순서 — release/acquire 페어링이 만드는 happens-before 관계를 흉내낸다.
+# (Python 은 GIL 때문에 진짜 하드웨어 재배열은 안 보이지만, release-store -&gt; acquire-load 짝짓기 패턴 자체는 동일하다.)
+
+import threading
+
+data = 0
+ready = threading.Event()  # release/acquire 짝을 흉내내는 신호: set()=release, wait()=acquire
+observations = []
+
+def writer():
+    global data
+    data = 42                 # release 이전의 모든 쓰기는...
+    ready.set()                # ...release. 이 시점 이후 acquire 한 쪽에는 반드시 42가 보여야 한다.
+
+def reader():
+    ready.wait()               # acquire: release 이전의 모든 쓰기가 happens-before 로 보장되어 보인다.
+    observations.append(data)  # 만약 순서 보장이 없었다면(relaxed) 0을 볼 수도 있었다.
+
+# seq_cst 라면 여기에 더해 &quot;모든 스레드가 동의하는 단일 전역 순서&quot;까지 보장하지만, 비용이 가장 크다.
+runs_correct = 0
+for _ in range(1000):
+    data = 0
+    ready.clear()
+    t_r = threading.Thread(target=reader)
+    t_w = threading.Thread(target=writer)
+    t_r.start(); t_w.start()
+    t_r.join(); t_w.join()
+    if observations[-1] == 42:
+        runs_correct += 1
+
+print(&quot;total runs:&quot;, len(observations))
+print(&quot;runs where acquire correctly saw release's write:&quot;, runs_correct)
+print(&quot;release/acquire happens-before held every time:&quot;, runs_correct == len(observations))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-36.py">docs/code/algorithms/algorithms-36.py</a></p>
       <h2>연습</h2>
       <p>flag/data 두 변수 패턴을 relaxed와 release/acquire로 각각 구현해 ARM 계열 기기에서 수백만 회 반복 실행하며 순서가 뒤집혀 보이는 경우를 세어보라.</p>
       <h2>실무 · Verex 연결</h2>

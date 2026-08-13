@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 56 — 비잔틴 정족수(3f+1)와 PBFT</title>
+<title>Day 56 — Byzantine Quorums (3f+1) and the PBFT → HotStuff → Tendermint Lineage</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,53 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 56</p>
   <article>
+      <h1>Byzantine Quorums (3f+1) and the PBFT → HotStuff → Tendermint Lineage <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 56 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>In a partially synchronous setting, tolerating f Byzantine nodes requires a total node count of at least 3f+1; setting the quorum size to 2f+1 makes any two quorums overlap in at least f+1 nodes. That intersection is guaranteed to contain at least one honest node, which is where the safety property — that two conflicting values can never both be finalized — comes from. PBFT reaches agreement in three phases, pre-prepare, prepare, and commit, but its view-change cost grows sharply with the number of nodes. HotStuff aggregates votes with threshold signatures and relays them through the leader, cutting communication to linear cost, and simplifies view changes with a chained-block rule. Tendermint's propose/prevote/precommit structure adds a locking rule that guarantees instant finality — once a block is committed, it is never reverted.</p>
+      <p>Proof-of-stake chains, rollup sequencers, and side infrastructure are all in this family, so interpreting a failure requires knowing exactly what assumptions finality rests on and how liveness recovers when a leader dies.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 비잔틴 정족수(3f+1)와 PBFT 계보 — n=3f+1, 정족수=2f+1일 때
+# 서로 다른 두 정족수는 항상 최소 f+1개 노드에서 겹치고, 그 교집합엔 정직한 노드가 반드시 있다.
+
+from itertools import combinations
+
+def check_byzantine_safety(f):
+    n = 3 * f + 1
+    quorum_size = 2 * f + 1
+    nodes = set(range(n))
+
+    min_intersection = n  # 최소 교집합 크기 추적
+    for q1 in combinations(nodes, quorum_size):
+        for q2 in combinations(nodes, quorum_size):
+            overlap = len(set(q1) &amp; set(q2))
+            min_intersection = min(min_intersection, overlap)
+
+    # 비잔틴 노드가 최대 f개이므로, 교집합이 f+1개 이상이면 정직한 노드가 반드시 하나 이상 포함
+    guaranteed_honest = min_intersection - f
+    return n, quorum_size, min_intersection, guaranteed_honest
+
+for f in [1, 2]:
+    n, q, min_overlap, honest = check_byzantine_safety(f)
+    print(f&quot;f={f}: n={n}, quorum={q} -&gt; 임의의 두 정족수 최소 교집합={min_overlap} &quot;
+          f&quot;(이론값 f+1={f+1})&quot;)
+    print(f&quot;  교집합 중 정직 노드 최소 보장 = {min_overlap} - f = {honest} &quot;
+          f&quot;({'안전' if honest &gt;= 1 else '위험'})&quot;)
+
+print(&quot;\n-&gt; 두 정족수의 교집합에 정직한 노드가 항상 1개 이상 있으므로,&quot;)
+print(&quot;   그 노드가 서로 모순되는 두 값에 동시에 서명할 수 없어 안전성이 성립한다.&quot;)
+print(&quot;   (PBFT: 3단계 통신, HotStuff: 서명 집계로 선형 통신량, Tendermint: lock 규칙으로 즉시 완결성)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-56.py">docs/code/algorithms/algorithms-56.py</a></p>
+      <h2>Exercise</h2>
+      <p>With n=4, f=1, sketch on paper a scenario where two honest nodes commit different values, and walk through why the quorum-intersection property makes that impossible.</p>
+      <h2>Practical Connection</h2>
+      <p>Under instant finality, reorganization risk effectively disappears, changing what confirmation-depth policy makes sense for a settlement system like Verex — so you need to be precise about how this differs from Ethereum's probabilistic finality.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>비잔틴 정족수(3f+1)와 PBFT <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 56 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
 
@@ -115,7 +185,38 @@
       <p>부분 동기 환경에서 f개의 비잔틴 노드를 견디려면 전체 노드 수가 3f+1 이상이어야 하고, 정족수를 2f+1로 잡으면 임의의 두 정족수가 최소 f+1개 노드에서 겹친다. 그 교집합에는 정직한 노드가 반드시 하나 이상 포함되므로, 서로 상충하는 두 값이 동시에 확정될 수 없다는 안전성이 나온다. PBFT는 pre-prepare, prepare, commit 3단계로 합의를 이루지만 뷰 체인지 비용이 노드 수에 대해 크게 증가한다. HotStuff는 투표를 임계 서명으로 집계하고 리더를 통해 중계해 통신량을 선형으로 줄이고, 연속된 체인 규칙으로 뷰 체인지를 단순화했다. Tendermint는 propose, prevote, precommit 구조에 잠금(lock) 규칙을 두어 한 번 커밋된 블록이 뒤집히지 않는 즉시 완결성을 제공한다.</p>
       <p>지분증명 체인, 롤업 시퀀서, 사이드 인프라가 모두 이 계열이라 완결성이 어떤 가정 위에서 보장되는지, 리더가 죽었을 때 진행성이 어떻게 회복되는지를 알아야 장애를 해석할 수 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 비잔틴 정족수(3f+1)와 PBFT 계보 — n=3f+1, 정족수=2f+1일 때
+# 서로 다른 두 정족수는 항상 최소 f+1개 노드에서 겹치고, 그 교집합엔 정직한 노드가 반드시 있다.
+
+from itertools import combinations
+
+def check_byzantine_safety(f):
+    n = 3 * f + 1
+    quorum_size = 2 * f + 1
+    nodes = set(range(n))
+
+    min_intersection = n  # 최소 교집합 크기 추적
+    for q1 in combinations(nodes, quorum_size):
+        for q2 in combinations(nodes, quorum_size):
+            overlap = len(set(q1) &amp; set(q2))
+            min_intersection = min(min_intersection, overlap)
+
+    # 비잔틴 노드가 최대 f개이므로, 교집합이 f+1개 이상이면 정직한 노드가 반드시 하나 이상 포함
+    guaranteed_honest = min_intersection - f
+    return n, quorum_size, min_intersection, guaranteed_honest
+
+for f in [1, 2]:
+    n, q, min_overlap, honest = check_byzantine_safety(f)
+    print(f&quot;f={f}: n={n}, quorum={q} -&gt; 임의의 두 정족수 최소 교집합={min_overlap} &quot;
+          f&quot;(이론값 f+1={f+1})&quot;)
+    print(f&quot;  교집합 중 정직 노드 최소 보장 = {min_overlap} - f = {honest} &quot;
+          f&quot;({'안전' if honest &gt;= 1 else '위험'})&quot;)
+
+print(&quot;\n-&gt; 두 정족수의 교집합에 정직한 노드가 항상 1개 이상 있으므로,&quot;)
+print(&quot;   그 노드가 서로 모순되는 두 값에 동시에 서명할 수 없어 안전성이 성립한다.&quot;)
+print(&quot;   (PBFT: 3단계 통신, HotStuff: 서명 집계로 선형 통신량, Tendermint: lock 규칙으로 즉시 완결성)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-56.py">docs/code/algorithms/algorithms-56.py</a></p>
       <h2>연습</h2>
       <p>n=4, f=1로 두고 정직 노드 두 개가 서로 다른 값을 커밋하는 시나리오를 종이에 그려 정족수 교집합 때문에 왜 불가능한지 직접 따라가 보라.</p>
       <h2>실무 · Verex 연결</h2>

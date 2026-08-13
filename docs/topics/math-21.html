@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 21 — 리스크·포트폴리오 행렬(공분산·상관)</title>
+<title>Day 21 — Risk/Portfolio Matrices (Covariance, Correlation)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,88 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 21</p>
   <article>
+      <h1>Risk/Portfolio Matrices (Covariance, Correlation) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 21 / 52 &middot; September — Linear Algebra (Day 18-26)</p>
+      <h2>Concept</h2>
+      <p>When you view multiple assets' returns as a vector, the covariance matrix is the symmetric positive semi-definite matrix collecting the degree of co-movement between every pair. The correlation matrix normalizes each entry by dividing by the standard deviations, removing scale so values become comparable between -1 and 1. For a portfolio weight vector w, the variance is computed as a quadratic form obtained by multiplying the covariance matrix by w on both sides, and this value shrinks below the weighted sum of individual variances the more you mix in assets with low or negative correlation. This is the mathematical essence of diversification. Eigendecomposition shows that the direction of large eigenvalues corresponds to common risk factors, and a core practical point is that with fewer samples the estimated covariance becomes unstable, requiring corrections like shrinkage.</p>
+      <p>When holding multiple positions at once, the real risk doesn't come from each individual position's volatility, but from the degree to which they move together.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 리스크·포트폴리오 행렬(공분산·상관) — 세 자산의 수익률에서 공분산·상관행렬을 구하고
+# 포트폴리오 분산 = w^T Σ w 가 개별 분산의 가중합보다 작아지는 분산투자 효과를 확인한다.
+
+import numpy as np
+
+rng = np.random.default_rng(42)
+n_days = 500
+
+# 자산 A, B는 서로 강한 양의 상관, 자산 C는 거의 무상관이 되도록 수익률 생성
+factor = rng.normal(0, 0.01, n_days)
+returns_A = factor + rng.normal(0, 0.003, n_days)
+returns_B = factor + rng.normal(0, 0.003, n_days)
+returns_C = rng.normal(0, 0.01, n_days)
+R = np.vstack([returns_A, returns_B, returns_C])  # shape (3, n_days)
+
+cov = np.cov(R)
+corr = np.corrcoef(R)
+print(&quot;공분산 행렬 Σ:\n&quot;, np.round(cov, 6))
+print(&quot;\n상관계수 행렬:\n&quot;, np.round(corr, 3))
+
+w = np.array([1 / 3, 1 / 3, 1 / 3])
+portfolio_var = w @ cov @ w  # 이차형식 w^T Σ w
+weighted_avg_var = w @ np.diag(cov)  # 상관을 무시하고 개별 분산만 가중합한 값
+
+print(f&quot;\n동일가중 포트폴리오 분산 (w^T Σ w) = {portfolio_var:.6f}&quot;)
+print(f&quot;상관 무시한 개별분산 가중합          = {weighted_avg_var:.6f}&quot;)
+print(f&quot;→ 실제 포트폴리오 분산이 더 {'작음' if portfolio_var &lt; weighted_avg_var else '크거나 같음'}: &quot;
+      f&quot;C가 A,B와 무상관이라 분산투자 효과가 발생&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-21.py">docs/code/math/math-21.py</a></p>
+      <h2>Exercise</h2>
+      <p>Compute the covariance and correlation matrices from the daily returns of three or four assets, then numerically search for the weights that minimize portfolio variance as you vary them.</p>
+      <h2>Practical Connection</h2>
+      <p>In prediction markets, positions across multiple markets become correlated whenever the underlying events overlap, so summing each market's risk independently underestimates the actual exposure.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>리스크·포트폴리오 행렬(공분산·상관) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 21 / 51 &middot; 9월 — 선형대수 (Day 18–26)</p>
+      <p class="meta">Math &middot; Day 21 / 52 &middot; 9월 — 선형대수 (Day 18–26)</p>
 
       <h2>개념</h2>
       <p>여러 자산의 수익률을 벡터로 볼 때, 공분산 행렬은 각 쌍의 동조 정도를 모아 놓은 대칭 양의 준정부호 행렬이다. 상관계수 행렬은 각 성분을 표준편차로 나눠 정규화한 것으로, 스케일을 제거해 -1에서 1 사이 값으로 비교 가능하게 만든다. 포트폴리오 비중 벡터 w에 대해 분산은 w에 공분산 행렬을 양쪽에서 곱한 이차형식으로 계산되며, 상관이 낮거나 음수인 자산을 섞을수록 이 값이 개별 분산의 가중합보다 작아진다. 이것이 분산투자 효과의 수학적 정체이다. 고유분해를 하면 큰 고유값 방향이 공통 위험 요인이 되고, 표본이 적을수록 추정 공분산이 불안정해 축소(shrinkage) 같은 보정이 필요하다는 점도 실무의 핵심이다.</p>
       <p>여러 포지션을 동시에 들고 있을 때 진짜 위험은 각 포지션의 변동성이 아니라 그들이 함께 움직이는 정도에서 나온다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 리스크·포트폴리오 행렬(공분산·상관) — 세 자산의 수익률에서 공분산·상관행렬을 구하고
+# 포트폴리오 분산 = w^T Σ w 가 개별 분산의 가중합보다 작아지는 분산투자 효과를 확인한다.
+
+import numpy as np
+
+rng = np.random.default_rng(42)
+n_days = 500
+
+# 자산 A, B는 서로 강한 양의 상관, 자산 C는 거의 무상관이 되도록 수익률 생성
+factor = rng.normal(0, 0.01, n_days)
+returns_A = factor + rng.normal(0, 0.003, n_days)
+returns_B = factor + rng.normal(0, 0.003, n_days)
+returns_C = rng.normal(0, 0.01, n_days)
+R = np.vstack([returns_A, returns_B, returns_C])  # shape (3, n_days)
+
+cov = np.cov(R)
+corr = np.corrcoef(R)
+print(&quot;공분산 행렬 Σ:\n&quot;, np.round(cov, 6))
+print(&quot;\n상관계수 행렬:\n&quot;, np.round(corr, 3))
+
+w = np.array([1 / 3, 1 / 3, 1 / 3])
+portfolio_var = w @ cov @ w  # 이차형식 w^T Σ w
+weighted_avg_var = w @ np.diag(cov)  # 상관을 무시하고 개별 분산만 가중합한 값
+
+print(f&quot;\n동일가중 포트폴리오 분산 (w^T Σ w) = {portfolio_var:.6f}&quot;)
+print(f&quot;상관 무시한 개별분산 가중합          = {weighted_avg_var:.6f}&quot;)
+print(f&quot;→ 실제 포트폴리오 분산이 더 {'작음' if portfolio_var &lt; weighted_avg_var else '크거나 같음'}: &quot;
+      f&quot;C가 A,B와 무상관이라 분산투자 효과가 발생&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-21.py">docs/code/math/math-21.py</a></p>
       <h2>연습</h2>
       <p>자산 서너 개의 일별 수익률로 공분산·상관 행렬을 계산하고, 비중을 바꿔가며 포트폴리오 분산이 최소가 되는 지점을 수치로 찾아보기.</p>
       <h2>실무 · Verex 연결</h2>

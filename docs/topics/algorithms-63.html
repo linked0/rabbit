@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 63 — 크로스체인 신뢰 가정 분류</title>
+<title>Day 63 — Classifying Cross-Chain Trust Assumptions — Bridges vs. Intents vs. Light Clients</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,53 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 63</p>
   <article>
+      <h1>Classifying Cross-Chain Trust Assumptions — Bridges vs. Intents vs. Light Clients <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 63 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>Cross-chain systems can be classified by what they rely on to believe a fact happened on another chain. Externally-verified bridges depend on the testimony of a multisig or a separate validator set, so their trust basis is that set's honesty and key management — which is exactly why they've been the favorite target of large-scale hacks. Light-client approaches verify the counterparty chain's consensus rules directly, requiring no additional trust beyond that chain's own consensus safety, but they carry high implementation complexity and on-chain verification cost, which is why ZK proofs are increasingly used to cut that cost. Intent/solver-based designs have users declare only the outcome they want; a solver fronts the funds from its own capital and recovers them later during settlement, so the trust assumption shifts from the authenticity of message-passing to the solver's collateral and the settlement/dispute process. The constant yardstick across all three is: who can lie, what do they lose if they do, and does a dispute window and recovery path actually exist?</p>
+      <p>The real risk in connecting assets or data across chains rarely comes from a code bug — it comes from who this bridge ultimately asks you to trust, and that trust assumption sets the worst-case loss bound for the whole service.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 크로스체인 신뢰 가정 분류 — 브릿지 vs 라이트클라이언트 vs 인텐트/솔버, 정족수 비율과 최악 손실로 비교한다.
+# 각 방식이 &quot;누구를 얼마나 믿어야 자금이 안전한가&quot;를 정족수 비율과 최악 손실액으로 계량화한다.
+
+bridges = [
+    {&quot;name&quot;: &quot;외부 검증형 멀티시그 브릿지&quot;, &quot;type&quot;: &quot;external&quot;, &quot;n&quot;: 9, &quot;threshold&quot;: 5, &quot;tvl&quot;: 10_000_000},
+    {&quot;name&quot;: &quot;라이트클라이언트 브릿지&quot;, &quot;type&quot;: &quot;lightclient&quot;, &quot;n&quot;: 100, &quot;threshold&quot;: 67, &quot;tvl&quot;: 10_000_000},
+    {&quot;name&quot;: &quot;인텐트/솔버 브릿지&quot;, &quot;type&quot;: &quot;intent&quot;, &quot;solver_collateral&quot;: 500_000, &quot;tvl&quot;: 10_000_000},
+]
+
+def worst_case_loss(b):
+    if b[&quot;type&quot;] in (&quot;external&quot;, &quot;lightclient&quot;):
+        quorum_fraction = b[&quot;threshold&quot;] / b[&quot;n&quot;]
+        return b[&quot;tvl&quot;], quorum_fraction   # 정족수 이상이 담합하면 TVL 전액이 위험
+    if b[&quot;type&quot;] == &quot;intent&quot;:
+        return min(b[&quot;solver_collateral&quot;], b[&quot;tvl&quot;]), None  # 손실은 솔버 담보로 상한이 걸린다
+    raise ValueError(&quot;unknown bridge type&quot;)
+
+for b in bridges:
+    loss, quorum_fraction = worst_case_loss(b)
+    if quorum_fraction is not None:
+        print(f&quot;{b['name']}: 담합 필요 비율 {quorum_fraction:.0%}, 최악 손실 ${loss:,}&quot;)
+    else:
+        print(f&quot;{b['name']}: 담합 비율 N/A(솔버 단독 위험), 최악 손실 ${loss:,} (담보 상한)&quot;)
+
+# 라이트클라이언트는 담합 비율이 호스트 체인 자체의 BFT 안전 가정(2/3)과 같아 &quot;추가 신뢰가 없다&quot; —
+# 반면 외부 멀티시그는 별도의 작은 검증자 집합을 새로 신뢰해야 한다
+print(&quot;\n추가 신뢰 요구 여부:&quot;)
+for b in bridges:
+    extra_trust = &quot;없음(호스트 체인 신뢰만 재사용)&quot; if b[&quot;type&quot;] == &quot;lightclient&quot; else &quot;있음(별도 주체 신뢰 필요)&quot;
+    print(f&quot;  {b['name']}: {extra_trust}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-63.py">docs/code/algorithms/algorithms-63.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick three real bridges or messaging protocols and compare them side by side in a table: who verifies, how funds are custodied, the worst-case loss bound, and the dispute window.</p>
+      <h2>Practical Connection</h2>
+      <p>The moment Verex accepts another chain's collateral or an external event's outcome as settlement input, market settlement's safety can never rise above the trust assumption of that input path — settlement is only ever as safe as its weakest input.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>크로스체인 신뢰 가정 분류 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 63 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
       <p class="lead">브릿지 vs 인텐트 vs 라이트클라이언트</p>
@@ -115,7 +185,38 @@
       <p>크로스체인 시스템은 상대 체인에서 일어난 사실을 무엇을 근거로 믿는지에 따라 분류된다. 외부 검증형 브릿지는 멀티시그나 별도 검증자 집합의 증언에 의존하므로 신뢰 근거가 그 집합의 정직성과 키 관리에 있고, 그래서 대형 탈취 사고의 단골 표적이 되어 왔다. 라이트클라이언트 방식은 상대 체인의 합의 규칙을 직접 검증해 상대 체인의 합의 안전성 외에 추가 신뢰를 요구하지 않지만, 구현 복잡도와 온체인 검증 비용이 크고 이를 줄이기 위해 ZK 증명을 쓰는 방향이 활발하다. 인텐트·솔버 기반은 사용자가 원하는 결과만 선언하고 솔버가 자기 자금으로 먼저 채워 준 뒤 나중에 정산에서 회수하는 구조라, 신뢰 가정이 메시지 전달의 진위에서 솔버의 담보와 정산·분쟁 절차로 옮겨간다. 비교의 기준은 언제나 누가 거짓말할 수 있고, 거짓말하면 무엇을 잃으며, 이의 제기 기간과 복구 경로가 존재하는가다.</p>
       <p>체인 간 자산이나 데이터를 붙일 때 실제 위험은 코드 버그보다 이 다리가 결국 누구를 믿는 구조인가에서 나오고, 그 신뢰 가정이 서비스 전체의 최악 손실 범위를 정하기 때문이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 크로스체인 신뢰 가정 분류 — 브릿지 vs 라이트클라이언트 vs 인텐트/솔버, 정족수 비율과 최악 손실로 비교한다.
+# 각 방식이 &quot;누구를 얼마나 믿어야 자금이 안전한가&quot;를 정족수 비율과 최악 손실액으로 계량화한다.
+
+bridges = [
+    {&quot;name&quot;: &quot;외부 검증형 멀티시그 브릿지&quot;, &quot;type&quot;: &quot;external&quot;, &quot;n&quot;: 9, &quot;threshold&quot;: 5, &quot;tvl&quot;: 10_000_000},
+    {&quot;name&quot;: &quot;라이트클라이언트 브릿지&quot;, &quot;type&quot;: &quot;lightclient&quot;, &quot;n&quot;: 100, &quot;threshold&quot;: 67, &quot;tvl&quot;: 10_000_000},
+    {&quot;name&quot;: &quot;인텐트/솔버 브릿지&quot;, &quot;type&quot;: &quot;intent&quot;, &quot;solver_collateral&quot;: 500_000, &quot;tvl&quot;: 10_000_000},
+]
+
+def worst_case_loss(b):
+    if b[&quot;type&quot;] in (&quot;external&quot;, &quot;lightclient&quot;):
+        quorum_fraction = b[&quot;threshold&quot;] / b[&quot;n&quot;]
+        return b[&quot;tvl&quot;], quorum_fraction   # 정족수 이상이 담합하면 TVL 전액이 위험
+    if b[&quot;type&quot;] == &quot;intent&quot;:
+        return min(b[&quot;solver_collateral&quot;], b[&quot;tvl&quot;]), None  # 손실은 솔버 담보로 상한이 걸린다
+    raise ValueError(&quot;unknown bridge type&quot;)
+
+for b in bridges:
+    loss, quorum_fraction = worst_case_loss(b)
+    if quorum_fraction is not None:
+        print(f&quot;{b['name']}: 담합 필요 비율 {quorum_fraction:.0%}, 최악 손실 ${loss:,}&quot;)
+    else:
+        print(f&quot;{b['name']}: 담합 비율 N/A(솔버 단독 위험), 최악 손실 ${loss:,} (담보 상한)&quot;)
+
+# 라이트클라이언트는 담합 비율이 호스트 체인 자체의 BFT 안전 가정(2/3)과 같아 &quot;추가 신뢰가 없다&quot; —
+# 반면 외부 멀티시그는 별도의 작은 검증자 집합을 새로 신뢰해야 한다
+print(&quot;\n추가 신뢰 요구 여부:&quot;)
+for b in bridges:
+    extra_trust = &quot;없음(호스트 체인 신뢰만 재사용)&quot; if b[&quot;type&quot;] == &quot;lightclient&quot; else &quot;있음(별도 주체 신뢰 필요)&quot;
+    print(f&quot;  {b['name']}: {extra_trust}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-63.py">docs/code/algorithms/algorithms-63.py</a></p>
       <h2>연습</h2>
       <p>실제 브릿지 또는 메시징 프로토콜 세 개를 골라 검증 주체, 자금 보관 방식, 최악의 경우 손실 범위, 이의 제기 기간을 하나의 표로 정리해 비교하기.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 6 — 비둘기집 원리</title>
+<title>Day 6 — Pigeonhole Principle to Hash Collisions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,96 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 6</p>
   <article>
+      <h1>Pigeonhole Principle to Hash Collisions <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 6 / 52 &middot; July — Discrete Math &amp; Logic (Day 3-10)</p>
+      <h2>Concept</h2>
+      <p>The pigeonhole principle states that if you put more than n items into n boxes, at least one box gets two or more. Generalized, putting m items into n boxes means some box gets at least ⌈m/n⌉. Since a hash function maps an effectively infinite domain to a fixed-length output, this principle proves that collisions must exist — there's no avoiding them. What a cryptographic hash actually aims for isn't the absence of collisions but that finding one is computationally hard. Layer the birthday problem on top of this, and for a b-bit output, a random collision is expected within roughly 2^(b/2) attempts, so collision resistance is effectively about half the output length.</p>
+      <p>Mistaking output bit-length for security strength — say, by truncating a hash or using a short identifier — quietly halves your strength against collision attacks (as opposed to preimage attacks). You need to know which resistance property actually matters for the job to pick a safe length.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 비둘기집 원리 → 해시 충돌 — 상자(버킷)보다 물건(입력)이 많으면 충돌은 &quot;반드시&quot; 생긴다.
+# 8비트로 자른 해시(256개 버킷)에 무작위 입력을 계속 넣어 첫 충돌이 나오는 시점을 관찰.
+
+import hashlib
+
+def short_hash(data: bytes, bits: int) -&gt; int:
+    full = hashlib.sha256(data).digest()
+    value = int.from_bytes(full, &quot;big&quot;)
+    return value % (2 ** bits)   # bits비트로 잘라 버킷 인덱스로 사용
+
+def find_first_collision(bits: int, seed: int = 0):
+    buckets = {}
+    i = seed
+    while True:
+        item = f&quot;item-{i}&quot;.encode()
+        idx = short_hash(item, bits)
+        if idx in buckets:
+            return i - seed + 1, buckets[idx], item   # 시도 횟수, 먼저 있던 입력, 충돌 입력
+        buckets[idx] = item
+        i += 1
+
+BITS = 8   # 256개 버킷뿐이라 비둘기집 원리상 257번째 입력까지 가면 충돌이 강제됨
+n_buckets = 2 ** BITS
+tries, first, second = find_first_collision(BITS)
+
+print(f&quot;버킷 수 = 2^{BITS} = {n_buckets}&quot;)
+print(f&quot;첫 충돌까지 시도 횟수: {tries}  (비둘기집 원리상 최대 {n_buckets + 1}회 이내 보장)&quot;)
+print(f&quot;  충돌한 두 입력: {first!r} , {second!r}&quot;)
+
+# 생일 문제 근사: 무작위 충돌은 대략 2^(bits/2) 시도에서 기대된다.
+expected = int(2 ** (BITS / 2))
+print(f&quot;생일 문제 근사 기대 시도 수 ≈ 2^({BITS}/2) = {expected}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-6.py">docs/code/math/math-6.py</a></p>
+      <h2>Exercise</h2>
+      <p>Truncate keccak256 output to 32, 48, and 64 bits, measure how many random-input attempts it takes to hit the first collision at each length, and compare against the 2^(b/2) prediction.</p>
+      <h2>Practical Connection</h2>
+      <p>Verex's Conditional Tokens derive conditionId, collectionId, and positionId all as hashes, so truncating these identifiers for use as indexing keys creates a real collision risk, and the same math applies to Merkle-tree-based proofs.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>비둘기집 원리 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 6 / 51 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
+      <p class="meta">Math &middot; Day 6 / 52 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
 
       <h2>개념</h2>
       <p>비둘기집 원리는 n개의 상자에 n보다 많은 물건을 넣으면 적어도 한 상자에는 두 개 이상이 들어간다는 진술이다. 일반화하면 m개 물건을 n개 상자에 넣을 때 어떤 상자에는 m/n의 올림 이상이 들어간다. 해시 함수는 사실상 무한한 정의역을 고정 길이 출력으로 보내므로, 이 원리에 의해 충돌의 존재 자체는 증명적으로 피할 수 없다. 암호학적 해시가 노리는 것은 충돌이 없다는 것이 아니라 충돌을 계산적으로 찾기 어렵다는 성질이다. 여기에 생일 문제가 겹쳐, b비트 출력에서 무작위 충돌은 약 2의 b/2제곱 번의 시도에서 기대되므로 충돌 저항 강도는 출력 길이의 절반 수준이다.</p>
       <p>출력 비트 수를 그대로 보안 강도로 착각해 해시를 잘라 쓰거나 짧은 식별자를 쓰면, 원상 공격이 아니라 충돌 공격 쪽에서 강도가 절반으로 떨어진다. 어떤 저항성이 필요한 자리인지 구분해야 안전한 길이를 고를 수 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 비둘기집 원리 → 해시 충돌 — 상자(버킷)보다 물건(입력)이 많으면 충돌은 &quot;반드시&quot; 생긴다.
+# 8비트로 자른 해시(256개 버킷)에 무작위 입력을 계속 넣어 첫 충돌이 나오는 시점을 관찰.
+
+import hashlib
+
+def short_hash(data: bytes, bits: int) -&gt; int:
+    full = hashlib.sha256(data).digest()
+    value = int.from_bytes(full, &quot;big&quot;)
+    return value % (2 ** bits)   # bits비트로 잘라 버킷 인덱스로 사용
+
+def find_first_collision(bits: int, seed: int = 0):
+    buckets = {}
+    i = seed
+    while True:
+        item = f&quot;item-{i}&quot;.encode()
+        idx = short_hash(item, bits)
+        if idx in buckets:
+            return i - seed + 1, buckets[idx], item   # 시도 횟수, 먼저 있던 입력, 충돌 입력
+        buckets[idx] = item
+        i += 1
+
+BITS = 8   # 256개 버킷뿐이라 비둘기집 원리상 257번째 입력까지 가면 충돌이 강제됨
+n_buckets = 2 ** BITS
+tries, first, second = find_first_collision(BITS)
+
+print(f&quot;버킷 수 = 2^{BITS} = {n_buckets}&quot;)
+print(f&quot;첫 충돌까지 시도 횟수: {tries}  (비둘기집 원리상 최대 {n_buckets + 1}회 이내 보장)&quot;)
+print(f&quot;  충돌한 두 입력: {first!r} , {second!r}&quot;)
+
+# 생일 문제 근사: 무작위 충돌은 대략 2^(bits/2) 시도에서 기대된다.
+expected = int(2 ** (BITS / 2))
+print(f&quot;생일 문제 근사 기대 시도 수 ≈ 2^({BITS}/2) = {expected}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-6.py">docs/code/math/math-6.py</a></p>
       <h2>연습</h2>
       <p>keccak256 출력을 앞에서 32비트, 48비트, 64비트로 잘라 각각 무작위 입력으로 첫 충돌이 나올 때까지 걸린 시도 횟수를 측정하고 2의 b/2제곱 예측과 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 13 — 메커니즘 디자인(VCG 개념)</title>
+<title>Day 13 — Mechanism Design: The VCG Concept</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,104 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 13</p>
   <article>
+      <h1>Mechanism Design: The VCG Concept <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 13 / 52 &middot; August — Game Theory &amp; Protocol Economics (Day 11-17)</p>
+      <h2>Concept</h2>
+      <p>Mechanism design is the field of designing the rules themselves so that a desired outcome emerges in equilibrium, under the premise that participants hold private information (preferences, values) and act strategically. One core goal is incentive compatibility, and the strongest form is dominant-strategy incentive compatibility, where truthful reporting is optimal for a participant regardless of what everyone else does. The VCG mechanism chooses the allocation that maximizes the sum of reported values, and charges each participant a payment equal to &quot;the welfare their participation cost every other participant&quot; — this aligns each participant's own net gain with the social surplus they create, making truthful reporting a dominant strategy. Applying VCG to a single-item auction gives exactly the second-price (Vickrey) auction, where the winner pays not their own bid but the runner-up's bid. That said, VCG can break budget balance, is vulnerable to collusion and Sybil (fake-identity) bidding, and the allocation problem itself can be computationally hard — so in practice it's often used as a design reference rather than deployed as-is.</p>
+      <p>Every place a protocol prices something — block-space auctions, MEV distribution, fee markets, oracle rewards — is a mechanism, and misaligned incentives inevitably surface as participants gaming the rules.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 메커니즘 디자인(VCG 개념) — 단일 물품 경매에 VCG를 적용하면 2위가격(비크리) 경매가 됨을
+# 직접 계산으로 확인: 지불액 = &quot;내가 없었다면 다른 참가자들이 얻었을 후생&quot; = 차순위 입찰가.
+
+def vcg_payment(bids: dict, winner: str) -&gt; float:
+    # 배분: 신고된 가치 합(단일 물품이므로 = 최고 입찰자)을 최대화.
+    # 지불액: 위너가 참여하지 않았을 때 다른 참가자들이 얻는 최적 후생(=차순위 최고가)
+    #        에서, 위너 참여 시 다른 참가자들이 얻는 후생(=0, 물품을 못 받으므로)을 뺀 값.
+    others = {b: v for b, v in bids.items() if b != winner}
+    welfare_without_winner = max(others.values()) if others else 0.0
+    welfare_of_others_with_winner = 0.0  # 물품이 하나뿐이라 위너가 다 가져가면 남에게 후생 0
+    return welfare_without_winner - welfare_of_others_with_winner
+
+bids = {&quot;alice&quot;: 90, &quot;bob&quot;: 70, &quot;carol&quot;: 55}
+winner = max(bids, key=bids.get)
+payment = vcg_payment(bids, winner)
+second_highest = sorted(bids.values(), reverse=True)[1]
+
+print(&quot;입찰:&quot;, bids)
+print(f&quot;낙찰자(신고 가치 합 최대화): {winner} (가치={bids[winner]})&quot;)
+print(f&quot;VCG 지불액: {payment}&quot;)
+print(f&quot;차순위 입찰가(2위가격): {second_highest}&quot;)
+print(&quot;VCG 지불액 == 2위가격?&quot;, payment == second_highest)
+
+# 유인합치성 확인: 낙찰자가 진실보다 낮게 신고해도 지불액(payment)은 안 바뀌므로
+# (payment 는 '남의' 입찰가에만 의존) 거짓 신고로 순이익을 늘릴 수 없음을 수치로 보인다.
+true_value = bids[&quot;alice&quot;]
+for reported in (95, 90, 75, 60):  # alice 가 진실(90) 대신 다르게 신고해봄
+    trial_bids = dict(bids)
+    trial_bids[&quot;alice&quot;] = reported
+    trial_winner = max(trial_bids, key=trial_bids.get)
+    if trial_winner == &quot;alice&quot;:
+        pay = vcg_payment(trial_bids, &quot;alice&quot;)
+        surplus = true_value - pay   # 실제 가치 기준 순이익
+    else:
+        surplus = 0.0
+    print(f&quot;alice 신고={reported:3} -&gt; 낙찰자={trial_winner:6} 순이익(진짜가치 기준)={surplus}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-13.py">docs/code/math/math-13.py</a></p>
+      <h2>Exercise</h2>
+      <p>For a single-item auction with three bidders of different values, directly compute the payment and each participant's optimal strategy under first-price and second-price rules, and compare.</p>
+      <h2>Practical Connection</h2>
+      <p>When Verex sets rewards and penalties for oracle reporters or dispute participants, structuring payments so truthful reporting is also individually optimal is exactly an incentive-compatibility design problem.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>메커니즘 디자인(VCG 개념) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 13 / 51 &middot; 8월 — 게임이론·프로토콜 경제학 (Day 11–17)</p>
+      <p class="meta">Math &middot; Day 13 / 52 &middot; 8월 — 게임이론·프로토콜 경제학 (Day 11–17)</p>
 
       <h2>개념</h2>
       <p>메커니즘 디자인은 참가자들이 사적 정보(선호, 가치)를 가지고 전략적으로 행동한다는 전제 아래, 원하는 결과가 균형에서 나오도록 규칙 자체를 설계하는 분야다. 핵심 목표 중 하나는 유인 합치성으로, 특히 참가자가 남의 행동과 무관하게 진실 보고가 최적이 되는 dominant-strategy 유인 합치성이 가장 강한 성질이다. VCG 메커니즘은 신고된 가치의 합을 최대화하는 배분을 선택하고, 각 참가자에게 '그가 참여함으로써 다른 참가자들이 잃은 후생'만큼을 지불액으로 매기는 방식이며, 이렇게 하면 각자의 순이익이 자신이 만든 사회적 잉여와 정렬되어 진실 신고가 우월 전략이 된다. 단일 물품 경매에 VCG를 적용하면 2등 가격 경매(Vickrey auction)가 되고, 낙찰자는 자기 입찰가가 아니라 차순위 입찰가를 낸다. 다만 VCG는 예산 균형이 깨질 수 있고 담합과 가짜 신원(sybil) 입찰에 취약하며 배분 문제 자체가 계산적으로 어려울 수 있어, 실제로는 그대로 쓰기보다 설계 기준으로 참고되는 경우가 많다.</p>
       <p>블록스페이스 경매, MEV 분배, 수수료 시장, 오라클 보상처럼 프로토콜이 값을 매기는 모든 자리는 메커니즘이고, 유인이 어긋나면 참가자가 규칙을 게임하는 방식으로 반드시 드러난다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 메커니즘 디자인(VCG 개념) — 단일 물품 경매에 VCG를 적용하면 2위가격(비크리) 경매가 됨을
+# 직접 계산으로 확인: 지불액 = &quot;내가 없었다면 다른 참가자들이 얻었을 후생&quot; = 차순위 입찰가.
+
+def vcg_payment(bids: dict, winner: str) -&gt; float:
+    # 배분: 신고된 가치 합(단일 물품이므로 = 최고 입찰자)을 최대화.
+    # 지불액: 위너가 참여하지 않았을 때 다른 참가자들이 얻는 최적 후생(=차순위 최고가)
+    #        에서, 위너 참여 시 다른 참가자들이 얻는 후생(=0, 물품을 못 받으므로)을 뺀 값.
+    others = {b: v for b, v in bids.items() if b != winner}
+    welfare_without_winner = max(others.values()) if others else 0.0
+    welfare_of_others_with_winner = 0.0  # 물품이 하나뿐이라 위너가 다 가져가면 남에게 후생 0
+    return welfare_without_winner - welfare_of_others_with_winner
+
+bids = {&quot;alice&quot;: 90, &quot;bob&quot;: 70, &quot;carol&quot;: 55}
+winner = max(bids, key=bids.get)
+payment = vcg_payment(bids, winner)
+second_highest = sorted(bids.values(), reverse=True)[1]
+
+print(&quot;입찰:&quot;, bids)
+print(f&quot;낙찰자(신고 가치 합 최대화): {winner} (가치={bids[winner]})&quot;)
+print(f&quot;VCG 지불액: {payment}&quot;)
+print(f&quot;차순위 입찰가(2위가격): {second_highest}&quot;)
+print(&quot;VCG 지불액 == 2위가격?&quot;, payment == second_highest)
+
+# 유인합치성 확인: 낙찰자가 진실보다 낮게 신고해도 지불액(payment)은 안 바뀌므로
+# (payment 는 '남의' 입찰가에만 의존) 거짓 신고로 순이익을 늘릴 수 없음을 수치로 보인다.
+true_value = bids[&quot;alice&quot;]
+for reported in (95, 90, 75, 60):  # alice 가 진실(90) 대신 다르게 신고해봄
+    trial_bids = dict(bids)
+    trial_bids[&quot;alice&quot;] = reported
+    trial_winner = max(trial_bids, key=trial_bids.get)
+    if trial_winner == &quot;alice&quot;:
+        pay = vcg_payment(trial_bids, &quot;alice&quot;)
+        surplus = true_value - pay   # 실제 가치 기준 순이익
+    else:
+        surplus = 0.0
+    print(f&quot;alice 신고={reported:3} -&gt; 낙찰자={trial_winner:6} 순이익(진짜가치 기준)={surplus}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-13.py">docs/code/math/math-13.py</a></p>
       <h2>연습</h2>
       <p>입찰가가 서로 다른 세 명이 참여하는 단일 물품 경매에서 1등 가격과 2등 가격 각각의 지불액과 각 참가자의 최적 전략을 직접 계산해 비교해 보라.</p>
       <h2>실무 · Verex 연결</h2>

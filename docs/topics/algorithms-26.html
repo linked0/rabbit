@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 26 — 가스 회계 설계</title>
+<title>Day 26 — Gas Accounting Design</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,56 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 26</p>
   <article>
+      <h1>Gas Accounting Design <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 26 / 100 &middot; B. Compilers, Runtimes &amp; VMs (Day 20-35)</p>
+      <h2>Concept</h2>
+      <p>Gas is a mechanism that quantifies compute, state storage, and bandwidth consumption into a single accounting unit and charges for it. Every opcode's gas value needs to be proportional to its actual resource consumption; even one underpriced operation becomes a DoS vector (this is why Ethereum's state-access and storage costs have been repriced several times in the past). Writes that grow state are made expensive, while operations that free state are given a refund, shaping the incentives around state growth. EIP-2929, which charges differently for a first (cold) access versus a repeat (warm) access to the same slot or address, is an example of even cache locality being folded into the pricing model. In the end, the block gas limit is an upper bound that caps a block's worst-case execution time so nodes can keep up.</p>
+      <p>If the cost model diverges from actual resource consumption, an attacker can stall a node for pennies, and if it's overpriced instead, honest users get priced out.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 가스 회계 설계 — opcode별 비용을 합산하고, cold/warm 접근 차등 과금(EIP-2929)과 블록 가스 한도를 시뮬레이션한다.
+
+BASE_COST = {&quot;ADD&quot;: 3, &quot;MUL&quot;: 5, &quot;SLOAD&quot;: 100, &quot;SSTORE_SET&quot;: 20000}
+COLD_SURCHARGE = 2000     # 슬롯 첫 접근(cold)에 추가로 붙는 과금
+BLOCK_GAS_LIMIT = 30000
+
+def run_tx(ops):
+    gas_used = 0
+    warm_slots = set()     # 트랜잭션 안에서 이미 접근한 슬롯은 이후 warm
+    trace = []
+    for op, *arg in ops:
+        cost = BASE_COST[op]
+        if op in (&quot;SLOAD&quot;, &quot;SSTORE_SET&quot;) and arg:
+            slot = arg[0]
+            if slot not in warm_slots:
+                cost += COLD_SURCHARGE      # cold 접근: 자원 소비가 더 크다고 보고 과금
+                warm_slots.add(slot)
+        gas_used += cost
+        trace.append((op, arg, cost, gas_used))
+    return gas_used, trace
+
+# 슬롯 x 를 두 번 읽는 트랜잭션: 첫 접근은 cold, 두 번째는 warm(캐시 지역성을 요금에 반영)
+ops = [(&quot;SLOAD&quot;, &quot;x&quot;), (&quot;ADD&quot;,), (&quot;SLOAD&quot;, &quot;x&quot;), (&quot;SSTORE_SET&quot;, &quot;y&quot;), (&quot;MUL&quot;,)]
+gas_used, trace = run_tx(ops)
+
+for op, arg, cost, cum in trace:
+    print(f&quot;  {op}{arg or ''}: cost={cost:&gt;6}  누적={cum}&quot;)
+
+print(f&quot;\n총 가스: {gas_used}, 블록 한도: {BLOCK_GAS_LIMIT}, 한도 내: {gas_used &lt;= BLOCK_GAS_LIMIT}&quot;)
+
+# DoS 저항 사고 실험: 이 트랜잭션을 블록 하나에 최대 몇 번 담을 수 있는가
+max_repeats = BLOCK_GAS_LIMIT // gas_used
+print(f&quot;이 트랜잭션을 블록 하나에 최대 {max_repeats}번 담을 수 있음 (가스가 실행량을 캡핑)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-26.py">docs/code/algorithms/algorithms-26.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement the same logic in two versions — one centered on storage writes, one centered on calldata and events — pull a gas report for each, and break down which opcodes dominate the cost.</p>
+      <h2>Practical Connection</h2>
+      <p>Verex's settlement and order processing need to finish within the block gas limit no matter how many participants there are, so avoiding unbounded array iteration and shifting cost to users via a pull-based claim design is necessary.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>가스 회계 설계 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 26 / 100 &middot; B. 컴파일러·런타임·VM (Day 20–35)</p>
       <p class="lead">비용 모델과 DoS 저항</p>
@@ -115,7 +188,41 @@
       <p>가스는 연산·상태 저장·대역폭 소비를 하나의 회계 단위로 정량화해 요금을 매기는 장치다. 각 opcode의 가스 값은 실제 자원 소비에 비례해야 하며, 저평가된 연산이 하나라도 있으면 그것이 곧 DoS 벡터가 된다(과거 이더리움에서 상태 접근·스토리지 비용이 여러 차례 재조정된 이유다). 상태를 늘리는 쓰기는 비싸게, 상태를 지우는 연산은 환급을 주는 식으로 상태 증가에 대한 유인을 설계한다. EIP-2929처럼 같은 슬롯·주소의 첫 접근(cold)과 재접근(warm)을 다르게 과금하는 것은 캐시 지역성까지 요금 모델에 반영한 예다. 블록 가스 한도는 결국 한 블록의 최악 실행 시간을 묶어 노드가 따라올 수 있게 하는 상한이다.</p>
       <p>비용 모델이 실제 자원 소비와 어긋나면 공격자가 헐값에 노드를 마비시킬 수 있고, 반대로 과다 책정하면 정직한 사용자가 밀려난다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 가스 회계 설계 — opcode별 비용을 합산하고, cold/warm 접근 차등 과금(EIP-2929)과 블록 가스 한도를 시뮬레이션한다.
+
+BASE_COST = {&quot;ADD&quot;: 3, &quot;MUL&quot;: 5, &quot;SLOAD&quot;: 100, &quot;SSTORE_SET&quot;: 20000}
+COLD_SURCHARGE = 2000     # 슬롯 첫 접근(cold)에 추가로 붙는 과금
+BLOCK_GAS_LIMIT = 30000
+
+def run_tx(ops):
+    gas_used = 0
+    warm_slots = set()     # 트랜잭션 안에서 이미 접근한 슬롯은 이후 warm
+    trace = []
+    for op, *arg in ops:
+        cost = BASE_COST[op]
+        if op in (&quot;SLOAD&quot;, &quot;SSTORE_SET&quot;) and arg:
+            slot = arg[0]
+            if slot not in warm_slots:
+                cost += COLD_SURCHARGE      # cold 접근: 자원 소비가 더 크다고 보고 과금
+                warm_slots.add(slot)
+        gas_used += cost
+        trace.append((op, arg, cost, gas_used))
+    return gas_used, trace
+
+# 슬롯 x 를 두 번 읽는 트랜잭션: 첫 접근은 cold, 두 번째는 warm(캐시 지역성을 요금에 반영)
+ops = [(&quot;SLOAD&quot;, &quot;x&quot;), (&quot;ADD&quot;,), (&quot;SLOAD&quot;, &quot;x&quot;), (&quot;SSTORE_SET&quot;, &quot;y&quot;), (&quot;MUL&quot;,)]
+gas_used, trace = run_tx(ops)
+
+for op, arg, cost, cum in trace:
+    print(f&quot;  {op}{arg or ''}: cost={cost:&gt;6}  누적={cum}&quot;)
+
+print(f&quot;\n총 가스: {gas_used}, 블록 한도: {BLOCK_GAS_LIMIT}, 한도 내: {gas_used &lt;= BLOCK_GAS_LIMIT}&quot;)
+
+# DoS 저항 사고 실험: 이 트랜잭션을 블록 하나에 최대 몇 번 담을 수 있는가
+max_repeats = BLOCK_GAS_LIMIT // gas_used
+print(f&quot;이 트랜잭션을 블록 하나에 최대 {max_repeats}번 담을 수 있음 (가스가 실행량을 캡핑)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-26.py">docs/code/algorithms/algorithms-26.py</a></p>
       <h2>연습</h2>
       <p>같은 로직을 storage 쓰기 중심과 calldata·event 중심 두 버전으로 구현해 gas 리포트를 뽑고, 어떤 opcode가 비용을 지배하는지 분해하라.</p>
       <h2>실무 · Verex 연결</h2>

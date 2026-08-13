@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 94 — 프라이버시 프리미티브</title>
+<title>Day 94 — Privacy primitives — ring signatures, nullifiers, and stealth addresses</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,78 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 94</p>
   <article>
+      <h1>Privacy primitives — ring signatures, nullifiers, and stealth addresses <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 94 / 100 &middot; F. Cryptography &amp; ZK (Day 82-96)</p>
+      <h2>Concept</h2>
+      <p>The common goal of privacy primitives is separating &quot;proving you have authorization&quot; from &quot;revealing who you are.&quot; A ring signature proves that the signer holds the private key for one of a set of public keys, without revealing which one; the strength of the anonymity depends on the size and composition of that set (the anonymity set). A nullifier is a unique tag deterministically derived from a secret value; publishing it prevents double-spending while keeping it unlinkable to the specific deposit or commitment it came from. The same secret always yields the same nullifier, so a second attempt to use it is caught immediately. A stealth address is derived when the sender uses ECDH with the recipient's public meta-address to create a shared secret and derive a one-time receiving address — only the recipient can recognize and spend from that address, so their receiving history doesn't accumulate on-chain under a single address.</p>
+      <p>On a public ledger, a single address exposes an entire transaction history and balance, making it possible to read a counterparty's position and front-run them — that's a privacy problem that turns straight into financial loss. Understanding privacy design is what lets you decide which information really needs to stay on-chain.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 프라이버시 프리미티브 — nullifier(중복 사용 방지)와 스텔스 주소(toy DH),
+# 그리고 링 서명(AOS, 1-of-n)으로 &quot;권한 증명&quot;과 &quot;신원 노출&quot;을 분리하는 예시.
+# 그룹은 학습용 소수: p=23, q=11(부분군 order), g=2. 실무 곡선 크기가 아니라 예시용.
+
+import hashlib, random
+
+p, q, g = 23, 11, 2
+
+def H(*args) -&gt; int:
+    return int(hashlib.sha256(&quot;|&quot;.join(map(str, args)).encode()).hexdigest(), 16) % q
+
+# --- 1) nullifier: 같은 비밀로는 항상 같은 태그가 나와 중복 사용을 검출 ---
+spent = set()
+def try_spend(secret):
+    tag = H(&quot;nullify&quot;, secret)
+    if tag in spent:
+        return False
+    spent.add(tag)
+    return True
+
+secret = 424242
+print(&quot;첫 인출:&quot;, try_spend(secret))          # True
+print(&quot;같은 비밀로 재인출 시도:&quot;, try_spend(secret))  # False — nullifier 재사용 검출
+
+# --- 2) 스텔스 주소: toy Diffie-Hellman 로 송/수신자가 독립적으로 같은 주소 유도 ---
+recv_priv = random.randrange(1, q); recv_pub = pow(g, recv_priv, p)
+eph_priv = random.randrange(1, q); eph_pub = pow(g, eph_priv, p)
+addr_sender = H(&quot;addr&quot;, pow(recv_pub, eph_priv, p))
+addr_receiver = H(&quot;addr&quot;, pow(eph_pub, recv_priv, p))
+print(&quot;스텔스 주소 일치(송신자==수신자 유도):&quot;, addr_sender == addr_receiver)
+
+# --- 3) 링 서명(AOS): n명 중 누가 서명했는지 숨긴 채 &quot;그중 하나&quot;임만 증명 ---
+def ring_sign(msg, pubs, idx, x):
+    n = len(pubs); c = [0] * n; z = [0] * n
+    k = random.randrange(1, q)
+    i = (idx + 1) % n
+    c[i] = H(msg, pow(g, k, p))
+    while i != idx:
+        z[i] = random.randrange(1, q)
+        c[(i + 1) % n] = H(msg, pow(g, z[i], p) * pow(pubs[i], c[i], p) % p)
+        i = (i + 1) % n
+    z[idx] = (k - c[idx] * x) % q
+    return c[0], z
+
+def ring_verify(msg, pubs, c0, z):
+    c = c0
+    for i in range(len(pubs)):
+        c = H(msg, pow(g, z[i], p) * pow(pubs[i], c, p) % p)
+    return c == c0
+
+secrets = [random.randrange(1, q) for _ in range(3)]
+pubs = [pow(g, x, p) for x in secrets]
+c0, z = ring_sign(&quot;transfer 10&quot;, pubs, 1, secrets[1])  # 실제 서명자는 인덱스 1
+print(&quot;링 서명 검증(서명자가 3명 중 누구인지는 드러나지 않음):&quot;, ring_verify(&quot;transfer 10&quot;, pubs, c0, z))
+print(&quot;메시지 변조 시 검증 실패:&quot;, not ring_verify(&quot;transfer 99&quot;, pubs, c0, z))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-94.py">docs/code/algorithms/algorithms-94.py</a></p>
+      <h2>Exercise</h2>
+      <p>Build a simple deposit/withdraw contract where deposits use a commitment hash and withdrawal is gated by publishing a nullifier so it can only happen once; test that a second withdrawal attempt with the same secret is blocked.</p>
+      <h2>Practical Connection</h2>
+      <p>In a prediction market, exposing the direction of a large position turns it straight into a front-running target, so Verex also needs to decide — from this angle — what order and settlement data to leave as public events versus what to keep off-chain.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>프라이버시 프리미티브 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 94 / 100 &middot; F. 암호학·ZK (Day 82–96)</p>
       <p class="lead">링 서명·nullifier·스텔스 주소</p>
@@ -115,7 +210,63 @@
       <p>프라이버시 프리미티브의 공통 목표는 &quot;권한이 있음&quot;을 증명하는 일과 &quot;누구인지&quot;를 드러내는 일을 분리하는 것이다. 링 서명은 여러 공개키로 이루어진 집합 중 하나의 비밀키 소유자가 서명했음을 증명하되 어느 것인지는 숨기며, 익명성의 강도는 그 집합(anonymity set)의 크기와 구성에 달린다. nullifier는 비밀값에서 결정적으로 유도한 고유 태그로, 이를 공개해 중복 사용을 막으면서도 어떤 예치·커밋먼트에서 나왔는지는 연결되지 않게 한다. 같은 비밀에서는 항상 같은 nullifier가 나오므로 두 번째 사용 시도는 즉시 검출된다. 스텔스 주소는 송신자가 수신자의 공개 메타주소와 ECDH로 공유 비밀을 만들어 일회성 수신 주소를 유도하는 방식으로, 수신자만 그 주소를 인식하고 지출할 수 있어 온체인상 수신 이력이 한 주소로 모이지 않는다.</p>
       <p>공개 원장에서는 주소 하나가 전체 거래 이력과 잔고를 노출해 상대 포지션을 읽고 앞서 거래하는 것이 가능하며, 이는 개인정보 문제이자 곧바로 경제적 손실이다. 프라이버시 설계를 알아야 어느 정보를 굳이 온체인에 남길지 판단할 수 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 프라이버시 프리미티브 — nullifier(중복 사용 방지)와 스텔스 주소(toy DH),
+# 그리고 링 서명(AOS, 1-of-n)으로 &quot;권한 증명&quot;과 &quot;신원 노출&quot;을 분리하는 예시.
+# 그룹은 학습용 소수: p=23, q=11(부분군 order), g=2. 실무 곡선 크기가 아니라 예시용.
+
+import hashlib, random
+
+p, q, g = 23, 11, 2
+
+def H(*args) -&gt; int:
+    return int(hashlib.sha256(&quot;|&quot;.join(map(str, args)).encode()).hexdigest(), 16) % q
+
+# --- 1) nullifier: 같은 비밀로는 항상 같은 태그가 나와 중복 사용을 검출 ---
+spent = set()
+def try_spend(secret):
+    tag = H(&quot;nullify&quot;, secret)
+    if tag in spent:
+        return False
+    spent.add(tag)
+    return True
+
+secret = 424242
+print(&quot;첫 인출:&quot;, try_spend(secret))          # True
+print(&quot;같은 비밀로 재인출 시도:&quot;, try_spend(secret))  # False — nullifier 재사용 검출
+
+# --- 2) 스텔스 주소: toy Diffie-Hellman 로 송/수신자가 독립적으로 같은 주소 유도 ---
+recv_priv = random.randrange(1, q); recv_pub = pow(g, recv_priv, p)
+eph_priv = random.randrange(1, q); eph_pub = pow(g, eph_priv, p)
+addr_sender = H(&quot;addr&quot;, pow(recv_pub, eph_priv, p))
+addr_receiver = H(&quot;addr&quot;, pow(eph_pub, recv_priv, p))
+print(&quot;스텔스 주소 일치(송신자==수신자 유도):&quot;, addr_sender == addr_receiver)
+
+# --- 3) 링 서명(AOS): n명 중 누가 서명했는지 숨긴 채 &quot;그중 하나&quot;임만 증명 ---
+def ring_sign(msg, pubs, idx, x):
+    n = len(pubs); c = [0] * n; z = [0] * n
+    k = random.randrange(1, q)
+    i = (idx + 1) % n
+    c[i] = H(msg, pow(g, k, p))
+    while i != idx:
+        z[i] = random.randrange(1, q)
+        c[(i + 1) % n] = H(msg, pow(g, z[i], p) * pow(pubs[i], c[i], p) % p)
+        i = (i + 1) % n
+    z[idx] = (k - c[idx] * x) % q
+    return c[0], z
+
+def ring_verify(msg, pubs, c0, z):
+    c = c0
+    for i in range(len(pubs)):
+        c = H(msg, pow(g, z[i], p) * pow(pubs[i], c, p) % p)
+    return c == c0
+
+secrets = [random.randrange(1, q) for _ in range(3)]
+pubs = [pow(g, x, p) for x in secrets]
+c0, z = ring_sign(&quot;transfer 10&quot;, pubs, 1, secrets[1])  # 실제 서명자는 인덱스 1
+print(&quot;링 서명 검증(서명자가 3명 중 누구인지는 드러나지 않음):&quot;, ring_verify(&quot;transfer 10&quot;, pubs, c0, z))
+print(&quot;메시지 변조 시 검증 실패:&quot;, not ring_verify(&quot;transfer 99&quot;, pubs, c0, z))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-94.py">docs/code/algorithms/algorithms-94.py</a></p>
       <h2>연습</h2>
       <p>간단한 예치·인출 컨트랙트를 두고 커밋먼트 해시로 예치하고 nullifier 공개로 1회만 인출되게 하는 흐름을 구현해, 같은 비밀로 두 번 인출이 막히는지 테스트하라.</p>
       <h2>실무 · Verex 연결</h2>

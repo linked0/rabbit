@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 37 — 집중부등식(Chebyshev·Hoeffding, 12월 다리)</title>
+<title>Day 37 — Concentration Inequalities (Chebyshev, Hoeffding — Bridge to December)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,118 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 37</p>
   <article>
+      <h1>Concentration Inequalities (Chebyshev, Hoeffding — Bridge to December) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 37 / 52 &middot; November — Probability, Statistics &amp; Financial Math (Day 35-43)</p>
+      <h2>Concept</h2>
+      <p>Concentration inequalities are a family of results bounding how tightly a random variable clusters around its expectation. Markov's inequality is the weakest form, bounding the tail of a non-negative variable using only its mean. Chebyshev's inequality adds variance information, guaranteeing that the probability of deviating from the mean by more than k standard deviations is at most 1/k². Hoeffding's inequality guarantees that for the average of independent variables each bounded within a finite interval, the probability of deviation decays exponentially in both the sample size and the deviation width. The consistent principle across this family is that stronger assumptions — non-negativity, then finite variance, then boundedness plus independence — yield sharper tail bounds. The practical use is solving in reverse: how many samples do you need to hit a target accuracy at a target confidence level — and that guarantee becomes meaningless the moment the independence assumption breaks.</p>
+      <p>Determining a defensible sample size for sampling-based estimation, A/B decisions, or the failure probability of a randomized algorithm requires these inequalities — a sample count picked by gut feel is usually either too small or wastefully large.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 37 — 집중부등식(Chebyshev·Hoeffding)
+# 시뮬레이션으로 실제 이탈확률을 구하고, Chebyshev·Hoeffding 상한과 비교해 부등식이 보장임을 확인한다.
+
+import random
+import math
+
+random.seed(0)
+
+# Chebyshev: P(|X - mu| &gt;= k*sigma) &lt;= 1/k^2, X ~ Uniform(0,1) 표본평균으로 확인
+n_trials = 200_000
+mu_uniform = 0.5
+var_uniform = 1 / 12
+sigma_uniform = math.sqrt(var_uniform)
+
+k = 2.0
+count_exceed = 0
+for _ in range(n_trials):
+    x = random.uniform(0, 1)
+    if abs(x - mu_uniform) &gt;= k * sigma_uniform:
+        count_exceed += 1
+
+empirical_prob = count_exceed / n_trials
+chebyshev_bound = 1 / k ** 2
+print(f&quot;Chebyshev: P(|X-mu|&gt;={k}*sigma) 실제 = {empirical_prob:.4f}, 상한 1/k^2 = {chebyshev_bound:.4f}&quot;)
+print(f&quot;-&gt; 실제 &lt;= 상한 ? {empirical_prob &lt;= chebyshev_bound}\n&quot;)
+
+# Hoeffding: 독립 [0,1] 변수 n개 평균이 참평균에서 t 이상 벗어날 확률 &lt;= 2*exp(-2*n*t^2)
+n_samples = 100
+t = 0.1
+n_experiments = 20_000
+count_exceed_hoeffding = 0
+true_mean = 0.5
+
+for _ in range(n_experiments):
+    sample = [random.uniform(0, 1) for _ in range(n_samples)]
+    sample_mean = sum(sample) / n_samples
+    if abs(sample_mean - true_mean) &gt;= t:
+        count_exceed_hoeffding += 1
+
+empirical_hoeffding = count_exceed_hoeffding / n_experiments
+hoeffding_bound = 2 * math.exp(-2 * n_samples * t ** 2)
+print(f&quot;Hoeffding: P(|mean-mu|&gt;={t}) 실제 = {empirical_hoeffding:.5f}, 상한 = {hoeffding_bound:.5f}&quot;)
+print(f&quot;-&gt; 실제 &lt;= 상한 ? {empirical_hoeffding &lt;= hoeffding_bound}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-37.py">docs/code/math/math-37.py</a></p>
+      <h2>Exercise</h2>
+      <p>Compute, using both Chebyshev's and Hoeffding's inequalities, how many coin flips are needed to estimate a biased coin's heads probability to within 0.01 at 95% confidence, and compare how different the two required sample sizes are.</p>
+      <h2>Practical Connection</h2>
+      <p>This same reasoning is exactly what's used to judge how many trials are needed before a measured average from a prediction-market simulation or a matching-engine load test can be trusted.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>집중부등식(Chebyshev·Hoeffding, 12월 다리) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 37 / 51 &middot; 11월 — 확률·통계·금융수학 (Day 35–42)</p>
+      <p class="meta">Math &middot; Day 37 / 52 &middot; 11월 — 확률·통계·금융수학 (Day 35–43)</p>
 
       <h2>개념</h2>
       <p>집중부등식은 확률변수가 기댓값 근처에 얼마나 몰려 있는지를 보장하는 부등식들의 총칭이다. Markov 부등식은 음이 아닌 변수에 대해 평균만으로 꼬리를 제한하는 가장 약한 형태이고, Chebyshev 부등식은 여기에 분산 정보를 더해 기댓값에서 표준편차의 k배 이상 벗어날 확률이 1/k² 이하임을 보장한다. Hoeffding 부등식은 서로 독립이고 각각 유한한 구간 안에 갇힌 변수들의 평균에 대해, 벗어남 확률이 표본 수와 벗어남 폭에 대해 지수적으로 감소함을 보장한다. 이 계열의 일관된 원리는 가정을 더 강하게 둘수록(비음수 → 분산 유한 → 유계·독립) 꼬리 경계가 더 날카로워진다는 것이다. 실무적 용도는 '몇 번 표본을 뽑아야 원하는 정확도를 원하는 신뢰수준으로 얻는가'를 역으로 푸는 것이며, 이때 독립성 가정이 깨지면 보장 자체가 무의미해진다.</p>
       <p>샘플링 기반 추정, A/B 판단, 랜덤 알고리즘의 실패 확률 산정에서 필요한 표본 수를 근거 있게 정하려면 이 부등식이 있어야 한다. 감으로 정한 표본 수는 대개 과소하거나 과대하다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 37 — 집중부등식(Chebyshev·Hoeffding)
+# 시뮬레이션으로 실제 이탈확률을 구하고, Chebyshev·Hoeffding 상한과 비교해 부등식이 보장임을 확인한다.
+
+import random
+import math
+
+random.seed(0)
+
+# Chebyshev: P(|X - mu| &gt;= k*sigma) &lt;= 1/k^2, X ~ Uniform(0,1) 표본평균으로 확인
+n_trials = 200_000
+mu_uniform = 0.5
+var_uniform = 1 / 12
+sigma_uniform = math.sqrt(var_uniform)
+
+k = 2.0
+count_exceed = 0
+for _ in range(n_trials):
+    x = random.uniform(0, 1)
+    if abs(x - mu_uniform) &gt;= k * sigma_uniform:
+        count_exceed += 1
+
+empirical_prob = count_exceed / n_trials
+chebyshev_bound = 1 / k ** 2
+print(f&quot;Chebyshev: P(|X-mu|&gt;={k}*sigma) 실제 = {empirical_prob:.4f}, 상한 1/k^2 = {chebyshev_bound:.4f}&quot;)
+print(f&quot;-&gt; 실제 &lt;= 상한 ? {empirical_prob &lt;= chebyshev_bound}\n&quot;)
+
+# Hoeffding: 독립 [0,1] 변수 n개 평균이 참평균에서 t 이상 벗어날 확률 &lt;= 2*exp(-2*n*t^2)
+n_samples = 100
+t = 0.1
+n_experiments = 20_000
+count_exceed_hoeffding = 0
+true_mean = 0.5
+
+for _ in range(n_experiments):
+    sample = [random.uniform(0, 1) for _ in range(n_samples)]
+    sample_mean = sum(sample) / n_samples
+    if abs(sample_mean - true_mean) &gt;= t:
+        count_exceed_hoeffding += 1
+
+empirical_hoeffding = count_exceed_hoeffding / n_experiments
+hoeffding_bound = 2 * math.exp(-2 * n_samples * t ** 2)
+print(f&quot;Hoeffding: P(|mean-mu|&gt;={t}) 실제 = {empirical_hoeffding:.5f}, 상한 = {hoeffding_bound:.5f}&quot;)
+print(f&quot;-&gt; 실제 &lt;= 상한 ? {empirical_hoeffding &lt;= hoeffding_bound}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-37.py">docs/code/math/math-37.py</a></p>
       <h2>연습</h2>
       <p>치우친 동전의 앞면 비율을 오차 0.01 이내로 95% 신뢰도로 추정하려면 몇 번 던져야 하는지 Chebyshev와 Hoeffding으로 각각 계산해 필요한 표본 수 차이를 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

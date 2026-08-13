@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 72 — B+트리 vs LSM</title>
+<title>Day 72 — B+Trees vs. LSM Trees: How Ethereum Clients Choose Their Database</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,56 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 72</p>
   <article>
+      <h1>B+Trees vs. LSM Trees: How Ethereum Clients Choose Their Database <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 72 / 100 &middot; E. Data &amp; Storage Engines (Day 69-81)</p>
+      <h2>Concept</h2>
+      <p>A B+tree keeps sorted keys in page-sized nodes and updates them in place, so read amplification is low and range scans come naturally, but random writes turn into random page writes, driving up write amplification and page-split cost. An LSM tree buffers writes into an in-memory table and flushes them sequentially as SSTables, cleaning up with background compaction — giving high write throughput, at the cost of a single key being scattered across multiple levels (raising read amplification, mitigated with Bloom filters) and compaction causing latency spikes and space amplification. Ethereum's state sits on top of a key-value store as a Merkle Patricia Trie, which produces a random, write-skewed access pattern, since every block rewrites the whole path of nodes up to the root. That's why the Geth line has relied on LSM-based storage (LevelDB, later Pebble), while Erigon chose to restructure state around flat key layout with the B+tree-based MDBX, trading toward lower read amplification and disk usage. In the end the choice comes down to the workload's read/write ratio, access locality, and how much space amplification is tolerable.</p>
+      <p>Slow node sync or exploding disk usage is usually not an application-logic problem — it's a mismatch between the storage engine's amplification characteristics and the actual access pattern.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># B+트리 vs LSM → 이더리움 클라이언트의 DB 선택 — 랜덤 쓰기 워크로드에서 두 구조의 실제 디스크 비용을 비교한다.
+# B+트리는 갱신마다 랜덤 페이지 쓰기, LSM은 순차 flush + 백그라운드 컴팩션으로 대가를 뒤로 미룬다.
+
+import math
+import random
+random.seed(1)
+
+PAGE_SIZE = 4096
+N_WRITES = 2000
+KEY_SPACE = 500   # 키 공간이 작을수록 같은 페이지가 자주 재기록된다 (지역성 ↑)
+
+def bplus_tree_cost(n_writes, key_space, page_size=PAGE_SIZE, keys_per_page=64):
+    # 단순화: 랜덤 키 쓰기마다 그 키가 속한 페이지 하나를 통째로 다시 쓴다 (in-place 갱신)
+    total_page_writes = 0
+    for _ in range(n_writes):
+        key = random.randint(0, key_space - 1)
+        _page = key // keys_per_page
+        total_page_writes += 1
+    return total_page_writes * page_size
+
+def lsm_cost(n_writes, record_size=64, level_multiplier=4):
+    logical = n_writes * record_size
+    # flush 1회 + 레벨을 타고 내려가며 평균 level_multiplier배 정도 재기록된다고 근사
+    amplification = 1 + math.log(max(n_writes // 100, 1), level_multiplier)
+    return logical * amplification
+
+bplus_bytes = bplus_tree_cost(N_WRITES, KEY_SPACE)
+lsm_bytes = lsm_cost(N_WRITES)
+
+print(f&quot;랜덤 쓰기 {N_WRITES}건, 키 공간 {KEY_SPACE} (지역성 낮음)&quot;)
+print(f&quot;B+트리 예상 디스크 기록량: {bplus_bytes:,} bytes (페이지 단위 랜덤 쓰기)&quot;)
+print(f&quot;LSM 예상 디스크 기록량:   {lsm_bytes:,.0f} bytes (순차 flush + 컴팩션 증폭)&quot;)
+print(&quot;→ 랜덤 쓰기 편중 워크로드일수록 LSM이 유리한 이유: 쓰기를 순차화해 증폭을 뒤로 미룬다&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-72.py">docs/code/algorithms/algorithms-72.py</a></p>
+      <h2>Exercise</h2>
+      <p>Run the same key-value workload — random-write-heavy vs. range-read-heavy — against both an LSM-based store and a B+tree-based store, and compare throughput, disk usage, and latency distribution.</p>
+      <h2>Practical Connection</h2>
+      <p>Append-heavy data with lots of time-range queries, like prediction-market event logs and execution history, favors the LSM family; random-read-heavy data, like per-account position lookups, calls for a different index structure.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>B+트리 vs LSM <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 72 / 100 &middot; E. 데이터·스토리지 엔진 (Day 69–81)</p>
 
@@ -115,7 +188,41 @@
       <p>B+트리는 정렬된 키를 페이지 단위 노드에 유지하며 갱신을 제자리(in-place)로 수행하므로 읽기 증폭이 작고 범위 스캔이 자연스럽지만, 랜덤 쓰기가 랜덤 페이지 쓰기로 이어져 쓰기 증폭과 페이지 분할 비용이 크다. LSM 트리는 쓰기를 메모리 테이블에 모아 순차적으로 SSTable로 flush하고 백그라운드 compaction으로 정리하므로 쓰기 처리량이 높은 대신, 하나의 키가 여러 레벨에 흩어져 읽기 증폭이 생기고(블룸 필터로 완화) compaction이 지연 스파이크와 공간 증폭을 만든다. 이더리움의 상태는 Merkle Patricia 트리를 키-값 저장소 위에 얹는 구조라, 블록마다 루트까지의 경로 노드가 통째로 새로 쓰이는 무작위·쓰기 편중 패턴이 나온다. 그래서 Geth 계열은 LSM 기반 저장소(LevelDB, 이후 Pebble)를 써 왔고, Erigon은 평탄한 키 배치와 B+트리 기반 MDBX로 상태를 재구성해 읽기 증폭과 디스크 사용량을 줄이는 방향을 택했다. 결국 선택은 워크로드의 읽기/쓰기 비율과 접근 지역성, 그리고 감당 가능한 공간 증폭에 달려 있다.</p>
       <p>노드 동기화가 느리거나 디스크가 폭증하는 문제는 대개 애플리케이션 로직이 아니라 스토리지 엔진의 증폭 특성과 접근 패턴의 불일치에서 온다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># B+트리 vs LSM → 이더리움 클라이언트의 DB 선택 — 랜덤 쓰기 워크로드에서 두 구조의 실제 디스크 비용을 비교한다.
+# B+트리는 갱신마다 랜덤 페이지 쓰기, LSM은 순차 flush + 백그라운드 컴팩션으로 대가를 뒤로 미룬다.
+
+import math
+import random
+random.seed(1)
+
+PAGE_SIZE = 4096
+N_WRITES = 2000
+KEY_SPACE = 500   # 키 공간이 작을수록 같은 페이지가 자주 재기록된다 (지역성 ↑)
+
+def bplus_tree_cost(n_writes, key_space, page_size=PAGE_SIZE, keys_per_page=64):
+    # 단순화: 랜덤 키 쓰기마다 그 키가 속한 페이지 하나를 통째로 다시 쓴다 (in-place 갱신)
+    total_page_writes = 0
+    for _ in range(n_writes):
+        key = random.randint(0, key_space - 1)
+        _page = key // keys_per_page
+        total_page_writes += 1
+    return total_page_writes * page_size
+
+def lsm_cost(n_writes, record_size=64, level_multiplier=4):
+    logical = n_writes * record_size
+    # flush 1회 + 레벨을 타고 내려가며 평균 level_multiplier배 정도 재기록된다고 근사
+    amplification = 1 + math.log(max(n_writes // 100, 1), level_multiplier)
+    return logical * amplification
+
+bplus_bytes = bplus_tree_cost(N_WRITES, KEY_SPACE)
+lsm_bytes = lsm_cost(N_WRITES)
+
+print(f&quot;랜덤 쓰기 {N_WRITES}건, 키 공간 {KEY_SPACE} (지역성 낮음)&quot;)
+print(f&quot;B+트리 예상 디스크 기록량: {bplus_bytes:,} bytes (페이지 단위 랜덤 쓰기)&quot;)
+print(f&quot;LSM 예상 디스크 기록량:   {lsm_bytes:,.0f} bytes (순차 flush + 컴팩션 증폭)&quot;)
+print(&quot;→ 랜덤 쓰기 편중 워크로드일수록 LSM이 유리한 이유: 쓰기를 순차화해 증폭을 뒤로 미룬다&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-72.py">docs/code/algorithms/algorithms-72.py</a></p>
       <h2>연습</h2>
       <p>동일한 키-값 워크로드(랜덤 쓰기 위주 vs 범위 읽기 위주)를 LSM 기반 저장소와 B+트리 기반 저장소에 각각 넣고 처리량·디스크 사용량·지연 분포를 비교해 볼 것.</p>
       <h2>실무 · Verex 연결</h2>

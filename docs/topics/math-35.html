@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 35 — 조건부확률·베이즈·기대값·정규분포</title>
+<title>Day 35 — Conditional Probability, Bayes' Theorem, Expectation, and the Normal Distribution</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,92 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 35</p>
   <article>
+      <h1>Conditional Probability, Bayes' Theorem, Expectation, and the Normal Distribution <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 35 / 52 &middot; November — Probability, Statistics &amp; Financial Math (Day 35-43)</p>
+      <h2>Concept</h2>
+      <p>Conditional probability P(A|B) is the probability of A given that B has occurred, defined as P(A and B) divided by P(B). Bayes' theorem, P(A|B) = P(B|A)P(A)/P(B), gives the procedure for updating a prior probability with the likelihood of new evidence to get a posterior probability. Expectation is a probability-weighted average, and by linearity the expectation of a sum equals the sum of expectations even when the variables aren't independent — though variance only adds simply when the variables are uncorrelated. The normal distribution is determined entirely by its mean and variance, and it serves as the default model because of the central limit theorem: summing many independent random variables with finite variance produces a sum whose distribution approaches normal. That said, assuming normality for fat-tailed data — like financial returns — badly underestimates the probability of extreme events.</p>
+      <p>When the base rate is low, even a highly accurate detector produces mostly false positives among its positive calls — a Bayesian conclusion that overturns naive intuition in practice — and a prediction market's price is itself best read as a posterior probability.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 35 — 조건부확률·베이즈·기대값·정규분포
+# 질병 검사 예시로 베이즈 정리를 수치로 계산: P(질병|양성) = P(양성|질병)P(질병) / P(양성)
+
+prior_disease = 0.01          # P(질병) — 사전확률(유병률)
+p_positive_given_disease = 0.95   # P(양성|질병) — 민감도
+p_positive_given_healthy = 0.05   # P(양성|건강) — 위양성률
+
+p_healthy = 1 - prior_disease
+p_positive = (p_positive_given_disease * prior_disease
+              + p_positive_given_healthy * p_healthy)
+
+p_disease_given_positive = (p_positive_given_disease * prior_disease) / p_positive
+
+print(f&quot;사전확률 P(질병) = {prior_disease}&quot;)
+print(f&quot;P(양성) (전체확률) = {p_positive:.4f}&quot;)
+print(f&quot;베이즈 정리로 계산한 P(질병|양성) = {p_disease_given_positive:.4f}&quot;)
+print(&quot;-&gt; 검사가 정확해 보여도 유병률이 낮으면 사후확률은 여전히 낮다는 직관을 확인한다.\n&quot;)
+
+# 기대값과 정규분포: 표준정규분포에서 표본을 뽑아 표본평균이 이론적 기대값(0)에 가까워짐을 확인
+import random
+
+random.seed(42)
+n = 100_000
+samples = [random.gauss(mu=0, sigma=1) for _ in range(n)]
+sample_mean = sum(samples) / n
+sample_var = sum((s - sample_mean) ** 2 for s in samples) / n
+
+print(f&quot;N(0,1)에서 {n}개 표본 추출&quot;)
+print(f&quot;표본평균 = {sample_mean:.6f} (이론값 0)&quot;)
+print(f&quot;표본분산 = {sample_var:.6f} (이론값 1)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-35.py">docs/code/math/math-35.py</a></p>
+      <h2>Exercise</h2>
+      <p>For an event with a 1% base rate, detected by a test with 99% sensitivity and 99% specificity, compute by hand the probability that a positive result is actually correct, then verify it with 100,000 simulation runs.</p>
+      <h2>Practical Connection</h2>
+      <p>Verex's market prices are read as participants' posterior probability estimates, and LMSR's per-outcome prices are always maintained as a probability vector summing to 1 — so getting this probabilistic language exactly right is what keeps P&amp;L and settlement calculations from going wrong.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>조건부확률·베이즈·기대값·정규분포 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 35 / 51 &middot; 11월 — 확률·통계·금융수학 (Day 35–42)</p>
+      <p class="meta">Math &middot; Day 35 / 52 &middot; 11월 — 확률·통계·금융수학 (Day 35–43)</p>
 
       <h2>개념</h2>
       <p>조건부확률 P(A|B)는 B가 일어났다는 정보 아래에서 A가 일어날 확률이며 P(A와 B가 함께)를 P(B)로 나눈 값으로 정의된다. 베이즈 정리는 P(A|B) = P(B|A)P(A)/P(B)로, 사전확률을 새 증거의 우도로 갱신해 사후확률을 얻는 절차를 준다. 기대값은 확률로 가중한 평균이고 선형성 덕분에 독립이 아니어도 합의 기대값은 기대값의 합이지만, 분산은 상관이 없을 때만 단순히 더해진다. 정규분포는 평균과 분산으로 결정되는 분포이며, 독립이고 분산이 유한한 확률변수를 많이 더하면 그 합의 분포가 정규분포에 가까워진다는 중심극한정리 때문에 기본 모형으로 쓰인다. 다만 금융 수익률처럼 꼬리가 두꺼운 데이터에 정규분포를 가정하면 극단 사건의 확률을 크게 과소평가하게 된다.</p>
       <p>기저율이 낮으면 정확도 높은 탐지기라도 양성 판정 대부분이 거짓이라는 베이즈적 결론이 실무 판단을 뒤집고, 예측시장 가격 자체가 사후확률로 읽히기 때문이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 35 — 조건부확률·베이즈·기대값·정규분포
+# 질병 검사 예시로 베이즈 정리를 수치로 계산: P(질병|양성) = P(양성|질병)P(질병) / P(양성)
+
+prior_disease = 0.01          # P(질병) — 사전확률(유병률)
+p_positive_given_disease = 0.95   # P(양성|질병) — 민감도
+p_positive_given_healthy = 0.05   # P(양성|건강) — 위양성률
+
+p_healthy = 1 - prior_disease
+p_positive = (p_positive_given_disease * prior_disease
+              + p_positive_given_healthy * p_healthy)
+
+p_disease_given_positive = (p_positive_given_disease * prior_disease) / p_positive
+
+print(f&quot;사전확률 P(질병) = {prior_disease}&quot;)
+print(f&quot;P(양성) (전체확률) = {p_positive:.4f}&quot;)
+print(f&quot;베이즈 정리로 계산한 P(질병|양성) = {p_disease_given_positive:.4f}&quot;)
+print(&quot;-&gt; 검사가 정확해 보여도 유병률이 낮으면 사후확률은 여전히 낮다는 직관을 확인한다.\n&quot;)
+
+# 기대값과 정규분포: 표준정규분포에서 표본을 뽑아 표본평균이 이론적 기대값(0)에 가까워짐을 확인
+import random
+
+random.seed(42)
+n = 100_000
+samples = [random.gauss(mu=0, sigma=1) for _ in range(n)]
+sample_mean = sum(samples) / n
+sample_var = sum((s - sample_mean) ** 2 for s in samples) / n
+
+print(f&quot;N(0,1)에서 {n}개 표본 추출&quot;)
+print(f&quot;표본평균 = {sample_mean:.6f} (이론값 0)&quot;)
+print(f&quot;표본분산 = {sample_var:.6f} (이론값 1)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-35.py">docs/code/math/math-35.py</a></p>
       <h2>연습</h2>
       <p>기저율 1%인 사건에 민감도 99%·특이도 99%인 탐지기를 적용했을 때 양성 판정이 실제로 맞을 확률을 손으로 계산하고, 10만 회 시뮬레이션으로 검증하기.</p>
       <h2>실무 · Verex 연결</h2>

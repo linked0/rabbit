@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 70 — WAL·그룹 커밋·fsync 비용</title>
+<title>Day 70 — WAL, Group Commit, and the Cost of fsync</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,59 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 70</p>
   <article>
+      <h1>WAL, Group Commit, and the Cost of fsync <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 70 / 100 &middot; E. Data &amp; Storage Engines (Day 69-81)</p>
+      <h2>Concept</h2>
+      <p>A write-ahead log (WAL) records changes sequentially to a log file before modifying the actual data pages, guaranteeing durability and crash recovery — and as a side effect, it turns random writes into sequential ones. For a commit to be truly durable, its log record has to actually reach storage, which requires an fsync (or fdatasync) call to force the OS page cache and device cache to flush — and that call is the dominant cost in commit latency. Group commit batches the log records of several transactions that arrive within a short time window and durably writes them with a single fsync, so the number of fsyncs scales with time rather than with transaction count. The result: a slight increase in any single transaction's latency, but a large gain in overall throughput — a classic latency-for-throughput batching tradeoff. Conversely, an asynchronous-commit setting skips waiting on fsync entirely for speed, at the cost of accepting the loss of some recent commits on crash.</p>
+      <p>When a database suddenly slows down, the culprit is often fsync-per-commit rather than the query plan — and conversely, a setting that looks fast might actually have quietly traded away durability.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># WAL·그룹 커밋·fsync 비용 — 변경을 로그에 먼저 순차 기록하고, 여러 트랜잭션을 모아 fsync 한 번으로 묶어 내구화한다.
+# 트랜잭션마다 fsync하는 방식과, 짧은 창 안의 여러 트랜잭션을 묶어 fsync 한 번으로 처리하는 그룹 커밋을 비교한다.
+
+class WAL:
+    def __init__(self):
+        self.log = []
+        self.fsync_calls = 0
+
+    def append(self, record):
+        self.log.append(record)   # 순차 기록 (아직 장치까지 내구화되지는 않음)
+
+    def flush(self):
+        self.fsync_calls += 1     # fsync: 실제 장치까지 강제로 내려보내는, 비용이 큰 호출
+
+txns = [f&quot;txn-{i}: UPDATE balance SET ...&quot; for i in range(12)]
+
+# 방식 1: 트랜잭션마다 즉시 fsync
+wal1 = WAL()
+for t in txns:
+    wal1.append(t)
+    wal1.flush()
+print(f&quot;개별 커밋: fsync 호출 {wal1.fsync_calls}회 (트랜잭션 수만큼)&quot;)
+
+# 방식 2: 그룹 커밋 — 4개씩 모아 fsync 한 번
+wal2 = WAL()
+GROUP_SIZE = 4
+for i in range(0, len(txns), GROUP_SIZE):
+    for t in txns[i:i + GROUP_SIZE]:
+        wal2.append(t)
+    wal2.flush()                 # 그룹 전체를 한 번의 fsync로 내구화
+print(f&quot;그룹 커밋(그룹 크기 {GROUP_SIZE}): fsync 호출 {wal2.fsync_calls}회&quot;)
+
+def replay(wal):
+    return list(wal.log)   # 크래시 복구: 로그를 처음부터 재생해 마지막 커밋 상태를 되살린다
+
+print(f&quot;\n복구 재생 결과 (마지막 3건): {replay(wal2)[-3:]}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-70.py">docs/code/algorithms/algorithms-70.py</a></p>
+      <h2>Exercise</h2>
+      <p>Run the same insert workload against local Postgres with synchronous_commit on and off, compare TPS and p99 latency, and also measure the numbers when transactions are batched together.</p>
+      <h2>Practical Connection</h2>
+      <p>When an indexer writes thousands of events per block, batching commits at the block level instead of committing per event is exactly the same throughput trick, for exactly the same reason.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>WAL·그룹 커밋·fsync 비용 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 70 / 100 &middot; E. 데이터·스토리지 엔진 (Day 69–81)</p>
 
@@ -115,7 +191,44 @@
       <p>WAL은 데이터 페이지를 수정하기 전에 변경 내역을 로그 파일에 먼저 순차 기록해 내구성과 크래시 복구를 보장하는 기법이며, 무작위 쓰기를 순차 쓰기로 바꾸는 부수 효과도 크다. 커밋이 진짜 내구적이 되려면 로그 레코드가 저장장치에 도달해야 하고, 이를 위해 fsync 또는 fdatasync로 OS 페이지 캐시와 장치 캐시를 강제로 비워야 하는데 이 호출이 커밋 지연의 지배적 비용이다. 그룹 커밋은 짧은 시간 창 안에 도착한 여러 트랜잭션의 로그를 모아 한 번의 fsync로 함께 내구화해, fsync 횟수를 트랜잭션 수가 아니라 시간 단위에 비례하게 만든다. 그 결과 개별 트랜잭션의 지연은 조금 늘지만 전체 처리량은 크게 오르며, 이는 지연과 처리량을 맞바꾸는 전형적인 배칭이다. 반대로 비동기 커밋 설정은 fsync를 기다리지 않아 빠르지만, 크래시 시 최근 커밋 일부의 손실을 감수하는 선택이다.</p>
       <p>DB가 갑자기 느려질 때 원인이 쿼리 플랜이 아니라 커밋당 fsync인 경우가 많고, 반대로 빨라 보이는 설정이 사실은 내구성을 포기한 것일 수도 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># WAL·그룹 커밋·fsync 비용 — 변경을 로그에 먼저 순차 기록하고, 여러 트랜잭션을 모아 fsync 한 번으로 묶어 내구화한다.
+# 트랜잭션마다 fsync하는 방식과, 짧은 창 안의 여러 트랜잭션을 묶어 fsync 한 번으로 처리하는 그룹 커밋을 비교한다.
+
+class WAL:
+    def __init__(self):
+        self.log = []
+        self.fsync_calls = 0
+
+    def append(self, record):
+        self.log.append(record)   # 순차 기록 (아직 장치까지 내구화되지는 않음)
+
+    def flush(self):
+        self.fsync_calls += 1     # fsync: 실제 장치까지 강제로 내려보내는, 비용이 큰 호출
+
+txns = [f&quot;txn-{i}: UPDATE balance SET ...&quot; for i in range(12)]
+
+# 방식 1: 트랜잭션마다 즉시 fsync
+wal1 = WAL()
+for t in txns:
+    wal1.append(t)
+    wal1.flush()
+print(f&quot;개별 커밋: fsync 호출 {wal1.fsync_calls}회 (트랜잭션 수만큼)&quot;)
+
+# 방식 2: 그룹 커밋 — 4개씩 모아 fsync 한 번
+wal2 = WAL()
+GROUP_SIZE = 4
+for i in range(0, len(txns), GROUP_SIZE):
+    for t in txns[i:i + GROUP_SIZE]:
+        wal2.append(t)
+    wal2.flush()                 # 그룹 전체를 한 번의 fsync로 내구화
+print(f&quot;그룹 커밋(그룹 크기 {GROUP_SIZE}): fsync 호출 {wal2.fsync_calls}회&quot;)
+
+def replay(wal):
+    return list(wal.log)   # 크래시 복구: 로그를 처음부터 재생해 마지막 커밋 상태를 되살린다
+
+print(f&quot;\n복구 재생 결과 (마지막 3건): {replay(wal2)[-3:]}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-70.py">docs/code/algorithms/algorithms-70.py</a></p>
       <h2>연습</h2>
       <p>로컬 Postgres에서 synchronous_commit을 켠 상태와 끈 상태로 동일한 삽입 부하를 돌려 TPS와 p99 지연을 비교하고, 트랜잭션을 배치로 묶었을 때의 수치도 함께 재라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 61 — 데이터 가용성 샘플링과 소거부호(Reed-Solomon)</title>
+<title>Day 61 — Data Availability Sampling and Erasure Coding (Reed-Solomon)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,71 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 61</p>
   <article>
+      <h1>Data Availability Sampling and Erasure Coding (Reed-Solomon) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 61 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>Reed-Solomon codes are erasure codes that treat k data symbols as the coefficients (or evaluations) of a polynomial, then evaluate that polynomial at n distinct points to produce n symbols. Because a degree-(k-1) polynomial is uniquely determined by any k distinct points, the original data can be reconstructed from any k of the n encoded pieces. The data availability problem arises because a block producer must be shown to have actually published its data, without every verifier downloading the whole thing. Extending the data with an erasure code creates a useful property: to hide the data, the producer must withhold a substantial fraction of the encoded pieces. Data availability sampling (DAS) exploits this: each light node requests a handful of pieces at random positions and accepts the block only if all of them arrive. Since a fixed fraction of pieces must be missing for the data to actually be unavailable, increasing the number of samples drives the probability of missing that unavailability down exponentially. This also requires a way to verify that each piece matches the committed data — for example a polynomial commitment scheme like KZG, or a fraud-proof mechanism — otherwise the producer could hand out pieces that were encoded incorrectly.</p>
+      <p>A rollup's safety ultimately comes down to whether its data was actually published, and DAS is what lets a light client verify that probabilistically without running a full node — so understanding it is essential to understanding the trust assumptions behind any service built on an L2.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 데이터 가용성 샘플링과 소거부호(Reed-Solomon) — k=4,n=8 시스터매틱 RS 부호로 조각 4개만으로 원본 복원.
+# 원본 데이터를 다항식 평가값으로 삼아 보간한 뒤 8개 지점에서 평가해 조각을 만들고, 임의의 4조각으로 라그랑주 보간해 되살린다.
+
+P = 257  # 8비트 심볼보다 큰 소수 (GF(p) 산술)
+
+def lagrange_interpolate(xs, ys, x, p=P):
+    total = 0
+    n = len(xs)
+    for i in range(n):
+        xi, yi = xs[i], ys[i]
+        num, den = 1, 1
+        for j in range(n):
+            if i == j:
+                continue
+            num = (num * (x - xs[j])) % p
+            den = (den * (xi - xs[j])) % p
+        total = (total + yi * num * pow(den, p - 2, p)) % p
+    return total % p
+
+k, n = 4, 8
+data = [65, 66, 67, 68]            # 원본 데이터 심볼 (예: 'A','B','C','D')
+xs_known = list(range(k))          # 0,1,2,3 지점에 원본을 심는다 (systematic 배치)
+
+# 원본 4점을 지나는 차수&lt;=3 다항식을 8개 지점(0..7)에서 평가해 소거부호 조각을 만든다
+shares = [lagrange_interpolate(xs_known, data, x) for x in range(n)]
+print(&quot;원본 데이터:&quot;, data)
+print(&quot;소거부호 조각 8개:&quot;, shares)
+
+# 원본 조각(0~3)이 전부 사라지고 패리티 조각(4~7)만 남았다고 가정
+available = [4, 5, 6, 7]
+recovered = [lagrange_interpolate(available, [shares[i] for i in available], x) for x in range(k)]
+print(&quot;원본 조각 전부 소실, 패리티 4개로만 복원:&quot;, recovered)
+print(&quot;복원 성공 여부:&quot;, recovered == data)
+
+def sampling_pass_prob_hidden_undetected(n, hidden, s):
+    &quot;&quot;&quot;숨겨진 조각을 표본 s개가 하나도 건드리지 못할 확률 (=DAS가 은닉을 놓칠 확률).&quot;&quot;&quot;
+    visible = n - hidden
+    if s &gt; visible:
+        return 0.0
+    prob = 1.0
+    for i in range(s):
+        prob *= (visible - i) / (n - i)
+    return prob
+
+print()
+for s in (1, 2, 4, 8):
+    p_miss = sampling_pass_prob_hidden_undetected(n=8, hidden=4, s=s)
+    print(f&quot;조각 절반이 숨겨졌을 때 샘플 {s}개로 은닉을 놓칠 확률: {p_miss:.4f}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-61.py">docs/code/algorithms/algorithms-61.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement a k=4, n=8 Reed-Solomon encoding over a small finite field, reconstruct the original data from any 4 pieces using Lagrange interpolation, and then calculate the probability that s random samples all succeed when half of the pieces are assumed to be withheld.</p>
+      <h2>Practical Connection</h2>
+      <p>If Verex runs on an L2, finality depends on settlement data actually being posted to the DA layer, so the design should define upfront what state market settlement is left in if data availability fails.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>데이터 가용성 샘플링과 소거부호(Reed-Solomon) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 61 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
 
@@ -115,7 +203,56 @@
       <p>Reed-Solomon 부호는 k개의 데이터 심볼을 다항식의 계수(또는 평가값)로 보고 서로 다른 n개의 점에서 평가해 n개의 심볼을 만드는 소거부호로, 차수 k-1 다항식은 서로 다른 k개의 점으로 유일하게 복원되므로 임의의 k개 조각만 있으면 원본을 되살릴 수 있다. 데이터 가용성 문제는 블록 생산자가 데이터를 실제로 공개했는지를 전체를 내려받지 않고 확인해야 한다는 데서 생기며, 소거부호로 확장해 두면 '데이터를 감추려면 최소한 상당 비율의 조각을 감춰야 한다'는 성질이 만들어진다. 데이터 가용성 샘플링(DAS)은 이 성질을 이용해 각 라이트 노드가 무작위 위치의 조각 몇 개를 요청하고 모두 받으면 통과시키는 방식이며, 숨겨진 조각의 비율이 일정 이상이므로 샘플 수를 늘리면 감지 실패 확률이 지수적으로 줄어든다. 여기에 각 조각이 약속된 데이터와 일치하는지 검증하는 수단(예: KZG 같은 다항식 약속 또는 사기 증명)이 함께 필요하며, 그렇지 않으면 생산자가 잘못 부호화한 조각을 낼 수 있다.</p>
       <p>롤업의 안전성은 결국 '데이터가 공개되었는가'에 달려 있고, 라이트 클라이언트가 풀 노드 없이도 이를 확률적으로 검증할 수 있게 해 주는 것이 DAS이므로 L2 위 서비스의 신뢰 가정을 이해하려면 필수다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 데이터 가용성 샘플링과 소거부호(Reed-Solomon) — k=4,n=8 시스터매틱 RS 부호로 조각 4개만으로 원본 복원.
+# 원본 데이터를 다항식 평가값으로 삼아 보간한 뒤 8개 지점에서 평가해 조각을 만들고, 임의의 4조각으로 라그랑주 보간해 되살린다.
+
+P = 257  # 8비트 심볼보다 큰 소수 (GF(p) 산술)
+
+def lagrange_interpolate(xs, ys, x, p=P):
+    total = 0
+    n = len(xs)
+    for i in range(n):
+        xi, yi = xs[i], ys[i]
+        num, den = 1, 1
+        for j in range(n):
+            if i == j:
+                continue
+            num = (num * (x - xs[j])) % p
+            den = (den * (xi - xs[j])) % p
+        total = (total + yi * num * pow(den, p - 2, p)) % p
+    return total % p
+
+k, n = 4, 8
+data = [65, 66, 67, 68]            # 원본 데이터 심볼 (예: 'A','B','C','D')
+xs_known = list(range(k))          # 0,1,2,3 지점에 원본을 심는다 (systematic 배치)
+
+# 원본 4점을 지나는 차수&lt;=3 다항식을 8개 지점(0..7)에서 평가해 소거부호 조각을 만든다
+shares = [lagrange_interpolate(xs_known, data, x) for x in range(n)]
+print(&quot;원본 데이터:&quot;, data)
+print(&quot;소거부호 조각 8개:&quot;, shares)
+
+# 원본 조각(0~3)이 전부 사라지고 패리티 조각(4~7)만 남았다고 가정
+available = [4, 5, 6, 7]
+recovered = [lagrange_interpolate(available, [shares[i] for i in available], x) for x in range(k)]
+print(&quot;원본 조각 전부 소실, 패리티 4개로만 복원:&quot;, recovered)
+print(&quot;복원 성공 여부:&quot;, recovered == data)
+
+def sampling_pass_prob_hidden_undetected(n, hidden, s):
+    &quot;&quot;&quot;숨겨진 조각을 표본 s개가 하나도 건드리지 못할 확률 (=DAS가 은닉을 놓칠 확률).&quot;&quot;&quot;
+    visible = n - hidden
+    if s &gt; visible:
+        return 0.0
+    prob = 1.0
+    for i in range(s):
+        prob *= (visible - i) / (n - i)
+    return prob
+
+print()
+for s in (1, 2, 4, 8):
+    p_miss = sampling_pass_prob_hidden_undetected(n=8, hidden=4, s=s)
+    print(f&quot;조각 절반이 숨겨졌을 때 샘플 {s}개로 은닉을 놓칠 확률: {p_miss:.4f}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-61.py">docs/code/algorithms/algorithms-61.py</a></p>
       <h2>연습</h2>
       <p>작은 유한체 위에서 k=4, n=8인 Reed-Solomon 인코딩을 직접 구현해 임의의 4개 조각으로 원본을 라그랑주 보간으로 복원해 보고, 조각 절반이 숨겨졌다고 가정할 때 샘플 s개가 모두 통과할 확률을 계산해 보라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 42 — 이벤트 루프 vs 스레드 vs 액터 모델</title>
+<title>Day 42 — Event Loop vs. Threads vs. the Actor Model</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,83 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 42</p>
   <article>
+      <h1>Event Loop vs. Threads vs. the Actor Model <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 42 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>The three models differ in what unit they slice concurrency into and how they share state. An event loop runs a single thread that non-blockingly cycles through ready I/O events and runs callbacks/tasks, so there's almost no context switching or locking — but one CPU-bound task blocking the loop stalls everything. The thread model lets the OS do preemptive scheduling, so you can write blocking code as-is and naturally use multiple cores, but shared memory has to be guarded with locks, which brings contention, deadlocks, and false sharing. The actor model confines state inside each actor and only allows communication through asynchronous messages, eliminating shared memory itself — the tradeoffs shift to message-copy cost, mailbox backpressure, and how much ordering is guaranteed. Real-world runtimes are usually hybrids: Go's goroutines, for instance, use a user-level scheduler that multiplexes many lightweight tasks onto a small number of OS threads, with an event-based I/O poller underneath.</p>
+      <p>A large share of concurrency bugs and latency spikes come from violating the assumptions behind whichever model was chosen — don't block the loop, guard shared state with locks, mailboxes aren't unbounded.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 이벤트 루프 vs 스레드 vs 액터 모델 — 상태를 액터 안에 가두고 메시지 큐로만 통신하는 최소 액터를 구현한다.
+# 공유 메모리가 없으니 락도 필요 없고, 순서 보장은 &quot;한 액터는 메일박스 메시지를 하나씩만 처리한다&quot;에서 나온다.
+
+import threading
+import queue
+
+class Actor:
+    def __init__(self, name, handle_fn):
+        self.name = name
+        self.mailbox = queue.Queue()      # 오직 메시지로만 상태에 접근 — 공유 메모리 자체가 없다
+        self._handle_fn = handle_fn
+        self._state = {}
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def send(self, msg):
+        self.mailbox.put(msg)              # 비동기 전송 — 보내는 쪽은 블록되지 않는다
+
+    def _run(self):
+        while True:
+            msg = self.mailbox.get()        # 메시지를 하나씩만 순차 처리 -&gt; 액터 내부 상태는 절대 경합하지 않음
+            if msg is None:                 # 종료 신호
+                break
+            self._handle_fn(self._state, msg)
+
+    def stop_and_join(self):
+        self.send(None)
+        self._thread.join()
+
+def counter_handler(state, msg):
+    op, payload = msg
+    if op == &quot;incr&quot;:
+        state[&quot;value&quot;] = state.get(&quot;value&quot;, 0) + payload
+    elif op == &quot;get&quot;:
+        reply_queue = payload
+        reply_queue.put(state.get(&quot;value&quot;, 0))   # 결과는 회신용 큐로 되돌려줌 — 여기도 메시지 전달일 뿐
+
+account = Actor(&quot;counter&quot;, counter_handler)
+
+# 여러 &quot;클라이언트&quot; 가 동시에 메시지를 보내도, 액터 내부 값은 큐를 통해 직렬화되어 안전하다.
+def client(n):
+    for _ in range(100):
+        account.send((&quot;incr&quot;, n))
+
+clients = [threading.Thread(target=client, args=(i,)) for i in (1, 2, 3, 4)]
+for t in clients:
+    t.start()
+for t in clients:
+    t.join()
+
+reply_queue = queue.Queue()
+account.send((&quot;get&quot;, reply_queue))
+total = reply_queue.get(timeout=5)   # get 메시지가 처리되어 회신이 올 때까지 블로킹 대기(결정론적 동기화)
+
+account.stop_and_join()
+
+expected = (1 + 2 + 3 + 4) * 100
+print(&quot;expected total:&quot;, expected)
+print(&quot;actor-computed total:&quot;, total)
+print(&quot;no locks used, no data race possible:&quot;, total == expected)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-42.py">docs/code/algorithms/algorithms-42.py</a></p>
+      <h2>Exercise</h2>
+      <p>Build the same HTTP echo server in Node.js (event loop) and Go (goroutines), put a several-hundred-millisecond CPU computation into the handler, and measure with a load tool how p99 latency changes.</p>
+      <h2>Practical Connection</h2>
+      <p>A blockchain indexer or an order book matching engine typically confines matching state to a single actor/single thread and only runs I/O asynchronously, which gets you ordering guarantees and throughput at the same time.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>이벤트 루프 vs 스레드 vs 액터 모델 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 42 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
 
@@ -115,7 +215,68 @@
       <p>세 모델은 동시성을 어떤 단위로 쪼개고 상태를 어떻게 공유하느냐가 다르다. 이벤트 루프는 단일 스레드가 준비된 I/O 이벤트를 논블로킹으로 순회하며 콜백/태스크를 실행하므로 컨텍스트 스위치와 락이 거의 없지만, 하나의 CPU 바운드 작업이 루프를 막으면 전체가 멈춘다. 스레드 모델은 OS가 선점 스케줄링을 해주어 블로킹 코드를 그대로 쓸 수 있고 멀티코어를 자연히 활용하지만, 공유 메모리를 락으로 지켜야 해서 경합·데드락·false sharing 같은 비용이 생긴다. 액터 모델은 상태를 액터 내부에 가두고 오직 비동기 메시지로만 통신하게 해 공유 메모리 자체를 없애며, 대신 메시지 복사 비용과 메일박스 backpressure, 순서 보장 범위가 설계 이슈가 된다. 실무 런타임은 대개 혼합형으로, 예를 들어 Go의 goroutine은 사용자 수준 스케줄러가 다수의 경량 태스크를 소수 OS 스레드에 다중화하고 내부적으로 이벤트 기반 I/O 폴러를 쓴다.</p>
       <p>동시성 버그와 지연 스파이크의 상당수는 선택한 모델의 전제(루프를 막지 마라, 공유 상태를 락으로 지켜라, 메일박스가 무한하지 않다)를 깨는 데서 나온다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 이벤트 루프 vs 스레드 vs 액터 모델 — 상태를 액터 안에 가두고 메시지 큐로만 통신하는 최소 액터를 구현한다.
+# 공유 메모리가 없으니 락도 필요 없고, 순서 보장은 &quot;한 액터는 메일박스 메시지를 하나씩만 처리한다&quot;에서 나온다.
+
+import threading
+import queue
+
+class Actor:
+    def __init__(self, name, handle_fn):
+        self.name = name
+        self.mailbox = queue.Queue()      # 오직 메시지로만 상태에 접근 — 공유 메모리 자체가 없다
+        self._handle_fn = handle_fn
+        self._state = {}
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def send(self, msg):
+        self.mailbox.put(msg)              # 비동기 전송 — 보내는 쪽은 블록되지 않는다
+
+    def _run(self):
+        while True:
+            msg = self.mailbox.get()        # 메시지를 하나씩만 순차 처리 -&gt; 액터 내부 상태는 절대 경합하지 않음
+            if msg is None:                 # 종료 신호
+                break
+            self._handle_fn(self._state, msg)
+
+    def stop_and_join(self):
+        self.send(None)
+        self._thread.join()
+
+def counter_handler(state, msg):
+    op, payload = msg
+    if op == &quot;incr&quot;:
+        state[&quot;value&quot;] = state.get(&quot;value&quot;, 0) + payload
+    elif op == &quot;get&quot;:
+        reply_queue = payload
+        reply_queue.put(state.get(&quot;value&quot;, 0))   # 결과는 회신용 큐로 되돌려줌 — 여기도 메시지 전달일 뿐
+
+account = Actor(&quot;counter&quot;, counter_handler)
+
+# 여러 &quot;클라이언트&quot; 가 동시에 메시지를 보내도, 액터 내부 값은 큐를 통해 직렬화되어 안전하다.
+def client(n):
+    for _ in range(100):
+        account.send((&quot;incr&quot;, n))
+
+clients = [threading.Thread(target=client, args=(i,)) for i in (1, 2, 3, 4)]
+for t in clients:
+    t.start()
+for t in clients:
+    t.join()
+
+reply_queue = queue.Queue()
+account.send((&quot;get&quot;, reply_queue))
+total = reply_queue.get(timeout=5)   # get 메시지가 처리되어 회신이 올 때까지 블로킹 대기(결정론적 동기화)
+
+account.stop_and_join()
+
+expected = (1 + 2 + 3 + 4) * 100
+print(&quot;expected total:&quot;, expected)
+print(&quot;actor-computed total:&quot;, total)
+print(&quot;no locks used, no data race possible:&quot;, total == expected)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-42.py">docs/code/algorithms/algorithms-42.py</a></p>
       <h2>연습</h2>
       <p>같은 HTTP 에코 서버를 Node.js(이벤트 루프)와 Go(고루틴)로 각각 만들고, 핸들러에 수백 밀리초짜리 CPU 연산을 넣었을 때 p99 지연이 어떻게 달라지는지 부하 도구로 측정해 볼 것.</p>
       <h2>실무 · Verex 연결</h2>

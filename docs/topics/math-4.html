@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 4 — 귀납법/구조적 재귀</title>
+<title>Day 4 — Induction and Structural Recursion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,114 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 4</p>
   <article>
+      <h1>Induction and Structural Recursion <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 4 / 52 &middot; July — Discrete Math &amp; Logic (Day 3-10)</p>
+      <h2>Concept</h2>
+      <p>Mathematical induction is a proof principle grounded in the well-ordering of the natural numbers: showing a base case and a step from n to n+1 lets you conclude the proposition holds for all natural numbers. Strong induction lets you use every case smaller than n as a hypothesis, and generalizing this further gives well-founded induction over well-founded relations, which applies to structures beyond the naturals. Structural induction is a special case of this that uses the fact that algebraic data types are built up finitely from constructors, proving the proposition for each constructor. For trees, you handle the leaf (base case) and the internal node (conclusion from the hypothesis on the children) separately, and this proof structure matches exactly the shape of a recursive function. In other words, proving a recursive program correct is structural induction that follows the program's own recursive structure, and termination is shown by exhibiting a well-founded measure that decreases on every recursive call.</p>
+      <p>Being able to explain why an invariant of a recursive function or tree data structure always holds — rather than just &quot;I ran it and it worked&quot; — lets you rule out edge cases by structure instead of by testing.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 귀납법/구조적 재귀 — 이진 트리의 &quot;리프 수 = 내부노드 수 + 1&quot;을 구조적 귀납으로 확인.
+# 기저: 리프 하나뿐인 트리는 leaves=1, internal=0 → 1=0+1.
+# 귀납 단계: 왼쪽/오른쪽 부분트리가 각각 성립한다고 가정하면, 합쳐도 그대로 성립.
+
+class Leaf:
+    pass
+
+class Node:
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+def count_leaves(t):
+    if isinstance(t, Leaf):
+        return 1
+    return count_leaves(t.left) + count_leaves(t.right)   # 재귀 = 귀납 가정 사용
+
+def count_internal(t):
+    if isinstance(t, Leaf):
+        return 0
+    return 1 + count_internal(t.left) + count_internal(t.right)
+
+def check_property(t):
+    # 명제 P(t): leaves(t) == internal(t) + 1
+    return count_leaves(t) == count_internal(t) + 1
+
+# 무작위로 완전(full) 이진 트리를 만들어 매번 P(t)가 성립하는지 확인.
+import random
+def random_full_tree(depth):
+    if depth == 0 or random.random() &lt; 0.3:
+        return Leaf()
+    return Node(random_full_tree(depth - 1), random_full_tree(depth - 1))
+
+random.seed(0)
+trees = [random_full_tree(4) for _ in range(20)]
+results = [check_property(t) for t in trees]
+
+print(&quot;검사한 트리 수:&quot;, len(trees))
+print(&quot;모두 P(t) 성립?&quot;, all(results))
+sample = trees[0]
+print(f&quot;예시 트리: 리프={count_leaves(sample)}, 내부노드={count_internal(sample)}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-4.py">docs/code/math/math-4.py</a></p>
+      <h2>Exercise</h2>
+      <p>Prove on paper, by structural induction, that a (full) binary tree always has exactly one more leaf than internal node, then write a verification function recursively following the same structure.</p>
+      <h2>Practical Connection</h2>
+      <p>Properties of Merkle trees like &quot;equal roots imply equal leaf sets&quot; or &quot;inclusion-proof verification is correct&quot; are all proved by induction on tree height, and the recursive structure of the verification code corresponds one-to-one with the induction step.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>귀납법/구조적 재귀 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 4 / 51 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
+      <p class="meta">Math &middot; Day 4 / 52 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
       <p class="lead">트리 성질을 귀납으로 &quot;설명&quot;</p>
       <h2>개념</h2>
       <p>수학적 귀납법은 자연수 집합의 정렬성(well-ordering)에 기반한 증명 원리로, 기저 사례와 &quot;n에서 n+1로 넘어간다&quot;는 단계를 보이면 모든 자연수에 대해 명제가 성립함을 결론짓는다. 강한 귀납법은 n보다 작은 모든 경우를 가정에 쓸 수 있게 한 형태이고, 이를 일반화하면 well-founded 관계 위의 정초 귀납법이 되어 자연수가 아닌 구조에도 적용된다. 구조적 귀납법은 그 특수형으로, 대수적 자료형이 생성자로부터 유한하게 만들어진다는 사실을 이용해 각 생성자마다 명제를 보이는 방식이다. 트리에 대해서는 리프(기저)와 내부 노드(자식들의 가정으로부터 결론)를 각각 처리하면 되고, 이 증명 구조는 그대로 재귀 함수의 형태와 일치한다. 즉 재귀 프로그램의 정당성 증명은 그 프로그램의 재귀 구조를 따라가는 구조적 귀납법이며, 종료성은 재귀 호출마다 감소하는 well-founded 척도를 제시해 보인다.</p>
       <p>재귀 함수나 트리 자료구조의 불변식을 &quot;돌려 보니 되더라&quot;가 아니라 왜 항상 성립하는지로 설명할 수 있어야, 엣지 케이스를 테스트가 아니라 구조로 걸러낼 수 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 귀납법/구조적 재귀 — 이진 트리의 &quot;리프 수 = 내부노드 수 + 1&quot;을 구조적 귀납으로 확인.
+# 기저: 리프 하나뿐인 트리는 leaves=1, internal=0 → 1=0+1.
+# 귀납 단계: 왼쪽/오른쪽 부분트리가 각각 성립한다고 가정하면, 합쳐도 그대로 성립.
+
+class Leaf:
+    pass
+
+class Node:
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+def count_leaves(t):
+    if isinstance(t, Leaf):
+        return 1
+    return count_leaves(t.left) + count_leaves(t.right)   # 재귀 = 귀납 가정 사용
+
+def count_internal(t):
+    if isinstance(t, Leaf):
+        return 0
+    return 1 + count_internal(t.left) + count_internal(t.right)
+
+def check_property(t):
+    # 명제 P(t): leaves(t) == internal(t) + 1
+    return count_leaves(t) == count_internal(t) + 1
+
+# 무작위로 완전(full) 이진 트리를 만들어 매번 P(t)가 성립하는지 확인.
+import random
+def random_full_tree(depth):
+    if depth == 0 or random.random() &lt; 0.3:
+        return Leaf()
+    return Node(random_full_tree(depth - 1), random_full_tree(depth - 1))
+
+random.seed(0)
+trees = [random_full_tree(4) for _ in range(20)]
+results = [check_property(t) for t in trees]
+
+print(&quot;검사한 트리 수:&quot;, len(trees))
+print(&quot;모두 P(t) 성립?&quot;, all(results))
+sample = trees[0]
+print(f&quot;예시 트리: 리프={count_leaves(sample)}, 내부노드={count_internal(sample)}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-4.py">docs/code/math/math-4.py</a></p>
       <h2>연습</h2>
       <p>이진 트리의 리프 개수가 (완전 이진 트리에서) 내부 노드 개수보다 정확히 하나 많다는 명제를 구조적 귀납법으로 종이에 증명하고, 같은 구조로 검증 함수를 재귀로 작성해 볼 것.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 17 — 병렬 알고리즘 모델</title>
+<title>Day 17 — Parallel Algorithm Models</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,70 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 17</p>
   <article>
+      <h1>Parallel Algorithm Models <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 17 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>The work-span model views a parallel computation as a DAG and summarizes it with two numbers. Work T1 is the total amount of computation (the time on a single processor); span T-infinity is the length of the critical path of dependencies (the time you can't shrink even with infinite processors); parallelism is defined as T1/T-infinity. A good scheduler (e.g., work-stealing) guarantees that Tp is roughly T1/p + T-infinity, so parallelism needs to be comfortably larger than p to approach linear scaling. Amdahl's law says that for a fixed problem size, a serial fraction s caps the speedup at 1/s. Gustafson's law instead assumes that as processors increase, people scale up the problem size too, so the work done in a fixed time grows roughly proportional to the number of processors. The two aren't contradictory — they just hold different things fixed.</p>
+      <p>When adding cores doesn't improve performance, failing to tell apart whether the cause is the serial portion, the critical path, or scheduling overhead leads to tuning the wrong thing.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 병렬 알고리즘 모델 — DAG의 work(T1)/span(T∞)을 계산하고, Amdahl vs Gustafson 속도향상을 비교한다.
+
+from collections import defaultdict
+
+# 태스크: id -&gt; (실행시간, 선행 태스크 목록)
+tasks = {
+    &quot;a&quot;: (2, []), &quot;b&quot;: (3, [&quot;a&quot;]), &quot;c&quot;: (1, [&quot;a&quot;]),
+    &quot;d&quot;: (4, [&quot;b&quot;]), &quot;e&quot;: (2, [&quot;c&quot;]), &quot;f&quot;: (1, [&quot;d&quot;, &quot;e&quot;]),
+}
+
+def topo_order():
+    indeg = {k: len(v[1]) for k, v in tasks.items()}
+    children = defaultdict(list)
+    for k, (_, ds) in tasks.items():
+        for d in ds:
+            children[d].append(k)
+    ready = [k for k, v in indeg.items() if v == 0]
+    order = []
+    while ready:
+        n = ready.pop()
+        order.append(n)
+        for c in children[n]:
+            indeg[c] -= 1
+            if indeg[c] == 0:
+                ready.append(c)
+    return order
+
+order = topo_order()
+work = sum(d for d, _ in tasks.values())            # T1: 프로세서 1개로 걸리는 총 시간
+finish = {}
+for t in order:
+    start = max((finish[d] for d in tasks[t][1]), default=0)
+    finish[t] = start + tasks[t][0]
+span = max(finish.values())                          # T∞: 임계 경로(의존성 사슬) 길이
+parallelism = work / span
+
+def amdahl(p, serial_fraction):
+    return 1 / (serial_fraction + (1 - serial_fraction) / p)
+
+def gustafson(p, serial_fraction):
+    return p - serial_fraction * (p - 1)
+
+print(f&quot;work T1={work}, span T∞={span}, 병렬성 T1/T∞={parallelism:.2f}&quot;)
+for p in (1, 2, 4, 8):
+    lower_bound = max(work / p, span)                 # 좋은 스케줄러가 보장하는 하한
+    print(f&quot;p={p}: 하한 Tp&gt;={lower_bound:.2f}, &quot;
+          f&quot;Amdahl(s=0.1)={amdahl(p, 0.1):.2f}x, Gustafson(s=0.1)={gustafson(p, 0.1):.2f}x&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-17.py">docs/code/algorithms/algorithms-17.py</a></p>
+      <h2>Exercise</h2>
+      <p>Compute the work and span of a parallel merge sort or parallel prefix sum by hand, then in Go increase the number of goroutines from 1 up to the core count and overlay the measured speedup curve against the prediction.</p>
+      <h2>Practical Connection</h2>
+      <p>This is the basis for judging how far parallelization pays off in block-execution parallelism (where inter-transaction state dependencies form the DAG's edges) or in Verex's batch settlement and off-chain matching engine.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>병렬 알고리즘 모델 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 17 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">work-span, Amdahl vs Gustafson</p>
@@ -115,7 +202,55 @@
       <p>work-span 모델은 병렬 계산을 DAG로 보고 두 값으로 요약한다. work T1은 전체 연산량(프로세서 1개로 걸리는 시간), span T∞는 의존성 사슬의 임계 경로 길이(프로세서가 무한히 많아도 못 줄이는 시간)이며, 병렬성은 T1/T∞로 정의된다. 좋은 스케줄러(예: work-stealing)는 Tp가 대략 T1/p + T∞ 수준임을 보장하므로, 병렬성이 p보다 충분히 커야 선형 스케일에 가까워진다. Amdahl의 법칙은 문제 크기를 고정한 채 직렬 비율 s가 있으면 속도향상이 1/s로 상한이 걸린다고 말한다. Gustafson의 법칙은 프로세서가 늘면 사람들이 문제 크기도 함께 키운다고 가정해, 고정 시간 안에 처리할 수 있는 일이 프로세서 수에 거의 비례해 늘어난다고 본다. 둘은 모순이 아니라 '무엇을 고정하느냐'가 다른 관점이다.</p>
       <p>코어를 늘렸는데 성능이 안 오를 때, 원인이 직렬 구간인지 임계 경로인지 스케줄링 오버헤드인지 구분하지 못하면 엉뚱한 곳을 튜닝하게 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 병렬 알고리즘 모델 — DAG의 work(T1)/span(T∞)을 계산하고, Amdahl vs Gustafson 속도향상을 비교한다.
+
+from collections import defaultdict
+
+# 태스크: id -&gt; (실행시간, 선행 태스크 목록)
+tasks = {
+    &quot;a&quot;: (2, []), &quot;b&quot;: (3, [&quot;a&quot;]), &quot;c&quot;: (1, [&quot;a&quot;]),
+    &quot;d&quot;: (4, [&quot;b&quot;]), &quot;e&quot;: (2, [&quot;c&quot;]), &quot;f&quot;: (1, [&quot;d&quot;, &quot;e&quot;]),
+}
+
+def topo_order():
+    indeg = {k: len(v[1]) for k, v in tasks.items()}
+    children = defaultdict(list)
+    for k, (_, ds) in tasks.items():
+        for d in ds:
+            children[d].append(k)
+    ready = [k for k, v in indeg.items() if v == 0]
+    order = []
+    while ready:
+        n = ready.pop()
+        order.append(n)
+        for c in children[n]:
+            indeg[c] -= 1
+            if indeg[c] == 0:
+                ready.append(c)
+    return order
+
+order = topo_order()
+work = sum(d for d, _ in tasks.values())            # T1: 프로세서 1개로 걸리는 총 시간
+finish = {}
+for t in order:
+    start = max((finish[d] for d in tasks[t][1]), default=0)
+    finish[t] = start + tasks[t][0]
+span = max(finish.values())                          # T∞: 임계 경로(의존성 사슬) 길이
+parallelism = work / span
+
+def amdahl(p, serial_fraction):
+    return 1 / (serial_fraction + (1 - serial_fraction) / p)
+
+def gustafson(p, serial_fraction):
+    return p - serial_fraction * (p - 1)
+
+print(f&quot;work T1={work}, span T∞={span}, 병렬성 T1/T∞={parallelism:.2f}&quot;)
+for p in (1, 2, 4, 8):
+    lower_bound = max(work / p, span)                 # 좋은 스케줄러가 보장하는 하한
+    print(f&quot;p={p}: 하한 Tp&gt;={lower_bound:.2f}, &quot;
+          f&quot;Amdahl(s=0.1)={amdahl(p, 0.1):.2f}x, Gustafson(s=0.1)={gustafson(p, 0.1):.2f}x&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-17.py">docs/code/algorithms/algorithms-17.py</a></p>
       <h2>연습</h2>
       <p>병렬 머지소트나 병렬 prefix sum의 work와 span을 손으로 계산한 뒤, Go에서 goroutine 수를 1부터 코어 수까지 늘려가며 실측 속도향상 곡선을 예측치와 겹쳐 그려 보라.</p>
       <h2>실무 · Verex 연결</h2>

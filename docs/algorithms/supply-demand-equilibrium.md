@@ -1,3 +1,93 @@
+# Supply, Demand, Utility, Market Equilibrium — Price Is Discovered, Not Computed
+
+*Daily Math, Day 2/52 · 2026-08-11 · Entry point into August's section (game theory & economics)*
+
+**Where to stop**: it's enough to have graphical intuition for where supply and demand
+curves cross, and to be able to explain "how does price move when supply is a vertical
+line." A full read of a microeconomics textbook is out of scope.
+
+## Equilibrium is convergence, not computation
+
+The demand curve `D(p)` — "the quantity people will buy at price p" — slopes downward,
+and the supply curve `S(p)` — "the quantity people will sell at price p" — slopes upward.
+The equilibrium price `p*` is where they meet.
+
+```
+D(p*) = S(p*)
+```
+
+What matters is that this equation isn't **an answer you solve for — it's the point
+where feedback arrives.** Excess demand (more buyers than sellers) pushes price up,
+which trims demand; excess supply pushes price down, which fills it back in. Nobody
+computes p* and announces it, yet the market gets there anyway — that's **discovery**.
+
+## Why block space is special: the supply curve is vertical
+
+For an ordinary good, supply rises along with price. Block space doesn't work that way —
+**the per-block gas ceiling is fixed**, so no matter how high the price goes, the amount
+that fits in one block stays the same. That means the supply curve is vertical, and once
+it is, **price is set entirely by the demand side.**
+
+```python
+import numpy as np
+
+p = np.linspace(0, 100, 1001)
+
+# ① Upward-sloping supply: D(p) = 100 - 2p, S(p) = 10 + p
+D, S = 100 - 2*p, 10 + p
+i = np.argmin(np.abs(D - S))
+base_elastic = p[i]                      # p* = 30
+
+# ② Vertical supply (the gas ceiling): S = 40, fixed
+j = np.argmin(np.abs(D - 40))
+base_vertical = p[j]                     # p* = 30 — matched to the same starting point
+
+# Give both the same demand shock (+50)
+D2 = 150 - 2*p
+shocked_elastic  = p[np.argmin(np.abs(D2 - (10 + p)))]
+shocked_vertical = p[np.argmin(np.abs(D2 - 40))]
+
+for name, a, b in [("elastic supply", base_elastic, shocked_elastic),
+                   ("vertical supply", base_vertical, shocked_vertical)]:
+    print(f"{name}: {a:.0f} -> {b:.0f}  ({(b/a - 1)*100:+.0f}%)")
+```
+
+Even with the same size demand shock, **the elastic-supply side takes on a small price
+rise and a volume increase, splitting the shock — while the vertical-supply side can't
+add any volume at all, so the entire shock goes into price.** That one picture is why gas
+fees can spike 10x on a single memecoin mint.
+
+## From here it leads into EIP-1559
+
+**Hand price discovery in a vertical-supply market to a (first-price) auction** and every
+user has to guess "how much will everyone else bid" — guess wrong and you either overpay
+or don't get included. What EIP-1559 did was **move that discovery into an algorithm** —
+a base fee that rises and falls based on the previous block's congestion, a feedback
+loop. Instead of the market rediscovering price from scratch every time, the protocol
+remembers the previous observation.
+
+**Other cases in the same grammar**
+- **EIP-8363** — adds a burn term to the staking demand curve, changing its slope.
+- **LMSR** (November) — replaces a prediction market's price discovery, not with an order
+  book, but with **a single curve.**
+  `C(q) = b·ln(Σe^(qᵢ/b))`, and worst-case subsidy is bounded above by `b·ln(n)`.
+
+All three cases treat "who discovers the price, and how" as the design surface.
+
+## Exercise
+
+Compare the rate of price increase between the two supply shapes in the code above, and
+sum up in one sentence **"why is gas-fee volatility especially large."**
+
+## Related code
+
+[docs/code/math/math-2.py](../code/math/math-2.py) — the Python code above, pulled out
+into a runnable file.
+
+---
+
+# 한국어
+
 # 공급·수요·시장균형 — 가격은 계산되는 게 아니라 발견된다
 
 *매일의 수학 Day 8/50 · 2026-08-11 · 8월 영역(게임이론·경제학) 입장*
@@ -70,3 +160,7 @@ for name, a, b in [("우상향 공급", base_elastic, shocked_elastic),
 
 위 코드에서 두 공급 형태의 가격 상승률을 비교하고, **"왜 가스비 변동성은 유독 큰가"**를
 한 문장으로 정리해 볼 것.
+
+## 관련 코드
+
+[docs/code/math/math-2.py](../code/math/math-2.py) — 위 파이썬 코드를 그대로 실행 가능한 파일로 뺀 것.

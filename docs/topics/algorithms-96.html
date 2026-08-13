@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 96 — [복습] 검증 가능한 시스템 설계 체크리스트</title>
+<title>Day 96 — [Review] A design checklist for verifiable systems</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,76 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 96</p>
   <article>
+      <h1>[Review] A design checklist for verifiable systems <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 96 / 100 &middot; F. Cryptography &amp; ZK (Day 82-96)</p>
+      <h2>Concept</h2>
+      <p>A verifiable system is designed so the other party can confirm the correctness of a result for themselves, instead of being asked to just trust it. The core axes are determinism (same input, same output), commitments (pinning state via a Merkle root or hash), the proof method (validity proof, Merkle proof, or fraud proof), and the trust assumptions plus data availability. Verifiability only has real meaning when verification cost is reliably lower than the cost of re-execution. Finally, the design isn't complete until the recovery path on failure is spelled out too — the challenge period, the escalation procedure, and who holds ultimate fallback authority.</p>
+      <p>Bolting on a proof system doesn't make you safe by itself; unless the trust assumptions and fallback path are pinned down in writing, nobody knows who can do what at the moment an incident actually happens.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># [복습] 검증 가능한 시스템 체크리스트 — 결정성·커밋먼트·증명 방식·검증 비용을
+# 머클 트리로 시연: 잎 하나의 값을 O(log n) 증명으로 검증(전체 재실행 O(n) 불필요).
+
+import hashlib
+
+def H(*parts) -&gt; bytes:
+    m = hashlib.sha256()
+    for p in parts:
+        m.update(p)
+    return m.digest()
+
+def build_tree(leaves):
+    level = [H(b&quot;leaf&quot;, x) for x in leaves]
+    tree = [level]
+    while len(level) &gt; 1:
+        if len(level) % 2:
+            level = level + [level[-1]]
+        level = [H(b&quot;node&quot;, level[i], level[i + 1]) for i in range(0, len(level), 2)]
+        tree.append(level)
+    return tree  # tree[0]=leaf hashes ... tree[-1]=[root]
+
+def merkle_proof(tree, index):
+    proof = []
+    for level in tree[:-1]:
+        sibling = index ^ 1
+        if sibling &lt; len(level):
+            proof.append(level[sibling])
+        index //= 2
+    return proof
+
+def verify_proof(leaf, index, proof, root):
+    h = H(b&quot;leaf&quot;, leaf)
+    for sib in proof:
+        h = H(b&quot;node&quot;, sib, h) if index % 2 else H(b&quot;node&quot;, h, sib)
+        index //= 2
+    return h == root
+
+leaves = [f&quot;account-{i}:balance={i*10}&quot;.encode() for i in range(8)]
+tree = build_tree(leaves)
+root = tree[-1][0]
+
+idx = 5
+proof = merkle_proof(tree, idx)
+print(&quot;커밋먼트(root):&quot;, root.hex()[:16], &quot;...&quot;)
+print(f&quot;leaf[{idx}] 증명 크기: {len(proof)} 해시  (전체 잎 {len(leaves)}개 재실행 없이 검증)&quot;)
+print(&quot;증명 검증 결과:&quot;, verify_proof(leaves[idx], idx, proof, root))
+
+tampered_leaf = b&quot;account-5:balance=9999&quot;
+print(&quot;변조된 leaf 는 같은 증명으로 거부됨:&quot;, not verify_proof(tampered_leaf, idx, proof, root))
+
+# 체크리스트: 결정성(같은 입력-&gt;같은 root) / 커밋먼트(root) / 증명방식(머클 증명)
+# / 검증 비용(O(log n) &lt; 재실행 O(n)) / 폴백(불일치 시 이의제기 대상은 root 제공자)
+print(&quot;\n[체크리스트] 결정성 O, 커밋먼트 O, 증명방식=머클, 검증&lt;재실행 O, 폴백 주체=? (명시 필요)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-96.py">docs/code/algorithms/algorithms-96.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick one system you've built and fill in a one-page table covering trust assumptions, commitments, who verifies, the challenge period, and the final fallback — then find which cells are left blank.</p>
+      <h2>Practical Connection</h2>
+      <p>Verex's result-finalization path (oracle proposal → challenge period → final settlement) is a direct application of this checklist, and the trust assumptions and fallback authority at each step need to be written down explicitly to be able to respond during a dispute.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>[복습] 검증 가능한 시스템 설계 체크리스트 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 96 / 100 &middot; F. 암호학·ZK (Day 82–96)</p>
 
@@ -115,7 +208,61 @@
       <p>검증 가능한 시스템은 결과를 믿어달라고 요구하는 대신 상대가 스스로 결과의 정당성을 확인할 수 있게 만드는 것을 설계 목표로 삼는다. 핵심 축은 결정성(같은 입력에 같은 출력), 커밋먼트(머클 루트나 해시로 상태를 고정), 증명 방식(유효성 증명, 머클 증명, 사기 증명 중 무엇인지), 그리고 신뢰 가정과 데이터 가용성이다. 검증 비용이 재실행 비용보다 확실히 작아야 검증 가능성이 실질적 의미를 가진다. 마지막으로 실패했을 때의 회복 경로 — 이의제기 기간, 에스컬레이션 절차, 최종 폴백 권한이 누구에게 있는지 — 까지 명시되어야 설계가 완결된다.</p>
       <p>증명 시스템을 붙였다는 사실만으로 안전해지지 않으며, 신뢰 가정과 폴백 경로를 문서로 고정해두지 않으면 실제 사고 순간에 누가 무엇을 할 수 있는지 아무도 모른다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># [복습] 검증 가능한 시스템 체크리스트 — 결정성·커밋먼트·증명 방식·검증 비용을
+# 머클 트리로 시연: 잎 하나의 값을 O(log n) 증명으로 검증(전체 재실행 O(n) 불필요).
+
+import hashlib
+
+def H(*parts) -&gt; bytes:
+    m = hashlib.sha256()
+    for p in parts:
+        m.update(p)
+    return m.digest()
+
+def build_tree(leaves):
+    level = [H(b&quot;leaf&quot;, x) for x in leaves]
+    tree = [level]
+    while len(level) &gt; 1:
+        if len(level) % 2:
+            level = level + [level[-1]]
+        level = [H(b&quot;node&quot;, level[i], level[i + 1]) for i in range(0, len(level), 2)]
+        tree.append(level)
+    return tree  # tree[0]=leaf hashes ... tree[-1]=[root]
+
+def merkle_proof(tree, index):
+    proof = []
+    for level in tree[:-1]:
+        sibling = index ^ 1
+        if sibling &lt; len(level):
+            proof.append(level[sibling])
+        index //= 2
+    return proof
+
+def verify_proof(leaf, index, proof, root):
+    h = H(b&quot;leaf&quot;, leaf)
+    for sib in proof:
+        h = H(b&quot;node&quot;, sib, h) if index % 2 else H(b&quot;node&quot;, h, sib)
+        index //= 2
+    return h == root
+
+leaves = [f&quot;account-{i}:balance={i*10}&quot;.encode() for i in range(8)]
+tree = build_tree(leaves)
+root = tree[-1][0]
+
+idx = 5
+proof = merkle_proof(tree, idx)
+print(&quot;커밋먼트(root):&quot;, root.hex()[:16], &quot;...&quot;)
+print(f&quot;leaf[{idx}] 증명 크기: {len(proof)} 해시  (전체 잎 {len(leaves)}개 재실행 없이 검증)&quot;)
+print(&quot;증명 검증 결과:&quot;, verify_proof(leaves[idx], idx, proof, root))
+
+tampered_leaf = b&quot;account-5:balance=9999&quot;
+print(&quot;변조된 leaf 는 같은 증명으로 거부됨:&quot;, not verify_proof(tampered_leaf, idx, proof, root))
+
+# 체크리스트: 결정성(같은 입력-&gt;같은 root) / 커밋먼트(root) / 증명방식(머클 증명)
+# / 검증 비용(O(log n) &lt; 재실행 O(n)) / 폴백(불일치 시 이의제기 대상은 root 제공자)
+print(&quot;\n[체크리스트] 결정성 O, 커밋먼트 O, 증명방식=머클, 검증&lt;재실행 O, 폴백 주체=? (명시 필요)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-96.py">docs/code/algorithms/algorithms-96.py</a></p>
       <h2>연습</h2>
       <p>자신이 만든 시스템 하나를 골라 신뢰 가정·커밋먼트·검증 주체·이의제기 기간·최종 폴백을 한 장짜리 표로 채우고 빈칸으로 남는 항목을 찾아라.</p>
       <h2>실무 · Verex 연결</h2>

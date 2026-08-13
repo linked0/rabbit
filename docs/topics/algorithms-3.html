@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 3 — 영속(persistent) 자료구조와 구조 공유</title>
+<title>Day 3 — Persistent Data Structures and Structural Sharing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,51 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 3</p>
   <article>
+      <h1>Persistent Data Structures and Structural Sharing <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 3 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>A persistent data structure is one where an update never destroys the existing version — it creates a new version while the old one stays readable. The key technique is structural sharing: only the nodes along the changed path get copied, while the rest of the subtree keeps pointing at the previous version unchanged. In a balanced tree or trie-based structure, the path length from the root to the change point is O(log n), so both the time and the extra memory for a single update stay at O(log n). Partial persistence (old versions are read-only) is distinguished from full persistence (old versions can be updated again too), and functional languages' immutable lists or a HAMT (hash array mapped trie) are the classic examples. Immutability means a snapshot of a prior version comes essentially for free, and readers can traverse safely without a lock.</p>
+      <p>In systems that need multiple versions alive at once — rollback, snapshot isolation, undo, optimistic concurrency — copying everything on every update costs O(n).</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 영속 연결 리스트 — 구조 공유로 갱신마다 새 버전을, 이전 버전은 그대로.
+# cons(x, node) 는 새 헤드 노드 하나만 만들고 나머지 체인은 공유한다 — O(1) 갱신.
+
+class Node:
+    __slots__ = (&quot;value&quot;, &quot;next&quot;)
+    def __init__(self, value, next=None):
+        self.value = value
+        self.next = next
+
+def cons(value, node):          # 새 버전 하나 생성 (기존 node 는 손대지 않음)
+    return Node(value, node)
+
+def to_list(node):
+    out = []
+    while node:
+        out.append(node.value)
+        node = node.next
+    return out
+
+v0 = None
+v1 = cons(1, v0)                # v1: [1]
+v2 = cons(2, v1)                # v2: [2, 1] — v1 의 노드를 그대로 공유
+v3 = cons(3, v1)                # v3: [3, 1] — v2 와 무관하게 v1 에서 또 분기
+
+print(&quot;v1 =&quot;, to_list(v1))      # [1]
+print(&quot;v2 =&quot;, to_list(v2))      # [2, 1]
+print(&quot;v3 =&quot;, to_list(v3))      # [3, 1]  ← v1 을 공유하지만 v2 와 독립
+print(&quot;v2 tail is v1 node:&quot;, v2.next is v1)  # True — 복사 없이 포인터 공유
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-3.py">docs/code/algorithms/algorithms-3.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement an immutable list or a simple HAMT yourself, insert 10,000 entries while keeping every intermediate version, and compare the memory and time cost against a full-copy-every-time approach.</p>
+      <h2>Practical Connection</h2>
+      <p>Ethereum's state trie is exactly a persistent data structure — each block writes only the nodes along the changed path and shares the rest with the previous root, so a single root hash can trace the entire state as of a specific block.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>영속(persistent) 자료구조와 구조 공유 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 3 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">불변 상태의 O(log n) 갱신</p>
@@ -115,7 +183,36 @@
       <p>영속(persistent) 자료구조는 갱신 연산이 기존 버전을 파괴하지 않고 새 버전을 만들며, 이전 버전도 계속 조회 가능한 자료구조다. 핵심 기법은 구조 공유로, 변경된 경로 위의 노드만 새로 복사하고 나머지 서브트리는 이전 버전과 포인터를 그대로 공유한다. 균형 트리나 트라이 기반 구조에서는 루트부터 변경 지점까지의 경로 길이가 O(log n)이므로 갱신 한 번의 시간과 추가 메모리도 O(log n)에 머문다. 과거 버전을 읽기만 가능한 부분 영속성과 과거 버전에서 다시 갱신까지 가능한 완전 영속성을 구분하며, 함수형 언어의 불변 리스트나 HAMT(hash array mapped trie)가 대표 사례다. 불변성 덕분에 이전 버전 스냅샷이 사실상 공짜로 생기고, 읽는 쪽은 락 없이 안전하게 순회할 수 있다.</p>
       <p>롤백, 스냅샷 격리, undo, 낙관적 동시성처럼 여러 버전을 동시에 살아 있게 해야 하는 시스템에서 매 갱신마다 전체 복사를 하면 O(n) 비용이 나기 때문이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 영속 연결 리스트 — 구조 공유로 갱신마다 새 버전을, 이전 버전은 그대로.
+# cons(x, node) 는 새 헤드 노드 하나만 만들고 나머지 체인은 공유한다 — O(1) 갱신.
+
+class Node:
+    __slots__ = (&quot;value&quot;, &quot;next&quot;)
+    def __init__(self, value, next=None):
+        self.value = value
+        self.next = next
+
+def cons(value, node):          # 새 버전 하나 생성 (기존 node 는 손대지 않음)
+    return Node(value, node)
+
+def to_list(node):
+    out = []
+    while node:
+        out.append(node.value)
+        node = node.next
+    return out
+
+v0 = None
+v1 = cons(1, v0)                # v1: [1]
+v2 = cons(2, v1)                # v2: [2, 1] — v1 의 노드를 그대로 공유
+v3 = cons(3, v1)                # v3: [3, 1] — v2 와 무관하게 v1 에서 또 분기
+
+print(&quot;v1 =&quot;, to_list(v1))      # [1]
+print(&quot;v2 =&quot;, to_list(v2))      # [2, 1]
+print(&quot;v3 =&quot;, to_list(v3))      # [3, 1]  ← v1 을 공유하지만 v2 와 독립
+print(&quot;v2 tail is v1 node:&quot;, v2.next is v1)  # True — 복사 없이 포인터 공유
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-3.py">docs/code/algorithms/algorithms-3.py</a></p>
       <h2>연습</h2>
       <p>불변 리스트나 간단한 HAMT를 직접 구현해 1만 건을 삽입하면서 모든 중간 버전을 보관하고, 매번 전체 복사하는 방식과 메모리·시간을 비교해 보기.</p>
       <h2>실무 · Verex 연결</h2>

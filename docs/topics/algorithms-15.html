@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 15 — 온라인 알고리즘과 경쟁비</title>
+<title>Day 15 — Online Algorithms and Competitive Ratio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,71 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 15</p>
   <article>
+      <h1>Online Algorithms and Competitive Ratio <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 15 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>An online algorithm never gets to see the whole input in advance and has to make irrevocable decisions as each request arrives. Its performance is measured not in absolute cost but in competitive ratio, defined as the worst case over all input sequences of (online algorithm's cost) / (offline optimal's cost, knowing the whole input). For cache replacement (paging), with a cache of size k, both LRU and FIFO are k-competitive, and k is also the lower bound on the competitive ratio for any deterministic algorithm — which makes LRU optimal in that class. Allowing randomization, as in the marking algorithm, can lower the expected competitive ratio to logarithmic scale, because it prevents an adversarial input from predicting the algorithm's next move. Problems like ski rental, which are about deciding &quot;when to buy,&quot; have a 2-competitive algorithm, and real-time selection problems in the secretary-problem family achieve constant-factor performance guarantees using randomized threshold rules.</p>
+      <p>Code that has to decide now, without knowing the future — caches, connection pools, real-time bidding, order matching — is everywhere, and average-case intuition alone falls apart under adversarial traffic. Competitive ratio is the one language that quantifies that worst case.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 15: 온라인 알고리즘과 경쟁비 — 캐시 교체(LRU/FIFO) 대 오프라인 최적(Belady)
+# 미래를 모른 채 결정하는 온라인 알고리즘의 비용을 오프라인 최적과 비교해 경쟁비를 측정한다.
+
+def lru_misses(seq, k):
+    cache, misses = [], 0
+    for x in seq:
+        if x in cache:
+            cache.remove(x); cache.append(x)
+        else:
+            misses += 1
+            if len(cache) &gt;= k:
+                cache.pop(0)
+            cache.append(x)
+    return misses
+
+def fifo_misses(seq, k):
+    cache, order, misses = set(), [], 0
+    for x in seq:
+        if x not in cache:
+            misses += 1
+            if len(cache) &gt;= k:
+                oldest = order.pop(0)
+                cache.remove(oldest)
+            cache.add(x); order.append(x)
+    return misses
+
+def belady_misses(seq, k):
+    cache, misses = [], 0
+    for i, x in enumerate(seq):
+        if x in cache:
+            continue
+        misses += 1
+        if len(cache) &gt;= k:
+            future = seq[i + 1:]
+            farthest = max(cache, key=lambda c: future.index(c) if c in future else float(&quot;inf&quot;))
+            cache.remove(farthest)
+        cache.append(x)
+    return misses
+
+k = 4
+seq = [1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5] * 3   # LRU에 불리하도록 순환 접근 패턴
+
+lru, fifo, opt = lru_misses(seq, k), fifo_misses(seq, k), belady_misses(seq, k)
+
+print(f&quot;캐시 크기 k={k}, 요청 {len(seq)}건&quot;)
+print(f&quot;LRU miss = {lru}, FIFO miss = {fifo}, 오프라인 최적(Belady) miss = {opt}&quot;)
+print(f&quot;LRU 경쟁비 ≈ {lru/opt:.2f} (이론 상한 k={k})&quot;)
+print(f&quot;FIFO 경쟁비 ≈ {fifo/opt:.2f}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-15.py">docs/code/algorithms/algorithms-15.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement LRU, FIFO, and random replacement under the same interface, then construct a cyclic access sequence sized to cache size k that's specifically designed to hit LRU's worst case, and measure whether the cost ratio against the offline optimum (Belady's algorithm) actually approaches k.</p>
+      <h2>Practical Connection</h2>
+      <p>A prediction-market order book that has to decide match-or-reject the instant each order arrives, or an RPC response cache exposed to an adversarial query pattern, are both exactly online decision problems.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>온라인 알고리즘과 경쟁비 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 15 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">캐시 교체·실시간 경매</p>
@@ -115,7 +203,56 @@
       <p>온라인 알고리즘은 입력 전체를 미리 보지 못하고 요청이 도착할 때마다 되돌릴 수 없는 결정을 내려야 하는 알고리즘이다. 성능은 절대 비용이 아니라 경쟁비로 재는데, 임의의 입력열에 대해 (온라인 알고리즘의 비용) / (모든 입력을 아는 오프라인 최적의 비용)의 최악값으로 정의된다. 캐시 교체(페이징)에서는 크기 k인 캐시에 대해 LRU와 FIFO가 k-경쟁적이고, 결정론적 알고리즘의 경쟁비 하한도 k라서 LRU는 이 부류에서 최적이다. 무작위화를 허용하면 마킹 알고리즘처럼 기댓값 기준 경쟁비를 로그 규모로 낮출 수 있는데, 이는 적대적 입력이 알고리즘의 다음 수를 예측하지 못하게 만들기 때문이다. ski rental처럼 '언제 사느냐'를 정하는 문제는 2-경쟁 알고리즘이 있고, 비서 문제류의 실시간 선택 문제는 무작위화된 임계 규칙으로 상수 비율의 성능 보장을 얻는다.</p>
       <p>캐시, 커넥션 풀, 실시간 입찰, 주문 매칭처럼 '미래를 모른 채 지금 결정해야 하는' 코드는 어디에나 있는데, 평균 케이스 직관만으로는 적대적 트래픽에서 무너진다. 경쟁비는 그 최악을 정량화해 주는 유일한 언어다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 15: 온라인 알고리즘과 경쟁비 — 캐시 교체(LRU/FIFO) 대 오프라인 최적(Belady)
+# 미래를 모른 채 결정하는 온라인 알고리즘의 비용을 오프라인 최적과 비교해 경쟁비를 측정한다.
+
+def lru_misses(seq, k):
+    cache, misses = [], 0
+    for x in seq:
+        if x in cache:
+            cache.remove(x); cache.append(x)
+        else:
+            misses += 1
+            if len(cache) &gt;= k:
+                cache.pop(0)
+            cache.append(x)
+    return misses
+
+def fifo_misses(seq, k):
+    cache, order, misses = set(), [], 0
+    for x in seq:
+        if x not in cache:
+            misses += 1
+            if len(cache) &gt;= k:
+                oldest = order.pop(0)
+                cache.remove(oldest)
+            cache.add(x); order.append(x)
+    return misses
+
+def belady_misses(seq, k):
+    cache, misses = [], 0
+    for i, x in enumerate(seq):
+        if x in cache:
+            continue
+        misses += 1
+        if len(cache) &gt;= k:
+            future = seq[i + 1:]
+            farthest = max(cache, key=lambda c: future.index(c) if c in future else float(&quot;inf&quot;))
+            cache.remove(farthest)
+        cache.append(x)
+    return misses
+
+k = 4
+seq = [1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5] * 3   # LRU에 불리하도록 순환 접근 패턴
+
+lru, fifo, opt = lru_misses(seq, k), fifo_misses(seq, k), belady_misses(seq, k)
+
+print(f&quot;캐시 크기 k={k}, 요청 {len(seq)}건&quot;)
+print(f&quot;LRU miss = {lru}, FIFO miss = {fifo}, 오프라인 최적(Belady) miss = {opt}&quot;)
+print(f&quot;LRU 경쟁비 ≈ {lru/opt:.2f} (이론 상한 k={k})&quot;)
+print(f&quot;FIFO 경쟁비 ≈ {fifo/opt:.2f}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-15.py">docs/code/algorithms/algorithms-15.py</a></p>
       <h2>연습</h2>
       <p>LRU, FIFO, 무작위 교체를 같은 인터페이스로 구현하고, 캐시 크기 k에 맞춰 일부러 LRU를 최악으로 만드는 순환 접근열을 생성해 오프라인 최적(Belady)과의 비용비가 실제로 k 근처까지 가는지 측정하라.</p>
       <h2>실무 · Verex 연결</h2>

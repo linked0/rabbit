@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 14 — EIP-1559 수수료시장(base fee = AIMD)</title>
+<title>Day 14 — EIP-1559 Fee Market (base fee = AIMD)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,92 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 14</p>
   <article>
+      <h1>EIP-1559 Fee Market (base fee = AIMD) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 14 / 52 &middot; August — Game Theory &amp; Protocol Economics (Day 11-17)</p>
+      <h2>Concept</h2>
+      <p>EIP-1559 splits the block fee into a base fee set by the protocol and a priority fee added by the user; the base fee is burned, while only the priority fee goes to the block proposer. The base fee is adjusted by comparing the previous block's gas usage to a target (half of the block gas limit): it rises when usage exceeds the target and falls when usage is below it, with the change per block capped at 1/8, i.e., 12.5%. This feedback loop functions like an AIMD-style congestion controller, designed to converge around the target utilization. From the user's side, the actual amount paid is base fee + priority fee, capped at the max fee, with any excess refunded — this reduces the overbidding incentive that first-price auctions used to create. However, because the adjustment speed is capped, when demand shifts sharply the base fee can only catch up over several blocks, so during short spikes priority-fee competition still drives the price.</p>
+      <p>If you don't know the base fee's maximum rate of change when writing gas-estimation logic or transaction resubmission policy, you'll either set the max fee too low and get stuck pending, or set it needlessly high.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># EIP-1559 수수료시장(base fee = AIMD) — 목표 가스 사용량 대비 초과/부족에 따라
+# base fee 를 최대 ±12.5%/블록으로 조정하는 AIMD 컨트롤러를 재현한다.
+
+GAS_LIMIT = 30_000_000
+TARGET = GAS_LIMIT // 2          # 목표 사용량 = 가스 한도의 절반
+MAX_CHANGE_DENOM = 8             # 블록당 최대 변화폭 = 1/8 (12.5%)
+
+
+def next_base_fee(base_fee: float, gas_used: int) -&gt; float:
+    if gas_used == TARGET:
+        return base_fee
+    delta = base_fee * abs(gas_used - TARGET) // TARGET // MAX_CHANGE_DENOM
+    delta = max(delta, 1)  # 스펙상 최소 1 wei는 움직인다
+    if gas_used &gt; TARGET:
+        return base_fee + delta   # 혼잡 → 인상
+    return max(base_fee - delta, 0)  # 여유 → 인하 (0 미만 방지)
+
+
+# 블록별 실제 가스 사용량 시나리오: 혼잡 → 완화 → 정확히 목표
+gas_used_per_block = [30_000_000, 30_000_000, 20_000_000, 10_000_000, 15_000_000, TARGET]
+
+base_fee = 10 ** 9  # 1 gwei
+print(f&quot;target gas = {TARGET:,}, initial base fee = {base_fee:,} wei&quot;)
+for i, used in enumerate(gas_used_per_block, start=1):
+    new_fee = next_base_fee(base_fee, used)
+    change_pct = (new_fee - base_fee) / base_fee * 100
+    print(f&quot;block {i}: gasUsed={used:&gt;10,}  base_fee {base_fee:&gt;12,} -&gt; {new_fee:&gt;12,} wei  ({change_pct:+.2f}%)&quot;)
+    base_fee = new_fee
+
+print(f&quot;\n최종 base fee: {base_fee:,} wei — 목표 사용량에서는 그대로 유지됨을 확인&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-14.py">docs/code/math/math-14.py</a></p>
+      <h2>Exercise</h2>
+      <p>Take the base fee and gasUsed from the last few hundred blocks, reproduce the adjustment formula yourself to predict the next block's base fee, and compare it against the actual value.</p>
+      <h2>Practical Connection</h2>
+      <p>In a system like Verex where settlement or oracle resolution clusters around specific moments, you need to budget a max-fee buffer (e.g., the equivalent of several blocks' worth of increases) that accounts for the base fee's cap on its rate of increase, so settlement transactions don't stall.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>EIP-1559 수수료시장(base fee = AIMD) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 14 / 51 &middot; 8월 — 게임이론·프로토콜 경제학 (Day 11–17)</p>
+      <p class="meta">Math &middot; Day 14 / 52 &middot; 8월 — 게임이론·프로토콜 경제학 (Day 11–17)</p>
 
       <h2>개념</h2>
       <p>EIP-1559는 블록 수수료를 프로토콜이 정하는 base fee와 사용자가 붙이는 priority fee로 나누고, base fee는 소각하고 priority fee만 블록 제안자에게 준다. base fee는 이전 블록의 가스 사용량을 목표치(블록 가스 한도의 절반)와 비교해 조정되는데, 사용량이 목표보다 많으면 올리고 적으면 내리며 한 블록당 변화폭은 최대 1/8, 즉 12.5%로 제한된다. 이 되먹임은 혼잡 제어의 AIMD 계열 제어기와 같은 역할을 하며, 목표 사용률 주위로 수렴시키는 것이 설계 의도다. 사용자 입장에서 실제 지불액은 base fee + priority fee이되 max fee를 넘지 않고, 초과분은 환불되므로 first-price 경매에서 오던 과다 입찰 유인이 줄어든다. 다만 조정 속도에 상한이 있어 수요가 급변하면 여러 블록에 걸쳐서만 따라잡으므로, 짧은 스파이크 동안은 여전히 priority fee 경쟁이 가격을 결정한다.</p>
       <p>가스비 추정 로직이나 트랜잭션 재전송 정책을 짤 때 base fee의 최대 변화율을 모르면 max fee를 너무 낮게 잡아 pending에 묶이거나 필요 이상으로 높게 잡게 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># EIP-1559 수수료시장(base fee = AIMD) — 목표 가스 사용량 대비 초과/부족에 따라
+# base fee 를 최대 ±12.5%/블록으로 조정하는 AIMD 컨트롤러를 재현한다.
+
+GAS_LIMIT = 30_000_000
+TARGET = GAS_LIMIT // 2          # 목표 사용량 = 가스 한도의 절반
+MAX_CHANGE_DENOM = 8             # 블록당 최대 변화폭 = 1/8 (12.5%)
+
+
+def next_base_fee(base_fee: float, gas_used: int) -&gt; float:
+    if gas_used == TARGET:
+        return base_fee
+    delta = base_fee * abs(gas_used - TARGET) // TARGET // MAX_CHANGE_DENOM
+    delta = max(delta, 1)  # 스펙상 최소 1 wei는 움직인다
+    if gas_used &gt; TARGET:
+        return base_fee + delta   # 혼잡 → 인상
+    return max(base_fee - delta, 0)  # 여유 → 인하 (0 미만 방지)
+
+
+# 블록별 실제 가스 사용량 시나리오: 혼잡 → 완화 → 정확히 목표
+gas_used_per_block = [30_000_000, 30_000_000, 20_000_000, 10_000_000, 15_000_000, TARGET]
+
+base_fee = 10 ** 9  # 1 gwei
+print(f&quot;target gas = {TARGET:,}, initial base fee = {base_fee:,} wei&quot;)
+for i, used in enumerate(gas_used_per_block, start=1):
+    new_fee = next_base_fee(base_fee, used)
+    change_pct = (new_fee - base_fee) / base_fee * 100
+    print(f&quot;block {i}: gasUsed={used:&gt;10,}  base_fee {base_fee:&gt;12,} -&gt; {new_fee:&gt;12,} wei  ({change_pct:+.2f}%)&quot;)
+    base_fee = new_fee
+
+print(f&quot;\n최종 base fee: {base_fee:,} wei — 목표 사용량에서는 그대로 유지됨을 확인&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-14.py">docs/code/math/math-14.py</a></p>
       <h2>연습</h2>
       <p>최근 수백 블록의 base fee와 gasUsed를 받아 조정 공식을 직접 재현해 다음 블록 base fee를 예측하고 실제값과 비교해 볼 것.</p>
       <h2>실무 · Verex 연결</h2>

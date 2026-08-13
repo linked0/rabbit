@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 16 — 조합 게임이론(제로섬 vs 비제로섬)</title>
+<title>Day 16 — Combinatorial Game Theory (Zero-sum vs Non-zero-sum)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,114 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 16</p>
   <article>
+      <h1>Combinatorial Game Theory (Zero-sum vs Non-zero-sum) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 16 / 52 &middot; August — Game Theory &amp; Protocol Economics (Day 11-17)</p>
+      <h2>Concept</h2>
+      <p>The most basic axis for classifying games is whether the sum of participants' payoffs is constant. Zero-sum games are purely adversarial, since one side's gain is exactly the other side's loss; for finite two-player zero-sum games there's a theorem that a unique minimax value exists once mixed strategies are allowed. In non-zero-sum games, the total payoff varies with strategy, so cooperation can leave everyone better off or everyone worse off, and the relevant solution concept shifts to Nash equilibrium — a point where no one has a unilateral incentive to deviate given others' strategies. In finite games, a mixed-strategy Nash equilibrium always exists but there can be more than one, and, as in the prisoner's dilemma, the equilibrium can be worse than the jointly optimal outcome. Separately, combinatorial games with perfect information and no element of chance have their own theory — most notably Sprague-Grundy theory, which reduces positions to Grundy numbers so that the sum of games can be computed.</p>
+      <p>Protocol design ultimately comes down to predicting what participants will do within the rules, and if a situation you assumed was zero-sum is actually non-zero-sum — where collusion pays off — the whole incentive design breaks down. It's also important to separate 'an equilibrium exists' from 'that equilibrium is desirable.'</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 조합 게임이론(제로섬 vs 비제로섬) — 제로섬(Matching Pennies)의 minimax=maximin 값을
+# 그리드서치로 확인하고, 비제로섬(죄수의 딜레마)의 순수전략 내시균형을 직접 탐색한다.
+
+import numpy as np
+
+# --- 제로섬: Matching Pennies. Row 이득 행렬 (Column 이득은 정확히 -Row) ---
+A = np.array([[1, -1],
+              [-1, 1]], dtype=float)
+
+ps = np.linspace(0, 1, 2001)  # Row가 action0을 고를 확률 p
+
+# Row(최대화)가 p를 고르면, Column(최소화)은 자신에게 최선인(=Row에게 최악인) 열을 선택
+maximin = max(min(p * A[0, 0] + (1 - p) * A[1, 0], p * A[0, 1] + (1 - p) * A[1, 1]) for p in ps)
+# Column(최소화)이 q를 고르면, Row(최대화)는 자신에게 최선인 행을 선택
+minimax = min(max(q * A[0, 0] + (1 - q) * A[0, 1], q * A[1, 0] + (1 - q) * A[1, 1]) for q in ps)
+
+print(&quot;Matching Pennies (제로섬) — payoff 행렬:&quot;)
+print(A)
+print(f&quot;maximin(row가 확보 가능한 최소 기대이득의 최대치) = {maximin:.4f}&quot;)
+print(f&quot;minimax(column이 허용하는 최대 기대손실의 최소치) = {minimax:.4f}&quot;)
+print(&quot;→ 두 값이 (거의) 같다 = minimax 정리: 혼합전략 하에서 게임의 값이 유일하게 존재\n&quot;)
+
+# --- 비제로섬: 죄수의 딜레마. Row/Col 각자의 payoff 행렬이 따로 있고 합이 일정하지 않음 ---
+# 행/열: 0=협력, 1=배신
+R = np.array([[3, 0], [5, 1]])  # Row의 payoff
+C = np.array([[3, 5], [0, 1]])  # Column의 payoff
+
+nash = []
+for i in range(2):
+    for j in range(2):
+        row_best = max(R[:, j]) == R[i, j]     # Row가 j 고정 시 i가 최선인가
+        col_best = max(C[i, :]) == C[i, j]     # Column이 i 고정 시 j가 최선인가
+        if row_best and col_best:
+            nash.append((i, j))
+
+labels = [&quot;협력&quot;, &quot;배신&quot;]
+print(&quot;죄수의 딜레마 (비제로섬) — 순수전략 내시균형:&quot;)
+for i, j in nash:
+    print(f&quot;  - (Row={labels[i]}, Col={labels[j]})  payoff=({R[i,j]}, {C[i,j]})&quot;)
+print(&quot;→ payoff 합이 칸마다 다르다(3+3=6 vs 5+0=5 vs 1+1=2): 제로섬이 아니라서 협력이 상호 이득이지만,&quot;)
+print(&quot;  각자의 지배전략은 배신이라 균형은 (배신, 배신)뿐 — 파레토 열등한 결과가 균형이 된다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-16.py">docs/code/math/math-16.py</a></p>
+      <h2>Exercise</h2>
+      <p>Construct a few 2x2 payoff matrices; for the zero-sum cases, solve via minimax, and for the non-zero-sum cases, find pure and mixed Nash equilibria by hand and verify them in code.</p>
+      <h2>Practical Connection</h2>
+      <p>In prediction markets, trader P&amp;L is roughly zero-sum once fees are removed, but the dispute game around challenging an oracle's result is non-zero-sum because of bonds and rewards, so parameters need to be set such that honest reporting is itself the equilibrium.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>조합 게임이론(제로섬 vs 비제로섬) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 16 / 51 &middot; 8월 — 게임이론·프로토콜 경제학 (Day 11–17)</p>
+      <p class="meta">Math &middot; Day 16 / 52 &middot; 8월 — 게임이론·프로토콜 경제학 (Day 11–17)</p>
 
       <h2>개념</h2>
       <p>게임을 분류하는 가장 기본적인 축은 참가자 보수의 합이 상수인지 여부다. 제로섬 게임은 한쪽의 이득이 정확히 다른 쪽의 손실이라 순수 대립 구조이며, 유한 2인 제로섬 게임에는 혼합 전략을 허용할 때 minimax 값이 유일하게 존재한다는 정리가 있다. 비제로섬 게임은 보수의 합이 전략에 따라 달라져 협력으로 모두가 나아지거나 모두가 나빠질 수 있고, 해 개념은 상대 전략이 주어졌을 때 누구도 일방적으로 바꿀 유인이 없는 내시 균형으로 옮겨간다. 유한 게임이면 혼합 전략 내시 균형은 항상 존재하지만 여러 개일 수 있고, 죄수의 딜레마처럼 균형이 전체 최적보다 나쁠 수도 있다. 한편 완전 정보에 우연 요소가 없는 조합 게임은 별도 이론을 갖는데, 국면을 Grundy 수로 환원해 게임의 합을 계산하는 Sprague-Grundy 이론이 대표적이다.</p>
       <p>프로토콜 설계는 결국 참여자가 규칙 안에서 무엇을 할지 예측하는 일이고, 제로섬으로 착각한 상황이 실제로는 담합이 이득인 비제로섬이면 인센티브 설계가 통째로 어긋난다. 균형이 존재한다는 것과 그 균형이 바람직하다는 것은 별개라는 점도 중요하다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 조합 게임이론(제로섬 vs 비제로섬) — 제로섬(Matching Pennies)의 minimax=maximin 값을
+# 그리드서치로 확인하고, 비제로섬(죄수의 딜레마)의 순수전략 내시균형을 직접 탐색한다.
+
+import numpy as np
+
+# --- 제로섬: Matching Pennies. Row 이득 행렬 (Column 이득은 정확히 -Row) ---
+A = np.array([[1, -1],
+              [-1, 1]], dtype=float)
+
+ps = np.linspace(0, 1, 2001)  # Row가 action0을 고를 확률 p
+
+# Row(최대화)가 p를 고르면, Column(최소화)은 자신에게 최선인(=Row에게 최악인) 열을 선택
+maximin = max(min(p * A[0, 0] + (1 - p) * A[1, 0], p * A[0, 1] + (1 - p) * A[1, 1]) for p in ps)
+# Column(최소화)이 q를 고르면, Row(최대화)는 자신에게 최선인 행을 선택
+minimax = min(max(q * A[0, 0] + (1 - q) * A[0, 1], q * A[1, 0] + (1 - q) * A[1, 1]) for q in ps)
+
+print(&quot;Matching Pennies (제로섬) — payoff 행렬:&quot;)
+print(A)
+print(f&quot;maximin(row가 확보 가능한 최소 기대이득의 최대치) = {maximin:.4f}&quot;)
+print(f&quot;minimax(column이 허용하는 최대 기대손실의 최소치) = {minimax:.4f}&quot;)
+print(&quot;→ 두 값이 (거의) 같다 = minimax 정리: 혼합전략 하에서 게임의 값이 유일하게 존재\n&quot;)
+
+# --- 비제로섬: 죄수의 딜레마. Row/Col 각자의 payoff 행렬이 따로 있고 합이 일정하지 않음 ---
+# 행/열: 0=협력, 1=배신
+R = np.array([[3, 0], [5, 1]])  # Row의 payoff
+C = np.array([[3, 5], [0, 1]])  # Column의 payoff
+
+nash = []
+for i in range(2):
+    for j in range(2):
+        row_best = max(R[:, j]) == R[i, j]     # Row가 j 고정 시 i가 최선인가
+        col_best = max(C[i, :]) == C[i, j]     # Column이 i 고정 시 j가 최선인가
+        if row_best and col_best:
+            nash.append((i, j))
+
+labels = [&quot;협력&quot;, &quot;배신&quot;]
+print(&quot;죄수의 딜레마 (비제로섬) — 순수전략 내시균형:&quot;)
+for i, j in nash:
+    print(f&quot;  - (Row={labels[i]}, Col={labels[j]})  payoff=({R[i,j]}, {C[i,j]})&quot;)
+print(&quot;→ payoff 합이 칸마다 다르다(3+3=6 vs 5+0=5 vs 1+1=2): 제로섬이 아니라서 협력이 상호 이득이지만,&quot;)
+print(&quot;  각자의 지배전략은 배신이라 균형은 (배신, 배신)뿐 — 파레토 열등한 결과가 균형이 된다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-16.py">docs/code/math/math-16.py</a></p>
       <h2>연습</h2>
       <p>2x2 보수 행렬 몇 개를 만들어 제로섬인 경우는 minimax로, 비제로섬인 경우는 순수·혼합 내시 균형을 손으로 구하고 코드로 검증하라.</p>
       <h2>실무 · Verex 연결</h2>

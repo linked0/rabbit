@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 76 — 컬럼 스토어와 벡터화 실행(OLAP)</title>
+<title>Day 76 — Column Stores and Vectorized Execution (OLAP)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,64 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 76</p>
   <article>
+      <h1>Column Stores and Vectorized Execution (OLAP) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 76 / 100 &middot; E. Data &amp; Storage Engines (Day 69-81)</p>
+      <h2>Concept</h2>
+      <p>A row store appends whole records together, while a column store lays out values of the same column contiguously, so a query only reads the columns it needs and I/O drops sharply. Because values that land together share the same type and often a similar distribution, compression schemes like RLE, dictionary encoding, delta encoding, and bit-packing work much better, and it becomes possible to operate directly on compressed data. The execution engine also processes data in batches of thousands of values (vectors) instead of the tuple-at-a-time Volcano model, cutting function-call overhead and exploiting cache locality and SIMD. The tradeoff is that single-row lookups and frequent updates suffer, so OLTP paths still belong on row stores.</p>
+      <p>Throwing analytical queries straight at an operational database is often tens of times slower and more expensive, and once the workload shape and storage layout are mismatched, index tuning alone won't recover it.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 컬럼 스토어와 벡터화 실행(OLAP) — 로우 스토어와 컬럼 스토어의 I/O·압축 차이를 흉내낸다.
+# 컬럼별로 값을 모으면 RLE 압축이 잘 듣고, 한 컬럼만 읽어도 되는 질의에서 I/O 가 줄어든다.
+
+rows = [
+    {&quot;country&quot;: &quot;KR&quot;, &quot;amount&quot;: 100},
+    {&quot;country&quot;: &quot;KR&quot;, &quot;amount&quot;: 120},
+    {&quot;country&quot;: &quot;US&quot;, &quot;amount&quot;: 90},
+    {&quot;country&quot;: &quot;US&quot;, &quot;amount&quot;: 95},
+    {&quot;country&quot;: &quot;US&quot;, &quot;amount&quot;: 80},
+]
+
+# 로우 스토어: &quot;amount 합계&quot;를 구하려면 레코드 전체를 훑어야 한다.
+row_store_bytes_touched = sum(len(r) for r in rows) * 8  # 필드 전부를 스캔한다고 가정
+
+# 컬럼 스토어: amount 컬럼만 연속 배치로 저장 → 그 컬럼만 읽으면 된다.
+column_store = {
+    &quot;country&quot;: [r[&quot;country&quot;] for r in rows],
+    &quot;amount&quot;: [r[&quot;amount&quot;] for r in rows],
+}
+column_store_bytes_touched = len(column_store[&quot;amount&quot;]) * 8  # amount 컬럼만 스캔
+
+def run_length_encode(values):
+    out = []
+    for v in values:
+        if out and out[-1][0] == v:
+            out[-1][1] += 1
+        else:
+            out.append([v, 1])
+    return out
+
+# 벡터화 실행: 튜플 하나씩이 아니라 컬럼 배열 전체에 한 번에 연산(sum)을 적용한다.
+def vectorized_sum(col):
+    return sum(col)  # 실제 엔진은 SIMD 로 배치 처리하지만, 여기선 개념만 시연
+
+country_rle = run_length_encode(column_store[&quot;country&quot;])
+total_amount = vectorized_sum(column_store[&quot;amount&quot;])
+
+print(&quot;row store bytes touched for SUM(amount):&quot;, row_store_bytes_touched)
+print(&quot;column store bytes touched for SUM(amount):&quot;, column_store_bytes_touched)
+print(&quot;country column RLE:&quot;, country_rle)          # [['KR', 2], ['US', 3]]
+print(&quot;vectorized SUM(amount):&quot;, total_amount)      # 485
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-76.py">docs/code/algorithms/algorithms-76.py</a></p>
+      <h2>Exercise</h2>
+      <p>Load the same event data into Postgres and DuckDB, then compare the scanned data volume and runtime of a large-scale aggregation query to confirm the effect of column pruning.</p>
+      <h2>Practical Connection</h2>
+      <p>Verex's analytics backend — indexing chain event logs to compute trading volume, open interest, and per-user P&amp;L — is a textbook OLAP workload, so it's natural to separate the storage used for mirroring on-chain state from the storage used for analytics.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>컬럼 스토어와 벡터화 실행(OLAP) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 76 / 100 &middot; E. 데이터·스토리지 엔진 (Day 69–81)</p>
 
@@ -115,7 +196,49 @@
       <p>로우 스토어가 레코드를 통째로 붙여 저장하는 반면 컬럼 스토어는 같은 컬럼의 값을 연속 배치해, 질의에 필요한 컬럼만 읽어 I/O를 크게 줄인다. 같은 타입에 값 분포도 비슷한 데이터가 모이므로 RLE, 딕셔너리, 델타, 비트팩킹 같은 압축이 훨씬 잘 듣고 압축된 상태로 연산하는 것도 가능해진다. 실행 엔진도 튜플 하나씩 넘기는 volcano 모델 대신 수천 개 값 묶음(벡터) 단위로 처리해 함수 호출 오버헤드를 줄이고 캐시 지역성과 SIMD를 살린다. 대신 단건 조회나 잦은 갱신에는 불리하므로 OLTP 경로는 여전히 로우 스토어가 맞다.</p>
       <p>분석 질의를 운영 DB에 그대로 던지면 수십 배 느리고 비싸며, 워크로드 성격과 저장 방식을 맞추지 못하면 인덱스 튜닝으로는 회복되지 않는다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 컬럼 스토어와 벡터화 실행(OLAP) — 로우 스토어와 컬럼 스토어의 I/O·압축 차이를 흉내낸다.
+# 컬럼별로 값을 모으면 RLE 압축이 잘 듣고, 한 컬럼만 읽어도 되는 질의에서 I/O 가 줄어든다.
+
+rows = [
+    {&quot;country&quot;: &quot;KR&quot;, &quot;amount&quot;: 100},
+    {&quot;country&quot;: &quot;KR&quot;, &quot;amount&quot;: 120},
+    {&quot;country&quot;: &quot;US&quot;, &quot;amount&quot;: 90},
+    {&quot;country&quot;: &quot;US&quot;, &quot;amount&quot;: 95},
+    {&quot;country&quot;: &quot;US&quot;, &quot;amount&quot;: 80},
+]
+
+# 로우 스토어: &quot;amount 합계&quot;를 구하려면 레코드 전체를 훑어야 한다.
+row_store_bytes_touched = sum(len(r) for r in rows) * 8  # 필드 전부를 스캔한다고 가정
+
+# 컬럼 스토어: amount 컬럼만 연속 배치로 저장 → 그 컬럼만 읽으면 된다.
+column_store = {
+    &quot;country&quot;: [r[&quot;country&quot;] for r in rows],
+    &quot;amount&quot;: [r[&quot;amount&quot;] for r in rows],
+}
+column_store_bytes_touched = len(column_store[&quot;amount&quot;]) * 8  # amount 컬럼만 스캔
+
+def run_length_encode(values):
+    out = []
+    for v in values:
+        if out and out[-1][0] == v:
+            out[-1][1] += 1
+        else:
+            out.append([v, 1])
+    return out
+
+# 벡터화 실행: 튜플 하나씩이 아니라 컬럼 배열 전체에 한 번에 연산(sum)을 적용한다.
+def vectorized_sum(col):
+    return sum(col)  # 실제 엔진은 SIMD 로 배치 처리하지만, 여기선 개념만 시연
+
+country_rle = run_length_encode(column_store[&quot;country&quot;])
+total_amount = vectorized_sum(column_store[&quot;amount&quot;])
+
+print(&quot;row store bytes touched for SUM(amount):&quot;, row_store_bytes_touched)
+print(&quot;column store bytes touched for SUM(amount):&quot;, column_store_bytes_touched)
+print(&quot;country column RLE:&quot;, country_rle)          # [['KR', 2], ['US', 3]]
+print(&quot;vectorized SUM(amount):&quot;, total_amount)      # 485
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-76.py">docs/code/algorithms/algorithms-76.py</a></p>
       <h2>연습</h2>
       <p>같은 이벤트 데이터를 Postgres와 DuckDB에 각각 적재해 대규모 집계 질의의 스캔량과 소요 시간을 비교하고 컬럼 프루닝 효과를 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

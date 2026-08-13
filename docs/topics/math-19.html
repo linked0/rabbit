@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 19 — 내적·노름·코사인 유사도</title>
+<title>Day 19 — Dot Product, Norm, Cosine Similarity</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,84 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 19</p>
   <article>
+      <h1>Dot Product, Norm, Cosine Similarity <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 19 / 52 &middot; September — Linear Algebra (Day 18-26)</p>
+      <h2>Concept</h2>
+      <p>The dot product of two vectors is defined as the sum of the products of corresponding components, and geometrically it equals the product of the two vectors' magnitudes times the cosine of the angle between them. A norm is a function measuring vector magnitude: the L2 norm is the square root of the dot product of a vector with itself, L1 is the sum of the absolute values of the components, and L∞ is the maximum absolute value. The Cauchy-Schwarz inequality says the absolute value of the dot product never exceeds the product of the two norms, which is exactly why dividing the dot product by the two norms always gives a value between -1 and 1, making cosine similarity well-defined. Cosine similarity ignores vector magnitude and compares direction only, so it's used instead of Euclidean distance when you want to exclude differences in document length or scale. A dot product of zero means orthogonality, which is the starting point for concepts like projection and least squares.</p>
+      <p>Practical problems like embedding search, similarity ranking, and how results change depending on whether you normalize, ultimately come down to which norm you're measuring with and whether you normalized magnitude.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 내적·노름·코사인 유사도 — L1/L2/L∞ 노름, 코사인 유사도, 코시-슈바르츠 부등식을 확인한다.
+
+import numpy as np
+
+u = np.array([3.0, 4.0, 0.0])
+v = np.array([1.0, 2.0, 2.0])
+
+dot = np.dot(u, v)
+print(f&quot;u={u}, v={v}&quot;)
+print(f&quot;내적 u·v = {dot}&quot;)
+
+l1 = np.linalg.norm(u, 1)
+l2 = np.linalg.norm(u, 2)
+linf = np.linalg.norm(u, np.inf)
+print(f&quot;\nu의 노름: L1={l1}, L2={l2}, L∞={linf}&quot;)
+
+cos_sim = dot / (np.linalg.norm(u) * np.linalg.norm(v))
+print(f&quot;\n코사인 유사도 cos(u,v) = {cos_sim:.4f}&quot;)
+
+# 코시-슈바르츠: |u·v| &lt;= ||u|| * ||v||  → 이 부등식 덕분에 cos_sim이 항상 [-1, 1] 안에 있다
+cauchy_schwarz_bound = np.linalg.norm(u) * np.linalg.norm(v)
+print(f&quot;|u·v| = {abs(dot):.4f}  &lt;=  ||u||*||v|| = {cauchy_schwarz_bound:.4f} ? {abs(dot) &lt;= cauchy_schwarz_bound}&quot;)
+
+# 크기가 다른 두 벡터라도 방향이 같으면 코사인 유사도는 1
+w = u * 10  # u와 방향은 같고 크기만 10배
+print(f&quot;\nw = 10*u 의 코사인 유사도(u,w) = {np.dot(u, w) / (np.linalg.norm(u) * np.linalg.norm(w)):.4f} → 스케일 무시, 방향만 비교&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-19.py">docs/code/math/math-19.py</a></p>
+      <h2>Exercise</h2>
+      <p>For the same dataset, implement Euclidean-distance nearest neighbors and cosine-similarity nearest neighbors separately, and check how the results change before and after normalizing vectors to unit norm.</p>
+      <h2>Practical Connection</h2>
+      <p>This is used directly when clustering similar wallets by on-chain address behavior vectors or wiring up log/document search, and more generally it underlies predictive models like least squares and regression.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>내적·노름·코사인 유사도 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 19 / 51 &middot; 9월 — 선형대수 (Day 18–26)</p>
+      <p class="meta">Math &middot; Day 19 / 52 &middot; 9월 — 선형대수 (Day 18–26)</p>
 
       <h2>개념</h2>
       <p>두 벡터의 내적은 대응 성분의 곱의 합으로 정의되며, 기하적으로는 두 벡터 크기의 곱에 사잇각의 코사인을 곱한 값과 같다. 노름은 벡터의 크기를 재는 함수로, L2 노름은 자기 자신과의 내적의 제곱근이고 L1은 성분 절댓값의 합, L∞는 최대 절댓값이다. 코시-슈바르츠 부등식은 내적의 절댓값이 두 노름의 곱을 넘지 못한다고 말하며, 이 덕분에 내적을 두 노름으로 나눈 값이 항상 -1과 1 사이에 있어 코사인 유사도가 잘 정의된다. 코사인 유사도는 벡터의 크기를 무시하고 방향만 비교하므로, 문서 길이나 스케일 차이를 배제하고 싶을 때 유클리드 거리 대신 쓴다. 내적이 0이면 직교이며, 이는 사영과 최소제곱 같은 개념의 출발점이다.</p>
       <p>임베딩 검색, 유사도 랭킹, 정규화 여부에 따른 결과 차이 같은 실무 문제는 결국 '어떤 노름으로 재고 크기를 정규화했는가'로 갈린다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 내적·노름·코사인 유사도 — L1/L2/L∞ 노름, 코사인 유사도, 코시-슈바르츠 부등식을 확인한다.
+
+import numpy as np
+
+u = np.array([3.0, 4.0, 0.0])
+v = np.array([1.0, 2.0, 2.0])
+
+dot = np.dot(u, v)
+print(f&quot;u={u}, v={v}&quot;)
+print(f&quot;내적 u·v = {dot}&quot;)
+
+l1 = np.linalg.norm(u, 1)
+l2 = np.linalg.norm(u, 2)
+linf = np.linalg.norm(u, np.inf)
+print(f&quot;\nu의 노름: L1={l1}, L2={l2}, L∞={linf}&quot;)
+
+cos_sim = dot / (np.linalg.norm(u) * np.linalg.norm(v))
+print(f&quot;\n코사인 유사도 cos(u,v) = {cos_sim:.4f}&quot;)
+
+# 코시-슈바르츠: |u·v| &lt;= ||u|| * ||v||  → 이 부등식 덕분에 cos_sim이 항상 [-1, 1] 안에 있다
+cauchy_schwarz_bound = np.linalg.norm(u) * np.linalg.norm(v)
+print(f&quot;|u·v| = {abs(dot):.4f}  &lt;=  ||u||*||v|| = {cauchy_schwarz_bound:.4f} ? {abs(dot) &lt;= cauchy_schwarz_bound}&quot;)
+
+# 크기가 다른 두 벡터라도 방향이 같으면 코사인 유사도는 1
+w = u * 10  # u와 방향은 같고 크기만 10배
+print(f&quot;\nw = 10*u 의 코사인 유사도(u,w) = {np.dot(u, w) / (np.linalg.norm(u) * np.linalg.norm(w)):.4f} → 스케일 무시, 방향만 비교&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-19.py">docs/code/math/math-19.py</a></p>
       <h2>연습</h2>
       <p>같은 데이터에 대해 유클리드 거리 기반 최근접 이웃과 코사인 유사도 기반 최근접 이웃을 각각 구현해, 벡터를 단위 노름으로 정규화하기 전후로 결과가 어떻게 바뀌는지 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

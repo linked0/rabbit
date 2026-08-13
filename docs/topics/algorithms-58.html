@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 58 — 나카모토 합의의 확률적 최종성과 selfish mining</title>
+<title>Day 58 — Nakamoto Consensus's Probabilistic Finality and Selfish Mining</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,61 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 58</p>
   <article>
+      <h1>Nakamoto Consensus's Probabilistic Finality and Selfish Mining <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 58 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>Nakamoto consensus produces blocks via proof of work and treats the chain with the greatest cumulative work as canonical — finality here isn't absolute, it's probabilistic. The more honest blocks get stacked on top of a given block, the bigger the gap an attacker has to make up to revert it, so the probability of reversion decreases exponentially as confirmations accumulate. This guarantee holds only under the assumptions that the attacker's hash power is less than the honest majority's and that network propagation is fast enough. Selfish mining is a strategy where a miner withholds a mined block instead of publishing it immediately, keeping a secret chain, then releases it strategically when an honest block appears, invalidating honest miners' work. This strategy shows that an attacker can earn a reward share above their actual hash-power share even well below a majority, revealing that a protocol's incentive-compatibility is a separate question from its safety threshold.</p>
+      <p>How many confirmations to wait for is a decision that converts a safety parameter into money, and the existence of incentive-based attacks means an honest-majority assumption alone can't justify a system's safety.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 나카모토 합의의 확률적 최종성 — 공격자 해시파워 비율과 확인 수(confirmation)에 따른
+# 되돌림(reorg) 성공 확률을 랜덤 워크 시뮬레이션으로 추정한다 (selfish mining 없이 정직한 다수 가정).
+
+import random
+
+random.seed(11)
+
+def simulate_reorg_attempt(attacker_ratio, confirmations, max_steps=10000):
+    &quot;&quot;&quot;정직한 체인이 confirmations만큼 앞서 있을 때, 공격자가 따라잡는지 랜덤 워크로 시뮬레이션.
+    lead &gt; 0: 정직한 체인이 앞선 블록 수. 공격자가 lead를 0 이하로 만들면 추월 성공.&quot;&quot;&quot;
+    lead = confirmations
+    for _ in range(max_steps):
+        if random.random() &lt; attacker_ratio:
+            lead -= 1  # 공격자가 블록을 캔다
+        else:
+            lead += 1  # 정직한 채굴자가 블록을 캔다
+        if lead &lt;= 0:
+            return True  # 공격자가 따라잡음 (reorg 성공)
+        if lead &gt; confirmations + 50:
+            return False  # 격차가 충분히 벌어져 사실상 안전
+    return False
+
+def estimate_reorg_probability(attacker_ratio, confirmations, trials=2000):
+    successes = sum(
+        simulate_reorg_attempt(attacker_ratio, confirmations) for _ in range(trials)
+    )
+    return successes / trials
+
+print(&quot;공격자 해시파워 비율별, 확인 수(confirmation)에 따른 되돌림 성공 확률 (시뮬레이션):\n&quot;)
+for attacker_ratio in [0.10, 0.30, 0.45]:
+    print(f&quot;attacker_ratio = {attacker_ratio}&quot;)
+    for conf in [1, 3, 6]:
+        p = estimate_reorg_probability(attacker_ratio, conf, trials=1000)
+        print(f&quot;  confirmations={conf}: 되돌림 확률 ≈ {p*100:.1f}%&quot;)
+    print()
+
+print(&quot;-&gt; 확인 수가 늘수록, 공격자 비율이 낮을수록 되돌림 확률이 지수적으로 감소한다.&quot;)
+print(&quot;   (해시파워가 정직한 쪽보다 크면(&gt;=50%) 확인 수와 무관하게 결국 따라잡는다.)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-58.py">docs/code/algorithms/algorithms-58.py</a></p>
+      <h2>Exercise</h2>
+      <p>Write a script that takes an attacker's hash-power share and a confirmation count as input and estimates the probability of a successful reversion via a random-walk simulation, then plot the probability curve against confirmation count.</p>
+      <h2>Practical Connection</h2>
+      <p>In a prediction market, deciding how many confirmations to require before crediting a deposit or finalizing settlement has to weigh the probabilistic-finality curve against the amount at stake — and the same question resurfaces, just reshaped into finality rules and reorg risk, on a proof-of-stake chain.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>나카모토 합의의 확률적 최종성과 selfish mining <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 58 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
 
@@ -115,7 +193,46 @@
       <p>나카모토 합의는 작업증명으로 블록을 생성하고 가장 누적 작업량이 큰 체인을 정본으로 삼는 규칙이며, 여기서 최종성은 절대적이지 않고 확률적이다. 어떤 블록 위에 정직한 블록이 더 쌓일수록 공격자가 그 블록을 되돌리기 위해 따라잡아야 할 격차가 커지므로, 되돌림 확률은 확인 수가 늘어남에 따라 지수적으로 감소한다. 이 보장은 공격자의 해시파워가 정직한 쪽보다 작다는 가정과 네트워크 전파가 충분히 빠르다는 가정 위에서만 성립한다. selfish mining은 채굴한 블록을 즉시 공개하지 않고 비밀 체인을 유지하다가 정직한 블록이 나오면 전략적으로 공개해, 정직한 채굴자들의 작업을 무효화시키는 전략이다. 이 전략은 공격자가 전체 해시파워의 과반에 크게 못 미치더라도 자기 지분보다 높은 보상 비율을 얻을 수 있음을 보여, 프로토콜의 인센티브 호환성이 안전성 임계값과 별개의 문제임을 드러낸다.</p>
       <p>몇 확인을 기다려야 하는가는 안전 파라미터를 돈으로 환산하는 결정이며, 인센티브 공격이 존재한다는 사실은 다수 정직 가정만으로 시스템을 정당화할 수 없음을 뜻한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 나카모토 합의의 확률적 최종성 — 공격자 해시파워 비율과 확인 수(confirmation)에 따른
+# 되돌림(reorg) 성공 확률을 랜덤 워크 시뮬레이션으로 추정한다 (selfish mining 없이 정직한 다수 가정).
+
+import random
+
+random.seed(11)
+
+def simulate_reorg_attempt(attacker_ratio, confirmations, max_steps=10000):
+    &quot;&quot;&quot;정직한 체인이 confirmations만큼 앞서 있을 때, 공격자가 따라잡는지 랜덤 워크로 시뮬레이션.
+    lead &gt; 0: 정직한 체인이 앞선 블록 수. 공격자가 lead를 0 이하로 만들면 추월 성공.&quot;&quot;&quot;
+    lead = confirmations
+    for _ in range(max_steps):
+        if random.random() &lt; attacker_ratio:
+            lead -= 1  # 공격자가 블록을 캔다
+        else:
+            lead += 1  # 정직한 채굴자가 블록을 캔다
+        if lead &lt;= 0:
+            return True  # 공격자가 따라잡음 (reorg 성공)
+        if lead &gt; confirmations + 50:
+            return False  # 격차가 충분히 벌어져 사실상 안전
+    return False
+
+def estimate_reorg_probability(attacker_ratio, confirmations, trials=2000):
+    successes = sum(
+        simulate_reorg_attempt(attacker_ratio, confirmations) for _ in range(trials)
+    )
+    return successes / trials
+
+print(&quot;공격자 해시파워 비율별, 확인 수(confirmation)에 따른 되돌림 성공 확률 (시뮬레이션):\n&quot;)
+for attacker_ratio in [0.10, 0.30, 0.45]:
+    print(f&quot;attacker_ratio = {attacker_ratio}&quot;)
+    for conf in [1, 3, 6]:
+        p = estimate_reorg_probability(attacker_ratio, conf, trials=1000)
+        print(f&quot;  confirmations={conf}: 되돌림 확률 ≈ {p*100:.1f}%&quot;)
+    print()
+
+print(&quot;-&gt; 확인 수가 늘수록, 공격자 비율이 낮을수록 되돌림 확률이 지수적으로 감소한다.&quot;)
+print(&quot;   (해시파워가 정직한 쪽보다 크면(&gt;=50%) 확인 수와 무관하게 결국 따라잡는다.)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-58.py">docs/code/algorithms/algorithms-58.py</a></p>
       <h2>연습</h2>
       <p>공격자 해시파워 비율과 확인 수를 입력받아 되돌림 성공 확률을 랜덤 워크 시뮬레이션으로 추정하는 스크립트를 짜고, 확인 수에 따른 확률 곡선을 그려 보라.</p>
       <h2>실무 · Verex 연결</h2>

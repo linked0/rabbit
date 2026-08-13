@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 38 — 랜덤워크/GBM(개념)</title>
+<title>Day 38 — Random Walks and GBM (Concept)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,21 +131,115 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 38</p>
   <article>
+      <h1>Random Walks and GBM (Concept) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 38 / 52 &middot; November — Probability, Statistics &amp; Financial Math (Day 35-43)</p>
+      <h2>Concept</h2>
+      <p>A random walk is a stochastic process built by repeatedly adding independent increments; in a symmetric simple random walk, variance grows proportionally with time, so the typical distance traveled scales with the square root of time. Taking this to a continuous-time limit gives Brownian motion, where increments are independent and normally distributed. Geometric Brownian motion (GBM) is a model where the logarithm of the value follows Brownian motion; because this keeps the value from going negative and gives returns a lognormal distribution, it's widely used to model asset prices. Real markets, though, show fat tails and volatility clustering, so GBM is ultimately only a first-order approximation.</p>
+      <p>Being able to estimate the swing of an accumulating stochastic process — price, balance, queue length — using square-root-of-time scaling is what lets you set risk limits or timeouts on solid ground rather than guesswork.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 38 — 랜덤워크/GBM(개념)
+# 대칭 단순 랜덤워크를 시뮬레이션하고, 로그값이 랜덤워크를 따르는 기하 브라운 운동(GBM) 근사 경로도 만든다.
+
+import random
+import math
+
+random.seed(1)
+
+# 1) 대칭 단순 랜덤워크: 매 스텝 +1 또는 -1
+n_steps = 20
+walk = [0]
+for _ in range(n_steps):
+    step = random.choice([-1, 1])
+    walk.append(walk[-1] + step)
+
+print(f&quot;단순 랜덤워크 경로 ({n_steps}스텝):&quot;)
+print(walk)
+print(f&quot;최종 위치 = {walk[-1]}, 이론적 표준편차(sqrt(n)) = {math.sqrt(n_steps):.3f}\n&quot;)
+
+# 2) 이산시간 GBM 근사: S_t = S_0 * exp(sum of small normal increments)
+# dlogS = (mu - 0.5*sigma^2)*dt + sigma*sqrt(dt)*Z, Z ~ N(0,1)
+S0 = 100.0
+mu = 0.05      # 연간 기대수익률
+sigma = 0.2    # 연간 변동성
+n_gbm_steps = 10
+dt = 1 / 252   # 하루 단위
+
+prices = [S0]
+for _ in range(n_gbm_steps):
+    z = random.gauss(0, 1)
+    drift = (mu - 0.5 * sigma ** 2) * dt
+    diffusion = sigma * math.sqrt(dt) * z
+    next_price = prices[-1] * math.exp(drift + diffusion)
+    prices.append(next_price)
+
+print(f&quot;GBM 근사 가격 경로 ({n_gbm_steps}일):&quot;)
+for i, p in enumerate(prices):
+    print(f&quot;  day {i}: {p:.4f}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-38.py">docs/code/math/math-38.py</a></p>
+      <h2>Exercise</h2>
+      <p>Simulate a few thousand paths each of a simple random walk and a GBM process, then plot the variance over time and the distribution of final values to visually confirm the normal and lognormal shapes.</p>
+      <h2>Practical Connection</h2>
+      <p>A prediction-market price behaves close to a martingale that updates whenever new information arrives, but because it's confined between 0 and 1, GBM can't be applied directly — understanding that difference is necessary to quantitatively estimate Verex's price swings or its collateral requirements.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>랜덤워크/GBM(개념) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 38 / 51 &middot; 11월 — 확률·통계·금융수학 (Day 35–42)</p>
+      <p class="meta">Math &middot; Day 38 / 52 &middot; 11월 — 확률·통계·금융수학 (Day 35–43)</p>
 
       <h2>개념</h2>
       <p>랜덤워크는 독립적인 증분을 계속 더해가는 확률과정으로, 대칭 단순 랜덤워크에서는 분산이 시간에 비례해 커지므로 전형적인 이동 거리는 시간의 제곱근 규모다. 이를 연속시간으로 극한을 취한 것이 브라운 운동이며, 증분이 서로 독립이고 정규분포를 따른다. 기하 브라운 운동은 값의 로그가 브라운 운동을 따르도록 만든 모형으로, 값이 음수가 되지 않고 수익률이 로그정규분포를 갖기 때문에 자산가격 모형으로 널리 쓰인다. 다만 실제 시장은 두꺼운 꼬리와 변동성 군집을 보여 GBM은 어디까지나 1차 근사다.</p>
       <p>가격·잔고·큐 길이처럼 누적되는 확률 과정의 변동 폭을 제곱근 스케일로 어림할 수 있어야 리스크 한도나 타임아웃을 근거 있게 정할 수 있다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 38 — 랜덤워크/GBM(개념)
+# 대칭 단순 랜덤워크를 시뮬레이션하고, 로그값이 랜덤워크를 따르는 기하 브라운 운동(GBM) 근사 경로도 만든다.
+
+import random
+import math
+
+random.seed(1)
+
+# 1) 대칭 단순 랜덤워크: 매 스텝 +1 또는 -1
+n_steps = 20
+walk = [0]
+for _ in range(n_steps):
+    step = random.choice([-1, 1])
+    walk.append(walk[-1] + step)
+
+print(f&quot;단순 랜덤워크 경로 ({n_steps}스텝):&quot;)
+print(walk)
+print(f&quot;최종 위치 = {walk[-1]}, 이론적 표준편차(sqrt(n)) = {math.sqrt(n_steps):.3f}\n&quot;)
+
+# 2) 이산시간 GBM 근사: S_t = S_0 * exp(sum of small normal increments)
+# dlogS = (mu - 0.5*sigma^2)*dt + sigma*sqrt(dt)*Z, Z ~ N(0,1)
+S0 = 100.0
+mu = 0.05      # 연간 기대수익률
+sigma = 0.2    # 연간 변동성
+n_gbm_steps = 10
+dt = 1 / 252   # 하루 단위
+
+prices = [S0]
+for _ in range(n_gbm_steps):
+    z = random.gauss(0, 1)
+    drift = (mu - 0.5 * sigma ** 2) * dt
+    diffusion = sigma * math.sqrt(dt) * z
+    next_price = prices[-1] * math.exp(drift + diffusion)
+    prices.append(next_price)
+
+print(f&quot;GBM 근사 가격 경로 ({n_gbm_steps}일):&quot;)
+for i, p in enumerate(prices):
+    print(f&quot;  day {i}: {p:.4f}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-38.py">docs/code/math/math-38.py</a></p>
       <h2>연습</h2>
       <p>단순 랜덤워크와 GBM 경로를 각각 수천 개 시뮬레이션해 시점별 분산과 최종값 분포를 그려 정규·로그정규 형태를 눈으로 확인하라.</p>
       <h2>실무 · Verex 연결</h2>
       <p>예측시장 가격은 새 정보가 들어올 때마다 갱신되는 마팅게일에 가까운 과정이지만 0과 1 사이에 갇혀 있어 GBM을 그대로 쓸 수는 없고, 이 차이를 알아야 Verex의 가격 변동 폭이나 담보 요구 수준을 정량적으로 추정할 수 있다.</p>
       <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
     </article>
-  <div class="pager"><a href="math-37.html">&larr; 37. 집중부등식(Chebyshev·Hoeffding, 12월 다리)</a><a href="math-39.html">39. VaR·꼬리리스크 &rarr;</a></div>
+  <div class="pager"><a href="math-37.html">&larr; 37. 집중부등식(Chebyshev·Hoeffding, 12월 다리)</a><a href="../html/docs/algorithms/random-walk-diffusion-black-scholes.html">39. 랜덤워크·열확산 방정식 &rarr;</a></div>
 </div>
 </body>
 </html>

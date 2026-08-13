@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 12 — 최대 유량·최소 컷과 매칭</title>
+<title>Day 12 — Max Flow, Min Cut, and Matching</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,81 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 12</p>
   <article>
+      <h1>Max Flow, Min Cut, and Matching <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 12 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>A flow network is a directed graph where every edge has a capacity, and the max-flow problem asks for the largest flow that can be pushed from a source to a sink. The max-flow min-cut theorem says that the minimum total capacity over all cuts separating the source and sink equals the maximum flow exactly — a combinatorial instance of LP duality. The basic algorithmic approach is to repeatedly find an augmenting path in the residual graph and push flow along it; depending on how the path is chosen, this splits into Edmonds-Karp (shortest augmenting path) or Dinic's algorithm (level graph plus blocking flow). Bipartite matching reduces to a flow problem where every capacity is set to 1, and in that setting König's theorem — that the maximum matching size equals the minimum vertex cover size — follows as a special case of the min-cut theorem. Once cost is factored in, this generalizes to min-cost max-flow (MCMF), the general form of resource-to-demand allocation.</p>
+      <p>Whenever a &quot;who gets what, how much&quot; question comes up — scheduling, order allocation, node-to-shard assignment — it usually reduces to flow or matching, and getting the model wrong means ending up writing an exponential-time search instead.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 12: 최대 유량·최소 컷과 매칭 — Edmonds-Karp로 최대 유량을 구하고 최소 컷을 복원
+# BFS로 최단 증가 경로를 찾아 유량을 밀어 넣고, 잔여 그래프에서 도달 가능한 집합이 곧 최소 컷이다.
+
+from collections import defaultdict, deque
+
+def edmonds_karp(capacity, source, sink):
+    graph = defaultdict(dict)
+    for (u, v), cap in capacity.items():
+        graph[u][v] = graph[u].get(v, 0) + cap
+        graph[v].setdefault(u, 0)
+
+    def bfs_path():
+        parent = {source: None}
+        queue = deque([source])
+        while queue:
+            u = queue.popleft()
+            if u == sink:
+                break
+            for v, cap in graph[u].items():
+                if cap &gt; 0 and v not in parent:
+                    parent[v] = u
+                    queue.append(v)
+        if sink not in parent:
+            return None
+        path, v = [], sink
+        while parent[v] is not None:
+            path.append((parent[v], v))
+            v = parent[v]
+        return list(reversed(path))
+
+    flow = 0
+    while True:
+        path = bfs_path()
+        if path is None:
+            break
+        path_flow = min(graph[u][v] for u, v in path)
+        for u, v in path:
+            graph[u][v] -= path_flow
+            graph[v][u] += path_flow
+        flow += path_flow
+
+    reachable, queue = {source}, deque([source])
+    while queue:
+        u = queue.popleft()
+        for v, cap in graph[u].items():
+            if cap &gt; 0 and v not in reachable:
+                reachable.add(v); queue.append(v)
+    min_cut = [(u, v) for (u, v) in capacity if u in reachable and v not in reachable]
+    return flow, min_cut
+
+capacity = {
+    (&quot;S&quot;, &quot;A&quot;): 3, (&quot;S&quot;, &quot;B&quot;): 2,
+    (&quot;A&quot;, &quot;B&quot;): 1, (&quot;A&quot;, &quot;T&quot;): 2,
+    (&quot;B&quot;, &quot;T&quot;): 3,
+}
+max_flow, min_cut = edmonds_karp(capacity, &quot;S&quot;, &quot;T&quot;)
+print(&quot;최대 유량 =&quot;, max_flow)
+print(&quot;최소 컷 간선 =&quot;, min_cut, &quot;(용량 합 =&quot;, sum(capacity[e] for e in min_cut), &quot;)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-12.py">docs/code/algorithms/algorithms-12.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement bipartite matching using Dinic's algorithm, then, for the same input, reconstruct the minimum vertex cover from the minimum cut and verify König's theorem in code.</p>
+      <h2>Practical Connection</h2>
+      <p>Splitting multiple orders across multiple liquidity sources for fills, or netting a large set of debt-credit relationships at settlement to reduce the number of on-chain transfers, both fall out naturally as min-cost flow models.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>최대 유량·최소 컷과 매칭 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 12 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">자원 배분 문제의 원형</p>
@@ -115,7 +213,66 @@
       <p>유량 네트워크는 각 간선에 용량이 있는 방향 그래프이고, 소스에서 싱크로 보낼 수 있는 최대 유량을 구하는 문제가 최대 유량 문제다. 최대 유량-최소 컷 정리는 소스와 싱크를 분리하는 컷 중 용량 합이 최소인 값이 최대 유량과 정확히 같다고 말하며, 이는 선형계획법 쌍대성의 조합론적 사례다. 알고리즘은 잔여 그래프(residual graph)에서 증가 경로를 찾아 유량을 밀어 넣는 방식이 기본이고, 경로 선택 전략에 따라 Edmonds-Karp(최단 증가 경로)나 Dinic(레벨 그래프 + 블로킹 유량)으로 나뉜다. 이분 매칭은 모든 용량을 1로 둔 유량 문제로 환원되며, 이때 최대 매칭 크기가 최소 정점 덮개 크기와 같다는 König 정리가 최소 컷 정리의 특수형으로 따라 나온다. 비용까지 고려하면 최소 비용 최대 유량(MCMF)으로 확장되어, 자원-수요 배분의 일반형이 된다.</p>
       <p>스케줄링, 주문 배정, 노드-샤드 할당처럼 &quot;누구에게 무엇을 얼마나&quot; 문제가 나오면 대부분 유량 또는 매칭으로 환원되며, 잘못 모델링하면 지수 시간 탐색을 짜게 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 12: 최대 유량·최소 컷과 매칭 — Edmonds-Karp로 최대 유량을 구하고 최소 컷을 복원
+# BFS로 최단 증가 경로를 찾아 유량을 밀어 넣고, 잔여 그래프에서 도달 가능한 집합이 곧 최소 컷이다.
+
+from collections import defaultdict, deque
+
+def edmonds_karp(capacity, source, sink):
+    graph = defaultdict(dict)
+    for (u, v), cap in capacity.items():
+        graph[u][v] = graph[u].get(v, 0) + cap
+        graph[v].setdefault(u, 0)
+
+    def bfs_path():
+        parent = {source: None}
+        queue = deque([source])
+        while queue:
+            u = queue.popleft()
+            if u == sink:
+                break
+            for v, cap in graph[u].items():
+                if cap &gt; 0 and v not in parent:
+                    parent[v] = u
+                    queue.append(v)
+        if sink not in parent:
+            return None
+        path, v = [], sink
+        while parent[v] is not None:
+            path.append((parent[v], v))
+            v = parent[v]
+        return list(reversed(path))
+
+    flow = 0
+    while True:
+        path = bfs_path()
+        if path is None:
+            break
+        path_flow = min(graph[u][v] for u, v in path)
+        for u, v in path:
+            graph[u][v] -= path_flow
+            graph[v][u] += path_flow
+        flow += path_flow
+
+    reachable, queue = {source}, deque([source])
+    while queue:
+        u = queue.popleft()
+        for v, cap in graph[u].items():
+            if cap &gt; 0 and v not in reachable:
+                reachable.add(v); queue.append(v)
+    min_cut = [(u, v) for (u, v) in capacity if u in reachable and v not in reachable]
+    return flow, min_cut
+
+capacity = {
+    (&quot;S&quot;, &quot;A&quot;): 3, (&quot;S&quot;, &quot;B&quot;): 2,
+    (&quot;A&quot;, &quot;B&quot;): 1, (&quot;A&quot;, &quot;T&quot;): 2,
+    (&quot;B&quot;, &quot;T&quot;): 3,
+}
+max_flow, min_cut = edmonds_karp(capacity, &quot;S&quot;, &quot;T&quot;)
+print(&quot;최대 유량 =&quot;, max_flow)
+print(&quot;최소 컷 간선 =&quot;, min_cut, &quot;(용량 합 =&quot;, sum(capacity[e] for e in min_cut), &quot;)&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-12.py">docs/code/algorithms/algorithms-12.py</a></p>
       <h2>연습</h2>
       <p>이분 매칭을 Dinic으로 직접 구현하고, 같은 입력에 대해 최소 정점 덮개를 최소 컷에서 복원해 König 정리를 코드로 확인해 볼 것.</p>
       <h2>실무 · Verex 연결</h2>

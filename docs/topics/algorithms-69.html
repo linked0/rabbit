@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 69 — MVCC 내부와 스냅샷 격리의 이상현상(write skew)</title>
+<title>Day 69 — MVCC Internals and Snapshot Isolation's Anomaly: Write Skew</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,59 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 69</p>
   <article>
+      <h1>MVCC Internals and Snapshot Isolation's Anomaly: Write Skew <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 69 / 100 &middot; E. Data &amp; Storage Engines (Day 69-81)</p>
+      <h2>Concept</h2>
+      <p>MVCC never overwrites an existing row on update — it creates a new version, and each transaction sees only the versions visible under its own snapshot. That lets reads never block writes and writes never block reads; which version is visible is decided by transaction ID and visibility rules. Snapshot isolation, built on top of this, prevents dirty reads, non-repeatable reads, and lost updates, but it does not guarantee serializability. The classic anomaly is write skew: two transactions read the same set of rows and each updates a different, non-overlapping row, so each transaction individually respects the constraint, but the two together violate an invariant. The fixes are to use a serializable isolation level such as SSI, to explicitly lock the rows a decision was based on, or to physicalize the invariant as a single row or a unique constraint.</p>
+      <p>Trusting an isolation level's name and leaving application invariants to the database creates bugs that surface quietly, only once load rises enough for concurrent transactions to actually overlap.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># MVCC 내부와 스냅샷 격리의 이상현상(write skew) — 두 트랜잭션이 같은 스냅샷을 읽고 서로 다른 행을 갱신해 불변식이 깨진다.
+# &quot;온콜 최소 1명&quot; 불변식을 스냅샷 격리에서 재현한다: 각자 상대가 아직 온콜이라 보고 자신을 뺐지만 합치면 0명이 된다.
+
+class VersionedTable:
+    def __init__(self, initial):
+        self.versions = {k: [(0, v)] for k, v in initial.items()}  # key -&gt; [(txn_id, value), ...]
+
+    def snapshot_read(self, key, as_of_txn):
+        # as_of_txn 이전에 커밋된 가장 최신 버전만 보인다 (스냅샷 격리)
+        visible = [v for (tid, v) in self.versions[key] if tid &lt;= as_of_txn]
+        return visible[-1] if visible else None
+
+    def write(self, key, txn_id, value):
+        self.versions[key].append((txn_id, value))
+
+table = VersionedTable({&quot;alice_on_call&quot;: True, &quot;bob_on_call&quot;: True})
+
+SNAPSHOT_TXN = 0  # 두 트랜잭션 모두 같은 시점의 스냅샷에서 시작
+a_sees_bob = table.snapshot_read(&quot;bob_on_call&quot;, SNAPSHOT_TXN)     # A: bob이 아직 온콜이니 alice는 빠져도 된다
+b_sees_alice = table.snapshot_read(&quot;alice_on_call&quot;, SNAPSHOT_TXN)  # B: alice가 아직 온콜이니 bob도 빠져도 된다
+
+print(&quot;A가 본 bob 상태:&quot;, a_sees_bob, &quot;→ alice를 오프콜로 전환&quot;)
+print(&quot;B가 본 alice 상태:&quot;, b_sees_alice, &quot;→ bob을 오프콜로 전환&quot;)
+
+if a_sees_bob:
+    table.write(&quot;alice_on_call&quot;, txn_id=1, value=False)
+if b_sees_alice:
+    table.write(&quot;bob_on_call&quot;, txn_id=2, value=False)
+
+final_alice = table.snapshot_read(&quot;alice_on_call&quot;, as_of_txn=99)
+final_bob = table.snapshot_read(&quot;bob_on_call&quot;, as_of_txn=99)
+print(f&quot;\n최종 상태: alice={final_alice}, bob={final_bob}&quot;)
+
+invariant_ok = final_alice or final_bob
+note = &quot;&quot; if invariant_ok else &quot; ← write skew로 위반됨&quot;
+print(&quot;불변식(최소 1명 온콜) 유지 여부:&quot;, invariant_ok, note)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-69.py">docs/code/algorithms/algorithms-69.py</a></p>
+      <h2>Exercise</h2>
+      <p>In PostgreSQL, reproduce a write skew that violates a balance-sum constraint using two sessions under REPEATABLE READ, then switch to SERIALIZABLE and check whether a serialization failure now occurs.</p>
+      <h2>Practical Connection</h2>
+      <p>Any path that 'writes based on a value it just read' — deducting remaining order quantity, checking a collateral limit — is a textbook case of write skew in an off-chain database; on-chain, the same problem is solved by atomizing it into a single state update.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>MVCC 내부와 스냅샷 격리의 이상현상(write skew) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 69 / 100 &middot; E. 데이터·스토리지 엔진 (Day 69–81)</p>
 
@@ -115,7 +191,44 @@
       <p>MVCC는 갱신 시 기존 행을 덮어쓰지 않고 새 버전을 만들어, 각 트랜잭션이 자신의 스냅샷에 보이는 버전만 읽게 하는 기법이다. 덕분에 읽기가 쓰기를 막지 않고 쓰기도 읽기를 막지 않으며, 어떤 버전이 보이는지는 트랜잭션 ID와 가시성 규칙으로 판정한다. 스냅샷 격리는 이 위에서 더티 리드·논리피터블 리드·로스트 업데이트를 막지만 직렬화 가능성을 보장하지는 않는다. 대표적 이상현상이 write skew로, 두 트랜잭션이 같은 집합을 읽고 각자 겹치지 않는 서로 다른 행을 갱신해, 개별적으로는 제약을 지키지만 합쳐 놓으면 불변식이 깨지는 경우이다. 해결은 SSI 같은 직렬화 가능 격리를 쓰거나, 읽은 근거를 명시적으로 잠그거나, 불변식을 단일 행·유니크 제약으로 물리화하는 것이다.</p>
       <p>격리 수준 이름만 믿고 애플리케이션 불변식을 DB에 맡기면, 부하가 올라가 동시 실행이 겹치는 순간에만 조용히 깨지는 버그가 생긴다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># MVCC 내부와 스냅샷 격리의 이상현상(write skew) — 두 트랜잭션이 같은 스냅샷을 읽고 서로 다른 행을 갱신해 불변식이 깨진다.
+# &quot;온콜 최소 1명&quot; 불변식을 스냅샷 격리에서 재현한다: 각자 상대가 아직 온콜이라 보고 자신을 뺐지만 합치면 0명이 된다.
+
+class VersionedTable:
+    def __init__(self, initial):
+        self.versions = {k: [(0, v)] for k, v in initial.items()}  # key -&gt; [(txn_id, value), ...]
+
+    def snapshot_read(self, key, as_of_txn):
+        # as_of_txn 이전에 커밋된 가장 최신 버전만 보인다 (스냅샷 격리)
+        visible = [v for (tid, v) in self.versions[key] if tid &lt;= as_of_txn]
+        return visible[-1] if visible else None
+
+    def write(self, key, txn_id, value):
+        self.versions[key].append((txn_id, value))
+
+table = VersionedTable({&quot;alice_on_call&quot;: True, &quot;bob_on_call&quot;: True})
+
+SNAPSHOT_TXN = 0  # 두 트랜잭션 모두 같은 시점의 스냅샷에서 시작
+a_sees_bob = table.snapshot_read(&quot;bob_on_call&quot;, SNAPSHOT_TXN)     # A: bob이 아직 온콜이니 alice는 빠져도 된다
+b_sees_alice = table.snapshot_read(&quot;alice_on_call&quot;, SNAPSHOT_TXN)  # B: alice가 아직 온콜이니 bob도 빠져도 된다
+
+print(&quot;A가 본 bob 상태:&quot;, a_sees_bob, &quot;→ alice를 오프콜로 전환&quot;)
+print(&quot;B가 본 alice 상태:&quot;, b_sees_alice, &quot;→ bob을 오프콜로 전환&quot;)
+
+if a_sees_bob:
+    table.write(&quot;alice_on_call&quot;, txn_id=1, value=False)
+if b_sees_alice:
+    table.write(&quot;bob_on_call&quot;, txn_id=2, value=False)
+
+final_alice = table.snapshot_read(&quot;alice_on_call&quot;, as_of_txn=99)
+final_bob = table.snapshot_read(&quot;bob_on_call&quot;, as_of_txn=99)
+print(f&quot;\n최종 상태: alice={final_alice}, bob={final_bob}&quot;)
+
+invariant_ok = final_alice or final_bob
+note = &quot;&quot; if invariant_ok else &quot; ← write skew로 위반됨&quot;
+print(&quot;불변식(최소 1명 온콜) 유지 여부:&quot;, invariant_ok, note)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-69.py">docs/code/algorithms/algorithms-69.py</a></p>
       <h2>연습</h2>
       <p>PostgreSQL에서 두 세션으로 잔고 합계 제약을 어기는 write skew를 REPEATABLE READ에서 재현하고, SERIALIZABLE로 바꿔 직렬화 실패가 나는지 확인해 보기.</p>
       <h2>실무 · Verex 연결</h2>

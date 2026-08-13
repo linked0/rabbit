@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 67 — 멱등성과 &quot;정확히 한 번&quot;</title>
+<title>Day 67 — Idempotency and &quot;Exactly Once&quot; — The Outbox Pattern</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,56 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 67</p>
   <article>
+      <h1>Idempotency and &quot;Exactly Once&quot; — The Outbox Pattern <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 67 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>In distributed systems, message delivery is in practice either at-most-once or at-least-once — pure exactly-once delivery is impossible. The realistic goal instead is exactly-once processing: 'retries can happen as many times as needed, but the effect happens once,' achieved by making the receiver idempotent. This is typically implemented by attaching a unique idempotency key to each request, storing the processing result under that key, and returning the stored result instead of reprocessing when the same key arrives again. The outbox pattern solves a related problem: a state change and publishing a message about it live in two different systems that can't be committed atomically together (the dual-write problem). The business data change and the message to be published are committed together, in the same DB transaction, into an outbox table; a separate relay process reads the outbox and forwards to the broker. That delivery is at-least-once, so it still needs idempotency on the consumer side as its pair.</p>
+      <p>In flows like payments and settlement, where duplicate execution directly means lost money, duplication or loss will eventually happen without an idempotency key and an outbox, as long as retries and failure recovery exist at all.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 멱등성과 &quot;정확히 한 번&quot; — 아웃박스 패턴 — 상태 변경과 메시지 발행을 한 트랜잭션에 묶고, 재시도는 멱등 키로 걸러낸다.
+# 같은 멱등 키로 재시도해도 잔고는 한 번만 차감되고, 릴레이가 outbox를 중복 전송해도 소비자는 한 번만 반영한다.
+
+ledger = {&quot;alice&quot;: 1000}
+outbox = []          # 상태 변경과 같은 트랜잭션에서 커밋된다고 가정하는 발행 대기 이벤트
+processed_keys = {}  # idem_key -&gt; 처리 결과 캐시
+
+def withdraw(idem_key, account, amount):
+    if idem_key in processed_keys:
+        return f&quot;[중복 요청 무시] 캐시된 결과 반환: {processed_keys[idem_key]}&quot;
+    ledger[account] -= amount
+    outbox.append({&quot;key&quot;: idem_key, &quot;type&quot;: &quot;withdrawn&quot;, &quot;account&quot;: account, &quot;amount&quot;: amount})
+    result = f&quot;{account} 잔고 {amount} 차감, 잔액={ledger[account]}&quot;
+    processed_keys[idem_key] = result
+    return result
+
+print(withdraw(&quot;req-1&quot;, &quot;alice&quot;, 100))
+print(withdraw(&quot;req-1&quot;, &quot;alice&quot;, 100))   # 네트워크 재시도로 같은 요청이 다시 옴
+print(withdraw(&quot;req-1&quot;, &quot;alice&quot;, 100))   # 또 재시도
+print(&quot;최종 잔액:&quot;, ledger[&quot;alice&quot;], &quot;(3번 호출됐지만 100만 한 번 차감)&quot;)
+
+# 릴레이: outbox를 읽어 브로커로 보내되 at-least-once라 중복 전송될 수 있다 — 소비자는 key로 dedupe
+consumer_applied = set()
+
+def consume(event):
+    if event[&quot;key&quot;] in consumer_applied:
+        return &quot;소비자: 이미 반영된 이벤트, 무시&quot;
+    consumer_applied.add(event[&quot;key&quot;])
+    return f&quot;소비자: {event['type']} 반영 완료&quot;
+
+print()
+for _ in range(2):  # 릴레이가 같은 이벤트를 두 번 보냈다고 가정
+    print(consume(outbox[0]))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-67.py">docs/code/algorithms/algorithms-67.py</a></p>
+      <h2>Exercise</h2>
+      <p>Attach an idempotency-key table and an outbox table to a withdrawal-processing API, then force-kill the process right after publishing and restart it, and verify through scenario testing that the message still has exactly one effect.</p>
+      <h2>Practical Connection</h2>
+      <p>In Verex, submitting on-chain settlement transactions routinely involves retries and replacements, so binding the off-chain ledger update and the transaction issuance together via an outbox, and making chain-event consumption idempotent, is the standard fix to prevent double settlement.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>멱등성과 &quot;정확히 한 번&quot; <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 67 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
       <p class="lead">아웃박스 패턴</p>
@@ -115,7 +188,41 @@
       <p>분산 시스템에서 메시지 전달은 실질적으로 at-most-once 아니면 at-least-once이며, 순수한 exactly-once 전달은 불가능하다. 대신 현실적인 목표는 '재시도는 얼마든지 일어나되 효과는 한 번'인 exactly-once 처리이고, 이는 수신 측이 멱등해야 달성된다. 멱등성은 보통 요청마다 고유한 멱등 키를 붙이고, 처리 결과를 그 키로 저장해 두었다가 같은 키가 다시 오면 새로 처리하지 않고 저장된 결과를 돌려주는 식으로 구현한다. 아웃박스 패턴은 '상태 변경'과 '메시지 발행'이 서로 다른 시스템이라 원자적으로 묶이지 않는 문제(이중 쓰기)를 해결한다. 비즈니스 데이터 변경과 발행할 메시지를 같은 DB 트랜잭션 안에서 outbox 테이블에 함께 커밋하고, 별도 릴레이 프로세스가 outbox를 읽어 브로커로 보내며, 그 전송은 at-least-once이므로 소비자 쪽 멱등성이 짝으로 필요하다.</p>
       <p>결제·정산처럼 중복 실행이 곧 금전 손실인 흐름에서, 재시도와 장애 복구가 있는 한 멱등 키와 아웃박스 없이는 언젠가 반드시 중복이나 유실이 발생한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 멱등성과 &quot;정확히 한 번&quot; — 아웃박스 패턴 — 상태 변경과 메시지 발행을 한 트랜잭션에 묶고, 재시도는 멱등 키로 걸러낸다.
+# 같은 멱등 키로 재시도해도 잔고는 한 번만 차감되고, 릴레이가 outbox를 중복 전송해도 소비자는 한 번만 반영한다.
+
+ledger = {&quot;alice&quot;: 1000}
+outbox = []          # 상태 변경과 같은 트랜잭션에서 커밋된다고 가정하는 발행 대기 이벤트
+processed_keys = {}  # idem_key -&gt; 처리 결과 캐시
+
+def withdraw(idem_key, account, amount):
+    if idem_key in processed_keys:
+        return f&quot;[중복 요청 무시] 캐시된 결과 반환: {processed_keys[idem_key]}&quot;
+    ledger[account] -= amount
+    outbox.append({&quot;key&quot;: idem_key, &quot;type&quot;: &quot;withdrawn&quot;, &quot;account&quot;: account, &quot;amount&quot;: amount})
+    result = f&quot;{account} 잔고 {amount} 차감, 잔액={ledger[account]}&quot;
+    processed_keys[idem_key] = result
+    return result
+
+print(withdraw(&quot;req-1&quot;, &quot;alice&quot;, 100))
+print(withdraw(&quot;req-1&quot;, &quot;alice&quot;, 100))   # 네트워크 재시도로 같은 요청이 다시 옴
+print(withdraw(&quot;req-1&quot;, &quot;alice&quot;, 100))   # 또 재시도
+print(&quot;최종 잔액:&quot;, ledger[&quot;alice&quot;], &quot;(3번 호출됐지만 100만 한 번 차감)&quot;)
+
+# 릴레이: outbox를 읽어 브로커로 보내되 at-least-once라 중복 전송될 수 있다 — 소비자는 key로 dedupe
+consumer_applied = set()
+
+def consume(event):
+    if event[&quot;key&quot;] in consumer_applied:
+        return &quot;소비자: 이미 반영된 이벤트, 무시&quot;
+    consumer_applied.add(event[&quot;key&quot;])
+    return f&quot;소비자: {event['type']} 반영 완료&quot;
+
+print()
+for _ in range(2):  # 릴레이가 같은 이벤트를 두 번 보냈다고 가정
+    print(consume(outbox[0]))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-67.py">docs/code/algorithms/algorithms-67.py</a></p>
       <h2>연습</h2>
       <p>출금 처리 API에 멱등 키 테이블과 outbox 테이블을 붙여, 발행 직후 프로세스를 강제 종료했다 재시작해도 메시지가 정확히 한 번의 효과만 내는지 시나리오 테스트로 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

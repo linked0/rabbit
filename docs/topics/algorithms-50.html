@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 50 — 카오스 엔지니어링·장애 주입 설계</title>
+<title>Day 50 — Chaos Engineering and Failure-Injection Design</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,69 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 50</p>
   <article>
+      <h1>Chaos Engineering and Failure-Injection Design <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 50 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>Chaos engineering is a methodology that deliberately injects controlled failures into a production-like environment to test, by experiment, the hypothesis that a system keeps behaving normally. The procedure is: define a steady state using observable metrics, form a hypothesis that this metric holds even under a given failure, inject an actual failure (instance termination, added latency, packet loss, an error response from a dependency), and observe whether the hypothesis breaks. The core principles are to start with a small blast radius and widen it gradually, and to define abort conditions in advance that stop the experiment immediately. The goal isn't to create failures — it's to surface latent defects that were already there (missing timeouts, retry storms, circular dependencies, bad fallbacks) within a controlled window.</p>
+      <p>Real failures in distributed systems come less from individual components than from the combination of timeouts, retries, and fallbacks between them, and unit tests never catch that kind of interaction.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 카오스 엔지니어링·장애 주입 설계 — 정상 상태를 정의하고, 장애(지연 주입)를 걸어 가설이 깨지는지 관찰한다.
+# 폭발 반경을 작게 시작하고, abort 조건을 넘으면 즉시 실험을 중단한다.
+
+import random
+
+random.seed(5)
+
+def call_dependency(latency_ms, fail_rate=0.0):
+    &quot;&quot;&quot;외부 의존(RPC/DB) 호출을 흉내: 지연과 실패율을 파라미터로 받음&quot;&quot;&quot;
+    ok = random.random() &gt; fail_rate
+    return ok, latency_ms + random.uniform(-2, 2)
+
+def measure_steady_state(n_calls, injected_latency_ms=0, injected_fail_rate=0.0):
+    latencies, errors = [], 0
+    for _ in range(n_calls):
+        ok, lat = call_dependency(10 + injected_latency_ms, injected_fail_rate)
+        latencies.append(lat)
+        if not ok:
+            errors += 1
+    error_rate = errors / n_calls
+    avg_latency = sum(latencies) / len(latencies)
+    return avg_latency, error_rate
+
+# 1. 정상 상태(steady state) 정의: 평균 지연 &lt; 20ms, 에러율 &lt; 1%
+baseline_latency, baseline_error = measure_steady_state(200)
+print(f&quot;[정상 상태] 평균 지연 {baseline_latency:.1f}ms, 에러율 {baseline_error*100:.1f}%&quot;)
+
+# 2. 가설: &quot;RPC 노드에 100ms 지연이 추가돼도 평균 지연은 150ms 미만, 에러율은 5% 미만이다&quot;
+def run_experiment(injected_latency_ms, injected_fail_rate, blast_radius_calls):
+    ABORT_ERROR_RATE = 0.20  # 폭발 반경을 넘는 피해가 감지되면 즉시 중단
+    latency, error_rate = measure_steady_state(
+        blast_radius_calls, injected_latency_ms, injected_fail_rate
+    )
+    aborted = error_rate &gt; ABORT_ERROR_RATE
+    return latency, error_rate, aborted
+
+for label, inj_latency, inj_fail in [
+    (&quot;작은 폭발 반경: RPC 지연 +100ms&quot;, 100, 0.02),
+    (&quot;의존 서비스 오류 응답 20%&quot;, 0, 0.20),
+]:
+    latency, error_rate, aborted = run_experiment(inj_latency, inj_fail, blast_radius_calls=50)
+    hypothesis_holds = latency &lt; 150 and error_rate &lt; 0.05
+    status = &quot;ABORT (폭발 반경 초과)&quot; if aborted else (
+        &quot;가설 유지&quot; if hypothesis_holds else &quot;가설 깨짐 -&gt; 결함 발견&quot;
+    )
+    print(f&quot;[{label}] 지연 {latency:.1f}ms, 에러율 {error_rate*100:.1f}% -&gt; {status}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-50.py">docs/code/algorithms/algorithms-50.py</a></p>
+      <h2>Exercise</h2>
+      <p>In staging, inject artificial latency and intermittent errors into one external dependency (an RPC node or a database), record how the error rate and latency metrics change, then fix the timeout and retry policy and repeat the same experiment to confirm the improvement numerically.</p>
+      <h2>Practical Connection</h2>
+      <p>A prediction-market service depends on chain RPC, an oracle, and an indexer all at once, so experimenting in advance with whether RPC or oracle latency halts the entire settlement pipeline can substantially cut real operational risk.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>카오스 엔지니어링·장애 주입 설계 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 50 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
 
@@ -115,7 +201,54 @@
       <p>카오스 엔지니어링은 운영과 유사한 환경에 통제된 장애를 의도적으로 주입해, 시스템이 정상 동작을 유지한다는 가설을 실험으로 검증하는 방법론이다. 절차는 관측 가능한 지표로 정상 상태(steady state)를 정의하고, 특정 장애 하에서도 그 지표가 유지된다는 가설을 세우고, 실제 장애(인스턴스 종료, 지연 추가, 패킷 손실, 의존 서비스 오류 응답)를 주입한 뒤 가설이 깨지는지 관찰하는 순서다. 핵심 원칙은 폭발 반경을 작게 시작해 점진적으로 넓히고, 실험을 즉시 중단할 abort 조건을 미리 정해두는 것이다. 목적은 장애를 만드는 것이 아니라 이미 잠재해 있던 결함(타임아웃 미설정, 재시도 폭주, 순환 의존, 잘못된 폴백)을 통제된 시간에 드러내는 데 있다.</p>
       <p>분산 시스템의 실제 장애는 개별 컴포넌트보다 그 사이의 타임아웃·재시도·폴백 조합에서 나오고, 이런 상호작용은 단위 테스트로 절대 잡히지 않는다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 카오스 엔지니어링·장애 주입 설계 — 정상 상태를 정의하고, 장애(지연 주입)를 걸어 가설이 깨지는지 관찰한다.
+# 폭발 반경을 작게 시작하고, abort 조건을 넘으면 즉시 실험을 중단한다.
+
+import random
+
+random.seed(5)
+
+def call_dependency(latency_ms, fail_rate=0.0):
+    &quot;&quot;&quot;외부 의존(RPC/DB) 호출을 흉내: 지연과 실패율을 파라미터로 받음&quot;&quot;&quot;
+    ok = random.random() &gt; fail_rate
+    return ok, latency_ms + random.uniform(-2, 2)
+
+def measure_steady_state(n_calls, injected_latency_ms=0, injected_fail_rate=0.0):
+    latencies, errors = [], 0
+    for _ in range(n_calls):
+        ok, lat = call_dependency(10 + injected_latency_ms, injected_fail_rate)
+        latencies.append(lat)
+        if not ok:
+            errors += 1
+    error_rate = errors / n_calls
+    avg_latency = sum(latencies) / len(latencies)
+    return avg_latency, error_rate
+
+# 1. 정상 상태(steady state) 정의: 평균 지연 &lt; 20ms, 에러율 &lt; 1%
+baseline_latency, baseline_error = measure_steady_state(200)
+print(f&quot;[정상 상태] 평균 지연 {baseline_latency:.1f}ms, 에러율 {baseline_error*100:.1f}%&quot;)
+
+# 2. 가설: &quot;RPC 노드에 100ms 지연이 추가돼도 평균 지연은 150ms 미만, 에러율은 5% 미만이다&quot;
+def run_experiment(injected_latency_ms, injected_fail_rate, blast_radius_calls):
+    ABORT_ERROR_RATE = 0.20  # 폭발 반경을 넘는 피해가 감지되면 즉시 중단
+    latency, error_rate = measure_steady_state(
+        blast_radius_calls, injected_latency_ms, injected_fail_rate
+    )
+    aborted = error_rate &gt; ABORT_ERROR_RATE
+    return latency, error_rate, aborted
+
+for label, inj_latency, inj_fail in [
+    (&quot;작은 폭발 반경: RPC 지연 +100ms&quot;, 100, 0.02),
+    (&quot;의존 서비스 오류 응답 20%&quot;, 0, 0.20),
+]:
+    latency, error_rate, aborted = run_experiment(inj_latency, inj_fail, blast_radius_calls=50)
+    hypothesis_holds = latency &lt; 150 and error_rate &lt; 0.05
+    status = &quot;ABORT (폭발 반경 초과)&quot; if aborted else (
+        &quot;가설 유지&quot; if hypothesis_holds else &quot;가설 깨짐 -&gt; 결함 발견&quot;
+    )
+    print(f&quot;[{label}] 지연 {latency:.1f}ms, 에러율 {error_rate*100:.1f}% -&gt; {status}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-50.py">docs/code/algorithms/algorithms-50.py</a></p>
       <h2>연습</h2>
       <p>스테이징에서 외부 의존 하나(RPC 노드나 DB)에 인위적 지연과 간헐적 오류를 주입하고 에러율과 지연 지표 변화를 기록한 뒤, 타임아웃과 재시도 정책을 고쳐 같은 실험을 반복해 개선을 수치로 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

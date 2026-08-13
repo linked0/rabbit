@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 64 — 시퀀서 분산화와 강제 포함(force inclusion)</title>
+<title>Day 64 — Sequencer Decentralization and Force Inclusion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,55 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 64</p>
   <article>
+      <h1>Sequencer Decentralization and Force Inclusion <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 64 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>Most rollups have a single entity operating the sequencer that orders transactions. This gives fast confirmation and low latency, but it leaves a censorship/liveness risk: if that entity excludes or halts a particular user's transactions, the user simply can't use the chain. Force inclusion sets a floor under that risk — if a user submits a transaction directly to an inbox contract on L1, bypassing the sequencer, the rollup must include it after a fixed delay window for the resulting state transition to be considered valid at all. That guarantees users at least an escape hatch, such as withdrawal, even if the sequencer censors them. Sequencer decentralization goes further, spreading the ordering authority itself across multiple parties — shared sequencers, stake-weighted rotation, or having the L1 proposer set order directly are all approaches being tried, each with different tradeoffs in latency, MEV, and complexity.</p>
+      <p>The worst-case scenario for any service deployed on an L2 is the sequencer halting or excluding just your transactions — and whether a force-inclusion path exists, and how long its delay window is, determines how long funds stay stuck when that happens. That's a practical criterion for choosing which chain to deploy on.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 시퀀서 분산화와 강제 포함(force inclusion) — 시퀀서가 검열해도 L1 inbox를 거치면 지연 창 이후 반드시 포함된다.
+# 시퀀서가 특정 발신자를 계속 배제해도, 지연 창(DELAY)이 지난 forced tx는 다음 블록에 강제로 실린다.
+
+DELAY = 3  # 강제 포함까지 걸리는 블록 수
+
+class Sequencer:
+    def __init__(self, censored_sender):
+        self.censored_sender = censored_sender
+        self.included = []
+
+    def build_block(self, block_num, mempool, forced_inbox):
+        already = {id(tx) for tx in self.included}
+        # 강제 포함 마감이 지난 tx는 검열 여부와 무관하게 반드시 포함해야 유효한 블록이다
+        due = [tx for tx in forced_inbox if block_num - tx[&quot;submitted_at&quot;] &gt;= DELAY and id(tx) not in already]
+        censorable = [tx for tx in mempool if tx[&quot;sender&quot;] != self.censored_sender and id(tx) not in already]
+        block = due + [tx for tx in censorable if id(tx) not in {id(t) for t in due}]
+        self.included.extend(block)
+        return block
+
+alice_tx = {&quot;sender&quot;: &quot;alice&quot;, &quot;tx&quot;: &quot;swap&quot;, &quot;submitted_at&quot;: 0}
+mempool = [alice_tx]
+forced_inbox = [alice_tx]  # alice가 시퀀서 mempool과 L1 inbox에 동시 제출
+
+seq = Sequencer(censored_sender=&quot;alice&quot;)
+for block_num in range(6):
+    block = seq.build_block(block_num, mempool, forced_inbox)
+    status = [tx[&quot;sender&quot;] for tx in block] if block else &quot;(empty, 시퀀서가 검열 중)&quot;
+    print(f&quot;블록 {block_num}: 포함된 tx = {status}&quot;)
+    if block:
+        break
+
+print(f&quot;\n시퀀서가 alice를 계속 배제했지만, 지연 창({DELAY}블록) 이후 강제 포함으로 결국 실렸다:&quot;, bool(seq.included))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-64.py">docs/code/algorithms/algorithms-64.py</a></p>
+      <h2>Exercise</h2>
+      <p>Find the force-inclusion (or forced-withdrawal) entry-point contract and its delay window in your L2's docs, then submit a forced-inclusion transaction through L1 yourself on testnet.</p>
+      <h2>Practical Connection</h2>
+      <p>Verex's market settlement isn't final until the oracle result is confirmed and the redeem transaction lands on-chain, so whether a force-inclusion path exists to push settlement/withdrawal through even under sequencer censorship is part of the protocol's safety story.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>시퀀서 분산화와 강제 포함(force inclusion) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 64 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
 
@@ -115,7 +187,40 @@
       <p>대부분의 롤업은 트랜잭션 순서를 정하는 시퀀서를 단일 주체가 운영한다. 이 구조는 빠른 확정감과 낮은 지연을 주지만, 그 주체가 특정 사용자의 트랜잭션을 배제하거나 멈추면 사용자가 체인을 쓸 수 없다는 검열·가용성 위험을 남긴다. force inclusion은 이 위험의 하한을 정하는 장치로, 사용자가 시퀀서를 거치지 않고 L1의 inbox 컨트랙트에 트랜잭션을 직접 제출하면 일정 지연 창이 지난 뒤에는 롤업이 그것을 반드시 포함해야 유효한 상태 전이로 인정되게 만든다. 덕분에 시퀀서가 검열해도 사용자는 최소한 출금 같은 탈출 경로를 확보한다. 시퀀서 분산화는 여기서 더 나아가 순서 결정 권한 자체를 여러 주체에 나누는 방향으로, 공유 시퀀서, 지분 기반 로테이션, L1 제안자가 직접 순서를 정하는 방식 등이 시도되며 각각 지연·MEV·복잡도에서 다른 트레이드오프를 갖는다.</p>
       <p>L2에 올린 서비스의 최악 시나리오는 시퀀서가 멈추거나 우리 트랜잭션만 배제하는 경우인데, force inclusion 경로의 존재 여부와 지연 창 길이가 그때 자금이 묶이는 시간을 결정한다. 이는 배포 체인을 고르는 실질적 기준이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 시퀀서 분산화와 강제 포함(force inclusion) — 시퀀서가 검열해도 L1 inbox를 거치면 지연 창 이후 반드시 포함된다.
+# 시퀀서가 특정 발신자를 계속 배제해도, 지연 창(DELAY)이 지난 forced tx는 다음 블록에 강제로 실린다.
+
+DELAY = 3  # 강제 포함까지 걸리는 블록 수
+
+class Sequencer:
+    def __init__(self, censored_sender):
+        self.censored_sender = censored_sender
+        self.included = []
+
+    def build_block(self, block_num, mempool, forced_inbox):
+        already = {id(tx) for tx in self.included}
+        # 강제 포함 마감이 지난 tx는 검열 여부와 무관하게 반드시 포함해야 유효한 블록이다
+        due = [tx for tx in forced_inbox if block_num - tx[&quot;submitted_at&quot;] &gt;= DELAY and id(tx) not in already]
+        censorable = [tx for tx in mempool if tx[&quot;sender&quot;] != self.censored_sender and id(tx) not in already]
+        block = due + [tx for tx in censorable if id(tx) not in {id(t) for t in due}]
+        self.included.extend(block)
+        return block
+
+alice_tx = {&quot;sender&quot;: &quot;alice&quot;, &quot;tx&quot;: &quot;swap&quot;, &quot;submitted_at&quot;: 0}
+mempool = [alice_tx]
+forced_inbox = [alice_tx]  # alice가 시퀀서 mempool과 L1 inbox에 동시 제출
+
+seq = Sequencer(censored_sender=&quot;alice&quot;)
+for block_num in range(6):
+    block = seq.build_block(block_num, mempool, forced_inbox)
+    status = [tx[&quot;sender&quot;] for tx in block] if block else &quot;(empty, 시퀀서가 검열 중)&quot;
+    print(f&quot;블록 {block_num}: 포함된 tx = {status}&quot;)
+    if block:
+        break
+
+print(f&quot;\n시퀀서가 alice를 계속 배제했지만, 지연 창({DELAY}블록) 이후 강제 포함으로 결국 실렸다:&quot;, bool(seq.included))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-64.py">docs/code/algorithms/algorithms-64.py</a></p>
       <h2>연습</h2>
       <p>사용하는 L2의 문서에서 force inclusion(또는 강제 출금) 진입점 컨트랙트와 지연 창을 찾아, 테스트넷에서 L1을 통한 강제 포함 트랜잭션을 한 번 직접 제출해 보라.</p>
       <h2>실무 · Verex 연결</h2>

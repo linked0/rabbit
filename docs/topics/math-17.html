@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 17 — 반복게임과 평판</title>
+<title>Day 17 — Repeated Games and Reputation — excluding the Folk Theorem proof</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,86 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 17</p>
   <article>
+      <h1>Repeated Games and Reputation — excluding the Folk Theorem proof <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 17 / 52 &middot; August — Game Theory &amp; Protocol Economics (Day 11-17)</p>
+      <h2>Concept</h2>
+      <p>In a one-shot game, defection is a dominant strategy, so cooperation can't be sustained as an equilibrium — but when the same players repeat the game, current gains and future retaliation are weighed together, and cooperation can be sustained as an equilibrium. The key variable is the discount factor, representing how much future payoffs are valued (or, equivalently, the probability the game continues); once this value is large enough, the loss from future punishment outweighs the one-time gain from defecting. Strategies like grim trigger and tit-for-tat turn this comparison into an executable rule, and the condition for sustaining cooperation reduces to the inequality 'gain from defecting ≤ discounted loss from future punishment.' The folk theorem states that as the discount factor approaches 1, essentially any payoff combination satisfying individual rationality can be supported as an equilibrium (we won't cover the proof). The practical takeaway is that reputation isn't a matter of morality — it's an equilibrium phenomenon produced by three conditions: repeated interaction, observability of behavior, and the value of the future relationship.</p>
+      <p>The honesty of continuously participating actors — validators, oracle providers, market makers — is something you design through the possibility of punishment and the size of future earnings, not something you can count on out of good faith. The moment a relationship becomes one-shot, that equilibrium disappears.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 반복게임과 평판(grim trigger) — 할인인자가 임계치 이상이면 &quot;영원한 보복&quot; 위협만으로
+# 무한반복 죄수의 딜레마에서 협력이 균형으로 유지됨을 수치로 확인한다.
+
+# 표준 PD payoff: R(둘다 협력) &lt; T(배신 유혹) 이고 P(둘다 배신) 는 그 사이 어딘가
+T, R, P, S = 5, 3, 1, 0  # Temptation, Reward, Punishment, Sucker
+
+# grim trigger: 상대가 한 번이라도 배신하면 그 뒤로 영원히 배신으로 응징
+# 협력 유지 조건(이탈 무이익): R/(1-δ) &gt;= T + δ*P/(1-δ)  =&gt;  δ &gt;= (T-R)/(T-P)
+threshold = (T - R) / (T - P)
+print(f&quot;협력 유지를 위한 할인인자 임계값 δ* = (T-R)/(T-P) = {threshold:.3f}&quot;)
+
+
+def value_of_cooperating(delta: float) -&gt; float:
+    # 계속 협력 → 매 라운드 R을 무한히 할인합산
+    return R / (1 - delta)
+
+
+def value_of_deviating_once(delta: float) -&gt; float:
+    # 이번 라운드만 배신(T 획득) 후 상대의 grim trigger로 영원히 P
+    return T + delta * P / (1 - delta)
+
+
+for delta in (0.3, threshold, 0.7):
+    coop = value_of_cooperating(delta)
+    dev = value_of_deviating_once(delta)
+    verdict = &quot;협력 우세 → 협력이 균형으로 유지&quot; if coop &gt;= dev else &quot;이탈 우세 → 협력 붕괴&quot;
+    print(f&quot;δ={delta:.3f}: V(협력)={coop:8.3f}  V(1회 이탈+영구응징)={dev:8.3f}  → {verdict}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-17.py">docs/code/math/math-17.py</a></p>
+      <h2>Exercise</h2>
+      <p>Fix a payoff table for the repeated prisoner's dilemma, compute by hand the minimum discount factor under which grim trigger sustains cooperation, then check how that threshold moves as you increase the gain from defecting.</p>
+      <h2>Practical Connection</h2>
+      <p>In prediction markets, the incentive for an oracle reporting outcomes or a dispute participant to stay honest ultimately comes down to whether the size of the stake and future fee income outweigh the one-time gain from manipulation.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>반복게임과 평판 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 17 / 51 &middot; 8월 — 게임이론·프로토콜 경제학 (Day 11–17)</p>
+      <p class="meta">Math &middot; Day 17 / 52 &middot; 8월 — 게임이론·프로토콜 경제학 (Day 11–17)</p>
       <p class="lead">폴크정리 증명은 제외</p>
       <h2>개념</h2>
       <p>1회성 게임에서는 배신이 우월전략이어서 협력이 균형이 되지 못하지만, 같은 상대와 게임이 반복되면 현재의 이득과 미래의 보복이 함께 계산되어 협력이 균형으로 유지될 수 있다. 핵심 변수는 할인인자로, 미래 보수를 얼마나 중시하는지(또는 게임이 계속될 확률이 얼마인지)를 나타내며, 이 값이 충분히 크면 이탈로 얻는 일회성 이득보다 이후 처벌로 잃는 손실이 커진다. grim trigger나 tit-for-tat 같은 유발전략은 바로 이 비교를 실행 가능한 규칙으로 만든 것이고, 협력 유지 조건은 '이탈 이득 ≤ 할인된 미래 처벌 손실'이라는 부등식으로 정리된다. 폴크정리는 할인인자가 1에 가까워질 때 개인 합리성을 만족하는 사실상 모든 보수 조합이 균형으로 지지될 수 있음을 말해 준다(증명은 다루지 않는다). 실무적 함의는 평판이 도덕이 아니라 반복 가능성·행동의 관측 가능성·미래 관계의 가치라는 세 조건이 만들어 내는 균형 현상이라는 것이다.</p>
       <p>검증자, 오라클 제공자, 마켓메이커처럼 계속 참여하는 주체의 정직함은 처벌 가능성과 미래 수익의 크기로 설계되는 것이지 선의로 기대할 수 있는 게 아니다. 관계가 일회성이 되는 순간 그 균형은 사라진다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 반복게임과 평판(grim trigger) — 할인인자가 임계치 이상이면 &quot;영원한 보복&quot; 위협만으로
+# 무한반복 죄수의 딜레마에서 협력이 균형으로 유지됨을 수치로 확인한다.
+
+# 표준 PD payoff: R(둘다 협력) &lt; T(배신 유혹) 이고 P(둘다 배신) 는 그 사이 어딘가
+T, R, P, S = 5, 3, 1, 0  # Temptation, Reward, Punishment, Sucker
+
+# grim trigger: 상대가 한 번이라도 배신하면 그 뒤로 영원히 배신으로 응징
+# 협력 유지 조건(이탈 무이익): R/(1-δ) &gt;= T + δ*P/(1-δ)  =&gt;  δ &gt;= (T-R)/(T-P)
+threshold = (T - R) / (T - P)
+print(f&quot;협력 유지를 위한 할인인자 임계값 δ* = (T-R)/(T-P) = {threshold:.3f}&quot;)
+
+
+def value_of_cooperating(delta: float) -&gt; float:
+    # 계속 협력 → 매 라운드 R을 무한히 할인합산
+    return R / (1 - delta)
+
+
+def value_of_deviating_once(delta: float) -&gt; float:
+    # 이번 라운드만 배신(T 획득) 후 상대의 grim trigger로 영원히 P
+    return T + delta * P / (1 - delta)
+
+
+for delta in (0.3, threshold, 0.7):
+    coop = value_of_cooperating(delta)
+    dev = value_of_deviating_once(delta)
+    verdict = &quot;협력 우세 → 협력이 균형으로 유지&quot; if coop &gt;= dev else &quot;이탈 우세 → 협력 붕괴&quot;
+    print(f&quot;δ={delta:.3f}: V(협력)={coop:8.3f}  V(1회 이탈+영구응징)={dev:8.3f}  → {verdict}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-17.py">docs/code/math/math-17.py</a></p>
       <h2>연습</h2>
       <p>반복 죄수의 딜레마 보수표를 하나 정하고 grim trigger 하에서 협력이 유지되는 할인인자의 최소값을 직접 계산한 뒤, 이탈 이득을 키우면 그 임계값이 어떻게 움직이는지 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

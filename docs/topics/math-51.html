@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 51 — 신뢰된 셋업 vs 투명성(STARK vs SNARK)</title>
+<title>Day 51 — The Three Properties of Zero-Knowledge Proofs (Completeness, Soundness, Zero-Knowledge)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,21 +131,95 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 51</p>
   <article>
-      <h1>신뢰된 셋업 vs 투명성(STARK vs SNARK) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 51 / 51 &middot; 12월 — 암호학·정보이론 (Day 43–51)</p>
+      <h1>The Three Properties of Zero-Knowledge Proofs (Completeness, Soundness, Zero-Knowledge) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 51 / 52 &middot; December — Cryptography &amp; Information Theory (Day 44-52)</p>
+      <h2>Concept</h2>
+      <p>An interactive proof system is a procedure by which a prover convinces a verifier that some statement is true, and a zero-knowledge proof requires three properties on top of that. Completeness means that if the statement is true and both parties honestly follow the protocol, the verifier accepts with overwhelming probability. Soundness means that if the statement is false, no prover can convince the verifier except with negligible probability; when this guarantee holds against every prover it's called a proof, and when it holds only against provers with bounded computational power it's called an argument. The zero-knowledge property means the verifier learns nothing beyond the fact that the statement is true, formalized as the existence of a simulator — one that doesn't know the witness — able to produce something indistinguishable from a real transcript. Depending on the strength of that indistinguishability, zero-knowledge is classified as perfect, statistical, or computational, and applications often require knowledge soundness — a guarantee that the prover actually knows the witness — rather than plain soundness.</p>
+      <p>In practice, what breaks is usually not the three properties themselves but the assumptions they rest on — the integrity of a trusted setup, or the assumptions made when converting an interactive protocol into a non-interactive one.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 영지식 증명의 3성질(완전성·건전성·영지식) — 그래프 3색칠 문제의 대화형 ZK 프로토콜을
+# 여러 라운드 시뮬레이션해, &quot;거짓 증명이 계속 통과할 확률이 지수적으로 줄어드는 것&quot;을 본다.
+
+import random
+
+# 삼각형 하나(간선 3개) — 진짜 3색칠 가능한 그래프
+edges = [(0, 1), (1, 2), (2, 0)]
+coloring = {0: &quot;R&quot;, 1: &quot;G&quot;, 2: &quot;B&quot;}   # 증명자만 아는 비밀
+
+
+def prover_commit(coloring, perm):
+    # 색을 무작위로 재배치(퍼뮤테이션)해서 커밋 — 매 라운드 다른 색 배정처럼 보이게.
+    return {v: perm[c] for v, c in coloring.items()}
+
+
+def round_trip(coloring, edges, cheat=False):
+    perm = {&quot;R&quot;: &quot;G&quot;, &quot;G&quot;: &quot;B&quot;, &quot;B&quot;: &quot;R&quot;}   # 색 재배치(진짜 증명자는 이런 순열을 매번 새로 고름)
+    committed = prover_commit(coloring, perm) if not cheat else {0: &quot;R&quot;, 1: &quot;R&quot;, 2: &quot;B&quot;}  # 부정직: 두 정점 같은 색
+    u, v = random.choice(edges)             # 검증자가 무작위로 간선 하나 선택
+    return committed[u] != committed[v]      # 그 간선의 두 끝점 색이 다른지만 공개
+
+
+N = 20
+honest_ok = sum(round_trip(coloring, edges) for _ in range(N))
+cheat_ok = sum(round_trip(coloring, edges, cheat=True) for _ in range(N))
+print(f&quot;정직한 증명자: {honest_ok}/{N} 라운드 통과 (완전성 — 항상 통과해야 함)&quot;)
+print(f&quot;부정직한 증명자: {cheat_ok}/{N} 라운드 통과 (매 라운드 들킬 확률 &gt;= 1/|E| — 반복할수록 사기 확률이 지수적으로 감소)&quot;)
+print(&quot;영지식성: 검증자는 매 라운드 '두 끝점 색이 다르다'만 보고, 실제 색은 절대 못 봄&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-51.py">docs/code/math/math-51.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick a classic sigma protocol, such as graph three-coloring or proof of knowledge of a discrete log, write out completeness, soundness, and the simulator construction by hand, and reproduce the interactive process in simple code.</p>
+      <h2>Practical Connection</h2>
+      <p>When reviewing a rollup's validity proof or a privacy feature, the starting point for accurately assessing its trust assumptions is distinguishing whether the system is a proof or an argument, whether it has knowledge soundness, and what setup assumptions it relies on.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1>영지식 증명의 3성질(완전성·건전성·영지식) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 51 / 52 &middot; 12월 — 암호학·정보이론 (Day 44–52)</p>
 
       <h2>개념</h2>
-      <p>많은 SNARK는 증명 시스템을 쓰기 전에 공개 파라미터를 생성하는 신뢰된 셋업을 요구하고, 이때 쓰인 비밀값(흔히 toxic waste라 부른다)이 폐기되지 않으면 거짓 증명을 만들 수 있다. 그래서 다자간 의식(MPC ceremony)으로 참가자 중 한 명만 정직하면 안전하도록 만들고, KZG 기반의 universal·updatable 셋업처럼 회로마다 다시 하지 않아도 되는 형태가 선호된다. STARK는 해시 함수와 오류정정부호에만 의존하는 구성이라 비밀 파라미터가 없고, 따라서 투명(transparent)하며 셋업 신뢰 가정이 사라진다. 대가는 증명 크기와 검증 비용으로, 일반적으로 STARK 증명이 페어링 기반 SNARK보다 크다. 또한 해시 기반이라는 성질 덕분에 STARK는 양자 공격에 대한 가정이 더 보수적이라는 점도 자주 언급되는 차이이다.</p>
-      <p>증명 시스템 선택은 성능 문제이기 이전에 신뢰 가정 문제이고, 셋업이 오염되면 그 위의 모든 검증이 무의미해진다.</p>
+      <p>대화형 증명 시스템은 증명자가 검증자에게 어떤 진술이 참임을 납득시키는 절차이며, 영지식 증명은 여기에 세 가지 성질을 요구한다. 완전성은 진술이 참이고 양쪽이 정직하게 프로토콜을 따르면 검증자가 압도적인 확률로 수락한다는 성질이다. 건전성은 진술이 거짓이면 어떤 증명자도 무시할 만한 확률로만 검증자를 속일 수 있다는 성질이며, 이 보장이 모든 증명자에 대해 성립하면 증명, 계산 능력이 제한된 증명자에 대해서만 성립하면 논증이라 부른다. 영지식성은 검증자가 얻는 것이 진술이 참이라는 사실뿐임을 뜻하며, 증인을 모르는 시뮬레이터가 실제 대화 기록과 구별할 수 없는 것을 만들어 낼 수 있다는 형태로 형식화된다. 구별 불가능성의 강도에 따라 완전, 통계적, 계산적 영지식으로 나뉘고, 응용에서는 단순 건전성보다 증인을 실제로 알고 있음을 보장하는 지식 건전성이 요구되는 경우가 많다.</p>
+      <p>실무에서 무너지는 지점은 대개 세 성질 자체가 아니라 그것이 성립하는 전제인데, 신뢰 설정의 무결성이나 대화형 프로토콜을 비대화형으로 바꿀 때의 가정이 여기에 해당한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 영지식 증명의 3성질(완전성·건전성·영지식) — 그래프 3색칠 문제의 대화형 ZK 프로토콜을
+# 여러 라운드 시뮬레이션해, &quot;거짓 증명이 계속 통과할 확률이 지수적으로 줄어드는 것&quot;을 본다.
+
+import random
+
+# 삼각형 하나(간선 3개) — 진짜 3색칠 가능한 그래프
+edges = [(0, 1), (1, 2), (2, 0)]
+coloring = {0: &quot;R&quot;, 1: &quot;G&quot;, 2: &quot;B&quot;}   # 증명자만 아는 비밀
+
+
+def prover_commit(coloring, perm):
+    # 색을 무작위로 재배치(퍼뮤테이션)해서 커밋 — 매 라운드 다른 색 배정처럼 보이게.
+    return {v: perm[c] for v, c in coloring.items()}
+
+
+def round_trip(coloring, edges, cheat=False):
+    perm = {&quot;R&quot;: &quot;G&quot;, &quot;G&quot;: &quot;B&quot;, &quot;B&quot;: &quot;R&quot;}   # 색 재배치(진짜 증명자는 이런 순열을 매번 새로 고름)
+    committed = prover_commit(coloring, perm) if not cheat else {0: &quot;R&quot;, 1: &quot;R&quot;, 2: &quot;B&quot;}  # 부정직: 두 정점 같은 색
+    u, v = random.choice(edges)             # 검증자가 무작위로 간선 하나 선택
+    return committed[u] != committed[v]      # 그 간선의 두 끝점 색이 다른지만 공개
+
+
+N = 20
+honest_ok = sum(round_trip(coloring, edges) for _ in range(N))
+cheat_ok = sum(round_trip(coloring, edges, cheat=True) for _ in range(N))
+print(f&quot;정직한 증명자: {honest_ok}/{N} 라운드 통과 (완전성 — 항상 통과해야 함)&quot;)
+print(f&quot;부정직한 증명자: {cheat_ok}/{N} 라운드 통과 (매 라운드 들킬 확률 &gt;= 1/|E| — 반복할수록 사기 확률이 지수적으로 감소)&quot;)
+print(&quot;영지식성: 검증자는 매 라운드 '두 끝점 색이 다르다'만 보고, 실제 색은 절대 못 봄&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-51.py">docs/code/math/math-51.py</a></p>
       <h2>연습</h2>
-      <p>같은 간단한 회로를 신뢰된 셋업이 필요한 시스템과 투명한 시스템 각각의 라이브러리로 증명해 보고, 셋업 산출물 유무·증명 크기·검증 시간을 표로 비교해 보기.</p>
+      <p>그래프 삼색칠이나 이산로그 지식 증명 같은 고전적 시그마 프로토콜 하나를 골라 완전성, 건전성, 시뮬레이터 구성을 각각 손으로 써 보고 간단한 코드로 대화 과정을 재현하라.</p>
       <h2>실무 · Verex 연결</h2>
-      <p>L2 롤업의 유효성 증명이나 예측시장의 프라이버시·오프체인 계산 검증을 검토할 때, 온체인 검증 가스와 셋업 신뢰 가정이 정확히 이 트레이드오프 위에서 결정된다.</p>
+      <p>롤업의 유효성 증명이나 프라이버시 기능을 검토할 때, 그 시스템이 증명인지 논증인지, 지식 건전성이 있는지, 어떤 설정 가정에 의존하는지를 구분해 읽는 것이 신뢰 가정을 정확히 평가하는 출발점이다.</p>
       <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
     </article>
-  <div class="pager"><a href="math-50.html">&larr; 50. 영지식 증명의 3성질(완전성·건전성·영지식)</a><span></span></div>
+  <div class="pager"><a href="math-50.html">&larr; 50. 해시함수 설계 원리(스펀지·머클-담고르)</a><a href="math-52.html">52. 신뢰된 셋업 vs 투명성(STARK vs SNARK) &rarr;</a></div>
 </div>
 </body>
 </html>

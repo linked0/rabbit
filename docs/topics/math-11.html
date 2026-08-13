@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 11 — 내시균형·죄수의 딜레마</title>
+<title>Day 11 — Nash Equilibrium and the Prisoner's Dilemma</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,116 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 11</p>
   <article>
+      <h1>Nash Equilibrium and the Prisoner's Dilemma <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 11 / 52 &middot; August — Game Theory &amp; Protocol Economics (Day 11-17)</p>
+      <h2>Concept</h2>
+      <p>A Nash equilibrium is a strategy profile in which no single participant can gain by unilaterally changing their own strategy. That doesn't mean it's the best outcome — only that there's no incentive to deviate — and the Prisoner's Dilemma is the classic illustration of that gap. In the Prisoner's Dilemma, defecting is the dominant strategy because it's better no matter what the other player does, so mutual defection is the unique Nash equilibrium, even though mutual cooperation would be better for both. In other words, the equilibrium of individual rationality and collective efficiency (Pareto optimality) don't necessarily coincide. In repeated games, if the discount rate on future payoffs is low enough, conditional cooperation strategies can sustain cooperation as an equilibrium — the classic way out of the dilemma.</p>
+      <p>Protocol design ultimately comes down to arranging rewards and penalties so participants have no incentive to defect, and incentives built without equilibrium concepts easily backfire.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 내시균형·죄수의 딜레마 — 2x2 보수행렬을 놓고 최적대응(best response)으로
+# 내시균형을 직접 찾는다: 상대가 무엇을 하든 배신이 낫다 -&gt; (배신,배신)이 유일한 균형.
+
+# 행: 나의 선택, 열: 상대의 선택. 값은 (나의 보수, 상대의 보수). 낮을수록 형량이 짧다(=이득이 큼).
+COOPERATE, DEFECT = &quot;협력&quot;, &quot;배신&quot;
+payoff = {
+    (COOPERATE, COOPERATE): (-1, -1),
+    (COOPERATE, DEFECT):    (-3, 0),
+    (DEFECT, COOPERATE):    (0, -3),
+    (DEFECT, DEFECT):       (-2, -2),
+}
+
+def best_responses(my_options, opp_action, my_index):
+    # opp_action 이 고정일 때, 내가 얻는 보수가 가장 좋은(가장 큰) 선택지들을 반환.
+    scores = {my: payoff[(my, opp_action)][my_index] if my_index == 0 else payoff[(opp_action, my)][my_index]
+              for my in my_options}
+    best = max(scores.values())
+    return [a for a, s in scores.items() if s == best]
+
+actions = [COOPERATE, DEFECT]
+
+print(&quot;A가 최적대응(B의 선택별로 A가 최선인 행동):&quot;)
+for b in actions:
+    br = best_responses(actions, b, my_index=0)
+    print(f&quot;  B={b} -&gt; A의 최적대응 = {br}&quot;)
+
+print(&quot;B가 최적대응(A의 선택별로 B가 최선인 행동):&quot;)
+for a in actions:
+    br = best_responses(actions, a, my_index=1)
+    print(f&quot;  A={a} -&gt; B의 최적대응 = {br}&quot;)
+
+# 내시균형: 두 사람 모두 상대의 선택에 대해 최적대응 중인 조합.
+nash_equilibria = []
+for a in actions:
+    for b in actions:
+        a_is_best = a in best_responses(actions, b, my_index=0)
+        b_is_best = b in best_responses(actions, a, my_index=1)
+        if a_is_best and b_is_best:
+            nash_equilibria.append((a, b))
+
+print(&quot;\n내시균형:&quot;, nash_equilibria)
+print(&quot;각자 -1(모두 협력)보다 나쁜 -2(모두 배신)가 균형 -&gt; 개인합리성과 집단효율의 괴리 확인.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-11.py">docs/code/math/math-11.py</a></p>
+      <h2>Exercise</h2>
+      <p>Take the Prisoner's Dilemma payoff matrix, parameterize the gains from cooperation and defection, and derive how large the discount factor needs to be for cooperation to hold up as an equilibrium in a repeated game.</p>
+      <h2>Practical Connection</h2>
+      <p>Validator slashing, oracle-dispute challenge bonds, and market-maker rebates are all devices that shift the equilibrium so honesty beats defection, and you only see the actual safety margin once you check that condition with the math.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>내시균형·죄수의 딜레마 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 11 / 51 &middot; 8월 — 게임이론·프로토콜 경제학 (Day 11–17)</p>
+      <p class="meta">Math &middot; Day 11 / 52 &middot; 8월 — 게임이론·프로토콜 경제학 (Day 11–17)</p>
 
       <h2>개념</h2>
       <p>내시균형은 각 참여자의 전략 조합에서, 누구도 혼자만 전략을 바꿔서는 이득을 볼 수 없는 상태이다. 이는 최적의 결과라는 뜻이 아니라 이탈 유인이 없는 안정점이라는 뜻이며, 죄수의 딜레마가 그 차이를 보여 준다. 죄수의 딜레마에서는 상대가 무엇을 하든 배신이 더 낫기 때문에 배신이 우월전략이고, 결과적으로 둘 다 배신하는 조합이 유일한 내시균형이지만 둘 다 협력하는 것보다 모두에게 나쁘다. 즉 개인 합리성의 균형과 집단 효율(파레토 최적)은 일치하지 않을 수 있다. 반복 게임에서 미래 이득의 할인율이 충분히 낮으면 조건부 협력 전략으로 협력이 균형으로 유지될 수 있다는 것이 이 딜레마의 대표적 탈출구이다.</p>
       <p>프로토콜 설계는 결국 참여자가 이탈할 유인이 없도록 보상과 벌칙을 배치하는 일이라, 균형 개념 없이 만든 인센티브는 의도와 반대로 작동하기 쉽다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 내시균형·죄수의 딜레마 — 2x2 보수행렬을 놓고 최적대응(best response)으로
+# 내시균형을 직접 찾는다: 상대가 무엇을 하든 배신이 낫다 -&gt; (배신,배신)이 유일한 균형.
+
+# 행: 나의 선택, 열: 상대의 선택. 값은 (나의 보수, 상대의 보수). 낮을수록 형량이 짧다(=이득이 큼).
+COOPERATE, DEFECT = &quot;협력&quot;, &quot;배신&quot;
+payoff = {
+    (COOPERATE, COOPERATE): (-1, -1),
+    (COOPERATE, DEFECT):    (-3, 0),
+    (DEFECT, COOPERATE):    (0, -3),
+    (DEFECT, DEFECT):       (-2, -2),
+}
+
+def best_responses(my_options, opp_action, my_index):
+    # opp_action 이 고정일 때, 내가 얻는 보수가 가장 좋은(가장 큰) 선택지들을 반환.
+    scores = {my: payoff[(my, opp_action)][my_index] if my_index == 0 else payoff[(opp_action, my)][my_index]
+              for my in my_options}
+    best = max(scores.values())
+    return [a for a, s in scores.items() if s == best]
+
+actions = [COOPERATE, DEFECT]
+
+print(&quot;A가 최적대응(B의 선택별로 A가 최선인 행동):&quot;)
+for b in actions:
+    br = best_responses(actions, b, my_index=0)
+    print(f&quot;  B={b} -&gt; A의 최적대응 = {br}&quot;)
+
+print(&quot;B가 최적대응(A의 선택별로 B가 최선인 행동):&quot;)
+for a in actions:
+    br = best_responses(actions, a, my_index=1)
+    print(f&quot;  A={a} -&gt; B의 최적대응 = {br}&quot;)
+
+# 내시균형: 두 사람 모두 상대의 선택에 대해 최적대응 중인 조합.
+nash_equilibria = []
+for a in actions:
+    for b in actions:
+        a_is_best = a in best_responses(actions, b, my_index=0)
+        b_is_best = b in best_responses(actions, a, my_index=1)
+        if a_is_best and b_is_best:
+            nash_equilibria.append((a, b))
+
+print(&quot;\n내시균형:&quot;, nash_equilibria)
+print(&quot;각자 -1(모두 협력)보다 나쁜 -2(모두 배신)가 균형 -&gt; 개인합리성과 집단효율의 괴리 확인.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-11.py">docs/code/math/math-11.py</a></p>
       <h2>연습</h2>
       <p>죄수의 딜레마 보수행렬을 놓고 협력의 이득과 배신의 이득을 파라미터로 두어, 반복 게임에서 협력이 유지되려면 할인계수가 얼마 이상이어야 하는지 직접 유도해 보기.</p>
       <h2>실무 · Verex 연결</h2>

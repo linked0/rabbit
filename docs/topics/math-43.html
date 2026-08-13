@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 43 — 정수론·모듈러 산술</title>
+<title>Day 43 — Correlation and Cointegration (A Light Treatment)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,21 +131,127 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 43</p>
   <article>
-      <h1>정수론·모듈러 산술 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 43 / 51 &middot; 12월 — 암호학·정보이론 (Day 43–51)</p>
+      <h1>Correlation and Cointegration (A Light Treatment) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 43 / 52 &middot; November — Probability, Statistics &amp; Financial Math (Day 35-43)</p>
+      <h2>Concept</h2>
+      <p>The correlation coefficient standardizes the degree of linear co-movement between two variables to a value between -1 and 1; it does not imply causation and fails to capture nonlinear relationships properly. In time series, when two series each have their own trend, correlation and regression coefficients can come out large even with no real relationship — the spurious regression problem — so correlation between levels shouldn't be trusted at face value. Cointegration describes a relationship where each series is individually non-stationary (has a unit root), but some linear combination of the two is stationary and mean-reverting — a statement that a long-run equilibrium exists between the two series. The standard procedure is to test each series for a unit root, estimate the cointegrating relationship, then test whether its residuals are stationary; if cointegration holds, an error-correction model can describe how fast short-term deviations revert to equilibrium. In short: correlation is a statement about simultaneous movement, and cointegration is a statement about a long-run relationship.</p>
+      <p>Pairs trading, hedge-ratio sizing, and analyzing peg deviations for stablecoins or LSTs are all really asking whether the levels of two series stay tied together over the long run — which is cointegration's territory, not correlation's.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 상관관계와 공적분(가볍게) — 수준(level) 상관의 함정 vs 스프레드의 평균회귀
+# 두 계열이 각자 추세를 가지면 아무 관계가 없어도 수준끼리는 강하게 &quot;상관&quot;돼 보인다(허위회귀).
+
+import random
+import statistics
+
+random.seed(3)
+N = 500
+
+def corr(xs, ys):
+    mx, my = statistics.mean(xs), statistics.mean(ys)
+    cov = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
+    sx = (sum((x - mx) ** 2 for x in xs)) ** 0.5
+    sy = (sum((y - my) ** 2 for y in ys)) ** 0.5
+    return cov / (sx * sy)
+
+# 1) 서로 무관한 두 랜덤워크(각자 추세만 가짐) — 진짜 관계는 없다
+a_level = [100.0]
+b_level = [50.0]
+for _ in range(N):
+    a_level.append(a_level[-1] + random.gauss(0.15, 1.0))  # 독립적인 상승 추세(추세가 노이즈를 압도)
+    b_level.append(b_level[-1] + random.gauss(0.10, 1.0))
+a_ret = [a_level[i] - a_level[i - 1] for i in range(1, len(a_level))]
+b_ret = [b_level[i] - b_level[i - 1] for i in range(1, len(b_level))]
+
+print(f&quot;[무관한 두 랜덤워크] 수준(level) 상관 = {corr(a_level, b_level):.3f}  (허위로 높게 나옴)&quot;)
+print(f&quot;[무관한 두 랜덤워크] 수익률(return) 상관 = {corr(a_ret, b_ret):.3f}  (실제로는 0에 가까움)&quot;)
+
+# 2) 공적분 관계: 두 계열은 각자 비정상(추세)이지만 스프레드는 평균회귀하도록 구성
+x_level = [100.0]
+for _ in range(N):
+    x_level.append(x_level[-1] + random.gauss(0.0, 1.0))
+
+spread = [0.0]
+for _ in range(N):
+    # 스프레드가 커질수록 되돌아오는 힘(AR(1), 계수&lt;1 =&gt; 평균회귀) + 노이즈
+    spread.append(spread[-1] * 0.8 + random.gauss(0.0, 0.5))
+
+y_level = [x_level[i] - spread[i] for i in range(N + 1)]
+
+print(f&quot;\n[공적분 쌍] 수준 상관 = {corr(x_level, y_level):.3f}&quot;)
+print(f&quot;[공적분 쌍] 스프레드 평균/표준편차 = {statistics.mean(spread):.3f} / {statistics.stdev(spread):.3f}&quot;)
+print(f&quot;[공적분 쌍] 스프레드가 [-3, 3] 범위 안에 머문 비율 = {sum(-3 &lt;= s &lt;= 3 for s in spread) / len(spread):.2%}&quot;)
+print(&quot;-&gt; 스프레드가 특정 범위를 벗어나지 않고 되돌아온다면 두 계열이 장기적으로 묶여있다는 신호(공적분).&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-43.py">docs/code/math/math-43.py</a></p>
+      <h2>Exercise</h2>
+      <p>Take price time series for two assets, compute the correlation of log-price levels and the correlation of log returns separately, compare how different the values are, and plot whether the spread between the two series mean-reverts.</p>
+      <h2>Practical Connection</h2>
+      <p>Prices of different markets covering the same event, or of complementary outcome tokens, should stay tied together in the long run — so if the spread does not mean-revert, that's grounds to suspect a liquidity shortfall or a difference in settlement terms.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1>상관관계와 공적분(가볍게) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 43 / 52 &middot; 11월 — 확률·통계·금융수학 (Day 35–43)</p>
 
       <h2>개념</h2>
-      <p>모듈러 산술은 정수를 법 n으로 나눈 나머지로 동일시하는 체계로, 덧셈·뺄셈·곱셈은 나머지 연산과 잘 호환되지만 나눗셈은 역원이 존재할 때만 정의된다. a가 법 n에서 곱셈 역원을 가질 필요충분조건은 gcd(a, n) = 1이며, 그 역원은 확장 유클리드 알고리즘으로 ax + ny = 1을 풀어 얻는다. n이 소수 p이면 0이 아닌 모든 원소가 역원을 가져 유한체가 되고, 페르마의 소정리에 의해 a^(p-1) ≡ 1 (mod p)이므로 역원을 a^(p-2)로도 구할 수 있다. 오일러 정리는 이를 일반화해 gcd(a, n) = 1일 때 a^φ(n) ≡ 1 (mod n)을 주며, 이것이 RSA류 시스템에서 지수를 다루는 근거다. 중국인의 나머지 정리는 서로소인 법들에 대한 합동식 체계가 그 곱을 법으로 유일한 해를 가짐을 말해 주고, 큰 수 연산을 작은 법들로 쪼개 계산하는 데 쓰인다.</p>
-      <p>타원곡선 연산, 해시-투-필드, ZK 회로의 산술이 전부 유한체 위에서 돌아가므로, 모듈러 역원과 오버플로 처리를 이해하지 못하면 암호 코드의 정확성도 성능도 판단할 수 없다.</p>
+      <p>상관계수는 두 변수의 선형 동조 정도를 -1과 1 사이로 표준화한 값이며, 인과를 뜻하지 않고 비선형 관계도 제대로 잡지 못한다. 시계열에서는 두 계열이 각각 추세를 가질 경우 실제 관계가 없어도 상관과 회귀 계수가 크게 나오는 허위 회귀 문제가 생기므로, 수준(level)끼리의 상관은 그대로 믿기 어렵다. 공적분은 각 계열은 비정상(단위근을 가짐)이지만 둘의 어떤 선형결합은 정상이 되어 평균으로 회귀하는 관계를 말하며, 이는 두 계열 사이에 장기 균형이 존재한다는 진술이다. 실무 절차는 각 계열의 단위근을 검정하고, 공적분 관계를 추정한 뒤 그 잔차가 정상인지 검정하는 순서이며, 공적분이 성립하면 오차수정모형으로 단기 이탈이 균형으로 되돌아가는 속도를 모델링한다. 요약하면 상관은 동시적 움직임에 대한 진술이고 공적분은 장기 관계에 대한 진술이다.</p>
+      <p>페어 트레이딩, 헤지 비율 산정, 스테이블코인이나 LST의 페그 이탈 분석은 모두 두 계열의 수준이 장기적으로 붙어 있는지를 묻는 질문이라 상관이 아니라 공적분의 영역이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 상관관계와 공적분(가볍게) — 수준(level) 상관의 함정 vs 스프레드의 평균회귀
+# 두 계열이 각자 추세를 가지면 아무 관계가 없어도 수준끼리는 강하게 &quot;상관&quot;돼 보인다(허위회귀).
+
+import random
+import statistics
+
+random.seed(3)
+N = 500
+
+def corr(xs, ys):
+    mx, my = statistics.mean(xs), statistics.mean(ys)
+    cov = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
+    sx = (sum((x - mx) ** 2 for x in xs)) ** 0.5
+    sy = (sum((y - my) ** 2 for y in ys)) ** 0.5
+    return cov / (sx * sy)
+
+# 1) 서로 무관한 두 랜덤워크(각자 추세만 가짐) — 진짜 관계는 없다
+a_level = [100.0]
+b_level = [50.0]
+for _ in range(N):
+    a_level.append(a_level[-1] + random.gauss(0.15, 1.0))  # 독립적인 상승 추세(추세가 노이즈를 압도)
+    b_level.append(b_level[-1] + random.gauss(0.10, 1.0))
+a_ret = [a_level[i] - a_level[i - 1] for i in range(1, len(a_level))]
+b_ret = [b_level[i] - b_level[i - 1] for i in range(1, len(b_level))]
+
+print(f&quot;[무관한 두 랜덤워크] 수준(level) 상관 = {corr(a_level, b_level):.3f}  (허위로 높게 나옴)&quot;)
+print(f&quot;[무관한 두 랜덤워크] 수익률(return) 상관 = {corr(a_ret, b_ret):.3f}  (실제로는 0에 가까움)&quot;)
+
+# 2) 공적분 관계: 두 계열은 각자 비정상(추세)이지만 스프레드는 평균회귀하도록 구성
+x_level = [100.0]
+for _ in range(N):
+    x_level.append(x_level[-1] + random.gauss(0.0, 1.0))
+
+spread = [0.0]
+for _ in range(N):
+    # 스프레드가 커질수록 되돌아오는 힘(AR(1), 계수&lt;1 =&gt; 평균회귀) + 노이즈
+    spread.append(spread[-1] * 0.8 + random.gauss(0.0, 0.5))
+
+y_level = [x_level[i] - spread[i] for i in range(N + 1)]
+
+print(f&quot;\n[공적분 쌍] 수준 상관 = {corr(x_level, y_level):.3f}&quot;)
+print(f&quot;[공적분 쌍] 스프레드 평균/표준편차 = {statistics.mean(spread):.3f} / {statistics.stdev(spread):.3f}&quot;)
+print(f&quot;[공적분 쌍] 스프레드가 [-3, 3] 범위 안에 머문 비율 = {sum(-3 &lt;= s &lt;= 3 for s in spread) / len(spread):.2%}&quot;)
+print(&quot;-&gt; 스프레드가 특정 범위를 벗어나지 않고 되돌아온다면 두 계열이 장기적으로 묶여있다는 신호(공적분).&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-43.py">docs/code/math/math-43.py</a></p>
       <h2>연습</h2>
-      <p>확장 유클리드 알고리즘을 직접 구현해 임의의 소수 p에 대해 a의 역원을 구하고, 같은 값을 a^(p-2) mod p로도 계산해 두 결과가 일치하는지 확인해 보라.</p>
+      <p>두 자산의 가격 시계열을 받아 로그 가격 수준의 상관과 로그 수익률의 상관을 각각 계산해 값이 얼마나 다른지 비교하고, 두 계열의 스프레드가 평균으로 회귀하는지 그려 확인하라.</p>
       <h2>실무 · Verex 연결</h2>
-      <p>Solidity에서 고정소수점 계산을 할 때 mulDiv 같은 패턴으로 곱셈을 먼저 하고 나누는 이유, 그리고 유한체 위의 나눗셈이 실제로는 역원 곱셈이라는 사실은 LMSR 가격 계산의 정밀도 설계와 검증 코드 양쪽에 직접 연결된다.</p>
+      <p>같은 사건을 다루는 서로 다른 마켓이나 상보적 아웃컴 토큰의 가격은 장기적으로 묶여 있어야 하므로, 스프레드가 평균 회귀하지 않는다면 유동성 부족이나 정산 조건 차이를 의심할 근거가 된다.</p>
       <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
     </article>
-  <div class="pager"><a href="math-42.html">&larr; 42. 상관관계와 공적분(가볍게)</a><a href="math-44.html">44. 군론 기초(순환군·이산로그) &rarr;</a></div>
+  <div class="pager"><a href="math-42.html">&larr; 42. 마르코프 체인(개념)</a><a href="math-44.html">44. 정수론·모듈러 산술 &rarr;</a></div>
 </div>
 </body>
 </html>

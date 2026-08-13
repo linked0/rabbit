@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 65 — 사기 증명 vs 유효성 증명의 게임 이론</title>
+<title>Day 65 — Fraud Proofs vs. Validity Proofs: The Game Theory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,47 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 65</p>
   <article>
+      <h1>Fraud Proofs vs. Validity Proofs: The Game Theory <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 65 / 100 &middot; D. Distributed Systems &amp; Consensus (Day 52-68)</p>
+      <h2>Concept</h2>
+      <p>Fraud-proof systems provisionally assume a submitted state transition is valid, and roll it back via on-chain verification only if someone flags a fault within the challenge window. This scheme's safety rests not on cryptography but on game-theoretic assumptions: at least one honest challenger must exist (1-of-N), and that challenger must be able to get a transaction onto L1 within the challenge window without being censored. This creates the verifier's dilemma — verification always costs something, but the payoff only materializes if fraud actually occurred, so a rational participant has an incentive to skip verification; bonds and slashing are used to correct for that. Validity-proof systems instead show cryptographically that the state transition followed the rules, so they need neither an honest-watcher assumption nor a challenge window. In exchange, the risk shifts to the cost of generating proofs and to the trusted setup or implementation bugs of the proof system itself. So the real difference between the two isn't 'who do you trust' — it's whether the risk lives in incentive design or in cryptography and code.</p>
+      <p>Once assets live on an L2, the withdrawal delay, the assumption that a challenger exists, and censorship resistance become the actual safety conditions on user funds. Miss this and you'll misjudge the real trust assumptions in a bridge or settlement design.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 사기 증명 vs 유효성 증명의 게임 이론 — 본드·이득·검증비용·적발확률로 &quot;사기가 손해&quot;인 조건을 구한다.
+# 기대이익 = (1-p)*이득 - p*본드 가 0보다 작아야 사기가 억제되며, 그 경계 p*를 계산한다.
+
+def expected_profit_from_fraud(gain, bond, detect_prob):
+    return (1 - detect_prob) * gain - detect_prob * bond
+
+gain = 50_000          # 사기가 성공했을 때 얻는 이득
+bond = 100_000         # 사기가 적발되면 몰수당하는 본드(슬래싱)
+challenge_cost = 500   # 정직한 챌린저가 검증·이의제기에 쓰는 비용
+
+for detect_prob in (0.3, 0.5, 0.7, 0.9):
+    ev = expected_profit_from_fraud(gain, bond, detect_prob)
+    verdict = &quot;사기 시도가 이득&quot; if ev &gt; 0 else &quot;사기 시도가 손해(억제됨)&quot;
+    print(f&quot;적발확률 p={detect_prob:.1f} → 기대이익={ev:,.0f} → {verdict}&quot;)
+
+# 손익분기 적발확률: (1-p)*gain - p*bond = 0  =&gt;  p* = gain / (gain + bond)
+breakeven_p = gain / (gain + bond)
+print(f&quot;\n손익분기 적발확률 p* = {breakeven_p:.3f} (이보다 낮으면 사기가 합리적 선택이 된다)&quot;)
+
+# verifier's dilemma: 챌린지 비용이 있으므로, 적발 시 보상이 최소 challenge_cost는 넘어야
+# 합리적 챌린저가 실제로 나선다 — 그렇지 않으면 아무도 검증하지 않아 p 자체가 0에 가까워진다
+slashed_reward_share = bond * 0.1  # 슬래싱된 본드의 10%를 챌린저에게 분배한다고 가정
+incentive = &quot;있음&quot; if slashed_reward_share &gt; challenge_cost else &quot;없음&quot;
+print(f&quot;챌린저 보상(본드의 10%)={slashed_reward_share:,.0f} vs 챌린지 비용={challenge_cost:,} → 챌린저가 나설 유인 {incentive}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-65.py">docs/code/algorithms/algorithms-65.py</a></p>
+      <h2>Exercise</h2>
+      <p>Set bond size, the payoff from a successful fraud attempt, challenge cost, and detection probability as variables, write out the inequality that makes attempting fraud unprofitable, and work out which parameter breaking makes the attack profitable.</p>
+      <h2>Practical Connection</h2>
+      <p>If Verex settles on an L2 or rollup, the challenge period sets the floor on when a winner can actually withdraw funds, so the UX design from market close to fund withdrawal is directly tied to this choice.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>사기 증명 vs 유효성 증명의 게임 이론 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 65 / 100 &middot; D. 분산시스템·합의 (Day 52–68)</p>
 
@@ -115,7 +179,32 @@
       <p>사기 증명(fraud proof) 방식은 제출된 상태 전이를 일단 유효하다고 가정하고, 챌린지 기간 안에 누군가 잘못을 지적하면 온체인 검증으로 되돌리는 구조다. 이 방식의 안전성은 암호학이 아니라 게임이론 가정에 의존하는데, 정직한 챌린저가 최소 한 명 존재하고(1-of-N) 그가 챌린지 기간 내에 검열당하지 않고 L1에 트랜잭션을 넣을 수 있어야 한다. 여기서 verifier's dilemma가 생기는데, 검증에는 항상 비용이 들지만 보상은 사기가 실제로 일어났을 때만 발생하므로 합리적 참여자는 검증을 게을리할 유인을 갖고, 이를 본드와 슬래싱으로 보정한다. 유효성 증명(validity proof) 방식은 상태 전이가 규칙을 따랐음을 암호학적 증명으로 보여 주므로 정직한 감시자 가정도 챌린지 기간도 필요 없다. 대신 증명 생성 비용과 증명 시스템 자체의 신뢰 설정·구현 버그로 위험이 옮겨 가므로, 둘의 차이는 '누구를 믿는가'가 아니라 '위험이 인센티브 설계에 있느냐 암호학과 코드에 있느냐'다.</p>
       <p>L2 위에서 자산을 다루면 출금 지연 기간, 챌린저 존재 가정, 검열 저항 같은 조건이 곧 사용자 자금의 안전 조건이 된다. 이를 모르면 브리지나 정산 설계에서 실제 신뢰 가정을 잘못 잡는다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 사기 증명 vs 유효성 증명의 게임 이론 — 본드·이득·검증비용·적발확률로 &quot;사기가 손해&quot;인 조건을 구한다.
+# 기대이익 = (1-p)*이득 - p*본드 가 0보다 작아야 사기가 억제되며, 그 경계 p*를 계산한다.
+
+def expected_profit_from_fraud(gain, bond, detect_prob):
+    return (1 - detect_prob) * gain - detect_prob * bond
+
+gain = 50_000          # 사기가 성공했을 때 얻는 이득
+bond = 100_000         # 사기가 적발되면 몰수당하는 본드(슬래싱)
+challenge_cost = 500   # 정직한 챌린저가 검증·이의제기에 쓰는 비용
+
+for detect_prob in (0.3, 0.5, 0.7, 0.9):
+    ev = expected_profit_from_fraud(gain, bond, detect_prob)
+    verdict = &quot;사기 시도가 이득&quot; if ev &gt; 0 else &quot;사기 시도가 손해(억제됨)&quot;
+    print(f&quot;적발확률 p={detect_prob:.1f} → 기대이익={ev:,.0f} → {verdict}&quot;)
+
+# 손익분기 적발확률: (1-p)*gain - p*bond = 0  =&gt;  p* = gain / (gain + bond)
+breakeven_p = gain / (gain + bond)
+print(f&quot;\n손익분기 적발확률 p* = {breakeven_p:.3f} (이보다 낮으면 사기가 합리적 선택이 된다)&quot;)
+
+# verifier's dilemma: 챌린지 비용이 있으므로, 적발 시 보상이 최소 challenge_cost는 넘어야
+# 합리적 챌린저가 실제로 나선다 — 그렇지 않으면 아무도 검증하지 않아 p 자체가 0에 가까워진다
+slashed_reward_share = bond * 0.1  # 슬래싱된 본드의 10%를 챌린저에게 분배한다고 가정
+incentive = &quot;있음&quot; if slashed_reward_share &gt; challenge_cost else &quot;없음&quot;
+print(f&quot;챌린저 보상(본드의 10%)={slashed_reward_share:,.0f} vs 챌린지 비용={challenge_cost:,} → 챌린저가 나설 유인 {incentive}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-65.py">docs/code/algorithms/algorithms-65.py</a></p>
       <h2>연습</h2>
       <p>본드 크기, 사기 성공 시 이득, 챌린지 비용, 적발 확률을 변수로 두고 '사기를 시도하는 것이 손해가 되는' 부등식을 직접 세운 뒤, 어느 파라미터가 무너질 때 공격이 이득이 되는지 계산하라.</p>
       <h2>실무 · Verex 연결</h2>

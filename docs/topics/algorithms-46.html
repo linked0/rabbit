@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 46 — 벤치마크 방법론</title>
+<title>Day 46 — Benchmark Methodology — Warm-up, Variance, and Automatic Regression Detection</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,64 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 46</p>
   <article>
+      <h1>Benchmark Methodology — Warm-up, Variance, and Automatic Regression Detection <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 46 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>A benchmark isn't about measuring one number — it's an experiment that estimates a distribution of measurements. JIT compilation, caches, branch predictors, and connection pools all mean early runs differ from steady state, so the warm-up period should be excluded from measurement. What users actually feel is closer to the median and tail percentiles (p95, p99) than the average, and reporting the variance across repeated runs is what makes comparing two versions valid. Regression detection comes down to whether the difference from a baseline exceeds the noise band, so on noisy environments like shared CI, you either widen the threshold generously or use relative comparisons within the same run.</p>
+      <p>A benchmark that ignores warm-up and variance lets real performance regressions through while flagging harmless changes as regressions — and eventually nobody trusts the results anymore.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 벤치마크 방법론 — 워밍업 구간을 제외하고, 분산까지 함께 보고해 회귀를 판정한다.
+# 노이즈 범위(표준편차 기반 임계값)를 넘어선 차이만 &quot;회귀&quot;로 인정한다.
+
+import random
+import statistics
+
+random.seed(7)
+
+def run_samples(n, base_ms, warmup=3):
+    &quot;&quot;&quot;워밍업 n_warmup개는 버리고, 정상 상태 표본만 반환.&quot;&quot;&quot;
+    raw = [base_ms + random.gauss(0, base_ms * 0.05) for _ in range(n + warmup)]
+    # 초반 워밍업 구간은 JIT/캐시 예열 때문에 더 느리다고 가정
+    for i in range(warmup):
+        raw[i] *= 1.6
+    return raw[warmup:]
+
+def summarize(samples):
+    mean = statistics.mean(samples)
+    stdev = statistics.stdev(samples)
+    p95 = sorted(samples)[int(len(samples) * 0.95)]
+    return mean, stdev, p95
+
+def is_regression(baseline, candidate, z_threshold=2.0):
+    &quot;&quot;&quot;두 집단 평균 차이가 결합 표준오차의 z_threshold배를 넘으면 회귀로 판정.&quot;&quot;&quot;
+    m0, s0, _ = summarize(baseline)
+    m1, s1, _ = summarize(candidate)
+    se = ((s0 ** 2) / len(baseline) + (s1 ** 2) / len(candidate)) ** 0.5
+    z = (m1 - m0) / se if se else float(&quot;inf&quot;)
+    return z &gt; z_threshold, z
+
+baseline = run_samples(30, base_ms=10.0)
+candidate_ok = run_samples(30, base_ms=10.2)   # 무해한 변경
+candidate_bad = run_samples(30, base_ms=13.0)  # 실제 회귀
+
+for name, cand in [(&quot;무해한 변경&quot;, candidate_ok), (&quot;실제 회귀&quot;, candidate_bad)]:
+    m0, s0, p95_0 = summarize(baseline)
+    m1, s1, p95_1 = summarize(cand)
+    flagged, z = is_regression(baseline, cand)
+    print(f&quot;[{name}] baseline mean={m0:.2f}ms p95={p95_0:.2f}ms | &quot;
+          f&quot;candidate mean={m1:.2f}ms p95={p95_1:.2f}ms | z={z:.2f} -&gt; &quot;
+          f&quot;{'REGRESSION' if flagged else 'OK'}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-46.py">docs/code/algorithms/algorithms-46.py</a></p>
+      <h2>Exercise</h2>
+      <p>Run a single function many times with Go's testing.B, extract percentiles and standard deviation, and tabulate how much the numbers change with and without warm-up.</p>
+      <h2>Practical Connection</h2>
+      <p>Contract gas consumption is deterministic, so regressions can be pinned to an exact value, but off-chain matching-engine and API latency have to be managed as distributions — Verex's CI needs two different kinds of regression gates for these two cases.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>벤치마크 방법론 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 46 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
       <p class="lead">워밍업·분산·회귀 자동 감지</p>
@@ -115,7 +196,49 @@
       <p>벤치마크는 하나의 수치를 재는 일이 아니라 측정값의 분포를 추정하는 실험이다. JIT 컴파일, 캐시, 분기 예측기, 커넥션 풀 때문에 초기 실행은 정상 상태와 다르므로 워밍업 구간을 측정에서 제외해야 한다. 사용자 체감은 평균보다 중앙값과 꼬리 분위수(p95, p99)에 가깝고, 반복 실행 간 분산을 함께 보고해야 두 버전의 비교가 성립한다. 회귀 감지는 기준선 대비 차이가 노이즈 범위를 넘는지의 판단이므로, 공유 CI처럼 흔들리는 환경에서는 임계값을 넉넉히 잡거나 같은 실행 안에서의 상대 비교를 쓴다.</p>
       <p>워밍업과 분산을 무시한 벤치마크는 실제 성능 회귀를 통과시키고 무해한 변경을 회귀로 오탐해서, 결국 아무도 결과를 믿지 않게 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 벤치마크 방법론 — 워밍업 구간을 제외하고, 분산까지 함께 보고해 회귀를 판정한다.
+# 노이즈 범위(표준편차 기반 임계값)를 넘어선 차이만 &quot;회귀&quot;로 인정한다.
+
+import random
+import statistics
+
+random.seed(7)
+
+def run_samples(n, base_ms, warmup=3):
+    &quot;&quot;&quot;워밍업 n_warmup개는 버리고, 정상 상태 표본만 반환.&quot;&quot;&quot;
+    raw = [base_ms + random.gauss(0, base_ms * 0.05) for _ in range(n + warmup)]
+    # 초반 워밍업 구간은 JIT/캐시 예열 때문에 더 느리다고 가정
+    for i in range(warmup):
+        raw[i] *= 1.6
+    return raw[warmup:]
+
+def summarize(samples):
+    mean = statistics.mean(samples)
+    stdev = statistics.stdev(samples)
+    p95 = sorted(samples)[int(len(samples) * 0.95)]
+    return mean, stdev, p95
+
+def is_regression(baseline, candidate, z_threshold=2.0):
+    &quot;&quot;&quot;두 집단 평균 차이가 결합 표준오차의 z_threshold배를 넘으면 회귀로 판정.&quot;&quot;&quot;
+    m0, s0, _ = summarize(baseline)
+    m1, s1, _ = summarize(candidate)
+    se = ((s0 ** 2) / len(baseline) + (s1 ** 2) / len(candidate)) ** 0.5
+    z = (m1 - m0) / se if se else float(&quot;inf&quot;)
+    return z &gt; z_threshold, z
+
+baseline = run_samples(30, base_ms=10.0)
+candidate_ok = run_samples(30, base_ms=10.2)   # 무해한 변경
+candidate_bad = run_samples(30, base_ms=13.0)  # 실제 회귀
+
+for name, cand in [(&quot;무해한 변경&quot;, candidate_ok), (&quot;실제 회귀&quot;, candidate_bad)]:
+    m0, s0, p95_0 = summarize(baseline)
+    m1, s1, p95_1 = summarize(cand)
+    flagged, z = is_regression(baseline, cand)
+    print(f&quot;[{name}] baseline mean={m0:.2f}ms p95={p95_0:.2f}ms | &quot;
+          f&quot;candidate mean={m1:.2f}ms p95={p95_1:.2f}ms | z={z:.2f} -&gt; &quot;
+          f&quot;{'REGRESSION' if flagged else 'OK'}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-46.py">docs/code/algorithms/algorithms-46.py</a></p>
       <h2>연습</h2>
       <p>함수 하나를 Go의 testing.B로 여러 차례 돌려 분위수와 표준편차를 뽑고, 워밍업 유무에 따라 수치가 얼마나 달라지는지 표로 정리하라.</p>
       <h2>실무 · Verex 연결</h2>

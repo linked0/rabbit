@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 51 — [복습] 성능 예산 문서 쓰기</title>
+<title>Day 51 — [Review] Writing a Performance Budget Document</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,57 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 51</p>
   <article>
+      <h1>[Review] Writing a Performance Budget Document <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 51 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>A performance budget document spells out, in numbers and conditions, the performance targets a system must meet, serving as the basis for design, review, and deployment decisions. At minimum it needs the target workload (request types and their ratios), the load level (requests per second, concurrency), metrics and targets (tail latency like p95/p99 rather than average, throughput, resource usage), and the measurement method and environment — that's what makes it a reproducible baseline. The budget becomes far more actionable when the overall target is broken down and allocated across segments — for example, splitting an end-to-end latency target across network, queue wait, handler, and DB call lets you immediately see which segment blew its budget. Targets should be set with justification; deriving them from user-perceived thresholds or an upstream system's timeout is more defensible than picking arbitrary numbers. Finally, the document only carries real force once it also states what happens on a budget overrun — blocking deployment, rolling back, an exception-approval process.</p>
+      <p>Without a documented target, performance turns into a subjective argument over &quot;slow&quot; versus &quot;fast,&quot; and regressions only get discovered once they've piled up, by which point tracing the cause is hard.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># [복습] 성능 예산 문서 쓰기 — 종단 지연 목표를 구간별(네트워크/큐/핸들러/DB)로 쪼개
+# 각 구간 상한을 정하고, 실측값과 비교해 어느 구간이 예산을 초과했는지 즉시 드러낸다.
+
+budget_ms = {
+    &quot;network&quot;: 20,
+    &quot;queue_wait&quot;: 30,
+    &quot;handler&quot;: 40,
+    &quot;db_call&quot;: 50,
+}
+total_budget_ms = sum(budget_ms.values())
+
+# 실측치 두 세트: 정상 배포 vs 회귀가 있는 배포
+measured_ok = {&quot;network&quot;: 18, &quot;queue_wait&quot;: 25, &quot;handler&quot;: 35, &quot;db_call&quot;: 45}
+measured_regressed = {&quot;network&quot;: 19, &quot;queue_wait&quot;: 28, &quot;handler&quot;: 38, &quot;db_call&quot;: 95}
+
+def evaluate(name, measured):
+    print(f&quot;--- {name} (총 예산 {total_budget_ms}ms) ---&quot;)
+    violations = []
+    for stage, limit in budget_ms.items():
+        actual = measured[stage]
+        status = &quot;OK&quot; if actual &lt;= limit else &quot;OVER&quot;
+        if status == &quot;OVER&quot;:
+            violations.append(stage)
+        print(f&quot;  {stage:10s}: {actual:5.1f}ms / {limit}ms budget -&gt; {status}&quot;)
+    total_actual = sum(measured.values())
+    print(f&quot;  합계: {total_actual:.1f}ms / {total_budget_ms}ms&quot;)
+    if violations:
+        print(f&quot;  조치: 배포 차단 (초과 구간: {', '.join(violations)})&quot;)
+    else:
+        print(&quot;  조치: 배포 승인&quot;)
+    print()
+
+evaluate(&quot;정상 배포&quot;, measured_ok)
+evaluate(&quot;회귀가 있는 배포&quot;, measured_regressed)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-51.py">docs/code/algorithms/algorithms-51.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick one of the services you currently work on, write a one-page budget covering workload, load, per-segment latency budget, measurement method, and action-on-overrun, then fill in actual measurements next to each line to find current violations.</p>
+      <h2>Practical Connection</h2>
+      <p>Breaking Verex's path from order submission to fill reflected — API, matching, chain submission, confirmation wait — into per-segment budgets lets you immediately tell, when perceived latency worsens, whether it's chain congestion or a regression in your own service.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>[복습] 성능 예산 문서 쓰기 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 51 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
 
@@ -115,7 +189,42 @@
       <p>성능 예산 문서는 시스템이 지켜야 할 성능 목표를 숫자와 조건으로 명시해 설계·리뷰·배포 판단의 기준으로 삼는 문서다. 최소한 대상 워크로드(요청 종류와 비율), 부하 수준(초당 요청 수, 동시성), 지표와 목표치(평균이 아니라 p95·p99 같은 꼬리 지연, 처리량, 자원 사용량), 측정 방법과 환경이 들어가야 재현 가능한 기준이 된다. 예산은 전체 목표를 구간별로 쪼개 배분할 때 실효성이 커지는데, 예를 들어 종단 지연 목표를 네트워크·큐 대기·핸들러·DB 호출로 나누어 각 구간의 상한을 정하면 어느 구간이 예산을 초과했는지 바로 드러난다. 목표치는 근거 있게 정해야 하며, 사용자 체감이나 상류 시스템의 타임아웃처럼 외부 제약에서 역산하는 것이 임의로 정한 숫자보다 방어 가능하다. 마지막으로 예산 초과 시의 행동(배포 차단, 롤백, 예외 승인 절차)까지 적어야 문서가 실제로 구속력을 갖는다.</p>
       <p>성능은 목표가 문서화되어 있지 않으면 '느리다/빠르다'는 주관적 논쟁이 되고, 회귀가 누적된 뒤에야 발견되어 원인 추적이 어려워진다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># [복습] 성능 예산 문서 쓰기 — 종단 지연 목표를 구간별(네트워크/큐/핸들러/DB)로 쪼개
+# 각 구간 상한을 정하고, 실측값과 비교해 어느 구간이 예산을 초과했는지 즉시 드러낸다.
+
+budget_ms = {
+    &quot;network&quot;: 20,
+    &quot;queue_wait&quot;: 30,
+    &quot;handler&quot;: 40,
+    &quot;db_call&quot;: 50,
+}
+total_budget_ms = sum(budget_ms.values())
+
+# 실측치 두 세트: 정상 배포 vs 회귀가 있는 배포
+measured_ok = {&quot;network&quot;: 18, &quot;queue_wait&quot;: 25, &quot;handler&quot;: 35, &quot;db_call&quot;: 45}
+measured_regressed = {&quot;network&quot;: 19, &quot;queue_wait&quot;: 28, &quot;handler&quot;: 38, &quot;db_call&quot;: 95}
+
+def evaluate(name, measured):
+    print(f&quot;--- {name} (총 예산 {total_budget_ms}ms) ---&quot;)
+    violations = []
+    for stage, limit in budget_ms.items():
+        actual = measured[stage]
+        status = &quot;OK&quot; if actual &lt;= limit else &quot;OVER&quot;
+        if status == &quot;OVER&quot;:
+            violations.append(stage)
+        print(f&quot;  {stage:10s}: {actual:5.1f}ms / {limit}ms budget -&gt; {status}&quot;)
+    total_actual = sum(measured.values())
+    print(f&quot;  합계: {total_actual:.1f}ms / {total_budget_ms}ms&quot;)
+    if violations:
+        print(f&quot;  조치: 배포 차단 (초과 구간: {', '.join(violations)})&quot;)
+    else:
+        print(&quot;  조치: 배포 승인&quot;)
+    print()
+
+evaluate(&quot;정상 배포&quot;, measured_ok)
+evaluate(&quot;회귀가 있는 배포&quot;, measured_regressed)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-51.py">docs/code/algorithms/algorithms-51.py</a></p>
       <h2>연습</h2>
       <p>지금 다루는 서비스 중 하나를 골라 워크로드·부하·구간별 지연 예산·측정 방법·초과 시 조치를 한 페이지로 적고, 실제 측정값을 옆 칸에 채워 현재 위반 항목을 찾아보라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenZeppelin Relayer &amp; Monitor — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; OpenZeppelin Relayer &amp; Monitor</p>
+  <article>
+      <h1><span class="topic-no">2</span>OpenZeppelin Relayer &amp; Monitor <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></h1>
+      <p class="lead">The managed service shut down; the tools were opened. Self-hosted transaction plumbing and on-chain alerting.</p>
+      <p class="meta">A thought experiment against verex's ChainJob worker: what a Relayer deletes, and what has to stay.</p>
+      <h2>Why</h2>
+      <p>Two questions this catalogue has not asked yet. First, the operational one: every agent demo here hand-rolls the dullest and most failure-prone part of on-chain work — nonce management, gas strategy, retries — and OpenZeppelin Relayer is that exact layer, extracted and hardened. Second, and larger: Defender was a managed SaaS that stopped taking sign-ups in June 2025 and shut down on 2026-07-01, handing its functionality to open source on the way out. That makes it a case study in a criterion missing from most infrastructure decisions — not &quot;what does it do&quot; or &quot;what does it cost&quot;, but &quot;what remains when the vendor leaves&quot;. Defender left well: a year's notice, a migration guide, a production-ready open-source successor. Most vendors will not.</p>
+      <h2>How it works</h2>
+      <p>Relayer keeps the plumbing: it accepts a transaction over a REST API, signs it, and owns nonce sequencing, gas pricing, and retry — EVM multi-chain plus Solana and Stellar, with keys in HashiCorp Vault or AWS KMS rather than an env var. Monitor watches the other direction: declarative JSON rules over events, function calls, and transaction patterns, firing Slack or webhook alerts. The concrete scenario is verex, which already wrote this by hand. Its ChainJob worker executes strictly serially, and its own header explains why: “all txs are sent by the operator or a server-held demo key, so a single lane doubles as nonce management.” Around that sit exponential backoff (5s → 25s → 125s), an atomic PENDING→RUNNING claim, and stuck-job recovery after two minutes — a small relayer, built to make settlement work at all. Adopting the real one deletes the nonce lane, the gas strategy, and the retry ladder, but not onFailed: reversing DB fills after a terminal failure is business logic wearing plumbing's clothes, and no relayer can know that a failed SETTLE_MATCH means two users' balances must be un-credited. The interesting question is the third one. The single lane was serializing business logic as a side effect, not just nonces; widen it and you find out whether that mattered — and this codebase has already produced one bug of exactly that family, a ladder sized from a pre-settlement balanceOf. Monitor addresses the mirror image: that bug was invisible off-chain until it produced a wrong quote, while on-chain it was observable the entire time.</p>
+      <p class="meta">3 diagram(s) on the live page.</p>
+      <h2>Related code</h2>
+      <pre><code>&quot;&quot;&quot;OpenZeppelin Relayer PoC -- nonce-managed transaction queue.
+Illustrates the core mechanism: the relayer assigns strictly increasing nonces, retries
+failed sends with backoff, and never re-uses a nonce even across retries/failures.
+&quot;&quot;&quot;
+
+from dataclasses import dataclass, field
+
+
+@dataclass
+class TxRequest:
+    id: str
+    payload: str
+    should_fail_times: int = 0  # simulate transient failures before success
+
+
+@dataclass
+class Relayer:
+    next_nonce: int = 0
+    sent: list[tuple[int, str]] = field(default_factory=list)  # (nonce, tx id)
+
+    def submit(self, req: TxRequest) -&gt; None:
+        nonce = self.next_nonce
+        self.next_nonce += 1  # nonce is consumed here, permanently -- never reused
+        attempts = 0
+        backoff = [5, 25, 125]
+        while True:
+            attempts += 1
+            ok = attempts &gt; req.should_fail_times
+            print(f&quot;  nonce={nonce} tx={req.id} attempt={attempts} -&gt; {'CONFIRMED' if ok else 'fails, retry'}&quot;)
+            if ok:
+                self.sent.append((nonce, req.id))
+                return
+            if attempts &gt; len(backoff):
+                print(f&quot;  nonce={nonce} tx={req.id} -&gt; exhausted retries, giving up (nonce still not reused)&quot;)
+                self.sent.append((nonce, f&quot;{req.id} (FAILED)&quot;))
+                return
+            print(f&quot;    backing off {backoff[attempts - 1]}s before retry&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    relayer = Relayer()
+    queue = [
+        TxRequest(&quot;settle-match-1&quot;, &quot;transfer(A,B,10)&quot;, should_fail_times=0),
+        TxRequest(&quot;settle-match-2&quot;, &quot;transfer(C,D,5)&quot;, should_fail_times=2),
+        TxRequest(&quot;settle-match-3&quot;, &quot;transfer(E,F,7)&quot;, should_fail_times=0),
+    ]
+
+    print(&quot;processing queue, one lane, strictly increasing nonces:&quot;)
+    for req in queue:
+        relayer.submit(req)
+
+    print(&quot;\nfinal nonce -&gt; tx mapping (no nonce ever reused):&quot;)
+    for nonce, tx_id in relayer.sent:
+        print(f&quot;  nonce {nonce}: {tx_id}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/pocs/oz-relayer.py">docs/code/pocs/oz-relayer.py</a></p>
+      <p><a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">2</span>OpenZeppelin Relayer · Monitor <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></h1>
+      <p class="lead">서비스는 죽고, 도구는 열렸다 — 셀프호스팅 트랜잭션 배관과 온체인 감시.</p>
+      <p class="meta">verex의 ChainJob 워커를 대상으로 한 사고 실험 — Relayer가 지우는 것과, 남아야 하는 것.</p>
+      <h2>왜</h2>
+      <p>이 카탈로그가 아직 묻지 않은 질문 둘. 첫째는 운영의 문제입니다 — 여기 있는 모든 에이전트 데모가 온체인 작업에서 가장 지루하고 가장 자주 터지는 부분(논스 관리, 가스 전략, 재시도)을 손으로 다시 짜고 있고, OpenZeppelin Relayer는 정확히 그 층을 뽑아내 굳혀놓은 것입니다. 둘째는 더 큰 문제입니다: Defender는 2025년 6월 신규 가입을 닫고 2026-07-01에 완전히 종료된 관리형 SaaS였고, 나가면서 기능을 오픈소스로 넘겼습니다. 그래서 이 항목은 대부분의 인프라 결정에 빠져 있는 기준 하나에 대한 사례 연구가 됩니다 — &quot;무엇을 하는가&quot;도 &quot;얼마인가&quot;도 아닌, **&quot;벤더가 떠날 때 무엇이 남는가&quot;**. Defender는 잘 떠났습니다: 1년 예고, 마이그레이션 가이드, 프로덕션 레디 오픈소스 후계자. 대부분의 벤더는 그렇게 떠나지 않습니다.</p>
+      <h2>동작 방식</h2>
+      <p>Relayer는 배관을 맡습니다: REST API로 트랜잭션을 받아 서명하고, 논스 순서·가스 가격·재시도를 직접 관리합니다 — EVM 멀티체인에 Solana·Stellar까지, 키는 env 변수가 아니라 HashiCorp Vault나 AWS KMS에 둡니다. Monitor는 반대 방향을 봅니다: 이벤트·함수 호출·트랜잭션 패턴을 선언적 JSON 룰로 감시하고 Slack·웹훅으로 알립니다. 구체적인 시나리오는 verex입니다 — 이미 이걸 손으로 짜 놨거든요. ChainJob 워커는 엄격히 직렬로 실행되고, 그 이유가 파일 헤더에 그대로 적혀 있습니다: &quot;모든 tx를 오퍼레이터나 서버 보관 키가 보내므로, 단일 레인이 곧 논스 관리다.&quot; 그 주위에 지수 백오프(5s → 25s → 125s), 원자적 PENDING→RUNNING 클레임, 2분 뒤 멈춘 잡 복구가 붙어 있습니다 — 정산을 굴러가게 만들려고 지은 작은 릴레이어입니다. 진짜 Relayer를 도입하면 논스 레인·가스 전략·재시도 사다리는 지워지지만, onFailed는 아닙니다: 종료 실패 후 DB 체결을 되감는 건 배관의 옷을 입은 비즈니스 로직이고, 실패한 SETTLE_MATCH가 곧 두 사용자의 잔고를 취소해야 한다는 뜻임을 아는 릴레이어는 없습니다. 흥미로운 건 세 번째 질문입니다. 단일 레인은 논스만이 아니라 **비즈니스 로직까지 부수적으로 직렬화**하고 있었고, 레인을 넓히면 그게 중요했는지 아닌지가 드러납니다 — 그리고 이 코드베이스는 이미 정확히 그 계열의 버그를 하나 냈습니다(정산 전 balanceOf로 사다리를 산정한 건). Monitor는 그 거울상을 맡습니다: 그 버그는 잘못된 호가를 낼 때까지 오프체인에서 보이지 않았지만, 온체인에서는 처음부터 관측 가능했습니다.</p>
+      <p class="meta">3 diagram(s) on the live page.</p>
+      <h2>관련 코드</h2>
+      <pre><code>&quot;&quot;&quot;OpenZeppelin Relayer PoC -- nonce-managed transaction queue.
+Illustrates the core mechanism: the relayer assigns strictly increasing nonces, retries
+failed sends with backoff, and never re-uses a nonce even across retries/failures.
+&quot;&quot;&quot;
+
+from dataclasses import dataclass, field
+
+
+@dataclass
+class TxRequest:
+    id: str
+    payload: str
+    should_fail_times: int = 0  # simulate transient failures before success
+
+
+@dataclass
+class Relayer:
+    next_nonce: int = 0
+    sent: list[tuple[int, str]] = field(default_factory=list)  # (nonce, tx id)
+
+    def submit(self, req: TxRequest) -&gt; None:
+        nonce = self.next_nonce
+        self.next_nonce += 1  # nonce is consumed here, permanently -- never reused
+        attempts = 0
+        backoff = [5, 25, 125]
+        while True:
+            attempts += 1
+            ok = attempts &gt; req.should_fail_times
+            print(f&quot;  nonce={nonce} tx={req.id} attempt={attempts} -&gt; {'CONFIRMED' if ok else 'fails, retry'}&quot;)
+            if ok:
+                self.sent.append((nonce, req.id))
+                return
+            if attempts &gt; len(backoff):
+                print(f&quot;  nonce={nonce} tx={req.id} -&gt; exhausted retries, giving up (nonce still not reused)&quot;)
+                self.sent.append((nonce, f&quot;{req.id} (FAILED)&quot;))
+                return
+            print(f&quot;    backing off {backoff[attempts - 1]}s before retry&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    relayer = Relayer()
+    queue = [
+        TxRequest(&quot;settle-match-1&quot;, &quot;transfer(A,B,10)&quot;, should_fail_times=0),
+        TxRequest(&quot;settle-match-2&quot;, &quot;transfer(C,D,5)&quot;, should_fail_times=2),
+        TxRequest(&quot;settle-match-3&quot;, &quot;transfer(E,F,7)&quot;, should_fail_times=0),
+    ]
+
+    print(&quot;processing queue, one lane, strictly increasing nonces:&quot;)
+    for req in queue:
+        relayer.submit(req)
+
+    print(&quot;\nfinal nonce -&gt; tx mapping (no nonce ever reused):&quot;)
+    for nonce, tx_id in relayer.sent:
+        print(f&quot;  nonce {nonce}: {tx_id}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/pocs/oz-relayer.py">docs/code/pocs/oz-relayer.py</a></p>
+      <p><a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-agent.html">&larr; 1. Autonomous payment agent</a><a href="pocs-dvt.html">3. DVT in the protocol &rarr;</a></div>
+</div>
+</body>
+</html>

@@ -1,3 +1,148 @@
+# Amortized Analysis via the Potential Method — Prepaying for the Expensive Operation
+
+*Developer Knowledge 100, Day 1/100 · 2026-08-12 · Section A, Advanced Algorithms*
+
+Inserting into a dynamic array is O(1) most of the time, but every so often the whole
+array gets copied and that one insert costs O(n). We want to say "O(1) on average," but
+we need to prove that "average" isn't just wishful thinking. Amortized analysis is that
+proof, and the potential method is its most mechanical tool.
+
+> **One-line summary** — Charge a little extra on cheap operations and bank it; when an
+> expensive operation comes along, pay for it out of the bank. The whole proof reduces to
+> showing the balance never goes negative.
+
+## Three techniques, and what separates them
+
+| Technique | How it works | When to use it |
+|---|---|---|
+| Aggregate | Sum the total cost of n operations directly, divide by n | Simplest when there's only one kind of operation |
+| Accounting | Charge each operation an arbitrary "fee" and show the balance never goes negative | When there are several kinds of operations |
+| **Potential** | Summarize the data structure's state as a single real number Φ and work with its change | When you don't need to track *where* the banked cost lives |
+
+The accounting method has to follow the banked cost around — "this element is carrying
+its own future copy cost." The potential method collapses that into a single state
+function, which is why the proof gets shorter. All three give the same conclusion; they
+just express it differently.
+
+## Definition
+
+For the state $D_i$ after the i-th operation, fix a potential function $\Phi(D_i) \ge 0$
+with $\Phi(D_0) = 0$. The **amortized cost** of the i-th operation is its actual cost plus
+the change in potential.
+
+```
+ĉ_i = c_i + Φ(D_i) − Φ(D_{i−1})
+```
+
+Summing the amortized cost over n operations telescopes the middle terms away:
+
+```
+Σ ĉ_i = Σ c_i + Φ(D_n) − Φ(D_0) = Σ c_i + Φ(D_n) ≥ Σ c_i
+```
+
+In other words, **if Φ ≥ 0 and Φ(D_0) = 0, the sum of amortized costs is an upper bound on
+the sum of actual costs**. So showing "ĉ_i ≤ O(1) for every i" is enough to conclude the
+total cost is O(n). All the creativity in the proof goes into picking Φ.
+
+## Example 1 — why doubling a dynamic array is O(1) amortized
+
+When the array fills up, double its capacity and copy everything over. With `num`
+elements and `size` capacity, pick the potential
+
+```
+Φ = 2·num − size
+```
+
+This is "a bank balance that grows as the remaining headroom before the array fills
+shrinks." Right after a doubling, num = size/2, so Φ = 0; when the array is full,
+num = size, so Φ = num.
+
+- **Insert without a copy**: c = 1, num goes up by 1 and size stays the same → ΔΦ = 2.
+  `ĉ = 1 + 2 = 3`
+- **Insert that triggers a copy**: just before, num = size = k. Cost including the copy is
+  c = k + 1. The new state has num = k+1, size = 2k, so Φ_new = 2(k+1) − 2k = 2 and
+  Φ_old = 2k − k = k.
+  `ĉ = (k + 1) + (2 − k) = 3`
+
+Both cases give ĉ = 3 = O(1). The k in the expensive insert's cost is exactly cancelled by
+the −k in ΔΦ — meaning the k preceding cheap inserts had already banked that cost. **A
+single worst-case insert is still O(n), but the sum over n inserts is O(n)** — and telling
+those two apart is the entire point of this analysis.
+
+```python
+# See for yourself that the bank balance never actually goes negative
+num, size, total = 0, 1, 0
+phi = lambda: 2 * num - size
+for i in range(1, 33):
+    before = phi()
+    if num == size:                 # full → double capacity + copy
+        cost = num + 1; size *= 2
+    else:
+        cost = 1
+    num += 1
+    amortized = cost + phi() - before
+    total += cost
+    assert phi() >= 0 and amortized <= 3
+    print(f"i={i:2} cost={cost:2} Φ={phi():2} ĉ={amortized} total={total}")
+```
+
+## Example 2 — why 2x works, but so would 1.5x or 3x
+
+Generalize the growth factor to r > 1: Φ takes the form
+(r/(r−1))·num − (1/(r−1))·size, and the amortized cost becomes a constant around
+r/(r−1) + 1. The closer r is to 1, the bigger that constant (copies happen more often);
+the larger r is, the more memory gets wasted. **The constant is set by r, but the fact
+that it's O(1) holds for any r > 1** — which is why 1.5x (friendlier to memory reuse) and
+2x (simpler arithmetic) both show up in practice.
+
+Conversely, if growth is **additive** (always +c), total cost becomes Θ(n²) and the
+amortized argument breaks down. Geometric growth is the condition that makes this whole
+argument work.
+
+## A trap: halving the shrink threshold breaks it
+
+If the policy is "double when full, halve when at most half full," alternating insert and
+delete near the boundary triggers a copy on every single operation, and O(n) repeats.
+The standard fix is **halve only when at most a quarter full**, and with that change,
+defining Φ separately for the num ≥ size/2 region and the region below it proves O(1)
+again. This is where the potential method earns its keep in practice — it lets you decide
+whether a policy change is safe **by calculation, not by intuition**.
+
+## Practical connection — Verex
+
+The EVM is designed in exactly the opposite direction. Gas charges the **worst-case cost
+of every operation up front** — if amortization were allowed, one transaction could spend
+down a neighboring transaction's banked balance, and that would break DoS resistance. So
+pushing to a dynamic array in Solidity doesn't get amortized O(1); it costs the full
+storage-write price every single time.
+
+Amortized thinking actually gets used off-chain. Verex's ChainJob worker's exponential
+backoff (5s → 25s → 125s) admits the same style of argument — because the retry interval
+grows geometrically, the total number of retries stays bounded logarithmically even
+through a run of consecutive failures. Indexer batch sizes, order-book snapshot
+intervals — any design that "occasionally does something expensive in bulk" is a
+candidate for this analysis, and there's one test: **does the frequency of the expensive
+thing shrink in inverse proportion to its cost?**
+
+## Exercises
+
+1. In the Python code above, change the growth factor to 1.5x and to 3x, measure how the
+   upper bound on ĉ changes, and compare it against r/(r−1) + 1.
+2. Implement the "halve when at most half full" policy, reproduce the Θ(n²) blowup when
+   alternating insert and delete, and confirm switching to the 1/4 policy makes it linear
+   again.
+3. For a stack's multipop operation (popping k elements at once), set Φ = stack size and
+   prove by hand that push, pop, and multipop are all amortized O(1).
+
+## Related code
+
+[docs/code/algorithms/algorithms-1.py](../code/algorithms/algorithms-1.py) — the Python
+code above, pulled out into a runnable file.
+
+---
+
+# 한국어
+
 # 포텐셜 함수로 하는 분할상환 분석 — 비싼 연산의 값을 미리 치러 두기
 
 *개발자 지식 100 Day 1/100 · 2026-08-12 · A 고급 알고리즘 구간*
@@ -119,3 +264,7 @@ EVM은 정확히 반대 방향으로 설계돼 있다. 가스는 **연산마다 
    Θ(n²)로 튀는 것을 재현하고, 1/4 정책으로 바꿔 다시 선형이 되는지 확인할 것.
 3. 스택의 multipop(한 번에 k개 pop) 연산에 Φ = 스택 크기를 잡고, push·pop·multipop 세
    연산 모두 분할상환 O(1)임을 손으로 증명해 볼 것.
+
+## 관련 코드
+
+[docs/code/algorithms/algorithms-1.py](../code/algorithms/algorithms-1.py) — 위 파이썬 코드를 그대로 실행 가능한 파일로 뺀 것.

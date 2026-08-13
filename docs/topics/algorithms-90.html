@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 90 — 유한체·다항식 산술과 NTT 구현 관점</title>
+<title>Day 90 — Finite Fields, Polynomial Arithmetic, and an Implementer's View of NTT</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,90 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 90</p>
   <article>
+      <h1>Finite Fields, Polynomial Arithmetic, and an Implementer's View of NTT <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 90 / 100 &middot; F. Cryptography &amp; ZK (Day 82-96)</p>
+      <h2>Concept</h2>
+      <p>A finite field is an algebraic structure with finitely many elements where addition, multiplication, and division by anything nonzero are all defined; cryptography and ZK mostly work over a prime field F_p for some large prime p. Polynomial multiplication over this field is O(n^2) by definition, but if you choose p so that its multiplicative group contains a subgroup of size a power of two — that is, a root of unity of suitable order — you can perform an FFT-like transform over the integers with zero error, and that's the NTT. Because NTT has no floating-point rounding error and its results land exactly on field elements, it suits proof systems; multiplication turns into an elementwise product in the evaluation domain, bringing the whole operation to O(n log n). In implementation, the key optimizations are cutting modular-multiplication cost with Montgomery or Barrett reduction, and applying lazy reduction inside the butterfly operations to reduce the number of modulo operations.</p>
+      <p>A large share of ZK proof-generation time comes from NTT and polynomial arithmetic, so estimating or tuning proving cost requires understanding this layer.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 유한체·다항식 산술과 NTT — 소수체 F_p 위에서 단위근을 이용한 NTT로 다항식 곱셈을
+# O(n log n) 에 수행하고, 결과가 나이브 O(n^2) 합성곱과 정확히 일치함을 검증한다 (교육용).
+
+MOD = 998244353          # NTT 친화 소수: MOD - 1 이 2의 큰 거듭제곱을 인수로 가짐
+ROOT = 3                  # MOD 의 원시근
+
+def ntt(a, invert):
+    n = len(a)
+    j = 0
+    for i in range(1, n):    # bit-reversal permutation
+        bit = n &gt;&gt; 1
+        while j &amp; bit:
+            j ^= bit
+            bit &gt;&gt;= 1
+        j ^= bit
+        if i &lt; j:
+            a[i], a[j] = a[j], a[i]
+
+    length = 2
+    while length &lt;= n:
+        w = pow(ROOT, (MOD - 1) // length, MOD)
+        if invert:
+            w = pow(w, MOD - 2, MOD)  # 페르마 소정리로 역원 계산
+        for i in range(0, n, length):
+            wn = 1
+            for k in range(length // 2):
+                u = a[i + k]
+                v = a[i + k + length // 2] * wn % MOD
+                a[i + k] = (u + v) % MOD
+                a[i + k + length // 2] = (u - v) % MOD
+                wn = wn * w % MOD
+        length &lt;&lt;= 1
+
+    if invert:
+        n_inv = pow(n, MOD - 2, MOD)
+        for i in range(n):
+            a[i] = a[i] * n_inv % MOD
+    return a
+
+def poly_multiply_ntt(a, b):
+    n = 1
+    while n &lt; len(a) + len(b):
+        n &lt;&lt;= 1
+    fa = a + [0] * (n - len(a))
+    fb = b + [0] * (n - len(b))
+    ntt(fa, False)
+    ntt(fb, False)
+    fc = [(x * y) % MOD for x, y in zip(fa, fb)]
+    return ntt(fc, True)[: len(a) + len(b) - 1]
+
+def poly_multiply_naive(a, b):
+    result = [0] * (len(a) + len(b) - 1)
+    for i, x in enumerate(a):
+        for j, y in enumerate(b):
+            result[i + j] = (result[i + j] + x * y) % MOD
+    return result
+
+poly_a = [1, 2, 3, 4]      # 1 + 2x + 3x^2 + 4x^3
+poly_b = [5, 6, 7]          # 5 + 6x + 7x^2
+
+ntt_result = poly_multiply_ntt(poly_a[:], poly_b[:])
+naive_result = poly_multiply_naive(poly_a, poly_b)
+
+print(&quot;F_p with p =&quot;, MOD, &quot;| primitive root =&quot;, ROOT)
+print(&quot;NTT-based product:  &quot;, ntt_result)
+print(&quot;naive O(n^2) product:&quot;, naive_result)
+print(&quot;NTT matches naive convolution exactly:&quot;, ntt_result == naive_result)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-90.py">docs/code/algorithms/algorithms-90.py</a></p>
+      <h2>Exercise</h2>
+      <p>Pick a prime suited for NTT, implement forward and inverse NTT over F_p directly, and cross-check polynomial multiplication results against naive O(n^2) multiplication using random inputs.</p>
+      <h2>Practical Connection</h2>
+      <p>When evaluating a rollup or ZK-based verification adoption, proving time and cost estimates ultimately come from circuit size and the NTT cost that scales with it, and that, together with on-chain verification gas, drives the architecture choice.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>유한체·다항식 산술과 NTT 구현 관점 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 90 / 100 &middot; F. 암호학·ZK (Day 82–96)</p>
 
@@ -115,7 +222,75 @@
       <p>유한체는 원소가 유한개이면서 덧셈과 곱셈, 그리고 0을 제외한 나눗셈이 모두 정의되는 대수 구조이고, 암호와 ZK에서는 주로 큰 소수 p에 대한 소수체 F_p를 쓴다. 이 위의 다항식 곱셈은 정의대로 하면 O(n^2)이지만, 곱셈군 안에 크기가 2의 거듭제곱인 부분군(즉 적당한 차수의 단위근)이 존재하도록 소수를 고르면 FFT와 같은 구조의 변환을 정수 위에서 오차 없이 수행할 수 있으며 이것이 NTT다. NTT는 부동소수점 반올림 오차가 없고 결과가 체 원소로 정확히 떨어지므로 증명 시스템에 적합하고, 곱셈은 평가 도메인에서의 원소별 곱으로 바뀌어 전체가 O(n log n)이 된다. 구현에서는 Montgomery나 Barrett 축약으로 모듈러 곱 비용을 줄이고 버터플라이 연산에서 지연 축약을 적용해 나머지 연산 횟수를 줄이는 것이 핵심 최적화다.</p>
       <p>ZK 증명 생성 시간의 큰 몫이 NTT와 다항식 연산에서 나오므로, 증명 비용을 추정하거나 튜닝하려면 이 계층을 이해해야 한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 유한체·다항식 산술과 NTT — 소수체 F_p 위에서 단위근을 이용한 NTT로 다항식 곱셈을
+# O(n log n) 에 수행하고, 결과가 나이브 O(n^2) 합성곱과 정확히 일치함을 검증한다 (교육용).
+
+MOD = 998244353          # NTT 친화 소수: MOD - 1 이 2의 큰 거듭제곱을 인수로 가짐
+ROOT = 3                  # MOD 의 원시근
+
+def ntt(a, invert):
+    n = len(a)
+    j = 0
+    for i in range(1, n):    # bit-reversal permutation
+        bit = n &gt;&gt; 1
+        while j &amp; bit:
+            j ^= bit
+            bit &gt;&gt;= 1
+        j ^= bit
+        if i &lt; j:
+            a[i], a[j] = a[j], a[i]
+
+    length = 2
+    while length &lt;= n:
+        w = pow(ROOT, (MOD - 1) // length, MOD)
+        if invert:
+            w = pow(w, MOD - 2, MOD)  # 페르마 소정리로 역원 계산
+        for i in range(0, n, length):
+            wn = 1
+            for k in range(length // 2):
+                u = a[i + k]
+                v = a[i + k + length // 2] * wn % MOD
+                a[i + k] = (u + v) % MOD
+                a[i + k + length // 2] = (u - v) % MOD
+                wn = wn * w % MOD
+        length &lt;&lt;= 1
+
+    if invert:
+        n_inv = pow(n, MOD - 2, MOD)
+        for i in range(n):
+            a[i] = a[i] * n_inv % MOD
+    return a
+
+def poly_multiply_ntt(a, b):
+    n = 1
+    while n &lt; len(a) + len(b):
+        n &lt;&lt;= 1
+    fa = a + [0] * (n - len(a))
+    fb = b + [0] * (n - len(b))
+    ntt(fa, False)
+    ntt(fb, False)
+    fc = [(x * y) % MOD for x, y in zip(fa, fb)]
+    return ntt(fc, True)[: len(a) + len(b) - 1]
+
+def poly_multiply_naive(a, b):
+    result = [0] * (len(a) + len(b) - 1)
+    for i, x in enumerate(a):
+        for j, y in enumerate(b):
+            result[i + j] = (result[i + j] + x * y) % MOD
+    return result
+
+poly_a = [1, 2, 3, 4]      # 1 + 2x + 3x^2 + 4x^3
+poly_b = [5, 6, 7]          # 5 + 6x + 7x^2
+
+ntt_result = poly_multiply_ntt(poly_a[:], poly_b[:])
+naive_result = poly_multiply_naive(poly_a, poly_b)
+
+print(&quot;F_p with p =&quot;, MOD, &quot;| primitive root =&quot;, ROOT)
+print(&quot;NTT-based product:  &quot;, ntt_result)
+print(&quot;naive O(n^2) product:&quot;, naive_result)
+print(&quot;NTT matches naive convolution exactly:&quot;, ntt_result == naive_result)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-90.py">docs/code/algorithms/algorithms-90.py</a></p>
       <h2>연습</h2>
       <p>NTT에 적합한 소수를 하나 골라 F_p 위의 NTT와 역 NTT를 직접 구현하고, 다항식 곱셈 결과를 naive O(n^2) 곱셈 결과와 무작위 입력으로 대조 검증하라.</p>
       <h2>실무 · Verex 연결</h2>

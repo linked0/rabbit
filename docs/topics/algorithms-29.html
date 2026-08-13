@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 29 — GC 심화</title>
+<title>Day 29 — Advanced Garbage Collection</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,79 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 29</p>
   <article>
+      <h1>Advanced Garbage Collection <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 29 / 100 &middot; B. Compilers, Runtimes &amp; VMs (Day 20-35)</p>
+      <h2>Concept</h2>
+      <p>Modern GC avoids &quot;stop and scan everything&quot; by breaking the work into small pieces (incremental) or overlapping it with the application threads (concurrent). Concurrent marking creates the problem that the object graph changes while marking is in progress, so a write barrier records changes to maintain the tri-color invariant (a black object never points directly to a white object). Region-based GC divides the heap into uniformly sized regions and only processes the regions with high reclamation efficiency, decoupling total heap size from pause time. ZGC uses colored pointers and load barriers to perform even relocation (compaction) concurrently, while Go's GC is a non-moving, non-generational concurrent mark-sweep collector that paces its marking rate to hit a GOGC target. The common cost is throughput and memory usage — the more you cut pause time, the more barrier overhead and spare heap you need.</p>
+      <p>On a latency-sensitive server, GC is a factor that can wreck p99 all by itself no matter how fast the code is, and not understanding what the tuning knobs mean traps you in the blunt remedy of just growing the heap.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># GC 심화 — 삼색(white/gray/black) 증분 마크 앤 스윕을 구현하고, 쓰기 배리어로 삼색 불변식을 지킨다.
+
+class Obj:
+    def __init__(self, name):
+        self.name = name
+        self.refs = []
+        self.color = &quot;white&quot;
+
+class IncrementalGC:
+    def __init__(self, roots):
+        self.gray = list(roots)
+        for r in roots:
+            r.color = &quot;gray&quot;
+
+    def write_barrier(self, holder, new_ref):
+        # 검은 객체가 흰 객체를 새로 가리키면, 흰 객체를 회색으로 되돌려 재방문시킨다
+        holder.refs.append(new_ref)
+        if holder.color == &quot;black&quot; and new_ref.color == &quot;white&quot;:
+            new_ref.color = &quot;gray&quot;
+            self.gray.append(new_ref)
+
+    def mark_step(self, budget=1):
+        # 한 번에 budget개만 처리 — &quot;멈추고 전부&quot;가 아니라 조금씩 진행(증분 마킹)
+        steps = 0
+        while self.gray and steps &lt; budget:
+            obj = self.gray.pop()
+            for r in obj.refs:
+                if r.color == &quot;white&quot;:
+                    r.color = &quot;gray&quot;
+                    self.gray.append(r)
+            obj.color = &quot;black&quot;
+            steps += 1
+
+    def sweep(self, all_objs):
+        return [o for o in all_objs if o.color != &quot;white&quot;]  # white == 도달 불가 -&gt; 회수 대상
+
+a, b, c, d = Obj(&quot;a&quot;), Obj(&quot;b&quot;), Obj(&quot;c&quot;), Obj(&quot;d&quot;)
+a.refs = [b]
+b.refs = [c]
+all_objs = [a, b, c, d]     # d는 아무도 참조하지 않는 쓰레기
+
+gc = IncrementalGC(roots=[a])
+while gc.gray:
+    gc.mark_step(budget=1)  # 애플리케이션과 번갈아 실행된다고 가정 (증분 마킹 흉내)
+
+# 마킹이 끝난 뒤, 이미 black인 a가 새 객체 e를 가리키게 되는 상황을 시뮬레이션
+e = Obj(&quot;e&quot;)
+all_objs.append(e)
+gc.write_barrier(a, e)      # 쓰기 배리어가 e를 gray로 되돌려 재방문 대상에 넣어야 함
+while gc.gray:
+    gc.mark_step(budget=1)
+
+survivors = gc.sweep(all_objs)
+print(&quot;생존(black):&quot;, [o.name for o in survivors])
+print(&quot;회수 대상(white, 도달 불가):&quot;, [o.name for o in all_objs if o.color == &quot;white&quot;])
+assert d.color == &quot;white&quot; and e.color == &quot;black&quot;
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-29.py">docs/code/algorithms/algorithms-29.py</a></p>
+      <h2>Exercise</h2>
+      <p>Turn on GODEBUG=gctrace=1 for a Go service and vary GOGC and the memory limit while recording how the GC cycle count, mark-assist volume, and p99 latency change.</p>
+      <h2>Practical Connection</h2>
+      <p>In allocation-heavy loops like block processing or order matching, reusing objects and cutting allocations pays off more than GC tuning does, and making that call requires understanding what the GC actually treats as cost.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>GC 심화 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 29 / 100 &middot; B. 컴파일러·런타임·VM (Day 20–35)</p>
       <p class="lead">증분·병행·리전 기반(ZGC·Go)</p>
@@ -115,7 +211,64 @@
       <p>현대 GC는 &quot;멈추고 전부 훑기&quot;를 피하기 위해 작업을 잘게 쪼개거나(증분) 애플리케이션 스레드와 겹쳐서(병행) 수행한다. 병행 마킹은 마킹 중에 객체 그래프가 변하는 문제를 낳으므로, 쓰기 배리어로 변경을 기록해 삼색 불변식(검은 객체가 흰 객체를 직접 가리키지 않는다)을 유지한다. 리전 기반 GC는 힙을 균일한 크기의 리전으로 나누고 회수 효율이 높은 리전만 골라 처리해, 전체 힙 크기와 정지 시간의 결합을 끊는다. ZGC는 컬러드 포인터와 로드 배리어를 써서 재배치(compaction)까지 병행으로 수행하고, Go의 GC는 비이동·비세대형 병행 마크스윕이며 GOGC 목표에 맞춰 마킹 속도를 조절하는 페이싱을 쓴다. 공통 대가는 처리량과 메모리 사용량으로, 정지 시간을 줄인 만큼 배리어 오버헤드와 여유 힙이 필요하다.</p>
       <p>지연시간이 중요한 서버에서 GC는 코드가 아무리 빨라도 p99를 혼자 망칠 수 있는 요인이고, 튜닝 손잡이의 의미를 모르면 힙만 키우는 대증요법에 갇힌다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># GC 심화 — 삼색(white/gray/black) 증분 마크 앤 스윕을 구현하고, 쓰기 배리어로 삼색 불변식을 지킨다.
+
+class Obj:
+    def __init__(self, name):
+        self.name = name
+        self.refs = []
+        self.color = &quot;white&quot;
+
+class IncrementalGC:
+    def __init__(self, roots):
+        self.gray = list(roots)
+        for r in roots:
+            r.color = &quot;gray&quot;
+
+    def write_barrier(self, holder, new_ref):
+        # 검은 객체가 흰 객체를 새로 가리키면, 흰 객체를 회색으로 되돌려 재방문시킨다
+        holder.refs.append(new_ref)
+        if holder.color == &quot;black&quot; and new_ref.color == &quot;white&quot;:
+            new_ref.color = &quot;gray&quot;
+            self.gray.append(new_ref)
+
+    def mark_step(self, budget=1):
+        # 한 번에 budget개만 처리 — &quot;멈추고 전부&quot;가 아니라 조금씩 진행(증분 마킹)
+        steps = 0
+        while self.gray and steps &lt; budget:
+            obj = self.gray.pop()
+            for r in obj.refs:
+                if r.color == &quot;white&quot;:
+                    r.color = &quot;gray&quot;
+                    self.gray.append(r)
+            obj.color = &quot;black&quot;
+            steps += 1
+
+    def sweep(self, all_objs):
+        return [o for o in all_objs if o.color != &quot;white&quot;]  # white == 도달 불가 -&gt; 회수 대상
+
+a, b, c, d = Obj(&quot;a&quot;), Obj(&quot;b&quot;), Obj(&quot;c&quot;), Obj(&quot;d&quot;)
+a.refs = [b]
+b.refs = [c]
+all_objs = [a, b, c, d]     # d는 아무도 참조하지 않는 쓰레기
+
+gc = IncrementalGC(roots=[a])
+while gc.gray:
+    gc.mark_step(budget=1)  # 애플리케이션과 번갈아 실행된다고 가정 (증분 마킹 흉내)
+
+# 마킹이 끝난 뒤, 이미 black인 a가 새 객체 e를 가리키게 되는 상황을 시뮬레이션
+e = Obj(&quot;e&quot;)
+all_objs.append(e)
+gc.write_barrier(a, e)      # 쓰기 배리어가 e를 gray로 되돌려 재방문 대상에 넣어야 함
+while gc.gray:
+    gc.mark_step(budget=1)
+
+survivors = gc.sweep(all_objs)
+print(&quot;생존(black):&quot;, [o.name for o in survivors])
+print(&quot;회수 대상(white, 도달 불가):&quot;, [o.name for o in all_objs if o.color == &quot;white&quot;])
+assert d.color == &quot;white&quot; and e.color == &quot;black&quot;
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-29.py">docs/code/algorithms/algorithms-29.py</a></p>
       <h2>연습</h2>
       <p>Go 서비스 하나에 GODEBUG=gctrace=1을 켜고 GOGC와 메모리 리밋을 바꿔가며 GC 주기·마킹 보조(assist) 발생량·p99 지연 변화를 기록해 보기.</p>
       <h2>실무 · Verex 연결</h2>

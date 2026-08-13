@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 50 — 영지식 증명의 3성질(완전성·건전성·영지식)</title>
+<title>Day 50 — Hash Function Design Principles (Sponge, Merkle-Damgård)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,21 +131,87 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 50</p>
   <article>
-      <h1>영지식 증명의 3성질(완전성·건전성·영지식) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 50 / 51 &middot; 12월 — 암호학·정보이론 (Day 43–51)</p>
+      <h1>Hash Function Design Principles (Sponge, Merkle-Damgård) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 50 / 52 &middot; December — Cryptography &amp; Information Theory (Day 44-52)</p>
+      <h2>Concept</h2>
+      <p>A cryptographic hash function maps an arbitrary-length input to a fixed-length output while aiming for preimage resistance, second-preimage resistance, and collision resistance. Because of the birthday problem, collision resistance for an n-bit output is capped at roughly 2^(n/2), so the choice of output length is what sets the security level. The Merkle-Damgård construction splits the input into blocks and repeatedly applies a compression function, appending length-encoding padding at the end; it's provable that if the compression function is collision resistant, so is the whole construction — but because the internal state is exactly the output, it's vulnerable to length-extension attacks. The sponge construction instead splits internal state into a rate portion that's exposed and a capacity portion that's never exposed; it absorbs input and then squeezes out as much output as needed, which supports arbitrary-length output and is not vulnerable to length-extension attacks. The security level is governed by the size of the capacity.</p>
+      <p>Using a hash for authentication without knowing whether it's vulnerable to length extension breaks the MAC construction, and choosing too short an output length opens the door to collision-based attacks.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 해시함수 설계 원리(스펀지·머클-담고르) — 고정 크기 압축함수를 체이닝해 임의 길이 입력을
+# 고정 길이로 접는 머클-담고르 구성을 hashlib 없이 토이 버전으로 직접 만들어 본다.
+
+def compress(state: int, block: int, mod: int = 2**32) -&gt; int:
+    # 진짜 해시가 아니라 예시용 압축함수 — 비선형 섞기 흉내만 낸다.
+    return ((state ^ block) * 2654435761 + 0x9E3779B9) % mod
+
+
+def merkle_damgard(message: bytes, block_size: int = 4) -&gt; int:
+    padded = message + b&quot;\x80&quot; + b&quot;\x00&quot; * ((-len(message) - 1) % block_size)
+    state = 0
+    for i in range(0, len(padded), block_size):
+        block = int.from_bytes(padded[i:i + block_size], &quot;big&quot;)
+        state = compress(state, block)
+    return state
+
+
+h1 = merkle_damgard(b&quot;hello world&quot;)
+h2 = merkle_damgard(b&quot;hello world!&quot;)   # 한 글자만 달라짐
+h3 = merkle_damgard(b&quot;hello world&quot;)    # 같은 입력 → 같은 해시
+
+print(f&quot;H('hello world')  = {h1:#010x}&quot;)
+print(f&quot;H('hello world!') = {h2:#010x}  (한 글자만 달라도 완전히 다른 출력 — 눈사태 효과)&quot;)
+print(f&quot;determinism check: H('hello world') 재계산 == 원래 값? {h1 == h3}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-50.py">docs/code/math/math-50.py</a></p>
+      <h2>Exercise</h2>
+      <p>Build a naive secret-prefix MAC using a Merkle-Damgård-family hash and actually succeed at a length-extension attack against it, then try the same attack against a sponge-family hash and against HMAC and confirm they're not vulnerable.</p>
+      <h2>Practical Connection</h2>
+      <p>Ethereum uses Keccak-family sponge hashes, and Merkle trees, address generation, and storage keys all depend on it — so how you construct hash input encoding for Verex's condition ID or position ID is directly a question of collision safety.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1>해시함수 설계 원리(스펀지·머클-담고르) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 50 / 52 &middot; 12월 — 암호학·정보이론 (Day 44–52)</p>
 
       <h2>개념</h2>
-      <p>대화형 증명 시스템은 증명자가 검증자에게 어떤 진술이 참임을 납득시키는 절차이며, 영지식 증명은 여기에 세 가지 성질을 요구한다. 완전성은 진술이 참이고 양쪽이 정직하게 프로토콜을 따르면 검증자가 압도적인 확률로 수락한다는 성질이다. 건전성은 진술이 거짓이면 어떤 증명자도 무시할 만한 확률로만 검증자를 속일 수 있다는 성질이며, 이 보장이 모든 증명자에 대해 성립하면 증명, 계산 능력이 제한된 증명자에 대해서만 성립하면 논증이라 부른다. 영지식성은 검증자가 얻는 것이 진술이 참이라는 사실뿐임을 뜻하며, 증인을 모르는 시뮬레이터가 실제 대화 기록과 구별할 수 없는 것을 만들어 낼 수 있다는 형태로 형식화된다. 구별 불가능성의 강도에 따라 완전, 통계적, 계산적 영지식으로 나뉘고, 응용에서는 단순 건전성보다 증인을 실제로 알고 있음을 보장하는 지식 건전성이 요구되는 경우가 많다.</p>
-      <p>실무에서 무너지는 지점은 대개 세 성질 자체가 아니라 그것이 성립하는 전제인데, 신뢰 설정의 무결성이나 대화형 프로토콜을 비대화형으로 바꿀 때의 가정이 여기에 해당한다.</p>
+      <p>암호학적 해시함수는 임의 길이 입력을 고정 길이 출력으로 보내면서 원상 저항성, 제2원상 저항성, 충돌 저항성을 목표로 한다. 생일 문제 때문에 n비트 출력의 충돌 저항성은 대략 2의 n/2제곱 수준이 상한이므로 출력 길이 선택이 곧 보안 수준이 된다. 머클-담고르 구조는 입력을 블록으로 나눠 압축함수를 반복 적용하고 마지막에 길이를 포함한 패딩을 붙이는 방식으로, 압축함수가 충돌 저항적이면 전체도 충돌 저항적임을 증명할 수 있지만 내부 상태가 곧 출력이라 길이 확장 공격에 취약하다. 스펀지 구조는 내부 상태를 외부에 드러나는 rate 부분과 절대 드러나지 않는 capacity 부분으로 나누고, 입력을 흡수(absorb)한 뒤 필요한 만큼 출력을 짜내는(squeeze) 방식이라 임의 길이 출력을 지원하고 길이 확장 공격이 성립하지 않는다. 보안 수준은 capacity 크기가 좌우한다.</p>
+      <p>길이 확장 공격 가능 여부를 모른 채 해시를 인증에 쓰면 MAC 구성이 깨지고, 출력 길이를 잘못 고르면 충돌 기반 공격에 문이 열린다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 해시함수 설계 원리(스펀지·머클-담고르) — 고정 크기 압축함수를 체이닝해 임의 길이 입력을
+# 고정 길이로 접는 머클-담고르 구성을 hashlib 없이 토이 버전으로 직접 만들어 본다.
+
+def compress(state: int, block: int, mod: int = 2**32) -&gt; int:
+    # 진짜 해시가 아니라 예시용 압축함수 — 비선형 섞기 흉내만 낸다.
+    return ((state ^ block) * 2654435761 + 0x9E3779B9) % mod
+
+
+def merkle_damgard(message: bytes, block_size: int = 4) -&gt; int:
+    padded = message + b&quot;\x80&quot; + b&quot;\x00&quot; * ((-len(message) - 1) % block_size)
+    state = 0
+    for i in range(0, len(padded), block_size):
+        block = int.from_bytes(padded[i:i + block_size], &quot;big&quot;)
+        state = compress(state, block)
+    return state
+
+
+h1 = merkle_damgard(b&quot;hello world&quot;)
+h2 = merkle_damgard(b&quot;hello world!&quot;)   # 한 글자만 달라짐
+h3 = merkle_damgard(b&quot;hello world&quot;)    # 같은 입력 → 같은 해시
+
+print(f&quot;H('hello world')  = {h1:#010x}&quot;)
+print(f&quot;H('hello world!') = {h2:#010x}  (한 글자만 달라도 완전히 다른 출력 — 눈사태 효과)&quot;)
+print(f&quot;determinism check: H('hello world') 재계산 == 원래 값? {h1 == h3}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-50.py">docs/code/math/math-50.py</a></p>
       <h2>연습</h2>
-      <p>그래프 삼색칠이나 이산로그 지식 증명 같은 고전적 시그마 프로토콜 하나를 골라 완전성, 건전성, 시뮬레이터 구성을 각각 손으로 써 보고 간단한 코드로 대화 과정을 재현하라.</p>
+      <p>머클-담고르 계열 해시로 naive한 secret 접두 MAC을 만들어 길이 확장 공격을 실제로 성공시켜 보고, 같은 시도를 스펀지 계열 해시와 HMAC에 해봐서 막히는지 확인하라.</p>
       <h2>실무 · Verex 연결</h2>
-      <p>롤업의 유효성 증명이나 프라이버시 기능을 검토할 때, 그 시스템이 증명인지 논증인지, 지식 건전성이 있는지, 어떤 설정 가정에 의존하는지를 구분해 읽는 것이 신뢰 가정을 정확히 평가하는 출발점이다.</p>
+      <p>이더리움은 Keccak 계열 스펀지 해시를 쓰고 머클 트리·주소 생성·스토리지 키가 모두 여기에 의존하므로, Verex의 컨디션 ID나 포지션 ID를 다루는 코드에서 해시 입력 인코딩을 어떻게 구성하느냐가 곧 충돌 안전성 문제가 된다.</p>
       <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
     </article>
-  <div class="pager"><a href="math-49.html">&larr; 49. 해시함수 설계 원리(스펀지·머클-담고르)</a><a href="math-51.html">51. 신뢰된 셋업 vs 투명성(STARK vs SNARK) &rarr;</a></div>
+  <div class="pager"><a href="math-49.html">&larr; 49. 엔트로피·정보·코딩</a><a href="math-51.html">51. 영지식 증명의 3성질(완전성·건전성·영지식) &rarr;</a></div>
 </div>
 </body>
 </html>

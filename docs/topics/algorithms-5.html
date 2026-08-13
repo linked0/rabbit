@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 5 — 트라이 계열 심화</title>
+<title>Day 5 — Advanced Trie Structures</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,80 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 5</p>
   <article>
+      <h1>Advanced Trie Structures <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 5 / 100 &middot; A. Advanced Algorithms &amp; Data Structures (Day 1-19)</p>
+      <h2>Concept</h2>
+      <p>A trie represents a key as a path split character by character, and a Patricia trie is a variant that shrinks depth by compressing any run of single-child nodes into one edge (path compression). Ethereum's Merkle Patricia Trie (MPT) layers Merkle hashing on top of that: each node holds the hashes of its children, and a parent re-hashes those hashes, so the entire state gets committed to a single root hash. Because MPT branch nodes fan out by nibble (4 bits), a node can have up to 16 children, so a proof for one node must include all its sibling hashes — proof size grows roughly in proportion to (path depth × branching factor). Verkle tries replace hashing with vector commitments (a polynomial-commitment family), collapsing all of a node's children into one constant-size commitment and making membership proofs close to constant size as well. The cost is that a node update is no longer a single hash but an elliptic-curve operation, so write and reconstruction costs go up — the choice within this family ultimately trades off proof size against update cost.</p>
+      <p>State proof size directly determines the bandwidth cost for light clients and stateless verification, while update cost determines a full node's block-processing time. Without knowing which side you're trying to shrink, you can't judge the feasibility of a storage-layer design or a proof-based feature.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 5: 트라이 계열 심화 — 패트리샤(Patricia) 트라이의 경로 압축
+# 공통 접두사를 압축해 간선에 저장하는 라딕스 트라이를 구현해 삽입/탐색과 압축 효과를 확인한다.
+
+class PatriciaNode:
+    def __init__(self):
+        self.children = {}   # edge_label(str) -&gt; PatriciaNode
+        self.is_word = False
+
+def common_prefix_len(a, b):
+    n, i = min(len(a), len(b)), 0
+    while i &lt; n and a[i] == b[i]:
+        i += 1
+    return i
+
+def insert(root, word):
+    node, remaining = root, word
+    while remaining:
+        for label in list(node.children):
+            common = common_prefix_len(label, remaining)
+            if common == 0:
+                continue
+            if common == len(label):
+                node, remaining = node.children[label], remaining[common:]
+                break
+            mid = PatriciaNode()                        # 공통 접두사에서 간선을 분기
+            mid.children[label[common:]] = node.children.pop(label)
+            node.children[label[:common]] = mid
+            node, remaining = mid, remaining[common:]
+            break
+        else:
+            node.children[remaining] = PatriciaNode()
+            node, remaining = node.children[remaining], &quot;&quot;
+    node.is_word = True
+
+def search(root, word):
+    node, remaining = root, word
+    while remaining:
+        for label, child in node.children.items():
+            if remaining.startswith(label):
+                node, remaining = child, remaining[len(label):]
+                break
+        else:
+            return False
+    return node.is_word
+
+def count_edges(node):
+    return sum(1 + count_edges(c) for c in node.children.values())
+
+words = [&quot;romane&quot;, &quot;romanus&quot;, &quot;romulus&quot;, &quot;rubens&quot;, &quot;ruber&quot;, &quot;rubicon&quot;, &quot;rubicundus&quot;]
+root = PatriciaNode()
+for w in words:
+    insert(root, w)
+
+print(f&quot;압축된 간선 수 = {count_edges(root)} (단어 {len(words)}개, 총 문자수 {sum(len(w) for w in words)})&quot;)
+print(&quot;search('romanus') =&quot;, search(root, &quot;romanus&quot;))
+print(&quot;search('roman')   =&quot;, search(root, &quot;roman&quot;))
+print(&quot;search('rubicon')  =&quot;, search(root, &quot;rubicon&quot;))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-5.py">docs/code/algorithms/algorithms-5.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement a simple Patricia trie and a nibble-branching MPT with the same set of keys/values, then tabulate the node count and total byte size of a Merkle proof for a given key as you vary the branching factor.</p>
+      <h2>Practical Connection</h2>
+      <p>If Verex ever needs to prove settlement results or position state to the outside world, or have them verified by a light client, the size of a single state proof becomes the client's actual cost — the trie structure choice shows up directly in that number.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>트라이 계열 심화 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 5 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
       <p class="lead">패트리샤 vs MPT vs Verkle (증명 크기 대 갱신 비용)</p>
@@ -115,7 +212,65 @@
       <p>트라이는 키를 문자 단위로 쪼개 경로로 표현하는 자료구조이고, 패트리샤 트라이는 자식이 하나뿐인 연속 구간을 하나의 간선으로 압축(path compression)해 깊이를 줄인 변형이다. 이더리움의 Merkle Patricia Trie(MPT)는 여기에 머클 해시를 얹어, 각 노드가 자식들의 해시를 담고 부모는 그 해시들을 다시 해시하는 방식으로 상태 전체를 하나의 루트 해시로 커밋한다. MPT의 분기 노드는 니블(4비트) 단위라 자식이 최대 16개이므로, 한 노드의 증명에는 형제 해시들이 모두 들어가고 증명 크기는 대략 (경로 깊이 × 분기 폭)에 비례해 커진다. Verkle 트라이는 해시 대신 벡터 커밋먼트(다항식 커밋먼트 계열)를 써서 한 노드의 자식 전체를 상수 크기 커밋먼트 하나로 묶고, 열람 증명도 상수 크기에 가깝게 만든다. 대가로 노드 갱신이 해시 한 번이 아니라 타원곡선 연산이 되어 쓰기·재구성 비용이 올라가므로, 이 계열의 선택은 결국 증명 크기와 갱신 비용 사이의 교환이다.</p>
       <p>상태 증명 크기는 라이트 클라이언트와 stateless 검증의 대역폭을 직접 결정하고, 갱신 비용은 풀노드의 블록 처리 시간을 결정한다. 어느 쪽을 깎을지 모르면 스토리지 계층 설계나 증명 기반 기능의 실현 가능성을 판단할 수 없다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 5: 트라이 계열 심화 — 패트리샤(Patricia) 트라이의 경로 압축
+# 공통 접두사를 압축해 간선에 저장하는 라딕스 트라이를 구현해 삽입/탐색과 압축 효과를 확인한다.
+
+class PatriciaNode:
+    def __init__(self):
+        self.children = {}   # edge_label(str) -&gt; PatriciaNode
+        self.is_word = False
+
+def common_prefix_len(a, b):
+    n, i = min(len(a), len(b)), 0
+    while i &lt; n and a[i] == b[i]:
+        i += 1
+    return i
+
+def insert(root, word):
+    node, remaining = root, word
+    while remaining:
+        for label in list(node.children):
+            common = common_prefix_len(label, remaining)
+            if common == 0:
+                continue
+            if common == len(label):
+                node, remaining = node.children[label], remaining[common:]
+                break
+            mid = PatriciaNode()                        # 공통 접두사에서 간선을 분기
+            mid.children[label[common:]] = node.children.pop(label)
+            node.children[label[:common]] = mid
+            node, remaining = mid, remaining[common:]
+            break
+        else:
+            node.children[remaining] = PatriciaNode()
+            node, remaining = node.children[remaining], &quot;&quot;
+    node.is_word = True
+
+def search(root, word):
+    node, remaining = root, word
+    while remaining:
+        for label, child in node.children.items():
+            if remaining.startswith(label):
+                node, remaining = child, remaining[len(label):]
+                break
+        else:
+            return False
+    return node.is_word
+
+def count_edges(node):
+    return sum(1 + count_edges(c) for c in node.children.values())
+
+words = [&quot;romane&quot;, &quot;romanus&quot;, &quot;romulus&quot;, &quot;rubens&quot;, &quot;ruber&quot;, &quot;rubicon&quot;, &quot;rubicundus&quot;]
+root = PatriciaNode()
+for w in words:
+    insert(root, w)
+
+print(f&quot;압축된 간선 수 = {count_edges(root)} (단어 {len(words)}개, 총 문자수 {sum(len(w) for w in words)})&quot;)
+print(&quot;search('romanus') =&quot;, search(root, &quot;romanus&quot;))
+print(&quot;search('roman')   =&quot;, search(root, &quot;roman&quot;))
+print(&quot;search('rubicon')  =&quot;, search(root, &quot;rubicon&quot;))
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-5.py">docs/code/algorithms/algorithms-5.py</a></p>
       <h2>연습</h2>
       <p>같은 키/값 집합을 넣은 간단한 패트리샤 트라이와 니블 분기 MPT를 직접 구현해, 임의의 키 하나에 대한 머클 증명의 노드 수와 총 바이트 수를 분기 폭을 바꿔 가며 표로 비교해 보라.</p>
       <h2>실무 · Verex 연결</h2>

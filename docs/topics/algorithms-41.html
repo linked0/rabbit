@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 41 — 커널 바이패스와 zero-copy</title>
+<title>Day 41 — Kernel Bypass and Zero-Copy — io_uring</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,80 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 41</p>
   <article>
+      <h1>Kernel Bypass and Zero-Copy — io_uring <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 41 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>Traditional socket I/O crosses the user-kernel boundary on every system call and copies data between kernel and user buffers, so for workloads with very many small requests, that overhead dominates the total cost. Zero-copy is a family of techniques that eliminates or reduces that copying — sendfile or splice for file transfer, which keep data from passing through user space, are the classic examples. io_uring provides an asynchronous interface built on two ring buffers shared between kernel and user space (a submission queue and a completion queue): you write requests into the queue and read completions out of it, and you can submit many requests in a single system call, or in polling mode make progress with no system calls at all. Kernel bypass goes further still, mapping NIC queues directly into a user-space driver and skipping the kernel network stack entirely — latency drops sharply, but the application now has to take on the protocol handling and protection the kernel used to provide. What all these techniques share is reducing the number of boundary crossings and the number of copies, at the cost of complexity and portability.</p>
+      <p>In matching engines or ultra-high-frequency RPC gateways where microsecond-level latency matters, the bottleneck is often system-call and copy overhead rather than application logic, so you need to be able to tell how much of the cost is kernel cost.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 커널 바이패스와 zero-copy — io_uring 의 핵심 아이디어(제출 큐 SQ / 완료 큐 CQ 를 유저-커널이 공유)를 순수 파이썬으로 흉내낸다.
+# 진짜 io_uring 은 시스템 콜 없이 링 버퍼만으로 요청/완료를 주고받지만, 여기서는 그 인터페이스 모양만 재현한다.
+
+from collections import deque
+
+class TinyIoUring:
+    def __init__(self):
+        self.submission_queue = deque()   # SQ: 유저가 써넣고 커널이 소비
+        self.completion_queue = deque()   # CQ: 커널이 써넣고 유저가 소비
+        self._next_id = 0
+
+    def submit(self, op, payload):
+        &quot;&quot;&quot;유저 공간: 요청을 SQ 에 밀어넣는다 — 요청마다 시스템 콜을 하지 않고 큐에만 쌓는다.&quot;&quot;&quot;
+        req_id = self._next_id
+        self._next_id += 1
+        self.submission_queue.append((req_id, op, payload))
+        return req_id
+
+    def kernel_process_batch(self):
+        &quot;&quot;&quot;커널 쪽 처리를 흉내: SQ 에 쌓인 요청을 한 번에(배치로) 처리해 CQ 에 완료를 채운다.
+        여기서 핵심은 요청 N개를 시스템 콜 1번(=이 함수 호출 1번)으로 끝낸다는 것 — zero-copy 의 핵심도
+        '경계를 넘는 횟수'와 '복사 횟수'를 줄이는 데 있다.&quot;&quot;&quot;
+        processed = 0
+        while self.submission_queue:
+            req_id, op, payload = self.submission_queue.popleft()
+            if op == &quot;read&quot;:
+                result = f&quot;data({payload})&quot;      # 실제로는 유저 버퍼로 직접 DMA 되어 복사가 생략됨
+            elif op == &quot;write&quot;:
+                result = f&quot;written:{len(payload)}bytes&quot;
+            else:
+                result = None
+            self.completion_queue.append((req_id, result))
+            processed += 1
+        return processed
+
+    def reap_completions(self):
+        &quot;&quot;&quot;유저 공간: CQ 에서 완료된 결과를 꺼낸다 — 이것도 시스템 콜 없이 공유 메모리 읽기만으로 끝난다.&quot;&quot;&quot;
+        out = []
+        while self.completion_queue:
+            out.append(self.completion_queue.popleft())
+        return out
+
+ring = TinyIoUring()
+
+# 전통적 블로킹 I/O 라면 read() 5번 = 시스템 콜 5번이지만, 여기서는 SQ 에 5개를 한꺼번에 밀어넣는다.
+req_ids = [ring.submit(&quot;read&quot;, f&quot;/file{i}&quot;) for i in range(5)]
+req_ids.append(ring.submit(&quot;write&quot;, &quot;payload-bytes&quot;))
+
+requests_processed = ring.kernel_process_batch()   # 이 함수 호출 자체가 &quot;시스템 콜 1회&quot;에 대응한다
+enter_syscalls = 1                                  # io_uring_enter() 를 딱 한 번만 부른 셈
+completions = ring.reap_completions()
+
+print(&quot;submitted requests:&quot;, len(req_ids))
+print(&quot;requests completed in this batch:&quot;, requests_processed)
+print(&quot;io_uring_enter() calls needed:&quot;, enter_syscalls,
+      f&quot;-&gt; 전통적 blocking read/write였다면 {len(req_ids)}번의 시스템 콜이 필요했다&quot;)
+print(&quot;completions:&quot;, completions)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-41.py">docs/code/algorithms/algorithms-41.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement the same echo server on epoll and on io_uring, and compare p99 latency and system calls per second (via strace -c or perf) under identical load.</p>
+      <h2>Practical Connection</h2>
+      <p>When a chain node or RPC proxy handling huge numbers of small JSON-RPC requests shows CPU time concentrated in kernel time, batched submission and reduced copying are worth checking before adding hardware.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>커널 바이패스와 zero-copy <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 41 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
       <p class="lead">io_uring</p>
@@ -115,7 +212,65 @@
       <p>전통적인 소켓 I/O는 시스템 콜마다 유저-커널 경계를 넘고 커널 버퍼와 유저 버퍼 사이에서 데이터를 복사하므로, 작은 요청이 매우 많은 워크로드에서는 이 오버헤드가 전체 비용을 지배한다. zero-copy는 그 복사를 제거하거나 줄이는 기법으로, 파일 전송의 sendfile이나 splice처럼 데이터가 유저 공간을 거치지 않게 하는 방식이 대표적이다. io_uring은 커널과 유저 공간이 공유하는 두 개의 링 버퍼(제출 큐와 완료 큐)를 두어 요청을 큐에 써 넣고 완료를 큐에서 읽는 비동기 인터페이스이며, 여러 요청을 한 번의 시스템 콜로 제출하거나 폴링 모드에서는 시스템 콜 없이도 진행시킬 수 있다. 커널 바이패스는 한 걸음 더 나아가 NIC 큐를 유저 공간 드라이버에 직접 매핑해 커널 네트워크 스택 자체를 건너뛰는 접근으로, 지연은 크게 줄지만 커널이 제공하던 프로토콜 처리와 보호를 애플리케이션이 떠안게 된다. 즉 이 계열 기법의 공통 축은 '경계 넘기 횟수'와 '복사 횟수'를 줄이는 것이며, 그 대가는 복잡도와 이식성이다.</p>
       <p>지연이 마이크로초 단위로 중요한 매칭 엔진이나 초고빈도 RPC 게이트웨이에서는 애플리케이션 로직이 아니라 시스템 콜·복사 비용이 병목이 되므로, 어디까지가 커널 비용인지 구분할 줄 알아야 한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 커널 바이패스와 zero-copy — io_uring 의 핵심 아이디어(제출 큐 SQ / 완료 큐 CQ 를 유저-커널이 공유)를 순수 파이썬으로 흉내낸다.
+# 진짜 io_uring 은 시스템 콜 없이 링 버퍼만으로 요청/완료를 주고받지만, 여기서는 그 인터페이스 모양만 재현한다.
+
+from collections import deque
+
+class TinyIoUring:
+    def __init__(self):
+        self.submission_queue = deque()   # SQ: 유저가 써넣고 커널이 소비
+        self.completion_queue = deque()   # CQ: 커널이 써넣고 유저가 소비
+        self._next_id = 0
+
+    def submit(self, op, payload):
+        &quot;&quot;&quot;유저 공간: 요청을 SQ 에 밀어넣는다 — 요청마다 시스템 콜을 하지 않고 큐에만 쌓는다.&quot;&quot;&quot;
+        req_id = self._next_id
+        self._next_id += 1
+        self.submission_queue.append((req_id, op, payload))
+        return req_id
+
+    def kernel_process_batch(self):
+        &quot;&quot;&quot;커널 쪽 처리를 흉내: SQ 에 쌓인 요청을 한 번에(배치로) 처리해 CQ 에 완료를 채운다.
+        여기서 핵심은 요청 N개를 시스템 콜 1번(=이 함수 호출 1번)으로 끝낸다는 것 — zero-copy 의 핵심도
+        '경계를 넘는 횟수'와 '복사 횟수'를 줄이는 데 있다.&quot;&quot;&quot;
+        processed = 0
+        while self.submission_queue:
+            req_id, op, payload = self.submission_queue.popleft()
+            if op == &quot;read&quot;:
+                result = f&quot;data({payload})&quot;      # 실제로는 유저 버퍼로 직접 DMA 되어 복사가 생략됨
+            elif op == &quot;write&quot;:
+                result = f&quot;written:{len(payload)}bytes&quot;
+            else:
+                result = None
+            self.completion_queue.append((req_id, result))
+            processed += 1
+        return processed
+
+    def reap_completions(self):
+        &quot;&quot;&quot;유저 공간: CQ 에서 완료된 결과를 꺼낸다 — 이것도 시스템 콜 없이 공유 메모리 읽기만으로 끝난다.&quot;&quot;&quot;
+        out = []
+        while self.completion_queue:
+            out.append(self.completion_queue.popleft())
+        return out
+
+ring = TinyIoUring()
+
+# 전통적 블로킹 I/O 라면 read() 5번 = 시스템 콜 5번이지만, 여기서는 SQ 에 5개를 한꺼번에 밀어넣는다.
+req_ids = [ring.submit(&quot;read&quot;, f&quot;/file{i}&quot;) for i in range(5)]
+req_ids.append(ring.submit(&quot;write&quot;, &quot;payload-bytes&quot;))
+
+requests_processed = ring.kernel_process_batch()   # 이 함수 호출 자체가 &quot;시스템 콜 1회&quot;에 대응한다
+enter_syscalls = 1                                  # io_uring_enter() 를 딱 한 번만 부른 셈
+completions = ring.reap_completions()
+
+print(&quot;submitted requests:&quot;, len(req_ids))
+print(&quot;requests completed in this batch:&quot;, requests_processed)
+print(&quot;io_uring_enter() calls needed:&quot;, enter_syscalls,
+      f&quot;-&gt; 전통적 blocking read/write였다면 {len(req_ids)}번의 시스템 콜이 필요했다&quot;)
+print(&quot;completions:&quot;, completions)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-41.py">docs/code/algorithms/algorithms-41.py</a></p>
       <h2>연습</h2>
       <p>같은 에코 서버를 epoll 기반과 io_uring 기반으로 각각 구현해 동일 부하에서 p99 지연과 초당 시스템 콜 수(strace -c 또는 perf)를 비교해 보라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -947,6 +947,25 @@ a.ghost:hover {
   background: none;
   padding: 0;
 }
+
+/* TechNotes 의 "관련 코드" 블록 (jay, 2026-08-13) — docs/pocs.html 의 정적 코드 블록과
+   같은 어두운 톤으로 맞췄다(단일 소스 파일을 두 표면에서 같은 느낌으로 보여준다). */
+.card-code {
+  margin: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre;
+}
+.card-code code {
+  background: none;
+  padding: 0;
+}
 .post-body blockquote {
   border-left: 3px solid var(--border);
   margin: 12px 0;

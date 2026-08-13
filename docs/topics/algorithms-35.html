@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 35 — [복습] 실행 계층 지도 한 장으로</title>
+<title>Day 35 — [Review] The Execution Stack on One Page</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,88 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 35</p>
   <article>
+      <h1>[Review] The Execution Stack on One Page <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 35 / 100 &middot; B. Compilers, Runtimes &amp; VMs (Day 20-35)</p>
+      <h2>Concept</h2>
+      <p>You can view the execution stack as a chain of stages that turns source code into actual hardware behavior. At the front is the frontend, which lexes and parses into an AST and does semantic analysis to pin down types and names; in the middle is the optimization stage, which works on an intermediate representation like SSA and performs constant propagation, inlining, dead code elimination, and so on. At the back, instruction selection, register allocation, and code generation produce target instructions (native machine code or VM bytecode), which an interpreter or JIT then executes while the runtime manages memory, GC, and exceptions. Mapped onto Ethereum: Solidity goes through an IR like Yul to become EVM bytecode, and the client's EVM interpreter executes that, deducting gas for every opcode. The point of this map is &quot;which decision gets locked in at which stage&quot; — when you're looking at an optimization failure or a performance problem, pinpointing the responsible stage first is the key move.</p>
+      <p>When you hit a performance issue or unexpected behavior, if you can't immediately narrow down whether to look at the source, compiler optimizations, VM execution, or the runtime, debugging drifts into guesswork. The layer map is the baseline for that narrowing.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># [복습] 실행 계층 지도 — 렉싱 -&gt; 파싱(AST) -&gt; 최적화(상수 전파) -&gt; 실행 까지, 한 표현식으로 전 단계를 통과시킨다.
+
+import re
+
+# 1) 프론트엔드: 렉서 — 소스 문자열을 토큰으로 쪼갠다.
+def lex(src):
+    return re.findall(r&quot;\d+|[+\-*/()]&quot;, src)
+
+# 1) 프론트엔드: 파서 — 토큰을 AST(중첩 튜플)로 만든다. 우선순위: * / &gt; + -
+def parse(tokens):
+    pos = 0
+    def peek():
+        return tokens[pos] if pos &lt; len(tokens) else None
+    def parse_expr():
+        nonlocal pos
+        node = parse_term()
+        while peek() in ('+', '-'):
+            op = tokens[pos]; pos += 1
+            node = (op, node, parse_term())
+        return node
+    def parse_term():
+        nonlocal pos
+        node = parse_factor()
+        while peek() in ('*', '/'):
+            op = tokens[pos]; pos += 1
+            node = (op, node, parse_factor())
+        return node
+    def parse_factor():
+        nonlocal pos
+        tok = tokens[pos]; pos += 1
+        if tok == '(':
+            node = parse_expr(); pos += 1  # skip ')'
+            return node
+        return int(tok)
+    return parse_expr()
+
+# 2) 미들엔드: 최적화 — 상수 전파/폴딩 (양쪽이 이미 리터럴이면 컴파일 타임에 계산해 버린다)
+def constant_fold(node):
+    if isinstance(node, int):
+        return node
+    op, left, right = node
+    left, right = constant_fold(left), constant_fold(right)
+    if isinstance(left, int) and isinstance(right, int):
+        return {'+': left + right, '-': left - right, '*': left * right, '/': left // right}[op]
+    return (op, left, right)
+
+# 3) 백엔드/런타임: 인터프리터 — 최종 AST(또는 폴딩된 상수)를 실제로 실행한다.
+def interpret(node):
+    if isinstance(node, int):
+        return node
+    op, left, right = node
+    l, r = interpret(left), interpret(right)
+    return {'+': l + r, '-': l - r, '*': l * r, '/': l // r}[op]
+
+source = &quot;1 + 2 * (3 + 4)&quot;
+tokens = lex(source)
+ast = parse(tokens)
+folded = constant_fold(ast)
+result = interpret(ast)
+
+print(&quot;source     :&quot;, source)
+print(&quot;tokens     :&quot;, tokens)
+print(&quot;ast        :&quot;, ast)
+print(&quot;folded ast :&quot;, folded, &quot; &lt;- 상수 전파로 이미 스칼라 하나로 굳음&quot;)
+print(&quot;result     :&quot;, result)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-35.py">docs/code/algorithms/algorithms-35.py</a></p>
+      <h2>Exercise</h2>
+      <p>On a single page, draw out the stages from source to hardware yourself, and next to each stage write its counterpart in the Ethereum stack (Solidity, Yul IR, EVM bytecode, the client's interpreter, gas metering) until there are no blanks left.</p>
+      <h2>Practical Connection</h2>
+      <p>When you hit a gas regression, figuring out whether it's from a change in compiler optimization settings, an opcode price change, or a change in contract logic is exactly the work of reading this map.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>[복습] 실행 계층 지도 한 장으로 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 35 / 100 &middot; B. 컴파일러·런타임·VM (Day 20–35)</p>
 
@@ -115,7 +220,73 @@
       <p>실행 계층은 소스 코드가 실제 하드웨어 동작이 되기까지의 단계 사슬로 볼 수 있다. 앞단은 렉싱·파싱으로 AST를 만들고 의미 분석으로 타입과 이름을 확정하는 프론트엔드이고, 가운데는 SSA 같은 중간 표현 위에서 상수 전파·인라이닝·죽은 코드 제거 등을 수행하는 최적화 단계다. 뒷단은 명령어 선택·레지스터 할당·코드 생성으로 타깃 명령어(네이티브 기계어 또는 VM 바이트코드)를 뽑고, 그 결과를 인터프리터나 JIT가 실행하며 런타임이 메모리·GC·예외를 관리한다. 이더리움에 대응시키면 Solidity가 Yul 같은 IR을 거쳐 EVM 바이트코드가 되고, 클라이언트의 EVM 인터프리터가 이를 실행하면서 각 opcode마다 가스를 차감하는 구조다. 이 지도의 요점은 '어떤 결정이 어느 단계에서 굳어지는가'이며, 최적화 실패나 성능 문제를 볼 때 원인 단계를 먼저 특정하는 것이 핵심이다.</p>
       <p>성능이나 동작 이상을 만났을 때 소스, 컴파일러 최적화, VM 실행, 런타임 중 어디를 봐야 하는지 즉시 좁히지 못하면 디버깅이 추측으로 흐른다. 계층 지도는 그 좁히기의 기준선이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># [복습] 실행 계층 지도 — 렉싱 -&gt; 파싱(AST) -&gt; 최적화(상수 전파) -&gt; 실행 까지, 한 표현식으로 전 단계를 통과시킨다.
+
+import re
+
+# 1) 프론트엔드: 렉서 — 소스 문자열을 토큰으로 쪼갠다.
+def lex(src):
+    return re.findall(r&quot;\d+|[+\-*/()]&quot;, src)
+
+# 1) 프론트엔드: 파서 — 토큰을 AST(중첩 튜플)로 만든다. 우선순위: * / &gt; + -
+def parse(tokens):
+    pos = 0
+    def peek():
+        return tokens[pos] if pos &lt; len(tokens) else None
+    def parse_expr():
+        nonlocal pos
+        node = parse_term()
+        while peek() in ('+', '-'):
+            op = tokens[pos]; pos += 1
+            node = (op, node, parse_term())
+        return node
+    def parse_term():
+        nonlocal pos
+        node = parse_factor()
+        while peek() in ('*', '/'):
+            op = tokens[pos]; pos += 1
+            node = (op, node, parse_factor())
+        return node
+    def parse_factor():
+        nonlocal pos
+        tok = tokens[pos]; pos += 1
+        if tok == '(':
+            node = parse_expr(); pos += 1  # skip ')'
+            return node
+        return int(tok)
+    return parse_expr()
+
+# 2) 미들엔드: 최적화 — 상수 전파/폴딩 (양쪽이 이미 리터럴이면 컴파일 타임에 계산해 버린다)
+def constant_fold(node):
+    if isinstance(node, int):
+        return node
+    op, left, right = node
+    left, right = constant_fold(left), constant_fold(right)
+    if isinstance(left, int) and isinstance(right, int):
+        return {'+': left + right, '-': left - right, '*': left * right, '/': left // right}[op]
+    return (op, left, right)
+
+# 3) 백엔드/런타임: 인터프리터 — 최종 AST(또는 폴딩된 상수)를 실제로 실행한다.
+def interpret(node):
+    if isinstance(node, int):
+        return node
+    op, left, right = node
+    l, r = interpret(left), interpret(right)
+    return {'+': l + r, '-': l - r, '*': l * r, '/': l // r}[op]
+
+source = &quot;1 + 2 * (3 + 4)&quot;
+tokens = lex(source)
+ast = parse(tokens)
+folded = constant_fold(ast)
+result = interpret(ast)
+
+print(&quot;source     :&quot;, source)
+print(&quot;tokens     :&quot;, tokens)
+print(&quot;ast        :&quot;, ast)
+print(&quot;folded ast :&quot;, folded, &quot; &lt;- 상수 전파로 이미 스칼라 하나로 굳음&quot;)
+print(&quot;result     :&quot;, result)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-35.py">docs/code/algorithms/algorithms-35.py</a></p>
       <h2>연습</h2>
       <p>한 페이지에 소스에서 하드웨어까지의 단계를 직접 그리고, 각 단계마다 이더리움 스택의 대응물(Solidity, Yul IR, EVM 바이트코드, 클라이언트 인터프리터, 가스 계량)을 옆에 적어 빈칸 없이 채워 보라.</p>
       <h2>실무 · Verex 연결</h2>

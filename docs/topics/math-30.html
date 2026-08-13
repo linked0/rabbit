@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 30 — 라그랑주/KKT(개념)</title>
+<title>Day 30 — Lagrange Multipliers and KKT Conditions (Concept)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,90 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 30</p>
   <article>
+      <h1>Lagrange Multipliers and KKT Conditions (Concept) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 30 / 52 &middot; October — Calculus &amp; Optimization (Day 27-34)</p>
+      <h2>Concept</h2>
+      <p>For constrained optimization, the method of Lagrange multipliers builds a Lagrangian by adding the equality constraints to the objective function, each scaled by a multiplier, and then looks for its stationary points. Geometrically, this expresses the condition that at the optimum, the gradient of the objective function must lie within the space spanned by the gradients of the constraints — meaning there's no direction along the constraint that still improves the objective. The KKT conditions extend this to include inequality constraints, and consist of stationarity of the Lagrangian, primal feasibility, non-negativity of the inequality multipliers, and complementary slackness. Complementary slackness requires that a multiplier be zero whenever its constraint isn't active — formalizing the intuition that a slack constraint doesn't affect the optimum. KKT conditions are generally necessary conditions, but for convex problems satisfying an appropriate constraint qualification, they are also sufficient for optimality.</p>
+      <p>Real-world optimization — allocation under risk limits, position optimization under collateral constraints, scheduling under resource constraints — is almost always constrained, and the multipliers give you a bonus: they're the value of relaxing a constraint by one unit.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 30 — 라그랑주/KKT(개념)
+# 등식 제약 x + y = 1 아래에서 f(x,y) = x^2 + y^2 최소화를 라그랑주 승수법으로 푼다.
+# L(x,y,lam) = x^2 + y^2 - lam*(x + y - 1); 정상점 조건: 2x=lam, 2y=lam, x+y=1
+
+import numpy as np
+
+# 정상점 조건을 선형연립방정식으로 세운다: [2, 0, -1; 0, 2, -1; 1, 1, 0] [x,y,lam]^T = [0,0,1]^T
+A = np.array([
+    [2.0, 0.0, -1.0],
+    [0.0, 2.0, -1.0],
+    [1.0, 1.0, 0.0],
+])
+b = np.array([0.0, 0.0, 1.0])
+
+x, y, lam = np.linalg.solve(A, b)
+print(f&quot;라그랑주 해: x = {x:.4f}, y = {y:.4f}, lambda = {lam:.4f}&quot;)
+print(f&quot;제약 확인 x + y = {x + y:.4f} (목표: 1)&quot;)
+print(f&quot;목적함수 f(x,y) = {x**2 + y**2:.6f}&quot;)
+
+
+def f(x, y):
+    return x ** 2 + y ** 2
+
+
+# 대칭성으로 예상되는 답 (0.5, 0.5)과 비교, 제약을 만족하는 다른 점들과 비교해 최소임을 확인
+print(&quot;\n제약선 위 다른 점들과 비교 (모두 x+y=1을 만족):&quot;)
+for t in [0.0, 0.3, 0.5, 0.7, 1.0]:
+    xt, yt = t, 1 - t
+    print(f&quot;  (x,y)=({xt:.2f},{yt:.2f}) -&gt; f = {f(xt, yt):.6f}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-30.py">docs/code/math/math-30.py</a></p>
+      <h2>Exercise</h2>
+      <p>Set up and solve by hand the KKT conditions for maximizing a simple convex objective under a budget constraint, then solve the same problem with a numerical optimization library and check that the multiplier values match.</p>
+      <h2>Practical Connection</h2>
+      <p>Setting a market maker's liquidity parameter under a maximum-loss cap, or adjusting a fee structure under constraints, is exactly a constrained optimization problem, and the multiplier reads as the marginal benefit of relaxing that cap.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>라그랑주/KKT(개념) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 30 / 51 &middot; 10월 — 미적분·최적화 (Day 27–34)</p>
+      <p class="meta">Math &middot; Day 30 / 52 &middot; 10월 — 미적분·최적화 (Day 27–34)</p>
 
       <h2>개념</h2>
       <p>제약이 있는 최적화에서 라그랑주 승수법은 등식 제약을 목적함수에 승수를 곱해 더한 라그랑지안을 만들고, 그 정상점을 찾는 방법이다. 기하적으로는 최적점에서 목적함수의 기울기가 제약면의 기울기들이 만드는 공간 안에 놓여야 한다는 조건, 즉 제약을 따라 움직여서는 더 이상 개선할 방향이 없다는 조건을 표현한다. 부등식 제약까지 포함하도록 확장한 것이 KKT 조건이며, 라그랑지안의 정상성, 원 문제의 실현가능성, 부등식 승수의 비음수성, 그리고 상보 여유성으로 구성된다. 상보 여유성은 제약이 활성이 아니면 그 승수가 0이어야 한다는 조건으로, 느슨한 제약은 최적해에 영향을 주지 않는다는 직관을 형식화한 것이다. KKT는 일반적으로 필요조건이지만, 볼록 문제이고 적절한 제약 자격이 성립하면 최적성의 충분조건이 되기도 한다.</p>
       <p>리스크 한도 하의 배분, 담보 제약 하의 포지션 최적화, 자원 제약이 있는 스케줄링처럼 실무의 최적화는 거의 항상 제약이 붙은 형태이고, 승수는 제약을 한 단위 완화했을 때의 가치라는 해석까지 준다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 30 — 라그랑주/KKT(개념)
+# 등식 제약 x + y = 1 아래에서 f(x,y) = x^2 + y^2 최소화를 라그랑주 승수법으로 푼다.
+# L(x,y,lam) = x^2 + y^2 - lam*(x + y - 1); 정상점 조건: 2x=lam, 2y=lam, x+y=1
+
+import numpy as np
+
+# 정상점 조건을 선형연립방정식으로 세운다: [2, 0, -1; 0, 2, -1; 1, 1, 0] [x,y,lam]^T = [0,0,1]^T
+A = np.array([
+    [2.0, 0.0, -1.0],
+    [0.0, 2.0, -1.0],
+    [1.0, 1.0, 0.0],
+])
+b = np.array([0.0, 0.0, 1.0])
+
+x, y, lam = np.linalg.solve(A, b)
+print(f&quot;라그랑주 해: x = {x:.4f}, y = {y:.4f}, lambda = {lam:.4f}&quot;)
+print(f&quot;제약 확인 x + y = {x + y:.4f} (목표: 1)&quot;)
+print(f&quot;목적함수 f(x,y) = {x**2 + y**2:.6f}&quot;)
+
+
+def f(x, y):
+    return x ** 2 + y ** 2
+
+
+# 대칭성으로 예상되는 답 (0.5, 0.5)과 비교, 제약을 만족하는 다른 점들과 비교해 최소임을 확인
+print(&quot;\n제약선 위 다른 점들과 비교 (모두 x+y=1을 만족):&quot;)
+for t in [0.0, 0.3, 0.5, 0.7, 1.0]:
+    xt, yt = t, 1 - t
+    print(f&quot;  (x,y)=({xt:.2f},{yt:.2f}) -&gt; f = {f(xt, yt):.6f}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-30.py">docs/code/math/math-30.py</a></p>
       <h2>연습</h2>
       <p>예산 제약 하에서 간단한 볼록 목적함수를 최대화하는 문제를 손으로 KKT 조건을 세워 풀고, 같은 문제를 수치 최적화 라이브러리로 풀어 승수 값이 일치하는지 비교하라.</p>
       <h2>실무 · Verex 연결</h2>

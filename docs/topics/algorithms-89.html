@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 89 — 고정소수점 산술과 반올림 정책</title>
+<title>Day 89 — Fixed-Point Arithmetic and Rounding Policy — The Rounding Direction That Preserves Invariants (Preventing Dust Leaks), and LMSR's exp/ln Approximation Error Bound</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,62 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 89</p>
   <article>
+      <h1>Fixed-Point Arithmetic and Rounding Policy — The Rounding Direction That Preserves Invariants (Preventing Dust Leaks), and LMSR's exp/ln Approximation Error Bound <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 89 / 100 &middot; F. Cryptography &amp; ZK (Day 82-96)</p>
+      <h2>Concept</h2>
+      <p>The EVM has no floating point, so ratios and prices are handled as fixed-point numbers — integers with an implicit scale factor (e.g., 1e18). Multiplication doubles the scale, so it has to be divided back down, and each such division introduces truncation error whose direction either preserves or breaks the system's invariants. The rule is to always round in the protocol's (pool/contract's) favor: round down what a user receives, round up what a user pays, to prevent a dust leak where repeated trades siphon off the remainder. Cost functions that need exp and ln, like LMSR's, have to be implemented as integer approximations, and you need to work out both the error bound of that approximation and whether the error breaks the cost function's monotonicity or convexity. The thing that ultimately needs verifying isn't the precision of any single operation — it's whether the invariant holds no matter what order the operations run in.</p>
+      <p>Getting a single rounding direction backwards turns a mathematically tiny error into a free, infinitely repeatable withdrawal path.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 고정소수점 산술과 반올림 정책 — 정수 스케일(1e18)로 나눗셈 절사 오차를 다루고,
+# &quot;프로토콜에 유리한 방향&quot;으로 반올림해 dust leak(잔여분 누적 착취)을 막는 것을 시연.
+
+SCALE = 10**18  # 고정소수점 스케일 (EVM의 흔한 관례)
+
+def mul_div_floor(a, b, denom):
+    return (a * b) // denom            # 사용자가 &quot;받는&quot; 양 — 내림 (프로토콜에 유리)
+
+def mul_div_ceil(a, b, denom):
+    return -((-(a * b)) // denom)      # 사용자가 &quot;내는&quot; 양 — 올림 (프로토콜에 유리)
+
+price = 3 * SCALE // 7  # 나누어떨어지지 않는 가격 (절사 오차가 필연적으로 생김)
+
+def swap_user_receives(amount_in):
+    # 사용자가 amount_in 을 내고 price 만큼의 비율로 얼마를 받는지: 내림 처리
+    return mul_div_floor(amount_in, SCALE, price)
+
+def swap_user_pays(amount_out_wanted):
+    # 사용자가 amount_out_wanted 를 원할 때 얼마를 내야 하는지: 올림 처리
+    return mul_div_ceil(amount_out_wanted * price, 1, SCALE)
+
+amount_in = 1_000_000  # 아주 작은 입력 (절사 오차가 상대적으로 크게 드러나도록)
+received_correct = swap_user_receives(amount_in)   # 내림 (안전)
+received_wrong = (amount_in * SCALE) // price if True else None
+paid_correct = swap_user_pays(received_correct)     # 올림 (안전)
+
+print(&quot;price (scaled):&quot;, price, &quot;=&gt; approx&quot;, price / SCALE)
+print(&quot;user receives (floor, protocol-favoring):&quot;, received_correct)
+print(&quot;re-quoted amount user must pay (ceil, protocol-favoring):&quot;, paid_correct)
+print(&quot;paid &gt;= amount_in (no value leaked to user via rounding):&quot;, paid_correct &gt;= amount_in)
+
+# 반대로 &quot;받는 양&quot;을 올림 처리하면 반복 거래로 프로토콜에서 조금씩 잔여분을 긁어갈 수 있다
+def swap_user_receives_UNSAFE(amount_in):
+    return mul_div_ceil(amount_in, SCALE, price)
+
+unsafe_received = swap_user_receives_UNSAFE(amount_in)
+print()
+print(&quot;UNSAFE variant (rounds in user's favor) receives:&quot;, unsafe_received)
+print(&quot;unsafe &gt; safe by:&quot;, unsafe_received - received_correct, &quot;=&gt; repeated trades could drain dust&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-89.py">docs/code/algorithms/algorithms-89.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement fixed-point mulDiv in both round-down and round-up versions, then simulate thousands of rapid buy-then-sell cycles and check whether the pool balance grows or shrinks.</p>
+      <h2>Practical Connection</h2>
+      <p>Verex's LMSR cost function and its CLOB matching/settlement path sit right at the center of this problem, and without documenting the rounding convention in one place, different modules will drift in different directions.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>고정소수점 산술과 반올림 정책 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 89 / 100 &middot; F. 암호학·ZK (Day 82–96)</p>
       <p class="lead">불변식을 지키는 반올림 방향(dust leak 방지), LMSR의 exp/ln 근사 오차 상한</p>
@@ -115,7 +194,47 @@
       <p>EVM에는 부동소수점이 없으므로 비율과 가격은 고정소수점, 즉 정수에 암묵적 스케일(예: 1e18)을 곱한 표현으로 다룬다. 곱셈은 스케일이 두 배가 되므로 나누어 되돌려야 하고, 이 나눗셈마다 절사 오차가 생기며 그 방향이 시스템의 불변식을 지키거나 깨뜨린다. 원칙은 항상 프로토콜(풀·컨트랙트)에 유리한 방향으로 반올림하는 것으로, 사용자가 받는 양은 내림, 사용자가 내는 양은 올림으로 처리해 반복 거래로 잔여분을 긁어가는 dust leak을 막는다. LMSR처럼 exp와 ln이 필요한 비용함수는 정수 근사로 구현해야 하고, 근사 오차의 상한과 그 오차가 비용함수의 단조성·볼록성을 깨지 않는지를 함께 따져야 한다. 결론적으로 검증해야 할 것은 개별 연산의 정밀도가 아니라 &quot;어떤 순서로 연산해도 불변식이 유지되는가&quot;이다.</p>
       <p>반올림 방향 하나를 반대로 잡으면 수학적으로는 미미한 오차가 무한 반복 가능한 무료 인출 경로가 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 고정소수점 산술과 반올림 정책 — 정수 스케일(1e18)로 나눗셈 절사 오차를 다루고,
+# &quot;프로토콜에 유리한 방향&quot;으로 반올림해 dust leak(잔여분 누적 착취)을 막는 것을 시연.
+
+SCALE = 10**18  # 고정소수점 스케일 (EVM의 흔한 관례)
+
+def mul_div_floor(a, b, denom):
+    return (a * b) // denom            # 사용자가 &quot;받는&quot; 양 — 내림 (프로토콜에 유리)
+
+def mul_div_ceil(a, b, denom):
+    return -((-(a * b)) // denom)      # 사용자가 &quot;내는&quot; 양 — 올림 (프로토콜에 유리)
+
+price = 3 * SCALE // 7  # 나누어떨어지지 않는 가격 (절사 오차가 필연적으로 생김)
+
+def swap_user_receives(amount_in):
+    # 사용자가 amount_in 을 내고 price 만큼의 비율로 얼마를 받는지: 내림 처리
+    return mul_div_floor(amount_in, SCALE, price)
+
+def swap_user_pays(amount_out_wanted):
+    # 사용자가 amount_out_wanted 를 원할 때 얼마를 내야 하는지: 올림 처리
+    return mul_div_ceil(amount_out_wanted * price, 1, SCALE)
+
+amount_in = 1_000_000  # 아주 작은 입력 (절사 오차가 상대적으로 크게 드러나도록)
+received_correct = swap_user_receives(amount_in)   # 내림 (안전)
+received_wrong = (amount_in * SCALE) // price if True else None
+paid_correct = swap_user_pays(received_correct)     # 올림 (안전)
+
+print(&quot;price (scaled):&quot;, price, &quot;=&gt; approx&quot;, price / SCALE)
+print(&quot;user receives (floor, protocol-favoring):&quot;, received_correct)
+print(&quot;re-quoted amount user must pay (ceil, protocol-favoring):&quot;, paid_correct)
+print(&quot;paid &gt;= amount_in (no value leaked to user via rounding):&quot;, paid_correct &gt;= amount_in)
+
+# 반대로 &quot;받는 양&quot;을 올림 처리하면 반복 거래로 프로토콜에서 조금씩 잔여분을 긁어갈 수 있다
+def swap_user_receives_UNSAFE(amount_in):
+    return mul_div_ceil(amount_in, SCALE, price)
+
+unsafe_received = swap_user_receives_UNSAFE(amount_in)
+print()
+print(&quot;UNSAFE variant (rounds in user's favor) receives:&quot;, unsafe_received)
+print(&quot;unsafe &gt; safe by:&quot;, unsafe_received - received_correct, &quot;=&gt; repeated trades could drain dust&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-89.py">docs/code/algorithms/algorithms-89.py</a></p>
       <h2>연습</h2>
       <p>고정소수점 mulDiv를 내림·올림 두 버전으로 구현하고, 매수 후 즉시 매도를 수천 번 반복하는 시뮬레이션으로 풀 잔고가 늘어나는지 줄어드는지 확인해 보기.</p>
       <h2>실무 · Verex 연결</h2>

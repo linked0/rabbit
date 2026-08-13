@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 39 — VaR·꼬리리스크</title>
+<title>Geometric series → DCF valuation — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -106,23 +129,30 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 39</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Geometric series → DCF valuation</p>
   <article>
-      <h1>VaR·꼬리리스크 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 39 / 51 &middot; 11월 — 확률·통계·금융수학 (Day 35–42)</p>
-
-      <h2>개념</h2>
-      <p>VaR는 주어진 기간과 신뢰수준에서 손실이 넘지 않을 것으로 보는 임계값으로, 손실분포의 분위수로 정의된다. 정의상 VaR는 그 임계값을 넘었을 때 손실이 얼마나 커지는지는 아무것도 말해주지 않으며, 이것이 꼬리리스크를 과소평가하는 근본 한계다. 또한 VaR는 일반적으로 열등가법성(subadditivity)을 만족하지 않아 포트폴리오를 합쳤을 때 위험이 부분의 합보다 커 보이는 경우가 생기고, 이 때문에 정합적 위험척도(coherent risk measure)로 인정되지 않는다. 기대손실(Expected Shortfall, CVaR)은 VaR를 초과하는 손실의 조건부 기댓값으로 정의되어 꼬리의 크기를 반영하고 열등가법성을 만족한다. 정규분포 가정으로 VaR를 계산하면 실제 금융 수익률의 두꺼운 꼬리를 놓치므로, 과거 시뮬레이션이나 극단값 이론 같은 대안이 쓰인다.</p>
-      <p>청산 임계값이나 담보 요구치를 정규분포 가정 VaR로 잡으면 평상시엔 멀쩡하다가 극단 구간에서 정확히 무너지는 설계가 된다.</p>
-      <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
-      <h2>연습</h2>
-      <p>실제 자산 일간 수익률로 정규분포 가정 VaR, 과거 시뮬레이션 VaR, 기대손실을 각각 계산하고 세 값이 신뢰수준 99%에서 얼마나 벌어지는지 비교하라.</p>
-      <h2>실무 · Verex 연결</h2>
-      <p>Verex에서 마켓메이커의 최대 손실 한도, 담보 비율, 극단적 가격 이동 시의 정산 안전마진을 정할 때 VaR 대신 기대손실로 보는 편이 안전한 이유가 여기에 있다.</p>
-      <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
+      <h1><span class="topic-no">26</span>Geometric series → DCF valuation <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">Sum of a geometric series, applied to perpetuity/Gordon-formula valuation.</p>
+      <p class="meta">Math — from 2026-08-03's daily math track (Day 7/50: sequences &amp; series).</p>
+      <h2>Why</h2>
+      <p>Connects a pure-math result (the closed-form sum of a geometric series) to something used directly in finance — the Gordon Growth Model for valuing a perpetuity, which underpins terminal-value calculations in discounted cash flow (DCF) analysis.</p>
+      <h2>How it works</h2>
+      <p>Planned: a small derivation-to-code page showing the geometric series sum formula S = a / (1 − r) for |r| &lt; 1, then substituting cash-flow growth into it to derive the Gordon Growth perpetuity formula, with an interactive calculator comparing the closed-form result against a brute-force sum of many discounted future cash flows — to visually confirm the two converge. Not yet built.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/geometric-series-dcf">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="math-38.html">&larr; 38. 랜덤워크/GBM(개념)</a><a href="math-40.html">40. LMSR/마켓 스코어링(Verex 연결) &rarr;</a></div>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">26</span>등비급수 → DCF 밸류에이션 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">등비급수의 합을 영구채·고든 공식 밸류에이션에 적용.</p>
+      <p class="meta">수학 — 2026-08-03 매일의 수학 트랙 (Day 7/50: 수열·급수).</p>
+      <h2>왜</h2>
+      <p>순수 수학 결과(등비급수 합의 닫힌 형태 공식)를 실제 금융에서 바로 쓰이는 것과 연결합니다 — 영구채 가치를 구하는 고든 성장 모형은 DCF(현금흐름할인법) 분석의 잔존가치(terminal value) 계산의 기반입니다.</p>
+      <h2>동작 방식</h2>
+      <p>계획: |r| &lt; 1일 때 등비급수 합 공식 S = a / (1 − r)을 보여주는 작은 유도 페이지를 만들고, 여기에 현금흐름 성장률을 대입해 고든 성장 영구채 공식을 유도합니다. 닫힌 형태 공식의 결과와, 수십 년치 할인된 미래 현금흐름을 직접 합산한 결과를 비교하는 인터랙티브 계산기로 두 값이 실제로 수렴함을 시각적으로 확인시킵니다. 아직 미구현.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/geometric-series-dcf">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="../knowledge/isaac-groot.html">&larr; 25. NVIDIA Isaac GR00T — humanoid foundation model</a><a href="pocs-amortized-potential-function.html">27. Amortized analysis via potential functions &rarr;</a></div>
 </div>
 </body>
 </html>

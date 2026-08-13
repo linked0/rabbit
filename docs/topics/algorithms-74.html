@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 74 — 프루닝·아카이브·스냅 싱크</title>
+<title>Day 74 — Pruning, Archive Nodes, and Snap Sync</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,75 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 74</p>
   <article>
+      <h1>Pruning, Archive Nodes, and Snap Sync <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 74 / 100 &middot; E. Data &amp; Storage Engines (Day 69-81)</p>
+      <h2>Concept</h2>
+      <p>A node can in principle store both history — blocks, receipts — and the state trie at every point in time, but keeping all of it forever is more disk than anyone can afford. Pruning deletes past state-trie nodes that aren't needed to serve the latest state; a pruned node can still answer current balance/storage queries, but not state queries at some old block. An archive node keeps every past state, enabling lookups and re-execution at any block, at a much higher storage cost. Sync methods also diverge: unlike full sync, which re-executes every block, snap sync downloads state as flat key-value ranges rather than individual trie nodes, verifies each range against the state root with a range proof, and then patches whatever changed during the sync in a healing phase. That makes snap sync much faster, but it only yields the latest state — not history.</p>
+      <p>When a request to 'look up a balance or position at some past block' arrives late, and there's no archive node or separate indexer, there's simply no way to answer it. Node operating cost and queryable range both need to be decided together, up front.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 프루닝·아카이브·스냅 싱크 — 오래된 상태 트라이를 지운 프루닝 노드와 전부 보관한 아카이브 노드의 조회 가능 범위 차이.
+# 프루닝 노드는 지운 과거 블록의 상태를 조회할 때 &quot;missing trie node&quot;에 해당하는 오류를 낸다.
+
+class ChainState:
+    def __init__(self):
+        self.history = {}   # block_number -&gt; {account: balance}
+
+    def commit_block(self, block_number, state):
+        self.history[block_number] = dict(state)
+
+class PrunedNode:
+    def __init__(self, chain, keep_last=3):
+        self.chain = chain
+        self.keep_last = keep_last
+
+    def get_balance(self, block_number, account):
+        latest = max(self.chain.history)
+        if block_number &lt; latest - self.keep_last + 1:
+            raise LookupError(f&quot;missing trie node: block {block_number} state pruned&quot;)
+        return self.chain.history[block_number].get(account)
+
+class ArchiveNode:
+    def __init__(self, chain):
+        self.chain = chain
+
+    def get_balance(self, block_number, account):
+        return self.chain.history[block_number].get(account)  # 모든 과거 상태 보존
+
+chain = ChainState()
+balance = 1000
+for block in range(10):
+    balance += 10
+    chain.commit_block(block, {&quot;alice&quot;: balance})
+
+pruned = PrunedNode(chain, keep_last=3)
+archive = ArchiveNode(chain)
+
+print(&quot;최신 블록(9) 잔고 - pruned:&quot;, pruned.get_balance(9, &quot;alice&quot;), &quot;/ archive:&quot;, archive.get_balance(9, &quot;alice&quot;))
+
+try:
+    pruned.get_balance(2, &quot;alice&quot;)
+except LookupError as e:
+    print(&quot;오래된 블록(2) 조회 - pruned 노드:&quot;, e)
+
+print(&quot;오래된 블록(2) 조회 - archive 노드:&quot;, archive.get_balance(2, &quot;alice&quot;))
+
+def snap_sync(chain, latest_block):
+    # 실제로는 range proof 검증이 들어가지만, 여기선 &quot;최신 상태 스냅샷만 받는다&quot;는 특성만 재현
+    return dict(chain.history[latest_block])
+
+synced_state = snap_sync(chain, latest_block=9)
+print(&quot;snap sync로 받은 상태(최신만):&quot;, synced_state, &quot;— 과거 블록 상태는 없음&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-74.py">docs/code/algorithms/algorithms-74.py</a></p>
+      <h2>Exercise</h2>
+      <p>Call eth_getBalance for the same account at the latest block and at a very old block number, and directly compare the responses — including whether a pruned node returns a 'missing trie node' error — against an archive endpoint's.</p>
+      <h2>Practical Connection</h2>
+      <p>Since Verex's market history, position snapshots, and settlement verification may all require access to past state, reducing archive-node dependency by indexing events into your own reconstructible DB is the better path.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>프루닝·아카이브·스냅 싱크 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 74 / 100 &middot; E. 데이터·스토리지 엔진 (Day 69–81)</p>
 
@@ -115,7 +207,60 @@
       <p>노드는 블록·영수증 같은 히스토리와 각 시점의 상태 트라이를 모두 저장할 수 있지만, 전체를 영구 보관하면 디스크가 감당되지 않는다. 프루닝은 최신 상태를 유지하는 데 필요 없는 과거 상태 트라이 노드를 지우는 것으로, 이 노드는 현재 잔고·스토리지 조회는 되지만 오래된 블록 시점의 상태 조회는 못 한다. 아카이브 노드는 모든 과거 상태를 보존해 임의 블록 시점의 조회와 재실행이 가능한 대신 저장 비용이 훨씬 크다. 동기화 방식도 갈리는데, 모든 블록을 재실행하는 full sync와 달리 snap sync는 상태를 트라이 노드 단위가 아니라 평면 키-값 구간 단위로 내려받고 각 구간을 상태 루트에 대한 range proof로 검증한 뒤, 동기화 중 변한 부분을 healing 단계에서 메운다. 그래서 snap sync는 훨씬 빠르지만 최신 상태만 얻고 과거 상태는 얻지 못한다.</p>
       <p>&quot;과거 블록 시점의 잔고나 포지션을 조회하라&quot;는 요구가 뒤늦게 들어오면 아카이브 노드나 별도 인덱서가 없어 대응이 불가능해진다. 노드 운영 비용과 조회 가능 범위는 처음부터 같이 결정해야 한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 프루닝·아카이브·스냅 싱크 — 오래된 상태 트라이를 지운 프루닝 노드와 전부 보관한 아카이브 노드의 조회 가능 범위 차이.
+# 프루닝 노드는 지운 과거 블록의 상태를 조회할 때 &quot;missing trie node&quot;에 해당하는 오류를 낸다.
+
+class ChainState:
+    def __init__(self):
+        self.history = {}   # block_number -&gt; {account: balance}
+
+    def commit_block(self, block_number, state):
+        self.history[block_number] = dict(state)
+
+class PrunedNode:
+    def __init__(self, chain, keep_last=3):
+        self.chain = chain
+        self.keep_last = keep_last
+
+    def get_balance(self, block_number, account):
+        latest = max(self.chain.history)
+        if block_number &lt; latest - self.keep_last + 1:
+            raise LookupError(f&quot;missing trie node: block {block_number} state pruned&quot;)
+        return self.chain.history[block_number].get(account)
+
+class ArchiveNode:
+    def __init__(self, chain):
+        self.chain = chain
+
+    def get_balance(self, block_number, account):
+        return self.chain.history[block_number].get(account)  # 모든 과거 상태 보존
+
+chain = ChainState()
+balance = 1000
+for block in range(10):
+    balance += 10
+    chain.commit_block(block, {&quot;alice&quot;: balance})
+
+pruned = PrunedNode(chain, keep_last=3)
+archive = ArchiveNode(chain)
+
+print(&quot;최신 블록(9) 잔고 - pruned:&quot;, pruned.get_balance(9, &quot;alice&quot;), &quot;/ archive:&quot;, archive.get_balance(9, &quot;alice&quot;))
+
+try:
+    pruned.get_balance(2, &quot;alice&quot;)
+except LookupError as e:
+    print(&quot;오래된 블록(2) 조회 - pruned 노드:&quot;, e)
+
+print(&quot;오래된 블록(2) 조회 - archive 노드:&quot;, archive.get_balance(2, &quot;alice&quot;))
+
+def snap_sync(chain, latest_block):
+    # 실제로는 range proof 검증이 들어가지만, 여기선 &quot;최신 상태 스냅샷만 받는다&quot;는 특성만 재현
+    return dict(chain.history[latest_block])
+
+synced_state = snap_sync(chain, latest_block=9)
+print(&quot;snap sync로 받은 상태(최신만):&quot;, synced_state, &quot;— 과거 블록 상태는 없음&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-74.py">docs/code/algorithms/algorithms-74.py</a></p>
       <h2>연습</h2>
       <p>같은 계정에 대해 최신 블록과 아주 오래된 블록 번호로 eth_getBalance를 호출해, 프루닝된 노드와 아카이브 엔드포인트의 응답 차이(missing trie node 오류 여부)를 직접 확인하라.</p>
       <h2>실무 · Verex 연결</h2>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 97 — 트랜스포머 계산 구조·KV 캐시·추론 서빙(연속 배칭·PagedAttention)…</title>
+<title>Day 97 — Transformer compute structure, KV cache, and inference serving (continuous batching, PagedAttention), plus quantization/distillation/LoRA trade-offs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,62 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 97</p>
   <article>
+      <h1>Transformer compute structure, KV cache, and inference serving (continuous batching, PagedAttention), plus quantization/distillation/LoRA trade-offs <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 97 / 100 &middot; G. AI Engineering (Day 97-100)</p>
+      <h2>Concept</h2>
+      <p>Transformer inference splits into a prefill stage, which processes the whole prompt at once, and a decode stage, which generates tokens one at a time — the two stages bottleneck on different things. During decode, the key/value vectors of past tokens are kept in a KV cache so they don't need to be recomputed every step; this cache grows with sequence length and the number of concurrent requests, so GPU memory itself becomes the concurrency limit. PagedAttention manages the KV cache in fixed-size pages instead of one large contiguous block, eliminating fragmentation and over-reservation so more requests can be served concurrently. Continuous batching doesn't fix the batch composition per request — at every token-generation step it drops finished requests and admits new ones, cutting GPU idle time. On the model side, quantization lowers weights and activations to lower precision, distillation trains a small model to mimic a large model's outputs, and LoRA freezes the original weights and trains/swaps only small low-rank matrices — each has a different trade-off across quality, memory, and serving flexibility.</p>
+      <p>LLM serving cost and latency are shaped far more by KV cache management and batching strategy than by model choice, so without understanding this structure, the only lever you have left is buying more GPUs.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 트랜스포머 계산 구조·KV 캐시 — 단일 헤드 self-attention을 numpy로 구현하고,
+# 자기회귀 decode 시 K/V를 매 스텝 재계산하지 않고 캐시에 append 만 하는 것을 시연.
+
+import numpy as np
+
+np.random.seed(0)
+d_model, d_k = 8, 4
+
+Wq = np.random.randn(d_model, d_k) * 0.1
+Wk = np.random.randn(d_model, d_k) * 0.1
+Wv = np.random.randn(d_model, d_k) * 0.1
+
+def softmax(x):
+    e = np.exp(x - x.max(axis=-1, keepdims=True))
+    return e / e.sum(axis=-1, keepdims=True)
+
+def attention(q, K, V):
+    scores = (q @ K.T) / np.sqrt(d_k)          # (1, seq_len)
+    weights = softmax(scores)
+    return weights @ V, weights                # (1, d_k), (1, seq_len)
+
+# prefill: 초기 프롬프트 3토큰을 한 번에 처리하며 K/V 캐시를 채운다
+tokens = np.random.randn(3, d_model) * 0.1
+K_cache = tokens @ Wk
+V_cache = tokens @ Wv
+print(&quot;prefill 후 KV 캐시 길이:&quot;, len(K_cache))
+
+# decode: 새 토큰마다 Q만 새로 계산하고, K/V는 &quot;재계산 없이&quot; 캐시에 append 만 한다
+for step in range(3):
+    new_token = np.random.randn(1, d_model) * 0.1
+    q = new_token @ Wq
+    k_new, v_new = new_token @ Wk, new_token @ Wv
+    K_cache = np.vstack([K_cache, k_new])       # O(1) append, 과거 K 재계산 없음
+    V_cache = np.vstack([V_cache, v_new])
+    out, weights = attention(q, K_cache, V_cache)
+    print(f&quot;decode step {step}: KV 캐시 길이={len(K_cache)}, &quot;
+          f&quot;attention weights={np.round(weights[0], 3).tolist()}&quot;)
+
+print(&quot;\n캐시가 없다면 매 decode 스텝마다 전체 시퀀스의 K/V를 O(n) 재계산해야 한다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-97.py">docs/code/algorithms/algorithms-97.py</a></p>
+      <h2>Exercise</h2>
+      <p>Serving the same model, ramp up concurrent request count and prompt length, measure throughput and p95 latency, and find the point where the estimated KV cache memory hits its limit and requests start queuing.</p>
+      <h2>Practical Connection</h2>
+      <p>The direct blockchain connection is weak, but as a low-latency service that caches and batches per-request state, this calls for the same mindset as batching and memory-budget design in an order-book engine or an indexer.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>트랜스포머 계산 구조·KV 캐시·추론 서빙(연속 배칭·PagedAttention)… <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 97 / 100 &middot; G. AI 엔지니어링 (Day 97–100)</p>
 
@@ -115,7 +194,47 @@
       <p>트랜스포머 추론은 프롬프트 전체를 한 번에 처리하는 prefill 단계와 토큰을 하나씩 만들어내는 decode 단계로 나뉘고, 두 단계의 병목이 다르다. decode에서는 과거 토큰의 key/value를 매번 다시 계산하지 않도록 KV 캐시에 보관하는데, 이 캐시 크기가 시퀀스 길이와 동시 요청 수에 비례해 커져 GPU 메모리가 곧 동시성 한계가 된다. PagedAttention은 KV 캐시를 연속된 큰 블록이 아니라 페이지 단위로 관리해 단편화와 과다 예약을 없애 동시 처리 요청 수를 늘린다. 연속 배칭은 요청 단위로 배치를 고정하지 않고 토큰 생성 스텝마다 끝난 요청을 빼고 새 요청을 넣어 GPU 유휴를 줄인다. 모델 쪽 최적화로는 가중치·활성값을 저정밀도로 낮추는 양자화, 큰 모델의 출력을 작은 모델에 학습시키는 증류, 원 가중치를 고정한 채 저랭크 행렬만 학습·교체하는 LoRA가 있으며 각각 품질·메모리·서빙 유연성의 트레이드오프가 다르다.</p>
       <p>LLM 서빙 비용과 지연은 모델 선택보다 KV 캐시 관리와 배칭 전략에서 훨씬 크게 갈리므로, 이 구조를 모르면 GPU를 더 사는 방식으로만 문제를 풀게 된다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 트랜스포머 계산 구조·KV 캐시 — 단일 헤드 self-attention을 numpy로 구현하고,
+# 자기회귀 decode 시 K/V를 매 스텝 재계산하지 않고 캐시에 append 만 하는 것을 시연.
+
+import numpy as np
+
+np.random.seed(0)
+d_model, d_k = 8, 4
+
+Wq = np.random.randn(d_model, d_k) * 0.1
+Wk = np.random.randn(d_model, d_k) * 0.1
+Wv = np.random.randn(d_model, d_k) * 0.1
+
+def softmax(x):
+    e = np.exp(x - x.max(axis=-1, keepdims=True))
+    return e / e.sum(axis=-1, keepdims=True)
+
+def attention(q, K, V):
+    scores = (q @ K.T) / np.sqrt(d_k)          # (1, seq_len)
+    weights = softmax(scores)
+    return weights @ V, weights                # (1, d_k), (1, seq_len)
+
+# prefill: 초기 프롬프트 3토큰을 한 번에 처리하며 K/V 캐시를 채운다
+tokens = np.random.randn(3, d_model) * 0.1
+K_cache = tokens @ Wk
+V_cache = tokens @ Wv
+print(&quot;prefill 후 KV 캐시 길이:&quot;, len(K_cache))
+
+# decode: 새 토큰마다 Q만 새로 계산하고, K/V는 &quot;재계산 없이&quot; 캐시에 append 만 한다
+for step in range(3):
+    new_token = np.random.randn(1, d_model) * 0.1
+    q = new_token @ Wq
+    k_new, v_new = new_token @ Wk, new_token @ Wv
+    K_cache = np.vstack([K_cache, k_new])       # O(1) append, 과거 K 재계산 없음
+    V_cache = np.vstack([V_cache, v_new])
+    out, weights = attention(q, K_cache, V_cache)
+    print(f&quot;decode step {step}: KV 캐시 길이={len(K_cache)}, &quot;
+          f&quot;attention weights={np.round(weights[0], 3).tolist()}&quot;)
+
+print(&quot;\n캐시가 없다면 매 decode 스텝마다 전체 시퀀스의 K/V를 O(n) 재계산해야 한다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-97.py">docs/code/algorithms/algorithms-97.py</a></p>
       <h2>연습</h2>
       <p>동일 모델을 서빙하면서 동시 요청 수와 프롬프트 길이를 늘려가며 처리량과 p95 지연을 측정하고, KV 캐시 메모리 추정치가 언제 한계에 닿아 대기가 시작되는지 지점을 찾아 보라.</p>
       <h2>실무 · Verex 연결</h2>

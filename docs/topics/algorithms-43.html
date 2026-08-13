@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 43 — 백프레셔와 큐 이론</title>
+<title>Day 43 — Backpressure and Queueing Theory — Capacity Planning with Little's Law</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,64 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 43</p>
   <article>
+      <h1>Backpressure and Queueing Theory — Capacity Planning with Little's Law <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 43 / 100 &middot; C. Concurrency &amp; Performance Engineering (Day 36-51)</p>
+      <h2>Concept</h2>
+      <p>Queueing theory models arrival and service processes probabilistically to predict queue length and latency. Little's law states that in steady state, L = λW — the average number of items in the system equals the average arrival rate times the average time spent in the system — and its power is that it holds without any assumption about the distributions involved. As utilization ρ approaches 1, waiting time grows roughly proportional to 1/(1-ρ) and blows up sharply, so a system should be run with some slack, not at 100% utilization. Backpressure is a technique that pushes back on inflow the consumer can't keep up with, toward the producer, so the queue doesn't grow without bound — implemented via bounded queues, blocking, credit-based flow control, or load shedding. An unbounded queue doesn't solve overload — it just turns the failure into runaway latency and memory exhaustion instead.</p>
+      <p>When load spikes and a service collapses, the path is usually the queue growing without bound, latency crossing timeouts, and retries exploding — and this is exactly the point that capacity math can head off in advance.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 백프레셔와 큐 이론 — Little's law(L = λW)를 이용률(ρ)이 오를 때 대기시간이 급격히 커지는 걸로 확인하고,
+# 유계 큐 + 거절(load shedding)로 무한정 큐잉을 막는 백프레셔를 시뮬레이션한다.
+
+import random
+
+random.seed(7)
+
+def simulate(arrival_rate, service_rate, queue_capacity, num_events=20_000):
+    &quot;&quot;&quot;이산 시간 슬롯 시뮬레이션: 매 슬롯마다 arrival_rate 확률로 도착, service_rate 확률로 서비스 완료.&quot;&quot;&quot;
+    queue_len = 0
+    total_in_system_time = 0.0
+    completed = 0
+    rejected = 0
+    wait_started = []  # 각 대기 항목이 큐에 들어간 시각(슬롯 인덱스)을 기록
+
+    for t in range(num_events):
+        if random.random() &lt; arrival_rate:
+            if queue_len &lt; queue_capacity:          # 유계 큐: 꽉 차면 즉시 거절(load shedding)
+                queue_len += 1
+                wait_started.append(t)
+            else:
+                rejected += 1
+        if queue_len &gt; 0 and random.random() &lt; service_rate:
+            queue_len -= 1
+            started = wait_started.pop(0)
+            total_in_system_time += (t - started + 1)
+            completed += 1
+
+    avg_wait = total_in_system_time / completed if completed else 0.0
+    avg_queue_len = (arrival_rate * avg_wait)   # Little's law: L = λ * W (도착률은 실제 수락된 요청 기준으로 근사)
+    return completed, rejected, avg_wait, avg_queue_len
+
+service_rate = 0.5
+print(f&quot;{'utilization(rho)':&gt;18} {'completed':&gt;10} {'rejected':&gt;9} {'avg_wait':&gt;10} {'L=lambda*W':&gt;12}&quot;)
+for rho in (0.5, 0.8, 0.95):
+    arrival_rate = rho * service_rate
+    completed, rejected, avg_wait, avg_L = simulate(arrival_rate, service_rate, queue_capacity=15)
+    print(f&quot;{rho:&gt;18.2f} {completed:&gt;10} {rejected:&gt;9} {avg_wait:&gt;10.2f} {avg_L:&gt;12.2f}&quot;)
+
+print(&quot;\n관찰: rho 가 1에 가까워질수록 avg_wait 이 완만하지 않고 급격히 커진다 (~1/(1-rho) 형태).&quot;)
+print(&quot;유계 큐 덕분에 rho=0.95 에서도 무한정 쌓이지 않고 일부는 거절(reject)되어 시스템이 보호된다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-43.py">docs/code/algorithms/algorithms-43.py</a></p>
+      <h2>Exercise</h2>
+      <p>Put a bounded queue in front of a worker pool, raise the arrival rate to 50%, 80%, and 95% of the service rate, measure p50/p99 latency and queue length, and check whether the numbers match what Little's law predicts.</p>
+      <h2>Practical Connection</h2>
+      <p>In a pipeline like Verex, where order intake is fast but on-chain settlement is slow, tied to block time, without a bounded queue and load shedding up front, back-end latency directly turns into user timeouts and a storm of resubmissions.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>백프레셔와 큐 이론 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 43 / 100 &middot; C. 동시성·성능 엔지니어링 (Day 36–51)</p>
       <p class="lead">Little's law로 용량 계산</p>
@@ -115,7 +196,49 @@
       <p>큐 이론은 도착 과정과 서비스 과정을 확률적으로 모델링해 대기 길이와 지연을 예측하는 도구다. Little's law는 안정 상태에서 L = λW, 즉 시스템 안의 평균 항목 수가 평균 도착률과 평균 체류시간의 곱과 같다는 관계이며 분포에 대한 가정 없이 성립한다는 점이 강력하다. 이용률 ρ가 1에 가까워지면 대기시간은 대략 1/(1-ρ)에 비례해 급격히 커지므로, 시스템은 이용률 100%가 아니라 여유를 남긴 지점에서 운영해야 한다. 백프레셔는 소비자가 감당하지 못하는 유입을 생산자 쪽으로 되밀어 큐가 무한히 자라는 것을 막는 기법으로, 유계 큐, 블로킹, 크레딧 기반 흐름 제어, 부하 차단으로 구현한다. 무계 큐는 과부하를 해결하는 게 아니라 장애의 모습을 지연 폭증과 메모리 고갈로 바꿔 놓을 뿐이다.</p>
       <p>부하가 몰릴 때 서비스가 무너지는 경로는 대부분 큐가 무한히 커지며 지연이 타임아웃을 넘고 재시도가 폭증하는 형태이고, 이 지점은 용량 계산으로 미리 막을 수 있기 때문이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 백프레셔와 큐 이론 — Little's law(L = λW)를 이용률(ρ)이 오를 때 대기시간이 급격히 커지는 걸로 확인하고,
+# 유계 큐 + 거절(load shedding)로 무한정 큐잉을 막는 백프레셔를 시뮬레이션한다.
+
+import random
+
+random.seed(7)
+
+def simulate(arrival_rate, service_rate, queue_capacity, num_events=20_000):
+    &quot;&quot;&quot;이산 시간 슬롯 시뮬레이션: 매 슬롯마다 arrival_rate 확률로 도착, service_rate 확률로 서비스 완료.&quot;&quot;&quot;
+    queue_len = 0
+    total_in_system_time = 0.0
+    completed = 0
+    rejected = 0
+    wait_started = []  # 각 대기 항목이 큐에 들어간 시각(슬롯 인덱스)을 기록
+
+    for t in range(num_events):
+        if random.random() &lt; arrival_rate:
+            if queue_len &lt; queue_capacity:          # 유계 큐: 꽉 차면 즉시 거절(load shedding)
+                queue_len += 1
+                wait_started.append(t)
+            else:
+                rejected += 1
+        if queue_len &gt; 0 and random.random() &lt; service_rate:
+            queue_len -= 1
+            started = wait_started.pop(0)
+            total_in_system_time += (t - started + 1)
+            completed += 1
+
+    avg_wait = total_in_system_time / completed if completed else 0.0
+    avg_queue_len = (arrival_rate * avg_wait)   # Little's law: L = λ * W (도착률은 실제 수락된 요청 기준으로 근사)
+    return completed, rejected, avg_wait, avg_queue_len
+
+service_rate = 0.5
+print(f&quot;{'utilization(rho)':&gt;18} {'completed':&gt;10} {'rejected':&gt;9} {'avg_wait':&gt;10} {'L=lambda*W':&gt;12}&quot;)
+for rho in (0.5, 0.8, 0.95):
+    arrival_rate = rho * service_rate
+    completed, rejected, avg_wait, avg_L = simulate(arrival_rate, service_rate, queue_capacity=15)
+    print(f&quot;{rho:&gt;18.2f} {completed:&gt;10} {rejected:&gt;9} {avg_wait:&gt;10.2f} {avg_L:&gt;12.2f}&quot;)
+
+print(&quot;\n관찰: rho 가 1에 가까워질수록 avg_wait 이 완만하지 않고 급격히 커진다 (~1/(1-rho) 형태).&quot;)
+print(&quot;유계 큐 덕분에 rho=0.95 에서도 무한정 쌓이지 않고 일부는 거절(reject)되어 시스템이 보호된다.&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-43.py">docs/code/algorithms/algorithms-43.py</a></p>
       <h2>연습</h2>
       <p>워커 풀 앞에 유계 큐를 두고 도착률을 서비스율의 50%, 80%, 95%로 올려가며 p50/p99 지연과 큐 길이를 측정해 Little's law로 계산한 값과 맞는지 비교하기.</p>
       <h2>실무 · Verex 연결</h2>

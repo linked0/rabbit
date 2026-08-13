@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 46 — 라그랑주 보간 + Reed-Solomon (스레드 A 수확)</title>
+<title>Day 46 — ECC and Digital Signatures</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,21 +131,193 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 46</p>
   <article>
-      <h1>라그랑주 보간 + Reed-Solomon (스레드 A 수확) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 46 / 51 &middot; 12월 — 암호학·정보이론 (Day 43–51)</p>
+      <h1>ECC and Digital Signatures <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 46 / 52 &middot; December — Cryptography &amp; Information Theory (Day 44-52)</p>
+      <h2>Concept</h2>
+      <p>Elliptic curve cryptography uses the additive group formed by points on an elliptic curve defined over a finite field, and its security rests on the discrete logarithm problem: given a point P and kP, it's hard to recover k. At the same security level, keys and signatures are much shorter than RSA's, and the operations are faster, which is why it's widely used in practice. A digital signature is a value generated with a private key and verified with the public key, giving unforgeability along with the ability for a third party to confirm who signed what. ECDSA requires a secret random nonce for every signature; if that value is reused or biased, the private key can be recovered from just two signatures, which is why deterministically deriving the nonce from the message and key is recommended. ECDSA signatures also have malleability — a different valid signature can exist for the same message — so the signature value itself should never be used as a unique identifier.</p>
+      <p>Wallets, auth tokens, and transaction approvals all depend on this, and mistakes like nonce reuse, signature malleability, or not fixing what's actually being signed lead directly to stolen funds.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># ECC·디지털 서명 — 작은 소수체 위의 토이 타원곡선 + Schnorr 서명(교육용, 실서비스 금지)
+# 곡선: y^2 = x^3 + a*x + b (mod p). secp256k1 규모가 아니라 원리를 보기 위한 장난감 파라미터.
+
+p, a, b = 97, 2, 3
+INF = None  # 무한원점(항등원)
+
+def inv(x, m=p):
+    return pow(x, -1, m)  # 파이썬 내장 모듈러 역원(내부적으로 확장 유클리드)
+
+def on_curve(P):
+    if P is INF:
+        return True
+    x, y = P
+    return (y * y - (x ** 3 + a * x + b)) % p == 0
+
+def point_add(P, Q):
+    if P is INF:
+        return Q
+    if Q is INF:
+        return P
+    x1, y1 = P
+    x2, y2 = Q
+    if x1 == x2 and (y1 + y2) % p == 0:
+        return INF  # P + (-P) = O
+    if P == Q:
+        lam = (3 * x1 * x1 + a) * inv(2 * y1) % p
+    else:
+        lam = (y2 - y1) * inv(x2 - x1) % p
+    x3 = (lam * lam - x1 - x2) % p
+    y3 = (lam * (x1 - x3) - y1) % p
+    return (x3, y3)
+
+def scalar_mul(k, P):
+    R, base = INF, P
+    while k &gt; 0:
+        if k &amp; 1:
+            R = point_add(R, base)
+        base = point_add(base, base)
+        k &gt;&gt;= 1
+    return R
+
+# 곡선 위의 점 하나를 찾아 생성원 G로 쓰고, 그 위수 n(G^n = O)을 직접 센다
+G = next((x, y) for x in range(p) for y in range(p) if on_curve((x, y)))
+n = 1
+acc = G
+while acc is not INF:
+    acc = point_add(acc, G)
+    n += 1
+print(f&quot;곡선 y^2=x^3+{a}x+{b} mod {p}, G={G}, G의 위수 n={n}&quot;)
+
+# --- Schnorr 서명 (해시는 hashlib.sha256으로 대체한 단순화 버전, 교육용) ---
+import hashlib, random
+
+def H(*parts):
+    m = hashlib.sha256(&quot;|&quot;.join(str(x) for x in parts).encode()).hexdigest()
+    return int(m, 16) % n
+
+d = 42 % n or 7          # 개인키
+Q = scalar_mul(d, G)      # 공개키
+message = &quot;transfer 10 USDC to bob&quot;
+
+k = random.randrange(1, n)
+R = scalar_mul(k, G)
+e = H(R[0], message)
+s = (k + e * d) % n
+print(f&quot;\n서명 (R, s) = ({R}, {s})&quot;)
+
+# 검증: s*G =? R + e*Q
+lhs = scalar_mul(s, G)
+rhs = point_add(R, scalar_mul(e, Q))
+print(&quot;검증 결과 s*G == R + e*Q :&quot;, lhs == rhs)
+
+# 다른 메시지로는 같은 서명이 통과하지 못함을 확인
+e_wrong = H(R[0], &quot;transfer 10000 USDC to bob&quot;)
+lhs_wrong = scalar_mul(s, G)
+rhs_wrong = point_add(R, scalar_mul(e_wrong, Q))
+print(&quot;변조된 메시지 검증(실패해야 정상) :&quot;, lhs_wrong == rhs_wrong)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-46.py">docs/code/math/math-46.py</a></p>
+      <h2>Exercise</h2>
+      <p>Generate a secp256k1 keypair with a library, sign and verify a message, then take two signatures produced by forcing the same nonce to be reused and actually recover the private key from them.</p>
+      <h2>Practical Connection</h2>
+      <p>EIP-712 structured signing includes a domain separator and chain id in what's being signed to prevent replay and cross-chain resubmission — Verex's off-chain order signatures need the same treatment, including the market, expiry, and nonce in what gets signed.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1>ECC·디지털 서명 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 46 / 52 &middot; 12월 — 암호학·정보이론 (Day 44–52)</p>
 
       <h2>개념</h2>
-      <p>서로 다른 k개의 점이 주어지면 차수가 k-1 이하인 다항식이 유일하게 결정되고, 라그랑주 보간은 각 점에서만 1이고 나머지 점에서 0이 되는 기저 다항식을 조합해 그 다항식을 명시적으로 구성한다. Reed-Solomon 부호는 이 사실을 그대로 부호화에 쓴다. k개의 데이터 심볼을 다항식의 계수로 보고 서로 다른 n개의 점에서 평가한 값을 코드워드로 삼으면, n개 중 임의의 k개만 살아남아도 보간으로 원래 다항식을 복원할 수 있다. 그래서 이 부호는 최소 거리가 n-k+1인 MDS 부호가 되어 최대 n-k개의 소실을 복구하고, 위치를 모르는 오류는 그 절반까지 정정한다. 같은 구조가 Shamir의 비밀 분산에도 쓰이는데, 비밀을 상수항에 두고 k-1차 다항식의 평가값을 나눠 주면 k개 미만의 조각은 비밀에 대해 아무 정보도 주지 않는다.</p>
-      <p>복제 대신 소실 부호를 쓰면 같은 내구성을 훨씬 적은 저장 비용으로 얻을 수 있어 스토리지·전송 설계의 기본 도구다. 또 임계 서명과 데이터 가용성 설계가 모두 이 다항식 논리 위에 서 있다.</p>
+      <p>타원곡선 암호는 유한체 위에 정의된 타원곡선 점들이 이루는 덧셈군을 사용하며, 안전성은 점 P와 kP를 알아도 k를 구하기 어렵다는 이산로그 문제에 기반한다. 같은 안전 수준에서 RSA보다 키와 서명이 훨씬 짧고 연산이 빨라 실무에서 널리 쓰인다. 디지털 서명은 개인키로 생성하고 공개키로 검증하는 값으로, 위조 불가능성과 함께 제3자가 서명자와 메시지를 확인할 수 있게 해 준다. ECDSA는 서명마다 비밀 난수를 필요로 하는데 이 값이 재사용되거나 편향되면 서명 두 개만으로 개인키가 복원되므로, 메시지와 키에서 결정론적으로 유도하는 방식이 권장된다. 또한 ECDSA 서명에는 연성이 있어 같은 메시지에 대해 형태가 다른 유효 서명이 존재할 수 있으므로, 서명 값 자체를 고유 식별자로 삼아서는 안 된다.</p>
+      <p>지갑, 인증 토큰, 트랜잭션 승인까지 전부 여기에 걸려 있고 난수 재사용, 서명 연성, 서명 대상 미고정 같은 실수는 곧바로 자금 탈취로 이어지기 때문이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># ECC·디지털 서명 — 작은 소수체 위의 토이 타원곡선 + Schnorr 서명(교육용, 실서비스 금지)
+# 곡선: y^2 = x^3 + a*x + b (mod p). secp256k1 규모가 아니라 원리를 보기 위한 장난감 파라미터.
+
+p, a, b = 97, 2, 3
+INF = None  # 무한원점(항등원)
+
+def inv(x, m=p):
+    return pow(x, -1, m)  # 파이썬 내장 모듈러 역원(내부적으로 확장 유클리드)
+
+def on_curve(P):
+    if P is INF:
+        return True
+    x, y = P
+    return (y * y - (x ** 3 + a * x + b)) % p == 0
+
+def point_add(P, Q):
+    if P is INF:
+        return Q
+    if Q is INF:
+        return P
+    x1, y1 = P
+    x2, y2 = Q
+    if x1 == x2 and (y1 + y2) % p == 0:
+        return INF  # P + (-P) = O
+    if P == Q:
+        lam = (3 * x1 * x1 + a) * inv(2 * y1) % p
+    else:
+        lam = (y2 - y1) * inv(x2 - x1) % p
+    x3 = (lam * lam - x1 - x2) % p
+    y3 = (lam * (x1 - x3) - y1) % p
+    return (x3, y3)
+
+def scalar_mul(k, P):
+    R, base = INF, P
+    while k &gt; 0:
+        if k &amp; 1:
+            R = point_add(R, base)
+        base = point_add(base, base)
+        k &gt;&gt;= 1
+    return R
+
+# 곡선 위의 점 하나를 찾아 생성원 G로 쓰고, 그 위수 n(G^n = O)을 직접 센다
+G = next((x, y) for x in range(p) for y in range(p) if on_curve((x, y)))
+n = 1
+acc = G
+while acc is not INF:
+    acc = point_add(acc, G)
+    n += 1
+print(f&quot;곡선 y^2=x^3+{a}x+{b} mod {p}, G={G}, G의 위수 n={n}&quot;)
+
+# --- Schnorr 서명 (해시는 hashlib.sha256으로 대체한 단순화 버전, 교육용) ---
+import hashlib, random
+
+def H(*parts):
+    m = hashlib.sha256(&quot;|&quot;.join(str(x) for x in parts).encode()).hexdigest()
+    return int(m, 16) % n
+
+d = 42 % n or 7          # 개인키
+Q = scalar_mul(d, G)      # 공개키
+message = &quot;transfer 10 USDC to bob&quot;
+
+k = random.randrange(1, n)
+R = scalar_mul(k, G)
+e = H(R[0], message)
+s = (k + e * d) % n
+print(f&quot;\n서명 (R, s) = ({R}, {s})&quot;)
+
+# 검증: s*G =? R + e*Q
+lhs = scalar_mul(s, G)
+rhs = point_add(R, scalar_mul(e, Q))
+print(&quot;검증 결과 s*G == R + e*Q :&quot;, lhs == rhs)
+
+# 다른 메시지로는 같은 서명이 통과하지 못함을 확인
+e_wrong = H(R[0], &quot;transfer 10000 USDC to bob&quot;)
+lhs_wrong = scalar_mul(s, G)
+rhs_wrong = point_add(R, scalar_mul(e_wrong, Q))
+print(&quot;변조된 메시지 검증(실패해야 정상) :&quot;, lhs_wrong == rhs_wrong)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-46.py">docs/code/math/math-46.py</a></p>
       <h2>연습</h2>
-      <p>작은 유한체 위에서 k=3, n=5인 Reed-Solomon 인코더와 라그랑주 보간 디코더를 직접 구현해, 임의의 2개 심볼을 지운 뒤 원본이 복원되는지 확인하라.</p>
+      <p>라이브러리로 secp256k1 키쌍을 만들어 메시지에 서명하고 검증한 뒤, 같은 난수를 강제로 두 번 사용한 서명 두 개에서 개인키를 실제로 복원해 보기.</p>
       <h2>실무 · Verex 연결</h2>
-      <p>이더리움의 블롭 데이터 가용성과 KZG 다항식 커밋먼트, 오라클·릴레이어 키를 나눠 갖는 임계 서명이 모두 이 보간·소실 부호 구조를 쓰므로, Verex의 오라클 신뢰 모델을 설계할 때 직접적인 배경 지식이 된다.</p>
+      <p>EIP-712 구조화 서명은 서명 대상에 도메인 구분자와 체인 id를 넣어 재사용과 크로스체인 재전송을 막는데, Verex의 오프체인 주문 서명도 같은 식으로 시장·만기·nonce를 서명 대상에 포함해야 안전하다.</p>
       <p class="stub">공부한 날 원본 커리큘럼(<code>docs/knowledge/math-50-curriculum.md</code>)의 이 줄에 노트 링크와 ✅ 를 붙이면, 이 자리는 노트 본문으로 바로 이어집니다. 노트 없이 이 페이지에 바로 적어도 됩니다 &mdash; 다만 다시 생성하면 덮어쓰이므로, 남길 글은 <code>docs/algorithms/</code> 의 마크다운으로 쓰는 편이 안전합니다.</p>
     </article>
-  <div class="pager"><a href="math-45.html">&larr; 45. ECC·디지털 서명</a><a href="math-47.html">47. 페어링/KZG(개념) &rarr;</a></div>
+  <div class="pager"><a href="math-45.html">&larr; 45. 군론 기초(순환군·이산로그)</a><a href="math-47.html">47. 라그랑주 보간 + Reed-Solomon (스레드 A 수확) &rarr;</a></div>
 </div>
 </body>
 </html>

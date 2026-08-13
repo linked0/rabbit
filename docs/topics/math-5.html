@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 5 — 그래프 기초(DAG·트리·해시 링크)</title>
+<title>Day 5 — Graph Basics: DAGs, Trees, and Hash Links</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,116 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 5</p>
   <article>
+      <h1>Graph Basics: DAGs, Trees, and Hash Links <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 5 / 52 &middot; July — Discrete Math &amp; Logic (Day 3-10)</p>
+      <h2>Concept</h2>
+      <p>A graph is a pair of a vertex set and an edge set, and its properties diverge sharply depending on whether edges are directed and whether cycles exist. A DAG has only directed edges and no cycles, so a topological sort is always possible, and that ordering is the basis for dependency resolution and sequential processing. A tree is a connected, acyclic graph; with n vertices it has exactly n-1 edges, and once you pick a root, the path from any vertex to the root is unique. A hash link is an edge that points to the target node's content hash rather than a memory address, so changing a node's content changes its hash, which cascades up through every ancestor node that pointed to it — making the whole structure tamper-evident. Because a structure built from hash links can never point ahead to a hash that doesn't exist yet, it can never contain a cycle by construction and is always a DAG; Merkle trees and blockchains are the special case.</p>
+      <p>Blockchain structure, Merkle proofs, build dependencies, and transaction dependency graphs are all described in this same language of DAGs and hash links.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 그래프 기초(DAG·트리·해시 링크) — 해시 링크로 만든 체인은 원리상 사이클이 생길 수 없어 항상 DAG.
+# 노드 하나(payload)를 바꾸면 그 해시가 바뀌고, 상위 노드가 가리키던 해시도 전부 달라진다.
+
+import hashlib
+
+def h(data: bytes) -&gt; str:
+    return hashlib.sha256(data).hexdigest()[:12]
+
+class HashNode:
+    def __init__(self, payload, prev_hash=&quot;&quot;):
+        self.payload = payload
+        self.prev_hash = prev_hash
+        self.hash = h(f&quot;{payload}|{prev_hash}&quot;.encode())
+
+def build_chain(payloads):
+    chain = []
+    prev = &quot;&quot;
+    for p in payloads:
+        node = HashNode(p, prev)
+        chain.append(node)
+        prev = node.hash
+    return chain
+
+def verify_chain(chain):
+    prev = &quot;&quot;
+    for node in chain:
+        if node.prev_hash != prev:
+            return False
+        if h(f&quot;{node.payload}|{node.prev_hash}&quot;.encode()) != node.hash:
+            return False
+        prev = node.hash
+    return True
+
+chain = build_chain([&quot;genesis&quot;, &quot;tx1&quot;, &quot;tx2&quot;, &quot;tx3&quot;])
+print(&quot;원본 체인 유효?&quot;, verify_chain(chain))
+for n in chain:
+    print(f&quot;  {n.payload:10} prev={n.prev_hash or '(none)':14} hash={n.hash}&quot;)
+
+# tx2 의 내용을 변조하면 → 그 노드의 해시가 바뀌고, tx3.prev_hash 와 불일치 → 검증 실패.
+chain[2].payload = &quot;tx2-tampered&quot;
+chain[2].hash = h(f&quot;{chain[2].payload}|{chain[2].prev_hash}&quot;.encode())
+print(&quot;\ntx2 변조 후 체인 유효?&quot;, verify_chain(chain))
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-5.py">docs/code/math/math-5.py</a></p>
+      <h2>Exercise</h2>
+      <p>Implement a Merkle tree that reads a directory tree and computes each node's hash from its children's hashes, then verify that changing one byte of a file changes the root, while only the nodes on the changed path need to be recomputed.</p>
+      <h2>Practical Connection</h2>
+      <p>Ethereum's state tree and block linkage are both hash-linked DAGs, and the same principle underlies how Gnosis Conditional Tokens derive condition and position identifiers as hashes of their inputs.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>그래프 기초(DAG·트리·해시 링크) <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 5 / 51 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
+      <p class="meta">Math &middot; Day 5 / 52 &middot; 7월 — 이산수학·논리 (Day 3–10)</p>
 
       <h2>개념</h2>
       <p>그래프는 정점 집합과 간선 집합의 쌍이고, 간선에 방향이 있는지와 사이클이 있는지에 따라 성질이 크게 갈린다. DAG는 방향 간선만 있고 사이클이 없는 그래프로, 위상 정렬이 항상 가능하며 그 순서가 의존성 해결과 순차 처리의 기준이 된다. 트리는 연결되어 있으면서 사이클이 없는 그래프로 정점이 n개면 간선이 정확히 n-1개이고, 루트를 정하면 각 정점에서 루트까지의 경로가 유일하다. 해시 링크는 간선을 메모리 주소가 아니라 대상 노드 내용의 해시로 두는 방식으로, 노드 내용을 바꾸면 해시가 달라져 그 노드를 가리키던 상위 노드까지 전부 달라지므로 구조 전체가 변조 감지 가능해진다. 해시 링크로 이어진 구조는 아직 존재하지 않는 해시를 미리 가리킬 수 없으므로 원리적으로 사이클이 생길 수 없고 항상 DAG가 되며, 머클 트리와 블록 체인이 그 특수한 경우다.</p>
       <p>블록체인 구조, 머클 증명, 빌드 의존성, 트랜잭션 의존 그래프가 전부 같은 DAG와 해시 링크 언어로 설명되기 때문이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 그래프 기초(DAG·트리·해시 링크) — 해시 링크로 만든 체인은 원리상 사이클이 생길 수 없어 항상 DAG.
+# 노드 하나(payload)를 바꾸면 그 해시가 바뀌고, 상위 노드가 가리키던 해시도 전부 달라진다.
+
+import hashlib
+
+def h(data: bytes) -&gt; str:
+    return hashlib.sha256(data).hexdigest()[:12]
+
+class HashNode:
+    def __init__(self, payload, prev_hash=&quot;&quot;):
+        self.payload = payload
+        self.prev_hash = prev_hash
+        self.hash = h(f&quot;{payload}|{prev_hash}&quot;.encode())
+
+def build_chain(payloads):
+    chain = []
+    prev = &quot;&quot;
+    for p in payloads:
+        node = HashNode(p, prev)
+        chain.append(node)
+        prev = node.hash
+    return chain
+
+def verify_chain(chain):
+    prev = &quot;&quot;
+    for node in chain:
+        if node.prev_hash != prev:
+            return False
+        if h(f&quot;{node.payload}|{node.prev_hash}&quot;.encode()) != node.hash:
+            return False
+        prev = node.hash
+    return True
+
+chain = build_chain([&quot;genesis&quot;, &quot;tx1&quot;, &quot;tx2&quot;, &quot;tx3&quot;])
+print(&quot;원본 체인 유효?&quot;, verify_chain(chain))
+for n in chain:
+    print(f&quot;  {n.payload:10} prev={n.prev_hash or '(none)':14} hash={n.hash}&quot;)
+
+# tx2 의 내용을 변조하면 → 그 노드의 해시가 바뀌고, tx3.prev_hash 와 불일치 → 검증 실패.
+chain[2].payload = &quot;tx2-tampered&quot;
+chain[2].hash = h(f&quot;{chain[2].payload}|{chain[2].prev_hash}&quot;.encode())
+print(&quot;\ntx2 변조 후 체인 유효?&quot;, verify_chain(chain))
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-5.py">docs/code/math/math-5.py</a></p>
       <h2>연습</h2>
       <p>디렉터리 트리를 읽어 각 노드의 해시를 자식 해시들로부터 계산하는 머클 트리를 구현하고, 파일 한 바이트를 바꿨을 때 루트가 바뀌는 것과 변경 경로 위의 노드만 다시 계산하면 되는 것을 확인하기.</p>
       <h2>실무 · Verex 연결</h2>

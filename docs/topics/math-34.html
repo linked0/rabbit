@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 34 — 볼록집합/볼록함수 판별</title>
+<title>Day 34 — Convex Sets and Testing for Convex Functions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,14 +131,120 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../math.html">Math</a> &rsaquo; Day 34</p>
   <article>
+      <h1>Convex Sets and Testing for Convex Functions <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Math &middot; Day 34 / 52 &middot; October — Calculus &amp; Optimization (Day 27-34)</p>
+      <h2>Concept</h2>
+      <p>A set C is convex if the line segment joining any two points of C lies entirely within C, and a function f is convex if its domain is convex and f(θx + (1−θ)y) ≤ θf(x) + (1−θ)f(y) holds for any two points and any θ between 0 and 1. An equivalent, geometric characterization is that f's epigraph is a convex set. If f is differentiable, there's a first-order test — the tangent plane at any point is a global lower bound on the function — and if f is twice differentiable, there's a second-order test: the Hessian is positive semidefinite (PSD). Convexity is preserved under several operations, notably non-negative weighted sums, composition with affine maps, pointwise supremum, and composition with a convex, non-decreasing function. In convex problems, a local minimum is automatically the global minimum, and the conditions under which strong duality holds are well understood — so whether a problem can be made convex is often the key fork in the road for optimization work.</p>
+      <p>Whether a problem is convex determines whether you can use a solver that guarantees a global optimum or have to fall back on an initialization-dependent heuristic, so you need to be able to tell at the modeling stage.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># Day 34 — 볼록집합/볼록함수 판별
+# 정의(선분 부등식)와 2차 조건(Hessian이 준정부호)으로 볼록함수 여부를 판별한다.
+
+import numpy as np
+
+
+def is_convex_by_definition(f, x, y, n_thetas=11):
+    &quot;&quot;&quot;f(theta*x + (1-theta)*y) &lt;= theta*f(x) + (1-theta)*f(y) 가 모든 theta에서 성립하는지 확인.&quot;&quot;&quot;
+    for theta in np.linspace(0, 1, n_thetas):
+        lhs = f(theta * x + (1 - theta) * y)
+        rhs = theta * f(x) + (1 - theta) * f(y)
+        if lhs &gt; rhs + 1e-9:
+            return False
+    return True
+
+
+def f_convex(x):  # f(x) = x^2, 볼록함수
+    return x ** 2
+
+
+def f_nonconvex(x):  # f(x) = -x^2 + sin(4x)*3, 오목/비볼록 성격
+    return -(x ** 2) + 3 * np.sin(4 * x)
+
+
+x1, x2 = -2.0, 3.0
+print(f&quot;f(x)=x^2 은 [{x1},{x2}]에서 볼록? -&gt; {is_convex_by_definition(f_convex, x1, x2)}&quot;)
+print(f&quot;f(x)=-x^2+3sin(4x) 는 [{x1},{x2}]에서 볼록? -&gt; {is_convex_by_definition(f_nonconvex, x1, x2)}&quot;)
+
+
+# 다변수: Hessian이 준정부호(고유값이 모두 0 이상)이면 볼록
+def hessian_psd(H):
+    eigenvalues = np.linalg.eigvalsh(H)
+    return np.all(eigenvalues &gt;= -1e-9), eigenvalues
+
+
+# g(x,y) = x^2 + 2y^2 의 Hessian은 상수: [[2,0],[0,4]]
+H_convex = np.array([[2.0, 0.0], [0.0, 4.0]])
+psd, eigs = hessian_psd(H_convex)
+print(f&quot;\ng(x,y)=x^2+2y^2 의 Hessian 고유값 = {eigs} -&gt; 준정부호(볼록)? {psd}&quot;)
+
+# h(x,y) = x^2 - y^2 (안장점 형태) 의 Hessian
+H_saddle = np.array([[2.0, 0.0], [0.0, -2.0]])
+psd2, eigs2 = hessian_psd(H_saddle)
+print(f&quot;h(x,y)=x^2-y^2 의 Hessian 고유값 = {eigs2} -&gt; 준정부호(볼록)? {psd2}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-34.py">docs/code/math/math-34.py</a></p>
+      <h2>Exercise</h2>
+      <p>Derive the Hessian of the log-sum-exp function by hand and numerically verify vᵀHv ≥ 0 for arbitrary vectors v, then separately confirm the same conclusion using only the convexity-preservation rules.</p>
+      <h2>Practical Connection</h2>
+      <p>LMSR's cost function has the log-sum-exp form, so it's convex — and that convexity is exactly what guarantees prices are well-defined as per-outcome probabilities and that no risk-free arbitrage exists in the structure.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/math-50-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>볼록집합/볼록함수 판별 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
-      <p class="meta">Math &middot; Day 34 / 51 &middot; 10월 — 미적분·최적화 (Day 27–34)</p>
+      <p class="meta">Math &middot; Day 34 / 52 &middot; 10월 — 미적분·최적화 (Day 27–34)</p>
 
       <h2>개념</h2>
       <p>집합 C가 볼록하다는 것은 C의 임의의 두 점을 잇는 선분이 통째로 C 안에 있다는 뜻이고, 함수 f가 볼록하다는 것은 정의역이 볼록이고 임의의 두 점과 0과 1 사이의 계수에 대해 f(θx + (1−θ)y) ≤ θf(x) + (1−θ)f(y)가 성립한다는 뜻이다. 동치 조건으로 f의 에피그래프가 볼록집합이라는 기하적 특징이 있고, 미분 가능하면 1차 조건(어느 점의 접평면이 함수의 전역 하계)으로, 두 번 미분 가능하면 Hessian이 준정부호(PSD)라는 2차 조건으로 판별한다. 볼록성은 연산에서 보존되며, 비음수 가중합, 아핀 사상과의 합성, 점별 상한(supremum), 볼록·비감소 함수와의 합성 등이 대표적인 보존 규칙이다. 볼록 문제에서는 국소 최소가 곧 전역 최소이고 강한 쌍대성이 성립하는 조건이 잘 알려져 있어, 문제를 볼록으로 만들 수 있느냐가 최적화 실무의 핵심 갈림길이 된다.</p>
       <p>&quot;볼록이냐&quot;에 따라 전역 최적을 보장받는 solver를 쓸지, 초기값에 의존하는 휴리스틱을 쓸지가 갈리므로 모델링 단계에서 판별할 수 있어야 한다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># Day 34 — 볼록집합/볼록함수 판별
+# 정의(선분 부등식)와 2차 조건(Hessian이 준정부호)으로 볼록함수 여부를 판별한다.
+
+import numpy as np
+
+
+def is_convex_by_definition(f, x, y, n_thetas=11):
+    &quot;&quot;&quot;f(theta*x + (1-theta)*y) &lt;= theta*f(x) + (1-theta)*f(y) 가 모든 theta에서 성립하는지 확인.&quot;&quot;&quot;
+    for theta in np.linspace(0, 1, n_thetas):
+        lhs = f(theta * x + (1 - theta) * y)
+        rhs = theta * f(x) + (1 - theta) * f(y)
+        if lhs &gt; rhs + 1e-9:
+            return False
+    return True
+
+
+def f_convex(x):  # f(x) = x^2, 볼록함수
+    return x ** 2
+
+
+def f_nonconvex(x):  # f(x) = -x^2 + sin(4x)*3, 오목/비볼록 성격
+    return -(x ** 2) + 3 * np.sin(4 * x)
+
+
+x1, x2 = -2.0, 3.0
+print(f&quot;f(x)=x^2 은 [{x1},{x2}]에서 볼록? -&gt; {is_convex_by_definition(f_convex, x1, x2)}&quot;)
+print(f&quot;f(x)=-x^2+3sin(4x) 는 [{x1},{x2}]에서 볼록? -&gt; {is_convex_by_definition(f_nonconvex, x1, x2)}&quot;)
+
+
+# 다변수: Hessian이 준정부호(고유값이 모두 0 이상)이면 볼록
+def hessian_psd(H):
+    eigenvalues = np.linalg.eigvalsh(H)
+    return np.all(eigenvalues &gt;= -1e-9), eigenvalues
+
+
+# g(x,y) = x^2 + 2y^2 의 Hessian은 상수: [[2,0],[0,4]]
+H_convex = np.array([[2.0, 0.0], [0.0, 4.0]])
+psd, eigs = hessian_psd(H_convex)
+print(f&quot;\ng(x,y)=x^2+2y^2 의 Hessian 고유값 = {eigs} -&gt; 준정부호(볼록)? {psd}&quot;)
+
+# h(x,y) = x^2 - y^2 (안장점 형태) 의 Hessian
+H_saddle = np.array([[2.0, 0.0], [0.0, -2.0]])
+psd2, eigs2 = hessian_psd(H_saddle)
+print(f&quot;h(x,y)=x^2-y^2 의 Hessian 고유값 = {eigs2} -&gt; 준정부호(볼록)? {psd2}&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/math/math-34.py">docs/code/math/math-34.py</a></p>
       <h2>연습</h2>
       <p>log-sum-exp 함수의 Hessian을 직접 구해 임의 벡터 v에 대해 vᵀHv ≥ 0임을 수치적으로 확인하고, 볼록성 보존 규칙만으로 같은 결론에 도달하는 경로도 적어 볼 것.</p>
       <h2>실무 · Verex 연결</h2>

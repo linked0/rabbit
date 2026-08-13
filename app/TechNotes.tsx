@@ -2,6 +2,7 @@ import type { DemoCard } from "@/lib/demo-cards";
 import { pick } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n";
 import MermaidDiagram from "./MermaidDiagram";
+import { getPocCodeSnippet, POC_CODE_REPO_HREF } from "@/lib/code-snippet";
 
 // 페이지 하단 "기술 노트" 섹션 — 카드 그리드의 짧은 설명과 별개로, 목적·동작 방식을 자세히
 // 기록해 방문한 채용 담당자가 실제 구현 이해도를 볼 수 있게 한다 (jay, 2026-08-04).
@@ -19,6 +20,7 @@ export default function TechNotes({ cards, lang }: { cards: DemoCard[]; lang: La
       {cards.map((card) => {
         const isLive = card.status === "live";
         const isDone = card.status === "done";
+        const code = getPocCodeSnippet(card.key);
         return (
           <div key={card.key} className="panel" style={{ marginTop: 16 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -47,6 +49,19 @@ export default function TechNotes({ cards, lang }: { cards: DemoCard[]; lang: La
                 <MermaidDiagram definition={d.src} />
               </figure>
             ))}
+            {code && (
+              <div style={{ marginTop: 12 }}>
+                <strong style={{ fontSize: 14 }}>{pick(lang, "관련 코드: ", "Related code: ")}</strong>
+                <pre className="card-code" style={{ marginTop: 8 }}>
+                  <code>{code}</code>
+                </pre>
+                <p className="sub" style={{ marginTop: 4, fontSize: 12 }}>
+                  <a href={POC_CODE_REPO_HREF(card.key)} target="_blank" rel="noopener noreferrer">
+                    docs/code/pocs/{card.key}.py
+                  </a>
+                </p>
+              </div>
+            )}
           </div>
         );
       })}

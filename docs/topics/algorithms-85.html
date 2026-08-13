@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 85 — 서명 스킴 비교</title>
+<title>Day 85 — Comparing Signature Schemes — ECDSA, EdDSA, Schnorr, BLS, and Forgery Pitfalls</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -77,16 +77,32 @@
   .meta { font-size:0.92rem; color:var(--text2); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
-  /* 커리큘럼 항목 목록 (algorithms.html) — 한 줄에 번호·제목·상태. */
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
   .topics { list-style:none; margin:0; padding:0; }
-  .topics li { display:flex; gap:12px; align-items:baseline; padding:9px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
   .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
   article h1 .topic-no { font-size:0.72em; }
-  .topic-text { flex:1 1 auto; min-width:0; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
   .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
@@ -94,6 +110,13 @@
   .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
   .pager span { color:var(--text2); }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
@@ -108,6 +131,61 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../algorithms.html">Algorithms</a> &rsaquo; Day 85</p>
   <article>
+      <h1>Comparing Signature Schemes — ECDSA, EdDSA, Schnorr, BLS, and Forgery Pitfalls <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <p class="meta">Algorithms &middot; Day 85 / 100 &middot; F. Cryptography &amp; ZK (Day 82-96)</p>
+      <h2>Concept</h2>
+      <p>ECDSA is an elliptic-curve signature scheme that requires a secret random nonce per signature; if that nonce is reused or biased, the private key can be recovered from just two signatures. It also has signature malleability — both (r, s) and (r, -s mod n) are valid — so Ethereum constrains s to the lower half of the range; in exchange, the property that lets you recover the public key from a signature is what makes the ecrecover pattern possible. EdDSA, a Schnorr-family scheme, derives the nonce deterministically from the private key and the message hash, structurally eliminating nonce-reuse incidents — but implementations vary in cofactor handling and encoding-normalization checks, creating a consensus risk where one library accepts a signature that another rejects. Schnorr signatures' linear structure lets multiple keys and signatures be aggregated into one; BLS uses pairings to make signatures short and lets an unlimited number of them aggregate, which suits collecting a validator set's signatures, though verification is comparatively heavy. A common trap across aggregate schemes is the rogue-key attack, where an attacker crafts their own key relative to someone else's public key — defending against it needs proof of possession or a MuSig-style commitment procedure.</p>
+      <p>Subtle differences in signature-verification code translate directly into stolen funds or a consensus split between nodes, and nonce handling, malleability, and rogue-key attacks have each caused real incidents repeatedly. Choosing a scheme is choosing which pitfall you're taking on.</p>
+      <h2>Code &amp; Formula</h2>
+      <pre><code># 서명 스킴 비교 — ECDSA의 nonce 재사용이 개인키를 복원시키는 함정을 토이 곡선 위에서 재현한다.
+# 실제 secp256k1 대신 작은 소수 곡선으로 개념만 시연 (교육용, 프로덕션 서명엔 검증된 라이브러리 사용).
+
+# 아주 작은 유한체 위의 &quot;장난감&quot; 타원곡선 대신, ECDSA 서명 수식만 정수 mod n 산술로 재현한다.
+# 서명 공식: s = k^-1 * (h + r * priv_key) mod n  (r 은 nonce k 로부터 유도된 값이라고 가정)
+
+n = 1000000007  # 그룹 위수 역할을 하는 소수 (토이 값)
+priv_key = 123456789 % n
+
+def sign(h, k, r):
+    &quot;&quot;&quot;h: 메시지 해시, k: nonce, r: nonce로부터 나온 값(실제론 k*G의 x좌표)&quot;&quot;&quot;
+    k_inv = pow(k, -1, n)
+    s = (k_inv * (h + r * priv_key)) % n
+    return s
+
+def recover_priv_key_from_nonce_reuse(h1, s1, h2, s2, r):
+    &quot;&quot;&quot;같은 nonce r로 서명한 서명 두 개만으로 개인키를 복원한다.&quot;&quot;&quot;
+    # s1 - s2 = k^-1 * (h1 - h2)  =&gt;  k = (h1 - h2) / (s1 - s2)
+    k = ((h1 - h2) * pow((s1 - s2) % n, -1, n)) % n
+    # s1 = k^-1 * (h1 + r * priv) =&gt; priv = (s1 * k - h1) / r
+    recovered = ((s1 * k - h1) * pow(r, -1, n)) % n
+    return recovered
+
+reused_nonce_k = 999999937
+r = (reused_nonce_k * 7) % n  # r 은 k 로부터 결정론적으로 유도된다고 가정 (토이 모델)
+
+h1, h2 = 42, 4242  # 서로 다른 두 메시지의 해시
+s1 = sign(h1, reused_nonce_k, r)
+s2 = sign(h2, reused_nonce_k, r)  # 실수로 같은 nonce 재사용
+
+recovered_priv = recover_priv_key_from_nonce_reuse(h1, s1, h2, s2, r)
+print(&quot;actual private key:&quot;, priv_key)
+print(&quot;recovered from two signatures sharing a nonce:&quot;, recovered_priv)
+print(&quot;nonce reuse breaks ECDSA:&quot;, recovered_priv == priv_key)
+
+print()
+print(&quot;EdDSA fixes this by deriving nonce deterministically as hash(priv_key || message),&quot;)
+print(&quot;so the same key+message always reuses the SAME nonce safely (no accidental reuse across msgs).&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-85.py">docs/code/algorithms/algorithms-85.py</a></p>
+      <h2>Exercise</h2>
+      <p>Produce two ECDSA signatures over different messages using the same nonce, then actually solve the resulting pair of equations to recover the private key.</p>
+      <h2>Practical Connection</h2>
+      <p>If Verex takes signed off-chain orders and verifies them on-chain, how you handle signature malleability, nonce reuse prevention, and domain separation (EIP-712) is exactly the defense line against order forgery and replay attacks.</p>
+      <p class="stub">If you study this on a given day, add a note link and a ✅ to this line in the source curriculum (<code>docs/knowledge/dev-100-curriculum.md</code>) and this spot will lead straight to the note body. You can also write directly on this page &mdash; but regenerating overwrites it, so it's safer to keep anything you want to save as markdown under <code>docs/algorithms/</code>.</p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
       <h1>서명 스킴 비교 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 85 / 100 &middot; F. 암호학·ZK (Day 82–96)</p>
       <p class="lead">ECDSA·EdDSA·Schnorr·BLS와 위조 함정</p>
@@ -115,7 +193,46 @@
       <p>ECDSA는 타원곡선 위의 서명 스킴으로 서명마다 비밀 난수 nonce가 필요하고, 이 nonce가 재사용되거나 편향되면 서명 두 개만으로 개인키가 복원된다. 또 (r, s)와 (r, -s mod n)이 모두 유효해 서명 가변성(malleability)이 생기므로 이더리움은 s를 낮은 절반으로 제한하는 규칙을 두었고, 대신 서명에서 공개키를 복원할 수 있다는 특성 덕에 ecrecover 패턴이 가능하다. EdDSA는 Schnorr 계열로 nonce를 비밀키와 메시지의 해시로 결정론적으로 만들어 nonce 재사용 사고를 구조적으로 없앴지만, 구현마다 cofactor 처리나 인코딩 정규성 검사 기준이 달라 같은 서명을 어떤 라이브러리는 받고 어떤 라이브러리는 거부하는 합의 위험이 있다. Schnorr 서명은 선형 구조 덕분에 여러 키와 서명을 하나로 집계할 수 있고, BLS는 페어링을 이용해 서명이 짧고 다수 서명을 무제한 집계할 수 있어 검증자 집합 서명 취합에 적합하지만 검증 연산이 상대적으로 무겁다. 집계형 스킴의 공통 함정은 rogue-key 공격으로, 공격자가 남의 공개키를 반영해 자신의 키를 고르는 것을 막기 위해 소유 증명(proof of possession)이나 MuSig류의 커밋 절차가 필요하다.</p>
       <p>서명 검증 코드의 미묘한 차이가 자금 도난이나 노드 간 합의 분기로 직결되고, nonce·malleability·rogue-key는 실제로 반복해서 사고를 낸 지점이다. 스킴을 고르는 일은 곧 어떤 함정을 떠안을지 고르는 일이다.</p>
       <h2>코드 · 수식</h2>
-      <p class="meta">10~25줄. 돌아가는 최소 예제 하나 또는 유도 한 단계.</p>
+      <pre><code># 서명 스킴 비교 — ECDSA의 nonce 재사용이 개인키를 복원시키는 함정을 토이 곡선 위에서 재현한다.
+# 실제 secp256k1 대신 작은 소수 곡선으로 개념만 시연 (교육용, 프로덕션 서명엔 검증된 라이브러리 사용).
+
+# 아주 작은 유한체 위의 &quot;장난감&quot; 타원곡선 대신, ECDSA 서명 수식만 정수 mod n 산술로 재현한다.
+# 서명 공식: s = k^-1 * (h + r * priv_key) mod n  (r 은 nonce k 로부터 유도된 값이라고 가정)
+
+n = 1000000007  # 그룹 위수 역할을 하는 소수 (토이 값)
+priv_key = 123456789 % n
+
+def sign(h, k, r):
+    &quot;&quot;&quot;h: 메시지 해시, k: nonce, r: nonce로부터 나온 값(실제론 k*G의 x좌표)&quot;&quot;&quot;
+    k_inv = pow(k, -1, n)
+    s = (k_inv * (h + r * priv_key)) % n
+    return s
+
+def recover_priv_key_from_nonce_reuse(h1, s1, h2, s2, r):
+    &quot;&quot;&quot;같은 nonce r로 서명한 서명 두 개만으로 개인키를 복원한다.&quot;&quot;&quot;
+    # s1 - s2 = k^-1 * (h1 - h2)  =&gt;  k = (h1 - h2) / (s1 - s2)
+    k = ((h1 - h2) * pow((s1 - s2) % n, -1, n)) % n
+    # s1 = k^-1 * (h1 + r * priv) =&gt; priv = (s1 * k - h1) / r
+    recovered = ((s1 * k - h1) * pow(r, -1, n)) % n
+    return recovered
+
+reused_nonce_k = 999999937
+r = (reused_nonce_k * 7) % n  # r 은 k 로부터 결정론적으로 유도된다고 가정 (토이 모델)
+
+h1, h2 = 42, 4242  # 서로 다른 두 메시지의 해시
+s1 = sign(h1, reused_nonce_k, r)
+s2 = sign(h2, reused_nonce_k, r)  # 실수로 같은 nonce 재사용
+
+recovered_priv = recover_priv_key_from_nonce_reuse(h1, s1, h2, s2, r)
+print(&quot;actual private key:&quot;, priv_key)
+print(&quot;recovered from two signatures sharing a nonce:&quot;, recovered_priv)
+print(&quot;nonce reuse breaks ECDSA:&quot;, recovered_priv == priv_key)
+
+print()
+print(&quot;EdDSA fixes this by deriving nonce deterministically as hash(priv_key || message),&quot;)
+print(&quot;so the same key+message always reuses the SAME nonce safely (no accidental reuse across msgs).&quot;)
+</code></pre>
+      <p class="code-link"><a href="../code/algorithms/algorithms-85.py">docs/code/algorithms/algorithms-85.py</a></p>
       <h2>연습</h2>
       <p>동일한 nonce로 서로 다른 메시지에 ECDSA 서명 두 개를 만든 뒤 두 서명식을 연립해 개인키를 실제로 복원하는 스크립트를 작성해 보라.</p>
       <h2>실무 · Verex 연결</h2>
