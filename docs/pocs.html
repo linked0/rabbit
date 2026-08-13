@@ -90,6 +90,12 @@
   .topics { list-style:none; margin:0; padding:0; }
   .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
   .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
@@ -98,6 +104,9 @@
   .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
   .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
   .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
   .topic-how strong { color:var(--text); }
   .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
@@ -141,9 +150,9 @@
       <div class="nav-group" data-group>
         <p class="nav-group-label">All PoCs (28)</p>
         <ul>
-        <li><a class="nav-link" href="#agent" data-key="agent"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>Autonomous payment agent</span></a></li>
-        <li><a class="nav-link" href="#oz-relayer" data-key="oz-relayer"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
-        <li><a class="nav-link" href="#dvt" data-key="dvt"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">3</span>DVT in the protocol</span></a></li>
+        <li><a class="nav-link" href="#dvt" data-key="dvt"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>DVT in the protocol</span></a></li>
+        <li><a class="nav-link" href="#agent" data-key="agent"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>Autonomous payment agent</span></a></li>
+        <li><a class="nav-link" href="#oz-relayer" data-key="oz-relayer"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">3</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
         <li><a class="nav-link" href="#dsrv-portal" data-key="dsrv-portal"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">4</span>Institutional custody study</span></a></li>
         <li><a class="nav-link" href="#pet-clean-room" data-key="pet-clean-room"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">5</span>PET clean room (FHE)</span></a></li>
         <li><a class="nav-link" href="#merkle-vs-verkle" data-key="merkle-vs-verkle"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">6</span>Merkle vs Verkle</span></a></li>
@@ -181,26 +190,26 @@
     <article>
       <h1>All PoCs</h1>
       <ul class="topics">
+        <li id="dvt">
+          <div class="topic-head"><span class="topic-no">1</span><span class="topic-title">DVT in the protocol</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <p class="topic-summary">Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.</p>
+          <p class="topic-how"><strong>How it works:</strong> Today's DVT (Obol, SSV) splits one validator key with Shamir sharing or threshold BLS and runs an off-chain consensus round to reassemble a signature each time; the protocol still sees a single validator, and all distribution lives in middleware. The proposal never splits the key: each participant registers their own (n ≤ 16), the protocol groups them m-of-n, and BLS aggregation plus a participation bitfield — the same grammar as today's attestation aggregation — decides whether enough took part.</p>
+          <p class="topic-why"><strong>Why:</strong> Reading a live protocol-design discussion closely enough to separate three things people usually blur: what the proposal actually changes, what it leaves unresolved, and which parts of the idea can be built one layer up without waiting for it. It is also a second instance of a pattern this site already documents elsewhere — middleware doing a job well until the protocol absorbs it, which is exactly what ERC-4337 bundlers face from native account abstraction.</p>
+          <p class="topic-link"><a href="topics/pocs-dvt.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/dvt">Open on jaylabs.xyz &rarr;</a></p>
+        </li>
         <li id="agent">
-          <div class="topic-head"><span class="topic-no">1</span><span class="topic-title">Autonomous payment agent</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">2</span><span class="topic-title">Autonomous payment agent</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">An agent that wakes on a timer, decides on its own whether to spend, and cannot exceed the mandate it was given.</p>
           <p class="topic-how"><strong>How it works:</strong> A scheduler hits a server endpoint every few minutes with no browser open. Each tick reads a real signal (the Chainlink Sepolia ETH/USD feed), evaluates a threshold rule against the last action, and either spends test USDC through an ERC-7715 session key or records why it declined.</p>
           <p class="topic-why"><strong>Why:</strong> The other demos on this page prove capability: a session key can spend within a bound, a paymaster can cover gas, a batch can revert atomically. Every one of them is started by a human pressing a button, which makes them account abstraction for agents rather than an agent.</p>
           <p class="topic-link"><a href="topics/pocs-agent.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/agent">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="oz-relayer">
-          <div class="topic-head"><span class="topic-no">2</span><span class="topic-title">OpenZeppelin Relayer &amp; Monitor</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">OpenZeppelin Relayer &amp; Monitor</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">The managed service shut down; the tools were opened. Self-hosted transaction plumbing and on-chain alerting.</p>
           <p class="topic-how"><strong>How it works:</strong> Relayer keeps the plumbing: it accepts a transaction over a REST API, signs it, and owns nonce sequencing, gas pricing, and retry — EVM multi-chain plus Solana and Stellar, with keys in HashiCorp Vault or AWS KMS rather than an env var. Monitor watches the other direction: declarative JSON rules over events, function calls, and transaction patterns, firing Slack or webhook alerts.</p>
           <p class="topic-why"><strong>Why:</strong> Two questions this catalogue has not asked yet. First, the operational one: every agent demo here hand-rolls the dullest and most failure-prone part of on-chain work — nonce management, gas strategy, retries — and OpenZeppelin Relayer is that exact layer, extracted and hardened.</p>
           <p class="topic-link"><a href="topics/pocs-oz-relayer.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
-        </li>
-        <li id="dvt">
-          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">DVT in the protocol</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
-          <p class="topic-summary">Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.</p>
-          <p class="topic-how"><strong>How it works:</strong> Today's DVT (Obol, SSV) splits one validator key with Shamir sharing or threshold BLS and runs an off-chain consensus round to reassemble a signature each time; the protocol still sees a single validator, and all distribution lives in middleware. The proposal never splits the key: each participant registers their own (n ≤ 16), the protocol groups them m-of-n, and BLS aggregation plus a participation bitfield — the same grammar as today's attestation aggregation — decides whether enough took part.</p>
-          <p class="topic-why"><strong>Why:</strong> Reading a live protocol-design discussion closely enough to separate three things people usually blur: what the proposal actually changes, what it leaves unresolved, and which parts of the idea can be built one layer up without waiting for it. It is also a second instance of a pattern this site already documents elsewhere — middleware doing a job well until the protocol absorbs it, which is exactly what ERC-4337 bundlers face from native account abstraction.</p>
-          <p class="topic-link"><a href="topics/pocs-dvt.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/dvt">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="dsrv-portal">
           <div class="topic-head"><span class="topic-no">4</span><span class="topic-title">Institutional custody study</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>

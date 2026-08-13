@@ -24,9 +24,9 @@
 
 1. [분할상환분석 심화 — 포텐셜 함수(potential method)로 비용 증명하기](html/docs/algorithms/amortized-potential-function.html) ✅
 2. [균형 트리 계열 비교 — Red-Black vs B+Tree vs Skip List (동시성 관점)](html/docs/algorithms/balanced-trees-concurrency.html) ✅
-3. 영속(persistent) 자료구조와 구조 공유 — 불변 상태의 O(log n) 갱신
+3. [영속(persistent) 자료구조와 구조 공유 — 불변 상태의 O(log n) 갱신](html/docs/algorithms/persistent-structures-structural-sharing.html) ✅
 4. 함수형 업데이트와 상태 diff — copy-on-write의 실제 비용
-5. 트라이 계열 심화 — 패트리샤 vs MPT vs Verkle (증명 크기 대 갱신 비용)
+5. Verkle tree — 이더리움의 Merkle-Patricia Trie에서 해시 기반 증명 대신 다항식 벡터 커밋먼트(KZG)를 사용해서, 각 노드가 훨씬 넓은 분기 수를 가지면서도 증명 크기는 작게 유지할 수 있게 한 개선입니다 — 이게 바로 stateless 이더리움 클라이언트를 실용적으로 만드는 핵심입니다
 6. 확률적 자료구조 — Bloom·Cuckoo·Count-Min·HyperLogLog
 7. 스트리밍/스케치 알고리즘 — heavy hitters, 근사 분위수
 8. 순서 통계 — Quickselect·중위수의 중위수(결정론적 선택)

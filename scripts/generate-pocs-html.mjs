@@ -152,8 +152,15 @@ ${diagramNote}${codeHtmlKo}      <p>${openLink}</p>
 }
 // 이번에 쓴 파일만 남긴다 — 카드에 docsHref 를 나중에 붙이거나 순서가 바뀌면 예전 스텁이
 // "지워진 항목의 페이지"로 남는 걸 막는다 (Algorithms·Math 스텁 생성과 같은 이유).
+// 예외: 카드가 docsHref 로 이 디렉터리의 파일을 직접 가리키면 그건 손으로 쓴 정본이므로
+// 지우지 않는다 (jay, 2026-08-13 — DVT 노트처럼 생성 템플릿보다 긴 글이 필요한 경우).
+const claimed = new Set(
+  numbered
+    .filter((c) => c.docsHref && !/^https?:\/\//.test(c.docsHref) && path.dirname(c.docsHref) === 'topics')
+    .map((c) => path.basename(c.docsHref)),
+);
 for (const f of fs.readdirSync(TOPICS_DIR)) {
-  if (f.startsWith('pocs-') && !written.has(f)) fs.rmSync(path.join(TOPICS_DIR, f));
+  if (f.startsWith('pocs-') && !written.has(f) && !claimed.has(f)) fs.rmSync(path.join(TOPICS_DIR, f));
 }
 
 // ── 1) index.html 의 PoCs 섹션 ──────────────────────────────────────────────

@@ -296,8 +296,16 @@ ${koBody}
     );
   }
 
+  // 예외: 항목의 href 가 이 디렉터리의 파일을 직접 가리키면 그건 손으로 쓴 노트가 곧 상세
+  // 페이지인 경우다 — 스텁을 만들지도 않지만 지우지도 않는다 (jay, 2026-08-13: math-3 처럼
+  // 생성된 학습 섹션 아래에 세션 노트를 덧붙여 정본으로 삼는 경우).
+  const claimed = new Set(
+    all
+      .filter((i) => i.href && !/^https?:\/\//.test(i.href) && path.dirname(i.href) === 'topics')
+      .map((i) => path.basename(i.href)),
+  );
   for (const f of fs.readdirSync(TOPICS_DIR)) {
-    if (f.startsWith(`${cfg.id}-`) && !written.has(f)) fs.rmSync(path.join(TOPICS_DIR, f));
+    if (f.startsWith(`${cfg.id}-`) && !written.has(f) && !claimed.has(f)) fs.rmSync(path.join(TOPICS_DIR, f));
   }
 
   // 1) 전체 페이지 (read-the-docs 껍데기 공유)

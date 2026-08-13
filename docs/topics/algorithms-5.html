@@ -90,6 +90,12 @@
   .topics { list-style:none; margin:0; padding:0; }
   .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
   .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
@@ -98,6 +104,9 @@
   .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
   .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
   .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
   .topic-how strong { color:var(--text); }
   .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
@@ -205,9 +214,9 @@ print(&quot;search('rubicon')  =&quot;, search(root, &quot;rubicon&quot;))
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1>트라이 계열 심화 <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
+      <h1>Verkle tree <span class="badge" style="background:#64748b22; color:#64748b;">TODO</span></h1>
       <p class="meta">Algorithms &middot; Day 5 / 100 &middot; A. 고급 알고리즘·자료구조 (Day 1–19)</p>
-      <p class="lead">패트리샤 vs MPT vs Verkle (증명 크기 대 갱신 비용)</p>
+      <p class="lead">이더리움의 Merkle-Patricia Trie에서 해시 기반 증명 대신 다항식 벡터 커밋먼트(KZG)를 사용해서, 각 노드가 훨씬 넓은 분기 수를 가지면서도 증명 크기는 작게 유지할 수 있게 한 개선입니다 — 이게 바로 stateless 이더리움 클라이언트를 실용적으로 만드는 핵심입니다</p>
       <h2>개념</h2>
       <p>트라이는 키를 문자 단위로 쪼개 경로로 표현하는 자료구조이고, 패트리샤 트라이는 자식이 하나뿐인 연속 구간을 하나의 간선으로 압축(path compression)해 깊이를 줄인 변형이다. 이더리움의 Merkle Patricia Trie(MPT)는 여기에 머클 해시를 얹어, 각 노드가 자식들의 해시를 담고 부모는 그 해시들을 다시 해시하는 방식으로 상태 전체를 하나의 루트 해시로 커밋한다. MPT의 분기 노드는 니블(4비트) 단위라 자식이 최대 16개이므로, 한 노드의 증명에는 형제 해시들이 모두 들어가고 증명 크기는 대략 (경로 깊이 × 분기 폭)에 비례해 커진다. Verkle 트라이는 해시 대신 벡터 커밋먼트(다항식 커밋먼트 계열)를 써서 한 노드의 자식 전체를 상수 크기 커밋먼트 하나로 묶고, 열람 증명도 상수 크기에 가깝게 만든다. 대가로 노드 갱신이 해시 한 번이 아니라 타원곡선 연산이 되어 쓰기·재구성 비용이 올라가므로, 이 계열의 선택은 결국 증명 크기와 갱신 비용 사이의 교환이다.</p>
       <p>상태 증명 크기는 라이트 클라이언트와 stateless 검증의 대역폭을 직접 결정하고, 갱신 비용은 풀노드의 블록 처리 시간을 결정한다. 어느 쪽을 깎을지 모르면 스토리지 계층 설계나 증명 기반 기능의 실현 가능성을 판단할 수 없다.</p>

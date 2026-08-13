@@ -544,14 +544,18 @@ export const POC_CARDS: DemoCard[] = [
     key: "dvt",
     title: "DVT in the protocol",
     titleKo: "프로토콜에 흡수된 DVT",
+    // 상세 페이지를 손으로 쓴다 (jay, 2026-08-13) — 생성된 이중언어 카드 요약은 그대로 두고,
+    // 그 아래에 사고 실험 세션 노트를 덧붙인 형태다. 생성기는 docsHref 가 topics/ 를 가리키면
+    // 그 파일을 정본으로 보고 덮어쓰지도 지우지도 않는다.
+    docsHref: "topics/pocs-dvt.html",
     description: "Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.",
     descriptionKo: "분산 밸리데이터를 프로토콜이 직접 다루자는 제안 정독 노트 — 키를 쪼개지 않는 m-of-n, 그리고 그것이 만들어내는 것들.",
     // 목업이지 라이브가 아니다 (jay, 2026-08-11) — 페이지는 완성됐지만 돌아가는 건 없다.
     // /live 는 "열어서 실제로 해볼 수 있는 것"만 답해야 하고, 정독 노트는 거기 해당하지 않는다.
     // href 는 그대로라 카드는 계속 눌린다 — DemoCard 가 soon+href 를 목업 배지로 렌더한다.
-    status: "soon",
+    status: "done",
     href: "/poc/dvt",
-    date: "2026-08-05",
+    date: "2026-08-13",
     howTo: "Read-only design analysis — no wallet needed. Start with the two diagrams contrasting DVT today against the proposal.",
     howToKo: "읽기 전용 설계 분석 — 지갑 불필요. 오늘의 DVT와 제안을 대비시킨 다이어그램 두 장부터 보세요.",
     purpose:
