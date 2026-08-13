@@ -57,3 +57,24 @@
 **Reasoning:** 원인 확인 결과 "View All Logs"는 `docs/logs/summary.md`(2026-06-15에 멈춘 별개의 손으로 쓰는 리서치 다이어리)를 가리키고 있었다 — jay가 실제로 매일 쓰는 `docs/history/YYYY-MM-DD-<repo>-history.md`(56개)와는 처음부터 다른 시스템이라 자연히 안 맞았다. Algorithms·Math·PoCs 와 같은 "폴더를 스캔해 자동 생성" 패턴으로 `docs/logs.html`을 새로 만들어, 목록이 다시는 stale 해지지 않게 함.
 **Change:** `scripts/generate-logs-html.mjs`(신규) — `docs/history/*.md` 전체를 스캔해 날짜순 정렬, 파일명으로 Rabbit/Verex 배지 판별(파일명에 표시 없는 초기 파일만 본문 "verex" 언급 횟수로 폴백), 그날의 `### 제목` 헤딩들을 브리핑으로 보여줌. `package.json`에 `docs:logs` 스크립트 추가. `docs/index.html`의 "View All Logs →"가 `logs.html`을 가리키도록 변경. 이후 피드백 반영: 브리핑을 한 줄로 이어붙이던 것을 항목별 줄바꿈으로, 페이지 전체를 한국어로, 항목 사이 구분선 제거, 줄 간격 축소(`scripts/rtd-shell.mjs`에 `.no-divider` 수정자 추가 — 다른 목록 페이지엔 영향 없음).
 **Result:** 56개 히스토리 파일 전부 노출 확인, 파일명 기반 Rabbit/Verex 라벨이 본문 언급 휴리스틱보다 우선하도록 수정(오분류 사례 1건 발견·수정). `tsc` 통과, 링크·태그 전수 확인, 다른 세 목록 페이지 미영향 확인.
+
+### Algorithms Day 3(영속 자료구조·구조 공유) 노트 작성 — jay와 나눈 대화를 그대로 정리
+
+**Cause:** jay가 별도 대화에서 영속 자료구조·구조 공유·Verkle tree를 주제로 심도 있게 논의한 뒤, 그 내용을 `docs/topics/algorithms-3.html`에 정리해 달라고 요청.
+**Reasoning:** 커리큘럼 Day 3 항목("영속 자료구조와 구조 공유 — 불변 상태의 O(log n) 갱신")이 정확히 그 대화 주제와 일치 — 새 항목을 만들지 않고 기존 Day 3에 노트를 붙이는 게 맞다고 판단. 이미 `docs/code/algorithms/algorithms-3.py`(영속 연결 리스트 `cons`/`to_list` 예제)가 준비돼 있어 그대로 "관련 코드"로 링크.
+**Change:** `docs/algorithms/persistent-structures-structural-sharing.md` 신규 작성(경로 복사 메커니즘, 영속성 3단계, "왜 중요한가"(락프리 읽기 + 저렴한 버전 관리), 실사용 사례 표, 한계 비용 vs 누적 비용 — 이더리움 아카이브/pruned 노드 저장량 대비 — 및 Day 5로의 연결 문장까지 영/한 병기). `docs/knowledge/dev-100-curriculum.md`의 Day 3에 노트 링크(`html/docs/algorithms/...`)와 ✅ 추가.
+**Result:** 링크된 항목이라 스텁 페이지가 자동 삭제됨(Day 1·2와 동일 패턴) — 이전 URL `docs/topics/algorithms-3.html`은 더 이상 존재하지 않고, 내용은 `docs/html/docs/algorithms/persistent-structures-structural-sharing.html`로 이동. `tsc --noEmit` 통과, 태그 짝·로컬 링크 전수 확인.
+
+### Algorithms Day 5를 "Verkle tree" 항목으로 좁힘 — 새 Day 삽입 대신 기존 슬롯 재사용
+
+**Cause:** jay가 이더리움 stateless 클라이언트를 가능케 하는 Verkle tree 설명 문장 하나를 "algorithms의 한 항목으로, 상단에, Done 항목들 밑으로" 추가해 달라고 요청.
+**Reasoning:** 문자 그대로 새 Day를 끼워 넣으면 Day 4~100 전부가 5~101로 밀려야 하는데, 이 항목들 전부에 이미 번호로 연결된 코드 파일(`docs/code/algorithms/algorithms-N.py`, 97개)과 `explainers.json`/`explainers.en.json` 양쪽의 100개 키가 붙어 있어, 밀어넣기를 하면 이 전부를 재매핑해야 하고 잘못하면 코드·설명이 엉뚱한 항목에 붙는 실수가 날 수 있었다. 확인해보니 Day 5가 이미 "트라이 계열 심화 — Patricia vs MPT vs Verkle"로 정확히 같은 주제였고 상세 설명(EXPLAINERS)도 이미 이 트레이드오프를 다루고 있어, jay에게 옵션을 제시하고 "Day 5 슬롯 재사용"으로 확정받음 — 번호 이동 없이 안전.
+**Change:** `docs/knowledge/dev-100-curriculum.md`의 5번 항목 제목을 "Verkle tree — (jay가 준 문장 그대로)"로 교체(기존 코드·explainer는 그대로 유지, 여전히 TODO 상태).
+**Result:** 상세 페이지 리드 문단에 그 문장이 그대로 노출되고 그 아래 기존 설명이 이어짐 확인. `tsc` 통과.
+
+### Math Day 3·PoCs DVT를 Done으로 표시
+
+**Cause:** jay가 "DVT in the protocol", "Persistent Data Structures & Structural Sharing", "Propositional Logic", "Sets, Functions, and Relations" 네 개를 모두 Done 상태로 바꿔 달라고 요청 — 뒤 두 개는 확인 결과 Math Day 3("명제논리·집합·함수·관계") 항목 하나의 제목 앞뒤 반쪽씩이었다.
+**Reasoning:** Math Day 3는 이미 손으로 쓴 상세 페이지(`docs/topics/math-3.html`, href로 직접 지정)가 있었지만 ✅ 표시만 빠져 있던 상태 — 내용 추가 없이 완료 표시만 필요. DVT PoC 카드도 읽기 노트(`docs/topics/pocs-dvt.html`)는 이미 완성돼 있었고 `status: "soon"`(목업 배지)만 남아 있던 상태.
+**Change:** `docs/knowledge/math-50-curriculum.md` Day 3에 ✅ 추가. `lib/poc-cards.ts`의 `dvt` 카드 `status: "soon"` → `"done"`, `date`를 오늘(2026-08-13)로 갱신(CLAUDE.md의 "done 전환 시 date 갱신" 규칙).
+**Result:** `docs/math.html`·`docs/pocs.html` 재생성 후 두 항목 모두 DONE 배지로 노출 확인. `tsc` 통과.

@@ -83,6 +83,21 @@
 <strong>Reasoning:</strong> 원인 확인 결과 &quot;View All Logs&quot;는 <code>docs/logs/summary.md</code>(2026-06-15에 멈춘 별개의 손으로 쓰는 리서치 다이어리)를 가리키고 있었다 — jay가 실제로 매일 쓰는 <code>docs/history/YYYY-MM-DD-&lt;repo&gt;-history.md</code>(56개)와는 처음부터 다른 시스템이라 자연히 안 맞았다. Algorithms·Math·PoCs 와 같은 &quot;폴더를 스캔해 자동 생성&quot; 패턴으로 <code>docs/logs.html</code>을 새로 만들어, 목록이 다시는 stale 해지지 않게 함.
 <strong>Change:</strong> <code>scripts/generate-logs-html.mjs</code>(신규) — <code>docs/history/*.md</code> 전체를 스캔해 날짜순 정렬, 파일명으로 Rabbit/Verex 배지 판별(파일명에 표시 없는 초기 파일만 본문 &quot;verex&quot; 언급 횟수로 폴백), 그날의 <code>### 제목</code> 헤딩들을 브리핑으로 보여줌. <code>package.json</code>에 <code>docs:logs</code> 스크립트 추가. <code>docs/index.html</code>의 &quot;View All Logs →&quot;가 <code>logs.html</code>을 가리키도록 변경. 이후 피드백 반영: 브리핑을 한 줄로 이어붙이던 것을 항목별 줄바꿈으로, 페이지 전체를 한국어로, 항목 사이 구분선 제거, 줄 간격 축소(<code>scripts/rtd-shell.mjs</code>에 <code>.no-divider</code> 수정자 추가 — 다른 목록 페이지엔 영향 없음).
 <strong>Result:</strong> 56개 히스토리 파일 전부 노출 확인, 파일명 기반 Rabbit/Verex 라벨이 본문 언급 휴리스틱보다 우선하도록 수정(오분류 사례 1건 발견·수정). <code>tsc</code> 통과, 링크·태그 전수 확인, 다른 세 목록 페이지 미영향 확인.</p>
+<h3>Algorithms Day 3(영속 자료구조·구조 공유) 노트 작성 — jay와 나눈 대화를 그대로 정리</h3>
+<p><strong>Cause:</strong> jay가 별도 대화에서 영속 자료구조·구조 공유·Verkle tree를 주제로 심도 있게 논의한 뒤, 그 내용을 <code>docs/topics/algorithms-3.html</code>에 정리해 달라고 요청.
+<strong>Reasoning:</strong> 커리큘럼 Day 3 항목(&quot;영속 자료구조와 구조 공유 — 불변 상태의 O(log n) 갱신&quot;)이 정확히 그 대화 주제와 일치 — 새 항목을 만들지 않고 기존 Day 3에 노트를 붙이는 게 맞다고 판단. 이미 <code>docs/code/algorithms/algorithms-3.py</code>(영속 연결 리스트 <code>cons</code>/<code>to_list</code> 예제)가 준비돼 있어 그대로 &quot;관련 코드&quot;로 링크.
+<strong>Change:</strong> <code>docs/algorithms/persistent-structures-structural-sharing.md</code> 신규 작성(경로 복사 메커니즘, 영속성 3단계, &quot;왜 중요한가&quot;(락프리 읽기 + 저렴한 버전 관리), 실사용 사례 표, 한계 비용 vs 누적 비용 — 이더리움 아카이브/pruned 노드 저장량 대비 — 및 Day 5로의 연결 문장까지 영/한 병기). <code>docs/knowledge/dev-100-curriculum.md</code>의 Day 3에 노트 링크(<code>html/docs/algorithms/...</code>)와 ✅ 추가.
+<strong>Result:</strong> 링크된 항목이라 스텁 페이지가 자동 삭제됨(Day 1·2와 동일 패턴) — 이전 URL <code>docs/topics/algorithms-3.html</code>은 더 이상 존재하지 않고, 내용은 <code>docs/html/docs/algorithms/persistent-structures-structural-sharing.html</code>로 이동. <code>tsc --noEmit</code> 통과, 태그 짝·로컬 링크 전수 확인.</p>
+<h3>Algorithms Day 5를 &quot;Verkle tree&quot; 항목으로 좁힘 — 새 Day 삽입 대신 기존 슬롯 재사용</h3>
+<p><strong>Cause:</strong> jay가 이더리움 stateless 클라이언트를 가능케 하는 Verkle tree 설명 문장 하나를 &quot;algorithms의 한 항목으로, 상단에, Done 항목들 밑으로&quot; 추가해 달라고 요청.
+<strong>Reasoning:</strong> 문자 그대로 새 Day를 끼워 넣으면 Day 4<del>100 전부가 5</del>101로 밀려야 하는데, 이 항목들 전부에 이미 번호로 연결된 코드 파일(<code>docs/code/algorithms/algorithms-N.py</code>, 97개)과 <code>explainers.json</code>/<code>explainers.en.json</code> 양쪽의 100개 키가 붙어 있어, 밀어넣기를 하면 이 전부를 재매핑해야 하고 잘못하면 코드·설명이 엉뚱한 항목에 붙는 실수가 날 수 있었다. 확인해보니 Day 5가 이미 &quot;트라이 계열 심화 — Patricia vs MPT vs Verkle&quot;로 정확히 같은 주제였고 상세 설명(EXPLAINERS)도 이미 이 트레이드오프를 다루고 있어, jay에게 옵션을 제시하고 &quot;Day 5 슬롯 재사용&quot;으로 확정받음 — 번호 이동 없이 안전.
+<strong>Change:</strong> <code>docs/knowledge/dev-100-curriculum.md</code>의 5번 항목 제목을 &quot;Verkle tree — (jay가 준 문장 그대로)&quot;로 교체(기존 코드·explainer는 그대로 유지, 여전히 TODO 상태).
+<strong>Result:</strong> 상세 페이지 리드 문단에 그 문장이 그대로 노출되고 그 아래 기존 설명이 이어짐 확인. <code>tsc</code> 통과.</p>
+<h3>Math Day 3·PoCs DVT를 Done으로 표시</h3>
+<p><strong>Cause:</strong> jay가 &quot;DVT in the protocol&quot;, &quot;Persistent Data Structures &amp; Structural Sharing&quot;, &quot;Propositional Logic&quot;, &quot;Sets, Functions, and Relations&quot; 네 개를 모두 Done 상태로 바꿔 달라고 요청 — 뒤 두 개는 확인 결과 Math Day 3(&quot;명제논리·집합·함수·관계&quot;) 항목 하나의 제목 앞뒤 반쪽씩이었다.
+<strong>Reasoning:</strong> Math Day 3는 이미 손으로 쓴 상세 페이지(<code>docs/topics/math-3.html</code>, href로 직접 지정)가 있었지만 ✅ 표시만 빠져 있던 상태 — 내용 추가 없이 완료 표시만 필요. DVT PoC 카드도 읽기 노트(<code>docs/topics/pocs-dvt.html</code>)는 이미 완성돼 있었고 <code>status: &quot;soon&quot;</code>(목업 배지)만 남아 있던 상태.
+<strong>Change:</strong> <code>docs/knowledge/math-50-curriculum.md</code> Day 3에 ✅ 추가. <code>lib/poc-cards.ts</code>의 <code>dvt</code> 카드 <code>status: &quot;soon&quot;</code> → <code>&quot;done&quot;</code>, <code>date</code>를 오늘(2026-08-13)로 갱신(CLAUDE.md의 &quot;done 전환 시 date 갱신&quot; 규칙).
+<strong>Result:</strong> <code>docs/math.html</code>·<code>docs/pocs.html</code> 재생성 후 두 항목 모두 DONE 배지로 노출 확인. <code>tsc</code> 통과.</p>
 
   </article>
 </div>
