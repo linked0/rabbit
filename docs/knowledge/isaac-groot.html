@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NVIDIA Isaac GR00T — a staged hands-on plan</title>
+<style>
+  :root {
+    --bg: #f8fafc; --card: #ffffff; --ink: #0f172a; --muted: #64748b;
+    --accent: #2563eb; --green: #16a34a; --amber: #d97706; --red: #dc2626; --line: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px; background: var(--bg); color: var(--ink);
+         font-family: 'Inter', -apple-system, sans-serif; line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 36px 0 10px; border-left: 4px solid var(--accent); padding-left: 10px; }
+  h3 { font-size: 1rem; margin: 20px 0 6px; }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+  .crumb { font-size: .85rem; color: var(--muted); margin-bottom: 18px; }
+  .crumb a { color: var(--accent); text-decoration: none; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin: 14px 0; }
+  .cap { font-size: .85rem; color: var(--muted); margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; margin: 12px 0; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #eef2ff; }
+  .tag { display: inline-block; font-size: .75rem; padding: 1px 8px; border-radius: 999px; font-weight: 600; }
+  .tag.ok { background: rgba(22,163,74,.12); color: var(--green); }
+  .tag.warn { background: rgba(217,119,6,.12); color: var(--amber); }
+  .tag.no { background: rgba(220,38,38,.12); color: var(--red); }
+  .tag.n { background: rgba(37,99,235,.12); color: var(--accent); }
+  .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; font-size: .9rem; margin: 14px 0; }
+  .ko { color: var(--muted); font-size: .9rem; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: .88em; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 14px 16px; border-radius: 10px; overflow-x: auto; font-size: .85rem; line-height: 1.55; }
+  pre code { background: none; color: inherit; padding: 0; }
+  svg { width: 100%; height: auto; display: block; }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .stage { border-left: 4px solid var(--accent); }
+  .stage.s0 { border-left-color: var(--muted); }
+  .stage.s1 { border-left-color: var(--green); }
+  .stage.s2 { border-left-color: var(--accent); }
+  .stage.s3 { border-left-color: var(--amber); }
+  .stage.s4 { border-left-color: var(--red); }
+  .stage-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .stage-head h3 { margin: 0; }
+  .cost { font-size: .85rem; color: var(--muted); font-weight: 600; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="crumb"><a href="../pocs.html">&larr; PoCs</a> &middot; <a href="../index.html">Workspace Index</a></p>
+
+<h1>NVIDIA Isaac GR00T — a staged hands-on plan</h1>
+<div class="sub">Actually running and fine-tuning an open humanoid foundation model, ordered by what costs nothing first
+· <span class="ko">휴머노이드 파운데이션 모델을 실제로 돌려보는 단계별 계획 — 돈이 안 드는 것부터</span></div>
+
+<div class="note">
+<b>Why this page exists.</b> A blockchain developer can't survive on blockchain alone. Every other robotics
+note is a survey — this one is an ordering: the cheapest step that still teaches something, first.
+The ordering is load-bearing because the obvious first purchase turns out to be the wrong one (§3).
+<span class="ko">순서 자체가 이 문서의 내용입니다 — 가장 그럴듯한 첫 구매가 사실 틀린 선택이기 때문에.</span>
+</div>
+
+<h2>1. What Isaac GR00T actually is <span class="ko">무엇인가</span></h2>
+
+<p>Not a single model — an <b>open reference platform</b> for general-purpose humanoid robots. Five layers
+that NVIDIA ships as one stack, which matters because each layer is a separate decision for someone
+building on it:</p>
+
+<div class="panel">
+<svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" aria-label="Isaac GR00T stack layers">
+  <defs><style>
+    .box { stroke-width:2; rx:8; }
+    .t { font: 600 12px Inter, sans-serif; fill:#0f172a; }
+    .s { font: 400 11px Inter, sans-serif; fill:#64748b; }
+    .arrow { stroke:#94a3b8; stroke-width:1.6; marker-end:url(#a); }
+  </style>
+  <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+    <path d="M0,0 L7,3 L0,6 z" fill="#94a3b8"/></marker></defs>
+
+  <rect class="box" x="20" y="16" width="300" height="46" fill="#dbeafe" stroke="#2563eb"/>
+  <text class="t" x="34" y="36">① Data &amp; pipelines</text>
+  <text class="s" x="34" y="52">real capture + synthetic + internet video</text>
+
+  <rect class="box" x="20" y="76" width="300" height="46" fill="#dcfce7" stroke="#16a34a"/>
+  <text class="t" x="34" y="96">② Foundation model — GR00T N1.7</text>
+  <text class="s" x="34" y="112">open VLA, cross-embodiment, 3B params</text>
+
+  <rect class="box" x="20" y="136" width="300" height="46" fill="#fef3c7" stroke="#d97706"/>
+  <text class="t" x="34" y="156">③ Simulation — Isaac Sim / Isaac Lab</text>
+  <text class="s" x="34" y="172">Omniverse + Cosmos, sim-to-real</text>
+
+  <rect class="box" x="20" y="196" width="300" height="46" fill="#fee2e2" stroke="#dc2626"/>
+  <text class="t" x="34" y="216">④ Edge runtime — Jetson AGX Thor</text>
+  <text class="s" x="34" y="232">real-time inference &amp; control on the robot</text>
+
+  <rect class="box" x="380" y="76" width="290" height="106" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text class="t" x="396" y="98">⑤ Workflows</text>
+  <text class="s" x="396" y="118">Isaac-Teleop — collect human demos</text>
+  <text class="s" x="396" y="136">GR00T-WholeBodyControl — humanoid control</text>
+  <text class="s" x="396" y="154">LeRobot integration (July 2026) —</text>
+  <text class="s" x="396" y="170">the practical on-ramp for small robots</text>
+
+  <line class="arrow" x1="322" y1="99" x2="376" y2="112"/>
+  <line class="arrow" x1="322" y1="159" x2="376" y2="146"/>
+</svg>
+<div class="cap">The model (②) is the famous part, but ③ and ⑤ are where a solo developer actually gets traction —
+they need no robot at all. <span class="ko">유명한 건 ②지만, 혼자 시작할 때 실제로 붙잡을 수 있는 건 ③·⑤입니다.</span></div>
+</div>
+
+<h3>The model in one line</h3>
+<p><b>GR00T N1.7-3B</b> is a <b>VLA (Vision-Language-Action)</b> model: it takes images and a natural-language
+instruction, and emits robot actions. "Cross-embodiment" means one model targets many robot bodies, adapted
+by post-training rather than retrained from scratch. Trained on real capture + synthetic motion + internet-scale
+video. Weights are on Hugging Face under <code>nvidia/GR00T-N1.7-3B</code>.</p>
+
+<h2>2. The one correction that reorders everything <span class="ko">순서를 뒤집는 정정 하나</span></h2>
+
+<p>The intuitive first move is to buy the cheap Jetson board everyone recommends for edge AI. For GR00T
+specifically, that doesn't work:</p>
+
+<table>
+  <tr><th>Task</th><th>Minimum</th><th>Qualifying hardware</th></tr>
+  <tr>
+    <td><b>Inference</b></td>
+    <td>1 GPU, <b>16 GB+ VRAM</b></td>
+    <td>RTX 4090 · L40 · H100 · Jetson AGX Thor/Orin · DGX Spark</td>
+  </tr>
+  <tr>
+    <td><b>Fine-tuning</b></td>
+    <td>1 GPU, <b>40 GB+ VRAM</b></td>
+    <td>A100 · H100 · rented cloud instance</td>
+  </tr>
+</table>
+
+<div class="note">
+<b>⚠️ Jetson Orin Nano Super ($399) has 8 GB — not enough to run GR00T at all.</b>
+It's still a fine board for ROS 2 and general edge inference, but it is <i>not</i> a GR00T entry point.
+The board NVIDIA actually designs GR00T real-time inference around is <b>Jetson AGX Thor</b>
+(128 GB, Blackwell) — whose dev kit launched at <b>$3,499</b> and has since been <b>raised to $5,499</b>.
+<br><span class="ko">즉, 가장 싸 보이는 하드웨어 진입로가 막혀 있고, 진짜 타깃 보드는 수백만 원대입니다 — 그래서 하드웨어를 맨 뒤로 미룹니다.</span>
+</div>
+
+<p>Because 16 GB is the inference floor, a <b>rented cloud GPU</b> (RTX 4090-class, roughly
+<b>$0.3–0.7/hr</b>) clears the bar for a few dollars — cheaper than any board, and available today.
+That single fact is what puts hardware purchases last instead of first.</p>
+
+<h2>3. The staged plan <span class="ko">단계별 계획</span></h2>
+
+<div class="panel stage s0">
+  <div class="stage-head"><h3>Stage 0 — Read the shape of the pipeline</h3><span class="cost">cost: $0 · ~2 hrs</span></div>
+  <ul>
+    <li>Clone <a href="https://github.com/NVIDIA/Isaac-GR00T">NVIDIA/Isaac-GR00T</a>; read
+        <code>getting_started/hardware_recommendation.md</code> and <code>scripts/deployment/README.md</code>
+        <b>before</b> running anything — the constraints decide the plan.</li>
+    <li>Read the <a href="https://huggingface.co/nvidia/GR00T-N1.7-3B">GR00T-N1.7-3B model card</a> for exact
+        input/output shapes (what an "action" is, concretely).</li>
+    <li>Read <a href="https://huggingface.co/blog/nvidia/nvidia-isaac-gr00t-in-lerobot">"NVIDIA Isaac GR00T in LeRobot"</a>
+        — the practical how-to-run guide, more useful than the marketing page.</li>
+    <li>Optional depth: the <a href="https://arxiv.org/abs/2503.14734">foundation-model whitepaper</a>.</li>
+  </ul>
+  <div class="cap"><b>Exit criterion:</b> you can state what goes in and what comes out of the model in one sentence.</div>
+</div>
+
+<div class="panel stage s1">
+  <div class="stage-head"><h3>Stage 1 — Run the real model on a rented GPU</h3><span class="cost">cost: a few $ · half a day</span></div>
+  <ul>
+    <li>Rent a 16 GB+ instance (RunPod / Lambda / Vast.ai), ~$0.3–0.7/hr.</li>
+    <li>Follow NVIDIA's <a href="https://docs.nvidia.com/learning/physical-ai/gr00t-e2e-workflow/latest/index.html">end-to-end workflow doc</a>
+        and run inference on a sample task.</li>
+    <li>Inspect an actual action tensor. This is the step that converts "VLA model" from a phrase into a data shape.</li>
+  </ul>
+  <div class="cap"><b>Exit criterion:</b> a real foundation model produced real actions, on your own rented box, with no robot involved.
+  <span class="ko">여기까지만 해도 파운데이션 모델을 직접 만져본 경험이 됩니다.</span></div>
+</div>
+
+<div class="panel stage s2">
+  <div class="stage-head"><h3>Stage 2 — Close the loop with a $100 arm</h3><span class="cost">cost: ~$100–130 · weeks</span></div>
+  <p>In <b>July 2026</b> NVIDIA integrated GR00T 1.7 and Isaac Teleop into Hugging Face's <b>LeRobot</b>
+  (shipped in LeRobot v0.4.0, upgraded to N1.7 in v0.6.0). That integration is what makes a hobby-priced arm
+  a legitimate target for a real foundation model rather than toy imitation-learning code.</p>
+  <ul>
+    <li><b>SO-101 arm</b> — 6 DOF, 3D-printable, STS3215 servos, <b>$100–130</b>, natively supported by LeRobot
+        (WowRobo / Seeed Studio / PartaBot / Hiwonder).</li>
+    <li>Collect demonstrations → format the dataset → post-train the actual GR00T checkpoint → deploy back to the arm.</li>
+    <li>This is the full loop — data, training, deployment — at the lowest price it currently exists at.</li>
+  </ul>
+  <div class="cap"><b>Exit criterion:</b> a policy you fine-tuned yourself moves physical hardware.</div>
+</div>
+
+<div class="panel stage s3">
+  <div class="stage-head"><h3>Stage 3 — Scale in simulation, not in hardware</h3><span class="cost">cost: GPU rental only</span></div>
+  <ul>
+    <li><a href="https://developer.nvidia.com/isaac/lab">Isaac Lab</a> — open source, headless-capable: train and
+        evaluate policies in physically accurate scenes without owning a robot.</li>
+    <li><a href="https://github.com/NVlabs/GR00T-WholeBodyControl">GR00T-WholeBodyControl</a> — read how whole-body
+        humanoid control is actually structured.</li>
+    <li>Validate in <a href="https://developer.nvidia.com/isaac/sim">Isaac Sim</a> before considering any deployment.</li>
+  </ul>
+  <div class="cap">Simulation is where the sim-to-real gap is confronted — and the only place scale is affordable solo.</div>
+</div>
+
+<div class="panel stage s4">
+  <div class="stage-head"><h3>Stage 4 — Edge deployment (defer)</h3><span class="cost">cost: $3,499–5,499</span></div>
+  <p><b>Jetson AGX Thor developer kit</b> — Blackwell, 128 GB, up to 2070 FP4 TFLOPS in a 130 W envelope;
+  7.5× the AI compute of Jetson Orin. This is the correct hardware for real-time on-robot GR00T inference,
+  and explicitly <i>not</i> a starting point. Revisit only after Stages 1–3 have made the workflow routine.</p>
+  <div class="cap"><b>Decision rule:</b> buy it when the bottleneck is genuinely "the policy needs to run on the robot",
+  not before. <span class="ko">병목이 진짜로 '로봇 위에서 돌려야 한다'가 됐을 때만 구매.</span></div>
+</div>
+
+<h2>4. Cost ladder at a glance <span class="ko">비용 사다리</span></h2>
+
+<table>
+  <tr><th>Stage</th><th>Spend</th><th>What you get</th><th>Blocked by</th></tr>
+  <tr><td>0 · Read</td><td><span class="tag ok">$0</span></td><td>Correct mental model of the stack</td><td>nothing</td></tr>
+  <tr><td>1 · Cloud inference</td><td><span class="tag ok">~$5</span></td><td>Real GR00T actions, hands on</td><td>nothing</td></tr>
+  <tr><td>2 · SO-101 + LeRobot</td><td><span class="tag n">$100–130</span></td><td>Full collect→fine-tune→deploy loop</td><td>shipping time</td></tr>
+  <tr><td>3 · Isaac Lab sim</td><td><span class="tag warn">GPU hrs</span></td><td>Policy training at scale, no hardware</td><td>Stage 1 fluency</td></tr>
+  <tr><td>4 · Jetson AGX Thor</td><td><span class="tag no">$3,499–5,499</span></td><td>Real-time on-robot inference</td><td>needing it</td></tr>
+</table>
+
+<h2>5. Adjacent hardware, for context <span class="ko">주변 하드웨어 참고</span></h2>
+
+<table>
+  <tr><th>Platform</th><th>Price</th><th>Note</th></tr>
+  <tr><td>SO-101 arm</td><td>$100–130</td><td>The Stage-2 target. LeRobot-native, 3D-printable.</td></tr>
+  <tr><td>Reachy Mini</td><td>from $299</td><td>Pollen Robotics / Hugging Face desktop humanoid, Python SDK, explicitly aimed at "AI builders".</td></tr>
+  <tr><td>Jetson Orin Nano Super</td><td>$399</td><td>8 GB — <b>cannot run GR00T</b>. Good for ROS 2 / general edge AI.</td></tr>
+  <tr><td>Unitree Go2</td><td>$1,600 (Air) – ~$15K (EDU)</td><td>Quadruped with an open SDK. Chinese manufacturer (Hangzhou); the aggressive price-cutter of the category.</td></tr>
+  <tr><td>Reachy 2</td><td>$70K–78K</td><td>Open humanoid research platform. Reference point, not a purchase.</td></tr>
+  <tr><td>Jetson AGX Thor</td><td>$3,499–5,499</td><td>The real GR00T edge target. Price was raised post-launch.</td></tr>
+</table>
+
+<h2>6. Open questions to resolve while doing it <span class="ko">진행하며 답할 질문들</span></h2>
+<ul>
+  <li>How much does post-training actually need — is 40 GB the real floor for a small SO-101 dataset, or does LoRA-style
+      adaptation drop it below a single rented 4090?</li>
+  <li>What does the sim-to-real gap cost concretely on a 6-DOF arm — does an Isaac Lab-trained policy transfer at all
+      without domain randomization work?</li>
+  <li>Is "cross-embodiment" real in practice at this scale, or does every new body need substantial retraining?</li>
+  <li>Where does the LeRobot integration end and hand-written glue begin — what does it <i>not</i> do for you?</li>
+</ul>
+
+<div class="note">
+<b>Honest scope note.</b> Nothing on this page has been run yet — it is a plan with verified prices and
+requirements as of 2026-08-13, not a report of results. The VRAM figures and the Thor price increase were
+checked against NVIDIA's own repo and current listings; the staging follows from them.
+<span class="ko">아직 실행 전입니다 — 2026-08-13 기준으로 검증된 요구사항·가격에 근거한 계획서.</span>
+</div>
+
+<h2>Sources</h2>
+<ul>
+  <li><a href="https://developer.nvidia.com/isaac/gr00t">Isaac GR00T platform page</a> (NVIDIA)</li>
+  <li><a href="https://github.com/NVIDIA/Isaac-GR00T">github.com/NVIDIA/Isaac-GR00T</a> — hardware requirements, deployment scripts</li>
+  <li><a href="https://huggingface.co/nvidia/GR00T-N1.7-3B">nvidia/GR00T-N1.7-3B</a> (Hugging Face)</li>
+  <li><a href="https://blogs.nvidia.com/blog/hugging-face-lerobot-models-frameworks-open-robotics/">NVIDIA × Hugging Face LeRobot integration</a> (July 2026)</li>
+  <li><a href="https://docs.nvidia.com/learning/physical-ai/gr00t-e2e-workflow/latest/index.html">GR00T end-to-end workflow docs</a></li>
+  <li><a href="https://arxiv.org/abs/2503.14734">An Open Foundation Model for Generalist Humanoid Robots</a> (whitepaper)</li>
+  <li><a href="https://nvidianews.nvidia.com/news/nvidia-blackwell-powered-jetson-thor-now-available-accelerating-the-age-of-general-robotics">Jetson Thor availability</a> · <a href="https://videocardz.com/newz/nvidia-raises-jetson-prices-by-up-to-101-agx-thor-now-costs-5499">price increase to $5,499</a></li>
+</ul>
+
+<p class="crumb" style="margin-top:32px;"><a href="../pocs.html">&larr; Back to PoCs</a></p>
+
+</div>
+</body>
+</html>

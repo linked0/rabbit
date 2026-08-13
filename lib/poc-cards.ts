@@ -844,4 +844,30 @@ export const POC_CARDS: DemoCard[] = [
     howItWorksKo:
       "Blockstream의 첫 Simplicity CTF — 컨트랙트에 잠긴 0.01 LBTC(~$600) 해제하면 보상.",
   },
+  {
+    // 로보틱스/AI 미래 대비 트랙의 첫 항목 (jay, 2026-08-13) — 서베이가 아니라 실제로
+    // 손으로 만져보는 단계별 계획. GR00T N1.7 최소 VRAM(16GB+) 조사 결과 Jetson Orin Nano
+    // Super(8GB)로는 직접 추론이 안 돼, 클라우드 GPU부터 시작하는 순서로 정정했다.
+    key: "isaac-groot",
+    title: "NVIDIA Isaac GR00T — humanoid foundation model",
+    titleKo: "NVIDIA Isaac GR00T — 휴머노이드 파운데이션 모델",
+    description:
+      "A staged, hands-on plan to actually run and fine-tune GR00T — cloud GPU inference first, then a $100 SO-101 arm via LeRobot, Jetson hardware last.",
+    descriptionKo:
+      "GR00T를 실제로 돌리고 파인튜닝해보는 단계별 계획 — 클라우드 GPU 추론부터, $100대 SO-101 로봇팔(LeRobot 연동)까지, Jetson 하드웨어는 맨 마지막.",
+    status: "soon",
+    docsHref: "knowledge/isaac-groot.html",
+    howTo:
+      "Not yet scoped — start on a rented 16GB+ GPU following NVIDIA's e2e workflow doc, no hardware purchase needed. github.com/NVIDIA/Isaac-GR00T",
+    howToKo:
+      "아직 범위 미정 — 하드웨어 구매 없이 대여한 16GB+ GPU에서 NVIDIA e2e 워크플로 문서부터. github.com/NVIDIA/Isaac-GR00T",
+    purpose:
+      "A blockchain developer can't survive on blockchain alone — this is the first concrete, hands-on attempt at the robotics/AI adjacent track the daily report's future-dev queue exists for. Not a survey: a staged plan to actually run a real humanoid foundation model rather than just read about one.",
+    purposeKo:
+      "블록체인 개발자로만은 버틸 수 없다는 판단에서, 데일리 리포트 future-dev 큐가 존재하는 로보틱스·AI 인접 트랙을 실제로 손으로 만져보는 첫 항목입니다. 서베이가 아니라, 읽고 끝내는 대신 진짜 휴머노이드 파운데이션 모델을 직접 돌려보는 단계별 계획입니다.",
+    howItWorks:
+      "GR00T N1.7-3B needs 16GB+ VRAM even for inference alone (RTX 4090, L40, H100, Jetson AGX Thor/Orin, or DGX Spark) — the $399 Jetson Orin Nano Super's 8GB isn't enough on its own, so the plan starts on a rented cloud GPU (roughly $0.3-0.7/hr) following NVIDIA's e2e workflow doc, no hardware purchase required. Once the model and pipeline are familiar, NVIDIA's July 2026 integration of GR00T 1.7 into Hugging Face's LeRobot means a $100-130 SO-101 arm becomes a complete loop — collect demonstrations, fine-tune the actual GR00T checkpoint, deploy back to the arm — rather than toy imitation-learning code. Isaac Lab (open source, headless-capable) covers simulation-scale practice without any physical robot. A Jetson AGX Thor dev kit ($3,499-5,499, the real-time inference target NVIDIA actually designs GR00T for) stays a later-stage purchase, not a starting point.",
+    howItWorksKo:
+      "GR00T N1.7-3B는 추론만 해도 16GB+ VRAM이 필요합니다(RTX 4090·L40·H100·Jetson AGX Thor/Orin·DGX Spark) — $399짜리 Jetson Orin Nano Super는 8GB라 이 모델을 직접 못 돌리므로, 하드웨어 구매 없이 대여한 클라우드 GPU(시간당 대략 $0.3~0.7)에서 NVIDIA의 e2e 워크플로 문서를 따라가는 것부터 시작합니다. 모델·파이프라인이 익숙해지면, 2026년 7월 NVIDIA가 GR00T 1.7을 Hugging Face LeRobot에 정식 통합한 덕분에 $100~130짜리 SO-101 로봇팔이 완결된 루프가 됩니다 — 시연 데이터 수집 → 실제 GR00T 체크포인트 파인튜닝 → 다시 팔에 배포, 장난감 모방학습 코드가 아니라. Isaac Lab(오픈소스, 헤드리스 실행 가능)은 물리 로봇 없이 시뮬레이션 규모의 연습을 담당합니다. Jetson AGX Thor 개발자 키트($3,499~5,499, NVIDIA가 실제로 GR00T 실시간 추론을 설계한 타깃)는 시작점이 아니라 나중 단계의 구매 항목으로 남겨둡니다.",
+  },
 ];

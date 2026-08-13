@@ -138,7 +138,7 @@ const articles = numbered
       <h2>How it works</h2>
       <p>${escapeHtml(c.howItWorks ?? '')}</p>
 ${diagramNote}
-      <p><a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="${c.docsHref ?? cardUrl(c)}">${c.docsHref ? 'Detail' : 'Open on jaylabs.xyz'} &rarr;</a></p>
     </article>`;
   })
   .join('\n');

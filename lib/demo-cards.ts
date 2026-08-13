@@ -16,6 +16,9 @@ export type DemoCard = {
   // 있었지만 Stripe 결제가 실제로 도는 건 08-04이므로 08-04.
   // 아직 구현되지 않은 "soon" 카드는 비워둔다 — 없는 날짜를 지어내지 않는다.
   date?: string;
+  // 로컬 docs 안의 상세 페이지 (선택 — jay, 2026-08-13). 있으면 docs/pocs.html 이
+  // "Open on jaylabs.xyz →" 대신 "Detail →"로 이 경로를 건다. docs/ 기준 상대 경로.
+  docsHref?: string;
   howTo: string;
   howToKo: string;
   // Longer technical write-up rendered in the "Technical Notes" section at the page bottom

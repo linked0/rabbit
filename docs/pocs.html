@@ -109,14 +109,14 @@
   <aside class="rail">
     <div class="rail-head">
       <a class="rail-title" href="index.html">Rabbit</a>
-      <span class="rail-sub">PoCs &mdash; all contents (27)</span>
+      <span class="rail-sub">PoCs &mdash; all contents (28)</span>
     </div>
     <div class="rail-search">
       <input id="filter" type="search" placeholder="Filter PoCs" aria-label="Filter PoCs" autocomplete="off">
     </div>
     <nav class="rail-nav" id="nav">
       <div class="nav-group" data-group>
-        <p class="nav-group-label">All PoCs (27)</p>
+        <p class="nav-group-label">All PoCs (28)</p>
         <ul>
         <li><a class="nav-link" href="#agent" data-key="agent"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>Autonomous payment agent</span></a></li>
         <li><a class="nav-link" href="#oz-relayer" data-key="oz-relayer"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
@@ -142,9 +142,10 @@
         <li><a class="nav-link" href="#alibaba-page-agent" data-key="alibaba-page-agent"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">22</span>Alibaba page-agent</span></a></li>
         <li><a class="nav-link" href="#google-glass-stitch" data-key="google-glass-stitch"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">23</span>Google Glass form factor &amp; Stitch</span></a></li>
         <li><a class="nav-link" href="#simplicity-ctf" data-key="simplicity-ctf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">24</span>Simplicity CTF</span></a></li>
-        <li><a class="nav-link" href="#geometric-series-dcf" data-key="geometric-series-dcf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">25</span>Geometric series → DCF valuation</span></a></li>
-        <li><a class="nav-link" href="#amortized-potential-function" data-key="amortized-potential-function"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">26</span>Amortized analysis via potential functions</span></a></li>
-        <li><a class="nav-link" href="#moralis-wallet-api" data-key="moralis-wallet-api"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">27</span>Moralis — wallet snapshot via API</span></a></li>
+        <li><a class="nav-link" href="#isaac-groot" data-key="isaac-groot"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">25</span>NVIDIA Isaac GR00T — humanoid foundation model</span></a></li>
+        <li><a class="nav-link" href="#geometric-series-dcf" data-key="geometric-series-dcf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">26</span>Geometric series → DCF valuation</span></a></li>
+        <li><a class="nav-link" href="#amortized-potential-function" data-key="amortized-potential-function"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">27</span>Amortized analysis via potential functions</span></a></li>
+        <li><a class="nav-link" href="#moralis-wallet-api" data-key="moralis-wallet-api"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">28</span>Moralis — wallet snapshot via API</span></a></li>
         </ul>
       </div>
       <p class="no-results" id="no-results">No match.</p>
@@ -418,8 +419,19 @@
 
       <p><a href="https://www.jaylabs.xyz/poc/simplicity-ctf">Open on jaylabs.xyz &rarr;</a></p>
     </article>
+    <article id="isaac-groot">
+      <h1><span class="topic-no">25</span>NVIDIA Isaac GR00T — humanoid foundation model <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">A staged, hands-on plan to actually run and fine-tune GR00T — cloud GPU inference first, then a $100 SO-101 arm via LeRobot, Jetson hardware last.</p>
+      <p class="meta">Not yet scoped — start on a rented 16GB+ GPU following NVIDIA's e2e workflow doc, no hardware purchase needed. github.com/NVIDIA/Isaac-GR00T</p>
+      <h2>Why</h2>
+      <p>A blockchain developer can't survive on blockchain alone — this is the first concrete, hands-on attempt at the robotics/AI adjacent track the daily report's future-dev queue exists for. Not a survey: a staged plan to actually run a real humanoid foundation model rather than just read about one.</p>
+      <h2>How it works</h2>
+      <p>GR00T N1.7-3B needs 16GB+ VRAM even for inference alone (RTX 4090, L40, H100, Jetson AGX Thor/Orin, or DGX Spark) — the $399 Jetson Orin Nano Super's 8GB isn't enough on its own, so the plan starts on a rented cloud GPU (roughly $0.3-0.7/hr) following NVIDIA's e2e workflow doc, no hardware purchase required. Once the model and pipeline are familiar, NVIDIA's July 2026 integration of GR00T 1.7 into Hugging Face's LeRobot means a $100-130 SO-101 arm becomes a complete loop — collect demonstrations, fine-tune the actual GR00T checkpoint, deploy back to the arm — rather than toy imitation-learning code. Isaac Lab (open source, headless-capable) covers simulation-scale practice without any physical robot. A Jetson AGX Thor dev kit ($3,499-5,499, the real-time inference target NVIDIA actually designs GR00T for) stays a later-stage purchase, not a starting point.</p>
+
+      <p><a href="knowledge/isaac-groot.html">Detail &rarr;</a></p>
+    </article>
     <article id="geometric-series-dcf">
-      <h1><span class="topic-no">25</span>Geometric series → DCF valuation <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">26</span>Geometric series → DCF valuation <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">Sum of a geometric series, applied to perpetuity/Gordon-formula valuation.</p>
       <p class="meta">Math — from 2026-08-03's daily math track (Day 7/50: sequences &amp; series).</p>
       <h2>Why</h2>
@@ -430,7 +442,7 @@
       <p><a href="https://www.jaylabs.xyz/poc/geometric-series-dcf">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="amortized-potential-function">
-      <h1><span class="topic-no">26</span>Amortized analysis via potential functions <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">27</span>Amortized analysis via potential functions <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">Proving O(1) amortized cost for dynamic-array doubling with a potential function.</p>
       <p class="meta">Algorithms — from 2026-08-03's advanced dev-knowledge track (Day 1/100).</p>
       <h2>Why</h2>
@@ -441,7 +453,7 @@
       <p><a href="https://www.jaylabs.xyz/poc/amortized-potential-function">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="moralis-wallet-api">
-      <h1><span class="topic-no">27</span>Moralis — wallet snapshot via API <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">28</span>Moralis — wallet snapshot via API <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">Querying balance/net-worth for an address with Moralis's Wallet API.</p>
       <p class="meta">Service — from 2026-08-03's service-discovery track (39/113: Moralis).</p>
       <h2>Why</h2>
