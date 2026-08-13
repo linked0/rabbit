@@ -645,4 +645,203 @@ export const POC_CARDS: DemoCard[] = [
       },
     ],
   },
+  // ── 학습 백로그 (jay의 Notion 큐에서 옮겨온 항목들, 2026-08-13 추가).
+  // 아직 스코프도 안 잡힌 "읽기/훑어보기" 대상이라 href 없음 — 실제로 뭔가 만들면 그때 카드를 바꾼다.
+  {
+    key: "google-adk-mcp",
+    title: "Google ADK Python 2.5 — agent-as-MCP-server",
+    titleKo: "Google ADK Python 2.5 훑어보기",
+    description:
+      "New ADK release: sandboxed code exec on Cloud Run, serving an agent as an MCP server, and a fresh ADK Go — the 30-minute question is whether a verex-desk subagent can be wrapped in ADK and called from Claude via MCP.",
+    descriptionKo:
+      "ADK 새 릴리스: Cloud Run 샌드박스 코드 실행 격리, 에이전트를 MCP 서버로 서빙, ADK Go 신규 릴리스 — verex-desk 서브에이전트를 ADK로 감싸 Claude에서 MCP로 부를 수 있는지가 30분 질문.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — a 30-minute skim. Start with the MCP-serving section of the release log. (Notion queue, added 2026-08-08.)",
+    howToKo:
+      "아직 범위 미정 — 30분 훑어보기. 릴리스 로그의 MCP 서빙 섹션부터. (Notion 지시, 2026-08-08 추가.)",
+    purpose:
+      "\"Serving an agent as an MCP server\" is the piece that lines up exactly with Claude's MCP ecosystem — the question worth 30 minutes is whether a verex-desk subagent can be wrapped in ADK and called from Claude over MCP.",
+    purposeKo:
+      "\"에이전트를 MCP 서버로\" = Claude 쪽 MCP 생태계와 정확히 맞물리는 조각 — verex-desk의 서브에이전트를 ADK로 감싸 Claude에서 호출하는 구조가 가능한지가 30분 질문.",
+    howItWorks:
+      "The new Agent Development Kit release: sandboxed code execution isolation on Cloud Run, the ability to serve an agent as an MCP server, and improved Live API. ADK Go also shipped a new release.",
+    howItWorksKo:
+      "Agent Development Kit의 새 릴리스: Cloud Run 샌드박스에서 코드 실행 격리 · 에이전트를 MCP 서버로 서빙 가능 · Live API 개선. ADK Go도 새 릴리스.",
+  },
+  {
+    key: "google-skills-repo",
+    title: "Google Skills Repository — 90+ agent skills",
+    titleKo: "Google Skills Repository(90+ 스킬) 둘러보기",
+    description:
+      "~90 distilled-knowledge skills for agents (product, architecture, best practices) — same family as Claude's SKILL.md ecosystem, worth comparing formats and trigger design.",
+    descriptionKo:
+      "에이전트용 '증류된 지식' 스킬 ~90개(제품·아키텍처·베스트 프랙티스) — Claude의 SKILL.md 생태계와 같은 계열, 스킬 포맷과 트리거 설계 비교.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — a 30-minute skim. Pick 2-3 well-written skills and steal their structure. (Notion queue, added 2026-08-08.)",
+    howToKo:
+      "아직 범위 미정 — 30분 훑어보기. 잘 쓴 스킬 2~3개를 골라 구조만 훔쳐오기. (Notion 지시, 2026-08-08 추가.)",
+    purpose:
+      "This report itself runs on a SKILL.md, so the value isn't the content — it's comparing how Google structures skill format and trigger design against Claude's approach.",
+    purposeKo:
+      "이 리포트 자체가 SKILL.md로 굴러가므로, 스킬 포맷이 어떻게 다른가(트리거 설계·구조)를 비교하는 것이 값어치.",
+    howItWorks:
+      "~90 skills of distilled knowledge for agents — product, architecture, and best-practice knowledge packaged the same way Claude's SKILL.md ecosystem is.",
+    howItWorksKo:
+      "에이전트용 '증류된 지식' 스킬 ~90개(제품·아키텍처·베스트 프랙티스). Claude의 SKILL.md 생태계와 같은 계열.",
+  },
+  {
+    key: "ai-agent-course",
+    title: "Free 3-hour AI agent build & monetize course",
+    titleKo: "AI 에이전트 구축·수익화 3시간 무료 코스 훑기",
+    description:
+      "A free ex-Google-engineer course spanning agent design, human handoff, RAG/vector DBs, Cloud deployment, WhatsApp monetization, and loops-vs-graphs — the value is seeing the whole stack in one arc.",
+    descriptionKo:
+      "전 구글 엔지니어의 무료 코스 — 에이전트 설계부터 휴먼 핸드오프, RAG·벡터DB, Cloud 배포, WhatsApp 수익화, 루프 vs 그래프까지 전체 스택을 한 번에.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — first 30 minutes: the design intro (00:00) and the loops-vs-graphs chapter (2:24). (Notion queue, added 2026-08-07.)",
+    howToKo:
+      "아직 범위 미정 — 첫 30분: 목차 기준 00:00(설계)·2:24(루프 vs 그래프)만. (Notion 지시, 2026-08-07 추가.)",
+    purpose:
+      "The value is the end-to-end arc — Agents → RAG → Deployment → Leads → Revenue in one course, sitting at the intersection of the LLM track (RAG/agents) and the \"sell AI agent services\" business category.",
+    purposeKo:
+      "전체 스택(Agents → RAG → Deployment → Leads → Revenue)을 한 번에 보여주는 구성이 값어치 — LLM 트랙(RAG·에이전트 파트)과 'AI 에이전트 서비스 판매' 비즈니스 카테고리의 교차점.",
+    howItWorks:
+      "Agent system design → human handoff → RAG/vector DBs → Google Cloud deployment → WhatsApp monetization → conversation-to-lead conversion → loops vs. graphs → multi-tool agent graphs.",
+    howItWorksKo:
+      "에이전트 시스템 설계 → 휴먼 핸드오프 → RAG·벡터 DB → Google Cloud 배포 → WhatsApp 유료 비즈니스화 → 대화→리드 전환 → 루프 vs 그래프 → 멀티툴 에이전트 그래프.",
+  },
+  {
+    key: "circuit-breaker-saga",
+    title: "Microservice patterns — Circuit Breaker & Saga",
+    titleKo: "마이크로서비스 디자인 패턴 2제 정리",
+    description:
+      "Circuit Breaker (fail fast on inter-service calls, probe recovery half-open) and Saga (distributed transactions as local-transaction chains plus compensations) — verex's settlement pipeline is a Saga; its RPC/indexer calls want a breaker.",
+    descriptionKo:
+      "Circuit Breaker(서비스 간 통신 — 실패 임계치 넘으면 회로 개방, 유예 후 half-open 복구 탐색)와 Saga(분산 트랜잭션을 로컬 트랜잭션 연쇄+보상 트랜잭션으로) 정리.",
+    status: "soon",
+    howTo: "Not yet scoped — a reading note. (Notion queue, added 2026-08-07.)",
+    howToKo: "아직 범위 미정 — 정독 노트. (Notion 지시, 2026-08-07 추가.)",
+    purpose:
+      "Verex's settlement pipeline (oracle lookup → settlement → payout) is literally a Saga, and its RPC/indexer calls want a circuit breaker as a baseline.",
+    purposeKo:
+      "Verex 연결: 정산 파이프라인(오라클 조회→정산→페이아웃)이 정확히 Saga 구조이고, RPC·인덱서 호출부에는 Circuit Breaker가 기본기입니다.",
+    howItWorks:
+      "Circuit Breaker (inter-service calls): trip the circuit and fail fast once failures cross a threshold, then probe recovery half-open after a cooldown. Saga (data consistency): resolve a distributed transaction as a chain of local transactions plus compensating transactions — eventual consistency without 2PC.",
+    howItWorksKo:
+      "① Circuit Breaker(서비스 간 통신): 연쇄 장애 방지 — 실패가 임계치를 넘으면 회로를 열어 호출을 즉시 실패시키고, 유예 후 half-open으로 회복을 탐색. ② Saga(데이터 일관성): 분산 트랜잭션을 로컬 트랜잭션의 연쇄 + 보상 트랜잭션(compensation)으로 풀기 — 2PC 없이 최종 일관성.",
+  },
+  {
+    key: "slack-claude-notion",
+    title: "Slack · Claude · Notion integration",
+    titleKo: "Slack · Claude · Notion 통합해 보기",
+    description:
+      "Wire the three tools together via Claude's Slack/Notion MCP connectors — e.g. a Slack thread that Claude summarizes and logs to Notion.",
+    descriptionKo:
+      "Claude의 Slack/Notion 커넥터(MCP)로 세 도구를 잇는 워크플로우 실험 — 예: Slack 대화 → Claude 정리 → Notion 기록.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "Connects to the still-on-hold \"Claude Tag for Slack\" idea — this is the workflow that idea would actually serve.",
+    purposeKo: "보류 중인 'Slack용 Claude Tag' 아이디어와 연결.",
+    howItWorks:
+      "Experiment with Claude's Slack/Notion connectors (MCP) to chain the three tools — e.g. a Slack conversation gets summarized by Claude and logged to Notion.",
+    howItWorksKo:
+      "Claude의 Slack/Notion 커넥터(MCP)로 세 도구를 잇는 워크플로우 실험. 예: Slack 대화 → Claude 정리 → Notion 기록.",
+  },
+  {
+    key: "claude-tag-slack",
+    title: "\"Claude Tag\" for Slack (on hold)",
+    titleKo: "(보류) Slack용 'Claude Tag' 시도",
+    description: "On hold — would lean on Notion↔Slack integration features.",
+    descriptionKo: "보류 — Notion↔Slack 연동 기능 활용 예정.",
+    status: "soon",
+    howTo: "On hold, not yet scoped.",
+    howToKo: "보류 — 아직 범위 미정.",
+    purpose:
+      "Feeds into the Slack · Claude · Notion integration item above rather than standing alone.",
+    purposeKo: "위 'Slack · Claude · Notion 통합' 항목과 연결되는 아이디어.",
+    howItWorks:
+      "Would lean on Notion↔Slack integration features to bring a Claude Tag-style presence into Slack.",
+    howItWorksKo: "Notion↔Slack 연동 기능을 활용.",
+  },
+  {
+    key: "apple-container",
+    title: "Apple container",
+    titleKo: "Apple `container` 써보기",
+    description:
+      "Apple's official open-source tool for running Linux containers as lightweight VMs on Apple Silicon — a Docker Desktop alternative candidate.",
+    descriptionKo:
+      "애플 공식 오픈소스 — Mac(Apple Silicon)에서 Linux 컨테이너를 경량 VM으로 실행 — Docker Desktop 대안 검토.",
+    status: "soon",
+    howTo: "Not yet scoped. github.com/apple/container",
+    howToKo: "아직 범위 미정. github.com/apple/container",
+    purpose:
+      "A Docker Desktop alternative candidate for local infra across two PCs and midnight automated jobs.",
+    purposeKo: "Docker Desktop 대안 검토 — 2대 PC·자정 자동작업의 로컬 인프라 후보.",
+    howItWorks:
+      "Apple's official open source — runs Linux containers as lightweight VMs on Apple Silicon Macs. Written in Swift, OCI-compatible (pulls/pushes Docker images as-is), at 1.0.0, requires macOS 26.",
+    howItWorksKo:
+      "애플 공식 오픈소스 — Mac(Apple Silicon)에서 Linux 컨테이너를 경량 VM으로 실행. Swift 제작 · OCI 호환(Docker 이미지 그대로 pull/push) · 1.0.0 릴리스 · macOS 26 필요.",
+  },
+  {
+    key: "alibaba-page-agent",
+    title: "Alibaba page-agent",
+    titleKo: "Alibaba `page-agent` 살펴보기",
+    description:
+      "An in-page GUI agent (24k★) — one script tag or npm install lets natural language drive a webpage's UI, no screenshots or browser extension needed.",
+    descriptionKo:
+      "웹페이지 안에 심는 in-page GUI 에이전트(24k★) — 스크립트 한 줄/npm으로 자연어로 웹 UI 조작, 스크린샷·확장 불필요.",
+    status: "soon",
+    howTo: "Not yet scoped. github.com/alibaba/page-agent",
+    howToKo: "아직 범위 미정. github.com/alibaba/page-agent",
+    purpose:
+      "Same family as Clicky's \"landing conversation layer\" — a candidate for a Verex landing/SaaS copilot or smart form-filling.",
+    purposeKo:
+      "Clicky의 '랜딩 대화 레이어'와 같은 계열 — Verex 랜딩/SaaS 코파일럿·스마트 폼 채우기 후보.",
+    howItWorks:
+      "An in-page GUI agent embedded directly in a webpage — one script tag or npm install lets natural language operate the web UI. No screenshots, browser extension, or headless browser needed (text-based DOM); connects to any LLM (BYO); has a beta MCP server; built on browser-use.",
+    howItWorksKo:
+      "웹페이지 안에 심는 in-page GUI 에이전트 — 스크립트 한 줄/npm으로 '자연어로 웹 UI 조작'. 스크린샷·브라우저 확장·헤드리스 불필요(텍스트 기반 DOM) · LLM 자유 연결(BYO) · MCP 서버 베타 · browser-use 기반.",
+  },
+  {
+    key: "google-glass-stitch",
+    title: "Google Glass form factor & Stitch",
+    titleKo: "Google Glass · Stitch",
+    description:
+      "A note that Google Glass will likely land as a \"use only when needed\" form factor, plus trying out Stitch.",
+    descriptionKo:
+      "Google Glass는 '필요할 때만 쓰는' 형태가 될 것이라는 메모, 그리고 Stitch 사용해보기.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose: "A quick idea to revisit, not yet expanded.",
+    purposeKo: "짧게 남겨둔 메모 — 아직 펼쳐보지 않음.",
+    howItWorks:
+      "Google Glass is expected to land as a \"use only when needed\" form factor rather than always-on wear; separately, try out Stitch.",
+    howItWorksKo: "Google Glass는 '필요할 때만 쓰는' 형태가 될 것 · Stitch 사용해보기.",
+  },
+  {
+    key: "simplicity-ctf",
+    title: "Simplicity CTF",
+    titleKo: "Simplicity CTF 나중에 도전",
+    description:
+      "Blockstream's first Simplicity CTF — unlock 0.01 LBTC (~$600) locked in a contract for the reward; hands-on practice with Simplicity, the new smart-contract language for Bitcoin/Liquid.",
+    descriptionKo:
+      "Blockstream의 첫 Simplicity CTF — 컨트랙트에 잠긴 0.01 LBTC(~$600) 해제하면 보상. Simplicity(비트코인/Liquid용 신 스마트컨트랙트 언어) 실전 학습 기회.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — for later. github.com/Arvolear/simplicity-ctf (added 2026-07-07)",
+    howToKo:
+      "아직 범위 미정 — 시간 날 때 도전. github.com/Arvolear/simplicity-ctf (7/7 추가)",
+    purpose: "A hands-on way to actually learn Simplicity rather than just read about it.",
+    purposeKo: "Simplicity 실전 학습 기회 — 시간 날 때 도전.",
+    howItWorks:
+      "Blockstream's first Simplicity CTF — solve it to unlock 0.01 LBTC (~$600) locked in a contract.",
+    howItWorksKo:
+      "Blockstream의 첫 Simplicity CTF — 컨트랙트에 잠긴 0.01 LBTC(~$600) 해제하면 보상.",
+  },
 ];
