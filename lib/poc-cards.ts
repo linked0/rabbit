@@ -413,6 +413,24 @@ export const POC_CARDS: DemoCard[] = [
     howItWorksKo:
       "에세이가 아니라 측정으로 계획했습니다: 공개 RPC에서 활성 검증인 집합과 스테이킹 가중치를 가져오고, 각 검증인이 광고하는 gossip/TPU 엔드포인트를 IP로 해석한 뒤, 공개 IP 인텔리전스 데이터셋으로 ASN과 호스팅 사업자에 매핑하고, 스테이킹을 ASN별·사업자별·지역별로 집계합니다. 핵심 지표는 스테이킹 가중 허핀달 지수와 가장 큰 단일 상관 버킷이며, 둘 다 33% 정지선 위에 함께 그립니다. 같은 파이프라인을 그대로 이더리움 비콘 체인에도 돌려 비교합니다 — 이더리움에서는 집중이 한 겹 아래에 숨어 있습니다. 검증인 **수**가 아니라, 스테이킹 풀과 그 운영자들이 빌려 쓰는 소수의 클라우드에 몰려 있기 때문입니다.",
   },
+  {
+    key: "sub-2bit-local-llm",
+    title: "Sub-2-bit LLMs, locally",
+    titleKo: "2비트 미만 LLM 로컬 실행",
+    description: "A 2.4T model in 397GB — shrinking the codebook below IQ1_S, and what the last half-bit costs.",
+    descriptionKo: "2.4T 모델을 397GB에 — IQ1_S 아래로 코드북 줄이기, 그리고 마지막 반 비트의 대가.",
+    status: "soon",
+    howTo: "Not yet scoped — start with the 27B model on a 16GB machine via llama.cpp, sweep the 1-bit dtypes, and reproduce the quality curve locally.",
+    howToKo: "아직 범위 미정 — 16GB 머신에서 llama.cpp로 27B 모델부터 시작해, 1비트 dtype들을 훑고 품질 곡선을 직접 재현합니다.",
+    purpose:
+      "\"Runs locally\" hides two very different claims, and Qwen3.8 makes the gap unusually visible. The 27B model on a 16GB machine is the ordinary claim. The 2.4T-A95B model compressed from 4.9TB to 397GB — 91% smaller, still needing roughly 450GB of RAM — is the other one, and it is only \"local\" for someone who owns a server. The second thing worth pinning down is the phrase vendors use for the trade-off: \"retains a lot of accuracy.\" Unsloth's own numbers show perplexity rising 2.58 → 4.49 and top-token agreement falling 78.9% → 66.3% between the largest and smallest 1-bit variants, in exchange for about 22% less disk. Whether that trade is worth taking is a measurement, not an opinion — and it is measurable on hardware I actually have.",
+    purposeKo:
+      "「로컬에서 돌아간다」는 말에는 아주 다른 두 주장이 섞여 있고, Qwen3.8은 그 간극을 유난히 잘 드러냅니다. 16GB 머신 위의 27B 모델은 평범한 쪽입니다. 4.9TB에서 397GB로 압축된 2.4T-A95B(91% 감소, 그래도 RAM 약 450GB 필요)는 다른 쪽이고, 이건 서버를 소유한 사람에게만 「로컬」입니다. 두 번째로 못 박아 둘 것은 업체들이 트레이드오프를 표현하는 문구입니다 — 「정확도를 상당히 유지한다」. Unsloth 자체 수치로도 1비트 변형 중 가장 큰 것과 가장 작은 것 사이에서 perplexity가 2.58 → 4.49로 오르고 상위 토큰 일치율이 78.9% → 66.3%로 떨어집니다. 대가로 얻는 건 디스크 약 22% 절감입니다. 이 교환이 남는 장사인지는 의견이 아니라 **측정**의 문제이고, 제가 실제로 가진 하드웨어에서 측정할 수 있습니다.",
+    howItWorks:
+      "The compression trick is narrower than the headline suggests. llama.cpp's IQ1_S spends 1.5625 bits per weight, of which 11 are index bits into a 2048-entry codebook. The Unsloth variants simply shrink that codebook — 1024, 512, then 256 entries — which drops the index to 10, 9 and 8 bits and the weight to 1.4375, 1.3125 and 1.1875 bpw (shipped as TQ2_0, TQ1_0 and Q1_0, names picked so the Hugging Face repo lists them at all). The claim that matters is that these are plain post-training quantizations: no quantization-aware training or distillation, which is exactly what makes them cheap to produce and worth verifying independently. The plan is to run the 27B model across several of these dtypes on hardware I own and reproduce the PPL/KLD/top-p curve myself rather than cite it, then check the practical rule of thumb — RAM+VRAM ≈ quant size, past which disk offloading quietly turns a 20 tok/s figure into something else entirely.",
+    howItWorksKo:
+      "압축 기법 자체는 헤드라인보다 훨씬 좁은 이야기입니다. llama.cpp의 IQ1_S는 가중치당 1.5625비트를 쓰는데, 그중 11비트가 2048개짜리 코드북을 가리키는 인덱스입니다. Unsloth 변형은 그 코드북을 줄이기만 합니다 — 1024개, 512개, 256개 — 그러면 인덱스가 10·9·8비트로 줄고 가중치가 1.4375·1.3125·1.1875 bpw가 됩니다(각각 TQ2_0·TQ1_0·Q1_0으로 배포되며, 이름은 Hugging Face 저장소에 아예 노출되도록 고른 것입니다). 중요한 주장은 이것들이 **평범한 사후 양자화(PTQ)**라는 점입니다 — QAT나 증류가 없고, 바로 그 점이 생산 비용을 낮추는 동시에 독립적으로 검증할 가치를 만듭니다. 계획은 27B 모델을 이 dtype들로 제가 가진 하드웨어에서 돌려 PPL/KLD/top-p 곡선을 인용하는 대신 직접 재현하고, 실용 규칙(RAM+VRAM ≈ 양자화 크기, 그 선을 넘으면 디스크 오프로딩이 20 tok/s라는 숫자를 조용히 전혀 다른 것으로 바꿔 놓는다)을 확인하는 것입니다.",
+  },
   // ── 참조 전용 (README 의 "📎 Reference only" 행). 읽고 이해한 것이지 만들 항목이 아니라
   // href 가 없다 — 원문은 docs/knowledge/*.html, docs/features/*.md 에 있다.
   {

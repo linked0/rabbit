@@ -99,3 +99,10 @@
 **Reasoning:** 이미 `solana` 카드가 있었지만 그건 EVM-vs-솔라나 아키텍처 비교 + devnet Anchor 프로그램이라 주제가 달라 별도 카드로 만들었다 — 이번 건의 핵심은 체인 아키텍처가 아니라 **네트워크 토폴로지**이기 때문이다(합의는 설계대로 동작했고, 인프라 결함 하나가 검증인 3분의 1에 동시 도달한 것이 문제였다). 카드를 "사건 요약"이 아니라 **측정 가능한 질문**으로 잡았다: 하나의 상관된 단일 장애점을 공유하는 스테이킹 최대 조각 vs. 최종성 정지 임계값 33%. 이더리움 비콘 체인에도 같은 파이프라인을 돌려 비교하도록 범위를 잡았다(거기서는 집중이 검증인 수가 아니라 스테이킹 풀과 그 운영자들이 쓰는 소수 클라우드에 숨어 있다). 신규 항목이므로 `status:"soon"`, `date`·`href` 없음 — Planned 기본값 규칙(2026-08-13 jay 정정) 적용.
 **Change:** `lib/poc-cards.ts`에 `stake-concentration` 카드 추가(`pet-clean-room` 뒤, 참조 전용 블록 앞). `pnpm docs:pocs`로 `docs/pocs.html`·`docs/index.html`·`docs/topics/pocs-*.html` 재생성 — 새 상세 페이지 `docs/topics/pocs-stake-concentration.html` 생성되고 나머지 topic 페이지는 번호/pager만 1씩 밀림.
 **Result:** `tsc --noEmit` 통과. 상세 페이지 영/한 양쪽 PLANNED 배지 확인, 목록에서 6번으로 노출. index의 링크가 아직 없는 `/poc/stake-concentration`를 가리키는 것은 기존 PLANNED 카드(`dsrv-portal`, `pet-clean-room`)와 동일한 생성기 관례라 그대로 두었다.
+
+### PoC 카드 추가: 2비트 미만 LLM 로컬 실행 (Qwen3.8 / Unsloth 동적 1비트 양자화)
+
+**Cause:** jay가 Unsloth의 "Qwen3.8 - How to Run Locally" 문서 내용을 붙여넣고 PoC 항목으로 추가해 메인에 반영해 달라고 요청.
+**Reasoning:** 카드를 "새 모델 소개"로 쓰면 모델 버전과 함께 금방 낡으므로, 오래 가는 두 질문으로 잡았다. ① 「로컬에서 돌아간다」가 섞어 쓰는 두 주장의 분리 — 16GB에서 도는 27B와, 4.9TB→397GB로 줄였지만 여전히 RAM 450GB가 필요해 서버 소유자에게만 「로컬」인 2.4T-A95B는 같은 단어로 부를 수 없다. ② 「정확도를 상당히 유지한다」는 문구의 수치화 — 원문 표 자체가 1비트 변형 최대↔최소 사이에서 PPL 2.578→4.489, top-p 일치율 78.882%→66.257%를 보여주고 그 대가가 디스크 약 22% 절감이므로, 남는 장사인지는 의견이 아니라 측정 문제로 프레이밍했다. 기법 설명은 실제로 좁은 이야기라 정확히 적었다 — IQ1_S(1.5625bpw)의 11비트 인덱스가 가리키는 코드북 2048개를 1024/512/256으로 줄여 인덱스를 10/9/8비트로, 가중치를 1.4375/1.3125/1.1875bpw로 낮춘 것(TQ2_0·TQ1_0·Q1_0, HF 저장소 노출 때문에 고른 이름)이고 QAT/증류 없는 PTQ라는 점이 검증 가치의 핵심. 실행 계획은 2.4T가 아니라 **가진 하드웨어에서 되는 27B**로 잡아 곡선을 인용 대신 재현하는 것으로 뒀다. 신규 항목이므로 `status:"soon"`, `date`·`href` 없음.
+**Change:** `lib/poc-cards.ts`에 `sub-2bit-local-llm` 카드 추가(`stake-concentration` 뒤, 참조 전용 블록 앞). `pnpm docs:pocs` 재생성 — `docs/topics/pocs-sub-2bit-local-llm.html` 신규 생성, 카드 수 31→32.
+**Result:** `tsc --noEmit` 통과, 영/한 양쪽 PLANNED 배지 확인(목록 7번). 붙여넣은 원문에 URL이 없어 출처 링크는 넣지 않았다 — 필요하면 Unsloth 문서 URL을 받아 `howItWorks` 끝에 기존 관례("Source: <url>")대로 덧붙이면 된다.
