@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Web stack layers — PoCs</title>
+<title>Stake concentration risk — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -138,148 +138,30 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Web stack layers</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Stake concentration risk</p>
   <article>
-      <h1><span class="topic-no">9</span>Web stack layers <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">A five-layer map of the stack, with this project overlaid on it.</p>
-      <p class="meta">Reference — docs/knowledge/web-stack-layers.html.</p>
+      <h1><span class="topic-no">6</span>Stake concentration risk <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">How much stake sits behind one router, one ASN, one data centre — and how close that is to halting finality.</p>
+      <p class="meta">Not yet scoped — start by mapping public validator endpoints to ASNs, then compute the stake-weighted concentration against each chain's halting threshold.</p>
       <h2>Why</h2>
-      <p>An orientation map rather than a study: which layer each piece of this project actually lives at, and where the gaps are. Useful mostly for noticing that several cards which sound like different problems turn out to sit at the same layer — and that one or two layers have nothing on them at all.</p>
+      <p>In 2026 a routing error on Solana took roughly 29% of stake offline at once and the network came within a few percentage points of losing finality. Nothing was hacked and no key was stolen — the consensus math worked exactly as designed. The failure was that a single infrastructure fault could reach a third of the validator set at the same time, which is a question about network topology, not cryptography. The interesting output is a number nobody publishes: for a given chain, what is the largest slice of stake that shares one correlated point of failure, and how does that compare to the fraction that halts finality (33% for both Solana's and Ethereum's BFT thresholds)?</p>
       <h2>How it works</h2>
-      <p>A static five-layer diagram with the project's routes and demos placed on it. No code.</p>
-      <h2>Related code</h2>
-      <pre><code>&quot;&quot;&quot;Web stack layers PoC -- a request flowing through a chain of middleware layers.
-Illustrates the core mechanism: each layer wraps the next, adding something on the way
-in and/or the way out, and the order in which layers run is visible in the output.
-&quot;&quot;&quot;
-
-from typing import Callable
-
-Handler = Callable[[dict], dict]
-
-
-def logging_layer(next_layer: Handler) -&gt; Handler:
-    def handle(request: dict) -&gt; dict:
-        print(f&quot;  [logging]  in:  {request['path']}&quot;)
-        response = next_layer(request)
-        print(f&quot;  [logging]  out: status={response['status']}&quot;)
-        return response
-    return handle
-
-
-def auth_layer(next_layer: Handler) -&gt; Handler:
-    def handle(request: dict) -&gt; dict:
-        print(f&quot;  [auth]     checking token for {request['path']}&quot;)
-        request[&quot;user&quot;] = &quot;jay&quot;
-        return next_layer(request)
-    return handle
-
-
-def cache_layer(cache: dict) -&gt; Callable[[Handler], Handler]:
-    def wrap(next_layer: Handler) -&gt; Handler:
-        def handle(request: dict) -&gt; dict:
-            if request[&quot;path&quot;] in cache:
-                print(f&quot;  [cache]    hit for {request['path']}&quot;)
-                return cache[request[&quot;path&quot;]]
-            print(f&quot;  [cache]    miss for {request['path']}&quot;)
-            response = next_layer(request)
-            cache[request[&quot;path&quot;]] = response
-            return response
-        return handle
-    return wrap
-
-
-def app_layer(request: dict) -&gt; dict:
-    print(f&quot;  [app]      handling {request['path']} for user={request.get('user')}&quot;)
-    return {&quot;status&quot;: 200, &quot;body&quot;: f&quot;hello, {request.get('user')}&quot;}
-
-
-if __name__ == &quot;__main__&quot;:
-    cache: dict = {}
-    # Layers compose from the outside in: logging -&gt; auth -&gt; cache -&gt; app.
-    stack = logging_layer(auth_layer(cache_layer(cache)(app_layer)))
-
-    print(&quot;request 1 (/profile):&quot;)
-    stack({&quot;path&quot;: &quot;/profile&quot;})
-
-    print(&quot;\nrequest 2 (/profile again -- cache should hit):&quot;)
-    stack({&quot;path&quot;: &quot;/profile&quot;})
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/web-stack-layers.py">docs/code/pocs/web-stack-layers.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/web-stack-layers">Open on jaylabs.xyz &rarr;</a></p>
+      <p>Planned as a measurement, not an essay: pull the active validator set and its stake weights from public RPC, resolve each advertised gossip/TPU endpoint to an IP, map those to ASN and hosting provider with a public IP-intelligence dataset, then aggregate stake by ASN, by provider, and by geographic region. The headline figure is the stake-weighted Herfindahl index plus the single largest correlated bucket, both plotted against the 33% halt line. The same pipeline runs unchanged against Ethereum's beacon chain for comparison, where the concentration hides one layer down — in staking pools and the handful of clouds their operators rent from rather than in the validator count itself.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/stake-concentration">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">9</span>웹 스택 계층 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">스택의 5계층 지도 위에 이 프로젝트를 얹어 본 것.</p>
-      <p class="meta">참조 — docs/knowledge/web-stack-layers.html.</p>
+      <h1><span class="topic-no">6</span>스테이킹 집중 위험 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">라우터 하나, ASN 하나, 데이터센터 하나 뒤에 스테이킹이 얼마나 몰려 있는가 — 그리고 그것이 최종성 정지까지 얼마나 가까운가.</p>
+      <p class="meta">아직 범위 미정 — 공개 검증인 엔드포인트를 ASN에 매핑하는 것부터 시작해, 각 체인의 정지 임계값 대비 스테이킹 가중 집중도를 계산합니다.</p>
       <h2>왜</h2>
-      <p>스터디라기보다 방향 지도입니다: 이 프로젝트의 각 조각이 실제로 어느 계층에 사는지, 그리고 빈 곳은 어디인지. 서로 다른 문제처럼 들리던 카드 여럿이 사실 같은 계층에 앉아 있다는 것, 그리고 어떤 계층은 아예 비어 있다는 것을 알아차리는 데 주로 쓸모가 있습니다.</p>
+      <p>2026년 솔라나에서 라우팅 오류 하나로 스테이킹의 약 29%가 한꺼번에 오프라인이 되면서, 네트워크가 최종성 상실까지 불과 몇 퍼센트포인트를 남기고 멈춰 섰습니다. 해킹당한 것도, 키가 털린 것도 아니었습니다 — 합의 알고리즘은 설계대로 정확히 동작했습니다. 문제는 **인프라 결함 하나가 검증인 집합의 3분의 1에 동시에 도달할 수 있었다**는 것이고, 이건 암호학이 아니라 네트워크 토폴로지의 문제입니다. 흥미로운 산출물은 아무도 발표하지 않는 숫자입니다: 어떤 체인에서 하나의 상관된 단일 장애점을 공유하는 스테이킹의 최대 조각은 얼마이고, 그것이 최종성을 정지시키는 비율(솔라나·이더리움 BFT 임계값 모두 33%)에 얼마나 가까운가?</p>
       <h2>동작 방식</h2>
-      <p>프로젝트의 라우트와 데모를 얹은 정적 5계층 다이어그램. 코드는 없습니다.</p>
-      <h2>관련 코드</h2>
-      <pre><code>&quot;&quot;&quot;Web stack layers PoC -- a request flowing through a chain of middleware layers.
-Illustrates the core mechanism: each layer wraps the next, adding something on the way
-in and/or the way out, and the order in which layers run is visible in the output.
-&quot;&quot;&quot;
-
-from typing import Callable
-
-Handler = Callable[[dict], dict]
-
-
-def logging_layer(next_layer: Handler) -&gt; Handler:
-    def handle(request: dict) -&gt; dict:
-        print(f&quot;  [logging]  in:  {request['path']}&quot;)
-        response = next_layer(request)
-        print(f&quot;  [logging]  out: status={response['status']}&quot;)
-        return response
-    return handle
-
-
-def auth_layer(next_layer: Handler) -&gt; Handler:
-    def handle(request: dict) -&gt; dict:
-        print(f&quot;  [auth]     checking token for {request['path']}&quot;)
-        request[&quot;user&quot;] = &quot;jay&quot;
-        return next_layer(request)
-    return handle
-
-
-def cache_layer(cache: dict) -&gt; Callable[[Handler], Handler]:
-    def wrap(next_layer: Handler) -&gt; Handler:
-        def handle(request: dict) -&gt; dict:
-            if request[&quot;path&quot;] in cache:
-                print(f&quot;  [cache]    hit for {request['path']}&quot;)
-                return cache[request[&quot;path&quot;]]
-            print(f&quot;  [cache]    miss for {request['path']}&quot;)
-            response = next_layer(request)
-            cache[request[&quot;path&quot;]] = response
-            return response
-        return handle
-    return wrap
-
-
-def app_layer(request: dict) -&gt; dict:
-    print(f&quot;  [app]      handling {request['path']} for user={request.get('user')}&quot;)
-    return {&quot;status&quot;: 200, &quot;body&quot;: f&quot;hello, {request.get('user')}&quot;}
-
-
-if __name__ == &quot;__main__&quot;:
-    cache: dict = {}
-    # Layers compose from the outside in: logging -&gt; auth -&gt; cache -&gt; app.
-    stack = logging_layer(auth_layer(cache_layer(cache)(app_layer)))
-
-    print(&quot;request 1 (/profile):&quot;)
-    stack({&quot;path&quot;: &quot;/profile&quot;})
-
-    print(&quot;\nrequest 2 (/profile again -- cache should hit):&quot;)
-    stack({&quot;path&quot;: &quot;/profile&quot;})
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/web-stack-layers.py">docs/code/pocs/web-stack-layers.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/web-stack-layers">Open on jaylabs.xyz &rarr;</a></p>
+      <p>에세이가 아니라 측정으로 계획했습니다: 공개 RPC에서 활성 검증인 집합과 스테이킹 가중치를 가져오고, 각 검증인이 광고하는 gossip/TPU 엔드포인트를 IP로 해석한 뒤, 공개 IP 인텔리전스 데이터셋으로 ASN과 호스팅 사업자에 매핑하고, 스테이킹을 ASN별·사업자별·지역별로 집계합니다. 핵심 지표는 스테이킹 가중 허핀달 지수와 가장 큰 단일 상관 버킷이며, 둘 다 33% 정지선 위에 함께 그립니다. 같은 파이프라인을 그대로 이더리움 비콘 체인에도 돌려 비교합니다 — 이더리움에서는 집중이 한 겹 아래에 숨어 있습니다. 검증인 **수**가 아니라, 스테이킹 풀과 그 운영자들이 빌려 쓰는 소수의 클라우드에 몰려 있기 때문입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/stake-concentration">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-linera-microchains.html">&larr; 8. Linera microchains</a><a href="pocs-kb-hybrid-payment.html">10. KB hybrid payment flow &rarr;</a></div>
+  <div class="pager"><a href="pocs-pet-clean-room.html">&larr; 5. PET clean room (FHE)</a><a href="pocs-merkle-vs-verkle.html">7. Merkle vs Verkle &rarr;</a></div>
 </div>
 </body>
 </html>

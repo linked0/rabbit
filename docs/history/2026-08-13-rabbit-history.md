@@ -92,3 +92,10 @@
 **Reasoning:** 두 카드를 `status:"soon"`으로 바꾸면 `sortDemoCards()`의 done→soon 순위 규칙상 done 그룹보다 무조건 뒤로 밀려서, "DVT 앞에 배치"로 3번을 만들던 이전 트릭이 더 이상 통하지 않는다 — done 카드끼리의 자체 순서로 3번을 만들어야 했다. 이미 done 카드가 두 개 더 있었다(agent 2026-08-12, oz-relayer 2026-08-12). DVT의 `date`를 오늘(2026-08-13, 상태를 플래그만 바꾼 날)이 아니라 원래 값인 2026-08-05(정독 노트 본문이 실제로 완성됐던 날 — CLAUDE.md의 "date는 카드를 만든 날이 아니라 실제로 완결된 날" 규칙에 더 맞는 값)로 되돌리면, 두 08-12 카드보다 뒤로 가면서 정확히 3번이 된다 — 다른 카드는 전혀 건드리지 않았다.
 **Change:** `lib/poc-cards.ts`에서 `agents-computer-use`·`tokenized-money-banks`의 `status`를 `"soon"`으로, `date` 필드를 제거(구현 전 카드는 날짜를 비워둔다는 기존 규칙). `dvt`의 `date`를 `"2026-08-05"`로 되돌림. `pnpm docs:pocs` 재생성.
 **Result:** 목록 순서 1=Autonomous payment agent, 2=OpenZeppelin Relayer & Monitor, 3=DVT in the protocol, 두 신규 카드는 PLANNED 배지로 이동해 14·15번 확인. `tsc --noEmit` 통과, 태그 짝 확인.
+
+### PoC 카드 추가: 스테이킹 집중 위험 (솔라나 라우팅 장애 29% 사건)
+
+**Cause:** jay가 "솔라나 네트워크에서 라우팅 오류로 스테이킹의 29%가 오프라인이 되어 최종성 상실 위기를 가까스로 넘긴 사건이 집중 위험을 드러냈다"는 내용으로 PoC 항목 하나를 만들어 메인 브랜치에 푸시해 달라고 요청.
+**Reasoning:** 이미 `solana` 카드가 있었지만 그건 EVM-vs-솔라나 아키텍처 비교 + devnet Anchor 프로그램이라 주제가 달라 별도 카드로 만들었다 — 이번 건의 핵심은 체인 아키텍처가 아니라 **네트워크 토폴로지**이기 때문이다(합의는 설계대로 동작했고, 인프라 결함 하나가 검증인 3분의 1에 동시 도달한 것이 문제였다). 카드를 "사건 요약"이 아니라 **측정 가능한 질문**으로 잡았다: 하나의 상관된 단일 장애점을 공유하는 스테이킹 최대 조각 vs. 최종성 정지 임계값 33%. 이더리움 비콘 체인에도 같은 파이프라인을 돌려 비교하도록 범위를 잡았다(거기서는 집중이 검증인 수가 아니라 스테이킹 풀과 그 운영자들이 쓰는 소수 클라우드에 숨어 있다). 신규 항목이므로 `status:"soon"`, `date`·`href` 없음 — Planned 기본값 규칙(2026-08-13 jay 정정) 적용.
+**Change:** `lib/poc-cards.ts`에 `stake-concentration` 카드 추가(`pet-clean-room` 뒤, 참조 전용 블록 앞). `pnpm docs:pocs`로 `docs/pocs.html`·`docs/index.html`·`docs/topics/pocs-*.html` 재생성 — 새 상세 페이지 `docs/topics/pocs-stake-concentration.html` 생성되고 나머지 topic 페이지는 번호/pager만 1씩 밀림.
+**Result:** `tsc --noEmit` 통과. 상세 페이지 영/한 양쪽 PLANNED 배지 확인, 목록에서 6번으로 노출. index의 링크가 아직 없는 `/poc/stake-concentration`를 가리키는 것은 기존 PLANNED 카드(`dsrv-portal`, `pet-clean-room`)와 동일한 생성기 관례라 그대로 두었다.

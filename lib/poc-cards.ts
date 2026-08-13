@@ -395,6 +395,24 @@ export const POC_CARDS: DemoCard[] = [
     howItWorksKo:
       "서베이가 아니라 실습으로 계획했습니다: FHE 라이브러리 하나를 골라 암호문 입력에 대한 집계 하나(합계나 카운트)를 끝까지 돌려보고, 지연과 암호문 크기를 실제로 측정합니다 — 이 기술이 쓸 만한지를 정하는 건 결국 이 두 숫자입니다. 참조 사례는 원본 레코드가 소유자를 아예 떠날 수 없다는 법적 제약이 걸린 병원·레지스트리 데이터 협업입니다.",
   },
+  {
+    key: "stake-concentration",
+    title: "Stake concentration risk",
+    titleKo: "스테이킹 집중 위험",
+    description: "How much stake sits behind one router, one ASN, one data centre — and how close that is to halting finality.",
+    descriptionKo: "라우터 하나, ASN 하나, 데이터센터 하나 뒤에 스테이킹이 얼마나 몰려 있는가 — 그리고 그것이 최종성 정지까지 얼마나 가까운가.",
+    status: "soon",
+    howTo: "Not yet scoped — start by mapping public validator endpoints to ASNs, then compute the stake-weighted concentration against each chain's halting threshold.",
+    howToKo: "아직 범위 미정 — 공개 검증인 엔드포인트를 ASN에 매핑하는 것부터 시작해, 각 체인의 정지 임계값 대비 스테이킹 가중 집중도를 계산합니다.",
+    purpose:
+      "In 2026 a routing error on Solana took roughly 29% of stake offline at once and the network came within a few percentage points of losing finality. Nothing was hacked and no key was stolen — the consensus math worked exactly as designed. The failure was that a single infrastructure fault could reach a third of the validator set at the same time, which is a question about network topology, not cryptography. The interesting output is a number nobody publishes: for a given chain, what is the largest slice of stake that shares one correlated point of failure, and how does that compare to the fraction that halts finality (33% for both Solana's and Ethereum's BFT thresholds)?",
+    purposeKo:
+      "2026년 솔라나에서 라우팅 오류 하나로 스테이킹의 약 29%가 한꺼번에 오프라인이 되면서, 네트워크가 최종성 상실까지 불과 몇 퍼센트포인트를 남기고 멈춰 섰습니다. 해킹당한 것도, 키가 털린 것도 아니었습니다 — 합의 알고리즘은 설계대로 정확히 동작했습니다. 문제는 **인프라 결함 하나가 검증인 집합의 3분의 1에 동시에 도달할 수 있었다**는 것이고, 이건 암호학이 아니라 네트워크 토폴로지의 문제입니다. 흥미로운 산출물은 아무도 발표하지 않는 숫자입니다: 어떤 체인에서 하나의 상관된 단일 장애점을 공유하는 스테이킹의 최대 조각은 얼마이고, 그것이 최종성을 정지시키는 비율(솔라나·이더리움 BFT 임계값 모두 33%)에 얼마나 가까운가?",
+    howItWorks:
+      "Planned as a measurement, not an essay: pull the active validator set and its stake weights from public RPC, resolve each advertised gossip/TPU endpoint to an IP, map those to ASN and hosting provider with a public IP-intelligence dataset, then aggregate stake by ASN, by provider, and by geographic region. The headline figure is the stake-weighted Herfindahl index plus the single largest correlated bucket, both plotted against the 33% halt line. The same pipeline runs unchanged against Ethereum's beacon chain for comparison, where the concentration hides one layer down — in staking pools and the handful of clouds their operators rent from rather than in the validator count itself.",
+    howItWorksKo:
+      "에세이가 아니라 측정으로 계획했습니다: 공개 RPC에서 활성 검증인 집합과 스테이킹 가중치를 가져오고, 각 검증인이 광고하는 gossip/TPU 엔드포인트를 IP로 해석한 뒤, 공개 IP 인텔리전스 데이터셋으로 ASN과 호스팅 사업자에 매핑하고, 스테이킹을 ASN별·사업자별·지역별로 집계합니다. 핵심 지표는 스테이킹 가중 허핀달 지수와 가장 큰 단일 상관 버킷이며, 둘 다 33% 정지선 위에 함께 그립니다. 같은 파이프라인을 그대로 이더리움 비콘 체인에도 돌려 비교합니다 — 이더리움에서는 집중이 한 겹 아래에 숨어 있습니다. 검증인 **수**가 아니라, 스테이킹 풀과 그 운영자들이 빌려 쓰는 소수의 클라우드에 몰려 있기 때문입니다.",
+  },
   // ── 참조 전용 (README 의 "📎 Reference only" 행). 읽고 이해한 것이지 만들 항목이 아니라
   // href 가 없다 — 원문은 docs/knowledge/*.html, docs/features/*.md 에 있다.
   {
