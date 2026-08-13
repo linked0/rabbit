@@ -548,9 +548,8 @@ export const POC_CARDS: DemoCard[] = [
       "a16z's 2026 update on computer-use agents in production — OSWorld benchmark jump from 42% to 85% in a year, and what buyers actually pay for once the model stops being the bottleneck.",
     descriptionKo:
       "컴퓨터 사용 에이전트가 프로덕션에 들어간 2026년 a16z 업데이트 — OSWorld 벤치마크가 1년 만에 42%에서 85%로 뛴 것과, 모델이 병목이 아니게 된 뒤 구매자가 실제로 돈을 내는 지점.",
-    status: "done",
+    status: "soon",
     href: "/poc/agents-computer-use",
-    date: "2026-08-13",
     howTo: "Reading notes — no demo, no wallet needed.",
     howToKo: "정독 노트 — 데모 없음, 지갑 불필요.",
     purpose:
@@ -570,9 +569,8 @@ export const POC_CARDS: DemoCard[] = [
       "Tempo Research's primer on the three product families banks can use to put a settlement asset onchain — tokenized deposits, first-party stablecoins, and third-party stablecoins — and the Basel LCR/NSFR cost each one hard-codes.",
     descriptionKo:
       "은행이 결제 자산을 온체인에 올릴 때 쓸 수 있는 세 가지 상품군 — 토큰화 예금, 1자 발행 스테이블코인, 3자 스테이블코인 — 과 각각이 하드코딩하는 바젤 LCR/NSFR 비용을 정리한 Tempo Research 리포트.",
-    status: "done",
+    status: "soon",
     href: "/poc/tokenized-money-banks",
-    date: "2026-08-13",
     howTo: "Reading notes — no demo, no wallet needed.",
     howToKo: "정독 노트 — 데모 없음, 지갑 불필요.",
     purpose:
@@ -599,7 +597,7 @@ export const POC_CARDS: DemoCard[] = [
     // href 는 그대로라 카드는 계속 눌린다 — DemoCard 가 soon+href 를 목업 배지로 렌더한다.
     status: "done",
     href: "/poc/dvt",
-    date: "2026-08-13",
+    date: "2026-08-05",
     howTo: "Read-only design analysis — no wallet needed. Start with the two diagrams contrasting DVT today against the proposal.",
     howToKo: "읽기 전용 설계 분석 — 지갑 불필요. 오늘의 DVT와 제안을 대비시킨 다이어그램 두 장부터 보세요.",
     purpose:

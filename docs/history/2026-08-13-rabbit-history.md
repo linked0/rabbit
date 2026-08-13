@@ -85,3 +85,10 @@
 **Reasoning:** PoCs 목록의 번호는 `sortDemoCards()`가 매기고(같은 status면 date 내림차순, 같은 date면 배열 순서 유지) DVT가 `status:"done", date:"2026-08-13"`로 이미 1번을 차지하고 있었으므로, 같은 status·같은 date로 새 카드 둘을 `dvt` 항목보다 배열상 앞에 넣기만 하면 안정 정렬(stable sort)로 정확히 1·2번이 되고 DVT가 자동으로 3번으로 밀림 — 별도 순번 필드를 손댈 필요가 없었다. PDF는 poppler(`brew install poppler`)로 텍스트 추출, mhtml은 Python `email` 모듈로 멀티파트를 파싱해 가장 큰 `text/html` 파트를 뽑아 태그를 벗겼다. `DemoCard`엔 출처 URL을 위한 전용 필드가 없어 DVT 카드의 관례(정독 노트 = `status:"done"`, purpose·howItWorks에 실제 내용 요약)를 따르되, `howItWorks`/`howItWorksKo` 문장 끝에 "Source: <url>"/"출처: <url>"을 평문으로 덧붙였다(다른 필드처럼 escapeHtml되는 자리라 링크 태그를 심어도 그대로 이스케이프되어 보일 것이었음).
 **Change:** `lib/poc-cards.ts`에 `agents-computer-use`, `tokenized-money-banks` 두 카드를 `dvt` 항목 바로 앞에 추가(둘 다 `status:"done"`, `date:"2026-08-13"`, 원문 요약 + 출처 URL 포함). `pnpm docs:pocs`로 `docs/pocs.html`·`docs/index.html`·`docs/topics/pocs-*.html` 재생성.
 **Result:** 생성된 목록에서 1=Can Agents Use a Computer Yet?, 2=Tokenized Money for Banks, 3=DVT in the protocol 순서 확인. 두 상세 페이지 모두 영/한 본문에 출처 URL 노출 확인. `tsc --noEmit` 통과, 태그 짝·로컬 링크 전수 확인(기존 `docs/index.html` `&lt;div&gt;` 불일치는 이번 변경 이전부터 있던 것으로 재확인, 무관).
+
+### 새 리서치 카드 둘을 Done → Planned로 정정, DVT를 다시 3번으로
+
+**Cause:** jay가 방금 추가한 두 카드(Can Agents Use a Computer Yet?, Tokenized Money for Banks)는 Done이 아니라 Planned여야 한다고 정정. 그리고 곧이어 "DVT in the protocol는 3번"이라고 다시 한번 지정.
+**Reasoning:** 두 카드를 `status:"soon"`으로 바꾸면 `sortDemoCards()`의 done→soon 순위 규칙상 done 그룹보다 무조건 뒤로 밀려서, "DVT 앞에 배치"로 3번을 만들던 이전 트릭이 더 이상 통하지 않는다 — done 카드끼리의 자체 순서로 3번을 만들어야 했다. 이미 done 카드가 두 개 더 있었다(agent 2026-08-12, oz-relayer 2026-08-12). DVT의 `date`를 오늘(2026-08-13, 상태를 플래그만 바꾼 날)이 아니라 원래 값인 2026-08-05(정독 노트 본문이 실제로 완성됐던 날 — CLAUDE.md의 "date는 카드를 만든 날이 아니라 실제로 완결된 날" 규칙에 더 맞는 값)로 되돌리면, 두 08-12 카드보다 뒤로 가면서 정확히 3번이 된다 — 다른 카드는 전혀 건드리지 않았다.
+**Change:** `lib/poc-cards.ts`에서 `agents-computer-use`·`tokenized-money-banks`의 `status`를 `"soon"`으로, `date` 필드를 제거(구현 전 카드는 날짜를 비워둔다는 기존 규칙). `dvt`의 `date`를 `"2026-08-05"`로 되돌림. `pnpm docs:pocs` 재생성.
+**Result:** 목록 순서 1=Autonomous payment agent, 2=OpenZeppelin Relayer & Monitor, 3=DVT in the protocol, 두 신규 카드는 PLANNED 배지로 이동해 14·15번 확인. `tsc --noEmit` 통과, 태그 짝 확인.
