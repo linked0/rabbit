@@ -90,6 +90,12 @@
   .topics { list-style:none; margin:0; padding:0; }
   .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
   .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
@@ -98,6 +104,9 @@
   .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
   .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
   .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
   .topic-how strong { color:var(--text); }
   .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
@@ -131,7 +140,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Google Skills Repository — 90+ agent skills</p>
   <article>
-      <h1><span class="topic-no">16</span>Google Skills Repository — 90+ agent skills <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">18</span>Google Skills Repository — 90+ agent skills <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">~90 distilled-knowledge skills for agents (product, architecture, best practices) — same family as Claude's SKILL.md ecosystem, worth comparing formats and trigger design.</p>
       <p class="meta">Not yet scoped — a 30-minute skim. Pick 2-3 well-written skills and steal their structure. (Notion queue, added 2026-08-08.)</p>
       <h2>Why</h2>
@@ -193,7 +202,7 @@ if __name__ == &quot;__main__&quot;:
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">16</span>Google Skills Repository(90+ 스킬) 둘러보기 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">18</span>Google Skills Repository(90+ 스킬) 둘러보기 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">에이전트용 '증류된 지식' 스킬 ~90개(제품·아키텍처·베스트 프랙티스) — Claude의 SKILL.md 생태계와 같은 계열, 스킬 포맷과 트리거 설계 비교.</p>
       <p class="meta">아직 범위 미정 — 30분 훑어보기. 잘 쓴 스킬 2~3개를 골라 구조만 훔쳐오기. (Notion 지시, 2026-08-08 추가.)</p>
       <h2>왜</h2>
@@ -252,7 +261,7 @@ if __name__ == &quot;__main__&quot;:
       <p class="code-link"><a href="../code/pocs/google-skills-repo.py">docs/code/pocs/google-skills-repo.py</a></p>
       <p><a href="https://www.jaylabs.xyz/poc/google-skills-repo">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-google-adk-mcp.html">&larr; 15. Google ADK Python 2.5 — agent-as-MCP-server</a><a href="pocs-ai-agent-course.html">17. Free 3-hour AI agent build &amp; monetize course &rarr;</a></div>
+  <div class="pager"><a href="pocs-google-adk-mcp.html">&larr; 17. Google ADK Python 2.5 — agent-as-MCP-server</a><a href="pocs-ai-agent-course.html">19. Free 3-hour AI agent build &amp; monetize course &rarr;</a></div>
 </div>
 </body>
 </html>

@@ -90,6 +90,12 @@
   .topics { list-style:none; margin:0; padding:0; }
   .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
   .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
@@ -98,6 +104,9 @@
   .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
   .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
   .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
   .topic-how strong { color:var(--text); }
   .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
@@ -131,7 +140,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Moralis — wallet snapshot via API</p>
   <article>
-      <h1><span class="topic-no">28</span>Moralis — wallet snapshot via API <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">30</span>Moralis — wallet snapshot via API <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">Querying balance/net-worth for an address with Moralis's Wallet API.</p>
       <p class="meta">Service — from 2026-08-03's service-discovery track (39/113: Moralis).</p>
       <h2>Why</h2>
@@ -186,7 +195,7 @@ print(f&quot;\ntotal portfolio value: ${total:,.2f}&quot;)
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">28</span>Moralis — API로 지갑 스냅샷 조회 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">30</span>Moralis — API로 지갑 스냅샷 조회 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">Moralis Wallet API로 특정 주소의 잔고·순자산 조회.</p>
       <p class="meta">서비스 — 2026-08-03 서비스 탐방 트랙 (39/113: Moralis).</p>
       <h2>왜</h2>
@@ -238,7 +247,7 @@ print(f&quot;\ntotal portfolio value: ${total:,.2f}&quot;)
       <p class="code-link"><a href="../code/pocs/moralis-wallet-api.py">docs/code/pocs/moralis-wallet-api.py</a></p>
       <p><a href="https://www.jaylabs.xyz/poc/moralis-wallet-api">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-amortized-potential-function.html">&larr; 27. Amortized analysis via potential functions</a><span></span></div>
+  <div class="pager"><a href="pocs-amortized-potential-function.html">&larr; 29. Amortized analysis via potential functions</a><span></span></div>
 </div>
 </body>
 </html>

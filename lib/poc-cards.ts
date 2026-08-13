@@ -541,15 +541,61 @@ export const POC_CARDS: DemoCard[] = [
       "계획: 서버 라우트가 Zapier MCP 연결(URL + 인증 토큰, 브라우저에 절대 노출 안 함)을 들고 있고, Anthropic API의 네이티브 MCP 커넥터로 툴 호출을 전달하거나, @modelcontextprotocol/sdk로 직접 범용 MCP 클라이언트 역할을 하며 사용 가능한 툴 목록을 보여주고 모델이 선택한 것을 실행합니다 — 에이전트에게 실제 계정에 대한 무제한 접근을 주지 않도록 안전한 액션(예: \"내게 이메일 보내기\")만 명시적으로 허용 목록에 넣습니다. 아직 미구현.",
   },
   {
+    key: "agents-computer-use",
+    title: "Can Agents Use a Computer Yet?",
+    titleKo: "에이전트는 이제 컴퓨터를 쓸 수 있나",
+    description:
+      "a16z's 2026 update on computer-use agents in production — OSWorld benchmark jump from 42% to 85% in a year, and what buyers actually pay for once the model stops being the bottleneck.",
+    descriptionKo:
+      "컴퓨터 사용 에이전트가 프로덕션에 들어간 2026년 a16z 업데이트 — OSWorld 벤치마크가 1년 만에 42%에서 85%로 뛴 것과, 모델이 병목이 아니게 된 뒤 구매자가 실제로 돈을 내는 지점.",
+    status: "soon",
+    href: "/poc/agents-computer-use",
+    howTo: "Reading notes — no demo, no wallet needed.",
+    howToKo: "정독 노트 — 데모 없음, 지갑 불필요.",
+    purpose:
+      "Tracking where computer-use agents actually stand in production, not in demos — the piece is built on interviews with real operators (a CPG data platform running 15-20M portal interactions/month, a systems integrator running 27 live workflows), not just benchmark numbers. A useful checkpoint for judging whether an \"agent operates a browser/UI\" idea is worth building now versus still a research toy.",
+    purposeKo:
+      "컴퓨터 사용 에이전트가 데모가 아니라 프로덕션에서 실제로 어디까지 와 있는지 추적하는 글 — 벤치마크 숫자뿐 아니라 실제 운영자 인터뷰(월 1500~2100만 건의 포털 상호작용을 처리하는 CPG 데이터 플랫폼, 27개 라이브 워크플로를 돌리는 시스템 통합사)를 근거로 삼는다. \"에이전트가 브라우저/UI를 조작한다\"는 아이디어가 지금 만들 만한 것인지, 아직 리서치 토이인지 판단할 때 쓸 만한 체크포인트.",
+    howItWorks:
+      "OSWorld-Verified (a real-desktop benchmark) jumped from 42% a year ago to 85% today (Claude Opus 4.6-class models), above the ~72% human baseline — but the piece's real argument is that the benchmark stopped mattering: once models cleared a \"good enough\" bar, buyers stopped comparing models and started buying infrastructure — verification, escalation, error handling, and a common pattern where an agent runs a workflow once, caches it as deterministic code, and is only re-invoked when something breaks (cost falls over a workflow's lifetime). Cost comparison: agent inference runs ~$6-8/hr ($3-15 range) versus ~$10/hr offshore BPO versus $30-45/hr fully-loaded US labor — roughly break-even against BPO today, 70-80% margin against US labor. The failure mode that matters most isn't the UI click failing, it's silent failures with no verifiable signal at run time (e.g. an insurance claim that \"succeeded\" on screen but stalls two days later on a phone call nobody logged). Source: https://www.a16z.news/p/can-agents-use-a-computer-yet-weve",
+    howItWorksKo:
+      "OSWorld-Verified(실제 데스크톱 환경 벤치마크)가 1년 전 42%에서 오늘 85%(Claude Opus 4.6급 모델)로 뛰어 인간 기준선 약 72%를 넘어섰다 — 하지만 글의 진짜 주장은 벤치마크가 더 이상 중요하지 않게 됐다는 것이다: 모델이 \"충분히 좋은\" 문턱을 넘자, 구매자들은 모델 비교를 멈추고 인프라를 사기 시작했다 — 검증, 에스컬레이션, 오류 처리, 그리고 에이전트가 워크플로를 한 번 실행한 뒤 결정론적 코드로 캐싱해두고 뭔가 깨질 때만 다시 호출되는 흔한 패턴(워크플로 수명 동안 비용이 떨어진다). 비용 비교: 에이전트 추론은 시간당 약 $6-8($3-15 범위) vs 역외 BPO 약 $10/hr vs 완전 부담 기준 미국 인건비 $30-45/hr — 오늘 기준 BPO와 거의 손익분기, 미국 인건비 대비 70-80% 마진. 가장 중요한 실패 유형은 UI 클릭 실패가 아니라, 실행 시점엔 검증할 신호가 없는 조용한 실패다(예: 화면상 \"접수 완료\"된 보험 청구가 이틀 뒤 아무도 기록하지 않은 전화 한 통 때문에 멈춰버리는 경우). 출처: https://www.a16z.news/p/can-agents-use-a-computer-yet-weve",
+  },
+  {
+    key: "tokenized-money-banks",
+    title: "Tokenized Money for Banks",
+    titleKo: "은행을 위한 토큰화된 화폐",
+    description:
+      "Tempo Research's primer on the three product families banks can use to put a settlement asset onchain — tokenized deposits, first-party stablecoins, and third-party stablecoins — and the Basel LCR/NSFR cost each one hard-codes.",
+    descriptionKo:
+      "은행이 결제 자산을 온체인에 올릴 때 쓸 수 있는 세 가지 상품군 — 토큰화 예금, 1자 발행 스테이블코인, 3자 스테이블코인 — 과 각각이 하드코딩하는 바젤 LCR/NSFR 비용을 정리한 Tempo Research 리포트.",
+    status: "soon",
+    href: "/poc/tokenized-money-banks",
+    howTo: "Reading notes — no demo, no wallet needed.",
+    howToKo: "정독 노트 — 데모 없음, 지갑 불필요.",
+    purpose:
+      "A structured way to read every \"bank issues a stablecoin\" headline: the report separates three genuinely different balance-sheet moves that get talked about as one thing, and shows why a bank ends up needing all three rather than picking a winner. Useful background for anything touching bank-adjacent stablecoin rails or institutional settlement design.",
+    purposeKo:
+      "\"은행이 스테이블코인을 발행한다\"는 헤드라인들을 구조적으로 읽는 방법 — 하나로 뭉뚱그려 얘기되는 세 가지 실제로 다른 대차대조표 움직임을 분리하고, 은행이 왜 하나를 고르는 대신 셋 다 필요하게 되는지 보여준다. 은행 인접 스테이블코인 레일이나 기관 결제 설계를 건드리는 작업에 유용한 배경지식.",
+    howItWorks:
+      "Three families, each a different trade on the balance sheet. (1) Tokenized deposits — the claim stays a deposit, just wrapped in a token; cheapest Basel treatment (25% LCR runoff, 50% NSFR ASF for the permissioned variant) but narrow reach — JPMD on Base is the live example. (2) First-party stablecoins — the bank issues against a segregated reserve pool; the claim converts from deposit to redemption contract, which is the expensive move: LCR runoff jumps from 25% to 100%, NSFR ASF drops from 50% to 0%, and it can be issued on the parent's own balance sheet, through a licensed subsidiary, or through a bank consortium. (3) Third-party stablecoins — the bank doesn't issue at all, just facilitates access (prefunded inventory or a deposit-secured loan) to reach venues that don't accept bank-claim tokens, at the cost of the claim leaving the bank's balance sheet entirely. The report's core claim: these aren't competing options, they're complementary — a single institutional client might use a tokenized deposit for intra-network settlement, a first-party stablecoin for treasury rebalancing, and a third-party stablecoin to hedge weekend exposure on Hyperliquid-style venues, so a bank offering only one can't fully serve them. Source: https://research.4pillars.io/en/research/tokenized-money-for-banks",
+    howItWorksKo:
+      "세 개의 상품군, 각각 대차대조표에서 다른 트레이드를 만든다. (1) 토큰화 예금 — 청구권은 여전히 예금이고 토큰으로 감싸기만 함; 바젤 처리가 가장 저렴(퍼미션드 변형은 LCR 유출 25%, NSFR ASF 50%)하지만 도달 범위가 좁음 — Base 위의 JPMD가 실제 사례. (2) 1자 발행 스테이블코인 — 은행이 분리된 준비금 풀을 대가로 발행; 청구권이 예금에서 상환 계약으로 바뀌는 게 비싼 지점이다: LCR 유출이 25%→100%로, NSFR ASF가 50%→0%로 바뀌고, 모회사 자체 대차대조표·인가받은 자회사·은행 컨소시엄 중 하나로 발행 가능. (3) 3자 스테이블코인 — 은행이 아예 발행하지 않고 접근만 중개(선충전 재고 또는 예금 담보 대출)해서 은행 청구 토큰을 받지 않는 venue에 도달하되, 대가로 청구권이 은행 대차대조표를 완전히 떠난다. 리포트의 핵심 주장: 이 셋은 경쟁 관계가 아니라 상호보완적이다 — 한 기관 고객이 네트워크 내 결제엔 토큰화 예금을, 트레저리 리밸런싱엔 1자 스테이블코인을, Hyperliquid류 venue의 주말 익스포저 헤지엔 3자 스테이블코인을 동시에 쓸 수 있어, 하나만 제공하는 은행은 그 고객을 완전히 커버할 수 없다. 출처: https://research.4pillars.io/en/research/tokenized-money-for-banks",
+  },
+  {
     key: "dvt",
     title: "DVT in the protocol",
     titleKo: "프로토콜에 흡수된 DVT",
+    // 상세 페이지를 손으로 쓴다 (jay, 2026-08-13) — 생성된 이중언어 카드 요약은 그대로 두고,
+    // 그 아래에 사고 실험 세션 노트를 덧붙인 형태다. 생성기는 docsHref 가 topics/ 를 가리키면
+    // 그 파일을 정본으로 보고 덮어쓰지도 지우지도 않는다.
+    docsHref: "topics/pocs-dvt.html",
     description: "Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.",
     descriptionKo: "분산 밸리데이터를 프로토콜이 직접 다루자는 제안 정독 노트 — 키를 쪼개지 않는 m-of-n, 그리고 그것이 만들어내는 것들.",
     // 목업이지 라이브가 아니다 (jay, 2026-08-11) — 페이지는 완성됐지만 돌아가는 건 없다.
     // /live 는 "열어서 실제로 해볼 수 있는 것"만 답해야 하고, 정독 노트는 거기 해당하지 않는다.
     // href 는 그대로라 카드는 계속 눌린다 — DemoCard 가 soon+href 를 목업 배지로 렌더한다.
-    status: "soon",
+    status: "done",
     href: "/poc/dvt",
     date: "2026-08-05",
     howTo: "Read-only design analysis — no wallet needed. Start with the two diagrams contrasting DVT today against the proposal.",

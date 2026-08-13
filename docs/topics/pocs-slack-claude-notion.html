@@ -90,6 +90,12 @@
   .topics { list-style:none; margin:0; padding:0; }
   .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
   .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
@@ -98,6 +104,9 @@
   .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
   .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
   .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
   .topic-how strong { color:var(--text); }
   .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
@@ -131,7 +140,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Slack · Claude · Notion integration</p>
   <article>
-      <h1><span class="topic-no">19</span>Slack · Claude · Notion integration <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">21</span>Slack · Claude · Notion integration <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">Wire the three tools together via Claude's Slack/Notion MCP connectors — e.g. a Slack thread that Claude summarizes and logs to Notion.</p>
       <p class="meta">Not yet scoped.</p>
       <h2>Why</h2>
@@ -183,7 +192,7 @@ print(f&quot;3. wrote to Notion -&gt; {page['url']} (id={page['page_id']})&quot;
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">19</span>Slack · Claude · Notion 통합해 보기 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">21</span>Slack · Claude · Notion 통합해 보기 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">Claude의 Slack/Notion 커넥터(MCP)로 세 도구를 잇는 워크플로우 실험 — 예: Slack 대화 → Claude 정리 → Notion 기록.</p>
       <p class="meta">아직 범위 미정.</p>
       <h2>왜</h2>
@@ -232,7 +241,7 @@ print(f&quot;3. wrote to Notion -&gt; {page['url']} (id={page['page_id']})&quot;
       <p class="code-link"><a href="../code/pocs/slack-claude-notion.py">docs/code/pocs/slack-claude-notion.py</a></p>
       <p><a href="https://www.jaylabs.xyz/poc/slack-claude-notion">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-circuit-breaker-saga.html">&larr; 18. Microservice patterns — Circuit Breaker &amp; Saga</a><a href="pocs-claude-tag-slack.html">20. &quot;Claude Tag&quot; for Slack (on hold) &rarr;</a></div>
+  <div class="pager"><a href="pocs-circuit-breaker-saga.html">&larr; 20. Microservice patterns — Circuit Breaker &amp; Saga</a><a href="pocs-claude-tag-slack.html">22. &quot;Claude Tag&quot; for Slack (on hold) &rarr;</a></div>
 </div>
 </body>
 </html>

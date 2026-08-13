@@ -57,3 +57,38 @@
 **Reasoning:** 원인 확인 결과 "View All Logs"는 `docs/logs/summary.md`(2026-06-15에 멈춘 별개의 손으로 쓰는 리서치 다이어리)를 가리키고 있었다 — jay가 실제로 매일 쓰는 `docs/history/YYYY-MM-DD-<repo>-history.md`(56개)와는 처음부터 다른 시스템이라 자연히 안 맞았다. Algorithms·Math·PoCs 와 같은 "폴더를 스캔해 자동 생성" 패턴으로 `docs/logs.html`을 새로 만들어, 목록이 다시는 stale 해지지 않게 함.
 **Change:** `scripts/generate-logs-html.mjs`(신규) — `docs/history/*.md` 전체를 스캔해 날짜순 정렬, 파일명으로 Rabbit/Verex 배지 판별(파일명에 표시 없는 초기 파일만 본문 "verex" 언급 횟수로 폴백), 그날의 `### 제목` 헤딩들을 브리핑으로 보여줌. `package.json`에 `docs:logs` 스크립트 추가. `docs/index.html`의 "View All Logs →"가 `logs.html`을 가리키도록 변경. 이후 피드백 반영: 브리핑을 한 줄로 이어붙이던 것을 항목별 줄바꿈으로, 페이지 전체를 한국어로, 항목 사이 구분선 제거, 줄 간격 축소(`scripts/rtd-shell.mjs`에 `.no-divider` 수정자 추가 — 다른 목록 페이지엔 영향 없음).
 **Result:** 56개 히스토리 파일 전부 노출 확인, 파일명 기반 Rabbit/Verex 라벨이 본문 언급 휴리스틱보다 우선하도록 수정(오분류 사례 1건 발견·수정). `tsc` 통과, 링크·태그 전수 확인, 다른 세 목록 페이지 미영향 확인.
+
+### Algorithms Day 3(영속 자료구조·구조 공유) 노트 작성 — jay와 나눈 대화를 그대로 정리
+
+**Cause:** jay가 별도 대화에서 영속 자료구조·구조 공유·Verkle tree를 주제로 심도 있게 논의한 뒤, 그 내용을 `docs/topics/algorithms-3.html`에 정리해 달라고 요청.
+**Reasoning:** 커리큘럼 Day 3 항목("영속 자료구조와 구조 공유 — 불변 상태의 O(log n) 갱신")이 정확히 그 대화 주제와 일치 — 새 항목을 만들지 않고 기존 Day 3에 노트를 붙이는 게 맞다고 판단. 이미 `docs/code/algorithms/algorithms-3.py`(영속 연결 리스트 `cons`/`to_list` 예제)가 준비돼 있어 그대로 "관련 코드"로 링크.
+**Change:** `docs/algorithms/persistent-structures-structural-sharing.md` 신규 작성(경로 복사 메커니즘, 영속성 3단계, "왜 중요한가"(락프리 읽기 + 저렴한 버전 관리), 실사용 사례 표, 한계 비용 vs 누적 비용 — 이더리움 아카이브/pruned 노드 저장량 대비 — 및 Day 5로의 연결 문장까지 영/한 병기). `docs/knowledge/dev-100-curriculum.md`의 Day 3에 노트 링크(`html/docs/algorithms/...`)와 ✅ 추가.
+**Result:** 링크된 항목이라 스텁 페이지가 자동 삭제됨(Day 1·2와 동일 패턴) — 이전 URL `docs/topics/algorithms-3.html`은 더 이상 존재하지 않고, 내용은 `docs/html/docs/algorithms/persistent-structures-structural-sharing.html`로 이동. `tsc --noEmit` 통과, 태그 짝·로컬 링크 전수 확인.
+
+### Algorithms Day 5를 "Verkle tree" 항목으로 좁힘 — 새 Day 삽입 대신 기존 슬롯 재사용
+
+**Cause:** jay가 이더리움 stateless 클라이언트를 가능케 하는 Verkle tree 설명 문장 하나를 "algorithms의 한 항목으로, 상단에, Done 항목들 밑으로" 추가해 달라고 요청.
+**Reasoning:** 문자 그대로 새 Day를 끼워 넣으면 Day 4~100 전부가 5~101로 밀려야 하는데, 이 항목들 전부에 이미 번호로 연결된 코드 파일(`docs/code/algorithms/algorithms-N.py`, 97개)과 `explainers.json`/`explainers.en.json` 양쪽의 100개 키가 붙어 있어, 밀어넣기를 하면 이 전부를 재매핑해야 하고 잘못하면 코드·설명이 엉뚱한 항목에 붙는 실수가 날 수 있었다. 확인해보니 Day 5가 이미 "트라이 계열 심화 — Patricia vs MPT vs Verkle"로 정확히 같은 주제였고 상세 설명(EXPLAINERS)도 이미 이 트레이드오프를 다루고 있어, jay에게 옵션을 제시하고 "Day 5 슬롯 재사용"으로 확정받음 — 번호 이동 없이 안전.
+**Change:** `docs/knowledge/dev-100-curriculum.md`의 5번 항목 제목을 "Verkle tree — (jay가 준 문장 그대로)"로 교체(기존 코드·explainer는 그대로 유지, 여전히 TODO 상태).
+**Result:** 상세 페이지 리드 문단에 그 문장이 그대로 노출되고 그 아래 기존 설명이 이어짐 확인. `tsc` 통과.
+
+### Math Day 3·PoCs DVT를 Done으로 표시
+
+**Cause:** jay가 "DVT in the protocol", "Persistent Data Structures & Structural Sharing", "Propositional Logic", "Sets, Functions, and Relations" 네 개를 모두 Done 상태로 바꿔 달라고 요청 — 뒤 두 개는 확인 결과 Math Day 3("명제논리·집합·함수·관계") 항목 하나의 제목 앞뒤 반쪽씩이었다.
+**Reasoning:** Math Day 3는 이미 손으로 쓴 상세 페이지(`docs/topics/math-3.html`, href로 직접 지정)가 있었지만 ✅ 표시만 빠져 있던 상태 — 내용 추가 없이 완료 표시만 필요. DVT PoC 카드도 읽기 노트(`docs/topics/pocs-dvt.html`)는 이미 완성돼 있었고 `status: "soon"`(목업 배지)만 남아 있던 상태.
+**Change:** `docs/knowledge/math-50-curriculum.md` Day 3에 ✅ 추가. `lib/poc-cards.ts`의 `dvt` 카드 `status: "soon"` → `"done"`, `date`를 오늘(2026-08-13)로 갱신(CLAUDE.md의 "done 전환 시 date 갱신" 규칙).
+**Result:** `docs/math.html`·`docs/pocs.html` 재생성 후 두 항목 모두 DONE 배지로 노출 확인. `tsc` 통과.
+
+### PoCs 상단에 외부 리서치 정독 노트 2건 추가 — DVT를 3번으로 밀어냄
+
+**Cause:** jay가 `/Users/jay/work/temp`에 저장해 둔 파일 두 개(a16z 뉴스레터 "Can Agents Use a Computer Yet?" mhtml, Tempo Research "Tokenized Money for Banks" PDF)를 PoCs 목록 상단 항목으로 만들고 출처 링크도 넣어 달라고 요청, 동시에 "DVT in the protocol이 3번이 되어야 한다"고 지정.
+**Reasoning:** PoCs 목록의 번호는 `sortDemoCards()`가 매기고(같은 status면 date 내림차순, 같은 date면 배열 순서 유지) DVT가 `status:"done", date:"2026-08-13"`로 이미 1번을 차지하고 있었으므로, 같은 status·같은 date로 새 카드 둘을 `dvt` 항목보다 배열상 앞에 넣기만 하면 안정 정렬(stable sort)로 정확히 1·2번이 되고 DVT가 자동으로 3번으로 밀림 — 별도 순번 필드를 손댈 필요가 없었다. PDF는 poppler(`brew install poppler`)로 텍스트 추출, mhtml은 Python `email` 모듈로 멀티파트를 파싱해 가장 큰 `text/html` 파트를 뽑아 태그를 벗겼다. `DemoCard`엔 출처 URL을 위한 전용 필드가 없어 DVT 카드의 관례(정독 노트 = `status:"done"`, purpose·howItWorks에 실제 내용 요약)를 따르되, `howItWorks`/`howItWorksKo` 문장 끝에 "Source: <url>"/"출처: <url>"을 평문으로 덧붙였다(다른 필드처럼 escapeHtml되는 자리라 링크 태그를 심어도 그대로 이스케이프되어 보일 것이었음).
+**Change:** `lib/poc-cards.ts`에 `agents-computer-use`, `tokenized-money-banks` 두 카드를 `dvt` 항목 바로 앞에 추가(둘 다 `status:"done"`, `date:"2026-08-13"`, 원문 요약 + 출처 URL 포함). `pnpm docs:pocs`로 `docs/pocs.html`·`docs/index.html`·`docs/topics/pocs-*.html` 재생성.
+**Result:** 생성된 목록에서 1=Can Agents Use a Computer Yet?, 2=Tokenized Money for Banks, 3=DVT in the protocol 순서 확인. 두 상세 페이지 모두 영/한 본문에 출처 URL 노출 확인. `tsc --noEmit` 통과, 태그 짝·로컬 링크 전수 확인(기존 `docs/index.html` `&lt;div&gt;` 불일치는 이번 변경 이전부터 있던 것으로 재확인, 무관).
+
+### 새 리서치 카드 둘을 Done → Planned로 정정, DVT를 다시 3번으로
+
+**Cause:** jay가 방금 추가한 두 카드(Can Agents Use a Computer Yet?, Tokenized Money for Banks)는 Done이 아니라 Planned여야 한다고 정정. 그리고 곧이어 "DVT in the protocol는 3번"이라고 다시 한번 지정.
+**Reasoning:** 두 카드를 `status:"soon"`으로 바꾸면 `sortDemoCards()`의 done→soon 순위 규칙상 done 그룹보다 무조건 뒤로 밀려서, "DVT 앞에 배치"로 3번을 만들던 이전 트릭이 더 이상 통하지 않는다 — done 카드끼리의 자체 순서로 3번을 만들어야 했다. 이미 done 카드가 두 개 더 있었다(agent 2026-08-12, oz-relayer 2026-08-12). DVT의 `date`를 오늘(2026-08-13, 상태를 플래그만 바꾼 날)이 아니라 원래 값인 2026-08-05(정독 노트 본문이 실제로 완성됐던 날 — CLAUDE.md의 "date는 카드를 만든 날이 아니라 실제로 완결된 날" 규칙에 더 맞는 값)로 되돌리면, 두 08-12 카드보다 뒤로 가면서 정확히 3번이 된다 — 다른 카드는 전혀 건드리지 않았다.
+**Change:** `lib/poc-cards.ts`에서 `agents-computer-use`·`tokenized-money-banks`의 `status`를 `"soon"`으로, `date` 필드를 제거(구현 전 카드는 날짜를 비워둔다는 기존 규칙). `dvt`의 `date`를 `"2026-08-05"`로 되돌림. `pnpm docs:pocs` 재생성.
+**Result:** 목록 순서 1=Autonomous payment agent, 2=OpenZeppelin Relayer & Monitor, 3=DVT in the protocol, 두 신규 카드는 PLANNED 배지로 이동해 14·15번 확인. `tsc --noEmit` 통과, 태그 짝 확인.

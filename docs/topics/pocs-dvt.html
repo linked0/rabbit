@@ -90,6 +90,12 @@
   .topics { list-style:none; margin:0; padding:0; }
   .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
   .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
@@ -98,6 +104,9 @@
   .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
   .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
   .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
   .topic-how strong { color:var(--text); }
   .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
@@ -125,6 +134,41 @@
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
   }
+
+  /* ── 사고 실험 노트(2026-08-13 세션)용 추가 스타일 — 생성 셸에 없는 것만 (jay). ── */
+  .note-article h2 {
+    border-left:4px solid var(--accent); padding-left:10px; margin:34px 0 8px;
+  }
+  .note-article h3 { font-size:1rem; margin:22px 0 6px; }
+  .note-article table { width:100%; border-collapse:collapse; font-size:0.92rem; margin:12px 0; }
+  .note-article th, .note-article td {
+    border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top;
+  }
+  .note-article th { background:var(--rail); font-weight:600; }
+  .note-article ul, .note-article ol { margin:8px 0; padding-left:22px; }
+  .note-article li { margin:5px 0; }
+  .note-article code {
+    background:var(--rail); padding:1px 5px; border-radius:4px;
+    font-size:0.88em; font-family: ui-monospace, monospace;
+  }
+  .note-article pre code { background:none; padding:0; }
+  .note {
+    border-left:4px solid var(--accent); background:var(--accent-soft);
+    border-radius:0 10px 10px 0; padding:12px 16px; margin:16px 0; font-size:0.95rem;
+  }
+  .note p:last-child, .note ul:last-child { margin-bottom:0; }
+  .finding {
+    border:1px solid var(--border); border-left:4px solid #d97706;
+    border-radius:0 10px 10px 0; padding:14px 18px; margin:16px 0;
+  }
+  .finding-label {
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:#d97706; margin:0 0 6px;
+  }
+  .finding p:last-child { margin-bottom:0; }
+  .kicker { font-weight:600; }
+  .toc { background:var(--rail); border-radius:10px; padding:14px 18px; margin:18px 0; font-size:0.93rem; }
+  .toc ol { margin:6px 0 0; }
 </style>
 </head>
 <body>
@@ -294,6 +338,629 @@ if __name__ == &quot;__main__&quot;:
       <p class="code-link"><a href="../code/pocs/dvt.py">docs/code/pocs/dvt.py</a></p>
       <p><a href="https://www.jaylabs.xyz/poc/dvt">Open on jaylabs.xyz &rarr;</a></p>
     </article>
+    <hr class="lang-divider">
+    <article class="note-article" lang="en">
+      <p class="lang-label">Deep-dive note &middot; thought-experiment session, 2026-08-13</p>
+      <h1>DVT reading notes — from attestation basics to four fault lines</h1>
+      <p class="lead">The long note behind the card summary above. Starts with what a validator actually does (§1), why DVT exists (§2), the protocol-absorption proposal (§3), and the four fault lines the thought experiment surfaced (§4&ndash;6).</p>
+      <p class="meta">Hand-written, so the generator leaves it alone &mdash; the card&rsquo;s <code>docsHref</code> points here as the canonical page.</p>
+
+      <div class="toc">
+        <strong>Contents</strong>
+        <ol>
+          <li><a href="#en-basics">What a validator actually does</a> &mdash; the shape of an attestation</li>
+          <li><a href="#en-why-dvt">Why DVT exists</a> &mdash; redundancy is the slashing condition</li>
+          <li><a href="#en-proposal">The proposal &mdash; the protocol handles m-of-n directly</a></li>
+          <li><a href="#en-findings">Thought experiment &mdash; four findings</a></li>
+          <li><a href="#en-design">Provisional design conclusions</a></li>
+          <li><a href="#en-open">Open questions</a></li>
+        </ol>
+      </div>
+
+      <h2 id="en-basics">1. What a validator actually does</h2>
+
+      <p>Understanding DVT requires knowing a validator&rsquo;s duties and timing precisely. This section is that foundation, and it keeps the exact points that tripped me up during the session.</p>
+
+      <h3>1.1 Slots and epochs</h3>
+      <pre><code>slot  = 12 seconds
+epoch = 32 slots = 6.4 minutes</code></pre>
+
+      <p>A validator does two things &mdash; <strong>attesting</strong> (once per epoch, 99% of the work) and <strong>proposing a block</strong> (once every few months at a million validators).</p>
+
+      <div class="note">
+        <p><span class="kicker">&#10067; The confusion &mdash; &ldquo;doesn&rsquo;t a validator attest every block?&rdquo;</span></p>
+        <p><strong>At the network level</strong> attestations do pour in every slot. <strong>At the individual level</strong> it is exactly once per epoch. Both are true; they are different layers of the same picture.</p>
+      </div>
+
+      <p>The reason is that validators are split into <strong>committees</strong>. Each epoch the whole validator set is shuffled and divided across the 32 slots:</p>
+
+      <pre><code>epoch N (32 slots = 6.4 min)
+├ slot 0  → committee A (~30k) attests
+├ slot 1  → committee B (~30k) attests
+│  ⋮
+└ slot 31 → committee Z (~30k) attests
+
+my validator: assigned to exactly one of these → once per epoch</code></pre>
+
+      <p>Within a slot the set is subdivided again, and that is about <strong>p2p subnets</strong>: one committee maps to one subnet with its own aggregators, so 30,000 signatures get collected hierarchically rather than all in one place.</p>
+
+      <h3>1.2 One attestation carries two votes</h3>
+
+      <pre><code>Attestation {
+  head:   "the current head of the chain is this block"   ← fork choice (LMD-GHOST)
+  source: "the last justified checkpoint"                 ┐
+  target: "this epoch&rsquo;s boundary block"                   ┘ ← finality vote (Casper FFG)
+}</code></pre>
+
+      <div class="note">
+        <p><span class="kicker">&#10067; The confusion &mdash; &ldquo;do you sign once for the slot and once for the epoch?&rdquo;</span></p>
+        <p>No. <strong>One signature, two votes inside it</strong> &mdash; like putting two ballots in one envelope. Two different consensus algorithms (fork choice and finality) ride on a single message.</p>
+      </div>
+
+      <h3>1.3 Nobody signs anything at &ldquo;epoch finalization&rdquo;</h3>
+
+      <pre><code>epoch N begins
+├ slot 0  committee A signs ── target: epoch N boundary block
+├ slot 1  committee B signs ── target: same
+│  ⋮
+└ slot 31 committee Z signs ── target: same
+│
+▼ end of epoch N ← no signing. the protocol just counts what already arrived.
+   did ≥2/3 of stake vote for that target? → justified
+
+   two consecutive justified epochs → the earlier one is finalized   ≈ 12.8 min</code></pre>
+
+      <div class="note">
+        <p><span class="kicker">&#10067; The confusion &mdash; &ldquo;does everyone sign together at the epoch decision point?&rdquo;</span></p>
+        <p>It is like collecting votes over 32 days and counting them on the 33rd. <strong>Nobody votes on counting day.</strong> The epoch boundary block is fixed the moment the epoch starts, so the slot-0 committee and the slot-31 committee can both name the same target.</p>
+      </div>
+
+      <p>Two things to add. <strong>Splitting across slots divides the work, not the judgement</strong> &mdash; every committee in the epoch votes for the same target. And <strong>the 2/3 threshold is stake, not headcount</strong>, which matters more now that EIP-7251 (MaxEB) lets balances differ.</p>
+
+      <h3>1.4 The 512-member sync committee is a separate track</h3>
+
+      <table>
+        <tr><th></th><th>Attestation committee</th><th>Sync committee</th></tr>
+        <tr><td>Who</td><td><strong>everyone</strong>, spread over 32 slots</td><td><strong>512 selected</strong></td></tr>
+        <tr><td>How often</td><td>once per epoch each</td><td><strong>every slot</strong></td></tr>
+        <tr><td>Term</td><td>reshuffled every epoch</td><td>~27 hours (256 epochs)</td></tr>
+        <tr><td>Signs</td><td>head + source + target</td><td>the block header</td></tr>
+        <tr><td>Purpose</td><td><strong>consensus</strong></td><td><strong>light clients</strong></td></tr>
+      </table>
+
+      <p>Sync-committee signatures <strong>do not affect consensus.</strong> Where the chain goes and what finalizes is decided entirely by attestations. The sync committee is a convenience layer: a phone wallet cannot verify a million attestations, so it only has to check that 512 named validators signed a header. That said, it does mean <strong>being online every slot</strong> &mdash; one more reason to want DVT.</p>
+
+      <h3>1.5 Why a million signers doesn&rsquo;t collapse the chain &mdash; BLS aggregation</h3>
+
+      <pre><code>~1M validators × once per epoch ÷ 6.4 min
+  ≈ 30k per slot ≈ 2,600 per second
+  → at 96 bytes each that is ~3MB per slot. Stored raw, the chain dies.</code></pre>
+
+      <p>This is why Ethereum uses <strong>BLS</strong> rather than ECDSA. BLS sums n signatures <strong>over the same message</strong> into <strong>one 96-byte signature</strong>, and the public keys aggregate too, so verification happens <strong>once</strong>. What is lost is &ldquo;who signed&rdquo; &mdash; which is why a <strong>participation bitfield</strong> is carried alongside.</p>
+
+      <table>
+        <tr><th></th><th>Without aggregation</th><th>Aggregated</th></tr>
+        <tr><td>500 signatures</td><td>48,000 bytes</td><td><strong>159 bytes</strong> (96 + 63-byte bitfield)</td></tr>
+        <tr><td>Verifications</td><td>500</td><td><strong>1</strong></td></tr>
+      </table>
+
+      <p>And there is a quiet elegance here: <strong>target stays constant across the whole epoch</strong>, which is not a coincidence. That is precisely what lets a million signatures scattered across 32 slots aggregate into one. Putting the finality vote on the epoch boundary rather than on every slot is a design <strong>shaped to fit what BLS aggregation can do</strong>.</p>
+
+      <h2 id="en-why-dvt">2. Why DVT exists</h2>
+
+      <h3>2.1 The asymmetry between the two failures</h3>
+
+      <table>
+        <tr><th>Failure</th><th>Cause</th><th>Cost</th></tr>
+        <tr><td>Offline</td><td>server or network dies</td><td>lose roughly what you would have earned &mdash; <span style="color:#d97706">small</span></td></tr>
+        <tr><td>Double signing</td><td>two conflicting messages, same slot</td><td>penalty + correlation penalty + forced exit &mdash; <span style="color:#dc2626"><strong>catastrophic</strong></span></td></tr>
+      </table>
+
+      <p>Operational reality compounds it: you never know which slot you are assigned, so you must be <strong>always on</strong>; you have <strong>four seconds</strong> to run fork choice and sign; and because you must sign, the private key sits <strong>hot on an internet-connected server, 24/7</strong>.</p>
+
+      <h3>2.2 Redundancy is the slashing condition</h3>
+
+      <p>If you are worried the server will die, the obvious answer is redundancy. Except:</p>
+
+      <pre><code>slot 17 (my assigned slot)
+├ server A: sees block X as head → signs attest(head=X)
+└ server B: never received X     → signs attest(head=W)
+                                     ↑ double vote = slashing</code></pre>
+
+      <p>The requirements collide head-on:</p>
+      <ul>
+        <li>Availability wants: <strong>any one machine can sign</strong> (1-of-n)</li>
+        <li>Safety wants: <strong>no single machine can sign</strong> (n-of-n)</li>
+      </ul>
+
+      <p><strong>DVT resolves the contradiction with t-of-n.</strong> At 4-of-6, two machines can die and it keeps running, while no single machine can do anything alone.</p>
+
+      <h3>2.3 Today&rsquo;s DVT &mdash; two pieces</h3>
+
+      <p><strong>&#9312; The key (threshold BLS).</strong> Either a <strong>DKG</strong> ceremony, where the whole key is never computed at all, or <strong>Shamir-splitting</strong> an existing key. Either way, <strong>the key is never reassembled during operation</strong> &mdash; shares produce partial signatures that combine via Lagrange interpolation. (Same property as the <strong>MPC vs. SSS</strong> distinction in custody design.) The finished signature is <strong>bit-for-bit indistinguishable</strong> from a single-key signature, so Ethereum <strong>has no idea</strong> this validator is run by six parties.</p>
+
+      <p><strong>&#9313; Off-chain consensus.</strong> BLS only combines partials over the <strong>same</strong> message, and independently-run fork choice can diverge. So the cluster must <strong>agree on what to sign before signing</strong> &mdash; QBFT in Obol, its own protocol in SSV. <strong>This is DVT&rsquo;s real cost: one consensus round per signature.</strong></p>
+
+      <h3>2.4 The four-second budget</h3>
+
+      <pre><code>t=0s   ─ slot begins
+t~1s   ─ block arrives; six nodes each run fork choice
+t~2s   ─ ⚙️ QBFT round ("the data we will sign is this")
+t~3s   ─ each signs with its key share → exchange partials
+t~3.5s ─ whoever collects 4 reconstructs the full signature
+t=4s   ─ ⏰ deadline — broadcast</code></pre>
+
+      <p>A solo validator would be done around t~1s; DVT inserts a consensus round and fills the budget. Being late is not slashable but <strong>reduces rewards</strong>, and if consensus fails outright <strong>no attestation goes out at all</strong>. Bought availability, gained a <strong>new failure mode</strong>.</p>
+
+      <h3>2.5 Where it is used &mdash; and &ldquo;machines&rdquo; vs. &ldquo;parties&rdquo;</h3>
+
+      <p>The largest consumer is <strong>Lido</strong>. It began with the Simple DVT Module and now runs through <strong>CSM (Community Staking Module) v3&rsquo;s &ldquo;Identified DVT Clusters&rdquo;</strong> via Obol and SSV, with bonds as low as <strong>0.5 ETH per key</strong>. Elsewhere: institutional staking risk reduction, home-staker clusters, restaking operators.</p>
+
+      <table>
+        <tr><th></th><th>My n machines</th><th>n independent parties</th></tr>
+        <tr><td>Solves</td><td>availability</td><td>availability <strong>+ decentralization</strong></td></tr>
+        <tr><td>Trust</td><td>only myself</td><td><strong>mutually distrusting</strong></td></tr>
+        <tr><td>If slashed</td><td>all my money anyway</td><td><strong>attribution is everything</strong></td></tr>
+      </table>
+
+      <p>Lido invests in the right-hand column &mdash; DVT is sold as a <strong>decentralization</strong> tool, not an uptime tool. And <strong>only the right-hand column produces hard questions</strong>: what does a non-participant earn? can you punish only the guilty? can I exit alone? Today&rsquo;s DVT answers these <strong>outside the protocol</strong> &mdash; private agreements, reward-splitter contracts, and <strong>expensive eviction that requires re-running DKG</strong>. The protocol cannot help, because it does not know who signed.</p>
+
+      <h2 id="en-proposal">3. The proposal &mdash; the protocol handles m-of-n directly</h2>
+
+      <p>The premise: <strong>the only reason for the key-splitting acrobatics is that the protocol can see just one validator. So teach it to see several.</strong></p>
+
+      <table>
+        <tr><th></th><th>Today&rsquo;s DVT (Obol / SSV)</th><th>The proposal</th></tr>
+        <tr><td>Key</td><td>one key <strong>split</strong> (DKG / Shamir)</td><td><strong>each registers their own</strong> (n &le; 16)</td></tr>
+        <tr><td>Pre-signing consensus</td><td>QBFT round per duty</td><td><strong>none</strong></td></tr>
+        <tr><td>Participation</td><td>&mdash; (protocol is blind)</td><td><strong>BLS aggregate + bitfield</strong></td></tr>
+        <tr><td>Where distribution lives</td><td>middleware</td><td><strong>the protocol</strong></td></tr>
+      </table>
+
+      <p>The elegance is that <strong>nothing new is invented</strong>. The protocol already runs &ldquo;many participants &rarr; aggregate signature + bitfield &rarr; threshold check&rdquo; at a scale of a million. An m-of-n group is that same grammar as a <strong>miniature committee of n &le; 16</strong>.</p>
+
+      <p>And <strong>EIP-7251 (MaxEB) is what makes it possible now</strong>. With the balance ceiling raised from 32 to 2048, <code>32&middot;n</code> fits in one record &mdash; and only then can the protocol express &ldquo;n people put in 32 each and made one validator&rdquo; as arithmetic.</p>
+
+      <div class="note">
+        <p><span class="kicker">&#128205; Status (checked 2026-08-13)</span></p>
+        <p><strong>It is not an EIP.</strong> It is an ethresear.ch post with no EIP number assigned. The pipeline is <code>&#9312; ethresear.ch &rarr; &#9313; EIP draft &rarr; &#9314; All Core Devs &rarr; &#9315; CFI &rarr; &#9316; SFI &rarr; &#9317; devnet/mainnet</code>, and this sits at <strong>&#9312;</strong>. Being a consensus-layer change, even if it advances it is a multi-year path.</p>
+        <p><strong>Do not confuse it with &ldquo;DVT-lite.&rdquo;</strong> That is a later, separate proposal about <strong>operational practice</strong> &mdash; simplifying setups with existing tools, no fork required &mdash; and the <strong>Ethereum Foundation is actually staking 72,000 ETH that way</strong>. Native DVT (this card&rsquo;s subject) needs a hard fork; DVT-lite works today. Both come out of Vitalik&rsquo;s 2026 &ldquo;simplification&rdquo; push.</p>
+      </div>
+
+      <h2 id="en-findings">4. Thought experiment &mdash; four findings</h2>
+
+      <p>That the spec is unsettled is what makes the exercise worth doing: instead of reading and implementing, you have to <strong>make the design decisions yourself</strong> &mdash; and doing so surfaced fault lines <strong>not among the card&rsquo;s original four questions</strong>.</p>
+
+      <div class="finding">
+        <p class="finding-label">Finding &#9312; &mdash; the state model</p>
+        <p><span class="kicker">Participation attribution is free; economic attribution has to be paid for in state.</span></p>
+        <p>The natural state model is <strong>one index, one balance (32n), n keys</strong>. Because duty assignment keys off the index, &ldquo;always the same duties&rdquo; follows automatically &mdash; and that is <strong>beneficial</strong>. If the index were split into n, each would land in a different slot and they would never sign the same thing; the merge is required.</p>
+        <p>But <strong>the same decision hurts on the other side.</strong> One balance means n people&rsquo;s money is commingled:</p>
+        <pre><code>bitfield: [1,1,1,1,1,1,1,1,0,0]   ← the protocol knows who idled
+balance:  320 ETH (single number)  ← but cannot burn selectively</code></pre>
+        <p>Separating it requires <code>balances: [Gwei; n]</code> and <code>withdrawal_credentials: [_; n]</code>, inflating the validator record up to <strong>16&times;</strong> &mdash; and beacon state is data every node must hold.</p>
+        <p><strong>&rarr; Hypothesis: <code>n &le; 16</code> is not &ldquo;16 is decentralized enough&rdquo; but &ldquo;16 is what the state budget can carry.&rdquo;</strong> A provisional answer to the card&rsquo;s fourth open question.</p>
+      </div>
+
+      <div class="finding">
+        <p class="finding-label">Finding &#9313; &mdash; not in the card: correlated liveness failure</p>
+        <p><span class="kicker">Grouping converts graceful degradation into a cliff.</span></p>
+        <table>
+          <tr><th></th><th>n independent validators</th><th>m-of-n group</th></tr>
+          <tr><td>1 down</td><td>32 ETH goes quiet</td><td>no effect (with headroom)</td></tr>
+          <tr><td>n&minus;m+1 down</td><td>only that much goes quiet</td><td><strong>all 32n goes quiet</strong></td></tr>
+        </table>
+        <p>Quorum is a binary test: clear it and the <strong>entire</strong> balance counts, miss it and <strong>zero</strong> does. It is worse at network scale &mdash; if many groups share <strong>the same client or the same cloud</strong>, one outage pushes several groups below m simultaneously, each dropping 32n at once, potentially <strong>stalling finality by missing the 2/3 threshold</strong>.</p>
+        <p><strong>The paradox:</strong> DVT exists for resilience through diversity, yet absorbed into the protocol and widely adopted it could <strong>make failures correlate instead</strong>.</p>
+      </div>
+
+      <div class="finding">
+        <p class="finding-label">Finding &#9314; &mdash; not in the card: free-riding and mutual insurance are the same thing</p>
+        <p><span class="kicker">Turn participation attribution on, and you turn off the reason the group exists.</span></p>
+        <p>With a bitfield, &ldquo;no work, no pay&rdquo; looks possible &mdash; and looks like the cleanest answer. But do the arithmetic:</p>
+        <pre><code>participant with 99% uptime
+
+"no work, no pay":
+  solo  99% uptime → 99% of rewards
+  group 99% uptime → 99% of rewards      ← gains exactly nothing
+
+pooled rewards:
+  10 members at 99% each → P(quorum miss) ≈ 0
+  → group earns 100% → my share exceeds my solo take</code></pre>
+        <p><strong>The group exists to provide mutual insurance</strong> &mdash; pooling 99% uptimes into 100%. And yet:</p>
+        <table>
+          <tr><th>Framing</th><th>Same phenomenon</th></tr>
+          <tr><td>Charitable</td><td>&ldquo;if I go down, others cover me&rdquo; = <strong>insurance</strong></td></tr>
+          <tr><td>Uncharitable</td><td>&ldquo;if I idle, I still get paid&rdquo; = <strong>free-riding</strong></td></tr>
+        </table>
+        <p>This is the classic insurance problem: <strong>eliminate moral hazard completely and the insurance itself ceases to exist.</strong> Nor is it new &mdash; the problem <strong>already exists in today&rsquo;s DVT</strong>, handled by monitoring, social sanction, and (expensive) DKG re-runs. Lido calling them <strong>&ldquo;Identified&rdquo;</strong> Clusters is exactly this hole being plugged with <strong>identity-based trust in place of anonymous trust</strong>.</p>
+        <p><strong>&rarr; The proposal&rsquo;s contribution is not solving this but making it solvable.</strong> The information is now available; the rule for using it is unwritten &mdash; and with a pooled balance, knowing does not help (Finding &#9312;).</p>
+      </div>
+
+      <div class="finding">
+        <p class="finding-label">Finding &#9315; &mdash; why the consensus round can disappear</p>
+        <p><span class="kicker">Byzantine consensus is not solved but avoided, by restating the problem as a monotone predicate.</span></p>
+        <table>
+          <tr><th></th><th>Consensus (today&rsquo;s DVT)</th><th>Aggregation (the proposal)</th></tr>
+          <tr><td>Question</td><td>&ldquo;what shall we sign?&rdquo;</td><td>&ldquo;who signed?&rdquo;</td></tr>
+          <tr><td>Ranking of answers</td><td>no objective ordering</td><td><strong>more is plainly better and verifiable</strong></td></tr>
+          <tr><td>Honest fraction needed</td><td><strong>&ge; 2/3</strong></td><td><strong>a single honest party</strong></td></tr>
+          <tr><td>Round trips</td><td>required</td><td>none</td></tr>
+        </table>
+        <pre><code>operator 3 publishes: [1,1,1,0,1,1,1,1,0,0]  ← 8 bits (excludes me)
+operator 7 publishes: [1,1,1,1,1,1,1,1,0,0]  ← 9 bits ← this one wins
+
+→ censoring me requires unanimity. One honest party defeats it.</code></pre>
+        <p><strong>It is not free.</strong> Nothing forces agreement, so views can split:</p>
+        <pre><code>during a reorg / late block:
+  operators 1–6:  head = X → aggregate X (6 bits)
+  operators 7–10: head = Y → aggregate Y (4 bits)
+  m = 8 → neither reaches quorum ❌</code></pre>
+        <p>Though <strong>natural convergence can be more forgiving than forced agreement</strong> &mdash; split 6:4 with m=6, the majority still passes, whereas DVT would have lost the whole attestation to a failed consensus round.</p>
+        <p><strong>And the safety threshold is still m.</strong> Censorship resistance is a strong 1-of-n, but m colluding members can sign a slashable message. For BFT-grade safety, set <strong>m &gt; 2n/3</strong> (n=10 &rarr; m &ge; 7; 8/10 has headroom, 6/10 does not).</p>
+      </div>
+
+      <h3>Side findings &mdash; two ways an honest participant gets wronged</h3>
+
+      <p><strong>&#9312; Aggregator griefing.</strong> A zero bit has two possible causes &mdash; you really did not sign, or <strong>you did and the aggregator did not wait</strong>. Harmless under pooled rewards; the moment you switch to per-participant accounting it becomes a <strong>free way to harm someone</strong>. (Mitigation: the &ldquo;fuller aggregate wins&rdquo; rule above.)</p>
+
+      <p><strong>&#9313; Geographic bias.</strong> In a Europe-centred cluster, an Asian participant&rsquo;s partials are <strong>structurally</strong> late. That is bias, not noise, so averaging does not wash it out. <strong>DVT&rsquo;s deepest tension lives here</strong> &mdash; geographic spread is the goal, spread means latency, and latency distorts the participation verdict.</p>
+
+      <p>For what it is worth, Ethereum already carries buffers against the analogous problem: <strong>multiple aggregators per committee</strong>, an <strong>inclusion window of up to a full epoch</strong>, and rewards split into <code>timely_source / timely_target / timely_head</code> so that <strong>missing head still earns the rest</strong>. It is not all-or-nothing.</p>
+
+      <h2 id="en-design">5. Provisional design conclusions</h2>
+
+      <ol>
+        <li><strong>Pool the rewards, individualize the slashing.</strong> Split the axes. What needs insuring is availability, not honesty &mdash; small lapses get covered, only real betrayal is charged personally. This matches the asymmetry from &sect;2.1. <strong>Side benefit: the balance need not be fully separated, saving state and loosening the <code>n &le; 16</code> ceiling.</strong></li>
+        <li><strong>Never judge on a single epoch &mdash; use a rolling window.</strong> One epoch&rsquo;s bitfield is <strong>noise</strong>; cumulative participation is <strong>signal</strong>. Random inclusion failures wash out; chronic free-riding shows up statistically.</li>
+        <li><strong>A deductible curve.</strong> Make 97% and 100% nearly indistinguishable in payout, and make it bite sharply below 60%. Honest operators can ignore the noise; only free-riders feel it.</li>
+        <li><strong>Do not designate an aggregator.</strong> Anyone may publish, and the aggregate with more bits always wins &mdash; censorship then requires unanimity.</li>
+        <li><strong>m &gt; 2n/3.</strong> Offline losses are cheap and a low collusion threshold is expensive, so err high on m.</li>
+        <li><strong>Exploit that eviction is now cheap.</strong> With no key splitting, replacing a participant is deregistration rather than a DKG ceremony &mdash; making <strong>automatic ejection</strong> a realistic option that today&rsquo;s DVT cannot afford.</li>
+      </ol>
+
+      <h2 id="en-open">6. Open questions</h2>
+
+      <p><strong>The four the source left open:</strong></p>
+      <ol>
+        <li><strong>Slashing attribution</strong> &mdash; the bitfield knows, the pooled balance blocks it (Finding &#9312;)</li>
+        <li><strong>Latency budget</strong> &mdash; the consensus round goes away, view divergence arrives (Finding &#9315;)</li>
+        <li><strong>The m&lt;n collusion trade-off</strong> &mdash; availability and collusion threshold move in exact opposition</li>
+        <li><strong>The rationale for n &le; 16</strong> &mdash; provisional answer: the state budget (Finding &#9312;)</li>
+      </ol>
+
+      <p><strong>Added by this session:</strong></p>
+      <ol start="5">
+        <li><strong>Correlated liveness failure</strong> &mdash; the cliff effect, plus client/cloud monoculture risk (Finding &#9313;)</li>
+        <li><strong>Reward attribution / free-riding</strong> &mdash; insurance and moral hazard are one phenomenon (Finding &#9314;)</li>
+        <li><strong>Aggregator griefing</strong> &mdash; the costless attack vector that per-participant accounting opens</li>
+        <li><strong>Geographic bias</strong> &mdash; the goal of dispersion fights the fairness of the verdict</li>
+      </ol>
+
+      <div class="note">
+        <p><span class="kicker">&#128279; Where this connects to other items on this site</span></p>
+        <ul>
+          <li><strong>Middleware absorbed by the protocol</strong> &mdash; the same pattern ERC-4337 bundlers face from native account abstraction. The narrative already in the card&rsquo;s &ldquo;Why&rdquo;.</li>
+          <li><strong>Correlated failure</strong> &mdash; a quorum of N nodes running identical code is one judgement copied N times. A recurring trap in bridge and oracle design.</li>
+          <li><strong>MPC vs. SSS</strong> &mdash; whether the key is reassembled during operation is the same axis as custody design.</li>
+        </ul>
+      </div>
+    </article>
+    <hr class="lang-divider">
+    <article class="note-article" lang="ko">
+      <p class="lang-label">심화 노트 &middot; 2026-08-13 사고 실험 세션</p>
+      <h1>DVT 정독 노트 — 어테스테이션 기초부터 네 개의 균열까지</h1>
+      <p class="lead">위 카드 요약의 배경이 되는 긴 노트. 밸리데이터가 실제로 무엇을 하는지(1장)부터 시작해, DVT가 왜 필요한지(2장), 프로토콜 흡수 제안(3장), 그리고 사고 실험으로 찾아낸 네 개의 균열(4~6장)까지.</p>
+      <p class="meta">이 절만 손으로 쓴 것이라 생성기가 덮어쓰지 않는다 — 카드의 <code>docsHref</code> 가 이 파일을 정본으로 가리킨다.</p>
+
+<div class="toc">
+      <strong>구성</strong>
+      <ol>
+        <li><a href="#basics">밸리데이터는 실제로 무엇을 하는가</a> — 어테스테이션의 구조</li>
+        <li><a href="#why-dvt">DVT가 왜 필요한가</a> — 이중화가 곧 슬래싱 조건이라는 역설</li>
+        <li><a href="#proposal">제안 — 프로토콜이 직접 m-of-n을 다룬다</a></li>
+        <li><a href="#findings">사고 실험 — 네 개의 발견</a></li>
+        <li><a href="#design">잠정 설계 결론</a></li>
+        <li><a href="#open">미해결 질문 정리</a></li>
+      </ol>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <h2 id="basics">1. 밸리데이터는 실제로 무엇을 하는가</h2>
+
+    <p>DVT를 이해하려면 밸리데이터의 의무와 타이밍을 먼저 정확히 알아야 한다. 이 장은 그 기초이고, 세션에서 실제로 헷갈렸던 지점들을 그대로 담았다.</p>
+
+    <h3>1.1 슬롯과 에폭</h3>
+    <pre><code>슬롯 = 12초
+에폭 = 32슬롯 = 6.4분</code></pre>
+
+    <p>밸리데이터는 두 가지 일을 한다 — <strong>어테스테이션</strong>(매 에폭, 일의 99%)과 <strong>블록 제안</strong>(백만 밸리데이터 기준 수개월에 한 번).</p>
+
+    <div class="note">
+      <p><span class="kicker">❓ 헷갈렸던 것 — "밸리데이터는 매 블록마다 어테스트하지 않나?"</span></p>
+      <p><strong>네트워크 전체로 보면</strong> 매 슬롯 어테스테이션이 쏟아지는 게 맞다. <strong>개별 밸리데이터로 보면</strong> 에폭당 딱 한 번이다. 둘 다 맞는 말이고, 보는 층위가 다를 뿐이다.</p>
+    </div>
+
+    <p>이유는 밸리데이터를 <strong>위원회로 나누기 때문</strong>이다. 매 에폭마다 전체 밸리데이터 집합을 섞어 32개 슬롯에 배분한다:</p>
+
+    <pre><code>에폭 N (32슬롯 = 6.4분)
+├ 슬롯 0  → 위원회 A (약 3만 명) 어테스트
+├ 슬롯 1  → 위원회 B (약 3만 명) 어테스트
+│  ⋮
+└ 슬롯 31 → 위원회 Z (약 3만 명) 어테스트
+
+내 밸리데이터: 이 중 한 슬롯에만 배정 → 에폭당 1회</code></pre>
+
+    <p>슬롯 안에서 다시 여러 위원회로 쪼개는데, 이건 <strong>p2p 서브넷</strong> 때문이다. 위원회 하나가 서브넷 하나에 대응하고 각 서브넷에 집계자가 있어서, 3만 명의 서명을 계층적으로 모은다.</p>
+
+    <h3>1.2 어테스테이션 하나에 투표가 두 개 들어있다</h3>
+
+    <pre><code>Attestation {
+  head:   "지금 체인 머리는 이 블록이다"   ← 포크 초이스 (LMD-GHOST)
+  source: "직전에 정당화된 체크포인트"     ┐
+  target: "이번 에폭 경계 블록"            ┘ ← 확정 투표 (Casper FFG)
+}</code></pre>
+
+    <div class="note">
+      <p><span class="kicker">❓ 헷갈렸던 것 — "슬롯에도 서명하고 에폭에도 서명하나?"</span></p>
+      <p>아니다. <strong>서명은 한 번, 그 안에 투표가 두 개</strong>다. 봉투 하나에 투표용지 두 장을 넣는 것과 같다. 두 개의 다른 합의 알고리즘(포크 초이스 + 확정)이 하나의 메시지에 얹혀 있다.</p>
+    </div>
+
+    <h3>1.3 "에폭 확정 시점"에는 아무도 서명하지 않는다</h3>
+
+    <pre><code>에폭 N 시작
+├ 슬롯 0  위원회A 서명 ── target: 에폭N 경계블록
+├ 슬롯 1  위원회B 서명 ── target: 같음
+│  ⋮
+└ 슬롯 31 위원회Z 서명 ── target: 같음
+│
+▼ 에폭 N 끝 ← 서명 없음. 이미 모인 표를 세기만 함.
+   같은 target에 투표한 지분이 2/3 이상? → 정당화(justified)
+
+   연속 두 에폭이 정당화되면 → 앞 에폭 확정(finalized)   ≈ 12.8분</code></pre>
+
+    <div class="note">
+      <p><span class="kicker">❓ 헷갈렸던 것 — "에폭 결정 시점에 다 같이 서명하는 건가?"</span></p>
+      <p>투표를 32일에 나눠 받고 33일째에 개표하는 것과 같다. <strong>개표일에 새로 투표하는 사람은 없다.</strong> 에폭 경계 블록은 에폭이 시작하자마자 정해지므로, 슬롯 0의 위원회도 슬롯 31의 위원회도 같은 target을 찍을 수 있다.</p>
+    </div>
+
+    <p>두 가지를 덧붙인다. <strong>슬롯 분산은 "일을 나눈 것"이지 "판단을 나눈 것"이 아니다</strong> — 모든 슬롯의 위원회가 같은 target에 투표한다. 그리고 <strong>2/3은 머릿수가 아니라 지분</strong>이다. EIP-7251(MaxEB)로 잔고가 제각각인 지금은 이 구분이 더 중요해졌다.</p>
+
+    <h3>1.4 싱크 위원회 512명은 별개 트랙</h3>
+
+    <table>
+      <tr><th></th><th>어테스테이션 위원회</th><th>싱크 위원회</th></tr>
+      <tr><td>누가</td><td><strong>전체</strong>를 32슬롯에 배분</td><td><strong>512명</strong>만 선발</td></tr>
+      <tr><td>빈도</td><td>각자 에폭당 1회</td><td><strong>매 슬롯</strong></td></tr>
+      <tr><td>임기</td><td>매 에폭 재배정</td><td>약 27시간 (256 에폭)</td></tr>
+      <tr><td>서명 대상</td><td>head + source + target</td><td>블록 헤더</td></tr>
+      <tr><td>목적</td><td><strong>합의</strong></td><td><strong>라이트 클라이언트</strong></td></tr>
+    </table>
+
+    <p>싱크 위원회 서명은 <strong>합의에 영향을 주지 않는다.</strong> 체인이 어디로 갈지, 뭐가 확정될지는 전부 어테스테이션이 정한다. 싱크 위원회는 휴대폰 지갑이 100만 개의 어테스테이션을 검증할 수 없으니, "512명이 이 헤더에 서명했다"만 확인하면 되게 만든 편의 장치다. 다만 <strong>매 슬롯 온라인이어야 한다</strong>는 뜻이라, DVT를 쓸 이유가 하나 더 생기는 지점이기도 하다.</p>
+
+    <h3>1.5 100만 명이 다 하는데 왜 안 터지나 — BLS 집계</h3>
+
+    <pre><code>밸리데이터 약 100만 × 에폭당 1회 ÷ 6.4분
+  ≈ 슬롯당 3만 건 ≈ 초당 2,600건
+  → 서명 96바이트면 슬롯당 3MB. 그대로 저장하면 체인이 죽는다.</code></pre>
+
+    <p>이더리움이 ECDSA 대신 <strong>BLS</strong>를 쓰는 이유가 이것이다. BLS는 <strong>같은 메시지</strong>에 대한 서명 n개를 <strong>하나의 96바이트 서명</strong>으로 합칠 수 있고, 공개키도 같이 합쳐 <strong>검증을 한 번</strong>만 하면 된다. 대신 "누가 서명했는지"가 사라지므로 <strong>참여 비트필드</strong>로 따로 기록한다.</p>
+
+    <table>
+      <tr><th></th><th>집계 없이</th><th>집계 후</th></tr>
+      <tr><td>500명 서명</td><td>48,000 바이트</td><td><strong>159 바이트</strong> (96 + 비트필드 63)</td></tr>
+      <tr><td>검증 연산</td><td>500회</td><td><strong>1회</strong></td></tr>
+    </table>
+
+    <p>그리고 여기 설계의 아름다움이 하나 숨어 있다 — <strong>target이 에폭 내내 같은 값</strong>이라는 것이 우연이 아니다. 그래야 32개 슬롯에 흩어져 서명한 100만 개를 하나로 뭉칠 수 있다. 확정 투표를 "매 슬롯"이 아니라 "에폭 경계"에 걸어둔 설계가 정확히 <strong>BLS 집계가 통하는 형태로 맞춰진 것</strong>이다.</p>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <h2 id="why-dvt">2. DVT가 왜 필요한가</h2>
+
+    <h3>2.1 두 실패의 비대칭</h3>
+
+    <table>
+      <tr><th>실패</th><th>원인</th><th>대가</th></tr>
+      <tr><td>오프라인</td><td>서버·네트워크 장애</td><td>벌었을 만큼 잃음 — <span style="color:var(--warn)">작음</span></td></tr>
+      <tr><td>이중 서명</td><td>같은 슬롯에 상충하는 두 메시지</td><td>몰수 + 상관 페널티 + 강제 퇴출 — <span style="color:var(--bad)"><strong>파멸적</strong></span></td></tr>
+    </table>
+
+    <p>여기에 운영 현실이 겹친다. 어느 슬롯에 배정될지 모르니 <strong>항상 켜져 있어야</strong> 하고, <strong>4초 안에</strong> 포크 초이스를 돌려 서명해야 하며, 서명을 해야 하므로 <strong>개인키가 인터넷에 연결된 서버 위에 24시간 뜨겁게</strong> 올라가 있어야 한다.</p>
+
+    <h3>2.2 이중화가 곧 슬래싱 조건이다</h3>
+
+    <p>서버가 죽을까 걱정되면 상식적인 해법은 이중화다. 그런데:</p>
+
+    <pre><code>슬롯 17 (내 배정 슬롯)
+├ 서버 A: 블록 X를 머리로 봄 → attest(head=X) 서명
+└ 서버 B: 블록 X를 못 받음  → attest(head=W) 서명
+                                  ↑ double vote = 슬래싱</code></pre>
+
+    <p>요구사항이 정면충돌한다:</p>
+    <ul>
+      <li>가용성이 원하는 것: <strong>아무나 하나면 서명 가능</strong> (1-of-n)</li>
+      <li>안전성이 원하는 것: <strong>누구도 혼자 서명 불가</strong> (n-of-n)</li>
+    </ul>
+
+    <p><strong>DVT는 t-of-n으로 이 모순을 푼다.</strong> 4-of-6이면 두 대가 죽어도 돌아가고, 어떤 한 대도 혼자서는 아무것도 못 한다.</p>
+
+    <h3>2.3 오늘의 DVT — 두 조각</h3>
+
+    <p><strong>① 키 (임계 BLS)</strong> — <strong>DKG</strong>(분산 키 생성)로 온전한 키를 한 번도 만들지 않거나, 기존 키를 <strong>샤미르 분할</strong>한다. 어느 경로든 <strong>운영 중에는 키를 재조립하지 않는다</strong> — 조각들이 부분 서명을 만들고 그것이 라그랑주 보간으로 합쳐진다. (커스터디에서의 <strong>MPC vs SSS</strong> 구분과 같은 성질이다.) 완성된 서명은 단일 키 서명과 <strong>비트 단위로 구별되지 않으므로</strong>, 이더리움은 이 밸리데이터가 분산 운영 중임을 <strong>전혀 모른다</strong>.</p>
+
+    <p><strong>② 오프체인 합의</strong> — BLS는 같은 메시지에 대한 부분 서명만 합쳐진다. 각 노드가 독립적으로 포크 초이스를 돌리면 결론이 갈릴 수 있으므로, <strong>서명 전에 "무엇을 서명할지" 합의</strong>해야 한다. Obol은 QBFT, SSV는 자체 프로토콜. <strong>이것이 DVT의 진짜 비용이다 — 서명 한 번마다 합의 라운드 한 번.</strong></p>
+
+    <h3>2.4 4초 예산</h3>
+
+    <pre><code>t=0s  ─ 슬롯 시작
+t~1s  ─ 블록 도착, 6개 노드가 각자 포크 초이스
+t~2s  ─ ⚙️ QBFT 합의 라운드 ("우리가 서명할 데이터는 이것")
+t~3s  ─ 각자 키 조각으로 부분 서명 → 교환
+t~3.5s─ 4개 모은 노드가 완성 서명 재조립
+t=4s  ─ ⏰ 마감 — 브로드캐스트</code></pre>
+
+    <p>솔로라면 t~1s에 끝날 일을 DVT는 합의 라운드를 끼워 넣어 4초를 꽉 채운다. 늦으면 슬래싱은 아니지만 <strong>보상이 깎이고</strong>, 합의가 실패하면 <strong>어테스테이션이 아예 안 나간다</strong>. 가용성을 사려고 도입했는데 <strong>새로운 실패 모드(합의 실패)를 하나 얻은</strong> 셈이다.</p>
+
+    <h3>2.5 어디에 쓰이나 — 그리고 "머신"과 "주체"의 구분</h3>
+
+    <p>최대 사용처는 <strong>Lido</strong>다. Simple DVT Module로 시작해 지금은 <strong>CSM(Community Staking Module) v3의 "Identified DVT Clusters"</strong>로 이어졌고, Obol·SSV를 통해 <strong>키당 본드 0.5 ETH</strong>까지 낮아졌다. 그 외 기관 스테이킹의 운영 리스크 완화, 홈 스테이커 클러스터, 리스테이킹 오퍼레이터.</p>
+
+    <table>
+      <tr><th></th><th>내 머신 n대</th><th>독립 운영자 n명</th></tr>
+      <tr><td>푸는 문제</td><td>가용성</td><td>가용성 <strong>+ 탈중앙화</strong></td></tr>
+      <tr><td>신뢰</td><td>나 자신만</td><td><strong>서로 안 믿음</strong></td></tr>
+      <tr><td>슬래싱되면</td><td>어차피 내 돈</td><td><strong>누구 탓인지가 전부</strong></td></tr>
+    </table>
+
+    <p>Lido가 DVT에 투자하는 이유는 오른쪽이다 — 가용성 도구가 아니라 <strong>탈중앙화 도구</strong>로 팔린다. 그리고 <strong>오른쪽일 때만 어려운 질문들이 생긴다</strong>: 논 사람의 보상은? 악행한 사람만 벌할 수 있나? 나만 빠져나올 수 있나? 오늘의 DVT는 이 질문들에 <strong>프로토콜 밖에서</strong> 답한다 — 사적 계약, 리워드 스플리터 컨트랙트, 그리고 <strong>DKG 재실행이 필요한 값비싼 추방</strong>. 프로토콜은 누가 서명했는지 모르니 도와줄 수가 없다.</p>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <h2 id="proposal">3. 제안 — 프로토콜이 직접 m-of-n을 다룬다</h2>
+
+    <p>발상은 이렇다: <strong>키를 쪼개는 곡예를 하는 이유는 프로토콜이 밸리데이터 하나만 볼 줄 알기 때문이다. 그럼 여러 개를 볼 줄 알게 만들면 되지 않나?</strong></p>
+
+    <table>
+      <tr><th></th><th>오늘의 DVT (Obol·SSV)</th><th>제안</th></tr>
+      <tr><td>키</td><td>하나를 <strong>쪼갬</strong> (DKG/샤미르)</td><td><strong>각자 자기 키</strong> 등록 (n ≤ 16)</td></tr>
+      <tr><td>서명 전 합의</td><td>매 의무마다 QBFT 라운드</td><td><strong>없음</strong></td></tr>
+      <tr><td>참여 판정</td><td>—(프로토콜이 모름)</td><td><strong>BLS 집계 + 참여 비트필드</strong></td></tr>
+      <tr><td>분산이 사는 곳</td><td>미들웨어</td><td><strong>프로토콜</strong></td></tr>
+    </table>
+
+    <p>우아한 점은 <strong>새로 발명하는 것이 하나도 없다</strong>는 것이다. 프로토콜은 이미 100만 명 규모로 "여러 참여자 → 집계 서명 + 비트필드 → 임계값 판정"을 돌리고 있다. m-of-n 그룹은 그 문법의 <strong>n ≤ 16짜리 미니 위원회</strong>일 뿐이다.</p>
+
+    <p>그리고 <strong>지금 가능해진 이유가 EIP-7251(MaxEB)</strong>이다. 잔고 상한이 32에서 2048로 오르면서 <code>32·n</code>이 한 레코드에 담기게 됐고, 그 순간 "n명이 각자 32씩 넣어 하나를 만든다"는 산수를 프로토콜이 표현할 수 있게 됐다.</p>
+
+    <div class="note">
+      <p><span class="kicker">📍 현재 상태 (2026-08-13 확인)</span></p>
+      <p><strong>EIP가 아니다.</strong> ethresear.ch 게시글 단계이고 EIP 번호가 배정된 적이 없다. 파이프라인은 <code>① ethresear.ch → ② EIP 초안 → ③ All Core Devs → ④ CFI → ⑤ SFI → ⑥ 데브넷·메인넷</code>이고 <strong>지금 ①</strong>이다. 합의계층 변경이라 진행되더라도 연 단위다.</p>
+      <p><strong>혼동 주의 — "DVT-lite"는 별개다.</strong> 비탈릭이 이후에 낸 <strong>운영 방식</strong> 제안으로, 프로토콜 변경 없이 기존 도구로 셋업을 단순화하자는 것이다. <strong>이더리움 재단이 실제로 이 방식으로 72,000 ETH를 스테이킹 중</strong>이다. 네이티브 DVT(이 카드의 주제)는 하드포크가 필요하고, DVT-lite는 지금 된다. 둘 다 비탈릭의 2026년 "단순화" 캠페인에서 나왔다.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <h2 id="findings">4. 사고 실험 — 네 개의 발견</h2>
+
+    <p>스펙이 확정되지 않았다는 것이 오히려 이 실험의 값어치다. 읽고 구현하는 대신 <strong>설계 결정을 직접 내려봐야</strong> 하고, 그 과정에서 카드의 원래 네 질문에 <strong>없던 균열</strong>들이 드러났다.</p>
+
+    <div class="finding">
+      <p class="finding-label">발견 ① — 상태 모델</p>
+      <p><span class="kicker">참여 귀속은 공짜로 얻지만, 경제적 귀속은 상태 비용을 내야 얻는다.</span></p>
+      <p>가장 자연스러운 상태 모델은 <strong>인덱스 하나 · 잔고 하나(32n) · 키 n개</strong>다. 의무 배정이 인덱스 기준이므로 "항상 같은 역할"이 자동으로 성립하고 — 이건 <strong>이롭게 작용한다</strong>. 인덱스가 n개로 흩어지면 각자 다른 슬롯에 배정되어 애초에 같이 서명할 일이 없어지니, 이 통합은 필수적이다.</p>
+      <p>그런데 <strong>같은 결정이 반대편에서는 해롭다.</strong> 잔고가 한 덩어리라 n명의 돈이 섞이고, 그러면:</p>
+      <pre><code>비트필드: [1,1,1,1,1,1,1,1,0,0]   ← 누가 놀았는지 프로토콜이 안다
+잔고:     320 ETH (한 덩어리)      ← 그런데 골라서 깎을 수가 없다</code></pre>
+      <p>쪼개려면 <code>balances: [Gwei; n]</code>과 <code>withdrawal_credentials: [_; n]</code>이 필요하고, 밸리데이터 레코드가 <strong>최대 16배</strong>로 부푼다. 비콘 상태는 모든 노드가 들고 있어야 하는 데이터다.</p>
+      <p><strong>→ 가설: <code>n ≤ 16</code>은 "16이면 충분히 분산됐다"는 판단이 아니라 "16까지가 상태를 감당할 수 있는 한계"다.</strong> 카드의 네 번째 미해결 질문에 대한 잠정 답.</p>
+    </div>
+
+    <div class="finding">
+      <p class="finding-label">발견 ② — 카드에 없던 질문: 상관된 가용성 실패</p>
+      <p><span class="kicker">그룹화는 우아한 열화(graceful degradation)를 절벽(cliff)으로 바꾼다.</span></p>
+      <table>
+        <tr><th></th><th>독립 밸리데이터 n개</th><th>m-of-n 그룹</th></tr>
+        <tr><td>1명 장애</td><td>32 ETH만 침묵</td><td>영향 없음 (여유 있으면)</td></tr>
+        <tr><td>n−m+1명 장애</td><td>그만큼만 침묵</td><td><strong>32n 전체 침묵</strong></td></tr>
+      </table>
+      <p>정족수는 이진 판정이라, 통과하면 잔고 <strong>전액</strong>이 실리고 미달하면 <strong>0</strong>이 실린다. 그리고 네트워크 차원에서 더 무섭다 — 여러 그룹이 <strong>같은 클라이언트나 같은 클라우드</strong>를 쓰면 그 하나가 죽을 때 여러 그룹이 동시에 m 미달이 되고, 각각 32n씩 빠지면서 <strong>2/3 문턱을 못 넘겨 확정이 멈출 수 있다</strong>.</p>
+      <p><strong>역설:</strong> DVT의 목적은 "다양성을 통한 복원력"인데, 프로토콜에 흡수되어 대중화되면 <strong>오히려 실패를 뭉치게 만들 수 있다</strong>.</p>
+    </div>
+
+    <div class="finding">
+      <p class="finding-label">발견 ③ — 카드에 없던 질문: 무임승차와 상호 보험은 같은 것이다</p>
+      <p><span class="kicker">참여 귀속을 켜는 순간, 그룹이 존재하는 이유를 끄게 된다.</span></p>
+      <p>비트필드가 있으니 "일 안 하면 안 준다"가 가능해 보인다. 가장 깔끔한 답 같지만, 계산해보면:</p>
+      <pre><code>가동률 99%인 참여자 기준
+
+"일 안 하면 안 준다":
+  솔로 99% 가동 → 99% 보상
+  그룹 99% 가동 → 99% 보상      ← 얻는 게 정확히 0
+
+보상 통합:
+  10명이 각자 99% → 정족수 미달 확률 ≈ 0
+  → 그룹은 100% 획득 → 내 몫은 솔로보다 많음</code></pre>
+      <p><strong>그룹의 존재 이유는 상호 보험이다</strong> — 각자 99%짜리 가동률을 모아 100%를 만드는 것. 그런데:</p>
+      <table>
+        <tr><th>보는 각도</th><th>같은 현상</th></tr>
+        <tr><td>좋게 보면</td><td>"내가 죽어도 남들이 메워준다" = <strong>보험</strong></td></tr>
+        <tr><td>나쁘게 보면</td><td>"내가 놀아도 보상은 나온다" = <strong>무임승차</strong></td></tr>
+      </table>
+      <p>보험업의 고전적 문제 그대로다 — <strong>도덕적 해이를 완전히 제거하면 보험 자체가 성립하지 않는다.</strong> 그리고 이 문제는 제안이 만든 게 아니라 <strong>오늘의 DVT에서 이미 존재</strong>한다. 지금은 모니터링 + 사회적 제재 + (비싼) DKG 재실행으로 처리하며, Lido가 <strong>"Identified"</strong> Clusters라고 이름 붙인 것도 <strong>익명 신뢰 대신 신원 기반 신뢰</strong>로 이 구멍을 메우기 때문이다.</p>
+      <p><strong>→ 제안의 기여는 "푸는 것"이 아니라 "풀 수 있게 만드는 것"이다.</strong> 정보는 확보했지만 그것을 쓸 규칙은 아직 쓰이지 않았고, 잔고가 통합돼 있으면 알아도 못 쓴다(발견 ①).</p>
+    </div>
+
+    <div class="finding">
+      <p class="finding-label">발견 ④ — 왜 합의 라운드가 사라질 수 있는가</p>
+      <p><span class="kicker">비잔틴 합의를 "해결"한 게 아니라 문제를 단조(monotone) 술어로 바꿔 "회피"했다.</span></p>
+      <table>
+        <tr><th></th><th>합의 (오늘의 DVT)</th><th>집계 (제안)</th></tr>
+        <tr><td>질문</td><td>"우리가 뭘 서명할까?"</td><td>"누가 서명했나?"</td></tr>
+        <tr><td>답의 우열</td><td>객관적 우열 없음</td><td><strong>많을수록 명백히 낫고 검증 가능</strong></td></tr>
+        <tr><td>필요한 정직 비율</td><td><strong>2/3 이상</strong></td><td><strong>1명이면 충분</strong></td></tr>
+        <tr><td>왕복 라운드</td><td>필요</td><td>불필요</td></tr>
+      </table>
+      <pre><code>운영자3이 발행: [1,1,1,0,1,1,1,1,0,0]  ← 8개 (나를 뺌)
+운영자7이 발행: [1,1,1,1,1,1,1,1,0,0]  ← 9개 ← 이게 이김
+
+→ 나를 빼려면 전원이 공모해야 한다. 정직한 1명이면 검열이 무력화된다.</code></pre>
+      <p><strong>공짜는 아니다.</strong> 일치를 강제하지 않으므로 뷰가 갈릴 수 있다:</p>
+      <pre><code>리오그 중 / 블록 지연:
+  운영자 1~6: head = X → 집계본 X (6개)
+  운영자 7~10: head = Y → 집계본 Y (4개)
+  m = 8 → 어느 쪽도 미달 ❌</code></pre>
+      <p>다만 <strong>강제 일치보다 자연 수렴이 오히려 관대할 수 있다</strong> — 6:4로 갈렸는데 m=6이었다면 다수파로 통과된다. DVT였다면 합의 실패로 통째로 날아갔을 상황이다.</p>
+      <p><strong>그리고 안전성 문턱은 결국 m이다.</strong> 집계의 검열 저항은 1-of-n으로 강하지만, m명이 공모하면 슬래싱 조건에 서명할 수 있다. BFT급 안전성을 원하면 <strong>m &gt; 2n/3</strong>으로 잡아야 한다 (n=10이면 m ≥ 7; 8/10은 여유 있음, 6/10은 미달).</p>
+    </div>
+
+    <h3>부수 발견 — 정직한 참여자가 억울해지는 두 경로</h3>
+
+    <p><strong>① 집계자 그리핑.</strong> 비트가 0으로 찍히는 이유가 두 가지다 — 정말 안 했거나, <strong>했는데 집계자가 안 기다렸거나</strong>. 통합 정산이면 무해하지만 개별 정산으로 바꾸는 순간 <strong>공짜로 남을 해치는 벡터</strong>가 열린다. (완화책은 위의 "더 꽉 찬 집계가 이긴다".)</p>
+
+    <p><strong>② 지리적 편향.</strong> 클러스터가 유럽 중심인데 나만 아시아에 있으면 부분 서명이 <strong>구조적으로</strong> 늦는다. 노이즈가 아니라 편향이라 평균으로도 씻기지 않는다. <strong>DVT의 근본 긴장</strong>이 여기 있다 — 지리적 분산이 목적인데, 분산이 곧 지연이고, 지연이 곧 참여 판정의 왜곡이다.</p>
+
+    <p>참고로 이더리움은 유사한 문제에 이미 완충장치를 갖고 있다: 위원회당 <strong>집계자가 여러 명</strong>이고, <strong>포함 창이 최대 한 에폭</strong>이며, 보상이 <code>timely_source / timely_target / timely_head</code>로 쪼개져 <strong>head를 놓쳐도 나머지는 받는</strong> 부분 인정 구조다. 올오어낫싱이 아니다.</p>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <h2 id="design">5. 잠정 설계 결론</h2>
+
+    <ol>
+      <li><strong>보상은 통합, 슬래싱은 개별.</strong> 축을 나눈다. 보험이 필요한 것은 가용성이지 정직성이 아니다 — 작은 실수는 서로 커버하고, 큰 배신만 개별 책임. 앞서 본 비대칭(오프라인은 작고 슬래싱은 파멸적)과 결이 맞는다. <strong>부수 효과: 잔고를 완전히 쪼갤 필요가 줄어 상태 비용이 절약되고 <code>n ≤ 16</code> 상한도 느슨해질 여지가 생긴다.</strong></li>
+      <li><strong>단일 에폭으로 판정하지 않는다 — 이동 창.</strong> 단일 에폭의 비트필드는 <strong>노이즈</strong>이고 누적 참여율은 <strong>신호</strong>다. 우연한 포함 실패는 평균에서 씻기고 만성 무임승차는 통계적으로 드러난다.</li>
+      <li><strong>자기부담금 곡선.</strong> 참여율 97%와 100%의 실질 차이는 거의 없게, 60% 아래부터 급격히 아프게. 정상 운영자는 노이즈를 신경 쓰지 않아도 되고 무임승차자만 손해를 본다.</li>
+      <li><strong>집계자를 지정하지 않는다.</strong> 아무나 발행 가능 + 비트가 더 많은 집계본이 무조건 우선. 검열에 전원 공모가 필요해진다.</li>
+      <li><strong>m &gt; 2n/3.</strong> 오프라인 손실은 싸고 공모 문턱이 낮은 것은 비싸므로, m은 높게 잡는 쪽이 합리적이다.</li>
+      <li><strong>퇴출이 싸다는 점을 활용한다.</strong> 키를 쪼개지 않으므로 DKG 재실행 없이 등록 해제만으로 참여자를 교체할 수 있다 — 오늘의 DVT가 못 하던 <strong>자동 제명</strong>이 현실적인 선택지가 된다.</li>
+    </ol>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <h2 id="open">6. 미해결 질문 정리</h2>
+
+    <p><strong>원문이 남긴 넷:</strong></p>
+    <ol>
+      <li><strong>슬래싱 귀속</strong> — 비트필드로 알지만 잔고 통합이 막는다 (발견 ①)</li>
+      <li><strong>지연 예산</strong> — 합의 라운드는 사라지지만 뷰 분기를 떠안는다 (발견 ④)</li>
+      <li><strong>m&lt;n 공모 트레이드오프</strong> — 가용성과 공모 문턱이 정확히 반비례</li>
+      <li><strong>n ≤ 16의 근거</strong> — 잠정 답: 상태 비용의 한계 (발견 ①)</li>
+    </ol>
+
+    <p><strong>이번 세션에서 추가된 것:</strong></p>
+    <ol start="5">
+      <li><strong>상관된 가용성 실패</strong> — 절벽 효과와 클라이언트·클라우드 단일화 위험 (발견 ②)</li>
+      <li><strong>보상 귀속 / 무임승차</strong> — 보험과 도덕적 해이가 같은 현상 (발견 ③)</li>
+      <li><strong>집계자 그리핑</strong> — 개별 정산이 여는 무비용 공격 벡터</li>
+      <li><strong>지리적 편향</strong> — 분산이라는 목적이 판정의 공정성과 충돌</li>
+    </ol>
+
+    <div class="note">
+      <p><span class="kicker">🔗 이 사이트의 다른 항목과 이어지는 지점</span></p>
+      <ul>
+        <li><strong>미들웨어의 프로토콜 흡수</strong> — ERC-4337 번들러가 네이티브 AA 앞에서 맞고 있는 상황과 같은 패턴. 카드의 원래 "왜"에 적힌 서사.</li>
+        <li><strong>상관 실패</strong> — 같은 코드를 돌리는 N개 노드의 정족수는 하나의 판단을 N번 복사한 것에 불과하다. 브릿지·오라클 설계에서 반복되는 함정.</li>
+        <li><strong>MPC vs SSS</strong> — 운영 중 키가 재조립되는가의 구분은 커스터디 설계와 동일한 축이다.</li>
+      </ul>
+    </div>
+    </article>
+
   <div class="pager"><a href="pocs-oz-relayer.html">&larr; 2. OpenZeppelin Relayer &amp; Monitor</a><a href="pocs-dsrv-portal.html">4. Institutional custody study &rarr;</a></div>
 </div>
 </body>

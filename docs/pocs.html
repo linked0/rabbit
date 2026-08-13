@@ -90,6 +90,12 @@
   .topics { list-style:none; margin:0; padding:0; }
   .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
   .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
@@ -98,6 +104,9 @@
   .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
   .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
   .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
   .topic-how strong { color:var(--text); }
   .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
@@ -132,18 +141,18 @@
   <aside class="rail">
     <div class="rail-head">
       <a class="rail-title" href="index.html">Rabbit</a>
-      <span class="rail-sub">PoCs &mdash; all contents (28)</span>
+      <span class="rail-sub">PoCs &mdash; all contents (30)</span>
     </div>
     <div class="rail-search">
       <input id="filter" type="search" placeholder="Filter PoCs" aria-label="Filter PoCs" autocomplete="off">
     </div>
     <nav class="rail-nav" id="nav">
       <div class="nav-group" data-group>
-        <p class="nav-group-label">All PoCs (28)</p>
+        <p class="nav-group-label">All PoCs (30)</p>
         <ul>
         <li><a class="nav-link" href="#agent" data-key="agent"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>Autonomous payment agent</span></a></li>
         <li><a class="nav-link" href="#oz-relayer" data-key="oz-relayer"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
-        <li><a class="nav-link" href="#dvt" data-key="dvt"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">3</span>DVT in the protocol</span></a></li>
+        <li><a class="nav-link" href="#dvt" data-key="dvt"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">3</span>DVT in the protocol</span></a></li>
         <li><a class="nav-link" href="#dsrv-portal" data-key="dsrv-portal"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">4</span>Institutional custody study</span></a></li>
         <li><a class="nav-link" href="#pet-clean-room" data-key="pet-clean-room"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">5</span>PET clean room (FHE)</span></a></li>
         <li><a class="nav-link" href="#merkle-vs-verkle" data-key="merkle-vs-verkle"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">6</span>Merkle vs Verkle</span></a></li>
@@ -154,21 +163,23 @@
         <li><a class="nav-link" href="#thirdweb" data-key="thirdweb"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">11</span>Thirdweb — platform survey</span></a></li>
         <li><a class="nav-link" href="#solana" data-key="solana"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">12</span>Solana</span></a></li>
         <li><a class="nav-link" href="#zapier-mcp" data-key="zapier-mcp"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">13</span>Zapier MCP</span></a></li>
-        <li><a class="nav-link" href="#erc-8141" data-key="erc-8141"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">14</span>ERC-8141</span></a></li>
-        <li><a class="nav-link" href="#google-adk-mcp" data-key="google-adk-mcp"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">15</span>Google ADK Python 2.5 — agent-as-MCP-server</span></a></li>
-        <li><a class="nav-link" href="#google-skills-repo" data-key="google-skills-repo"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">16</span>Google Skills Repository — 90+ agent skills</span></a></li>
-        <li><a class="nav-link" href="#ai-agent-course" data-key="ai-agent-course"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">17</span>Free 3-hour AI agent build &amp; monetize course</span></a></li>
-        <li><a class="nav-link" href="#circuit-breaker-saga" data-key="circuit-breaker-saga"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">18</span>Microservice patterns — Circuit Breaker &amp; Saga</span></a></li>
-        <li><a class="nav-link" href="#slack-claude-notion" data-key="slack-claude-notion"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">19</span>Slack · Claude · Notion integration</span></a></li>
-        <li><a class="nav-link" href="#claude-tag-slack" data-key="claude-tag-slack"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">20</span>&quot;Claude Tag&quot; for Slack (on hold)</span></a></li>
-        <li><a class="nav-link" href="#apple-container" data-key="apple-container"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">21</span>Apple container</span></a></li>
-        <li><a class="nav-link" href="#alibaba-page-agent" data-key="alibaba-page-agent"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">22</span>Alibaba page-agent</span></a></li>
-        <li><a class="nav-link" href="#google-glass-stitch" data-key="google-glass-stitch"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">23</span>Google Glass form factor &amp; Stitch</span></a></li>
-        <li><a class="nav-link" href="#simplicity-ctf" data-key="simplicity-ctf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">24</span>Simplicity CTF</span></a></li>
-        <li><a class="nav-link" href="#isaac-groot" data-key="isaac-groot"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">25</span>NVIDIA Isaac GR00T — humanoid foundation model</span></a></li>
-        <li><a class="nav-link" href="#geometric-series-dcf" data-key="geometric-series-dcf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">26</span>Geometric series → DCF valuation</span></a></li>
-        <li><a class="nav-link" href="#amortized-potential-function" data-key="amortized-potential-function"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">27</span>Amortized analysis via potential functions</span></a></li>
-        <li><a class="nav-link" href="#moralis-wallet-api" data-key="moralis-wallet-api"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">28</span>Moralis — wallet snapshot via API</span></a></li>
+        <li><a class="nav-link" href="#agents-computer-use" data-key="agents-computer-use"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">14</span>Can Agents Use a Computer Yet?</span></a></li>
+        <li><a class="nav-link" href="#tokenized-money-banks" data-key="tokenized-money-banks"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">15</span>Tokenized Money for Banks</span></a></li>
+        <li><a class="nav-link" href="#erc-8141" data-key="erc-8141"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">16</span>ERC-8141</span></a></li>
+        <li><a class="nav-link" href="#google-adk-mcp" data-key="google-adk-mcp"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">17</span>Google ADK Python 2.5 — agent-as-MCP-server</span></a></li>
+        <li><a class="nav-link" href="#google-skills-repo" data-key="google-skills-repo"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">18</span>Google Skills Repository — 90+ agent skills</span></a></li>
+        <li><a class="nav-link" href="#ai-agent-course" data-key="ai-agent-course"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">19</span>Free 3-hour AI agent build &amp; monetize course</span></a></li>
+        <li><a class="nav-link" href="#circuit-breaker-saga" data-key="circuit-breaker-saga"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">20</span>Microservice patterns — Circuit Breaker &amp; Saga</span></a></li>
+        <li><a class="nav-link" href="#slack-claude-notion" data-key="slack-claude-notion"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">21</span>Slack · Claude · Notion integration</span></a></li>
+        <li><a class="nav-link" href="#claude-tag-slack" data-key="claude-tag-slack"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">22</span>&quot;Claude Tag&quot; for Slack (on hold)</span></a></li>
+        <li><a class="nav-link" href="#apple-container" data-key="apple-container"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">23</span>Apple container</span></a></li>
+        <li><a class="nav-link" href="#alibaba-page-agent" data-key="alibaba-page-agent"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">24</span>Alibaba page-agent</span></a></li>
+        <li><a class="nav-link" href="#google-glass-stitch" data-key="google-glass-stitch"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">25</span>Google Glass form factor &amp; Stitch</span></a></li>
+        <li><a class="nav-link" href="#simplicity-ctf" data-key="simplicity-ctf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">26</span>Simplicity CTF</span></a></li>
+        <li><a class="nav-link" href="#isaac-groot" data-key="isaac-groot"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">27</span>NVIDIA Isaac GR00T — humanoid foundation model</span></a></li>
+        <li><a class="nav-link" href="#geometric-series-dcf" data-key="geometric-series-dcf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">28</span>Geometric series → DCF valuation</span></a></li>
+        <li><a class="nav-link" href="#amortized-potential-function" data-key="amortized-potential-function"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">29</span>Amortized analysis via potential functions</span></a></li>
+        <li><a class="nav-link" href="#moralis-wallet-api" data-key="moralis-wallet-api"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">30</span>Moralis — wallet snapshot via API</span></a></li>
         </ul>
       </div>
       <p class="no-results" id="no-results">No match.</p>
@@ -196,7 +207,7 @@
           <p class="topic-link"><a href="topics/pocs-oz-relayer.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="dvt">
-          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">DVT in the protocol</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">DVT in the protocol</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.</p>
           <p class="topic-how"><strong>How it works:</strong> Today's DVT (Obol, SSV) splits one validator key with Shamir sharing or threshold BLS and runs an off-chain consensus round to reassemble a signature each time; the protocol still sees a single validator, and all distribution lives in middleware. The proposal never splits the key: each participant registers their own (n ≤ 16), the protocol groups them m-of-n, and BLS aggregation plus a participation bitfield — the same grammar as today's attestation aggregation — decides whether enough took part.</p>
           <p class="topic-why"><strong>Why:</strong> Reading a live protocol-design discussion closely enough to separate three things people usually blur: what the proposal actually changes, what it leaves unresolved, and which parts of the idea can be built one layer up without waiting for it. It is also a second instance of a pattern this site already documents elsewhere — middleware doing a job well until the protocol absorbs it, which is exactly what ERC-4337 bundlers face from native account abstraction.</p>
@@ -272,106 +283,120 @@
           <p class="topic-why"><strong>Why:</strong> Consuming someone else's MCP server (Zapier's, exposing 8,000+ app integrations as tools) rather than building one from scratch — the &quot;client&quot; side of the same protocol this project's own knowledge-base work explores from the &quot;server&quot; side.</p>
           <p class="topic-link"><a href="topics/pocs-zapier-mcp.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/zapier-mcp">Open on jaylabs.xyz &rarr;</a></p>
         </li>
+        <li id="agents-computer-use">
+          <div class="topic-head"><span class="topic-no">14</span><span class="topic-title">Can Agents Use a Computer Yet?</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <p class="topic-summary">a16z's 2026 update on computer-use agents in production — OSWorld benchmark jump from 42% to 85% in a year, and what buyers actually pay for once the model stops being the bottleneck.</p>
+          <p class="topic-how"><strong>How it works:</strong> 6-class models), above the ~72% human baseline — but the piece's real argument is that the benchmark stopped mattering: once models cleared a &quot;good enough&quot; bar, buyers stopped comparing models and started buying infrastructure — verification, escalation, error handling, and a common pattern where an agent runs a workflow once, caches it as deterministic code, and is only re-invoked when something breaks (cost falls over a workflow's lifetime). Cost comparison: agent inference runs ~$6-8/hr ($3-15 range) versus ~$10/hr offshore BPO versus $30-45/hr fully-loaded US labor — roughly break-even against BPO today, 70-80% margin against US labor.</p>
+          <p class="topic-why"><strong>Why:</strong> Tracking where computer-use agents actually stand in production, not in demos — the piece is built on interviews with real operators (a CPG data platform running 15-20M portal interactions/month, a systems integrator running 27 live workflows), not just benchmark numbers. A useful checkpoint for judging whether an &quot;agent operates a browser/UI&quot; idea is worth building now versus still a research toy.</p>
+          <p class="topic-link"><a href="topics/pocs-agents-computer-use.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/agents-computer-use">Open on jaylabs.xyz &rarr;</a></p>
+        </li>
+        <li id="tokenized-money-banks">
+          <div class="topic-head"><span class="topic-no">15</span><span class="topic-title">Tokenized Money for Banks</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <p class="topic-summary">Tempo Research's primer on the three product families banks can use to put a settlement asset onchain — tokenized deposits, first-party stablecoins, and third-party stablecoins — and the Basel LCR/NSFR cost each one hard-codes.</p>
+          <p class="topic-how"><strong>How it works:</strong> Three families, each a different trade on the balance sheet. (1) Tokenized deposits — the claim stays a deposit, just wrapped in a token; cheapest Basel treatment (25% LCR runoff, 50% NSFR ASF for the permissioned variant) but narrow reach — JPMD on Base is the live example.</p>
+          <p class="topic-why"><strong>Why:</strong> A structured way to read every &quot;bank issues a stablecoin&quot; headline: the report separates three genuinely different balance-sheet moves that get talked about as one thing, and shows why a bank ends up needing all three rather than picking a winner. Useful background for anything touching bank-adjacent stablecoin rails or institutional settlement design.</p>
+          <p class="topic-link"><a href="topics/pocs-tokenized-money-banks.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/tokenized-money-banks">Open on jaylabs.xyz &rarr;</a></p>
+        </li>
         <li id="erc-8141">
-          <div class="topic-head"><span class="topic-no">14</span><span class="topic-title">ERC-8141</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">16</span><span class="topic-title">ERC-8141</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Native account-abstraction explainer — Ethereum's protocol-level Frame Transactions.</p>
           <p class="topic-how"><strong>How it works:</strong> Not a working demo by necessity: EIP-8141 defines a new transaction type where a single transaction carries a sequence of frames (a VERIFY frame for signature/fee authorization, then one or more EXECUTE frames) instead of one implicit call — but no client or RPC can send this transaction type yet, since it requires execution-layer support the network doesn't have. As of writing it's only &quot;considered for inclusion&quot; in a future fork, so this stays a diagram/explainer page rather than a live demo.</p>
           <p class="topic-why"><strong>Why:</strong> A protocol-native preview of what this project's application-layer AA demos (session keys, atomic batching) do today with smart contracts and delegation — EIP-8141 proposes moving those same properties into Ethereum's base transaction format itself.</p>
           <p class="topic-link"><a href="topics/pocs-erc-8141.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/erc-8141">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="google-adk-mcp">
-          <div class="topic-head"><span class="topic-no">15</span><span class="topic-title">Google ADK Python 2.5 — agent-as-MCP-server</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">17</span><span class="topic-title">Google ADK Python 2.5 — agent-as-MCP-server</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">New ADK release: sandboxed code exec on Cloud Run, serving an agent as an MCP server, and a fresh ADK Go — the 30-minute question is whether a verex-desk subagent can be wrapped in ADK and called from Claude via MCP.</p>
           <p class="topic-how"><strong>How it works:</strong> The new Agent Development Kit release: sandboxed code execution isolation on Cloud Run, the ability to serve an agent as an MCP server, and improved Live API. ADK Go also shipped a new release.</p>
           <p class="topic-why"><strong>Why:</strong> &quot;Serving an agent as an MCP server&quot; is the piece that lines up exactly with Claude's MCP ecosystem — the question worth 30 minutes is whether a verex-desk subagent can be wrapped in ADK and called from Claude over MCP.</p>
           <p class="topic-link"><a href="topics/pocs-google-adk-mcp.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/google-adk-mcp">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="google-skills-repo">
-          <div class="topic-head"><span class="topic-no">16</span><span class="topic-title">Google Skills Repository — 90+ agent skills</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">18</span><span class="topic-title">Google Skills Repository — 90+ agent skills</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">~90 distilled-knowledge skills for agents (product, architecture, best practices) — same family as Claude's SKILL.md ecosystem, worth comparing formats and trigger design.</p>
           <p class="topic-how"><strong>How it works:</strong> md ecosystem is.</p>
           <p class="topic-why"><strong>Why:</strong> md, so the value isn't the content — it's comparing how Google structures skill format and trigger design against Claude's approach.</p>
           <p class="topic-link"><a href="topics/pocs-google-skills-repo.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/google-skills-repo">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="ai-agent-course">
-          <div class="topic-head"><span class="topic-no">17</span><span class="topic-title">Free 3-hour AI agent build &amp; monetize course</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">19</span><span class="topic-title">Free 3-hour AI agent build &amp; monetize course</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A free ex-Google-engineer course spanning agent design, human handoff, RAG/vector DBs, Cloud deployment, WhatsApp monetization, and loops-vs-graphs — the value is seeing the whole stack in one arc.</p>
           <p class="topic-how"><strong>How it works:</strong> Agent system design → human handoff → RAG/vector DBs → Google Cloud deployment → WhatsApp monetization → conversation-to-lead conversion → loops vs. graphs → multi-tool agent graphs.</p>
           <p class="topic-why"><strong>Why:</strong> The value is the end-to-end arc — Agents → RAG → Deployment → Leads → Revenue in one course, sitting at the intersection of the LLM track (RAG/agents) and the &quot;sell AI agent services&quot; business category.</p>
           <p class="topic-link"><a href="topics/pocs-ai-agent-course.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/ai-agent-course">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="circuit-breaker-saga">
-          <div class="topic-head"><span class="topic-no">18</span><span class="topic-title">Microservice patterns — Circuit Breaker &amp; Saga</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">20</span><span class="topic-title">Microservice patterns — Circuit Breaker &amp; Saga</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Circuit Breaker (fail fast on inter-service calls, probe recovery half-open) and Saga (distributed transactions as local-transaction chains plus compensations) — verex's settlement pipeline is a Saga; its RPC/indexer calls want a breaker.</p>
           <p class="topic-how"><strong>How it works:</strong> Circuit Breaker (inter-service calls): trip the circuit and fail fast once failures cross a threshold, then probe recovery half-open after a cooldown. Saga (data consistency): resolve a distributed transaction as a chain of local transactions plus compensating transactions — eventual consistency without 2PC.</p>
           <p class="topic-why"><strong>Why:</strong> Verex's settlement pipeline (oracle lookup → settlement → payout) is literally a Saga, and its RPC/indexer calls want a circuit breaker as a baseline.</p>
           <p class="topic-link"><a href="topics/pocs-circuit-breaker-saga.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/circuit-breaker-saga">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="slack-claude-notion">
-          <div class="topic-head"><span class="topic-no">19</span><span class="topic-title">Slack · Claude · Notion integration</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">21</span><span class="topic-title">Slack · Claude · Notion integration</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Wire the three tools together via Claude's Slack/Notion MCP connectors — e.g. a Slack thread that Claude summarizes and logs to Notion.</p>
           <p class="topic-how"><strong>How it works:</strong> g. a Slack conversation gets summarized by Claude and logged to Notion.</p>
           <p class="topic-why"><strong>Why:</strong> Connects to the still-on-hold &quot;Claude Tag for Slack&quot; idea — this is the workflow that idea would actually serve.</p>
           <p class="topic-link"><a href="topics/pocs-slack-claude-notion.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/slack-claude-notion">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="claude-tag-slack">
-          <div class="topic-head"><span class="topic-no">20</span><span class="topic-title">&quot;Claude Tag&quot; for Slack (on hold)</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">22</span><span class="topic-title">&quot;Claude Tag&quot; for Slack (on hold)</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">On hold — would lean on Notion↔Slack integration features.</p>
           <p class="topic-how"><strong>How it works:</strong> Would lean on Notion↔Slack integration features to bring a Claude Tag-style presence into Slack.</p>
           <p class="topic-why"><strong>Why:</strong> Feeds into the Slack · Claude · Notion integration item above rather than standing alone.</p>
           <p class="topic-link"><a href="topics/pocs-claude-tag-slack.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/claude-tag-slack">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="apple-container">
-          <div class="topic-head"><span class="topic-no">21</span><span class="topic-title">Apple container</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">23</span><span class="topic-title">Apple container</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Apple's official open-source tool for running Linux containers as lightweight VMs on Apple Silicon — a Docker Desktop alternative candidate.</p>
           <p class="topic-how"><strong>How it works:</strong> Apple's official open source — runs Linux containers as lightweight VMs on Apple Silicon Macs. 0, requires macOS 26.</p>
           <p class="topic-why"><strong>Why:</strong> A Docker Desktop alternative candidate for local infra across two PCs and midnight automated jobs.</p>
           <p class="topic-link"><a href="topics/pocs-apple-container.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/apple-container">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="alibaba-page-agent">
-          <div class="topic-head"><span class="topic-no">22</span><span class="topic-title">Alibaba page-agent</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">24</span><span class="topic-title">Alibaba page-agent</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">An in-page GUI agent (24k★) — one script tag or npm install lets natural language drive a webpage's UI, no screenshots or browser extension needed.</p>
           <p class="topic-how"><strong>How it works:</strong> An in-page GUI agent embedded directly in a webpage — one script tag or npm install lets natural language operate the web UI. No screenshots, browser extension, or headless browser needed (text-based DOM); connects to any LLM (BYO); has a beta MCP server; built on browser-use.</p>
           <p class="topic-why"><strong>Why:</strong> Same family as Clicky's &quot;landing conversation layer&quot; — a candidate for a Verex landing/SaaS copilot or smart form-filling.</p>
           <p class="topic-link"><a href="topics/pocs-alibaba-page-agent.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/alibaba-page-agent">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="google-glass-stitch">
-          <div class="topic-head"><span class="topic-no">23</span><span class="topic-title">Google Glass form factor &amp; Stitch</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">25</span><span class="topic-title">Google Glass form factor &amp; Stitch</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A note that Google Glass will likely land as a &quot;use only when needed&quot; form factor, plus trying out Stitch.</p>
           <p class="topic-how"><strong>How it works:</strong> Google Glass is expected to land as a &quot;use only when needed&quot; form factor rather than always-on wear; separately, try out Stitch.</p>
           <p class="topic-why"><strong>Why:</strong> A quick idea to revisit, not yet expanded.</p>
           <p class="topic-link"><a href="topics/pocs-google-glass-stitch.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/google-glass-stitch">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="simplicity-ctf">
-          <div class="topic-head"><span class="topic-no">24</span><span class="topic-title">Simplicity CTF</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">26</span><span class="topic-title">Simplicity CTF</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Blockstream's first Simplicity CTF — unlock 0.01 LBTC (~$600) locked in a contract for the reward; hands-on practice with Simplicity, the new smart-contract language for Bitcoin/Liquid.</p>
           <p class="topic-how"><strong>How it works:</strong> 01 LBTC (~$600) locked in a contract.</p>
           <p class="topic-why"><strong>Why:</strong> A hands-on way to actually learn Simplicity rather than just read about it.</p>
           <p class="topic-link"><a href="topics/pocs-simplicity-ctf.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/simplicity-ctf">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="isaac-groot">
-          <div class="topic-head"><span class="topic-no">25</span><span class="topic-title">NVIDIA Isaac GR00T — humanoid foundation model</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">27</span><span class="topic-title">NVIDIA Isaac GR00T — humanoid foundation model</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A staged, hands-on plan to actually run and fine-tune GR00T — cloud GPU inference first, then a $100 SO-101 arm via LeRobot, Jetson hardware last.</p>
           <p class="topic-how"><strong>How it works:</strong> 7/hr) following NVIDIA's e2e workflow doc, no hardware purchase required. 7 into Hugging Face's LeRobot means a $100-130 SO-101 arm becomes a complete loop — collect demonstrations, fine-tune the actual GR00T checkpoint, deploy back to the arm — rather than toy imitation-learning code.</p>
           <p class="topic-why"><strong>Why:</strong> A blockchain developer can't survive on blockchain alone — this is the first concrete, hands-on attempt at the robotics/AI adjacent track the daily report's future-dev queue exists for. Not a survey: a staged plan to actually run a real humanoid foundation model rather than just read about one.</p>
           <p class="topic-link"><a href="knowledge/isaac-groot.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/isaac-groot">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="geometric-series-dcf">
-          <div class="topic-head"><span class="topic-no">26</span><span class="topic-title">Geometric series → DCF valuation</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">28</span><span class="topic-title">Geometric series → DCF valuation</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Sum of a geometric series, applied to perpetuity/Gordon-formula valuation.</p>
           <p class="topic-how"><strong>How it works:</strong> Planned: a small derivation-to-code page showing the geometric series sum formula S = a / (1 − r) for |r| &lt; 1, then substituting cash-flow growth into it to derive the Gordon Growth perpetuity formula, with an interactive calculator comparing the closed-form result against a brute-force sum of many discounted future cash flows — to visually confirm the two converge. Not yet built.</p>
           <p class="topic-why"><strong>Why:</strong> Connects a pure-math result (the closed-form sum of a geometric series) to something used directly in finance — the Gordon Growth Model for valuing a perpetuity, which underpins terminal-value calculations in discounted cash flow (DCF) analysis.</p>
           <p class="topic-link"><a href="topics/pocs-geometric-series-dcf.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/geometric-series-dcf">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="amortized-potential-function">
-          <div class="topic-head"><span class="topic-no">27</span><span class="topic-title">Amortized analysis via potential functions</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">29</span><span class="topic-title">Amortized analysis via potential functions</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Proving O(1) amortized cost for dynamic-array doubling with a potential function.</p>
           <p class="topic-how"><strong>How it works:</strong> Planned: an interactive dynamic array (a growable vector) where each push is logged with its real cost, alongside a running potential function Φ that tracks &quot;banked&quot; cost from cheap operations — demonstrating that amortized cost = real cost + ΔΦ stays bounded even across a resize. Not yet built.</p>
           <p class="topic-why"><strong>Why:</strong> A core algorithms-interview topic: proving that an operation with occasional expensive worst cases (like a dynamic array's resize-and-copy) is still O(1) on average over a sequence of operations, using the potential-function accounting method rather than a hand-wavy argument.</p>
           <p class="topic-link"><a href="topics/pocs-amortized-potential-function.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/amortized-potential-function">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="moralis-wallet-api">
-          <div class="topic-head"><span class="topic-no">28</span><span class="topic-title">Moralis — wallet snapshot via API</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">30</span><span class="topic-title">Moralis — wallet snapshot via API</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Querying balance/net-worth for an address with Moralis's Wallet API.</p>
           <p class="topic-how"><strong>How it works:</strong> Planned: a small server route calling Moralis's Wallet API (net-worth and token-balance endpoints) with a server-held API key, rendering a simple portfolio snapshot for any address a visitor enters — read-only, no wallet connection needed. Not yet built.</p>
           <p class="topic-why"><strong>Why:</strong> A quick evaluation of a common build-vs-buy tradeoff in crypto tooling — instead of indexing chain data yourself (event logs, balance changes) to answer &quot;what does this wallet hold,&quot; a hosted indexing API like Moralis answers it in one call.</p>

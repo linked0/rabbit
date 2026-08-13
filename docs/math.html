@@ -90,6 +90,12 @@
   .topics { list-style:none; margin:0; padding:0; }
   .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
   .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
   .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
@@ -98,6 +104,9 @@
   .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
   .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
   .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
   .topic-how strong { color:var(--text); }
   .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
@@ -132,7 +141,7 @@
   <aside class="rail">
     <div class="rail-head">
       <a class="rail-title" href="index.html">Rabbit</a>
-      <span class="rail-sub">Math &mdash; 52 topics, 3 done</span>
+      <span class="rail-sub">Math &mdash; 52 topics, 4 done</span>
     </div>
     <div class="rail-search">
       <input id="filter" type="search" placeholder="Filter math" aria-label="Filter math" autocomplete="off">
@@ -148,7 +157,7 @@
       <div class="nav-group" data-group>
         <p class="nav-group-label">7월 — 이산수학·논리 (Day 3–10)</p>
         <ul>
-        <li><a class="nav-link" href="#math-3" data-key="math-3"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">3</span>명제논리·집합·함수·관계</span></a></li>
+        <li><a class="nav-link" href="#math-3" data-key="math-3"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">3</span>명제논리·집합·함수·관계</span></a></li>
         <li><a class="nav-link" href="#math-4" data-key="math-4"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">4</span>귀납법/구조적 재귀</span></a></li>
         <li><a class="nav-link" href="#math-5" data-key="math-5"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">5</span>그래프 기초(DAG·트리·해시 링크)</span></a></li>
         <li><a class="nav-link" href="#math-6" data-key="math-6"><span class="nav-dot" style="background:#64748b;" title="TODO"></span><span class="nav-text"><span class="topic-no">6</span>비둘기집 원리</span></a></li>
@@ -237,7 +246,7 @@
       <p>7월부터 12월까지, 프로토콜·금융·암호학이 실제로 요구하는 수학을 하루 1개씩.</p>
       <p><strong>운영</strong>: 매일 리포트 안에서 1개. 증명을 다 따라가는 게 아니라 <strong>&quot;필요할 때 꺼내 쓸 수 있는&quot; 수준</strong>이 멈춤선.</p>
       <p><strong>연결</strong>: 각 항목은 Verex(LMSR·정산·오라클)나 EVM 실무의 어딘가에 닿는다.</p>
-      <p class="meta">3 / 52 done</p>
+      <p class="meta">4 / 52 done</p>
     </article>
     <article>
       <h1>시작 — 값의 시간가치와 시장 (Day 1–2)</h1>
@@ -262,7 +271,7 @@
       <h1>7월 — 이산수학·논리 (Day 3–10)</h1>
       <ul class="topics">
         <li id="math-3">
-          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">명제논리·집합·함수·관계</span></div>
+          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">명제논리·집합·함수·관계</span> <span class="badge topic-done" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">명제논리는 참·거짓 값을 갖는 명제와 결합자(∧, ∨, ¬, →, ↔)로 이루어지며, 특히 함의 p→q는 p가 거짓이면 무조건 참이라는 점과 그 대우 ¬q→¬p가 항상 동치라는 점이 핵심이다. 집합은 원소의 모임으로 ∈, ⊆, ∪, ∩, 여집합, 곱집합 같은 표기를 쓰고, 한정기호 ∀와 ∃는 부정할 때 서로 뒤바뀌며 안쪽 명제가 부정된다(¬∀x P(x) ≡ ∃x ¬P(x)).</p>
           <p class="topic-how"><strong>How it works:</strong> 관계는 곱집합 A×B의 부분집합으로 정의되며, 반사·대칭·추이 세 성질을 모두 가지면 동치관계가 되어 집합을 서로소인 동치류로 분할하고, 반사·반대칭·추이를 가지면 부분순서가 된다. 함수는 정의역의 각 원소에 정확히 하나의 값을 대응시키는 특수한 관계이며, 단사(injective)·전사(surjective)·전단사(bijective)의 구분이 크기 비교와 역함수 존재의 기준이 된다.</p>
           <p class="topic-why"><strong>Why:</strong> 논문·명세·정형 검증 문서는 전부 이 표기로 쓰여 있어서, 기호를 못 읽으면 알고리즘의 전제 조건과 보장 범위를 오해하게 된다.</p>
