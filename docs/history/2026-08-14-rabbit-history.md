@@ -18,3 +18,13 @@
 **Change:** `lib/poc-cards.ts`의 `stake-concentration` 카드 — `status: "soon"` → `"done"`, `date: "2026-08-14"` 추가, done 사유 주석 추가, `howTo`/`howToKo`를 "Not yet scoped …" → "Mapping the correlated failure surface under a validator set …"로 교체. `pnpm docs:pocs`로 재생성.
 
 **Result:** `npx tsc --noEmit` 통과(exit 0). 카드가 PLANNED 6번 → **DONE 1번**으로 이동(정렬 규칙대로 date 기준 최신), 페이저 링크도 자동 재연결. 생성 HTML 로컬 링크 누락 0건. `docs/index.html`의 div 짝 불일치(28/27)는 HEAD에도 동일하게 존재하는 **기존 이슈**로, 이번 변경과 무관. **남은 것:** `howItWorks`/`purpose` 본문이 여전히 "에세이가 아니라 측정으로 계획했습니다"로 시작해 done 상태와 어긋난다 — 문안은 jay 판단이 필요해 이번엔 손대지 않음.
+
+### Stake concentration 카드 위치 정정: 1번 → 4번 (date 필드 제거)
+
+**Cause:** 위 작업 직후 jay가 "1번이 아니라 4번으로 해달라"고 요청. done 묶음의 헤드라인으로 올리지 않겠다는 판단.
+
+**Reasoning:** 위치는 `sortDemoCards()`가 `status` → `date` 내림차순으로만 결정하므로, 배열 순서를 손으로 바꿔도 효과가 없다. 4번(done 4장 중 마지막)에 두려면 `date`가 `dvt`의 `2026-08-05`보다 오래돼야 하는데, 실제 작업일은 08-12~08-14이라 **그보다 이른 날짜는 전부 지어낸 값**이 된다. 대신 [`lib/demo-cards.ts:53-55`](../../lib/demo-cards.ts)의 규칙을 이용했다 — *date가 있는 카드가 date 없는 카드보다 앞에 온다.* 즉 `date`를 비우면 날짜를 조작하지 않고도 done 묶음의 끝으로 내려간다. 프로젝트 규칙의 "done으로 바꿀 때 date를 채워라"는 **새 done 카드를 맨 위로 띄우기 위한** 조항이므로, 맨 위에 두지 않겠다는 이번 요청에서는 date를 비우는 것이 규칙의 의도와 어긋나지 않는다고 판단. 그 판단 근거를 카드 주석에 남겨 다음 편집자가 "규칙 위반"으로 오해하지 않게 했다.
+
+**Change:** `lib/poc-cards.ts`의 `stake-concentration`에서 `date: "2026-08-14"` 줄 삭제, 삭제 이유를 주석으로 명시. `pnpm docs:pocs` 재생성.
+
+**Result:** `npx tsc --noEmit` 통과. 순서가 `agent`(1) · `oz-relayer`(2) · `dvt`(3) · `stake-concentration`(**4**) · `dsrv-portal`(5)로 확정. 페이저도 "← 3. DVT / 5. Institutional custody →"로 재연결. 로컬 링크 누락 0건. **부수 발견:** 이번 재생성에서 `pocs-oz-relayer.html`·`pocs-stake-concentration.html`의 이전-글 링크만 `../topics/pocs-*.html` 형태로 나왔다(다른 파일은 모두 같은 디렉터리 상대경로). 경로는 정상 해석되어 깨지지 않지만 생성 스크립트의 일관성 문제로 보이며, `scripts/generate-pocs-html.mjs` 수정이 필요해 이번 범위에서는 제외.

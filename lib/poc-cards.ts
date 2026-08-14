@@ -403,8 +403,10 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo: "라우터 하나, ASN 하나, 데이터센터 하나 뒤에 스테이킹이 얼마나 몰려 있는가 — 그리고 그것이 최종성 정지까지 얼마나 가까운가.",
     // done (jay, 2026-08-14): 2026-08-12 솔라나 라우팅 장애를 사례로 상관 장애면을 정리했다 —
     // 상시 구동 측정 파이프라인이 아니라 완결된 검토.
+    // date 없음은 의도된 것 (jay, 2026-08-14): 헤드라인으로 올리지 않고 done 묶음의 끝(4번)에 둔다.
+    // sortDemoCards는 date 있는 done을 date 없는 done보다 앞에 두므로, 날짜를 지어내지 않고
+    // 위치를 낮추는 방법은 date를 비우는 것이다.
     status: "done",
-    date: "2026-08-14", // 완결 선언일 — done 카드의 정렬 기준
     howTo: "Mapping the correlated failure surface under a validator set: why ASN, not validator count, is the real unit of independence.",
     howToKo: "검증인 집합 아래에 깔린 상관 장애면 정리 — 독립성의 진짜 단위가 검증인 수가 아니라 ASN인 이유.",
     purpose:
