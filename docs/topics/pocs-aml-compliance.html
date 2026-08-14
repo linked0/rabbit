@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Google ADK Python 2.5 — agent-as-MCP-server — PoCs</title>
+<title>AML — where the cryptography stops — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -138,144 +138,30 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Google ADK Python 2.5 — agent-as-MCP-server</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; AML — where the cryptography stops</p>
   <article>
-      <h1><span class="topic-no">22</span>Google ADK Python 2.5 — agent-as-MCP-server <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">New ADK release: sandboxed code exec on Cloud Run, serving an agent as an MCP server, and a fresh ADK Go — the 30-minute question is whether a verex-desk subagent can be wrapped in ADK and called from Claude via MCP.</p>
-      <p class="meta">Not yet scoped — a 30-minute skim. Start with the MCP-serving section of the release log. (Notion queue, added 2026-08-08.)</p>
+      <h1><span class="topic-no">6</span>AML — where the cryptography stops <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">Travel Rule, KYC reuse, sanctions screening — the layer this catalogue keeps hitting and calling 'not a technical problem', studied on its own terms.</p>
+      <p class="meta">Not yet scoped — a reading study. Start with Korea's 특금법 (VASP registration, 트래블룰) and FATF Recommendation 16, then map which obligations a protocol can carry and which only a licensed entity can.</p>
       <h2>Why</h2>
-      <p>&quot;Serving an agent as an MCP server&quot; is the piece that lines up exactly with Claude's MCP ecosystem — the question worth 30 minutes is whether a verex-desk subagent can be wrapped in ADK and called from Claude over MCP.</p>
+      <p>This card exists because of a sentence written on another one. The institutional custody study card promised a separation — which parts are engineering (MPC, approval state machines, AA policies) and which parts are a licence you either have or do not — and then set the licence half aside. Nearly every card since has hit the same wall from a different angle. Verifiable credentials prove an institution signed something but not that the claim is true, so someone has to decide which issuers count. Zero-knowledge selective disclosure can prove an investor is eligible without revealing a birthday, but eligibility is defined by a regulator, not a circuit. The multichain RWA card's hardest question turns out to be who is liable for overissuance rather than how to detect it. In each case the technical work stops at the same boundary, and the boundary is worth studying directly rather than repeatedly noting in passing.</p>
       <h2>How it works</h2>
-      <p>The new Agent Development Kit release: sandboxed code execution isolation on Cloud Run, the ability to serve an agent as an MCP server, and improved Live API. ADK Go also shipped a new release.</p>
-      <h2>Related code</h2>
-      <pre><code># Google ADK — agent-as-MCP-server: a small agent function served through a mock
-# MCP-style tool registry (name -&gt; handler), invoked by name the way an MCP client
-# would call a tool exposed by another agent.
-
-from typing import Callable
-
-
-class MCPRegistry:
-    &quot;&quot;&quot;Mimics an MCP server's tool registry: a mapping from tool name to handler,
-    with the schema an MCP `tools/list` call would return.&quot;&quot;&quot;
-
-    def __init__(self):
-        self._tools: dict[str, Callable[[dict], dict]] = {}
-        self._schemas: dict[str, dict] = {}
-
-    def register(self, name: str, schema: dict, handler: Callable[[dict], dict]) -&gt; None:
-        self._tools[name] = handler
-        self._schemas[name] = schema
-
-    def list_tools(self) -&gt; list[dict]:
-        return [{&quot;name&quot;: name, **schema} for name, schema in self._schemas.items()]
-
-    def call(self, name: str, arguments: dict) -&gt; dict:
-        if name not in self._tools:
-            raise KeyError(f&quot;no MCP tool registered as '{name}'&quot;)
-        return self._tools[name](arguments)
-
-
-def verex_desk_subagent(arguments: dict) -&gt; dict:
-    &quot;&quot;&quot;A stand-in for an ADK-wrapped verex-desk subagent, served as a single tool.&quot;&quot;&quot;
-    query = arguments.get(&quot;query&quot;, &quot;&quot;)
-    if &quot;invoice&quot; in query.lower():
-        return {&quot;answer&quot;: &quot;Invoice status: pending approval.&quot;, &quot;confidence&quot;: 0.9}
-    return {&quot;answer&quot;: f&quot;No specialized handling for: {query}&quot;, &quot;confidence&quot;: 0.2}
-
-
-if __name__ == &quot;__main__&quot;:
-    print(&quot;ADK agent served as an MCP tool — mock registry, called by name\n&quot;)
-
-    registry = MCPRegistry()
-    registry.register(
-        name=&quot;verex_desk.query&quot;,
-        schema={&quot;description&quot;: &quot;Query the verex-desk subagent&quot;, &quot;input&quot;: {&quot;query&quot;: &quot;string&quot;}},
-        handler=verex_desk_subagent,
-    )
-
-    print(&quot;Available tools (as an MCP client would list them):&quot;)
-    for tool in registry.list_tools():
-        print(f&quot;  - {tool}&quot;)
-
-    print(&quot;\nInvoking tool by name, as Claude would over MCP:&quot;)
-    for query in [&quot;What's the status of invoice #42?&quot;, &quot;What's the weather?&quot;]:
-        result = registry.call(&quot;verex_desk.query&quot;, {&quot;query&quot;: query})
-        print(f&quot;  call(verex_desk.query, query={query!r}) -&gt; {result}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/google-adk-mcp.py">docs/code/pocs/google-adk-mcp.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/google-adk-mcp">Open on jaylabs.xyz &rarr;</a></p>
+      <p>Planned as a reading study with a map as its output, not an essay. The Korean layer first, since that is the one that would actually bind: 특금법 registration for a VASP, the 실명확인 입출금계정 requirement that gates everything else, 트래블룰 above the threshold, and the domestic solutions that carry it (CODE, VerifyVASP) — which are, structurally, the same institution-to-institution fact transport the RWA card is about, solved by consortium rather than by protocol. Then the international frame: FATF Recommendation 16 and the originator/beneficiary fields it demands, sanctions screening against OFAC and equivalents, STR and CTR reporting duties, and the risk-based approach that decides how much diligence each customer gets. The output worth producing is a two-column map: obligations a protocol can actually carry (screening a destination address, enforcing a transfer allowlist, proving eligibility without disclosure) against obligations that require a licensed entity with staff and liability (filing a suspicious transaction report, deciding a risk rating, answering a regulator). The tension to keep in view throughout is that AML is built on knowing who, and most of this catalogue is built on not needing to know — reusable KYC credentials are the one place those two genuinely meet, and the interesting question is whether a reused credential satisfies a regulator who wants the underlying evidence on file.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/aml-compliance">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">22</span>Google ADK Python 2.5 훑어보기 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">ADK 새 릴리스: Cloud Run 샌드박스 코드 실행 격리, 에이전트를 MCP 서버로 서빙, ADK Go 신규 릴리스 — verex-desk 서브에이전트를 ADK로 감싸 Claude에서 MCP로 부를 수 있는지가 30분 질문.</p>
-      <p class="meta">아직 범위 미정 — 30분 훑어보기. 릴리스 로그의 MCP 서빙 섹션부터. (Notion 지시, 2026-08-08 추가.)</p>
+      <h1><span class="topic-no">6</span>AML — 암호학이 멈추는 자리 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">트래블룰·KYC 재사용·제재 스크리닝 — 이 카탈로그가 계속 부딪히고는 &quot;기술 문제가 아니다&quot;라고 넘겼던 층을, 이번엔 그 자체로 공부해 본다.</p>
+      <p class="meta">아직 범위 미정 — 정독 스터디. 특금법(가상자산사업자 신고·트래블룰)과 FATF 권고 16번부터 시작해, 어떤 의무가 프로토콜로 옮겨지고 어떤 의무가 라이선스를 가진 법인에만 남는지 매핑.</p>
       <h2>왜</h2>
-      <p>&quot;에이전트를 MCP 서버로&quot; = Claude 쪽 MCP 생태계와 정확히 맞물리는 조각 — verex-desk의 서브에이전트를 ADK로 감싸 Claude에서 호출하는 구조가 가능한지가 30분 질문.</p>
+      <p>이 카드는 다른 카드에 적어둔 문장 하나 때문에 생겼습니다. **기관 커스터디 스터디** 카드가 분리를 약속했죠 — *어디까지가 엔지니어링(MPC·승인 상태기계·AA 정책)이고, 어디부터가 있거나 없거나인 라이선스인가.* 그러고는 라이선스 쪽을 옆으로 치워뒀습니다. 그 뒤의 거의 모든 카드가 각도만 바꿔 같은 벽에 부딪혔습니다. **VC**는 기관이 서명했다는 사실만 증명하고 그 주장이 참인지는 증명하지 못하므로, 결국 **어느 발급자를 신뢰할지 사람이 정해야** 합니다. **ZK 선택적 공개**는 생년월일을 밝히지 않고 적격 투자자임을 증명하지만, **적격의 정의는 회로가 아니라 규제기관이** 씁니다. **멀티체인 RWA** 카드의 가장 어려운 질문도 결국 과발행을 어떻게 탐지하느냐가 아니라 **누가 책임지느냐**로 귀결됐습니다. 매번 기술적 작업이 같은 경계에서 멈추는데, 그 경계를 지나가며 언급만 하지 말고 정면으로 공부해 볼 값어치가 있습니다.</p>
       <h2>동작 방식</h2>
-      <p>Agent Development Kit의 새 릴리스: Cloud Run 샌드박스에서 코드 실행 격리 · 에이전트를 MCP 서버로 서빙 가능 · Live API 개선. ADK Go도 새 릴리스.</p>
-      <h2>관련 코드</h2>
-      <pre><code># Google ADK — agent-as-MCP-server: a small agent function served through a mock
-# MCP-style tool registry (name -&gt; handler), invoked by name the way an MCP client
-# would call a tool exposed by another agent.
-
-from typing import Callable
-
-
-class MCPRegistry:
-    &quot;&quot;&quot;Mimics an MCP server's tool registry: a mapping from tool name to handler,
-    with the schema an MCP `tools/list` call would return.&quot;&quot;&quot;
-
-    def __init__(self):
-        self._tools: dict[str, Callable[[dict], dict]] = {}
-        self._schemas: dict[str, dict] = {}
-
-    def register(self, name: str, schema: dict, handler: Callable[[dict], dict]) -&gt; None:
-        self._tools[name] = handler
-        self._schemas[name] = schema
-
-    def list_tools(self) -&gt; list[dict]:
-        return [{&quot;name&quot;: name, **schema} for name, schema in self._schemas.items()]
-
-    def call(self, name: str, arguments: dict) -&gt; dict:
-        if name not in self._tools:
-            raise KeyError(f&quot;no MCP tool registered as '{name}'&quot;)
-        return self._tools[name](arguments)
-
-
-def verex_desk_subagent(arguments: dict) -&gt; dict:
-    &quot;&quot;&quot;A stand-in for an ADK-wrapped verex-desk subagent, served as a single tool.&quot;&quot;&quot;
-    query = arguments.get(&quot;query&quot;, &quot;&quot;)
-    if &quot;invoice&quot; in query.lower():
-        return {&quot;answer&quot;: &quot;Invoice status: pending approval.&quot;, &quot;confidence&quot;: 0.9}
-    return {&quot;answer&quot;: f&quot;No specialized handling for: {query}&quot;, &quot;confidence&quot;: 0.2}
-
-
-if __name__ == &quot;__main__&quot;:
-    print(&quot;ADK agent served as an MCP tool — mock registry, called by name\n&quot;)
-
-    registry = MCPRegistry()
-    registry.register(
-        name=&quot;verex_desk.query&quot;,
-        schema={&quot;description&quot;: &quot;Query the verex-desk subagent&quot;, &quot;input&quot;: {&quot;query&quot;: &quot;string&quot;}},
-        handler=verex_desk_subagent,
-    )
-
-    print(&quot;Available tools (as an MCP client would list them):&quot;)
-    for tool in registry.list_tools():
-        print(f&quot;  - {tool}&quot;)
-
-    print(&quot;\nInvoking tool by name, as Claude would over MCP:&quot;)
-    for query in [&quot;What's the status of invoice #42?&quot;, &quot;What's the weather?&quot;]:
-        result = registry.call(&quot;verex_desk.query&quot;, {&quot;query&quot;: query})
-        print(f&quot;  call(verex_desk.query, query={query!r}) -&gt; {result}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/google-adk-mcp.py">docs/code/pocs/google-adk-mcp.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/google-adk-mcp">Open on jaylabs.xyz &rarr;</a></p>
+      <p>에세이가 아니라 **지도 하나를 산출물로** 하는 정독 스터디로 계획합니다. 실제로 구속력을 갖는 **국내 층부터**: 가상자산사업자 **특금법 신고**, 나머지 전부의 관문인 **실명확인 입출금계정** 요건, 기준금액 이상의 **트래블룰**, 그리고 그것을 실어 나르는 국내 솔루션(**CODE·VerifyVASP**) — 이건 구조적으로 RWA 카드가 다룬 **기관 간 사실 전달과 같은 문제**인데, 프로토콜이 아니라 **컨소시엄으로 푼 사례**입니다. 다음으로 국제 프레임: **FATF 권고 16번**과 그것이 요구하는 송신인·수취인 필드, **OFAC 등 제재 목록 스크리닝**, **STR(의심거래보고)·CTR(고액현금거래보고)** 의무, 그리고 고객별 실사 강도를 정하는 **위험기반접근법(RBA)**. 만들 값어치가 있는 산출물은 **두 칸짜리 지도**입니다 — 프로토콜이 실제로 질 수 있는 의무(수취 주소 스크리닝, 전송 화이트리스트 강제, 원문 없이 적격성 증명) 대 **사람과 책임을 가진 법인만 질 수 있는 의무**(의심거래보고 제출, 위험등급 판정, 감독당국 응대). 내내 놓치지 말아야 할 긴장은 이것입니다 — **AML은 &quot;누구인지 아는 것&quot; 위에 서 있고, 이 카탈로그의 대부분은 &quot;알 필요가 없게 만드는 것&quot; 위에 서 있습니다.** 재사용 가능한 KYC 크리덴셜이 그 둘이 실제로 만나는 유일한 지점이고, 흥미로운 질문은 **재사용된 증명이 원본 증거를 파일로 갖고 싶어 하는 감독당국을 만족시키는가**입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/aml-compliance">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-erc-8141.html">&larr; 21. ERC-8141</a><a href="pocs-google-skills-repo.html">23. Google Skills Repository — 90+ agent skills &rarr;</a></div>
+  <div class="pager"><a href="../topics/pocs-rwa-multichain.html">&larr; 5. RWA across chains — the invariant nobody enforces</a><a href="pocs-dsrv-portal.html">7. Institutional custody study &rarr;</a></div>
 </div>
 </body>
 </html>

@@ -134,6 +134,18 @@
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
   }
+
+  /* 원문 인용 블록 (jay, 2026-08-14) — 남의 글을 그대로 보관하는 자리라 본문과 시각적으로
+     구분한다. 인용이지 내 주장이 아님이 한눈에 보여야 한다. */
+  .source-article { border-left:4px solid #94a3b8; }
+  .source-note {
+    background:var(--rail); border-radius:10px; padding:12px 16px; margin:14px 0;
+    font-size:0.9rem; color:var(--text2);
+  }
+  .source-body p { margin:12px 0; }
+  .source-body ul { margin:8px 0; padding-left:22px; }
+  .source-body li { margin:4px 0; }
+  .source-body h3 { font-size:1rem; margin:22px 0 6px; }
 </style>
 </head>
 <body>
@@ -161,6 +173,80 @@
       <p>글이 제안한 스택 그대로: **Private Operational Registry**(후보 인프라로 Canton을 명시)가 민감한 원본과 최신 기준 상태를 보관합니다 — 수탁잔고·NAV·투자자 자격·총발행량·상환과 정지 상태. 책임기관은 레지스트리를 공개하는 대신 **필요한 사실만 VC로 발급**합니다. **검증 계층**이 발급자·서명·schema·유효기간·폐기를 확인하고, 잔고나 신원을 드러낼 수 없는 경우 선택적 공개나 ZKP를 씁니다. **체인별 어댑터**가 검증 결과를 그 네트워크의 attestation 형식으로 변환하며, 이 구조에서 EAS는 여러 EVM 실행 어댑터 중 하나로 내려앉습니다. 그다음 **Policy Contract**가 mint·transfer·redeem·pause를 허용하거나 거절합니다. 저자가 실제로 주는 지시는 좁고 좋습니다 — **PoC는 단일 체인에서 시작하되, 처음부터 사실과 실행을 분리하라.** 그래야 체인을 추가할 때 현실의 권리를 다시 만들지 않고 실행 채널만 넓힙니다. 다시 읽을 때의 메모 둘. **첫째, 빈칸**: 대사는 발견이지 예방이 아닙니다 — 진짜로 막으려면 각 체인의 mint가 전역 한도를 확인하고 예약해야 하는데 그것이 곧 체인 간 원자성이고, 공유 시퀀서는 **원자적 포함까지만** 보장합니다. **둘째, 이 카탈로그라면 택했을 대안** — 브릿지를 인텐트로 대체한 것과 같은 수를 씁니다: 정확한 전역 불변식을 붙들려 하지 말고 **누군가 담보를 걸고 그것을 보증하게** 하는 것. 발행 대리인이 mint 전에 오프체인 기준원장에서 배정을 사오고, 배정 없이 찍으면 슬래싱 — 불변식을 원자적으로가 아니라 **경제적으로** 강제합니다. 카드사가 실시간 조회 없이 한도에 대해 승인하고 나중에 정산하는 것과 정확히 같은 구조입니다. RWA에는 오히려 이쪽이 정직합니다 — NAV는 하루 한 번 산정되고 상환은 T+1인데, **오프체인이 애초에 원자적이지 않았으니까요.** 대가는 익숙한 것: 담보는 자본이 큰 쪽으로 집중되고, RWA는 라이선스까지 걸려 결국 수탁사·증권사 몇 곳이 그 자리에 섭니다. 구조가 기존 금융으로 되돌아오는 셈이고 — **다른 점은 담보와 슬래싱 조건이 코드로 공개된다는 것 하나뿐**인데, 그 하나가 얼마짜리인지가 다툴 만한 지점입니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/rwa-multichain">Open on jaylabs.xyz &rarr;</a></p>
     </article>
+    <hr class="lang-divider">
+    <article class="source-article" lang="ko">
+      <p class="lang-label">원문 보관 &middot; 2026-08-14 읽음</p>
+      <h1>RWA는 토큰 발행이 아니라, 현실의 권리를 멀티체인에 연결하는 일입니다</h1>
+
+      <div class="source-note">
+        <strong>인용 안내.</strong> 아래는 이 카드가 분석 대상으로 삼은 <strong>제3자의 공개 글 원문</strong>이다(LinkedIn, 2026-08-14 읽음). 위쪽 카드 요약의 주장과 구분하기 위해 손대지 않고 그대로 보관한다 &mdash; 나중에 다시 분석할 때 <strong>어디까지가 저자의 논지이고 어디부터가 내 해석인지</strong> 헷갈리지 않게. 저작권은 원저자에게 있으며, 개인 학습 기록 목적의 보관이다.
+      </div>
+
+      <div class="source-body">
+        <p>최근 업비트의 GIWA Dojang과 Ethereum Attestation Service(EAS)를 보면서 RWA를 실제로 구현하는 방향을 다시 생각하게 됐습니다. Dojang은 업비트가 확인한 지갑 주소, 특정 시점의 잔고, 잔고 데이터의 Merkle root 같은 오프체인 정보를 GIWA Chain에서 검증 가능한 attestation으로 발급합니다.</p>
+
+        <p>개인정보 원문을 체인에 올리지 않으면서도, 누가 어떤 사실을 확인했는지, 그 증명이 아직 유효한지, 온체인 애플리케이션이 확인할 수 있게 만드는 구조입니다.</p>
+
+        <p>단일 체인과 단일 발행자만 본다면 이 방식은 상당히 명확합니다. 신뢰할 발행자를 등록하고, 공통 schema를 정하고, EAS로 증명을 발급하고, Resolver와 Smart Contract가 증명 결과를 읽어 실행하면 됩니다.</p>
+
+        <h3>그런데 실제 RWA도 한 체인 안에서만 운영될까요?</h3>
+
+        <p>RWA 상품은 투자자와 유동성이 있는 곳을 따라 여러 네트워크에 발행될 가능성이 높습니다. 같은 단기채 펀드가 Ethereum, Base, 다른 EVM 네트워크, 나아가 서로 다른 기관 원장에서 유통될 수도 있습니다.</p>
+
+        <p>이때부터 질문이 달라집니다.</p>
+        <ul>
+          <li>각 체인이 동일한 KYC와 수탁 정보를 다시 확인해야 할까.</li>
+          <li>한 체인에서 상품이 정지되면 다른 체인도 즉시 정지되는가.</li>
+          <li>전체 기초자산이 100억원인데 여러 체인의 토큰 공급량 합계가 이를 넘지 않는다고 누가 보장하는가.</li>
+          <li>어느 기록이 최종적인 기준인가.</li>
+        </ul>
+
+        <p>최근 RWA SoK 논문은 이를 오프체인 원장의 법적 진실과 온체인 스마트컨트랙트의 계산적 진실을 계속 동기화해야 하는 dual-state system으로 설명합니다. 체인마다 별도의 schema, attester, registry를 만들면 발행 채널이 늘어날수록 같은 사실을 반복해서 등록하고 검증해야 합니다. EAS는 여러 EVM 체인에서 사용할 수 있습니다. 하지만 서로 다른 체인의 증명을 자동으로 하나의 금융상 사실로 만들어주지는 않습니다.</p>
+
+        <p><strong>그래서 먼저 표준화해야 하는 것은 Token Contract가 아니라 오프체인 사실을 전달하는 공통 인터페이스라고 생각합니다.</strong></p>
+
+        <h3>여기에 Verifiable Credential이 적합할 수 있습니다</h3>
+
+        <p>VC는 특정 기술 제품이 아니라, 누가 발급했는지, 무엇에 관한 주장인지, 언제부터 언제까지 유효한지, 어떤 schema를 따르는지, 정지되거나 폐기됐는지, 어떤 서명으로 검증할 수 있는지를 표현하는 체인 중립적인 credential envelope입니다.</p>
+
+        <p>다만 VC만 도입한다고 RWA 데이터 표준이 완성되는 것은 아닙니다. assetId, NAV, snapshotAt, custodyStatus, chainAllocation처럼 실제 금융업무에서 사용할 공통 schema는 참여기관이 별도로 합의해야 합니다. VC를 쓴다고 DID가 반드시 필요한 것도 아닙니다. 여러 기관의 검증키를 공통 방식으로 발견하고 교체해야 할 때 선택적으로 사용할 수 있습니다.</p>
+
+        <p>최근 xRWA 논문도 asset, identity, compliance, custody 정보를 VC로 구성하고, 한 네트워크에서 확인한 자산을 다른 네트워크가 재사용하는 구조를 제안합니다. 아직 시뮬레이션 단계지만 문제를 바라보는 방향은 흥미롭습니다.</p>
+
+        <h3>제가 생각하는 플랫폼 구조는 다음과 같습니다</h3>
+
+        <p><strong>Private Operational Registry</strong>가 수탁잔고, NAV, 투자자 자격, 전체 발행량, 상환과 정지 상태 등 민감한 원본과 최신 기준 상태를 관리합니다. 여기에는 캔톤 네트워크 같은 인프라가 활용될 수 있습니다.</p>
+
+        <p>수탁기관, 사무관리사, 신원확인기관 등 <strong>책임기관</strong>은 필요한 사실만 VC로 발급합니다. 모든 원본 데이터를 공개할 필요는 없습니다.</p>
+
+        <p><strong>검증 계층</strong>은 발급자, 서명, schema, 유효기간, 폐기 상태를 확인합니다. 개인정보나 잔고 원문을 노출하기 어려운 경우에는 선택적 공개나 ZKP를 결합해 &ldquo;적격 투자자인가&rdquo;, &ldquo;잔고가 기준 이상인가&rdquo; 같은 조건만 증명할 수 있습니다.</p>
+
+        <p>각 체인의 <strong>Adapter</strong>가 검증 결과를 EAS 또는 해당 네트워크의 attestation 형식으로 변환합니다. 이 구조에서 EAS는 EVM 실행 어댑터 중 하나가 됩니다.</p>
+
+        <p><strong>Policy Contract</strong>가 검증 결과와 Private Registry의 기준 상태를 바탕으로 mint, transfer, redeem, pause를 허용하거나 거절합니다.</p>
+
+        <p><strong>운영 계층</strong>은 모든 체인의 공급량과 오프체인 기준원장을 계속 대사합니다. 멀티체인에서는 발행보다 글로벌 공급량 통제가 더 중요합니다.</p>
+
+        <h3>여기서 VC와 ZKP가 현실의 진실을 만들어주는 것은 아닙니다</h3>
+
+        <p>VC는 책임기관이 그 내용에 서명했다는 사실을 증명합니다. ZKP는 주어진 입력이 조건을 만족한다는 사실을 원문 없이 증명합니다. 수탁자산이 실제로 존재하는지, NAV가 정확한지, 법적 권리가 유효한지는 여전히 수탁기관&middot;발행자&middot;감사인&middot;등록기관의 책임입니다.</p>
+
+        <p>따라서 PoC는 단일 체인에서 시작해도 됩니다. 다만 처음부터 사실과 실행을 분리해야 합니다. 사실은 Private Registry와 VC에 두고, 정책은 교체 가능한 검증 계층에 두고, 실행은 체인별 Adapter와 Token Contract에 둡니다. 그러면 새로운 체인을 추가할 때 현실의 권리와 데이터를 다시 만드는 대신 실행 채널만 확장할 수 있습니다.</p>
+
+        <h3>RWA의 효용도 발행한 토큰 수로 평가하면 안 됩니다</h3>
+
+        <ul>
+          <li>중복 KYC가 얼마나 줄었는지.</li>
+          <li>발행과 상환 시간이 얼마나 짧아졌는지.</li>
+          <li>과발행과 자격 없는 이전을 막을 수 있는지.</li>
+          <li>기관 간 대사와 감사 비용이 얼마나 줄었는지.</li>
+          <li>다른 금융 애플리케이션이 그 권리를 담보나 결제에 재사용할 수 있는지.</li>
+        </ul>
+
+        <p>결국 RWA 플랫폼은 한 체인 위의 토큰 발행기가 아닙니다. 현실의 권리와 상태를 Private Registry에서 관리하고, 책임기관의 증명을 공통 형식으로 전달하고, 각 네트워크의 정책과 실행으로 연결하는 멀티체인 금융 운영 시스템이어야 합니다.</p>
+      </div>
+    </article>
+
   <div class="pager"><a href="pocs-stake-concentration.html">&larr; 4. Stake concentration risk</a><a href="pocs-dsrv-portal.html">6. Institutional custody study &rarr;</a></div>
 </div>
 </body>
