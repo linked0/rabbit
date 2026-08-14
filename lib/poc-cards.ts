@@ -360,6 +360,32 @@ export const POC_CARDS: DemoCard[] = [
   // 있고, PoCs 목록에서만 뺀다. 이 목록은 "무엇을 만들고 있나"를 답하는데, 캔버스
   // 자리표시자와 Unity 트랙은 그 질문에 서로 다른 답을 해서 배지 하나로 정리되지 않았다.
   {
+    // 남의 아키텍처 제안을 읽고 그 빈칸을 찾은 항목 (jay, 2026-08-14). 이 카탈로그의
+    // 다른 카드들과 달리 출발점이 내 아이디어가 아니라 실무자의 공개 글이라, 원 논지와
+    // 내 분석을 카드 안에서 분리해 적었다 — 나중에 다시 볼 때 어느 쪽이 누구 주장인지
+    // 헷갈리지 않게. soon 묶음의 맨 앞(5번)에 두려고 배열에서 dsrv-portal 앞에 넣었다.
+    key: "rwa-multichain",
+    title: "RWA across chains — the invariant nobody enforces",
+    titleKo: "멀티체인 RWA — 아무도 강제하지 않는 불변식",
+    description:
+      "Reading a practitioner's multichain RWA architecture and finding the one box it leaves empty: who stops the tokens on five chains from summing past the asset behind them.",
+    descriptionKo:
+      "실무자의 멀티체인 RWA 아키텍처 제안을 읽고, 그 설계가 비워둔 칸 하나를 찾은 기록 — 다섯 체인의 토큰 합계가 기초자산을 넘지 않게 누가 막는가.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — a reading note kept for re-analysis. Source: a public LinkedIn post proposing an RWA platform architecture (Private Registry + VC + per-chain adapters), read on 2026-08-14.",
+    howToKo:
+      "아직 범위 미정 — 다시 분석하려고 남겨 둔 정독 노트. 출처: RWA 플랫폼 아키텍처(Private Registry + VC + 체인별 어댑터)를 제안한 공개 LinkedIn 글, 2026-08-14 읽음.",
+    purpose:
+      "Almost every question this catalogue asks shows up in one place here. The post's thesis is that RWA's bottleneck is not minting tokens but carrying one off-chain fact to many chains, so the thing to standardise first is the fact-transport interface, not the token contract — which is the same enforce-on-chain-remember-off-chain split the CRE × Cloud card arrives at from the other direction. Its honest passage is the one worth keeping: verifiable credentials prove that a responsible institution signed something, and zero-knowledge proofs prove an input satisfies a condition, but neither proves the custodied asset exists. What makes it worth a card rather than a bookmark is where it stops. The author correctly names the hardest problem — in multichain, controlling global supply matters more than issuing — and then answers it with continuous reconciliation, which detects overissuance after the fact rather than preventing it. That gap is the same one the bridge and shared-sequencer cards keep circling, and it is the part to re-analyse.",
+    purposeKo:
+      "이 카탈로그가 묻는 질문이 거의 전부 한 자리에 나옵니다. 글의 논지는 **RWA의 병목이 토큰 발행이 아니라 오프체인 사실을 여러 체인에 전달하는 일**이고, 그래서 먼저 표준화할 것은 Token Contract가 아니라 사실 전달 인터페이스라는 것 — CRE × Cloud 카드가 반대 방향에서 도달한 \"강제는 온체인, 기억은 오프체인\"과 같은 분리입니다. 살릴 만한 정직한 대목: **VC는 책임기관이 서명했다는 사실을, ZKP는 입력이 조건을 만족한다는 사실을 증명할 뿐 수탁자산이 실제로 존재하는지는 증명하지 못한다.** 북마크가 아니라 카드가 될 값어치는 **글이 멈추는 자리**에 있습니다. 저자는 가장 어려운 문제를 정확히 짚고도(\"멀티체인에서는 발행보다 글로벌 공급량 통제가 더 중요하다\") 그 답을 **지속적 대사(reconciliation)**로 둡니다 — 과발행을 사전에 막는 것이 아니라 사후에 발견하는 방식입니다. 그 빈칸이 브릿지·공유 시퀀서 카드가 반복해서 부딪히는 바로 그 지점이고, 다시 분석할 부분입니다.",
+    howItWorks:
+      "The proposed stack, as written: a Private Operational Registry (Canton named as candidate infrastructure) holds the sensitive originals and the authoritative current state — custody balances, NAV, investor eligibility, total issuance, redemption and suspension status. Responsible institutions issue only the necessary facts as verifiable credentials rather than exposing the registry. A verification layer checks issuer, signature, schema, validity window and revocation, with selective disclosure or ZK where a balance or an identity cannot be shown. Per-chain adapters translate a verification result into that network's attestation format, which reduces EAS to one EVM execution adapter among several. A policy contract then permits or refuses mint, transfer, redeem and pause. The instruction the author actually gives is narrow and good: start the PoC on a single chain, but separate fact from execution from day one, so that adding a chain extends the execution channel instead of rebuilding the rights. Two notes for the re-read. First, the empty box: reconciliation detects, it does not prevent — true prevention needs each chain's mint to check and reserve against a global cap, which is cross-chain atomicity, and shared sequencers only guarantee atomic inclusion, not atomic execution. Second, the alternative this catalogue would reach for instead, following the same move that replaced bridges with intents: stop trying to hold an exact global invariant and make someone post collateral against it. An issuing agent buys an allocation from the off-chain ledger before minting and is slashed for minting without one — the invariant is enforced economically rather than atomically, exactly as a card network authorises against a limit it does not check in real time. That is likely more honest for RWA anyway, where NAV strikes daily and redemption settles T+1; the off-chain side was never atomic. The cost is the familiar one: collateral concentrates in whoever has the most capital, and under RWA licensing that is a custodian or a broker, so the structure returns to a small set of regulated intermediaries — with their collateral and slashing conditions published as code, which is the only difference and the one worth arguing about.",
+    howItWorksKo:
+      "글이 제안한 스택 그대로: **Private Operational Registry**(후보 인프라로 Canton을 명시)가 민감한 원본과 최신 기준 상태를 보관합니다 — 수탁잔고·NAV·투자자 자격·총발행량·상환과 정지 상태. 책임기관은 레지스트리를 공개하는 대신 **필요한 사실만 VC로 발급**합니다. **검증 계층**이 발급자·서명·schema·유효기간·폐기를 확인하고, 잔고나 신원을 드러낼 수 없는 경우 선택적 공개나 ZKP를 씁니다. **체인별 어댑터**가 검증 결과를 그 네트워크의 attestation 형식으로 변환하며, 이 구조에서 EAS는 여러 EVM 실행 어댑터 중 하나로 내려앉습니다. 그다음 **Policy Contract**가 mint·transfer·redeem·pause를 허용하거나 거절합니다. 저자가 실제로 주는 지시는 좁고 좋습니다 — **PoC는 단일 체인에서 시작하되, 처음부터 사실과 실행을 분리하라.** 그래야 체인을 추가할 때 현실의 권리를 다시 만들지 않고 실행 채널만 넓힙니다. 다시 읽을 때의 메모 둘. **첫째, 빈칸**: 대사는 발견이지 예방이 아닙니다 — 진짜로 막으려면 각 체인의 mint가 전역 한도를 확인하고 예약해야 하는데 그것이 곧 체인 간 원자성이고, 공유 시퀀서는 **원자적 포함까지만** 보장합니다. **둘째, 이 카탈로그라면 택했을 대안** — 브릿지를 인텐트로 대체한 것과 같은 수를 씁니다: 정확한 전역 불변식을 붙들려 하지 말고 **누군가 담보를 걸고 그것을 보증하게** 하는 것. 발행 대리인이 mint 전에 오프체인 기준원장에서 배정을 사오고, 배정 없이 찍으면 슬래싱 — 불변식을 원자적으로가 아니라 **경제적으로** 강제합니다. 카드사가 실시간 조회 없이 한도에 대해 승인하고 나중에 정산하는 것과 정확히 같은 구조입니다. RWA에는 오히려 이쪽이 정직합니다 — NAV는 하루 한 번 산정되고 상환은 T+1인데, **오프체인이 애초에 원자적이지 않았으니까요.** 대가는 익숙한 것: 담보는 자본이 큰 쪽으로 집중되고, RWA는 라이선스까지 걸려 결국 수탁사·증권사 몇 곳이 그 자리에 섭니다. 구조가 기존 금융으로 되돌아오는 셈이고 — **다른 점은 담보와 슬래싱 조건이 코드로 공개된다는 것 하나뿐**인데, 그 하나가 얼마짜리인지가 다툴 만한 지점입니다.",
+  },
+  {
     key: "dsrv-portal",
     title: "Institutional custody study",
     titleKo: "기관 커스터디 스터디",
