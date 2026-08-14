@@ -431,6 +431,28 @@ export const POC_CARDS: DemoCard[] = [
     howItWorksKo:
       "압축 기법 자체는 헤드라인보다 훨씬 좁은 이야기입니다. llama.cpp의 IQ1_S는 가중치당 1.5625비트를 쓰는데, 그중 11비트가 2048개짜리 코드북을 가리키는 인덱스입니다. Unsloth 변형은 그 코드북을 줄이기만 합니다 — 1024개, 512개, 256개 — 그러면 인덱스가 10·9·8비트로 줄고 가중치가 1.4375·1.3125·1.1875 bpw가 됩니다(각각 TQ2_0·TQ1_0·Q1_0으로 배포되며, 이름은 Hugging Face 저장소에 아예 노출되도록 고른 것입니다). 중요한 주장은 이것들이 **평범한 사후 양자화(PTQ)**라는 점입니다 — QAT나 증류가 없고, 바로 그 점이 생산 비용을 낮추는 동시에 독립적으로 검증할 가치를 만듭니다. 계획은 27B 모델을 이 dtype들로 제가 가진 하드웨어에서 돌려 PPL/KLD/top-p 곡선을 인용하는 대신 직접 재현하고, 실용 규칙(RAM+VRAM ≈ 양자화 크기, 그 선을 넘으면 디스크 오프로딩이 20 tok/s라는 숫자를 조용히 전혀 다른 것으로 바꿔 놓는다)을 확인하는 것입니다.",
   },
+  {
+    key: "lerobot-so101",
+    title: "LeRobot + SO-101 — the cheapest hands-on robotics entry",
+    titleKo: "LeRobot + SO-101 로봇팔 — 손으로 만지는 로보틱스의 최저가 입구",
+    description:
+      "Hugging Face's LeRobot library plus a $100-130 6-DOF arm: the whole imitation-learning loop — record demos, train a policy, replay autonomously — on a desk.",
+    descriptionKo:
+      "Hugging Face LeRobot 라이브러리 + $100~130짜리 6DOF 로봇팔: 시연 녹화 → 정책 학습 → 자율 재생이라는 모방학습 전체 루프를 책상 위에서.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — start with `pip install lerobot` and run the training/eval loop on a public Hub dataset in simulation (gym-aloha, pusht), no hardware needed. github.com/huggingface/lerobot · huggingface.co/docs/lerobot/so101",
+    howToKo:
+      "아직 범위 미정 — `pip install lerobot`부터, 로봇 없이 HF Hub 공개 데이터셋과 시뮬레이션(gym-aloha·pusht)에서 학습·평가 루프를 먼저 돌립니다. github.com/huggingface/lerobot · huggingface.co/docs/lerobot/so101",
+    purpose:
+      "If the GR00T card is the map of physical AI, this is the first shovel. The point is not the arm — it is that the full imitation-learning pipeline a VLA foundation model is fine-tuned with becomes reproducible at the smallest possible scale, on a laptop and a $100 piece of hardware, instead of staying a diagram in a paper. Two questions worth answering by doing rather than reading: how few lines of code separate \"load dataset\" from \"trained policy\" once the dataset format is standardised, and what a robot episode (observation images + joint states + actions) actually looks like next to the text-token datasets an LLM developer already knows.",
+    purposeKo:
+      "GR00T 항목이 피지컬 AI의 \"지도\"였다면, 이건 **첫 삽**입니다. 핵심은 로봇팔 자체가 아니라, VLA 파운데이션 모델을 파인튜닝할 때 쓰는 모방학습 파이프라인 전체가 논문 속 다이어그램이 아니라 노트북 한 대와 $100짜리 하드웨어에서 재현 가능한 최소 규모로 내려온다는 점입니다. 읽는 대신 해봐야 답이 나오는 질문 둘: 데이터셋 포맷이 표준화되고 나면 \"데이터셋 로드\"와 \"학습된 정책\" 사이가 코드 몇 줄인가, 그리고 로봇 에피소드(관측 이미지 + 관절 상태 + 행동)는 LLM 개발자가 이미 아는 텍스트 토큰 데이터셋 옆에 놓았을 때 무엇이 같고 무엇이 다른가.",
+    howItWorks:
+      "LeRobot bills itself as the `transformers` of robotics: one package holding a dataset standard (`LeRobotDataset`), pretrained policies (ACT, Diffusion Policy, π0, GR00T-N family) and the training/eval scripts, so the loop runs against Hub datasets and simulated environments before any hardware exists. The hardware half is the SO-101 — a 6-DOF arm of 3D-printed frame plus six STS3215 servos, roughly $100-130 a kit and $220-260 for a leader+follower pair (Seeed Studio, WowRobo, PartaBot). The leader arm is moved by hand to record teleoperated demonstrations; fine-tuning an ACT policy on those recordings makes the follower arm reproduce the motion on its own — assembly included, a weekend-sized project. The staging matters: simulation first, one arm second, and LeRobot's planned NVIDIA Cosmos 3 support is the bridge back to the GR00T stack rather than a separate track. Source: github.com/huggingface/lerobot · huggingface.co/docs/lerobot/so101",
+    howItWorksKo:
+      "LeRobot은 스스로를 \"로보틱스판 `transformers`\"로 표방합니다 — 데이터셋 표준(`LeRobotDataset`), 사전학습 정책(ACT·Diffusion Policy·π0·GR00T-N 계열), 학습·평가 스크립트가 한 패키지에 들어 있어서, **로봇이 없어도** Hub 공개 데이터셋과 시뮬레이션 환경으로 루프를 먼저 돌릴 수 있습니다. 하드웨어 쪽은 SO-101 — 3D 프린트 프레임 + STS3215 서보 6개의 6DOF 팔로, 킷 기준 $100~130, 리더+팔로워 페어는 $220~260입니다(Seeed Studio·WowRobo·PartaBot). 사람이 직접 쥐고 움직이는 **리더 팔**로 teleop 시연을 녹화하고, 그 데이터로 ACT 정책을 파인튜닝하면 **팔로워 팔**이 동작을 자율적으로 재현합니다 — 조립 포함 주말 프로젝트 규모. 순서가 중요합니다: 시뮬레이션이 먼저, 실물 팔이 그다음이고, LeRobot의 NVIDIA Cosmos 3 지원 예정은 별도 트랙이 아니라 GR00T 스택으로 돌아가는 다리입니다. 출처: github.com/huggingface/lerobot · huggingface.co/docs/lerobot/so101",
+  },
   // ── 참조 전용 (README 의 "📎 Reference only" 행). 읽고 이해한 것이지 만들 항목이 아니라
   // href 가 없다 — 원문은 docs/knowledge/*.html, docs/features/*.md 에 있다.
   {
