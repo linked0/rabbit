@@ -150,12 +150,12 @@
       <div class="nav-group" data-group>
         <p class="nav-group-label">All PoCs (33)</p>
         <ul>
-        <li><a class="nav-link" href="#agent" data-key="agent"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>Autonomous payment agent</span></a></li>
-        <li><a class="nav-link" href="#oz-relayer" data-key="oz-relayer"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
-        <li><a class="nav-link" href="#dvt" data-key="dvt"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">3</span>DVT in the protocol</span></a></li>
-        <li><a class="nav-link" href="#dsrv-portal" data-key="dsrv-portal"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">4</span>Institutional custody study</span></a></li>
-        <li><a class="nav-link" href="#pet-clean-room" data-key="pet-clean-room"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">5</span>PET clean room (FHE)</span></a></li>
-        <li><a class="nav-link" href="#stake-concentration" data-key="stake-concentration"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">6</span>Stake concentration risk</span></a></li>
+        <li><a class="nav-link" href="#stake-concentration" data-key="stake-concentration"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>Stake concentration risk</span></a></li>
+        <li><a class="nav-link" href="#agent" data-key="agent"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>Autonomous payment agent</span></a></li>
+        <li><a class="nav-link" href="#oz-relayer" data-key="oz-relayer"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">3</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
+        <li><a class="nav-link" href="#dvt" data-key="dvt"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">4</span>DVT in the protocol</span></a></li>
+        <li><a class="nav-link" href="#dsrv-portal" data-key="dsrv-portal"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">5</span>Institutional custody study</span></a></li>
+        <li><a class="nav-link" href="#pet-clean-room" data-key="pet-clean-room"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">6</span>PET clean room (FHE)</span></a></li>
         <li><a class="nav-link" href="#sub-2bit-local-llm" data-key="sub-2bit-local-llm"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">7</span>Sub-2-bit LLMs, locally</span></a></li>
         <li><a class="nav-link" href="#lerobot-so101" data-key="lerobot-so101"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">8</span>LeRobot + SO-101 — the cheapest hands-on robotics entry</span></a></li>
         <li><a class="nav-link" href="#merkle-vs-verkle" data-key="merkle-vs-verkle"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">9</span>Merkle vs Verkle</span></a></li>
@@ -195,47 +195,47 @@
     <article>
       <h1>All PoCs</h1>
       <ul class="topics">
+        <li id="stake-concentration">
+          <div class="topic-head"><span class="topic-no">1</span><span class="topic-title">Stake concentration risk</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <p class="topic-summary">How much stake sits behind one router, one ASN, one data centre — and how close that is to halting finality.</p>
+          <p class="topic-how"><strong>How it works:</strong> Planned as a measurement, not an essay: pull the active validator set and its stake weights from public RPC, resolve each advertised gossip/TPU endpoint to an IP, map those to ASN and hosting provider with a public IP-intelligence dataset, then aggregate stake by ASN, by provider, and by geographic region. The headline figure is the stake-weighted Herfindahl index plus the single largest correlated bucket, both plotted against the 33% halt line.</p>
+          <p class="topic-why"><strong>Why:</strong> In 2026 a routing error on Solana took roughly 29% of stake offline at once and the network came within a few percentage points of losing finality. Nothing was hacked and no key was stolen — the consensus math worked exactly as designed.</p>
+          <p class="topic-link"><a href="topics/pocs-stake-concentration.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/stake-concentration">Open on jaylabs.xyz &rarr;</a></p>
+        </li>
         <li id="agent">
-          <div class="topic-head"><span class="topic-no">1</span><span class="topic-title">Autonomous payment agent</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">2</span><span class="topic-title">Autonomous payment agent</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">An agent that wakes on a timer, decides on its own whether to spend, and cannot exceed the mandate it was given.</p>
           <p class="topic-how"><strong>How it works:</strong> A scheduler hits a server endpoint every few minutes with no browser open. Each tick reads a real signal (the Chainlink Sepolia ETH/USD feed), evaluates a threshold rule against the last action, and either spends test USDC through an ERC-7715 session key or records why it declined.</p>
           <p class="topic-why"><strong>Why:</strong> The other demos on this page prove capability: a session key can spend within a bound, a paymaster can cover gas, a batch can revert atomically. Every one of them is started by a human pressing a button, which makes them account abstraction for agents rather than an agent.</p>
           <p class="topic-link"><a href="topics/pocs-agent.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/agent">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="oz-relayer">
-          <div class="topic-head"><span class="topic-no">2</span><span class="topic-title">OpenZeppelin Relayer &amp; Monitor</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">OpenZeppelin Relayer &amp; Monitor</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">The managed service shut down; the tools were opened. Self-hosted transaction plumbing and on-chain alerting.</p>
           <p class="topic-how"><strong>How it works:</strong> Relayer keeps the plumbing: it accepts a transaction over a REST API, signs it, and owns nonce sequencing, gas pricing, and retry — EVM multi-chain plus Solana and Stellar, with keys in HashiCorp Vault or AWS KMS rather than an env var. Monitor watches the other direction: declarative JSON rules over events, function calls, and transaction patterns, firing Slack or webhook alerts.</p>
           <p class="topic-why"><strong>Why:</strong> Two questions this catalogue has not asked yet. First, the operational one: every agent demo here hand-rolls the dullest and most failure-prone part of on-chain work — nonce management, gas strategy, retries — and OpenZeppelin Relayer is that exact layer, extracted and hardened.</p>
           <p class="topic-link"><a href="topics/pocs-oz-relayer.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="dvt">
-          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">DVT in the protocol</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">4</span><span class="topic-title">DVT in the protocol</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.</p>
           <p class="topic-how"><strong>How it works:</strong> Today's DVT (Obol, SSV) splits one validator key with Shamir sharing or threshold BLS and runs an off-chain consensus round to reassemble a signature each time; the protocol still sees a single validator, and all distribution lives in middleware. The proposal never splits the key: each participant registers their own (n ≤ 16), the protocol groups them m-of-n, and BLS aggregation plus a participation bitfield — the same grammar as today's attestation aggregation — decides whether enough took part.</p>
           <p class="topic-why"><strong>Why:</strong> Reading a live protocol-design discussion closely enough to separate three things people usually blur: what the proposal actually changes, what it leaves unresolved, and which parts of the idea can be built one layer up without waiting for it. It is also a second instance of a pattern this site already documents elsewhere — middleware doing a job well until the protocol absorbs it, which is exactly what ERC-4337 bundlers face from native account abstraction.</p>
           <p class="topic-link"><a href="topics/pocs-dvt.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/dvt">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="dsrv-portal">
-          <div class="topic-head"><span class="topic-no">4</span><span class="topic-title">Institutional custody study</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">5</span><span class="topic-title">Institutional custody study</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">MPC · approval flows · AA · AML — and which parts are buildable without a VASP licence.</p>
           <p class="topic-how"><strong>How it works:</strong> Reading study, not a deployment: MPC signing (threshold schemes vs. the key-splitting DVT already studied elsewhere here), approval workflows as state machines, where account abstraction's policy layer overlaps custody policy, and AML/travel-rule obligations.</p>
           <p class="topic-why"><strong>Why:</strong> Everything else in this catalogue is a single wallet acting for itself. Institutional custody is the opposite shape: keys split across an MPC quorum, transactions gated by an approval workflow, and a compliance surface that is legal rather than technical.</p>
           <p class="topic-link"><a href="topics/pocs-dsrv-portal.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/dsrv-portal">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="pet-clean-room">
-          <div class="topic-head"><span class="topic-no">5</span><span class="topic-title">PET clean room (FHE)</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">6</span><span class="topic-title">PET clean room (FHE)</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Homomorphic encryption for data that cannot leave its owner — a hands-on study.</p>
           <p class="topic-how"><strong>How it works:</strong> Planned as a hands-on rather than a survey: take one FHE library, run a single aggregate (a sum or a count over encrypted inputs) end to end, and measure what it actually costs in latency and ciphertext size — the two numbers that decide whether any of this is usable. The reference case is a hospital/registry data collaboration, where the legal constraint is that raw records cannot leave the owner at all.</p>
           <p class="topic-why"><strong>Why:</strong> The one problem in this catalogue that cryptography solves and a blockchain does not. On-chain work makes data public and verifiable; a clean room needs the opposite — compute over data that never becomes readable, so two parties can learn a joint result without either seeing the other's input.</p>
           <p class="topic-link"><a href="topics/pocs-pet-clean-room.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/pet-clean-room">Open on jaylabs.xyz &rarr;</a></p>
-        </li>
-        <li id="stake-concentration">
-          <div class="topic-head"><span class="topic-no">6</span><span class="topic-title">Stake concentration risk</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
-          <p class="topic-summary">How much stake sits behind one router, one ASN, one data centre — and how close that is to halting finality.</p>
-          <p class="topic-how"><strong>How it works:</strong> Planned as a measurement, not an essay: pull the active validator set and its stake weights from public RPC, resolve each advertised gossip/TPU endpoint to an IP, map those to ASN and hosting provider with a public IP-intelligence dataset, then aggregate stake by ASN, by provider, and by geographic region. The headline figure is the stake-weighted Herfindahl index plus the single largest correlated bucket, both plotted against the 33% halt line.</p>
-          <p class="topic-why"><strong>Why:</strong> In 2026 a routing error on Solana took roughly 29% of stake offline at once and the network came within a few percentage points of losing finality. Nothing was hacked and no key was stolen — the consensus math worked exactly as designed.</p>
-          <p class="topic-link"><a href="topics/pocs-stake-concentration.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/stake-concentration">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="sub-2bit-local-llm">
           <div class="topic-head"><span class="topic-no">7</span><span class="topic-title">Sub-2-bit LLMs, locally</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>

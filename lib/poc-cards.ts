@@ -401,9 +401,12 @@ export const POC_CARDS: DemoCard[] = [
     titleKo: "스테이킹 집중 위험",
     description: "How much stake sits behind one router, one ASN, one data centre — and how close that is to halting finality.",
     descriptionKo: "라우터 하나, ASN 하나, 데이터센터 하나 뒤에 스테이킹이 얼마나 몰려 있는가 — 그리고 그것이 최종성 정지까지 얼마나 가까운가.",
-    status: "soon",
-    howTo: "Not yet scoped — start by mapping public validator endpoints to ASNs, then compute the stake-weighted concentration against each chain's halting threshold.",
-    howToKo: "아직 범위 미정 — 공개 검증인 엔드포인트를 ASN에 매핑하는 것부터 시작해, 각 체인의 정지 임계값 대비 스테이킹 가중 집중도를 계산합니다.",
+    // done (jay, 2026-08-14): 2026-08-12 솔라나 라우팅 장애를 사례로 상관 장애면을 정리했다 —
+    // 상시 구동 측정 파이프라인이 아니라 완결된 검토.
+    status: "done",
+    date: "2026-08-14", // 완결 선언일 — done 카드의 정렬 기준
+    howTo: "Mapping the correlated failure surface under a validator set: why ASN, not validator count, is the real unit of independence.",
+    howToKo: "검증인 집합 아래에 깔린 상관 장애면 정리 — 독립성의 진짜 단위가 검증인 수가 아니라 ASN인 이유.",
     purpose:
       "In 2026 a routing error on Solana took roughly 29% of stake offline at once and the network came within a few percentage points of losing finality. Nothing was hacked and no key was stolen — the consensus math worked exactly as designed. The failure was that a single infrastructure fault could reach a third of the validator set at the same time, which is a question about network topology, not cryptography. The interesting output is a number nobody publishes: for a given chain, what is the largest slice of stake that shares one correlated point of failure, and how does that compare to the fraction that halts finality (33% for both Solana's and Ethereum's BFT thresholds)?",
     purposeKo:
