@@ -433,6 +433,49 @@ export const POC_CARDS: DemoCard[] = [
       "배포가 아니라 정독 스터디입니다: MPC 서명(임계 방식 vs. 여기 DVT 카드에서 이미 다룬 키 분할), 상태기계로서의 승인 워크플로, 계정 추상화의 정책 계층이 커스터디 정책과 겹치는 지점, 그리고 AML·트래블룰 의무. PoC 후보는 VASP 등록이 필요 없는 것들 — 승인 플로우 시뮬레이터, 정족수 caveat을 가진 AA 정책 컨트랙트 — 이고, 이 카드가 실제로 될 것도 그것들입니다.",
   },
   {
+    // 오늘 본 신원 파편화 문제의 표준화 시도 (jay, 2026-08-14). Privado ID·EAS·Rarimo 가
+    // 각자 자기 레지스트리를 갖는 구조를 하나로 합치자는 제안이라, dsrv-portal(7) 다음이자
+    // erc-8141(9) 앞인 8번이 제자리다 — 앞은 "누가 보증하나", 뒤는 "프로토콜이 흡수한다".
+    key: "erc-7812",
+    title: "ERC-7812 — one registry for provable identity",
+    titleKo: "ERC-7812 — 증명 가능한 신원의 단일 레지스트리",
+    description:
+      "A singleton on-chain registry where any protocol can store and prove identity statements by ZK, without publishing the data — Vitalik is a co-author.",
+    descriptionKo:
+      "어떤 프로토콜이든 신원 관련 주장을 저장하고 ZK로 증명하되 데이터는 공개하지 않는 단일 온체인 레지스트리 — 비탈릭이 공저자다.",
+    status: "soon",
+    howTo:
+      "Read-only study — no wallet needed. Start with the Rationale section on why a singleton, then read the reference implementation. eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry",
+    howToKo:
+      "읽기 전용 스터디 — 지갑 불필요. 왜 싱글턴인지를 다룬 Rationale 절부터, 그다음 레퍼런스 구현. eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry",
+    purpose:
+      "The identity cards in this catalogue keep arriving at the same wall from different sides, and this proposal is aimed squarely at it. Studying iden3 shows that each identity protocol anchors its own state root in its own contract, so a credential proven to one verifier means nothing to another that watches a different contract — the fragmentation is structural, not a matter of adoption. This ERC's answer is a single permissionless registry that every protocol writes into, which makes the trust surface one immutable contract instead of one per issuer stack. The part worth thinking hardest about is the cross-chain claim: because the whole registry commits to a single Sparse Merkle Tree, moving its state to another chain means moving one bytes32 root rather than replicating a protocol. That is the same problem the multichain RWA card leaves unsolved for supply, solved here for identity by refusing to fragment in the first place — which is also Canton's move, arrived at independently.",
+    purposeKo:
+      "이 카탈로그의 신원 카드들이 각기 다른 방향에서 같은 벽에 도달하는데, 이 제안은 그 벽을 정면으로 겨냥합니다. iden3를 뜯어보면 **신원 프로토콜마다 자기 상태 루트를 자기 컨트랙트에 앵커링**하므로, 한 검증자에게 증명한 크리덴셜이 다른 컨트랙트를 보는 검증자에게는 아무 의미가 없습니다 — **파편화가 채택의 문제가 아니라 구조의 문제**라는 뜻입니다. 이 ERC의 답은 **모든 프로토콜이 함께 쓰는 하나의 퍼미션리스 레지스트리**이고, 그러면 신뢰 표면이 발급자 스택마다 하나씩이 아니라 **불변 컨트랙트 하나**가 됩니다. 가장 곱씹을 부분은 크로스체인 주장입니다 — 레지스트리 전체가 **하나의 Sparse Merkle Tree에 커밋**되므로, 다른 체인으로 상태를 옮기는 일이 프로토콜을 복제하는 게 아니라 **bytes32 루트 하나를 보내는 일**이 됩니다. 멀티체인 RWA 카드가 공급량에 대해 풀지 못한 채 남긴 그 문제를, 신원에 대해서는 **애초에 파편화하지 않는 방식**으로 푼 셈이고 — 그건 Canton이 독립적으로 도달한 수와 같습니다.",
+    howItWorks:
+      "The registry is an EvidenceRegistry singleton, deployed deterministically to the same address on mainnet and Sepolia, sitting in front of an EvidenceDB that holds a Sparse Merkle Tree with Poseidon hashing — Poseidon because the tree has to be cheap to verify inside a circuit, the same reason iden3 picked Baby Jubjub over secp256k1. Protocols write statements as leaves; nobody writes the underlying data, only its commitment, so what lands on chain is a hash and what travels to a verifier is a proof. Sparse rather than plain matters for the same reason it did in iden3: only a sparse tree gives non-inclusion proofs, which is what revocation actually requires. The specification is deliberately abstract, and the authors say so — it is a base layer, with more specific ERCs expected on top for on-chain passports, social graphs, POAPs. Reference implementation lives at rarimo/evidence-registry, and Rarimo's own passport and biometric registries are built on it. Status: merged as a draft in February 2025, moved to Review in June 2025, contracts already deployed. Three questions to bring to the read. First, the singleton's honest cost — a shared immutable registry means a bug or a bad standard is shared too, and there is no upgrade path by design. Second, the trust question this catalogue keeps returning to does not go away: the registry proves a statement was recorded, never that it is true, so the issuer allowlist problem simply moves up a level. Third, whether a single global tree stays cheap to prove against once many protocols write to it.",
+    howItWorksKo:
+      "레지스트리는 **EvidenceRegistry 싱글턴**으로, 결정론적 배포를 통해 메인넷과 Sepolia에 **같은 주소**로 올라가 있습니다. 그 뒤에 **EvidenceDB**가 있고, **Poseidon 해시를 쓰는 Sparse Merkle Tree**를 보관합니다 — Poseidon인 이유는 트리가 **회로 안에서 싸게 검증돼야** 하기 때문이고, iden3가 secp256k1 대신 Baby Jubjub을 고른 것과 같은 이유입니다. 프로토콜들은 주장을 **잎(leaf)으로 기록**하되 원본 데이터는 아무도 쓰지 않고 **커밋먼트만** 올립니다 — 체인에 남는 건 해시이고, 검증자에게 가는 건 증명입니다. 일반 머클이 아니라 **Sparse**인 이유도 iden3에서와 같습니다: **비포함 증명**이 가능해야 폐기(revocation)가 성립하니까요. 명세는 **의도적으로 추상적**이며 저자들도 그렇게 밝힙니다 — 온체인 여권·소셜 그래프·POAP 같은 구체적 용도는 그 위에 별도 ERC로 올라올 것을 상정한 **기반 계층**입니다. 레퍼런스 구현은 `rarimo/evidence-registry`이고, Rarimo 자신의 여권·생체 레지스트리가 그 위에 올라가 있습니다. 상태: **2025-02 draft 병합, 2025-06 Review 단계, 컨트랙트는 이미 배포됨**. 읽을 때 들고 갈 질문 셋. **① 싱글턴의 정직한 대가** — 공유 불변 레지스트리는 버그나 잘못된 표준도 함께 공유한다는 뜻이고, 설계상 업그레이드 경로가 없습니다. **② 이 카탈로그가 반복해서 돌아오는 신뢰 문제는 사라지지 않습니다** — 레지스트리는 *주장이 기록됐다*는 것만 증명하지 *그것이 참이라*는 것은 절대 증명하지 않으므로, 발급자 허용목록 문제가 한 층 위로 옮겨갈 뿐입니다. **③ 여러 프로토콜이 함께 쓰기 시작해도 단일 전역 트리에 대한 증명이 계속 쌀 것인가.**",
+  },
+  {
+    key: "erc-8141",
+    title: "ERC-8141",
+    titleKo: "ERC-8141",
+    description: "Native account-abstraction explainer — Ethereum's protocol-level Frame Transactions.",
+    descriptionKo: "네이티브 계정 추상화 설명 페이지 — 이더리움 프로토콜 레벨 Frame Transactions.",
+    status: "soon",
+    howTo: "Read-only explainer — no wallet needed.",
+    howToKo: "읽기 전용 설명 페이지 — 지갑 불필요.",
+    purpose:
+      "A protocol-native preview of what this project's application-layer AA demos (session keys, atomic batching) do today with smart contracts and delegation — EIP-8141 proposes moving those same properties into Ethereum's base transaction format itself.",
+    purposeKo:
+      "이 프로젝트의 애플리케이션 레벨 AA 데모(세션 키, 원자적 배치)가 스마트 컨트랙트와 위임으로 지금 하고 있는 일을, 프로토콜 네이티브 수준에서 미리 보여줍니다 — EIP-8141은 같은 속성을 이더리움의 기본 트랜잭션 포맷 자체로 옮기자는 제안입니다.",
+    howItWorks:
+      "Not a working demo by necessity: EIP-8141 defines a new transaction type where a single transaction carries a sequence of frames (a VERIFY frame for signature/fee authorization, then one or more EXECUTE frames) instead of one implicit call — but no client or RPC can send this transaction type yet, since it requires execution-layer support the network doesn't have. As of writing it's only \"considered for inclusion\" in a future fork, so this stays a diagram/explainer page rather than a live demo.",
+    howItWorksKo:
+      "구조상 실제 동작하는 데모가 될 수 없습니다: EIP-8141은 트랜잭션 하나가 암묵적 호출 한 번이 아니라 프레임의 시퀀스(서명·수수료 인가를 담당하는 VERIFY 프레임, 이어지는 하나 이상의 EXECUTE 프레임)를 담는 새 트랜잭션 타입을 정의하지만, 아직 어떤 클라이언트나 RPC도 이 타입을 보낼 수 없습니다 — 네트워크에 없는 실행 계층 지원이 필요하기 때문입니다. 이 글을 쓰는 시점 기준 향후 포크에 \"포함 검토 중\"인 단계라, 라이브 데모가 아니라 다이어그램·설명 페이지로 남습니다.",
+  },
+  {
     key: "pet-clean-room",
     title: "PET clean room (FHE)",
     titleKo: "PET 클린룸 (동형암호)",
@@ -752,24 +795,6 @@ export const POC_CARDS: DemoCard[] = [
     ],
   },
   {
-    key: "erc-8141",
-    title: "ERC-8141",
-    titleKo: "ERC-8141",
-    description: "Native account-abstraction explainer — Ethereum's protocol-level Frame Transactions.",
-    descriptionKo: "네이티브 계정 추상화 설명 페이지 — 이더리움 프로토콜 레벨 Frame Transactions.",
-    status: "soon",
-    howTo: "Read-only explainer — no wallet needed.",
-    howToKo: "읽기 전용 설명 페이지 — 지갑 불필요.",
-    purpose:
-      "A protocol-native preview of what this project's application-layer AA demos (session keys, atomic batching) do today with smart contracts and delegation — EIP-8141 proposes moving those same properties into Ethereum's base transaction format itself.",
-    purposeKo:
-      "이 프로젝트의 애플리케이션 레벨 AA 데모(세션 키, 원자적 배치)가 스마트 컨트랙트와 위임으로 지금 하고 있는 일을, 프로토콜 네이티브 수준에서 미리 보여줍니다 — EIP-8141은 같은 속성을 이더리움의 기본 트랜잭션 포맷 자체로 옮기자는 제안입니다.",
-    howItWorks:
-      "Not a working demo by necessity: EIP-8141 defines a new transaction type where a single transaction carries a sequence of frames (a VERIFY frame for signature/fee authorization, then one or more EXECUTE frames) instead of one implicit call — but no client or RPC can send this transaction type yet, since it requires execution-layer support the network doesn't have. As of writing it's only \"considered for inclusion\" in a future fork, so this stays a diagram/explainer page rather than a live demo.",
-    howItWorksKo:
-      "구조상 실제 동작하는 데모가 될 수 없습니다: EIP-8141은 트랜잭션 하나가 암묵적 호출 한 번이 아니라 프레임의 시퀀스(서명·수수료 인가를 담당하는 VERIFY 프레임, 이어지는 하나 이상의 EXECUTE 프레임)를 담는 새 트랜잭션 타입을 정의하지만, 아직 어떤 클라이언트나 RPC도 이 타입을 보낼 수 없습니다 — 네트워크에 없는 실행 계층 지원이 필요하기 때문입니다. 이 글을 쓰는 시점 기준 향후 포크에 \"포함 검토 중\"인 단계라, 라이브 데모가 아니라 다이어그램·설명 페이지로 남습니다.",
-  },
-  {
     key: "toss-payments",
     title: "Toss Payments",
     titleKo: "토스페이먼츠",
@@ -879,6 +904,7 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "circuit-breaker-saga",
+    later: true, // 지금은 중요하지 않음 (jay, 2026-08-14)
     title: "Microservice patterns — Circuit Breaker & Saga",
     titleKo: "마이크로서비스 디자인 패턴 2제 정리",
     description:
@@ -899,6 +925,7 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "slack-claude-notion",
+    later: true, // 지금은 중요하지 않음 (jay, 2026-08-14)
     title: "Slack · Claude · Notion integration",
     titleKo: "Slack · Claude · Notion 통합해 보기",
     description:
@@ -918,6 +945,7 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "claude-tag-slack",
+    later: true, // 지금은 중요하지 않음 (jay, 2026-08-14)
     title: "\"Claude Tag\" for Slack (on hold)",
     titleKo: "(보류) Slack용 'Claude Tag' 시도",
     description: "On hold — would lean on Notion↔Slack integration features.",

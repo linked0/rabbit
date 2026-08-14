@@ -19,6 +19,10 @@ export type DemoCard = {
   // 로컬 docs 안의 상세 페이지 (선택 — jay, 2026-08-13). 있으면 docs/pocs.html 이
   // "Open on jaylabs.xyz →" 대신 "Detail →"로 이 경로를 건다. docs/ 기준 상대 경로.
   docsHref?: string;
+  // "지금은 중요하지 않은 것" (jay, 2026-08-14). status 로는 표현이 안 된다 — 이것들도
+  // 여전히 계획(soon)이고 언젠가 할 수도 있지만, 지금 목록 위쪽을 차지할 이유가 없다.
+  // true 면 목록 본문과 레일에서 별도 "Later" 묶음으로 내려가고, 번호도 그 뒤에 이어진다.
+  later?: boolean;
   howTo: string;
   howToKo: string;
   // Longer technical write-up rendered in the "Technical Notes" section at the page bottom

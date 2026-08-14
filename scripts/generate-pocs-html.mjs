@@ -53,7 +53,14 @@ const cards = [
 // 묶음 없이 한 목록 (jay, 2026-08-12) — PoCs/Done 으로 갈랐다가 다시 합쳤다. 18장짜리
 // 목록에서 소제목 두 개는 구조라기보다 방해였고, 상태는 색 점이 이미 말한다.
 // 대신 항목마다 번호를 매긴다: "몇 개 중 몇 번째"가 보이면 목록의 길이가 가늠된다.
-const numbered = cards.map((c, i) => ({ ...c, no: i + 1 }));
+// "Later" 묶음 (jay, 2026-08-14) — 지금 중요하지 않은 항목을 목록 아래로 내린다. status
+// 로는 표현이 안 되는 구분이라 카드의 later 플래그로 가른다: 이것들도 여전히 계획이지만,
+// 목록 위쪽을 차지할 이유가 없다. 번호는 본 목록 다음으로 이어져 전체 개수는 그대로다.
+const mainCards = cards.filter((c) => !c.later);
+const laterCards = cards.filter((c) => c.later);
+const numbered = [...mainCards, ...laterCards].map((c, i) => ({ ...c, no: i + 1 }));
+const numberedMain = numbered.slice(0, mainCards.length);
+const numberedLater = numbered.slice(mainCards.length);
 
 // DemoCard.tsx 와 같은 구분 — 오직 status 로만 정한다 (2026-08-12). "href 가 있으면 목업"
 // 이라는 추론은 지웠다: DVT 는 읽을 페이지가 있어도 계획이고, 게임·에이전트는 완료다.
@@ -204,10 +211,8 @@ fs.writeFileSync(INDEX_HTML, marked, 'utf8');
 // 좌측 고정 레일에 **전체 항목**을 싣고 본문은 오른쪽 (jay, 2026-08-12, verex /docs 레퍼런스).
 // 인덱스가 6장만 보여주게 된 뒤로 이 페이지가 "전부 있는 곳"이 됐고, 상단 TOC 하나로는
 // 18개를 훑기 어렵다 — 레일은 어디까지 왔든 목록이 눈앞에 남는다.
-const navGroups = [
-  {
-    label: `All PoCs (${numbered.length})`,
-    items: numbered.map((c) => {
+function navItems(list) {
+  return list.map((c) => {
       const b = badge(c);
       // 상태는 큰 색 점 하나로만 말한다 (jay, 2026-08-12) — 글자 배지는 뺐다. 목록이 조용해지고
       // 완료(하늘)는 점 색만으로 충분히 눈에 띈다. 라벨은 hover 툴팁(title)으로 남겨 둔다.
@@ -217,8 +222,14 @@ const navGroups = [
         color: b.color,
         statusLabel: b.label,
       };
-    }),
-  },
+  });
+}
+// 레일도 같은 두 묶음으로 나눈다 — 아래로 내린 것을 위에서 다시 만나면 내린 의미가 없다.
+const navGroups = [
+  { label: `All PoCs (${numberedMain.length})`, items: navItems(numberedMain) },
+  ...(numberedLater.length
+    ? [{ label: `Later (${numberedLater.length})`, items: navItems(numberedLater) }]
+    : []),
 ];
 
 // 원래 있던 lead(description) + Why(purpose)가 좋았다 (jay, 2026-08-13) — 코드·How it
@@ -231,7 +242,8 @@ const firstSentences = (s, n = 2) => {
   return parts.slice(0, n).join('').trim();
 };
 
-const rows = numbered
+function rowsFor(list) {
+  return list
   .map((c) => {
     const b = badge(c);
     const mark = ` <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span>`;
@@ -250,13 +262,27 @@ const rows = numbered
         </li>`;
   })
   .join('\n');
+}
+
+// 두 절로 나눠 그린다 (jay, 2026-08-14). Later 는 접지 않고 그냥 아래에 둔다 — 숨기면
+// 있다는 것 자체를 잊고, 접으면 클릭이 하나 는다. 소제목과 한 줄 설명이면 충분하다.
+const laterHtml = numberedLater.length
+  ? `
+    <article>
+      <h1>Later</h1>
+      <p class="lead">Not important right now. Kept because the idea is still worth having, not because it is queued.</p>
+      <ul class="topics">
+${rowsFor(numberedLater)}
+      </ul>
+    </article>`
+  : '';
 
 const contentHtml = `    <article>
       <h1>All PoCs</h1>
       <ul class="topics">
-${rows}
+${rowsFor(numberedMain)}
       </ul>
-    </article>`;
+    </article>${laterHtml}`;
 
 fs.writeFileSync(
   OUT_HTML,
