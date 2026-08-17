@@ -140,7 +140,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; A price at a moment — settlement windows and oracle instants</p>
   <article>
-      <h1><span class="topic-no">7</span>A price at a moment — settlement windows and oracle instants <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">8</span>A price at a moment — settlement windows and oracle instants <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">Polymarket's five-second trick and Balance Coin's oracle attack are the same defect: one price, one instant, no band, no delay.</p>
       <p class="meta">Not yet scoped — start by pricing the attack: given order-book depth on the reference venue, what does it cost to move the price by X for T seconds, and how does that cost scale as the averaging window grows? Sources: Stanford/SMU settlement-manipulation study (CoinDesk, 2026-08-07); SlowMist on the Balance Coin oracle exploit (2026-07-22).</p>
       <h2>Why</h2>
@@ -152,7 +152,7 @@
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">7</span>한 시점의 가격 하나 — 정산 창과 오라클 순간 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">8</span>한 시점의 가격 하나 — 정산 창과 오라클 순간 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">폴리마켓의 5초짜리 수법과 Balance Coin 오라클 공격은 같은 결함입니다 — 한 시점의 가격 하나를, 검증 범위도 지연도 없이.</p>
       <p class="meta">아직 범위 미정 — 공격의 가격표부터: 기준 거래소의 호가 깊이가 주어졌을 때 가격을 T초 동안 X만큼 움직이는 비용은 얼마이고, 평균 구간이 길어지면 그 비용이 어떻게 커지는가. 출처: 스탠퍼드·SMU 정산 조작 연구(CoinDesk 2026-08-07), SlowMist의 Balance Coin 오라클 공격 분석(2026-07-22).</p>
       <h2>왜</h2>
@@ -161,7 +161,7 @@
       <p>폴리마켓이 실제로 적용한 수정은 공개돼 있고 구체적이라 **지어내지 않고 검증**할 수 있습니다: 단일 시점 스냅샷을 TWAP으로 교체 — 5분 시장은 30초 평균, 15분·4시간 시장은 60초 평균이고, 소스는 Chainlink Data Streams입니다. 규제 지수와 이동평균을 쓰는 Kalshi의 방식과 같은 계열입니다. 여기서 공격해 볼 파라미터 집합이 나옵니다. 모델은 노브 세 개와 곡선 하나입니다. **구간 길이**: 기준 거래소의 중간가를 T초 동안 X만큼 움직이는 비용은 호가 깊이의 함수이고 이득은 정산까지 들고 간 계약의 명목금액이므로, 조작비용 대 구간길이를 그리면 곡선이 이득선을 넘는 지점이 보입니다 — 설계 산출물은 구간 자체가 아니라 **그 교차점**입니다. **검증 범위(band)**: Balance Coin이 보태는 것은 타당성 검사를 통과하지 못한 가격은 애초에 실행 가능해서는 안 된다는 점이고, 이건 평균화보다 싸고 평균화와 독립적인 통제입니다. **지연(delay)**: 지연 0으로 발사되는 청산은 잘못된 가격을 알아챌 수 있었던 유일한 구간을 없앱니다 — 지연은 지연시간 낭비가 아니라 **탐지 창**입니다. verex로 옮겨 적을 한 줄은 두 사례를 모두 일반화하는 것입니다: **오라클 확정과 거래 중단 사이의 간격을 구현 세부사항이 아니라 자체 원자성 요구를 가진 공격면으로 다룰 것.** 그 포지션을 정산할 가격이 이미 정해진 뒤에도 포지션을 열 수 있다면, 그 창이 곧 상품입니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/price-at-a-moment">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-aqua-shared-liquidity.html">&larr; 6. Shared liquidity — quoted depth vs. the balance behind it</a><a href="pocs-third-party-blast-radius.html">8. Trusted third parties — the blast radius nobody maps &rarr;</a></div>
+  <div class="pager"><a href="pocs-agentic-intent-veto.html">&larr; 7. The budget is the wrong invariant</a><a href="pocs-third-party-blast-radius.html">9. Trusted third parties — the blast radius nobody maps &rarr;</a></div>
 </div>
 </body>
 </html>
