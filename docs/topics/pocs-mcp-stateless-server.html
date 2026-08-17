@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building an MCP server on the stateless spec — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Building an MCP server on the stateless spec</p>
+  <article>
+      <h1><span class="topic-no">10</span>Building an MCP server on the stateless spec <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">The 2026-07-28 revision drops the session handshake, so an MCP server becomes an ordinary stateless HTTP service — deployable to serverless and edge, and authorized like any enterprise API.</p>
+      <p class="meta">Not yet scoped — build one narrow tool server against 2026-07-28 from the start rather than porting a 2025-11-25 one, deploy it to Cloud Run, and connect it to Claude. Spec: blog.modelcontextprotocol.io, release candidate 2026-07-28.</p>
+      <h2>Why</h2>
+      <p>The reason to build one now rather than a year ago is that the shape of the answer changed. Until this revision an MCP server was a stateful conversation: an initialize/initialized handshake, an Mcp-Session-Id header, and a server that had to remember which client it was talking to. The 2026-07-28 revision removes both — every request is self-contained, with protocol version, client identity and capabilities travelling in _meta, Streamable HTTP requests routed by Mcp-Method and Mcp-Name headers, and list and resource-read results cacheable. What that changes practically is deployment: a stateless request/response service runs on serverless or edge without sticky sessions, which is the difference between &quot;an MCP server is a process I keep running&quot; and &quot;an MCP server is a function I deploy.&quot; The second change carries more weight for real work — authorization now aligns with deployed OAuth 2.0 and OIDC practice, so pointing a server at an enterprise identity provider like Entra or Okta stops being a workaround. That is the half that decides whether an MCP server may ever touch company data, and it is why building against the new spec is not the same exercise as building against the old one. The adoption figure is context rather than argument: SDK downloads passed 400 million a month, roughly 4× this year.</p>
+      <h2>How it works</h2>
+      <p>Build one narrow server — one or two tools over a real data source — directly on 2026-07-28 rather than porting, because Tasks is an explicit breaking change (poll-based tasks/get, tasks/update, cooperative tasks/cancel) and porting means learning the old model twice. Three things are worth verifying by doing rather than reading. First, that a cold-started serverless instance can serve a request with no prior state at all — that is the whole claim of the stateless core, and it either holds on a real cold start or it does not. Second, what _meta must actually carry for a client to work without the handshake, which is the part a spec summary never makes concrete enough to implement from. Third, whether the cacheability of list and resource-read results survives a real deployment, since that is where the stateless design either pays for its extra per-request payload or does not. The authorization half deserves the most time: put the server behind an OAuth/OIDC provider and walk the token path end to end, because &quot;the approval path for company data is standardised now&quot; is a claim that is either true in an hour or false all week. Two existing items connect. The google-adk-mcp card asks the framework question — whether a verex-desk subagent can be wrapped in ADK and served over MCP — and this card asks the protocol question underneath it, so doing this one first turns that one into a wrapper exercise instead of two unknowns at once. The LLM track's Day 39 (implement an MCP server by hand) should restart on this spec rather than the one it was written against. One caution before building: Roots, Sampling and Logging are deprecated with documented replacements and a minimum twelve-month removal window.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/mcp-stateless-server">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">10</span>무상태 스펙 위에서 MCP 서버 만들기 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">2026-07-28 개정이 세션 핸드셰이크를 걷어내면서 MCP 서버는 평범한 무상태 HTTP 서비스가 됩니다 — 서버리스·엣지에 배포되고, 여느 사내 API처럼 인가됩니다.</p>
+      <p class="meta">아직 범위 미정 — 2025-11-25 서버를 포팅하지 말고 처음부터 2026-07-28 기준으로 좁은 도구 서버 하나를 만들어 Cloud Run에 올리고 Claude에 연결해 봅니다. 스펙: blog.modelcontextprotocol.io, 2026-07-28 릴리스 후보.</p>
+      <h2>왜</h2>
+      <p>지금 만들어 볼 이유가 1년 전과 다른 것은 **답의 모양 자체가 바뀌었기 때문**입니다. 이번 개정 전까지 MCP 서버는 상태를 가진 대화였습니다 — initialize/initialized 핸드셰이크, Mcp-Session-Id 헤더, 그리고 지금 어느 클라이언트와 말하고 있는지 기억해야 하는 서버. 2026-07-28 개정은 둘 다 없앱니다 — 모든 요청이 자기완결적이고, 프로토콜 버전·클라이언트 신원·능력은 `_meta`에 실려 가며, Streamable HTTP 요청은 `Mcp-Method`·`Mcp-Name` 헤더로 라우팅되고, list와 resource-read 결과는 캐시 가능합니다. 실무적으로 바뀌는 것은 **배포**입니다: 무상태 요청/응답 서비스는 sticky session 없이 서버리스나 엣지에서 돕니다. 즉 &quot;MCP 서버는 내가 계속 띄워 두는 프로세스&quot;와 &quot;MCP 서버는 내가 배포하는 함수&quot;의 차이입니다. 실제 업무에는 두 번째 변화가 더 무겁습니다 — **인가가 실제로 배포된 OAuth 2.0·OIDC 관행에 맞춰졌습니다.** Entra나 Okta 같은 사내 IdP에 서버를 붙이는 일이 더는 우회가 아닙니다. 바로 이 절반이 MCP 서버가 회사 데이터에 닿아도 되는지를 결정하고, 그래서 **새 스펙으로 만드는 것은 옛 스펙으로 만드는 것과 같은 연습이 아닙니다.** 채택 수치는 논거가 아니라 배경입니다: SDK 다운로드 월 4억 회 돌파, 올해만 약 4배.</p>
+      <h2>동작 방식</h2>
+      <p>좁은 서버 하나 — 실제 데이터 소스 위의 도구 한두 개 — 를 포팅하지 말고 **처음부터 2026-07-28로** 만듭니다. Tasks가 명시적 파괴적 변경(폴링 기반 `tasks/get`·`tasks/update`, 협조적 `tasks/cancel`)이라, 포팅은 옛 모델을 두 번 배우는 일이 되기 때문입니다. 읽지 말고 **해봐야** 확인되는 것 셋. 첫째, 콜드 스타트한 서버리스 인스턴스가 **선행 상태 없이** 요청을 처리하는가 — 무상태 코어의 주장 전부가 이것이고, 실제 콜드 스타트에서 성립하거나 아니거나입니다. 둘째, 핸드셰이크 없이 클라이언트가 동작하려면 `_meta`가 실제로 무엇을 실어야 하는가 — 스펙 요약만으로는 구현할 만큼 구체화되지 않는 부분입니다. 셋째, list·resource-read 결과의 캐시 가능성이 실제 배포에서도 유지되는가 — 무상태 설계가 늘어난 요청당 페이로드값을 하는지가 여기서 갈립니다. **인가 절반에 시간을 가장 많이 써야 합니다**: 서버를 OAuth/OIDC 제공자 뒤에 두고 토큰 경로를 끝까지 걸어 봅니다. &quot;이제 회사 데이터 승인 경로가 표준화됐다&quot;는 주장은 한 시간이면 참이거나 일주일 내내 거짓이거나 둘 중 하나이기 때문입니다. 기존 항목 둘과 이어집니다. **google-adk-mcp** 카드는 프레임워크 질문(verex-desk 서브에이전트를 ADK로 감싸 MCP로 서빙할 수 있는가)이고 이 카드는 그 아래의 프로토콜 질문이므로, **이 카드를 먼저 하면** 그쪽은 미지수 둘이 아니라 래퍼 연습 하나가 됩니다. LLM 트랙 **Day 39(MCP 서버 직접 구현)**도 작성 당시 스펙이 아니라 이 스펙으로 재개하는 편이 낫습니다. 만들기 전 주의 하나: Roots·Sampling·Logging은 대체 수단이 문서화된 채 deprecated이고, 제거까지 최소 12개월이 보장됩니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/mcp-stateless-server">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-stablecoin-redemption-desk.html">&larr; 9. The redemption desk — what actually makes a stablecoin's denominator</a><a href="pocs-aml-compliance.html">11. AML — where the cryptography stops &rarr;</a></div>
+</div>
+</body>
+</html>
