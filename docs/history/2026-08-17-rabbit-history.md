@@ -51,3 +51,13 @@
 **Change:** `lib/poc-cards.ts`에 `opencv-robot-vision` 추가. 배열에서 `lerobot-so101` **바로 앞**에 둔 것은 의도적이며(픽셀→밀리미터가 먼저, 팔 움직이기가 그다음) 그 이유를 카드 주석에 적었다. 다음 큐 항목(Jetson Orin Nano Super)과의 연결도 `cv2.dnn` + ONNX 대목에 걸어 뒀다. `status:"soon"`, `date` 없음 — Planned 기본값 규칙.
 
 **Result:** `npx tsc --noEmit` 통과(exit 0). 카드 42→43, 목록 **18번**(`sub-2bit-local-llm` 다음, `lerobot-so101` 앞). 생성 HTML 44개 전수 검사 신규 이슈 0건(기존 2건 동일). **푸시하지 않음** — jay 지시대로 커밋까지만.
+
+### 워크스페이스 인덱스 갱신: Current Projects의 Logs 행을 08-17로
+
+**Cause:** jay가 "Current Projects에 변경사항을 반영하고 머지하라 — current plan·features·logs처럼"이라고 지시. `docs/index.html`의 Current Projects 섹션이 3행 구조(1행 Rabbit · 2행 Verex · 3행 Logs)인데, Logs 행이 각각 08-14(rabbit)·08-12(verex)를 가리키고 있어 오늘 추가한 이력과 어긋나 있었다.
+
+**Reasoning:** 이 섹션은 `pnpm docs:pocs`가 손대지 않는 **수기 관리 영역**이다(생성기는 PoCs 섹션만 다시 쓴다). 그래서 카드 3장의 href·제목·경로를 직접 고쳤다. Verex 이력 파일은 rabbit이 워크스페이스 허브라 `rabbit/docs/history/`에도 사본이 존재하는 구조여서, 카드가 가리킬 대상을 만들기 위해 `verex/docs/history/2026-08-17-verex-history.md`를 복사해 왔다 — 기존 08-10~08-12 verex 파일들과 같은 방식. 전체 로그 수는 `pnpm docs:logs`가 세므로 손으로 세지 않고 생성기 출력(60건)을 카드 문구에 반영했다.
+
+**Change:** `verex/docs/history/2026-08-17-verex-history.md`를 `docs/history/`로 복사. `pnpm docs:html`(신규 파일의 HTML 미러 생성)과 `pnpm docs:logs`(58 → 60건) 실행. `docs/index.html`의 Logs 행 카드 3장 수정 — Rabbit Latest Log 08-14 → **08-17**, Verex Latest Log 08-12 → **08-17**, All Logs 58 → **60 entries**. 1행·2행(Rabbit/Verex의 Feature Designs·Current Plan·Latest Task)은 경로가 그대로 유효해 건드리지 않았다 — 파일 안 주석의 지시와 같다.
+
+**Result:** Current Projects 카드 9개의 링크 대상 전수 확인 — **누락 0건**. `docs/index.html`의 div 28/27 불일치는 HEAD와 동일한 기존 이슈. **남은 것:** `docs/html/projects/verex/**` 미러가 2026-08-01 커밋 시점의 스냅샷으로 고정되어 있다 — `generate-docs-html.mjs`는 REPO_ROOT(rabbit) 안만 순회하므로 형제 저장소인 verex의 최신 문서를 다시 만들 수단이 지금 없다. 그래서 **Verex — Feature Designs 카드는 열리기는 하지만 오늘 추가한 Observability 행이 보이지 않는다.** 해결하려면 생성기에 형제 저장소 경로를 넣거나 verex 문서를 rabbit 안으로 복사하는 절차가 필요해, 이번 범위 밖으로 두고 보고만 한다.
