@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Institutional custody study — PoCs</title>
+<title>Shared liquidity — quoted depth vs. the balance behind it — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -138,124 +138,30 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Institutional custody study</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Shared liquidity — quoted depth vs. the balance behind it</p>
   <article>
-      <h1><span class="topic-no">8</span>Institutional custody study <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">MPC · approval flows · AA · AML — and which parts are buildable without a VASP licence.</p>
-      <p class="meta">Not yet scoped — a reading study first, then whichever PoC items survive the licence question.</p>
+      <h1><span class="topic-no">6</span>Shared liquidity — quoted depth vs. the balance behind it <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">1inch Aqua leaves LP tokens in the wallet and lets one balance quote across many positions. The number nobody publishes is how much of that quoted depth is actually fillable.</p>
+      <p class="meta">Not yet scoped — start on an anvil fork with one wallet backing three positions, fire two orders into the same block, and record which one reverts. Source: 1inch.com/aqua/learn, launched publicly 2026-07-27 across 13 chains.</p>
       <h2>Why</h2>
-      <p>Everything else in this catalogue is a single wallet acting for itself. Institutional custody is the opposite shape: keys split across an MPC quorum, transactions gated by an approval workflow, and a compliance surface that is legal rather than technical. The useful output is a separation — which parts are engineering (MPC, approval state machines, AA policies) and which parts are a licence you either have or do not.</p>
+      <p>The pitch is self-custody — tokens never leave the wallet, no deposit, no debt — and all of that is true. The part worth a card is what the design trades away to get it. Aqua's own documentation says a swap &quot;simply reverts&quot; if the balance is too low at that moment, and its own example has a $100,000 balance backing three positions that collectively quote $300,000. Put those two sentences next to each other and the quoted depth stops being a commitment and becomes an upper bound: real, but only for whoever arrives first. That is the same shape as this catalogue's stake-concentration card — a set that looks like N independent units while the actual unit of independence is smaller — moved from validators to order books. The question is not whether Aqua is safe for the LP (it is; the LP is the party protected by the revert) but what it costs the taker, who pays gas to discover that advertised liquidity was already spent.</p>
       <h2>How it works</h2>
-      <p>Reading study, not a deployment: MPC signing (threshold schemes vs. the key-splitting DVT already studied elsewhere here), approval workflows as state machines, where account abstraction's policy layer overlaps custody policy, and AML/travel-rule obligations. The PoC candidates are the ones that need no VASP registration — an approval-flow simulator, an AA policy contract with quorum caveats — and those are exactly the ones this card would become.</p>
-      <h2>Related code</h2>
-      <pre><code>&quot;&quot;&quot;Institutional custody study PoC -- M-of-N threshold approval gate.
-Illustrates the core mechanism behind MPC custody and approval workflows: a transaction
-only executes once a quorum of independent signers has approved it.
-&quot;&quot;&quot;
-
-from dataclasses import dataclass, field
-
-
-@dataclass
-class Transaction:
-    id: str
-    description: str
-    approvals: set[str] = field(default_factory=set)
-
-
-class ApprovalQuorum:
-    def __init__(self, signers: list[str], threshold: int):
-        self.signers = set(signers)
-        self.threshold = threshold  # &quot;M&quot; of &quot;N&quot;
-
-    def approve(self, tx: Transaction, signer: str) -&gt; str:
-        if signer not in self.signers:
-            return f&quot;REJECTED: {signer} is not a registered quorum member&quot;
-        if signer in tx.approvals:
-            return f&quot;NOOP: {signer} already approved {tx.id}&quot;
-        tx.approvals.add(signer)
-        return f&quot;recorded approval from {signer} ({len(tx.approvals)}/{self.threshold})&quot;
-
-    def can_execute(self, tx: Transaction) -&gt; bool:
-        return len(tx.approvals) &gt;= self.threshold
-
-    def execute(self, tx: Transaction) -&gt; str:
-        if not self.can_execute(tx):
-            return f&quot;BLOCKED: {tx.id} has {len(tx.approvals)}/{self.threshold} approvals&quot;
-        return f&quot;EXECUTED: {tx.id} ({tx.description}) -- quorum of {self.threshold} met&quot;
-
-
-if __name__ == &quot;__main__&quot;:
-    quorum = ApprovalQuorum(signers=[&quot;alice&quot;, &quot;bob&quot;, &quot;carol&quot;, &quot;dave&quot;], threshold=3)
-    tx = Transaction(id=&quot;withdraw-001&quot;, description=&quot;withdraw 100 ETH to cold wallet&quot;)
-
-    for signer in [&quot;alice&quot;, &quot;eve&quot;, &quot;bob&quot;, &quot;alice&quot;, &quot;carol&quot;]:
-        print(&quot; &quot;, quorum.approve(tx, signer))
-        print(&quot;  execute?&quot;, quorum.execute(tx))
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/dsrv-portal.py">docs/code/pocs/dsrv-portal.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/dsrv-portal">Open on jaylabs.xyz &rarr;</a></p>
+      <p>Mechanism first, as documented: the LP grants a revocable allowance rather than depositing, several positions are configured against that one allowance, and when a matching order arrives the SwapVM engine pulls the tokens straight from the wallet and pushes back the proceeds plus fees in a single atomic transaction. Nothing is borrowed — the allowance is a permission cap, not an escrow, so the balance is checked at execution and the swap reverts if it has moved. What the public documentation does not describe is what happens when two orders draw on the same balance at once, and that is the gap this PoC aims at. The measurement is small enough to run locally: on an anvil fork, stand up one wallet with three positions quoting a combined 3× its balance, submit competing orders in the same block, then sweep the balance down through 90%, 50% and 10% of quoted depth. The output is a curve of realized depth over advertised depth, plus a revert rate and the gas a taker burns on the failures — the same argument the stake-concentration card makes with a Herfindahl index, made here with a fill rate. One section belongs inside this card rather than beside it: the withdrawal-authority comparison. &quot;Funds stay in the wallet and are pulled when needed&quot; is the same primitive the AA and AP2 cards already build with, so Aqua's approve-and-pull sits naturally next to a Permit2 signature and an ERC-4337 session key. The three differ in what can be revoked, what the approval leaks while it is live, and what revocation costs — and Aqua is the case where the approval is deliberately long-lived, which is exactly why the revert path carries so much weight.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/aqua-shared-liquidity">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">8</span>기관 커스터디 스터디 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">MPC · 승인 플로우 · AA · AML — 그리고 VASP 없이 만들 수 있는 부분은 어디까지인가.</p>
-      <p class="meta">아직 범위 미정 — 먼저 정독, 그다음 라이선스 질문을 통과한 PoC 항목만.</p>
+      <h1><span class="topic-no">6</span>공유 유동성 — 호가된 깊이와 그 뒤의 잔고 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">1inch Aqua는 LP 토큰을 지갑에 둔 채 하나의 잔고로 여러 포지션이 호가하게 합니다. 아무도 발표하지 않는 숫자는 그 호가된 깊이 중 실제로 체결 가능한 몫입니다.</p>
+      <p class="meta">아직 범위 미정 — anvil 포크에서 지갑 하나가 포지션 셋을 받치게 두고, 같은 블록에 주문 두 건을 넣어 어느 쪽이 revert 하는지 기록하는 것부터. 출처: 1inch.com/aqua/learn, 2026-07-27 13개 체인 공개.</p>
       <h2>왜</h2>
-      <p>이 카탈로그의 나머지는 전부 「지갑 하나가 자기 자신을 위해 행동한다」입니다. 기관 커스터디는 정반대 모양입니다 — 키는 MPC 정족수로 쪼개지고, 트랜잭션은 승인 워크플로가 막고, 컴플라이언스 표면은 기술이 아니라 법입니다. 유용한 산출물은 분리입니다: 어디까지가 엔지니어링(MPC·승인 상태기계·AA 정책)이고, 어디부터가 있거나 없거나인 라이선스인가.</p>
+      <p>홍보 문구는 자기수탁입니다 — 토큰은 지갑을 떠나지 않고, 예치도 부채도 없다. 전부 사실입니다. 카드가 될 값어치는 **그것을 얻기 위해 무엇을 내주었는가**에 있습니다. Aqua 자체 문서는 그 순간 잔고가 부족하면 스왑이 &quot;그냥 revert 된다&quot;고 적고 있고, 같은 문서의 예시는 10만 달러 잔고가 세 포지션을 받치며 합계 30만 달러를 호가합니다. 이 두 문장을 나란히 놓으면 **호가된 깊이는 약속이 아니라 상한**이 됩니다 — 실재하지만 먼저 도착한 쪽에게만. 이 카탈로그의 stake-concentration 카드와 형태가 같습니다: 겉보기엔 독립 단위 N개인데 실제 독립성의 단위는 더 작다는 것 — 검증인에서 오더북으로 옮겼을 뿐입니다. 질문은 Aqua가 LP에게 안전한가가 아니라(안전합니다. revert로 보호받는 쪽이 LP입니다) **taker에게 얼마인가**입니다. 이미 소진된 유동성이 광고되어 있었다는 사실을 가스를 내고 알게 되는 쪽이니까요.</p>
       <h2>동작 방식</h2>
-      <p>배포가 아니라 정독 스터디입니다: MPC 서명(임계 방식 vs. 여기 DVT 카드에서 이미 다룬 키 분할), 상태기계로서의 승인 워크플로, 계정 추상화의 정책 계층이 커스터디 정책과 겹치는 지점, 그리고 AML·트래블룰 의무. PoC 후보는 VASP 등록이 필요 없는 것들 — 승인 플로우 시뮬레이터, 정족수 caveat을 가진 AA 정책 컨트랙트 — 이고, 이 카드가 실제로 될 것도 그것들입니다.</p>
-      <h2>관련 코드</h2>
-      <pre><code>&quot;&quot;&quot;Institutional custody study PoC -- M-of-N threshold approval gate.
-Illustrates the core mechanism behind MPC custody and approval workflows: a transaction
-only executes once a quorum of independent signers has approved it.
-&quot;&quot;&quot;
-
-from dataclasses import dataclass, field
-
-
-@dataclass
-class Transaction:
-    id: str
-    description: str
-    approvals: set[str] = field(default_factory=set)
-
-
-class ApprovalQuorum:
-    def __init__(self, signers: list[str], threshold: int):
-        self.signers = set(signers)
-        self.threshold = threshold  # &quot;M&quot; of &quot;N&quot;
-
-    def approve(self, tx: Transaction, signer: str) -&gt; str:
-        if signer not in self.signers:
-            return f&quot;REJECTED: {signer} is not a registered quorum member&quot;
-        if signer in tx.approvals:
-            return f&quot;NOOP: {signer} already approved {tx.id}&quot;
-        tx.approvals.add(signer)
-        return f&quot;recorded approval from {signer} ({len(tx.approvals)}/{self.threshold})&quot;
-
-    def can_execute(self, tx: Transaction) -&gt; bool:
-        return len(tx.approvals) &gt;= self.threshold
-
-    def execute(self, tx: Transaction) -&gt; str:
-        if not self.can_execute(tx):
-            return f&quot;BLOCKED: {tx.id} has {len(tx.approvals)}/{self.threshold} approvals&quot;
-        return f&quot;EXECUTED: {tx.id} ({tx.description}) -- quorum of {self.threshold} met&quot;
-
-
-if __name__ == &quot;__main__&quot;:
-    quorum = ApprovalQuorum(signers=[&quot;alice&quot;, &quot;bob&quot;, &quot;carol&quot;, &quot;dave&quot;], threshold=3)
-    tx = Transaction(id=&quot;withdraw-001&quot;, description=&quot;withdraw 100 ETH to cold wallet&quot;)
-
-    for signer in [&quot;alice&quot;, &quot;eve&quot;, &quot;bob&quot;, &quot;alice&quot;, &quot;carol&quot;]:
-        print(&quot; &quot;, quorum.approve(tx, signer))
-        print(&quot;  execute?&quot;, quorum.execute(tx))
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/dsrv-portal.py">docs/code/pocs/dsrv-portal.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/dsrv-portal">Open on jaylabs.xyz &rarr;</a></p>
+      <p>먼저 문서화된 동작 방식: LP는 예치하지 않고 **취소 가능한 allowance**만 부여하고, 그 하나의 allowance 위에 여러 포지션이 설정되며, 조건에 맞는 주문이 오면 SwapVM 엔진이 지갑에서 토큰을 곧바로 당겨가고 대금과 수수료를 한 번의 원자적 트랜잭션으로 되돌려줍니다. 빌리는 것은 없습니다 — allowance는 에스크로가 아니라 **권한 상한**이라, 잔고는 실행 시점에 확인되고 그사이 움직였다면 스왑은 revert 됩니다. 공개 문서가 설명하지 않는 것은 **두 주문이 같은 잔고를 동시에 노릴 때** 무슨 일이 벌어지는가이고, 이 PoC가 겨누는 자리가 거기입니다. 측정은 로컬에서 돌릴 만큼 작습니다: anvil 포크에 지갑 하나와 그 잔고의 3배를 합산 호가하는 포지션 셋을 세우고, 같은 블록에 경합하는 주문을 넣은 뒤, 잔고를 호가 대비 90%·50%·10%로 낮춰가며 훑습니다. 산출물은 **광고된 깊이 대비 실현된 깊이 곡선**, revert 비율, 그리고 taker가 실패에 태우는 가스입니다 — stake-concentration 카드가 허핀달 지수로 하는 논증을 여기서는 체결률로 하는 셈입니다. 한 섹션은 옆에 두지 말고 이 카드 **안에** 넣습니다: **인출 권한 모델 비교**. &quot;자금은 지갑에 두고 필요할 때 당겨간다&quot;는 것은 AA·AP2 카드가 이미 다루는 그 원시 기능이라, Aqua의 approve-and-pull은 Permit2 서명, ERC-4337 세션키와 자연스럽게 나란히 놓입니다. 셋은 **무엇을 취소할 수 있는가, 승인이 살아 있는 동안 무엇이 노출되는가, 취소에 얼마가 드는가**에서 갈립니다 — 그리고 Aqua는 승인이 의도적으로 오래 살아 있는 경우이고, 바로 그래서 revert 경로에 그토록 많은 무게가 실립니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/aqua-shared-liquidity">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-aml-compliance.html">&larr; 7. AML — where the cryptography stops</a><a href="pocs-erc-7812.html">9. ERC-7812 — one registry for provable identity &rarr;</a></div>
+  <div class="pager"><a href="../topics/pocs-rwa-multichain.html">&larr; 5. RWA across chains — the invariant nobody enforces</a><a href="pocs-aml-compliance.html">7. AML — where the cryptography stops &rarr;</a></div>
 </div>
 </body>
 </html>

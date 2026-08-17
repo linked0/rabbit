@@ -390,6 +390,33 @@ export const POC_CARDS: DemoCard[] = [
       "글이 제안한 스택 그대로: **Private Operational Registry**(후보 인프라로 Canton을 명시)가 민감한 원본과 최신 기준 상태를 보관합니다 — 수탁잔고·NAV·투자자 자격·총발행량·상환과 정지 상태. 책임기관은 레지스트리를 공개하는 대신 **필요한 사실만 VC로 발급**합니다. **검증 계층**이 발급자·서명·schema·유효기간·폐기를 확인하고, 잔고나 신원을 드러낼 수 없는 경우 선택적 공개나 ZKP를 씁니다. **체인별 어댑터**가 검증 결과를 그 네트워크의 attestation 형식으로 변환하며, 이 구조에서 EAS는 여러 EVM 실행 어댑터 중 하나로 내려앉습니다. 그다음 **Policy Contract**가 mint·transfer·redeem·pause를 허용하거나 거절합니다. 저자가 실제로 주는 지시는 좁고 좋습니다 — **PoC는 단일 체인에서 시작하되, 처음부터 사실과 실행을 분리하라.** 그래야 체인을 추가할 때 현실의 권리를 다시 만들지 않고 실행 채널만 넓힙니다. 다시 읽을 때의 메모 둘. **첫째, 빈칸**: 대사는 발견이지 예방이 아닙니다 — 진짜로 막으려면 각 체인의 mint가 전역 한도를 확인하고 예약해야 하는데 그것이 곧 체인 간 원자성이고, 공유 시퀀서는 **원자적 포함까지만** 보장합니다. **둘째, 이 카탈로그라면 택했을 대안** — 브릿지를 인텐트로 대체한 것과 같은 수를 씁니다: 정확한 전역 불변식을 붙들려 하지 말고 **누군가 담보를 걸고 그것을 보증하게** 하는 것. 발행 대리인이 mint 전에 오프체인 기준원장에서 배정을 사오고, 배정 없이 찍으면 슬래싱 — 불변식을 원자적으로가 아니라 **경제적으로** 강제합니다. 카드사가 실시간 조회 없이 한도에 대해 승인하고 나중에 정산하는 것과 정확히 같은 구조입니다. RWA에는 오히려 이쪽이 정직합니다 — NAV는 하루 한 번 산정되고 상환은 T+1인데, **오프체인이 애초에 원자적이지 않았으니까요.** 대가는 익숙한 것: 담보는 자본이 큰 쪽으로 집중되고, RWA는 라이선스까지 걸려 결국 수탁사·증권사 몇 곳이 그 자리에 섭니다. 구조가 기존 금융으로 되돌아오는 셈이고 — **다른 점은 담보와 슬래싱 조건이 코드로 공개된다는 것 하나뿐**인데, 그 하나가 얼마짜리인지가 다툴 만한 지점입니다.",
   },
   {
+    // 1inch Aqua 공개(2026-07-27)를 계기로 추가 (jay, 2026-08-17). 광고 문구 한 줄에서
+    // 출발했지만 카드가 될 값어치는 그 아래 있다 — "토큰이 지갑에 남는다"는 자기수탁 이야기가
+    // 아니라 호가와 체결 가능성이 분리된다는 이야기다. stake-concentration 카드와 논리 구조가
+    // 같다(겉보기 독립 단위 N개 vs 실제 독립성의 단위) — 그쪽은 done 묶음이라 배열로 붙이지
+    // 못하고 soon 묶음의 앞쪽에 둔다.
+    key: "aqua-shared-liquidity",
+    title: "Shared liquidity — quoted depth vs. the balance behind it",
+    titleKo: "공유 유동성 — 호가된 깊이와 그 뒤의 잔고",
+    description:
+      "1inch Aqua leaves LP tokens in the wallet and lets one balance quote across many positions. The number nobody publishes is how much of that quoted depth is actually fillable.",
+    descriptionKo:
+      "1inch Aqua는 LP 토큰을 지갑에 둔 채 하나의 잔고로 여러 포지션이 호가하게 합니다. 아무도 발표하지 않는 숫자는 그 호가된 깊이 중 실제로 체결 가능한 몫입니다.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — start on an anvil fork with one wallet backing three positions, fire two orders into the same block, and record which one reverts. Source: 1inch.com/aqua/learn, launched publicly 2026-07-27 across 13 chains.",
+    howToKo:
+      "아직 범위 미정 — anvil 포크에서 지갑 하나가 포지션 셋을 받치게 두고, 같은 블록에 주문 두 건을 넣어 어느 쪽이 revert 하는지 기록하는 것부터. 출처: 1inch.com/aqua/learn, 2026-07-27 13개 체인 공개.",
+    purpose:
+      "The pitch is self-custody — tokens never leave the wallet, no deposit, no debt — and all of that is true. The part worth a card is what the design trades away to get it. Aqua's own documentation says a swap \"simply reverts\" if the balance is too low at that moment, and its own example has a $100,000 balance backing three positions that collectively quote $300,000. Put those two sentences next to each other and the quoted depth stops being a commitment and becomes an upper bound: real, but only for whoever arrives first. That is the same shape as this catalogue's stake-concentration card — a set that looks like N independent units while the actual unit of independence is smaller — moved from validators to order books. The question is not whether Aqua is safe for the LP (it is; the LP is the party protected by the revert) but what it costs the taker, who pays gas to discover that advertised liquidity was already spent.",
+    purposeKo:
+      "홍보 문구는 자기수탁입니다 — 토큰은 지갑을 떠나지 않고, 예치도 부채도 없다. 전부 사실입니다. 카드가 될 값어치는 **그것을 얻기 위해 무엇을 내주었는가**에 있습니다. Aqua 자체 문서는 그 순간 잔고가 부족하면 스왑이 \"그냥 revert 된다\"고 적고 있고, 같은 문서의 예시는 10만 달러 잔고가 세 포지션을 받치며 합계 30만 달러를 호가합니다. 이 두 문장을 나란히 놓으면 **호가된 깊이는 약속이 아니라 상한**이 됩니다 — 실재하지만 먼저 도착한 쪽에게만. 이 카탈로그의 stake-concentration 카드와 형태가 같습니다: 겉보기엔 독립 단위 N개인데 실제 독립성의 단위는 더 작다는 것 — 검증인에서 오더북으로 옮겼을 뿐입니다. 질문은 Aqua가 LP에게 안전한가가 아니라(안전합니다. revert로 보호받는 쪽이 LP입니다) **taker에게 얼마인가**입니다. 이미 소진된 유동성이 광고되어 있었다는 사실을 가스를 내고 알게 되는 쪽이니까요.",
+    howItWorks:
+      "Mechanism first, as documented: the LP grants a revocable allowance rather than depositing, several positions are configured against that one allowance, and when a matching order arrives the SwapVM engine pulls the tokens straight from the wallet and pushes back the proceeds plus fees in a single atomic transaction. Nothing is borrowed — the allowance is a permission cap, not an escrow, so the balance is checked at execution and the swap reverts if it has moved. What the public documentation does not describe is what happens when two orders draw on the same balance at once, and that is the gap this PoC aims at. The measurement is small enough to run locally: on an anvil fork, stand up one wallet with three positions quoting a combined 3× its balance, submit competing orders in the same block, then sweep the balance down through 90%, 50% and 10% of quoted depth. The output is a curve of realized depth over advertised depth, plus a revert rate and the gas a taker burns on the failures — the same argument the stake-concentration card makes with a Herfindahl index, made here with a fill rate. One section belongs inside this card rather than beside it: the withdrawal-authority comparison. \"Funds stay in the wallet and are pulled when needed\" is the same primitive the AA and AP2 cards already build with, so Aqua's approve-and-pull sits naturally next to a Permit2 signature and an ERC-4337 session key. The three differ in what can be revoked, what the approval leaks while it is live, and what revocation costs — and Aqua is the case where the approval is deliberately long-lived, which is exactly why the revert path carries so much weight.",
+    howItWorksKo:
+      "먼저 문서화된 동작 방식: LP는 예치하지 않고 **취소 가능한 allowance**만 부여하고, 그 하나의 allowance 위에 여러 포지션이 설정되며, 조건에 맞는 주문이 오면 SwapVM 엔진이 지갑에서 토큰을 곧바로 당겨가고 대금과 수수료를 한 번의 원자적 트랜잭션으로 되돌려줍니다. 빌리는 것은 없습니다 — allowance는 에스크로가 아니라 **권한 상한**이라, 잔고는 실행 시점에 확인되고 그사이 움직였다면 스왑은 revert 됩니다. 공개 문서가 설명하지 않는 것은 **두 주문이 같은 잔고를 동시에 노릴 때** 무슨 일이 벌어지는가이고, 이 PoC가 겨누는 자리가 거기입니다. 측정은 로컬에서 돌릴 만큼 작습니다: anvil 포크에 지갑 하나와 그 잔고의 3배를 합산 호가하는 포지션 셋을 세우고, 같은 블록에 경합하는 주문을 넣은 뒤, 잔고를 호가 대비 90%·50%·10%로 낮춰가며 훑습니다. 산출물은 **광고된 깊이 대비 실현된 깊이 곡선**, revert 비율, 그리고 taker가 실패에 태우는 가스입니다 — stake-concentration 카드가 허핀달 지수로 하는 논증을 여기서는 체결률로 하는 셈입니다. 한 섹션은 옆에 두지 말고 이 카드 **안에** 넣습니다: **인출 권한 모델 비교**. \"자금은 지갑에 두고 필요할 때 당겨간다\"는 것은 AA·AP2 카드가 이미 다루는 그 원시 기능이라, Aqua의 approve-and-pull은 Permit2 서명, ERC-4337 세션키와 자연스럽게 나란히 놓입니다. 셋은 **무엇을 취소할 수 있는가, 승인이 살아 있는 동안 무엇이 노출되는가, 취소에 얼마가 드는가**에서 갈립니다 — 그리고 Aqua는 승인이 의도적으로 오래 살아 있는 경우이고, 바로 그래서 revert 경로에 그토록 많은 무게가 실립니다.",
+  },
+  {
     // AML 학습 항목 (jay, 2026-08-14 — 국내 거래소 준법감시인 채용 공고를 계기로 추가).
     // dsrv-portal 카드가 "어디까지가 엔지니어링이고 어디부터가 라이선스인가"를 묻는데,
     // 이 카드는 그 경계선 자체를 공부 대상으로 삼는다 — 둘은 짝이다.
