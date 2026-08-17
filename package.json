@@ -11,7 +11,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "docs:html": "node scripts/generate-docs-html.mjs",
+    "docs:sync-verex": "node scripts/sync-verex-docs.mjs",
+    "docs:html": "node scripts/sync-verex-docs.mjs && node scripts/generate-docs-html.mjs",
     "docs:pocs": "node scripts/generate-pocs-html.mjs",
     "docs:curriculum": "node scripts/generate-curriculum-html.mjs",
     "docs:logs": "node scripts/generate-logs-html.mjs"

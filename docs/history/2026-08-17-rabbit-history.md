@@ -61,3 +61,13 @@
 **Change:** `verex/docs/history/2026-08-17-verex-history.md`를 `docs/history/`로 복사. `pnpm docs:html`(신규 파일의 HTML 미러 생성)과 `pnpm docs:logs`(58 → 60건) 실행. `docs/index.html`의 Logs 행 카드 3장 수정 — Rabbit Latest Log 08-14 → **08-17**, Verex Latest Log 08-12 → **08-17**, All Logs 58 → **60 entries**. 1행·2행(Rabbit/Verex의 Feature Designs·Current Plan·Latest Task)은 경로가 그대로 유효해 건드리지 않았다 — 파일 안 주석의 지시와 같다.
 
 **Result:** Current Projects 카드 9개의 링크 대상 전수 확인 — **누락 0건**. `docs/index.html`의 div 28/27 불일치는 HEAD와 동일한 기존 이슈. **남은 것:** `docs/html/projects/verex/**` 미러가 2026-08-01 커밋 시점의 스냅샷으로 고정되어 있다 — `generate-docs-html.mjs`는 REPO_ROOT(rabbit) 안만 순회하므로 형제 저장소인 verex의 최신 문서를 다시 만들 수단이 지금 없다. 그래서 **Verex — Feature Designs 카드는 열리기는 하지만 오늘 추가한 Observability 행이 보이지 않는다.** 해결하려면 생성기에 형제 저장소 경로를 넣거나 verex 문서를 rabbit 안으로 복사하는 절차가 필요해, 이번 범위 밖으로 두고 보고만 한다.
+
+### verex 문서 미러 자동화: 끊겨 있던 재생성 경로 복구
+
+**Cause:** jay가 "rabbit 저장소의 verex features 문서에 Observability 행이 반영됐냐"고 물었고, 답은 아니오였다. 추적해 보니 `docs/html/projects/verex/**`가 2026-08-01 커밋 스냅샷에 멈춰 있었다.
+
+**Reasoning:** 원인은 "생성이 안 된 것"이 아니라 **"생성할 원본이 rabbit 안에 없었던 것"**이다 — `generate-docs-html.mjs`는 REPO_ROOT 안의 `.md`만 순회하는데 rabbit에는 verex features의 마크다운이 아예 없었고, 커밋된 HTML 7개만 있었다. 즉 그 미러는 빌드 산출물이 아니라 **한 번 만들어 넣고 갱신 경로가 끊긴 스냅샷**이었다. 선택지 셋(A: 수동 복사, B: 생성기에 형제 저장소 소스 추가, C: 마크다운 원본도 커밋)에서 jay가 **B+C**를 택했다 — A는 오늘 겪은 표류를 그대로 반복하게 되어 있고, 이 질문이 나온 이유가 바로 그것이다. 구현은 생성기를 건드리지 않는 쪽을 골랐다: 출력 경로 규칙(`docs/html/` + REPO_ROOT 기준 상대경로)이 **기존 미러 경로와 정확히 일치**하므로, 원본만 `projects/verex/`로 가져오면 변환은 기존 생성기가 그대로 처리한다. 동기화 범위는 Current Projects 카드가 거는 두 갈래(`docs/features`, `docs/tasks`)의 `.md`만으로 좁혔고(240KB), 복사할 때 **내용을 한 글자도 고치지 않는다** — 헤더를 덧붙이면 문서 간 상대 링크와 앵커가 어긋나기 때문. 형제 저장소가 없는 머신에서 `docs:html`이 깨지지 않도록 조용히 통과하게 했다.
+
+**Change:** `scripts/sync-verex-docs.mjs` 신규 — `~/work/verex`의 `docs/features`·`docs/tasks` 마크다운을 `projects/verex/`로 복사하고, `projects/verex/SOURCE.txt`에 **verex 커밋 해시**를 남긴다(어느 시점 사본인지 rabbit의 git이 직접 기록하게 하는 것이 C의 요지). SOURCE는 `.txt`로 둬서 생성기가 HTML로 만들지 않게 했다. `package.json`에 `docs:sync-verex` 추가하고 `docs:html`을 `sync && generate`로 연결 — rabbit에는 git hook이 없어 이 연결이 다른 경로를 건드리지 않음을 확인했다. 실행 결과 27개 마크다운이 동기화되고 변환 대상이 334 → 361개로 늘었다.
+
+**Result:** rabbit 쪽 verex Feature Designs 미러에 **Observability 행이 표시된다.** `observability.html`(7,193 B)도 생성됐고, SOURCE.txt가 verex 커밋 `07ec1ca`를 가리킨다. Current Projects 카드 9개 + 미러된 verex README의 내부 링크 전수 확인 — **깨진 링크 0건**(이전에는 features 카테고리 표의 링크 대부분이 미러에 대상 파일이 없어 죽어 있었는데, 원본이 통째로 들어오면서 함께 살아났다). **남은 것:** `docs/html/projects/verex/docs/tasks/summary.html`은 verex에 대응하는 `summary.md`가 없는 **유령 파일**이다. `docs/index.html`의 "View All Verex Tasks →"가 이것을 걸고 있어 지우면 링크가 깨지므로, 이번에는 정리하지 않고 그대로 두고 보고만 한다.
