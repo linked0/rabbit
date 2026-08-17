@@ -41,3 +41,13 @@
 **Change:** `lib/poc-cards.ts`에 `agentic-intent-veto` 추가. 이 카탈로그에서 드문 형태(정독 노트도 사고 실험도 아닌 **만들 물건의 설계**)라 배열에서 `aqua-shared-liquidity` 바로 뒤 — soon 묶음 앞쪽에 두었고, 그 이유를 카드 주석에 적었다. `howItWorks`에 구현 범위를 좁게 못박음: 솔라나 프로그램 하나(커밋 대조 + 타임락 정산 + 감시자 취소), 적대적 판매자 API, Cloud Run 정책 서비스 — 지갑 UI·멀티체인·토큰 없음. 데모 스크립트(같은 에이전트를 인젝션 실린 판매자 API에 두 번 실행)도 본문에 포함. `status:"soon"`, `date` 없음.
 
 **Result:** `npx tsc --noEmit` 통과(exit 0). 카드 41→42, 목록 **7번**. 생성 HTML 43개 전수 검사 신규 이슈 0건(기존 2건 동일).
+
+### PoC 카드 추가: OpenCV — 픽셀에서 밀리미터로 (로보틱스 트랙 3번째)
+
+**Cause:** jay가 데일리 브리핑 "오늘의 로보틱스·AI 항목 3"(OpenCV 캘리브레이션 · ArUco 자세추정 · hand-eye, 비용 0원)을 붙여넣고 PoC 항목 추가를 지시. 머지는 나중에 한꺼번에 하기로 하고 **커밋만**.
+
+**Reasoning:** 튜토리얼 링크 모음이 되지 않게 **산출물을 숫자 두 개로 못박았다** — 재투영 RMS(1픽셀 미만이 합격선)와 자로 잰 거리 대비 `tvec` 오차율. 이 카탈로그의 다른 카드들과 같은 기준("에세이가 아니라 측정")을 로보틱스 비전에 적용한 것이고, "축이 그려졌다"로 끝나는 카드와 값어치가 갈리는 지점이 여기다. 카드의 논지는 이 단계를 건너뛰면 저가 로봇팔이 허공을 집는 이유 — 정책은 로봇 좌표계에서 행동을 배우는데 카메라는 픽셀만 보고하고, 모방학습 루프 어디에도 그 변환이 없다. 브리핑이 짚은 **버전 함정**(`estimatePoseSingleMarkers`가 OpenCV 4.7에서 폐기 → `ArucoDetector` + `solvePnP(SOLVEPNP_IPPE_SQUARE)`)과 **eye-in-hand / eye-to-hand 혼동**은 둘 다 "그럴듯해 보이면서 틀린" 결과를 내는 함정이라 본문에 명시적으로 남겼다.
+
+**Change:** `lib/poc-cards.ts`에 `opencv-robot-vision` 추가. 배열에서 `lerobot-so101` **바로 앞**에 둔 것은 의도적이며(픽셀→밀리미터가 먼저, 팔 움직이기가 그다음) 그 이유를 카드 주석에 적었다. 다음 큐 항목(Jetson Orin Nano Super)과의 연결도 `cv2.dnn` + ONNX 대목에 걸어 뒀다. `status:"soon"`, `date` 없음 — Planned 기본값 규칙.
+
+**Result:** `npx tsc --noEmit` 통과(exit 0). 카드 42→43, 목록 **18번**(`sub-2bit-local-llm` 다음, `lerobot-so101` 앞). 생성 HTML 44개 전수 검사 신규 이슈 0건(기존 2건 동일). **푸시하지 않음** — jay 지시대로 커밋까지만.

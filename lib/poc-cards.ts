@@ -691,6 +691,32 @@ export const POC_CARDS: DemoCard[] = [
       "압축 기법 자체는 헤드라인보다 훨씬 좁은 이야기입니다. llama.cpp의 IQ1_S는 가중치당 1.5625비트를 쓰는데, 그중 11비트가 2048개짜리 코드북을 가리키는 인덱스입니다. Unsloth 변형은 그 코드북을 줄이기만 합니다 — 1024개, 512개, 256개 — 그러면 인덱스가 10·9·8비트로 줄고 가중치가 1.4375·1.3125·1.1875 bpw가 됩니다(각각 TQ2_0·TQ1_0·Q1_0으로 배포되며, 이름은 Hugging Face 저장소에 아예 노출되도록 고른 것입니다). 중요한 주장은 이것들이 **평범한 사후 양자화(PTQ)**라는 점입니다 — QAT나 증류가 없고, 바로 그 점이 생산 비용을 낮추는 동시에 독립적으로 검증할 가치를 만듭니다. 계획은 27B 모델을 이 dtype들로 제가 가진 하드웨어에서 돌려 PPL/KLD/top-p 곡선을 인용하는 대신 직접 재현하고, 실용 규칙(RAM+VRAM ≈ 양자화 크기, 그 선을 넘으면 디스크 오프로딩이 20 tok/s라는 숫자를 조용히 전혀 다른 것으로 바꿔 놓는다)을 확인하는 것입니다.",
   },
   {
+    // 로보틱스 트랙 3번째 항목 (jay, 2026-08-17). 배열에서 lerobot-so101 바로 앞에 둔 것은
+    // 의도적이다 — 이 카드가 그 카드의 "앞 단계"라서(픽셀 → 밀리미터가 먼저, 팔 움직이기가
+    // 그다음). 튜토리얼 링크 모음이 되지 않게 산출물을 숫자 두 개로 못박았다: 재투영 RMS와
+    // 자로 잰 거리 대비 tvec 오차율.
+    key: "opencv-robot-vision",
+    title: "Pixels to millimetres — the step before the arm moves",
+    titleKo: "픽셀에서 밀리미터로 — 팔이 움직이기 전 단계",
+    description:
+      "Camera calibration, ArUco pose and hand-eye alignment on a built-in webcam and a sheet of A4. The output is not a demo but two error numbers.",
+    descriptionKo:
+      "노트북 웹캠과 A4 한 장으로 하는 카메라 캘리브레이션·ArUco 자세추정·hand-eye 정렬. 산출물은 데모가 아니라 오차 숫자 두 개입니다.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — `pip install opencv-python opencv-contrib-python`, print one DICT_4X4_50 marker from chev.me/arucogen, and check that the axes render on a webcam with rough intrinsics (fx=fy=image width, cx/cy=centre). Real calibration second. docs.opencv.org",
+    howToKo:
+      "아직 범위 미정 — `pip install opencv-python opencv-contrib-python`, chev.me/arucogen에서 DICT_4X4_50 마커 하나 인쇄, 대략값 내부 파라미터(fx=fy=이미지 폭, cx·cy=중심)로 웹캠에 축이 그려지는지부터 확인. 제대로 된 캘리브레이션은 그다음. docs.opencv.org",
+    purpose:
+      "The LeRobot card is about moving the arm; this is the step in front of it, and skipping it is why a cheap arm grabs at empty air. A policy trained on demonstrations learns actions in the robot's own coordinate frame, but everything the camera reports is in pixels, and nothing in the imitation-learning loop converts between them for you. So the question this card answers is the plainest one in robotics vision — two hundred pixels on screen is how many millimetres in the world? — and the reason it belongs in this catalogue rather than in a bookmark folder is that the honest answer is a measurement, not a pipeline. It also happens to be free: a built-in webcam and a sheet of A4 are the entire bill of materials, which makes it the cheapest way to find out where the ceiling actually is before spending anything on hardware. The V in VLA starts here.",
+    purposeKo:
+      "LeRobot 카드가 \"팔을 어떻게 움직이는가\"라면 이 카드는 **그 앞 단계**이고, 이걸 건너뛰는 것이 저가 로봇팔이 허공을 집는 이유입니다. 시연으로 학습된 정책은 로봇 자신의 좌표계에서 행동을 배우는데 카메라가 보고하는 것은 전부 픽셀이고, 모방학습 루프 안 어디에도 그 둘을 변환해 주는 단계는 없습니다. 그래서 이 카드가 답하는 질문은 로보틱스 비전에서 가장 단순한 것입니다 — **화면의 200픽셀은 실제로 몇 밀리미터인가?** 그리고 이것이 북마크 폴더가 아니라 이 카탈로그에 들어가는 이유는, 정직한 답이 파이프라인이 아니라 **측정값**이기 때문입니다. 게다가 비용이 0원입니다 — 노트북 내장 웹캠과 A4 한 장이 자재 명세의 전부라, 하드웨어에 돈을 쓰기 전에 천장이 어디인지 알아내는 가장 싼 방법이기도 합니다. VLA의 V가 여기서 시작합니다.",
+    howItWorks:
+      "Four steps, and only the last two are optional. Intrinsics: fifteen to twenty chessboard or ChArUco shots through `cv2.calibrateCamera` yield the matrix K (fx, fy, cx, cy) and the distortion coefficients, and reprojection RMS is the first of the two numbers this card exists to produce — under one pixel is the pass mark. Pose: an ArUco marker on the object or the gripper gives full 6-DOF position and rotation relative to the camera, and there is one version trap worth knowing before it costs half an hour — `cv2.aruco.estimatePoseSingleMarkers` was deprecated in OpenCV 4.7, so the current path is `cv2.aruco.ArucoDetector` for corners followed by `cv2.solvePnP` with SOLVEPNP_IPPE_SQUARE, which is why a large share of the tutorials online no longer run as written. Hand-eye: `cv2.calibrateHandEye` aligns the camera frame with the robot base frame, and the classic first mistake is not the algorithm choice (Tsai, Park, Horaud) but the setup — a camera mounted on the arm is eye-in-hand, a camera on a tripod is eye-to-hand, and getting that backwards produces a transform that is wrong in a way that still looks plausible. Inference: `cv2.dnn` runs an ONNX detector with no second framework, which is the natural lightweight pairing for an edge board like the Jetson Orin Nano Super and the reason that item sits next in the queue. The second number is the one that actually settles what this camera can do: put the marker at a distance measured with a ruler, compare it to tvec, and record the error as a percentage. Everything above is setup for those two figures — RMS and range error — and a card that reports them is worth more than one that reports that the axes rendered.",
+    howItWorksKo:
+      "단계는 넷이고 뒤의 둘만 선택입니다. **내부 파라미터**: 체스보드나 ChArUco 보드를 15~20장 찍어 `cv2.calibrateCamera`에 넣으면 행렬 K(fx·fy·cx·cy)와 왜곡계수가 나오고, **재투영 RMS**가 이 카드가 만들려는 두 숫자 중 첫 번째입니다 — 1픽셀 미만이 합격선. **자세추정**: 물체나 그리퍼에 붙인 ArUco 마커가 카메라 기준 6DOF 위치와 회전을 바로 줍니다. 여기 30분을 잡아먹기 전에 알아둘 **버전 함정**이 하나 있습니다 — `cv2.aruco.estimatePoseSingleMarkers`는 OpenCV 4.7에서 폐기됐으므로, 현행 경로는 `cv2.aruco.ArucoDetector`로 코너를 검출하고 `cv2.solvePnP`(플래그 `SOLVEPNP_IPPE_SQUARE`)로 자세를 푸는 것입니다. 인터넷 예제 상당수가 적힌 대로 돌지 않는 이유가 이것입니다. **hand-eye**: `cv2.calibrateHandEye`가 카메라 좌표계와 로봇 베이스 좌표계를 정렬하는데, 초보의 첫 실수는 알고리즘 선택(Tsai·Park·Horaud)이 아니라 **설정**입니다 — 카메라가 팔에 붙어 있으면 eye-in-hand, 삼각대에 있으면 eye-to-hand이고, 이걸 반대로 잡으면 **그럴듯해 보이면서 틀린** 변환이 나옵니다. **추론**: `cv2.dnn`은 별도 프레임워크 없이 ONNX 검출 모델을 돌리는데, Jetson Orin Nano Super 같은 엣지 보드와 짝지을 때의 자연스러운 경량 조합이고 그 항목이 큐에서 다음 순서인 이유이기도 합니다. 이 카메라로 어디까지 할 수 있는지를 실제로 결정하는 것은 **두 번째 숫자**입니다: 마커를 자로 잰 거리에 놓고 `tvec`과 비교해 오차를 퍼센트로 기록합니다. 위의 전부는 그 두 수치 — **RMS와 거리 오차율** — 를 위한 준비이고, 그것을 보고하는 카드가 \"축이 그려졌다\"고 보고하는 카드보다 값어치가 큽니다.",
+  },
+  {
     key: "lerobot-so101",
     title: "LeRobot + SO-101 — the cheapest hands-on robotics entry",
     titleKo: "LeRobot + SO-101 로봇팔 — 손으로 만지는 로보틱스의 최저가 입구",
