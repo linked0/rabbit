@@ -42,12 +42,13 @@ then summarize the built result into <code>docs/history/</code>.</p>
 <h2>Target information architecture (one top menu, anchored by Home)</h2>
 <p>Status verified against the running code on 2026-08-03 (routes, <code>app/Nav.tsx</code>, <code>next.config.js</code>),
 not just doc text — several rows are flagged stale below (see notes under the table).
-<strong>Spot re-check 2026-08-18</strong> (jay): only two rows were re-verified against the code, not the whole
-table — <em>Cross-cutting</em> CI/CD (still absent: no <code>.github/workflows/</code> in this repo) and <em>Agentic AA
-— autonomy loop</em> (still ⬜: <code>app/poc/agent/</code> holds only <code>page.tsx</code> + <code>AgentJournalMock.tsx</code>, and
-<code>app/api/</code> has no <code>agent</code> route). Per-milestone marks for that second row now live in
-<a href="../tasks/current-plan.html#roadmap">current-plan.md → Roadmap status</a>. Every other row still
-carries its 2026-08-03 verification date. <strong>This
+<strong>Full re-audit 2026-08-18</strong> (jay): every row below re-verified against the code — routes
+enumerated from <code>app/**/page.tsx</code>, the top menu read from <code>app/Nav.tsx</code>, not from doc text.
+One row was materially wrong and is corrected below (AI Chat). Verified facts used as the
+basis: the top menu is exactly <code>/</code> · <code>/portfolio</code> · <code>/projects</code> · <code>/game</code> · <code>/poc</code> · <code>/live</code>;
+<code>.github/workflows/</code> still does not exist; <code>/market</code>, <code>/xyz</code>, <code>/poc/aa</code>, <code>/poc/ap2</code>, <code>/poc/7702</code>
+and <code>/poc/agent</code> all exist as routes. Per-milestone marks for the autonomy loop live in
+<a href="../tasks/current-plan.html#roadmap">current-plan.md → Roadmap status</a>. <strong>This
 table is the single status source for everything except the one task tracked in
 <a href="../tasks/current-plan.html">current-plan.md</a> — the Agentic AA autonomy loop</strong> (<code>/poc/agent</code>).
 AP2, Toss, and the AA building blocks graduated out of current-plan.md on 2026-08-06 once built
@@ -78,9 +79,9 @@ their rows below are now the live status. The PoCs hub they all plug into is tra
 </tr>
 <tr>
 <td>AI Chat</td>
-<td><code>/chat</code></td>
+<td><del><code>/chat</code></del> → Home</td>
 <td><a href="ai-chat.html">ai-chat.md</a> — full design incl. Auth+LLM gating and KB-via-MCP+RAG</td>
-<td>🟡 Route exists but was <strong>dropped from the top nav</strong> (2026-08-01, folded into Home); gating/BYO-key ⬜ · KB-RAG ⬜ · Ask-about-me ✅ · Jay Chat public surface ✅</td>
+<td>🟡 <strong>Corrected 2026-08-18</strong> — the previous row said &quot;route exists but was dropped from the nav&quot;; in fact <strong><code>app/chat/</code> does not exist at all</strong>. The surface shipped instead as Jay Chat embedded in Home (<code>app/home/page.tsx</code> + <code>app/api/jay-chat/route.ts</code>), so there is no <code>/chat</code> route to drop. Jay Chat public surface ✅ · Ask-about-me ✅ · gating/BYO-key ⬜ · KB-RAG ⬜</td>
 </tr>
 <tr>
 <td>AP2 Test</td>

@@ -7,12 +7,13 @@ then summarize the built result into `docs/history/`.
 ## Target information architecture (one top menu, anchored by Home)
 Status verified against the running code on 2026-08-03 (routes, `app/Nav.tsx`, `next.config.js`),
 not just doc text — several rows are flagged stale below (see notes under the table).
-**Spot re-check 2026-08-18** (jay): only two rows were re-verified against the code, not the whole
-table — _Cross-cutting_ CI/CD (still absent: no `.github/workflows/` in this repo) and _Agentic AA
-— autonomy loop_ (still ⬜: `app/poc/agent/` holds only `page.tsx` + `AgentJournalMock.tsx`, and
-`app/api/` has no `agent` route). Per-milestone marks for that second row now live in
-[current-plan.md → Roadmap status](../tasks/current-plan.md#roadmap). Every other row still
-carries its 2026-08-03 verification date. **This
+**Full re-audit 2026-08-18** (jay): every row below re-verified against the code — routes
+enumerated from `app/**/page.tsx`, the top menu read from `app/Nav.tsx`, not from doc text.
+One row was materially wrong and is corrected below (AI Chat). Verified facts used as the
+basis: the top menu is exactly `/` · `/portfolio` · `/projects` · `/game` · `/poc` · `/live`;
+`.github/workflows/` still does not exist; `/market`, `/xyz`, `/poc/aa`, `/poc/ap2`, `/poc/7702`
+and `/poc/agent` all exist as routes. Per-milestone marks for the autonomy loop live in
+[current-plan.md → Roadmap status](../tasks/current-plan.md#roadmap). **This
 table is the single status source for everything except the one task tracked in
 [current-plan.md](../tasks/current-plan.md) — the Agentic AA autonomy loop** (`/poc/agent`).
 AP2, Toss, and the AA building blocks graduated out of current-plan.md on 2026-08-06 once built
@@ -25,7 +26,7 @@ their rows below are now the live status. The PoCs hub they all plug into is tra
 |------|-------|-------------|--------|
 | Home | `/` | [main-page.md](main-page.md) | ✅ Done — `/` rewrites to `app/home/page.tsx` |
 | Portfolio & Market | `/portfolio` + `/market` | [portfolio-and-market.md](portfolio-and-market.md) | 🟡 Stale row — already split into **Portfolio** (`/portfolio`, ✅ done) and **Market** (`/market`, 🟡 in progress — Hyperliquid trading, see the doc); this table's Menu column needs a nav-update pass to reflect the split as two rows |
-| AI Chat | `/chat` | [ai-chat.md](ai-chat.md) — full design incl. Auth+LLM gating and KB-via-MCP+RAG | 🟡 Route exists but was **dropped from the top nav** (2026-08-01, folded into Home); gating/BYO-key ⬜ · KB-RAG ⬜ · Ask-about-me ✅ · Jay Chat public surface ✅ |
+| AI Chat | ~~`/chat`~~ → Home | [ai-chat.md](ai-chat.md) — full design incl. Auth+LLM gating and KB-via-MCP+RAG | 🟡 **Corrected 2026-08-18** — the previous row said "route exists but was dropped from the nav"; in fact **`app/chat/` does not exist at all**. The surface shipped instead as Jay Chat embedded in Home (`app/home/page.tsx` + `app/api/jay-chat/route.ts`), so there is no `/chat` route to drop. Jay Chat public surface ✅ · Ask-about-me ✅ · gating/BYO-key ⬜ · KB-RAG ⬜ |
 | AP2 Test | `/poc/ap2` | [ap2-test.md](ap2-test.md) — build detail in the [archived plan §2](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s2) | ✅ Done — Stripe Checkout settlement example (test mode), server-side `payment_status` verification; moved from `/ap2` to `/poc/ap2` |
 | XYZ Demo | `/xyz` | [xyz-demo.md](xyz-demo.md) | 🟡 In progress — C2 bundle-submit + C4 PBS relay dashboard live; other items pending |
 | Verex | ↗ external | [verex-link.md](verex-link.md) | ✅ Done, but **not as designed here** — the nav item was removed (2026-07-25); replaced with a featured card on the Home page (`app/home/page.tsx`, `lib/verex.ts`) instead of a top-menu external link |

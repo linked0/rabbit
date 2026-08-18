@@ -44,8 +44,14 @@ the agreed next-work queue.</p>
 <p><strong>Carry-over from jul-28:</strong> A.4 <code>walletSummary</code> <code>balanceOfBatch</code> batching — in progress in a
 separate session (started 2026-08-03).</p>
 </blockquote>
-<h2>Roadmap status (2026-08-03, S6/S9 re-audited 2026-08-18)</h2>
+<h2>Roadmap status (2026-08-03; <strong>all 10 steps re-audited 2026-08-18</strong>)</h2>
 <blockquote>
+<p><strong>2026-08-18 re-audit:</strong> every row below was re-checked against <code>main</code>. S6 and S9 had drifted
+and are corrected with evidence; the other eight were confirmed unchanged — S2&#39;s
+<code>packages/contracts/deployments.json</code> is present, S3&#39;s two gaps still stand (<code>packages/mcp-server</code>
+absent, no ADR 0001), S4&#39;s <code>packages/api/src/db.ts</code> is present, S5 has no chain→DB indexer
+(<code>worker.ts</code> runs API→chain ChainJob work, which is the opposite direction), and S7/S8/S10 have
+no code at all (no 4337/7702/session-key or CCIP/LayerZero references under <code>packages/*/src</code>).</p>
 <p>Moved here from <code>docs/features/README.md</code> (jay, 2026-08-03): dated status audits are planning
 content and belong in the rolling current-plan doc, not the long-lived feature index. Audited
 against the code on <code>main</code>, not the commit log. The roadmap has been executed <strong>out of order</strong>:
