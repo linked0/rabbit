@@ -27,3 +27,25 @@
 **Change:** `lib/poc-cards.ts`에 `cross-border-rail-interop` 추가(`tokenized-money-banks` 바로 앞). 비교에 **기준선이 이미 존재**한다는 점을 살려 측정 가능하게 잡았다 — Nexus를 무원장 팔(유로시스템·말레이시아·싱가포르 테스트 시스템 연결, 휴대폰 번호 주소 지정, ASEAN 확장 중), mBridge를 원장 팔(중앙은행이 만든 다중통화 CBDC 정산 체인, 2024년 MVP)로 두고 **"허브 대비 무엇을 더 샀나"**를 묻는다. 측정의 핵심은 **선충전 금액**: 코레스 뱅킹의 진짜 비용은 수수료가 아니라 코리도마다 놀고 있는 노스트로·보스트로 잔고이므로, 코리도 하나를 원자적 PvP 유무로 모델링해 **필요 선충전 유동성의 차이**(코리도 거래량·정산 지연·FX 변동성에서 도출)를 구하면 논쟁이 아니라 숫자가 나온다. 측정이 오도되지 않도록 제약도 넣었다 — **여기서 채택을 결정하는 것은 처리량이 아니라 거버넌스**(허브 운영자, 브리지 통화, 제재 시 처리, 회원 배제 가능성)라, 지연시간과 비용만 재면 틀린 것을 재게 된다. `status:"soon"`, `date` 없음.
 
 **Result:** `npx tsc --noEmit` 통과(exit 0). 카드 44→45, 목록 **30번**(`tokenized-money-banks` 바로 앞). 생성 HTML 46개 전수 검사 — 신규 이슈 0건(기존 2건 동일). BIS Nexus·mBridge와 BRICS 보도는 웹 검색으로 교차 확인했고, 확인되지 않은 사항(mBridge 거버넌스 변동 등)은 카드에 넣지 않았다.
+
+### 워크스페이스 인덱스 파일명 수정 + Rabbit current-plan에 Roadmap status 신설
+
+**Cause:** jay가 두 가지를 지적 — ① Workspace Index의 "Verex — Current Plan" 카드가 표시하는 파일명이 틀렸다 ② Rabbit의 current-plan도 Verex처럼 **Roadmap status와 done/not-started 표기**를 갖춰야 한다.
+
+**Reasoning:** ①은 확인해 보니 **링크가 아니라 라벨만 썩어 있었다** — `href`는 이미 `current-plan.html`을 올바로 가리키는데 `card-path` 텍스트만 `jul-28-verex-design.md`였고, 그 파일은 verex에 **존재하지 않는다**(`docs/tasks/`에 current-plan.md·jul-28-plan.md·jul-28-verex.md·jul-29-verex.md·jun-19-*.md만 있음). 링크가 멀쩡해서 클릭으로는 안 드러나는 종류의 오류라, 이후에도 잡히도록 카드 경로 전수 검사를 검증 스크립트에 넣었다.
+
+②는 형식을 옮기기 전에 **상태를 코드에 대고 감사**하는 것이 먼저였다 — verex 표의 원칙이 "커밋 로그가 아니라 `main`의 코드 기준"이고, 그 원칙 없이 형식만 베끼면 그럴듯한 거짓 상태표가 된다. 감사 결과 **M1–M5가 전부 미착수**였다: `app/api/`에 `agent` 라우트가 없고(M2), `app/poc/agent/`에는 `page.tsx`와 `AgentJournalMock.tsx`뿐(M3은 목업만), 스케줄러 없음(M4). 여기서 걸리는 점 하나를 카드와 대조해 확인했다 — `agent` PoC 카드는 `status:"done", date:"2026-08-12"`인데, 08-12 이력을 보면 그날 한 일은 *"완료(done) 상태 신설"*이라는 문서 색인 정리이고 에이전트 구현 항목이 없다. 즉 그 done은 `oz-relayer`와 같은 **완결된 사고실험 + 목업**을 뜻하지 자율 루프가 돈다는 뜻이 아니다. 둘이 모순으로 읽히지 않도록 그 설명을 표 아래에 명시적으로 적었다.
+
+**Change:** `docs/index.html`의 card-path를 `verex/docs/tasks/current-plan.md`로 교정. `docs/tasks/current-plan.md`에 **`## Roadmap status`** 신설 — verex와 같은 표기(✅ done / ◐ partial / ❌ not started)로 M1–M5 + §8 Unity 사이드퀘스트 6행, 각 행에 **파일 단위 근거**를 적었다(추정이 아니라 확인한 것만). TOC에 항목 추가, 헤더의 `Status:` 줄이 표를 가리키게 수정, 그리고 전역 규칙대로 §0 Summary의 이력 포인터를 08-06 → **08-18**로 갱신(08-06은 이 계획 자체의 설계일로 함께 남김). Logs 행 카드도 08-17 → **08-18**로 올리고 verex 08-18 이력을 `docs/history/`로 미러, `pnpm docs:logs`로 60 → **62건** 반영.
+
+**Result:** Current Projects 카드 9개의 **href와 card-path 텍스트를 모두** 검사 — 깨진 것 0건(이전 검사는 href만 봤기 때문에 이 오류를 놓쳤다). `npx tsc --noEmit` exit 0. `docs/index.html`의 div 28/27은 HEAD와 동일한 기존 이슈.
+
+### Feature Designs 상태 갱신 — rabbit은 부분 재확인, verex는 실제 드리프트 2건
+
+**Cause:** jay가 Rabbit·Verex Feature Designs 문서의 상태 갱신을 요청. 두 문서 모두 마지막 감사가 2026-08-03이었다.
+
+**Reasoning:** 전체 재감사 대신 **문서가 "없다"고 단정한 항목만 코드에 대고 확인**하는 방식을 골랐다 — 드리프트는 대개 거기서 생기고, 근거 없이 상태를 바꿔 지어낼 위험이 없다. **rabbit은 두 행이 여전히 정확**했다: CI/CD는 `.github/workflows/`가 실제로 없어서 맞고, Agentic AA 자율 루프도 위 감사대로 ⬜가 맞다. 그래서 **날짜를 통째로 갱신하지 않고 "이 두 행만 재확인했다"고 범위를 명시**했다 — 나머지 행까지 새 날짜를 달면 확인하지 않은 것을 확인한 것처럼 만들기 때문. **verex 쪽 상세는** [2026-08-18-verex-history.md](2026-08-18-verex-history.md) 참고(S9 CI/CD는 이미 존재, S6는 과소 기재였음).
+
+**Change:** `docs/features/README.md` 상단에 2026-08-18 부분 재확인 문단 추가 — 재확인한 두 행과 각각의 근거, 그리고 자율 루프의 세부 상태는 이제 `current-plan.md#roadmap`에 있다는 포인터. 나머지 행은 2026-08-03 확인 날짜를 그대로 유지한다고 명시.
+
+**Result:** rabbit 상태 문서가 코드와 일치하고, **어디까지 확인된 상태인지가 문서 자체에 적혀 있다.** verex 문서 2건 수정은 형제 저장소에서 별도 커밋·머지했고, 어제 만든 동기화(`pnpm docs:html` → `sync-verex-docs.mjs`)가 그 변경을 rabbit 미러로 자동으로 끌어왔다(2 files updated).

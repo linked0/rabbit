@@ -9,9 +9,11 @@
   Nothing was deleted; the finished rows moved to the features table.
 - **Design source:** [../features/agentic-aa.md](../features/agentic-aa.md) (4 pillars, ERC-8021,
   WalletChan) · scenario prose in [`lib/agent-scenarios.ts`](../../lib/agent-scenarios.ts).
-- **Status:** ⬜ Not started — design below, no code yet.
+- **Status:** ⬜ Not started — design below, no code yet. Per-milestone marks in
+  [Roadmap status](#roadmap); audited against the code on `main`, not the commit log.
 
 ## Table of contents <a id="toc"></a>
+- [Roadmap status](#roadmap)
 - [§0 — Summary](#s0)
 - [§1 — Why this, and not more pillars](#s1)
 - [§2 — The demo: scheduled operator, actually running](#s2)
@@ -21,6 +23,30 @@
 - [§6 — What this demo does *not* prove](#s6)
 - [§7 — What already exists (the rail this builds on)](#s7)
 - [§8 — Side-quest: Unity visualization via the `rabbit-hole` submodule](#s8)
+
+## Roadmap status <a id="roadmap"></a>
+<sub>[↑ TOC](#toc)</sub>
+
+> Same shape as [verex's rolling plan](../../projects/verex/docs/tasks/current-plan.md) (jay,
+> 2026-08-18): a dated status table is what lets a cold session see where the work actually
+> stands without reading the whole design. Audited **against the code on `main`**, not the
+> commit log — the marks below were checked by looking for the files, not by trusting a
+> milestone list.
+
+| M | Milestone | Status | Evidence / gap |
+|---|-----------|--------|----------------|
+| **M1** | Agent identity + mandate | ❌ not started | no server-held session account, no grant/revoke flow; **blocked by D2 key custody** |
+| **M2** | The tick, callable by hand | ❌ not started | no `POST /api/agent/tick` — `app/api/` has no `agent` route at all |
+| **M3** | Journal + persistence | ◐ mock only | `/poc/agent` renders `app/poc/agent/AgentJournalMock.tsx`, a hand-written 7-tick script walked by a button — no store, no read API, no real ticks |
+| **M4** | Actually unattended | ❌ not started | no scheduler wired. **This is the milestone that earns the word "agentic"** — M1–M3 without it is still a button |
+| **M5** | Expiry run *(evidence)* | ❌ not started | blocked on M4; nothing to capture until the loop runs unattended |
+| **§8** | Unity visualization *(side-quest)* | ❌ not started | explicitly off the critical path; submodule decision **U1** still open |
+
+**What the PoC card says, and why it does not contradict this.** The `agent` card in
+[`lib/poc-cards.ts`](../../lib/poc-cards.ts) is `status: "done", date: "2026-08-12"`. That
+follows the `oz-relayer` pattern — a completed thought experiment plus a mock, not a running
+demo. The autonomy loop this doc plans is a different claim, and by the table above none of it
+is built yet. The card and the plan are consistent; they are just measuring different things.
 
 ## 0. Summary <a id="s0"></a>
 <sub>[↑ TOC](#toc)</sub>
@@ -36,7 +62,8 @@ task is to make it a thing that is actually running while nobody is watching.
 
 **History:** this doc stays short on purpose — for the blow-by-blow of what got built on a given
 day, follow `docs/history/YYYY-MM-DD-rabbit-history.md` (latest:
-[2026-08-06](../history/2026-08-06-rabbit-history.md); the building blocks this sits on were built
+[2026-08-18](../history/2026-08-18-rabbit-history.md); this plan's own design work is
+[08-06](../history/2026-08-06-rabbit-history.md), and the building blocks it sits on were built
 [08-04](../history/2026-08-04-rabbit-history.md) and refined
 [08-05](../history/2026-08-05-rabbit-history.md)).
 

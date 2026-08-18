@@ -41,7 +41,13 @@ Each feature has its own file; this is the main index. These are for review — 
 then summarize the built result into <code>docs/history/</code>.</p>
 <h2>Target information architecture (one top menu, anchored by Home)</h2>
 <p>Status verified against the running code on 2026-08-03 (routes, <code>app/Nav.tsx</code>, <code>next.config.js</code>),
-not just doc text — several rows are flagged stale below (see notes under the table). <strong>This
+not just doc text — several rows are flagged stale below (see notes under the table).
+<strong>Spot re-check 2026-08-18</strong> (jay): only two rows were re-verified against the code, not the whole
+table — <em>Cross-cutting</em> CI/CD (still absent: no <code>.github/workflows/</code> in this repo) and <em>Agentic AA
+— autonomy loop</em> (still ⬜: <code>app/poc/agent/</code> holds only <code>page.tsx</code> + <code>AgentJournalMock.tsx</code>, and
+<code>app/api/</code> has no <code>agent</code> route). Per-milestone marks for that second row now live in
+<a href="../tasks/current-plan.html#roadmap">current-plan.md → Roadmap status</a>. Every other row still
+carries its 2026-08-03 verification date. <strong>This
 table is the single status source for everything except the one task tracked in
 <a href="../tasks/current-plan.html">current-plan.md</a> — the Agentic AA autonomy loop</strong> (<code>/poc/agent</code>).
 AP2, Toss, and the AA building blocks graduated out of current-plan.md on 2026-08-06 once built

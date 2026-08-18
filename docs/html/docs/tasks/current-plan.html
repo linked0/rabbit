@@ -46,10 +46,12 @@ docs.</li>
 Nothing was deleted; the finished rows moved to the features table.</li>
 <li><strong>Design source:</strong> <a href="../features/agentic-aa.html">../features/agentic-aa.md</a> (4 pillars, ERC-8021,
 WalletChan) · scenario prose in <a href="https://github.com/linked0/rabbit/blob/main/lib/agent-scenarios.ts"><code>lib/agent-scenarios.ts</code></a>.</li>
-<li><strong>Status:</strong> ⬜ Not started — design below, no code yet.</li>
+<li><strong>Status:</strong> ⬜ Not started — design below, no code yet. Per-milestone marks in
+<a href="#roadmap">Roadmap status</a>; audited against the code on <code>main</code>, not the commit log.</li>
 </ul>
 <h2>Table of contents <a id="toc"></a></h2>
 <ul>
+<li><a href="#roadmap">Roadmap status</a></li>
 <li><a href="#s0">§0 — Summary</a></li>
 <li><a href="#s1">§1 — Why this, and not more pillars</a></li>
 <li><a href="#s2">§2 — The demo: scheduled operator, actually running</a></li>
@@ -60,6 +62,66 @@ WalletChan) · scenario prose in <a href="https://github.com/linked0/rabbit/blob
 <li><a href="#s7">§7 — What already exists (the rail this builds on)</a></li>
 <li><a href="#s8">§8 — Side-quest: Unity visualization via the <code>rabbit-hole</code> submodule</a></li>
 </ul>
+<h2>Roadmap status <a id="roadmap"></a></h2>
+<p><sub><a href="#toc">↑ TOC</a></sub></p>
+<blockquote>
+<p>Same shape as <a href="../../projects/verex/docs/tasks/current-plan.html">verex&#39;s rolling plan</a> (jay,
+2026-08-18): a dated status table is what lets a cold session see where the work actually
+stands without reading the whole design. Audited <strong>against the code on <code>main</code></strong>, not the
+commit log — the marks below were checked by looking for the files, not by trusting a
+milestone list.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>M</th>
+<th>Milestone</th>
+<th>Status</th>
+<th>Evidence / gap</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>M1</strong></td>
+<td>Agent identity + mandate</td>
+<td>❌ not started</td>
+<td>no server-held session account, no grant/revoke flow; <strong>blocked by D2 key custody</strong></td>
+</tr>
+<tr>
+<td><strong>M2</strong></td>
+<td>The tick, callable by hand</td>
+<td>❌ not started</td>
+<td>no <code>POST /api/agent/tick</code> — <code>app/api/</code> has no <code>agent</code> route at all</td>
+</tr>
+<tr>
+<td><strong>M3</strong></td>
+<td>Journal + persistence</td>
+<td>◐ mock only</td>
+<td><code>/poc/agent</code> renders <code>app/poc/agent/AgentJournalMock.tsx</code>, a hand-written 7-tick script walked by a button — no store, no read API, no real ticks</td>
+</tr>
+<tr>
+<td><strong>M4</strong></td>
+<td>Actually unattended</td>
+<td>❌ not started</td>
+<td>no scheduler wired. <strong>This is the milestone that earns the word &quot;agentic&quot;</strong> — M1–M3 without it is still a button</td>
+</tr>
+<tr>
+<td><strong>M5</strong></td>
+<td>Expiry run <em>(evidence)</em></td>
+<td>❌ not started</td>
+<td>blocked on M4; nothing to capture until the loop runs unattended</td>
+</tr>
+<tr>
+<td><strong>§8</strong></td>
+<td>Unity visualization <em>(side-quest)</em></td>
+<td>❌ not started</td>
+<td>explicitly off the critical path; submodule decision <strong>U1</strong> still open</td>
+</tr>
+</tbody></table>
+<p><strong>What the PoC card says, and why it does not contradict this.</strong> The <code>agent</code> card in
+<a href="https://github.com/linked0/rabbit/blob/main/lib/poc-cards.ts"><code>lib/poc-cards.ts</code></a> is <code>status: &quot;done&quot;, date: &quot;2026-08-12&quot;</code>. That
+follows the <code>oz-relayer</code> pattern — a completed thought experiment plus a mock, not a running
+demo. The autonomy loop this doc plans is a different claim, and by the table above none of it
+is built yet. The card and the plan are consistent; they are just measuring different things.</p>
 <h2>0. Summary <a id="s0"></a></h2>
 <p><sub><a href="#toc">↑ TOC</a></sub></p>
 <p>Build <strong><code>/poc/agent</code></strong> — a server-side agent that wakes on a timer, reads a real signal, decides on
@@ -71,7 +133,8 @@ a button; it is a <strong>live journal</strong> of the agent&#39;s decisions, in
 task is to make it a thing that is actually running while nobody is watching.</p>
 <p><strong>History:</strong> this doc stays short on purpose — for the blow-by-blow of what got built on a given
 day, follow <code>docs/history/YYYY-MM-DD-rabbit-history.md</code> (latest:
-<a href="../history/2026-08-06-rabbit-history.html">2026-08-06</a>; the building blocks this sits on were built
+<a href="../history/2026-08-18-rabbit-history.html">2026-08-18</a>; this plan&#39;s own design work is
+<a href="../history/2026-08-06-rabbit-history.html">08-06</a>, and the building blocks it sits on were built
 <a href="../history/2026-08-04-rabbit-history.html">08-04</a> and refined
 <a href="../history/2026-08-05-rabbit-history.html">08-05</a>).</p>
 <p><strong>Resume point (2026-08-06):</strong> plan + a discussion mockup on branch <strong><code>claude/agentic-aa-plan</code></strong>

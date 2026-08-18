@@ -44,7 +44,7 @@ the agreed next-work queue.</p>
 <p><strong>Carry-over from jul-28:</strong> A.4 <code>walletSummary</code> <code>balanceOfBatch</code> batching — in progress in a
 separate session (started 2026-08-03).</p>
 </blockquote>
-<h2>Roadmap status (2026-08-03)</h2>
+<h2>Roadmap status (2026-08-03, S6/S9 re-audited 2026-08-18)</h2>
 <blockquote>
 <p>Moved here from <code>docs/features/README.md</code> (jay, 2026-08-03): dated status audits are planning
 content and belong in the rolling current-plan doc, not the long-lived feature index. Audited
@@ -81,8 +81,8 @@ S9&#39;s deploy is live while S5/S6 never started.</p>
 </tr>
 <tr>
 <td>S6 Oracle adapters + MM v1</td>
-<td>❌ not started</td>
-<td>resolve is still Stage-1 manual (operator EOA) — audit item A5 SPOF stands</td>
+<td>◐ partial (re-audited 2026-08-18)</td>
+<td>default resolve is still Stage-1 manual, operator-only (<code>resolve.ts</code> rejects any <code>accountIndex !== 0</code>) so the A5 SPOF stands — but the UMA path is no longer absent: <code>resolve.ts</code> branches on <code>market.oracleType === &quot;UMA&quot;</code> and defers to the adapter that owns the condition, and <code>uma-demo.ts</code> walks propose/dispute/vote/finalize with a runbook. <strong>Against the MOCK oracle</strong> — a live Sepolia UMA adapter is not verified here</td>
 </tr>
 <tr>
 <td>S7–S8 AA / cross-chain</td>
@@ -91,8 +91,8 @@ S9&#39;s deploy is live while S5/S6 never started.</p>
 </tr>
 <tr>
 <td>S9 Deploy</td>
-<td>◐ partial</td>
-<td>Cloud Run staging + prod live (2026-08-03); <strong>Stripe ❌, CI/CD ❌</strong> (no <code>.github/workflows</code>)</td>
+<td>◐ partial (re-audited 2026-08-18)</td>
+<td>Cloud Run staging + prod live (2026-08-03); <strong>CI/CD ✅ — <code>.github/workflows/deploy-staging.yml</code> exists</strong> (last touched 2026-08-07, <code>ec3f853</code>), which supersedes the earlier &quot;no <code>.github/workflows</code>&quot; gap; <strong>Stripe ❌</strong> (no stripe references under <code>packages/*/src</code>)</td>
 </tr>
 <tr>
 <td>S10 Final</td>
