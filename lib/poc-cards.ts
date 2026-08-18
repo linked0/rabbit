@@ -650,6 +650,32 @@ export const POC_CARDS: DemoCard[] = [
       "서베이가 아니라 실습으로 계획했습니다: FHE 라이브러리 하나를 골라 암호문 입력에 대한 집계 하나(합계나 카운트)를 끝까지 돌려보고, 지연과 암호문 크기를 실제로 측정합니다 — 이 기술이 쓸 만한지를 정하는 건 결국 이 두 숫자입니다. 참조 사례는 원본 레코드가 소유자를 아예 떠날 수 없다는 법적 제약이 걸린 병원·레지스트리 데이터 협업입니다.",
   },
   {
+    // pet-clean-room 바로 뒤에 두었다 (jay, 2026-08-18) — 둘이 짝이라서. 그쪽은 "끝내 읽히지
+    // 않는 데이터 위에서 계산하기"이고, 이 카드는 "값만 가렸을 때 무엇이 새는가"다.
+    // 논지의 뼈대는 Sui 자신의 발표 문구다: "체인은 누가 누구에게 언제 냈는지를 보여준다.
+    // 금액은 ▦▦▦로 나온다." 그 문장을 무해한 절반으로 내놓았는데, B2B에서는 아닐 수 있다.
+    key: "confidential-settlement-metadata",
+    title: "Hiding the amount is the easy half",
+    titleKo: "금액을 가리는 건 쉬운 절반이다",
+    description:
+      "Confidential settlement encrypts the invoice value and publishes who paid whom and when. For a supply chain, the second half may be the one worth hiding.",
+    descriptionKo:
+      "기밀 정산은 청구 금액을 암호화하고 누가 누구에게 언제 냈는지는 공개합니다. 공급망 입장에서는 뒤쪽 절반이 정작 가려야 할 것일 수 있습니다.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — synthesise a B2B payment graph, strip every amount, and see how much commercially sensitive structure is still recoverable from edges and timestamps alone. Source: Mysten Labs' Tessera announcement, 2026-08-10, and Sui's Confidential Transfers (public testing since 2026-06).",
+    howToKo:
+      "아직 범위 미정 — B2B 결제 그래프를 합성하고 금액을 전부 지운 뒤, 간선과 타임스탬프만으로 상업적으로 민감한 구조가 얼마나 복원되는지 봅니다. 출처: Mysten Labs의 Tessera 발표(2026-08-10), Sui Confidential Transfers(2026-06 공개 테스트).",
+    purpose:
+      "Institutional privacy converged on one shape in 2026 — Tessera on Sui, XRPL's confidential transfers, Circle's Arc Privacy, Canton, Midnight — and the shape is: encrypt the value, publish the graph. Sui states it without hedging in its own announcement: the chain shows who paid whom and when, and the amount appears as ▦▦▦. That is offered as the harmless half. This card asks whether it is. In B2B settlement the commercially sensitive facts are often structural rather than numeric: who your suppliers are, which relationships are contractual and which are one-off, when a contract started or stopped, whether you have begun paying late. A competitor does not need your invoice value to see that you onboarded a supplier last month and dropped another one. And the asymmetry is worse than it looks — an amount that leaks is one number, while a published graph edge cannot be un-published, and the graph compounds as every later payment adds to it. The point is not that the cryptography is weak. Twisted ElGamal over Ristretto255 with zero-knowledge proofs does exactly what it claims. The point is that the thing left in the clear was chosen for a technical reason, not a privacy one.",
+    purposeKo:
+      "2026년의 기관용 프라이버시는 한 형태로 수렴했습니다 — Sui의 Tessera, XRPL의 기밀 전송, Circle의 Arc Privacy, Canton, Midnight — 그리고 그 형태는 **값은 암호화하고 그래프는 공개하는 것**입니다. Sui는 자기 발표에서 이를 에두르지 않고 적었습니다: 체인은 **누가 누구에게 언제** 냈는지를 보여주고, 금액은 ▦▦▦로 나온다. 이것이 **무해한 절반**으로 제시됩니다. 이 카드는 정말 그런가를 묻습니다. B2B 정산에서 상업적으로 민감한 사실은 숫자보다 **구조** 쪽인 경우가 많습니다 — 공급업체가 누구인지, 어느 관계가 계약이고 어느 것이 일회성인지, 계약이 언제 시작되고 끊겼는지, 대금을 늦게 내기 시작했는지. 경쟁사는 청구 금액을 몰라도 **지난달에 공급업체 하나가 들어오고 하나가 빠진 것**을 볼 수 있습니다. 게다가 비대칭이 겉보기보다 나쁩니다 — 새어 나간 금액은 **숫자 하나**지만, 공개된 그래프 간선은 **되돌려 감출 수 없고** 이후의 모든 결제가 거기에 더해지며 누적됩니다. 암호학이 약하다는 얘기가 아닙니다. Ristretto255 위의 Twisted ElGamal과 영지식 증명은 주장한 그대로 동작합니다. 요점은 **평문으로 남겨진 것이 프라이버시 판단이 아니라 기술적 제약 때문에 정해졌다**는 것입니다.",
+    howItWorks:
+      "The measurement runs entirely on synthetic data, which is what makes it doable: build a B2B payment graph with realistic structure — supplier tiers, net-30 cadence, seasonal variance, occasional onboarding and churn, a few relationships that quietly slip late — then publish only what Tessera publishes. Sender, receiver, timestamp. No amounts at all, not even ranges. Then attack it. Interval regularity separates contractual edges from one-off ones; edge start and stop dates give contract initiation and termination; frequency ranks counterparty importance; cadence slippage is a distress signal that arrives before any public filing. The output is a number rather than an opinion: what share of those inferences is recoverable, at what accuracy, with zero value data. Two things make this more than a critique. First, the exposure is inherent, not sloppy — the encryption is on the value because the chain must still name the accounts whose ciphertexts it updates, so hiding the graph too would mean a shielded-pool design, which breaks exactly the auditability institutions are buying. That is a real trilemma and worth stating as one rather than scoring points. Canton is the comparison arm precisely because it resolves it differently, keeping the graph off the public ledger at the cost of being a permissioned network. The second axis is the trust model: Seal grants scoped, time-limited, revocable access to regulators, tax authorities and dispute arbiters, which is the right shape for compliance, and network operators can onboard, freeze accounts, or pause the network. Both are sensible. Both also mean the confidentiality is conditional on whoever holds the threshold shares — worth recording next to the third-party-blast-radius card, because a privacy guarantee an operator can revoke is a policy, not a cryptographic property.",
+    howItWorksKo:
+      "측정이 전부 **합성 데이터** 위에서 돌아가기 때문에 실제로 해볼 만합니다: 현실적인 구조를 가진 B2B 결제 그래프를 만듭니다 — 공급업체 계층, net-30 주기, 계절 변동, 간헐적인 신규 편입과 이탈, 조용히 지연되기 시작하는 관계 몇 개. 그리고 **Tessera가 공개하는 것만** 공개합니다. 보내는 쪽, 받는 쪽, 타임스탬프. 금액은 범위조차 없이 전부 제거합니다. 그다음 공격합니다. **간격의 규칙성**이 계약 관계와 일회성 거래를 갈라내고, **간선의 시작·종료일**이 계약 개시와 해지를 주며, **빈도**가 거래처 중요도를 순위 매기고, **주기의 미끄러짐**은 어떤 공시보다 먼저 도착하는 부실 신호입니다. 산출물은 의견이 아니라 숫자입니다: **금액 데이터가 0인 상태에서 이 추론들이 얼마나, 어느 정확도로 복원되는가.** 이것이 단순한 비판을 넘어서는 이유가 둘 있습니다. **첫째, 이 노출은 부주의가 아니라 내재적입니다** — 암호화가 값에 걸린 이유는 체인이 여전히 **어느 계정의 암호문을 갱신할지 지목해야** 하기 때문이고, 그래프까지 가리려면 실드풀 설계로 가야 하는데 그러면 기관이 사려는 **감사 가능성**이 정확히 깨집니다. 이건 진짜 트릴레마이므로 점수를 따려 하지 말고 트릴레마로 적어 두는 편이 낫습니다. **Canton이 비교군인 이유가 바로 이것** — 퍼미션드 네트워크라는 대가를 치르고 그래프를 공개 원장 밖에 둠으로써 같은 문제를 다르게 풉니다. **둘째 축은 신뢰 모델**입니다: Seal은 규제기관·과세당국·분쟁 중재인에게 **범위가 정해지고 기한이 있으며 취소 가능한** 접근을 부여하는데 이는 컴플라이언스에 맞는 형태이고, 네트워크 운영자는 회원을 편입하거나 계정을 동결하거나 네트워크를 멈출 수 있습니다. 둘 다 합리적입니다. 그리고 둘 다 **기밀성이 임계 지분을 쥔 쪽에 조건부**라는 뜻이기도 합니다 — `third-party-blast-radius` 카드 옆에 적어 둘 값어치가 있습니다. **운영자가 취소할 수 있는 프라이버시 보장은 암호학적 성질이 아니라 정책**이니까요.",
+  },
+  {
     key: "stake-concentration",
     title: "Stake concentration risk",
     titleKo: "스테이킹 집중 위험",
