@@ -52,6 +52,7 @@ WalletChan) · scenario prose in <a href="https://github.com/linked0/rabbit/blob
 <h2>Table of contents <a id="toc"></a></h2>
 <ul>
 <li><a href="#roadmap">Roadmap status</a></li>
+<li><a href="#queue">Next-work queue</a></li>
 <li><a href="#s0">§0 — Summary</a></li>
 <li><a href="#s1">§1 — Why this, and not more pillars</a></li>
 <li><a href="#s2">§2 — The demo: scheduled operator, actually running</a></li>
@@ -122,6 +123,41 @@ milestone list.</p>
 follows the <code>oz-relayer</code> pattern — a completed thought experiment plus a mock, not a running
 demo. The autonomy loop this doc plans is a different claim, and by the table above none of it
 is built yet. The card and the plan are consistent; they are just measuring different things.</p>
+<h2>Next-work queue — 1 blocking gate + 2 active tasks + 1 deferred <a id="queue"></a></h2>
+<p><sub><a href="#toc">↑ TOC</a></sub></p>
+<blockquote>
+<p>Same shape as <a href="../../projects/verex/docs/tasks/current-plan.html">verex&#39;s queue</a> (jay,
+2026-08-18): <strong>Why now / Gate / Done when</strong> per item, deferred items struck through and kept
+rather than deleted. &quot;Done when&quot; lines are the verification gates — a task is not done because
+code exists, it is done when the stated check passes. Estimates are focused-work days.</p>
+</blockquote>
+<h3>0) <code>(you)</code> D2 — where the session key lives ⛔ <strong>BLOCKING</strong></h3>
+<p><strong>Why now:</strong> M1 cannot start without it, so everything below is gated on one decision.
+<strong>Proposal on the table</strong> (<a href="#s4">§4</a>): generate server-side, expose only the address to the
+browser for the grant, private key in server env — testnet-grade custody, labelled as such on the
+page. <strong>Needs jay&#39;s explicit OK.</strong>
+<strong>Done when:</strong> jay says yes/no in writing and <a href="#s4">§4 D2</a> records the choice.</p>
+<h3>1) M1 — agent identity + mandate ⬜ not started · ~1d</h3>
+<p><strong>Why now:</strong> first buildable step once D2 clears; every later milestone signs with this account.
+<strong>Gate:</strong> D2 above. D1 (gas) is <strong>already decided</strong> — keep 7715/7710 and pre-fund the session
+account once; &quot;agent ran out of gas&quot; stays an honest journal failure mode.
+<strong>Done when:</strong> a mandate can be granted scoped to amount + expiry + recipient, and revoked, with
+the session address visible in the browser.</p>
+<h3>2) M2 — the tick, callable by hand ⬜ not started · ~1d</h3>
+<p><strong>Why now:</strong> it is the whole loop minus the scheduler, and it is verifiable without one.
+<strong>Gate:</strong> M1.
+<strong>Done when:</strong> <code>POST /api/agent/tick</code> runs observe → decide → act → record, and <strong>calling it twice
+in a row is safe</strong> — verified by <code>curl</code>, before any scheduler exists.</p>
+<h3>3) <del>§8 Unity visualization</del> — <strong>DEFERRED, not dropped</strong> (jay, 2026-08-18)</h3>
+<blockquote>
+<p>Kept because the design work is done and the reasoning is worth not re-deriving: it is
+explicitly off the critical path (<a href="#s8">§8</a>), and its own blocking question — <strong>U1</strong>, the
+submodule strategy — is still open. Nothing here is wrong; it is simply behind M1–M5, and
+starting it before M4 would mean visualising a loop that does not yet run unattended.</p>
+</blockquote>
+<p><strong>M3–M5 are not in the queue on purpose.</strong> M3 depends on D4 (journal storage, ⬜ undecided) and M4
+on D3 (scheduler host, ⬜ undecided); both are listed in <a href="#s4">§4</a> and neither blocks M1 or M2, so
+they enter the queue once those two decisions land rather than sitting here as pseudo-active work.</p>
 <h2>0. Summary <a id="s0"></a></h2>
 <p><sub><a href="#toc">↑ TOC</a></sub></p>
 <p>Build <strong><code>/poc/agent</code></strong> — a server-side agent that wakes on a timer, reads a real signal, decides on
@@ -219,10 +255,16 @@ tx. This is the main surface; it should read like a log, not a dashboard.</li>
 </ul>
 <h2>3. Build plan (M1–M5) <a id="s3"></a></h2>
 <p><sub><a href="#toc">↑ TOC</a></sub></p>
+<blockquote>
+<p>Status column mirrors <a href="#roadmap">Roadmap status</a> — that table is the source, this one adds the
+deliverable detail. If the two ever disagree, the Roadmap table was audited against the code and
+wins.</p>
+</blockquote>
 <table>
 <thead>
 <tr>
 <th>M</th>
+<th>Status</th>
 <th>Milestone</th>
 <th>Deliverable</th>
 <th>Est.</th>
@@ -230,30 +272,35 @@ tx. This is the main surface; it should read like a log, not a dashboard.</li>
 </thead>
 <tbody><tr>
 <td><strong>M1</strong></td>
+<td>⬜ not started</td>
 <td><strong>Agent identity + mandate</strong></td>
 <td>Server-held session account (address exposed to the browser); grant flow scoped to amount + expiry + recipient; revoke</td>
 <td>1d</td>
 </tr>
 <tr>
 <td><strong>M2</strong></td>
+<td>⬜ not started</td>
 <td><strong>The tick, callable by hand</strong></td>
 <td><code>POST /api/agent/tick</code> — observe → decide → act → record, idempotent, safe to call twice. Verified by <code>curl</code> before any scheduler exists</td>
 <td>1d</td>
 </tr>
 <tr>
 <td><strong>M3</strong></td>
+<td>◐ mock only</td>
 <td><strong>Journal + persistence</strong></td>
 <td>Journal store (see <a href="#s4">D4</a>), read API, <code>/poc/agent</code> page with the three states</td>
 <td>1d</td>
 </tr>
 <tr>
 <td><strong>M4</strong></td>
+<td>⬜ not started</td>
 <td><strong>Actually unattended</strong></td>
 <td>Scheduler wired (see <a href="#s4">D3</a>) — the loop runs with no browser and no terminal. <strong>This is the milestone that earns the word &quot;agentic&quot;</strong>; M1–M3 without it is still a button</td>
 <td>0.5d</td>
 </tr>
 <tr>
 <td><strong>M5</strong></td>
+<td>⬜ not started</td>
 <td><strong>Expiry run</strong> <em>(evidence, not code)</em></td>
 <td>Let a mandate lapse with the scheduler live; capture the journal showing post-expiry rejections; add it to the PoC card&#39;s tech notes</td>
 <td>0.5d</td>

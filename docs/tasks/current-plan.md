@@ -14,6 +14,7 @@
 
 ## Table of contents <a id="toc"></a>
 - [Roadmap status](#roadmap)
+- [Next-work queue](#queue)
 - [§0 — Summary](#s0)
 - [§1 — Why this, and not more pillars](#s1)
 - [§2 — The demo: scheduled operator, actually running](#s2)
@@ -47,6 +48,48 @@
 follows the `oz-relayer` pattern — a completed thought experiment plus a mock, not a running
 demo. The autonomy loop this doc plans is a different claim, and by the table above none of it
 is built yet. The card and the plan are consistent; they are just measuring different things.
+
+## Next-work queue — 1 blocking gate + 2 active tasks + 1 deferred <a id="queue"></a>
+<sub>[↑ TOC](#toc)</sub>
+
+> Same shape as [verex's queue](../../projects/verex/docs/tasks/current-plan.md) (jay,
+> 2026-08-18): **Why now / Gate / Done when** per item, deferred items struck through and kept
+> rather than deleted. "Done when" lines are the verification gates — a task is not done because
+> code exists, it is done when the stated check passes. Estimates are focused-work days.
+
+### 0) `(you)` D2 — where the session key lives ⛔ **BLOCKING**
+
+**Why now:** M1 cannot start without it, so everything below is gated on one decision.
+**Proposal on the table** ([§4](#s4)): generate server-side, expose only the address to the
+browser for the grant, private key in server env — testnet-grade custody, labelled as such on the
+page. **Needs jay's explicit OK.**
+**Done when:** jay says yes/no in writing and [§4 D2](#s4) records the choice.
+
+### 1) M1 — agent identity + mandate ⬜ not started · ~1d
+
+**Why now:** first buildable step once D2 clears; every later milestone signs with this account.
+**Gate:** D2 above. D1 (gas) is **already decided** — keep 7715/7710 and pre-fund the session
+account once; "agent ran out of gas" stays an honest journal failure mode.
+**Done when:** a mandate can be granted scoped to amount + expiry + recipient, and revoked, with
+the session address visible in the browser.
+
+### 2) M2 — the tick, callable by hand ⬜ not started · ~1d
+
+**Why now:** it is the whole loop minus the scheduler, and it is verifiable without one.
+**Gate:** M1.
+**Done when:** `POST /api/agent/tick` runs observe → decide → act → record, and **calling it twice
+in a row is safe** — verified by `curl`, before any scheduler exists.
+
+### 3) ~~§8 Unity visualization~~ — **DEFERRED, not dropped** (jay, 2026-08-18)
+
+> Kept because the design work is done and the reasoning is worth not re-deriving: it is
+> explicitly off the critical path ([§8](#s8)), and its own blocking question — **U1**, the
+> submodule strategy — is still open. Nothing here is wrong; it is simply behind M1–M5, and
+> starting it before M4 would mean visualising a loop that does not yet run unattended.
+
+**M3–M5 are not in the queue on purpose.** M3 depends on D4 (journal storage, ⬜ undecided) and M4
+on D3 (scheduler host, ⬜ undecided); both are listed in [§4](#s4) and neither blocks M1 or M2, so
+they enter the queue once those two decisions land rather than sitting here as pseudo-active work.
 
 ## 0. Summary <a id="s0"></a>
 <sub>[↑ TOC](#toc)</sub>
@@ -135,13 +178,17 @@ makes a decision visible as a decision.
 ## 3. Build plan (M1–M5) <a id="s3"></a>
 <sub>[↑ TOC](#toc)</sub>
 
-| M | Milestone | Deliverable | Est. |
-|---|---|---|---|
-| **M1** | **Agent identity + mandate** | Server-held session account (address exposed to the browser); grant flow scoped to amount + expiry + recipient; revoke | 1d |
-| **M2** | **The tick, callable by hand** | `POST /api/agent/tick` — observe → decide → act → record, idempotent, safe to call twice. Verified by `curl` before any scheduler exists | 1d |
-| **M3** | **Journal + persistence** | Journal store (see [D4](#s4)), read API, `/poc/agent` page with the three states | 1d |
-| **M4** | **Actually unattended** | Scheduler wired (see [D3](#s4)) — the loop runs with no browser and no terminal. **This is the milestone that earns the word "agentic"**; M1–M3 without it is still a button | 0.5d |
-| **M5** | **Expiry run** *(evidence, not code)* | Let a mandate lapse with the scheduler live; capture the journal showing post-expiry rejections; add it to the PoC card's tech notes | 0.5d |
+> Status column mirrors [Roadmap status](#roadmap) — that table is the source, this one adds the
+> deliverable detail. If the two ever disagree, the Roadmap table was audited against the code and
+> wins.
+
+| M | Status | Milestone | Deliverable | Est. |
+|---|--------|-----------|-------------|------|
+| **M1** | ⬜ not started | **Agent identity + mandate** | Server-held session account (address exposed to the browser); grant flow scoped to amount + expiry + recipient; revoke | 1d |
+| **M2** | ⬜ not started | **The tick, callable by hand** | `POST /api/agent/tick` — observe → decide → act → record, idempotent, safe to call twice. Verified by `curl` before any scheduler exists | 1d |
+| **M3** | ◐ mock only | **Journal + persistence** | Journal store (see [D4](#s4)), read API, `/poc/agent` page with the three states | 1d |
+| **M4** | ⬜ not started | **Actually unattended** | Scheduler wired (see [D3](#s4)) — the loop runs with no browser and no terminal. **This is the milestone that earns the word "agentic"**; M1–M3 without it is still a button | 0.5d |
+| **M5** | ⬜ not started | **Expiry run** *(evidence, not code)* | Let a mandate lapse with the scheduler live; capture the journal showing post-expiry rejections; add it to the PoC card's tech notes | 0.5d |
 
 **Optional follow-ons, not in scope until M5 lands:** ERC-8021 attribution suffix on the agent's
 txs (agent proves its own output on-chain, ~+0.5d) · an LLM-written rationale line per journal row
