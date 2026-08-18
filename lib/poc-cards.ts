@@ -1062,4 +1062,28 @@ export const POC_CARDS: DemoCard[] = [
     howItWorksKo:
       "GR00T N1.7-3B는 추론만 해도 16GB+ VRAM이 필요합니다(RTX 4090·L40·H100·Jetson AGX Thor/Orin·DGX Spark) — $399짜리 Jetson Orin Nano Super는 8GB라 이 모델을 직접 못 돌리므로, 하드웨어 구매 없이 대여한 클라우드 GPU(시간당 대략 $0.3~0.7)에서 NVIDIA의 e2e 워크플로 문서를 따라가는 것부터 시작합니다. 모델·파이프라인이 익숙해지면, 2026년 7월 NVIDIA가 GR00T 1.7을 Hugging Face LeRobot에 정식 통합한 덕분에 $100~130짜리 SO-101 로봇팔이 완결된 루프가 됩니다 — 시연 데이터 수집 → 실제 GR00T 체크포인트 파인튜닝 → 다시 팔에 배포, 장난감 모방학습 코드가 아니라. Isaac Lab(오픈소스, 헤드리스 실행 가능)은 물리 로봇 없이 시뮬레이션 규모의 연습을 담당합니다. Jetson AGX Thor 개발자 키트($3,499~5,499, NVIDIA가 실제로 GR00T 실시간 추론을 설계한 타깃)는 시작점이 아니라 나중 단계의 구매 항목으로 남겨둡니다.",
   },
+  {
+    // 에이전트가 같이 쓰는 "기록 시스템" 트랙 (jay, 2026-08-18) — 동기화·공유 서비스가
+    // 아니라 아카이브. 경로/계정이 아니라 노드 ID와 다이제스트가 권위인 쪽을 실제로 써본다.
+    key: "docbank",
+    title: "Docbank — self-sovereign document vault",
+    titleKo: "Docbank — 자기주권형 문서 보관소",
+    description:
+      "A Go document system where stable node IDs and immutable SHA-256 versions — not paths or a provider account — are the authority for your archive.",
+    descriptionKo:
+      "경로나 클라우드 계정이 아니라, 안정적인 노드 ID와 불변 SHA-256 버전이 아카이브의 권위가 되는 Go 문서 시스템.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — install, then `docbank add ~/Documents --dest /archive` → `docbank tree /archive` → `docbank web`. Alpha software, so keep independent copies of anything irreplaceable. github.com/kenn-io/docbank",
+    howToKo:
+      "아직 범위 미정 — 설치 후 `docbank add ~/Documents --dest /archive` → `docbank tree /archive` → `docbank web`. 알파 단계이므로 대체 불가능한 자료는 별도 사본을 유지한 채로. github.com/kenn-io/docbank",
+    purpose:
+      "Agents that file, retrieve, and revise documents need a system of record, not a sync folder — and a file path makes a poor long-term identity once things get moved and renamed. Docbank is the clearest example so far of the opposite bet: the catalog stays on your machine, a document keeps its identity through moves, every version is named by a verifiable digest, and stale automation hits an explicit revision conflict instead of silently overwriting. Worth running hands-on as a candidate substrate for agent-facing archives — and as a contrast with the sync-and-share model it deliberately isn't.",
+    purposeKo:
+      "문서를 정리하고 찾아오고 고치는 에이전트에게 필요한 것은 동기화 폴더가 아니라 기록 시스템입니다 — 파일 경로는 이동·이름변경 한 번이면 장기 식별자로서 무너집니다. Docbank는 그 반대편 선택을 가장 선명하게 보여주는 사례입니다: 카탈로그는 내 기기에 남고, 문서는 옮겨져도 정체성을 유지하며, 모든 버전은 검증 가능한 다이제스트로 이름 붙고, 뒤처진 자동화는 조용히 덮어쓰는 대신 명시적 리비전 충돌로 막힙니다. 에이전트용 아카이브의 기반 후보로 직접 돌려볼 가치가 있고, 동시에 이것이 의도적으로 되기를 거부한 sync-and-share 모델과의 대조 사례이기도 합니다.",
+    howItWorks:
+      "One authenticated daemon owns a vault, and the CLI, web app, TUI, scripts, and external agents all speak the same loopback-authenticated HTTP/OpenAPI contract — Go programs can skip the daemon and embed an independently rooted vault in-process via go.kenn.io/docbank. A node ID survives moves and renames, each content version is immutable and addressed by SHA-256, and writes carry revision preconditions so a stale agent gets a conflict rather than a silent overwrite. Deletion is staged deliberately: trash, permanent delete, GC, and pack reclamation are separate decisions, with revision-bound restore in between. Blobs live loose or packed, optionally in fenced filesystem or S3-compatible stores that hold content without becoming the catalog (Docbank verifies but does not encrypt them). Recovery is provable rather than assumed — incremental snapshot repositories are verified end-to-end before a restore is published, and restore is topology-independent. Apache-2.0, Go 1.26+ with CGO and Node 24+ to build from source; installers refuse any archive whose digest doesn't match the release SHA256SUMS. Sibling project to msgvault, which does the same for messages.",
+    howItWorksKo:
+      "인증된 데몬 하나가 볼트를 소유하고, CLI·웹앱·TUI·스크립트·외부 에이전트가 모두 같은 루프백 인증 HTTP/OpenAPI 계약을 씁니다 — Go 애플리케이션은 데몬 없이 go.kenn.io/docbank 모듈로 독립 루트 볼트를 인프로세스로 임베드할 수도 있습니다. 노드 ID는 이동·이름변경 후에도 유지되고, 각 콘텐츠 버전은 불변이며 SHA-256으로 주소가 매겨지고, 쓰기에는 리비전 사전조건이 붙어 뒤처진 에이전트는 조용한 덮어쓰기 대신 충돌을 받습니다. 삭제는 단계로 분리됩니다: 휴지통 · 영구 삭제 · GC · 팩 회수가 각각 별개의 결정이고, 그 사이에 리비전 기반 복원이 있습니다. 블롭은 loose 또는 packed 형태로, 필요하면 격리된 파일시스템/S3 호환 스토어에 둘 수 있지만 그 스토어가 카탈로그가 되지는 않습니다(Docbank는 검증은 하되 암호화는 하지 않습니다). 복구는 가정이 아니라 증명 대상입니다 — 증분 스냅샷 저장소를 끝까지 검증한 뒤에야 복원 결과를 공개하고, 복원은 토폴로지에 무관합니다. Apache-2.0이고 소스 빌드에는 Go 1.26+ · CGO · Node 24+가 필요하며, 설치 스크립트는 릴리스 SHA256SUMS와 다이제스트가 맞지 않는 아카이브를 설치하지 않습니다. 메시지에 대해 같은 일을 하는 msgvault의 자매 프로젝트입니다.",
+  },
 ];
