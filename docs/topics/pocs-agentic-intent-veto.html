@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The budget is the wrong invariant — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The budget is the wrong invariant</p>
+  <article>
+      <h1><span class="topic-no">7</span>The budget is the wrong invariant <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">A spend cap constrains the amount, not the purchase. An agent that spends $50 of its $100 on the wrong thing passed every check — and on-chain there is no chargeback behind it.</p>
+      <p class="meta">Not yet scoped — designed as a hackathon entry (Google Cloud × Solana agentic commerce, 2026-08). Start with the hostile-merchant demo: prove that a session-key agent buys the wrong thing while staying inside its limit, because that failure is the whole argument.</p>
+      <h2>Why</h2>
+      <p>Autonomous payments are almost always secured with a spend cap, and the cap is the wrong invariant. An agent given $100 that spends $50 on the wrong item has violated nothing — the session key worked, the limit held, the signature verified. The failure that matters is not overspend but wrong spend inside the limit, and unlike a card payment there is no chargeback sitting behind it. So this card is a design for fixing the invariant rather than tightening the cap, written as if entering the Google Cloud × Solana agentic-commerce hackathon, where the stated theme (an agent that settles and signs without human approval inside a budget) all but guarantees that most entries demonstrate the happy path of exactly the mechanism this one argues is insufficient. The competition is not the point; the point is that the strongest form of this argument is a demo in which the audience watches a conventional agent pass every check and lose the money anyway.</p>
+      <h2>How it works</h2>
+      <p>Two mechanisms, and the second is the one that will draw fire. First: sign the intent, not the limit. Before the agent sees any merchant content, a commitment is issued to (item class, max unit price, max quantity, merchant allowlist, expiry), and the on-chain program checks settlement against that commitment rather than against a balance — so an agent whose context is poisoned after the commitment was made cannot settle a purchase that does not match what it committed to wanting. That is AP2's Intent Mandate / Cart Mandate split moved onto Solana; the AP2 card already builds the same separation, so the new part is enforcement at settlement rather than the mandate concept. Second: a veto window on settlement. Between authorization and final settlement sits a short interval — 30 to 60 seconds — in which a separate low-privilege watcher key can cancel, with the privileges deliberately disjoint: the agent cannot cancel its own payments and the watcher cannot spend. This is the price-at-a-moment card's claim about liquidations — an action that fires with zero delay removes the only interval in which a bad input could have been noticed — applied to payments instead of oracles. The demo runs the same agent twice against a merchant API carrying a prompt injection: on a plain session key the limit holds, the purchase is wrong and the money is gone; on these rails settlement fails on the intent mismatch rather than on the amount. Two questions get asked of every entry, so answer them in the design. Sub-second finality is what makes a 30-second veto window a product decision rather than an artifact of block time — on a slower chain that window is indistinguishable from ordinary confirmation latency, and the product does not exist. And the commitment issuer and the watcher have to live somewhere the agent cannot reach, which makes them a policy service with an audit log rather than anything on-chain: enforce on-chain, decide off-chain, the same split the CRE × Cloud card arrives at from the other direction. The objection to answer first, because a payments audience raises it immediately, is that no merchant wants to wait 30 seconds for finality — and the answer is that card networks already made this trade and gave it a name. Authorization is instant, capture is later. This is auth-and-capture rebuilt for agents rather than a new tradeoff, which is also where the rwa-multichain card lands coming the other way: authorize against a limit now, reconcile after. Scope if built: one Solana program (commitment check, timelocked settlement, watcher cancel), a deliberately hostile merchant API, and a Cloud Run policy service. No wallet UI, no multichain, no token — nothing that does not appear in the demo.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/agentic-intent-veto">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">7</span>한도는 틀린 불변식이다 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">한도는 금액을 제약하지 구매를 제약하지 않습니다. $100 중 $50을 엉뚱한 것에 쓴 에이전트는 모든 검사를 통과한 것이고, 온체인에는 그 뒤를 받칠 차지백이 없습니다.</p>
+      <p class="meta">아직 범위 미정 — 해커톤 출품작을 가정한 설계(Google Cloud × Solana 에이전틱 커머스, 2026-08). 적대적 판매자 데모부터: 세션키 에이전트가 한도 안에 머문 채로 엉뚱한 것을 산다는 걸 먼저 증명합니다. 그 실패가 논증의 전부이기 때문입니다.</p>
+      <h2>왜</h2>
+      <p>자율 결제는 거의 항상 지출 한도로 보호되는데, **한도는 틀린 불변식**입니다. $100을 받은 에이전트가 엉뚱한 물건에 $50을 썼다면 위반한 것이 하나도 없습니다 — 세션키는 동작했고, 한도는 지켜졌고, 서명은 검증됐습니다. 중요한 실패는 초과지출이 아니라 **한도 안에서의 잘못된 지출**이고, 카드 결제와 달리 그 뒤에는 차지백이 없습니다. 그래서 이 카드는 한도를 더 조이는 대신 **불변식을 갈아 끼우는** 설계이고, Google Cloud × Solana 에이전틱 커머스 해커톤에 출품한다는 가정으로 썼습니다. 그 대회의 주제(예산 안에서 사람 승인 없이 정산·서명하는 에이전트) 자체가, 대부분의 출품작이 **바로 이 카드가 불충분하다고 주장하는 메커니즘의 해피패스**를 시연하게 만들기 때문입니다. 대회가 요점은 아닙니다. 요점은 이 논증의 가장 강한 형태가 **관객이 평범한 에이전트가 모든 검사를 통과하고도 돈을 잃는 것을 지켜보는 데모**라는 것입니다.</p>
+      <h2>동작 방식</h2>
+      <p>메커니즘은 둘이고, 공격을 받을 쪽은 두 번째입니다. **첫째, 한도가 아니라 의도에 서명합니다.** 에이전트가 판매자 콘텐츠를 보기 **전에** `(품목 클래스, 최대 단가, 최대 수량, 판매자 allowlist, 만료)` 커밋을 발행하고, 온체인 프로그램은 정산을 잔고가 아니라 **그 커밋과** 대조합니다 — 커밋 이후에 컨텍스트가 오염된 에이전트는 자기가 원한다고 커밋한 것과 다른 구매를 정산할 수 없습니다. 이것은 AP2의 Intent Mandate / Cart Mandate 분리를 솔라나로 옮긴 것입니다. AP2 카드가 이미 같은 분리를 만들고 있으므로 **새로운 부분은 만다트 개념이 아니라 정산 시점의 강제**입니다. **둘째, 정산에 거부권 창을 둡니다.** 승인과 최종 정산 사이에 30~60초의 짧은 구간을 두고 그 안에서 **별도의 저권한 감시 키**가 취소할 수 있게 하되, 권한을 의도적으로 서로소로 나눕니다 — 에이전트는 자기 결제를 취소하지 못하고, 감시자는 지출하지 못합니다. 이것은 `price-at-a-moment` 카드가 청산에 대해 한 주장(지연 0으로 발사되는 동작은 잘못된 입력을 알아챌 수 있었던 유일한 구간을 없앤다)을 오라클이 아니라 **결제에** 적용한 것입니다. 데모는 프롬프트 인젝션이 실린 판매자 API에 대고 **같은 에이전트를 두 번** 돌립니다: 평범한 세션키에서는 한도가 지켜지고 구매는 틀렸고 돈은 사라지며, 이 레일 위에서는 금액이 아니라 **의도 불일치로** 정산이 실패합니다. 모든 출품작이 받는 질문 둘은 설계 안에서 답해 둡니다. **서브초 파이널리티**가 30초 거부권 창을 블록타임의 부산물이 아니라 **제품 결정**으로 만듭니다 — 느린 체인에서는 그 창이 평범한 확정 지연과 구분되지 않고, 그러면 제품이 성립하지 않습니다. 그리고 커밋 발행자와 감시자는 **에이전트가 닿을 수 없는 곳**에 있어야 하므로 온체인이 아니라 감사 로그를 가진 정책 서비스가 됩니다 — 강제는 온체인, 판단은 오프체인. CRE × Cloud 카드가 반대 방향에서 도달한 그 분리입니다. 결제 쪽 청중이 즉시 제기하므로 먼저 답해야 할 반론은 **&quot;어느 판매자가 파이널리티를 30초 기다리느냐&quot;**이고, 답은 **카드망이 이미 이 거래를 했고 이름까지 붙여 두었다**는 것입니다. 승인은 즉시, 매입은 나중. 이것은 새로운 트레이드오프가 아니라 **auth/capture를 에이전트용으로 다시 만든 것**이고, `rwa-multichain` 카드가 반대편에서 도달한 지점이기도 합니다(지금 한도에 대해 승인하고 나중에 대사). 만든다면 범위는: 솔라나 프로그램 하나(커밋 대조 + 타임락 정산 + 감시자 취소), 의도적으로 적대적인 판매자 API, Cloud Run 정책 서비스. 지갑 UI도, 멀티체인도, 토큰도 없습니다 — 데모에 나오지 않는 것은 전부 만들지 않습니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/agentic-intent-veto">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-aqua-shared-liquidity.html">&larr; 6. Shared liquidity — quoted depth vs. the balance behind it</a><a href="pocs-price-at-a-moment.html">8. A price at a moment — settlement windows and oracle instants &rarr;</a></div>
+</div>
+</body>
+</html>

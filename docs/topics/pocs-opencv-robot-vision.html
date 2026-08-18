@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixels to millimetres — the step before the arm moves — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Pixels to millimetres — the step before the arm moves</p>
+  <article>
+      <h1><span class="topic-no">19</span>Pixels to millimetres — the step before the arm moves <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">Camera calibration, ArUco pose and hand-eye alignment on a built-in webcam and a sheet of A4. The output is not a demo but two error numbers.</p>
+      <p class="meta">Not yet scoped — `pip install opencv-python opencv-contrib-python`, print one DICT_4X4_50 marker from chev.me/arucogen, and check that the axes render on a webcam with rough intrinsics (fx=fy=image width, cx/cy=centre). Real calibration second. docs.opencv.org</p>
+      <h2>Why</h2>
+      <p>The LeRobot card is about moving the arm; this is the step in front of it, and skipping it is why a cheap arm grabs at empty air. A policy trained on demonstrations learns actions in the robot's own coordinate frame, but everything the camera reports is in pixels, and nothing in the imitation-learning loop converts between them for you. So the question this card answers is the plainest one in robotics vision — two hundred pixels on screen is how many millimetres in the world? — and the reason it belongs in this catalogue rather than in a bookmark folder is that the honest answer is a measurement, not a pipeline. It also happens to be free: a built-in webcam and a sheet of A4 are the entire bill of materials, which makes it the cheapest way to find out where the ceiling actually is before spending anything on hardware. The V in VLA starts here.</p>
+      <h2>How it works</h2>
+      <p>Four steps, and only the last two are optional. Intrinsics: fifteen to twenty chessboard or ChArUco shots through `cv2.calibrateCamera` yield the matrix K (fx, fy, cx, cy) and the distortion coefficients, and reprojection RMS is the first of the two numbers this card exists to produce — under one pixel is the pass mark. Pose: an ArUco marker on the object or the gripper gives full 6-DOF position and rotation relative to the camera, and there is one version trap worth knowing before it costs half an hour — `cv2.aruco.estimatePoseSingleMarkers` was deprecated in OpenCV 4.7, so the current path is `cv2.aruco.ArucoDetector` for corners followed by `cv2.solvePnP` with SOLVEPNP_IPPE_SQUARE, which is why a large share of the tutorials online no longer run as written. Hand-eye: `cv2.calibrateHandEye` aligns the camera frame with the robot base frame, and the classic first mistake is not the algorithm choice (Tsai, Park, Horaud) but the setup — a camera mounted on the arm is eye-in-hand, a camera on a tripod is eye-to-hand, and getting that backwards produces a transform that is wrong in a way that still looks plausible. Inference: `cv2.dnn` runs an ONNX detector with no second framework, which is the natural lightweight pairing for an edge board like the Jetson Orin Nano Super and the reason that item sits next in the queue. The second number is the one that actually settles what this camera can do: put the marker at a distance measured with a ruler, compare it to tvec, and record the error as a percentage. Everything above is setup for those two figures — RMS and range error — and a card that reports them is worth more than one that reports that the axes rendered.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/opencv-robot-vision">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">19</span>픽셀에서 밀리미터로 — 팔이 움직이기 전 단계 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">노트북 웹캠과 A4 한 장으로 하는 카메라 캘리브레이션·ArUco 자세추정·hand-eye 정렬. 산출물은 데모가 아니라 오차 숫자 두 개입니다.</p>
+      <p class="meta">아직 범위 미정 — `pip install opencv-python opencv-contrib-python`, chev.me/arucogen에서 DICT_4X4_50 마커 하나 인쇄, 대략값 내부 파라미터(fx=fy=이미지 폭, cx·cy=중심)로 웹캠에 축이 그려지는지부터 확인. 제대로 된 캘리브레이션은 그다음. docs.opencv.org</p>
+      <h2>왜</h2>
+      <p>LeRobot 카드가 &quot;팔을 어떻게 움직이는가&quot;라면 이 카드는 **그 앞 단계**이고, 이걸 건너뛰는 것이 저가 로봇팔이 허공을 집는 이유입니다. 시연으로 학습된 정책은 로봇 자신의 좌표계에서 행동을 배우는데 카메라가 보고하는 것은 전부 픽셀이고, 모방학습 루프 안 어디에도 그 둘을 변환해 주는 단계는 없습니다. 그래서 이 카드가 답하는 질문은 로보틱스 비전에서 가장 단순한 것입니다 — **화면의 200픽셀은 실제로 몇 밀리미터인가?** 그리고 이것이 북마크 폴더가 아니라 이 카탈로그에 들어가는 이유는, 정직한 답이 파이프라인이 아니라 **측정값**이기 때문입니다. 게다가 비용이 0원입니다 — 노트북 내장 웹캠과 A4 한 장이 자재 명세의 전부라, 하드웨어에 돈을 쓰기 전에 천장이 어디인지 알아내는 가장 싼 방법이기도 합니다. VLA의 V가 여기서 시작합니다.</p>
+      <h2>동작 방식</h2>
+      <p>단계는 넷이고 뒤의 둘만 선택입니다. **내부 파라미터**: 체스보드나 ChArUco 보드를 15~20장 찍어 `cv2.calibrateCamera`에 넣으면 행렬 K(fx·fy·cx·cy)와 왜곡계수가 나오고, **재투영 RMS**가 이 카드가 만들려는 두 숫자 중 첫 번째입니다 — 1픽셀 미만이 합격선. **자세추정**: 물체나 그리퍼에 붙인 ArUco 마커가 카메라 기준 6DOF 위치와 회전을 바로 줍니다. 여기 30분을 잡아먹기 전에 알아둘 **버전 함정**이 하나 있습니다 — `cv2.aruco.estimatePoseSingleMarkers`는 OpenCV 4.7에서 폐기됐으므로, 현행 경로는 `cv2.aruco.ArucoDetector`로 코너를 검출하고 `cv2.solvePnP`(플래그 `SOLVEPNP_IPPE_SQUARE`)로 자세를 푸는 것입니다. 인터넷 예제 상당수가 적힌 대로 돌지 않는 이유가 이것입니다. **hand-eye**: `cv2.calibrateHandEye`가 카메라 좌표계와 로봇 베이스 좌표계를 정렬하는데, 초보의 첫 실수는 알고리즘 선택(Tsai·Park·Horaud)이 아니라 **설정**입니다 — 카메라가 팔에 붙어 있으면 eye-in-hand, 삼각대에 있으면 eye-to-hand이고, 이걸 반대로 잡으면 **그럴듯해 보이면서 틀린** 변환이 나옵니다. **추론**: `cv2.dnn`은 별도 프레임워크 없이 ONNX 검출 모델을 돌리는데, Jetson Orin Nano Super 같은 엣지 보드와 짝지을 때의 자연스러운 경량 조합이고 그 항목이 큐에서 다음 순서인 이유이기도 합니다. 이 카메라로 어디까지 할 수 있는지를 실제로 결정하는 것은 **두 번째 숫자**입니다: 마커를 자로 잰 거리에 놓고 `tvec`과 비교해 오차를 퍼센트로 기록합니다. 위의 전부는 그 두 수치 — **RMS와 거리 오차율** — 를 위한 준비이고, 그것을 보고하는 카드가 &quot;축이 그려졌다&quot;고 보고하는 카드보다 값어치가 큽니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/opencv-robot-vision">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-sub-2bit-local-llm.html">&larr; 18. Sub-2-bit LLMs, locally</a><a href="pocs-lerobot-so101.html">20. LeRobot + SO-101 — the cheapest hands-on robotics entry &rarr;</a></div>
+</div>
+</body>
+</html>
