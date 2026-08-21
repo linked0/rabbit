@@ -16,6 +16,39 @@ import { createRequire } from 'node:module';
 // 페이지 껍데기(레일+본문 레이아웃, 항목 상세 페이지)는 algorithms.html·math.html 과
 // 공유한다 — scripts/rtd-shell.mjs.
 import { renderRtdPage, renderTopicPage, escapeHtml } from './rtd-shell.mjs';
+import { marked as mdEngine } from 'marked'; // 아래쪽 지역 변수 marked 와 이름이 겹쳐 별칭을 쓴다
+// 카드 본문은 마크다운이다 — 제목·표·목록·**강조**·`코드`·빈 줄 문단이 데이터에 들어간다.
+// 예전에는 escapeHtml 만 거쳐 <p> 하나에 통째로 들어가서 별표가 화면에 그대로 찍히고
+// 문단이 전부 뭉개졌다 (jay, 2026-08-21 스크린샷: "이런 구조 없는 형식은 읽을 수가 없다").
+// 기준으로 삼은 것은 손으로 쓴 topics/pocs-dvt.html — 제목 40개, 표 16개, 목록 12개로
+// 실제로 읽히는 페이지다. 생성 페이지도 그만큼의 구조를 가질 수 있어야 카드가 docsHref 로
+// 도망칠 이유가 없어진다.
+//
+// 강조를 marked 에 맡기지 않고 먼저 빼내는 이유 — 돌려보고 정한 것이다. CommonMark 의
+// delimiter flanking 규칙 때문에 **"따옴표로 감싼 구절"**뒤에 조사가 바로 붙으면 strong 으로
+// 닫히지 않는다: 닫는 ** 가 punctuation 뒤 + 글자 앞이라 left/right 양쪽 flanking 이 되어
+// 닫을 자격을 잃는다. 이스케이프 여부와 무관하게 같은 결과이고, 이 저장소의 한국어 본문에
+// 흔한 문형이라 카드 7장에서 별표가 그대로 남았다. 그래서 **...** 를 먼저 자리표시자로 빼고,
+// 블록 구조(표·목록·제목·코드펜스)만 marked 에 맡긴 뒤 마지막에 <strong> 으로 복원한다.
+//
+// 순서: 이스케이프 -> 강조 토큰화 -> marked(블록) -> 강조 복원.
+// 이스케이프가 먼저여야 카드에 <tag> 같은 문자열이 있어도 태그로 해석되지 않는다.
+function mdRender(v, { inline = false } = {}) {
+  if (!v) return '';
+  const bold = [];
+  const tokenised = escapeHtml(String(v)).replace(
+    /\*\*([^*]+?)\*\*/g,
+    (_, inner) => `@@B${bold.push(inner) - 1}@@`
+  );
+  const html = inline
+    ? mdEngine.parseInline(tokenised, { async: false })
+    : mdEngine.parse(tokenised, { async: false });
+  return html
+    .replace(/@@B(\d+)@@/g, (_, i) => `<strong>${mdEngine.parseInline(bold[Number(i)], { async: false })}</strong>`)
+    .trim();
+}
+const md = (v) => mdRender(v);
+const mdInline = (v) => mdRender(v, { inline: true });
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..');
 const INDEX_HTML = path.join(REPO_ROOT, 'docs', 'index.html');
@@ -128,24 +161,24 @@ for (const [idx, c] of numbered.entries()) {
       crumbHtml: `<a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ${escapeHtml(c.title)}`,
       bodyHtml: `  <article>
       <h1><span class="topic-no">${c.no}</span>${escapeHtml(c.title)} <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></h1>
-      <p class="lead">${escapeHtml(c.description)}</p>
-      <p class="meta">${escapeHtml(c.howTo)}</p>
+      <p class="lead">${mdInline(c.description)}</p>
+      <p class="meta">${mdInline(c.howTo)}</p>
       <h2>Why</h2>
-      <p>${escapeHtml(c.purpose ?? '')}</p>
+      ${md(c.purpose)}
       <h2>How it works</h2>
-      <p>${escapeHtml(c.howItWorks ?? '')}</p>
+      ${md(c.howItWorks)}
 ${diagramNote}${codeHtml}      <p>${openLink}</p>
     </article>
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
       <h1><span class="topic-no">${c.no}</span>${escapeHtml(c.titleKo)} <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></h1>
-      <p class="lead">${escapeHtml(c.descriptionKo)}</p>
-      <p class="meta">${escapeHtml(c.howToKo)}</p>
+      <p class="lead">${mdInline(c.descriptionKo)}</p>
+      <p class="meta">${mdInline(c.howToKo)}</p>
       <h2>왜</h2>
-      <p>${escapeHtml(c.purposeKo ?? '')}</p>
+      ${md(c.purposeKo)}
       <h2>동작 방식</h2>
-      <p>${escapeHtml(c.howItWorksKo ?? '')}</p>
+      ${md(c.howItWorksKo)}
 ${diagramNote}${codeHtmlKo}      <p>${openLink}</p>
     </article>`,
       pagerHtml: `${
@@ -252,12 +285,12 @@ function rowsFor(list) {
     // "add why and how it works to the list page, not move — just copy it"). 상세
     // 페이지는 전체 문단을 그대로 유지한다.
     const how = firstSentences(c.howItWorks, 2);
-    const howHtml = how ? `\n          <p class="topic-how"><strong>How it works:</strong> ${escapeHtml(how)}</p>` : '';
+    const howHtml = how ? `\n          <p class="topic-how"><strong>How it works:</strong> ${mdInline(how)}</p>` : '';
     const why = firstSentences(c.purpose, 2);
-    const whyHtml = why ? `\n          <p class="topic-why"><strong>Why:</strong> ${escapeHtml(why)}</p>` : '';
+    const whyHtml = why ? `\n          <p class="topic-why"><strong>Why:</strong> ${mdInline(why)}</p>` : '';
     return `        <li id="${c.key}">
           <div class="topic-head"><span class="topic-no">${c.no}</span><span class="topic-title">${escapeHtml(c.title)}</span>${mark}</div>
-          <p class="topic-summary">${escapeHtml(c.description)}</p>${howHtml}${whyHtml}
+          <p class="topic-summary">${mdInline(c.description)}</p>${howHtml}${whyHtml}
           <p class="topic-link">${links}</p>
         </li>`;
   })
