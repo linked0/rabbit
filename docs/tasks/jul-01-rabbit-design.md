@@ -124,7 +124,7 @@ Sources: [Flashbots Protect Quick Start](https://docs.flashbots.net/flashbots-pr
 
 ## New Second
 ### Task description
-![alt text](./images/japanese.png)
+![alt text](../images/reference/japanese.png)
 I want to have this kind of 쩌는 app in ETC category. Just similar web app that don't need to particular features.
 
 ### Claude design

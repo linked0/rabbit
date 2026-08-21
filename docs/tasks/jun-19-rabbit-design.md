@@ -48,7 +48,7 @@ crypto-only (stocks, ETFs, crypto, etc.).
     current value + unrealized P&L. (No separate table needed at first; compute on read.
     Add a `Holding` snapshot later only if performance needs it.)
 
-### UI (from jay's wireframe — [`images/investment-basic-ui.png`](images/investment-basic-ui.png))
+### UI (from jay's wireframe — [`docs/images/ui/investment-basic-ui.png`](../images/ui/investment-basic-ui.png))
 The input page is **two stacked sections**:
 
 **Current Portfolio** — a holdings grid, one row per asset:
