@@ -47,10 +47,10 @@ enumerated from <code>app/**/page.tsx</code>, the top menu read from <code>app/N
 One row was materially wrong and is corrected below (AI Chat). Verified facts used as the
 basis: the top menu is exactly <code>/</code> · <code>/portfolio</code> · <code>/projects</code> · <code>/game</code> · <code>/poc</code> · <code>/live</code>;
 <code>.github/workflows/</code> still does not exist; <code>/market</code>, <code>/xyz</code>, <code>/poc/aa</code>, <code>/poc/ap2</code>, <code>/poc/7702</code>
-and <code>/poc/agent</code> all exist as routes. Per-milestone marks for the autonomy loop live in
-<a href="../tasks/current-plan.html#roadmap">current-plan.md → Roadmap status</a>. <strong>This
-table is the single status source for everything except the one task tracked in
-<a href="../tasks/current-plan.html">current-plan.md</a> — the Agentic AA autonomy loop</strong> (<code>/poc/agent</code>).
+and <code>/poc/agent</code> all exist as routes. <strong>Plan reset 2026-08-21</strong> (jay): the autonomy-loop plan
+was archived unstarted, so <strong>this table is now the single status source for the whole repo</strong> —
+<a href="../tasks/current-plan.html">current-plan.md</a> holds no active task until jay picks the next one.
+Per-milestone marks for the autonomy loop moved to <a href="#backlog">Backlog</a> below.
 AP2, Toss, and the AA building blocks graduated out of current-plan.md on 2026-08-06 once built
 (archived at
 <a href="../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.html">../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md</a>);
@@ -121,9 +121,15 @@ their rows below are now the live status. The PoCs hub they all plug into is tra
 </tr>
 <tr>
 <td><em>Agentic AA — autonomy loop</em></td>
-<td><code>/poc/agent</code> (planned)</td>
-<td><strong><a href="../tasks/current-plan.html">current-plan.md</a></strong> — the only task tracked there</td>
-<td>⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes <code>lib/agent-scenarios.ts</code>&#39;s <code>scheduled-operator</code> actually run</td>
+<td><code>/poc/agent</code> (mock only)</td>
+<td><a href="#b1">Backlog → B1</a> · design in the <a href="../tasks/archive/2026-08-21-current-plan-agentic-aa.html">archived plan</a></td>
+<td>⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes <code>lib/agent-scenarios.ts</code>&#39;s <code>scheduled-operator</code> actually run. <strong>Route exists but is a mock</strong> — <code>app/poc/agent/AgentJournalMock.tsx</code>, a 7-tick script walked by a button; no store, no scheduler, no chain. Blocked on <strong>D2</strong> (session-key custody)</td>
+</tr>
+<tr>
+<td><em>Agentic AA — Unity visualization</em></td>
+<td><code>/poc/agent</code> toggle (planned)</td>
+<td><a href="#b2">Backlog → B2</a> · <a href="game.html">game.md</a></td>
+<td>⬜ Deferred, not dropped — side-quest, explicitly off the critical path; blocked on <strong>U1</strong> (submodule strategy) and sequenced after the loop actually runs</td>
 </tr>
 <tr>
 <td><em>EIP-7702 inspector</em></td>
@@ -198,6 +204,123 @@ They escalate: <strong>data → monetized data → on-chain data.</strong></p>
 &quot;priced data, paid for by an agent&quot; story that hits the oracle, pricing, Go, and 0→1 bullets
 most directly. Item 3 is the strongest <em>blockchain</em> signal but the heaviest; pull it in only if
 the Hyperliquid testnet integration lands cleanly.</p>
+<h2>Backlog — unstarted work graduated out of current-plan.md <a id="backlog"></a></h2>
+<blockquote>
+<p><strong>Why this section exists (2026-08-21, jay).</strong> The rolling plan
+<a href="../tasks/current-plan.html">current-plan.md</a> was reset. Everything it tracked was still
+unstarted, so rather than carry a stale plan forward, the unbuilt milestones and the open
+decisions moved here — the same graduation AP2/Toss/AA got on 2026-08-06, except those
+graduated because they were <strong>done</strong> and these graduate because they were <strong>never begun</strong>.
+Nothing was deleted. The full design prose stays verbatim in
+<a href="../tasks/archive/2026-08-21-current-plan-agentic-aa.html">../tasks/archive/2026-08-21-current-plan-agentic-aa.md</a>;
+this is the status surface, and it is what the next plan will draw from.</p>
+</blockquote>
+<h3>B1 — Agentic AA: the autonomy loop (<code>/poc/agent</code>) <a id="b1"></a></h3>
+<p>The claim it would demonstrate: <strong>the safety of an unattended agent is arithmetic, not trust</strong> —
+the mandate&#39;s amount cap and expiry are enforced by contracts the agent cannot touch, so a buggy
+or compromised agent&#39;s worst case is bounded in advance and observable after the fact. Audited
+against the code on <code>main</code>, not the commit log.</p>
+<table>
+<thead>
+<tr>
+<th>M</th>
+<th>Milestone</th>
+<th>Status</th>
+<th>Evidence / gap</th>
+<th>Est.</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>M1</strong></td>
+<td>Agent identity + mandate</td>
+<td>⬜ not started</td>
+<td>no server-held session account, no grant/revoke flow; <strong>blocked by D2</strong></td>
+<td>1d</td>
+</tr>
+<tr>
+<td><strong>M2</strong></td>
+<td>The tick, callable by hand</td>
+<td>⬜ not started</td>
+<td>no <code>POST /api/agent/tick</code> — <code>app/api/</code> has no <code>agent</code> route at all</td>
+<td>1d</td>
+</tr>
+<tr>
+<td><strong>M3</strong></td>
+<td>Journal + persistence</td>
+<td>🟡 mock only</td>
+<td><code>/poc/agent</code> renders <code>app/poc/agent/AgentJournalMock.tsx</code>, a hand-written 7-tick script walked by a button — no store, no read API, no real ticks</td>
+<td>1d</td>
+</tr>
+<tr>
+<td><strong>M4</strong></td>
+<td>Actually unattended</td>
+<td>⬜ not started</td>
+<td>no scheduler wired. <strong>This is the milestone that earns the word &quot;agentic&quot;</strong> — M1–M3 without it is still a button</td>
+<td>0.5d</td>
+</tr>
+<tr>
+<td><strong>M5</strong></td>
+<td>Expiry run <em>(evidence, not code)</em></td>
+<td>⬜ not started</td>
+<td>blocked on M4; nothing to capture until the loop runs unattended</td>
+<td>0.5d</td>
+</tr>
+</tbody></table>
+<p><strong>Open decisions — D2 is the blocker.</strong> Full reasoning in the
+<a href="../tasks/archive/2026-08-21-current-plan-agentic-aa.html#s4">archived plan §4</a>.</p>
+<table>
+<thead>
+<tr>
+<th>D</th>
+<th>Question</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>D1</strong></td>
+<td>Gas: pre-fund the session account, or move to a 4337 account with a paymaster?</td>
+<td>✅ decided — keep 7715/7710 and pre-fund once; &quot;agent ran out of gas&quot; stays an honest journal failure mode</td>
+</tr>
+<tr>
+<td><strong>D2</strong></td>
+<td>Where does the session key live?</td>
+<td>⛔ <strong>open, blocks M1</strong> — proposal on the table is server-side generation with only the address exposed to the browser, testnet-grade custody labelled as such. Needs jay&#39;s explicit yes/no</td>
+</tr>
+<tr>
+<td><strong>D3</strong></td>
+<td>Scheduler host — Cloud Scheduler · GitHub Actions cron · hosted cron</td>
+<td>⬜ open (note: <code>.github/workflows/</code> still does not exist in this repo)</td>
+</tr>
+<tr>
+<td><strong>D4</strong></td>
+<td>Journal storage — Postgres/Prisma · JSON file · reconstruct from chain</td>
+<td>⬜ open, leaning Postgres. Chain-only cannot record <strong>skips</strong>, and skips are the point of the demo</td>
+</tr>
+<tr>
+<td><strong>D5</strong></td>
+<td>Deterministic rule or LLM decision?</td>
+<td>✅ decided — deterministic. The interesting property is that the bound holds regardless of how the agent decides</td>
+</tr>
+</tbody></table>
+<p><strong>What the PoC card says, and why it does not contradict this.</strong> The <code>agent</code> card in
+<a href="https://github.com/linked0/rabbit/blob/main/lib/poc-cards.ts"><code>../../lib/poc-cards.ts</code></a> is <code>status: &quot;done&quot;, date: &quot;2026-08-12&quot;</code>. That
+follows the <code>oz-relayer</code> pattern — a completed thought experiment plus a mock, not a running
+demo. The loop above is a different claim, and none of it is built.</p>
+<h3>B2 — Unity visualization of the agent (side-quest) <a id="b2"></a></h3>
+<p>⬜ <strong>Deferred, not dropped.</strong> Design only — jay&#39;s idea, 2026-08-06. A Unity scene that <em>shows</em>
+the agent acting: it wakes, checks a price board, mostly shrugs and goes back to sleep, and after
+expiry walks to a gate that no longer opens. The value beyond fun is that it makes the enforcer
+physical — in a journal a rejection is a red word, in a scene it is a gate that will not move.</p>
+<p>Two rules that survive from the design and should not be re-litigated: <strong>Unity is a dumb
+renderer</strong> (it gets journal rows via <code>SendMessage</code> and never touches a chain, a key, or an RPC —
+a second path to the chain could disagree with the journal, and the journal <em>is</em> the record), and
+it lives behind a <strong>toggle on <code>/poc/agent</code></strong>, not its own route, for the same reason.</p>
+<p><strong>Open — U1 blocks the rest.</strong> U1: submodule strategy for <code>rabbit-hole</code> (source + CI build ·
+source + committed WebGL build ⭐ recommended · no submodule, iframe a published build) — the
+same question <a href="game.html">game.md</a> already asks, so whatever is picked should serve both. U2:
+replay history or live ticks only. U3: shared art direction with <code>/game</code>. U4: is <code>rabbit-hole</code>
+for this program specifically or the general home for jay&#39;s Unity work. Sequenced <strong>after</strong> B1&#39;s
+M5 — building the scene against mock data would mean tuning it twice.</p>
 
   </article>
 </div>
