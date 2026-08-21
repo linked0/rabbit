@@ -23,3 +23,15 @@
 **Change:** ① `docs/tasks/current-plan.md` → `archive/2026-08-21-current-plan-agentic-aa.md` (`git mv`, 미착수 사실을 밝힌 배너 추가). ② 아카이브 두 개의 상대 링크 깊이 교정 — **2026-08-06 아카이브는 그때 경로를 안 고쳐서 `../features/…` 링크 16개가 이미 깨져 있었다**(`docs/tasks/features/`는 존재하지 않음). 같은 작업이라 함께 고쳤다. ③ `docs/features/README.md`에 `## Backlog` 신설 — **B1**(자율 루프: M1–M5 표 + D1–D5 결정 표), **B2**(Unity 시각화: U1–U4). 표에 Unity 행 추가, 자율 루프 행은 "목업만 존재"로 정정. ④ 새 `current-plan.md` 작성 — Roadmap status(9행, 코드 대조), 게이트 P0 + 후보 5개(각 Why now/Gate/Done when), 그리고 **어느 문서에 무엇을 쓰는지**를 정한 표. ⑤ 아카이브된 계획을 가리키던 살아있는 참조 2건 정정: `app/poc/agent/page.tsx`의 D1–D5 안내 문구(사용자에게 보이는 텍스트), `docs/features/agentic-aa.md`의 Status 줄.
 
 **Result:** `npx tsc --noEmit` 통과. docs 내 상대 링크 검증 MISS 0(아카이브 링크 교정 포함). features/README가 이제 **저장소 전체의 유일한 상태 소스**다 — 예외였던 "current-plan이 추적하는 한 작업"이 사라졌으므로. 후보 5개 중 추천은 **C2(CI/CD)** — 가장 작고, 뒤따르는 모든 작업을 싸게 만들고, verex에 복사할 `deploy-staging.yml`이 이미 있다. **다음 결정은 jay의 P0 한 문장**이고, 그게 정해지면 이 파일은 그 작업 중심으로 다시 쓰인다.
+
+### Workspace Index의 Verex 카드를 rabbit 내부 미러에서 verex GitHub Pages로 전환
+
+> 소스 문서: 없음 — jay와의 대화에서 나온 결정("verex 부분은 https://linked0.github.io/verex/ 로 링크한다"). 작업은 새 병렬 워크스페이스 `/Users/jay/work-agent/rabbit`(브랜치 `claude/docs-parallel`)에서 수행.
+
+**Cause:** jay가 `docs/index.html`의 Verex 카드를 rabbit 안에 복사해 둔 사본이 아니라 verex의 GitHub Pages로 직접 걸라고 지시. 배경에는 미러의 구조적 결함이 있다 — `scripts/sync-verex-docs.mjs`의 헤더 주석이 밝히듯, 미러는 2026-08-01 스냅샷에서 멈춰 verex에 새 문서를 추가해도 rabbit 카드는 옛 내용을 계속 보여줬다.
+
+**Reasoning:** 동기화를 더 자주 돌리는 것도 선택지였지만, 그건 같은 실패 모드를 주기만 줄여 유지하는 방식이다. 링크로 바꾸면 **사본 자체가 없어지므로 낡을 것이 없다.** 확인 결과 verex의 Pages는 이미 살아 있었다 — 소스 `main:/docs`, 오늘 04:07 UTC 빌드 성공. 루트 URL만 404였는데 원인은 Pages 설정이 아니라 `verex/docs/`에 `index.md`가 없어서 Jekyll이 `/`에서 내놓을 게 없었던 것. `features/`·`history/`는 `README.md`가 디렉터리 인덱스 역할을 해 이미 200이었다. 카드 제목의 "Latest Log: 2026-08-18"처럼 **날짜를 박아둔 표기도 함께 제거**했다 — 라이브 인덱스를 가리키는데 제목만 고정 날짜면 미러와 똑같은 종류의 거짓말이 된다.
+
+**Change:** ① `docs/index.html`의 Verex 링크 5개를 `https://linked0.github.io/verex/...`로 교체(카드 4개 + "View All Verex Tasks"), 외부 링크이므로 `target="_blank" rel="noopener noreferrer"` 추가, 배지 `HTML` → `GH PAGES`, card-path 표기를 URL로 변경, "Latest Log: 2026-08-18" → "Logs". Rabbit 카드는 손대지 않음. ② 링크 대상이 404이던 두 곳을 verex 쪽에서 신규 작성 — `verex/docs/index.md`(사이트 랜딩), `verex/docs/tasks/README.md`(tasks 인덱스). 이어서 jay가 "Verex — Logs 는 history 폴더의 파일 목록을 보여줘야 한다"고 요청해 `verex/docs/history/index.md`를 Liquid 자동 생성 목록으로 추가했다. **Rabbit 로그 카드는 jay의 지시로 원래대로 둔다** — `logs.html`은 `pnpm docs:logs`를 손으로 돌려야 갱신되는 스냅샷이라 자동 갱신되는 Verex 쪽과 성격이 달랐고, jay가 현행 유지를 택했다. ③ 변경 이유를 파일 내 주석으로 기록(기존 한국어 주석 관례 유지).
+
+**Result:** 링크 4개는 즉시 200으로 동작(`features/`, `tasks/current-plan.html`, `tasks/jun-19-verex-design.html`, `history/`). 나머지 2개(사이트 루트, `tasks/`)는 새로 만든 인덱스 파일이 **verex `main`에 머지·푸시된 뒤** 동작한다 — Pages가 `main:/docs`만 서빙하기 때문. 이로써 rabbit 안의 Verex 미러 3종(`docs/history/*verex*.md` 24개, `projects/verex/**`, `docs/html/projects/verex/**` 30개 380KB)과 `scripts/sync-verex-docs.mjs`가 모두 죽은 자산이 됐다 — 삭제는 jay 확인 대기. 삭제 시 "All Logs" 카드 수치는 64 → 약 40(rabbit 전용)으로 줄어든다.
