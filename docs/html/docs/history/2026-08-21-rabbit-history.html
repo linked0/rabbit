@@ -68,6 +68,14 @@
 <p><strong>Reasoning:</strong> 쓰기 전에 큰 갈림길 네 개를 jay에게 물었고 전부 답을 받았다 — ① 만다트는 <strong>거래가 아니라 자금 조달</strong>을 강제한다 ② 접속은 <strong>REST 먼저, MCP는 래퍼로</strong> ③ <strong>LLM이 확률을 추정하고 결정적 규칙이 집행</strong>한다 ④ 루프는 <strong>해소·상환까지 전부</strong>. ①이 가장 중요했다: ERC-7710 enforcer는 <em>호출</em>을 검사하는데 CTF 주문은 <em>서명</em>이라, 세션 키가 주문에 서명해도 enforcer를 통과하지 않는다. 자금 조달을 묶으면 범위는 좁아도 <strong>완전히 정직한 산술 주장</strong>이 된다 — 가진 적 없는 돈은 잃을 수 없다. 더 센 버전(EIP-1271 스마트 계정 + 커스텀 검증 컨트랙트)은 O4로 기록만 하고 만들지 않는다.</p>
 <p><strong>Change:</strong> <code>docs/tasks/current-plan.md</code>를 <strong>Rabbit ⇄ Verex 이음새 계획</strong>으로 새로 씀 — 시나리오(관찰→추정→결정→체결→감시→기록), 각 한도가 실제로 어디서 강제되는지 그린 아키텍처, 저장소 상태 요약, <strong>구현 매트릭스</strong>(6열 15행: 항목 · rabbit이 만들 것 · verex가 만들 것 · 의존 · 견적), Phase 0–5 빌드 순서, 열린 질문 O1–O6, &quot;이 데모가 증명하지 않는 것&quot;. 문서 소유 규칙을 명시: <strong>한 저장소 안에서 끝나는 일은 그 저장소 계획서로.</strong></p>
 <p><strong>Result:</strong> 두 가지가 나왔고 둘 다 표를 그리기 전엔 안 보였다. <strong>하나 — 두 저장소가 실제로 맞물리는 행은 딱 두 개다</strong>(R-B 주문 서명 ⇄ V-A 주문 수용, R-G 상환 ⇄ V-D 주소 기반 상환). 나머지는 전부 한쪽이 혼자 하는 일이라 P0·V-A~V-C와 R-A가 병렬로 굴러간다 — 예상보다 훨씬 덜 얽혀 있다. <strong>둘 — verex W1이 먼저여야 하는 이유가 바뀌었다.</strong> 뻔한 이유는 &quot;해소 안 된 마켓에선 상환 불가&quot;인데, 진짜 이유는 W1의 fresh seed가 스테이징 거래 행을 <strong>삭제</strong>한다는 것이다. 에이전트가 먼저 거래하면 재시드가 저널이 가리키는 행을 지운다. 가스 비대칭도 확인했다 — 외부 maker는 <strong>거래엔 가스가 안 들고</strong>(오퍼레이터가 <code>matchOrders</code> 전송) <strong>상환에만</strong> 든다. <strong>다음 결정은 O1</strong>: rabbit이 verex <code>packages/sdk</code>의 주문 서명 코드를 어떻게 얻느냐(퍼블리시 / 복사 / 얇은 재구현). <strong>Phase 2(R-B)가 여기서 막히고</strong>, 나머지는 안 막힌다.</p>
+<h3>Workspace 인덱스 Logs 행: &quot;All Logs&quot; → &quot;Rabbit — Logs&quot;, 순서 재배치</h3>
+<blockquote>
+<p>소스 문서: 없음 — jay가 인덱스 페이지 카드 스크린샷을 보고 직접 지시.</p>
+</blockquote>
+<p><strong>Cause:</strong> jay가 Logs 행의 세 번째 카드(&quot;All Logs — 64 entries&quot;)를 지목. 이름을 <strong>Rabbit — Logs</strong>로, 순서는 <strong>Rabbit → Verex → Rabbit Latest Log</strong>로.</p>
+<p><strong>Reasoning:</strong> 바로 옆 카드가 이미 &quot;Verex — Logs&quot;인데 이쪽만 &quot;All Logs&quot;라 <strong>스코프가 안 보였다</strong> — 실제로는 rabbit의 <code>logs.html</code>을 가리킨다. 이름을 맞추면 앞의 둘이 두 저장소의 로그 색인 <strong>쌍</strong>이 되고 마지막이 오늘로 가는 지름길이 된다는 게 jay가 지시한 순서의 논리다. 제목의 <code>— N entries</code>는 뺐다: 손으로 관리하는 숫자였고 <strong>이미 한 번 63에 멈춰 낡은 채 방치</strong>된 적이 있어, 다시 틀릴 자리를 없애는 쪽을 골랐다.</p>
+<p><strong>Change:</strong> <code>docs/index.html</code> Logs 행 — 카드 rename + 재배치, 다른 카드들과 맞추려 <code>HTML</code> 배지 추가, 이유를 HTML 주석으로 남김. <strong>남겨둔 것:</strong> 같은 페이지 하단 &quot;View All Logs →&quot; 링크는 같은 스코프 흐림이 있지만 지시 범위 밖이라 그대로 뒀다.</p>
+<p><strong>Result:</strong> <code>&lt;a&gt;</code> 태그 72/72 균형, <code>div</code> 28/27은 이전부터 있던 불균형이라 그대로. 카드 3개 전부 링크 유효.</p>
 
   </article>
 </div>
