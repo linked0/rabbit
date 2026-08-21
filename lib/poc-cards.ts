@@ -396,8 +396,10 @@ export const POC_CARDS: DemoCard[] = [
     // 1inch Aqua 공개(2026-07-27)를 계기로 추가 (jay, 2026-08-17). 광고 문구 한 줄에서
     // 출발했지만 카드가 될 값어치는 그 아래 있다 — "토큰이 지갑에 남는다"는 자기수탁 이야기가
     // 아니라 호가와 체결 가능성이 분리된다는 이야기다. stake-concentration 카드와 논리 구조가
-    // 같다(겉보기 독립 단위 N개 vs 실제 독립성의 단위) — 그쪽은 done 묶음이라 배열로 붙이지
-    // 못하고 soon 묶음의 앞쪽에 둔다.
+    // 같다(겉보기 독립 단위 N개 vs 실제 독립성의 단위).
+    // done 으로 전환 (jay, 2026-08-21). 배열 위치는 그대로 두었다 — soon 이던 시절엔 무날짜
+    // 카드라 배열 순서가 곧 렌더 순서였지만, done 은 date 로 정렬되므로 이제 배열 위치가
+    // 렌더에 아무 영향이 없다. 큰 블록을 옮겨 diff 를 키울 이유가 없다.
     key: "aqua-shared-liquidity",
     title: "Shared liquidity — quoted depth vs. the balance behind it",
     titleKo: "공유 유동성 — 호가된 깊이와 그 뒤의 잔고",
@@ -405,11 +407,12 @@ export const POC_CARDS: DemoCard[] = [
       "1inch Aqua leaves LP tokens in the wallet and lets one balance quote across many positions. The number nobody publishes is how much of that quoted depth is actually fillable.",
     descriptionKo:
       "1inch Aqua는 LP 토큰을 지갑에 둔 채 하나의 잔고로 여러 포지션이 호가하게 합니다. 아무도 발표하지 않는 숫자는 그 호가된 깊이 중 실제로 체결 가능한 몫입니다.",
-    status: "soon",
+    status: "done",
+    date: "2026-08-21", // 완결 선언일 — done 카드의 정렬 기준
     howTo:
-      "Not yet scoped — start on an anvil fork with one wallet backing three positions, fire two orders into the same block, and record which one reverts. Source: 1inch.com/aqua/learn, launched publicly 2026-07-27 across 13 chains.",
+      "Separating quoted depth from fillable depth: why one balance backing three positions advertises 3× the liquidity it can settle, and who pays to find out. Source: 1inch.com/aqua/learn, public launch 2026-07-27 across 13 chains.",
     howToKo:
-      "아직 범위 미정 — anvil 포크에서 지갑 하나가 포지션 셋을 받치게 두고, 같은 블록에 주문 두 건을 넣어 어느 쪽이 revert 하는지 기록하는 것부터. 출처: 1inch.com/aqua/learn, 2026-07-27 13개 체인 공개.",
+      "호가된 깊이와 체결 가능한 깊이를 분리해 보기 — 잔고 하나가 포지션 셋을 받치면 왜 결제 가능한 양의 3배가 광고되는지, 그리고 그걸 알아내는 비용은 누가 무는지. 출처: 1inch.com/aqua/learn, 2026-07-27 13개 체인 공개.",
     purpose:
       "The pitch is self-custody — tokens never leave the wallet, no deposit, no debt — and all of that is true. The part worth a card is what the design trades away to get it. Aqua's own documentation says a swap \"simply reverts\" if the balance is too low at that moment, and its own example has a $100,000 balance backing three positions that collectively quote $300,000. Put those two sentences next to each other and the quoted depth stops being a commitment and becomes an upper bound: real, but only for whoever arrives first. That is the same shape as this catalogue's stake-concentration card — a set that looks like N independent units while the actual unit of independence is smaller — moved from validators to order books. The question is not whether Aqua is safe for the LP (it is; the LP is the party protected by the revert) but what it costs the taker, who pays gas to discover that advertised liquidity was already spent.",
     purposeKo:

@@ -76,6 +76,14 @@
 <p><strong>Reasoning:</strong> 바로 옆 카드가 이미 &quot;Verex — Logs&quot;인데 이쪽만 &quot;All Logs&quot;라 <strong>스코프가 안 보였다</strong> — 실제로는 rabbit의 <code>logs.html</code>을 가리킨다. 이름을 맞추면 앞의 둘이 두 저장소의 로그 색인 <strong>쌍</strong>이 되고 마지막이 오늘로 가는 지름길이 된다는 게 jay가 지시한 순서의 논리다. 제목의 <code>— N entries</code>는 뺐다: 손으로 관리하는 숫자였고 <strong>이미 한 번 63에 멈춰 낡은 채 방치</strong>된 적이 있어, 다시 틀릴 자리를 없애는 쪽을 골랐다.</p>
 <p><strong>Change:</strong> <code>docs/index.html</code> Logs 행 — 카드 rename + 재배치, 다른 카드들과 맞추려 <code>HTML</code> 배지 추가, 이유를 HTML 주석으로 남김. <strong>남겨둔 것:</strong> 같은 페이지 하단 &quot;View All Logs →&quot; 링크는 같은 스코프 흐림이 있지만 지시 범위 밖이라 그대로 뒀다.</p>
 <p><strong>Result:</strong> <code>&lt;a&gt;</code> 태그 72/72 균형, <code>div</code> 28/27은 이전부터 있던 불균형이라 그대로. 카드 3개 전부 링크 유효.</p>
+<h3>PoC 카드 <code>aqua-shared-liquidity</code> 를 done 으로</h3>
+<blockquote>
+<p>소스 문서: 없음 — jay가 카드를 지목해 직접 지시. 카드 원본은 <a href="https://github.com/linked0/rabbit/blob/main/lib/poc-cards.ts">lib/poc-cards.ts</a>의 <code>aqua-shared-liquidity</code>.</p>
+</blockquote>
+<p><strong>Cause:</strong> jay가 &quot;Shared liquidity — quoted depth vs. the balance behind it&quot; 카드를 done 으로 바꾸라고 지시.</p>
+<p><strong>Reasoning:</strong> 상태 플래그만 뒤집으면 카드가 자기 배지와 모순된다. 이 카탈로그에서 done 은 <code>oz-relayer</code> 패턴 — <strong>사고가 완결됐다</strong>는 뜻이지 코드가 돌아간다는 뜻이 아니고, 기존 done 카드들은 ① 정렬 기준이 되는 <code>date</code>(완결 선언일)를 갖고 ② <code>howTo</code> 가 &quot;무엇을 시작할지&quot;가 아니라 <strong>&quot;무엇을 정리했는지&quot; 한 줄 요약</strong>이다(stake-concentration 이 그 예). 이 카드의 <code>howTo</code> 는 &quot;Not yet scoped — start on an anvil fork…&quot; 였다. 그대로 두면 DONE 배지 옆에서 &quot;아직 범위 미정&quot;이라고 말한다 — 이전에 지적해 둔 stake-concentration 의 결함을 하나 더 만드는 셈이라 같이 고쳤다. <code>howItWorks</code> 의 측정 설계는 손대지 않았다: done 카드에서 측정 설계는 <strong>미래 계획이 아니라 결과물</strong>이다.</p>
+<p><strong>Change:</strong> <code>status: &quot;soon&quot;</code> → <code>&quot;done&quot;</code>, <code>date: &quot;2026-08-21&quot;</code> 추가, <code>howTo</code>/<code>howToKo</code> 를 완결 요약으로 재작성(출처 1inch.com/aqua/learn·2026-07-27·13개 체인은 보존). 배열 위치는 <strong>의도적으로 그대로</strong> — soon 이던 시절엔 무날짜라 배열 순서가 곧 렌더 순서였지만 done 은 <code>date</code> 로 정렬되므로 이제 배열이 렌더에 영향을 주지 않는다. 그 이유를 카드 주석에 남겨, 다음 사람이 &quot;왜 안 옮겼지&quot;를 다시 묻지 않게 했다.</p>
+<p><strong>Result:</strong> <code>npx tsc --noEmit</code> 통과. 상태 분포 done 5→6, soon 41→40. <code>docs:pocs</code> 재생성 후 카드가 <strong>done 묶음 맨 앞</strong>으로 이동(날짜 최신) — 렌더 순서 aqua → rwa-multichain → agent → oz-relayer → dvt → stake-concentration. <code>pocs.html</code> 은 live 카드를 제외하고 그리므로(<code>status !== &#39;live&#39;</code>) 이게 정상 위치다.</p>
 
   </article>
 </div>

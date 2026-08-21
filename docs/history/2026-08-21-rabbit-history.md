@@ -59,3 +59,15 @@
 **Change:** `docs/index.html` Logs 행 — 카드 rename + 재배치, 다른 카드들과 맞추려 `HTML` 배지 추가, 이유를 HTML 주석으로 남김. **남겨둔 것:** 같은 페이지 하단 "View All Logs →" 링크는 같은 스코프 흐림이 있지만 지시 범위 밖이라 그대로 뒀다.
 
 **Result:** `<a>` 태그 72/72 균형, `div` 28/27은 이전부터 있던 불균형이라 그대로. 카드 3개 전부 링크 유효.
+
+### PoC 카드 `aqua-shared-liquidity` 를 done 으로
+
+> 소스 문서: 없음 — jay가 카드를 지목해 직접 지시. 카드 원본은 [lib/poc-cards.ts](../../lib/poc-cards.ts)의 `aqua-shared-liquidity`.
+
+**Cause:** jay가 "Shared liquidity — quoted depth vs. the balance behind it" 카드를 done 으로 바꾸라고 지시.
+
+**Reasoning:** 상태 플래그만 뒤집으면 카드가 자기 배지와 모순된다. 이 카탈로그에서 done 은 `oz-relayer` 패턴 — **사고가 완결됐다**는 뜻이지 코드가 돌아간다는 뜻이 아니고, 기존 done 카드들은 ① 정렬 기준이 되는 `date`(완결 선언일)를 갖고 ② `howTo` 가 "무엇을 시작할지"가 아니라 **"무엇을 정리했는지" 한 줄 요약**이다(stake-concentration 이 그 예). 이 카드의 `howTo` 는 "Not yet scoped — start on an anvil fork…" 였다. 그대로 두면 DONE 배지 옆에서 "아직 범위 미정"이라고 말한다 — 이전에 지적해 둔 stake-concentration 의 결함을 하나 더 만드는 셈이라 같이 고쳤다. `howItWorks` 의 측정 설계는 손대지 않았다: done 카드에서 측정 설계는 **미래 계획이 아니라 결과물**이다.
+
+**Change:** `status: "soon"` → `"done"`, `date: "2026-08-21"` 추가, `howTo`/`howToKo` 를 완결 요약으로 재작성(출처 1inch.com/aqua/learn·2026-07-27·13개 체인은 보존). 배열 위치는 **의도적으로 그대로** — soon 이던 시절엔 무날짜라 배열 순서가 곧 렌더 순서였지만 done 은 `date` 로 정렬되므로 이제 배열이 렌더에 영향을 주지 않는다. 그 이유를 카드 주석에 남겨, 다음 사람이 "왜 안 옮겼지"를 다시 묻지 않게 했다.
+
+**Result:** `npx tsc --noEmit` 통과. 상태 분포 done 5→6, soon 41→40. `docs:pocs` 재생성 후 카드가 **done 묶음 맨 앞**으로 이동(날짜 최신) — 렌더 순서 aqua → rwa-multichain → agent → oz-relayer → dvt → stake-concentration. `pocs.html` 은 live 카드를 제외하고 그리므로(`status !== 'live'`) 이게 정상 위치다.
