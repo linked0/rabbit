@@ -75,7 +75,7 @@
 36. 로그수익률·변동성(σ)
 37. 집중부등식(Chebyshev·Hoeffding, 12월 다리)
 38. 랜덤워크/GBM(개념)
-39. [랜덤워크·열확산 방정식 — 뉴턴에서 디퓨전 모델까지](html/docs/algorithms/random-walk-diffusion-black-scholes.html) ✅
+39. [랜덤워크·열확산 방정식 — 뉴턴에서 디퓨전 모델까지](html/docs/algorithms/random-walk-diffusion-black-scholes.html)
 40. VaR·꼬리리스크
 41. LMSR/마켓 스코어링(Verex 연결)
 42. 마르코프 체인(개념)

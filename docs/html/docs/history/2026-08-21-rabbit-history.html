@@ -116,6 +116,14 @@
 <p><strong>Reasoning:</strong> <code>dvt</code> 카드에 덧붙이지 않았다 — 그쪽은 <code>done</code>이고 <code>docsHref</code>로 <strong>손으로 쓰는 페이지</strong>라 append가 어색하고, DKG는 DVT 한 곳이 아니라 keyper 위원회·MPC 수탁·랜덤성 비콘까지 걸치는 더 넓은 원시 기능이다. 카드의 각을 잡을 때 &quot;t-of-n이라 안전하다&quot;를 반복하는 것은 값어치가 없다고 봤다 — 모든 글이 이미 그 말을 하고, 그건 참이다. <strong>아무도 말하지 않는 쪽은 의식이 끝난 다음이다.</strong> DKG는 <em>사건</em>으로 서술되지만 실제 배포된 것은 전부 <strong>위원회</strong>이고, 위원회는 바뀐다(운영자 이탈·합류·지분 분실). 각각에 두 번째 의식인 <strong>리셰어링</strong>이 필요하고 그것은 첫 번째만큼 신뢰돼야 하는데, 문서에서도 배포에서도 자주 빠진다.</p>
 <p><strong>Change:</strong> 새 카드 <code>dkg-resharing</code>, <code>status: &quot;soon&quot;</code>, <code>third-party-blast-radius</code> 바로 앞. 내용은 새 블록 마크다운 형식으로 — DKG 산출물 표(개인키는 <strong>아무도</strong> 갖지 않음 / 공개키 / 지분 / <strong>트랜스크립트</strong>), 구성원 변경 세 사건 표, n=7·t=5로 <strong>암호학이 아니라 운영을 재는</strong> 측정 5단계와 그 결과 표 서식, &quot;n이 n이기를 멈추는 지점&quot;, 그리고 리셰어링이 불가능할 때 <strong>다른 카드 셋에서 각각 무엇이 깨지는지</strong> 표.</p>
 <p><strong>Result:</strong> 카드 51장 렌더(50→51), 키 54개 중복 0, <code>tsc --noEmit</code> 통과. 페이지 구조 h3 8·표 6·목록 2. <strong>카드의 축이 된 판단:</strong> 리셰어링은 <strong>그룹 공개키를 보존할 수 있고</strong>, 공개키야말로 대개 다른 곳에 못 박혀 있는 부분이다 — 비콘 체인의 검증인 공개키, 고객이 저장한 입금 주소, 이미 브로드캐스트된 봉투 안의 key ID. 그래서 <strong>리셰어링이 되면 운영자 교체는 운영 작업이고, 안 되면 &quot;그 키를 참조한 모든 것의 이전&quot;이 된다.</strong> 그리고 날카로운 질문 하나가 따라 나왔다 — <strong>복구와 절도가 구별되는가.</strong> 지분을 잃은 구성원을 위해 t명이 복원해 주는 절차는 구조적으로 공모한 t명이 아무에게나 넘기는 절차와 같다. 둘을 가르는 것은 암호학 바깥의 정책이고, 이는 <code>aml-compliance</code> 카드의 경계와 정확히 같다. <strong>가장 먼저 확인할 것:</strong> 운영 중 실제로 리셰어링을 해 본 배포가 있는지 — 문서상 가능하다고만 적힌 것 말고.</p>
+<h3>Math 39번(랜덤워크·열확산 방정식)을 done → planned 로 되돌림</h3>
+<blockquote>
+<p>소스 문서: <a href="../knowledge/math-50-curriculum.html">docs/knowledge/math-50-curriculum.md</a> — Math 섹션의 유일한 원본. 생성물은 <code>docs/math.html</code>과 <code>docs/index.html</code>의 <code>MATH:BEGIN/END</code> 구간.</p>
+</blockquote>
+<p><strong>Cause:</strong> jay가 랜덤워크·열확산 방정식 항목을 planned 로 바꿔 달라고 요청. 대시보드에서 DONE 배지를 달고 있었다.</p>
+<p><strong>Reasoning:</strong> 이 카드는 손으로 고칠 수 없다 — <code>docs/index.html</code>의 <code>MATH:BEGIN/END</code> 사이는 <code>scripts/generate-curriculum-html.mjs</code>가 다시 쓰는 구간이고, 완료 여부는 커리큘럼 마크다운 줄 끝의 <strong><code>✅</code> 하나</strong>로만 표현된다(<code>done = text.endsWith(&#39;✅&#39;)</code>). 그래서 원본에서 <code>✅</code>만 떼고 생성기를 다시 돌렸다. 노트 링크는 그대로 뒀다 — 글은 이미 존재하고, 바뀐 것은 &quot;학습 완료&quot; 표시뿐이다.</p>
+<p><strong>Change:</strong> <code>docs/knowledge/math-50-curriculum.md</code> 39번 줄의 <code>✅</code> 제거 후 <code>node scripts/generate-curriculum-html.mjs</code> 실행 → <code>docs/math.html</code>, <code>docs/index.html</code> 재생성.</p>
+<p><strong>Result:</strong> Math 완료 수 4 → <strong>3 / 52</strong>. 항목 39는 TODO(회색 점)로 38번과 같은 상태가 됐다. <strong>부수 효과: 대시보드 Math 섹션에서 이 카드가 사라졌다</strong> — 색인은 <code>[...done, ...todo].slice(0, 6)</code>이라 done 3개 + todo 상위 3개(귀납법·그래프 기초·비둘기집)만 남고 39번은 순서상 그 아래로 밀린다. 전체 목록 <code>math.html</code>에는 그대로 있다. 카드가 색인에 계속 보여야 한다면 정렬 규칙 쪽을 바꿔야 하고, 그건 별개 결정이다.</p>
 
   </article>
 </div>
