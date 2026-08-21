@@ -50,7 +50,7 @@ the browser shows a default. No favicon exists in `public/` (only `know.html`).
 ---
 
 ## 3. Google login error — "Server error: problem with the server configuration"
-**Goal:** fix the error in `login-server-error.png` when signing in with Google.
+**Goal:** fix the error in `docs/images/issues/login-server-error.png` when signing in with Google.
 
 **What the screenshot shows:** NextAuth's generic **`Configuration`** error page ("There is a
 problem with the server configuration. Check the server logs"). This is thrown *before*

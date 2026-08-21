@@ -12,7 +12,7 @@
 - A user can enter the game through some top menu whose name you can determin
 
 ### Google Login Error
-- When I try to login as google account this error happend: ![alt text](./login-server-error.png)
+- When I try to login as google account this error happend: ![alt text](../images/issues/login-server-error.png)
 
 ### Create a some feature design for Agentic Commerce
 - You can add the file to this folder: /Users/jay/work/task/rabbit/docs/tasks

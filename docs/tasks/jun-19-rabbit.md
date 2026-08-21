@@ -14,7 +14,7 @@ You already did the great thing to implemented as we planed. I want you to do th
 - It should be stored in database that I chose Postgresql for that
 - This task also provide how to set Database instance in GCP.
 
-![Investment basic UI](./images/investment-basic-ui.png)
+![Investment basic UI](../images/ui/investment-basic-ui.png)
 
 #### Simulate results based on the investment policy
 - There are so many method to gain a profit or loss in investment. There are many setting for investigation that I will provide an UX that you should ask me if I don't provide you.

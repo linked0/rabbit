@@ -60,7 +60,7 @@ on the **deployed cloud app** (Cloud Run per the roadmap) — safely, since C2 s
 
 **Reference (aesthetic to reproduce):**
 
-![Gravia-style live-trading dashboard reference](./images/japanese.png)
+![Gravia-style live-trading dashboard reference](../images/reference/japanese.png)
 
 **What:** a visually striking, `SIMULATED / DEMO` live-trading **dashboard** (Gravia aesthetic) at
 `/jayverse` — dark cyberpunk terminal, everything animating off one **mock** feed. Full design +
