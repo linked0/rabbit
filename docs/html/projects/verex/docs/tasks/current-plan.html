@@ -43,10 +43,16 @@
 tail and the CI half of task 2; those, plus everything the batch deliberately deferred (LMSR
 phase B, the indexer, Chainlink), moved to
 <a href="../features/README.html#backlog">../features/README.md → Backlog</a> as <strong>V1–V5</strong>.</p>
-<p><strong>This file currently has no active task.</strong> Deliberate, not an oversight — jay picks the next
-one (<a href="#p0">P0</a>). Until then the queue below is a menu, not a commitment. Same shape as rabbit&#39;s
-rolling plan (<code>rabbit/docs/tasks/current-plan.md</code>, reset the same day), so a cold session reads
-both repos the same way.</p>
+<p><strong>P0 answered the same day — the active track is cross-repo.</strong> jay picked <strong>J2, &quot;the mandated
+trader&quot;</strong>: an agent running in rabbit that forms its own view of a verex market, trades on it
+under an on-chain funding bound, and self-redeems after resolution. The <strong>scenario, the seam and
+the build order live in rabbit&#39;s plan</strong> (<code>rabbit/docs/tasks/current-plan.md</code>); this file owns the
+verex half — <strong>W1</strong> (promoted out of the candidate list) and the new <strong>W6</strong> and <strong>W7</strong>. One fact,
+one home: read the seam there, read what verex builds here.</p>
+<p><strong>Why verex should want W6 regardless of rabbit.</strong> Every order today is signed by a server-held
+demo wallet (<code>accountIndex 1..9</code>, keys in Secret Manager). W6 is the point where verex stops
+being a custodian and can accept a counterparty it does not hold keys for — a product claim on
+its own, and the first genuinely S7-adjacent work in the repo.</p>
 </blockquote>
 <h2>Table of contents <a id="toc"></a></h2>
 <ul>
@@ -73,8 +79,9 @@ gap is the single most valuable thing left on the board.</p>
 with the last full roadmap audit at <a href="" data-missing="../history/2026-08-18-verex-history.md">2026-08-18</a> and the
 wave 2 UMA work at <a href="" data-missing="../history/2026-08-05-verex-history.md">2026-08-05</a> /
 <a href="" data-missing="../history/2026-08-06-verex-history.md">2026-08-06</a>.</p>
-<p><strong>Next step:</strong> answer <a href="#p0">P0</a> — pick one candidate. Then this file gets rewritten around it with
-its own wave/gate structure, the way the archived batch plan was.</p>
+<p><strong>Next step:</strong> <a href="#w1">W1</a> — J2&#39;s phase 0. It must land before <a href="#w6">W6</a> opens the exchange to
+external makers, because W1&#39;s fresh seed wipes staging&#39;s trade rows and would take an agent&#39;s
+journal with it.</p>
 <h2>Roadmap status <a id="roadmap"></a></h2>
 <p><sub><a href="#toc">↑ TOC</a></sub></p>
 <blockquote>
@@ -142,26 +149,30 @@ S9&#39;s deploy is live while S5 never started.</p>
 <strong>in-process</strong> (<code>packages/api/src/mm.ts</code> — LMSR-quoting CLOB ladder), not a separate
 <code>packages/mm-agent</code> worker; <code>packages/mcp-server</code> does not exist.</p>
 <p><strong>Legend:</strong> ✅ done · ◐ partial · ❌ / ⬜ not started · ⛔ blocking.</p>
-<h2>Next-work queue — 0 active · 1 gate · 5 candidates <a id="queue"></a></h2>
+<h2>Next-work queue — 3 active (J2) · 4 candidates <a id="queue"></a></h2>
 <p><sub><a href="#toc">↑ TOC</a></sub></p>
 <blockquote>
 <p><strong>Why now / Gate / Done when</strong> per item, as in the archived plan. &quot;Done when&quot; is a verification
 gate — a task is not done because code exists, it is done when the stated check passes.
-Estimates are focused-work days (AI-assisted), §1.4 style. <strong>Nothing below is committed to.</strong></p>
+Estimates are focused-work days (AI-assisted), §1.4 style. <strong>W1, W6 and W7 are committed</strong> —
+they are verex&#39;s share of the J2 track. W2–W5 remain a menu.</p>
 </blockquote>
-<h3>0) <code>(you)</code> P0 — pick the next task ⛔ <strong>BLOCKING</strong> <a id="p0"></a></h3>
-<p><strong>Why now:</strong> the batch closed with no successor chosen, so every candidate is gated on one
-sentence from jay.
-<strong>Done when:</strong> jay names a candidate, this file is rewritten around it with its own gates, and the
-chosen item&#39;s feature doc becomes the design source.
-<strong>Recommendation, if you want one:</strong> <strong>W1 — finish wave 3.</strong> It is the only candidate that
-converts work already paid for into a provable claim, it closes the roadmap&#39;s oldest open audit
-item, and everything needed is already deployed. Building anything new before it means adding a
-second unverified thing on top of a first.</p>
-<h3>1) W1 — finish wave 3: prove UMA on live Sepolia ⭐ · ~1–2d <a id="w1"></a></h3>
+<h3>0) <code>(you)</code> P0 — pick the next task ✅ <strong>closed 2026-08-21</strong> <a id="p0"></a></h3>
+<p>jay picked the cross-repo <strong>J2</strong> track. Verex&#39;s share of it, in order: <strong>W1 → W6 → W7</strong>. The
+recommendation on the table had been W1 alone; J2 keeps W1 first for a <strong>different and stronger
+reason</strong> than the one originally given — see the sequencing note in W1 below.</p>
+<h3>1) W1 — finish wave 3: prove UMA on live Sepolia · <strong>ACTIVE, J2 phase 0</strong> · ~1–2d <a id="w1"></a></h3>
 <p><strong>Why now:</strong> the adapter is deployed against the real oracle and has never answered anything. Until
 one market resolves through it, S6 is partial and <strong>A5</strong> — the MEDIUM-severity operator-SPOF, the
-roadmap&#39;s biggest trust gain — stays open on a technicality that is one afternoon wide.
+roadmap&#39;s biggest trust gain — stays open on a technicality that is one afternoon wide.</p>
+<p><strong>Why it must come <em>before</em> W6, not after</strong> (found while designing J2, 2026-08-21): the obvious
+reason is that an agent cannot redeem from a market that never resolves. The real reason is the
+<strong>fresh seed</strong> — it deletes staging&#39;s <code>Trade</code>/<code>PricePoint</code>/<code>Outcome</code>/<code>Market</code> rows, so re-seeding
+<em>after</em> an external agent has been trading leaves its journal citing rows that no longer exist.
+Re-seed first, then open the door.</p>
+<p><strong>One addition to W1&#39;s scope, owed to J2 rather than to W1 itself:</strong> the fresh seed should include
+<strong>at least one short-dated UMA market</strong> — something that can plausibly resolve inside a demo
+session rather than in 2026. Without it, J2 phase 4 has nothing to watch.
 <strong>Gate:</strong> operator gas (last checked <strong>0.1788 ETH</strong>, comfortable under the reduced scope) and WETH
 wrapped for the bond (<code>0x7b79995e…98E7f9</code>, 0.001 final fee + a ~0.01 proposer bond, both
 recoverable on undisputed settlement).
@@ -172,13 +183,63 @@ print — intended, not a bug.
 <strong>Done when:</strong> one market resolved end-to-end by the live adapter with a winner redeeming, A5
 closed in the audit tracker, and the staging deploy performed by the CD workflow itself rather
 than by hand (<a href="../features/README.html#v1">V1</a>).</p>
-<h3>2) W2 — <code>ci.yml</code>, the missing half of CI/CD · ~0.5–1d</h3>
+<h3>2) W6 — accept a counterparty verex does not custody · <strong>ACTIVE, J2 phase 1</strong> · ~2–3d <a id="w6"></a></h3>
+<p><strong>Why now:</strong> J2&#39;s agent holds its own key, by design — that was the whole point of jay&#39;s call that
+the agent key must not live on verex&#39;s server. So the exchange has to accept an order it did not
+sign. <strong>The codebase is closer to this than it looks:</strong> <code>model Order</code> already carries <code>maker</code> (a
+real address), <code>signedOrder</code> (Json) and a unique <code>orderHash</code>; <code>buildSignedOrder</code> then signs <em>on the
+client&#39;s behalf</em> with <code>account(index)</code>. Accepting an external order is mostly <strong>removing that
+step</strong>.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Item</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>W6.1</strong></td>
+<td>External signed orders</td>
+<td><code>POST /orders</code> and <code>POST /trade</code> accept a client-supplied <code>SignedOrder</code> with an arbitrary <code>maker</code>. Verify EIP-712 server-side and fail fast; the Exchange re-verifies at match. Migration: <code>Order.makerIndex</code> nullable</td>
+</tr>
+<tr>
+<td><strong>W6.2</strong></td>
+<td>Funding stops being the API&#39;s job</td>
+<td><code>ensureFunds</code> faucets and approves <em>on behalf of</em> the maker — impossible for a key we do not hold. For external makers it <strong>reads and rejects</strong>: insufficient balance or allowance is a 400, not something the server silently fixes. Add an address-scoped faucet for testnet convenience</td>
+</tr>
+<tr>
+<td><strong>W6.3</strong></td>
+<td>Address-scoped reads</td>
+<td><code>/wallet/:address</code> — balance, positions, open orders, redeems, history. Today all <code>/wallet/:index</code></td>
+</tr>
+<tr>
+<td><strong>W6.4</strong></td>
+<td>External redeem</td>
+<td><code>POST /redeem</code> by address, signed by the holder. Note the asymmetry: <strong>trading costs an external maker no gas</strong> (<code>book.ts:694</code> — the operator sends <code>matchOrders</code>), but <strong>redeeming does</strong>, since CTF <code>redeemPositions</code> must come from the position holder</td>
+</tr>
+</tbody></table>
+<p><strong>Gate:</strong> none technically. Worth deciding <strong>O6</strong> in the seam plan
+(<code>rabbit/docs/tasks/current-plan.md</code>) — whether the agent trades against staging or a dedicated
+environment — before external rows start landing in staging&#39;s DB.
+<strong>Done when:</strong> a wallet verex has never heard of funds itself, signs an order, fills against the
+operator&#39;s LMSR ladder, and reads its own position back — with <strong>no <code>accountIndex</code> anywhere in the
+exchange path</strong>.</p>
+<h3>3) W7 — <code>packages/mcp-server</code> · <strong>queued, J2 phase 5</strong> · ~1–2d <a id="w7"></a></h3>
+<p><strong>Why now:</strong> it closes the S3 gap that has been open since the roadmap was written
+(<a href="../features/README.html#v4">V4</a>), and after W6 it is genuinely <strong>thin</strong> — the MCP tools
+(<code>list_markets</code>, <code>get_book</code>, <code>place_order</code>, <code>get_position</code>, <code>redeem</code>) wrap the same REST endpoints
+the agent already uses. A second front door, not a second implementation.
+<strong>Gate:</strong> W6. Building MCP over the index-based API would bake custody into the tool surface.
+<strong>Done when:</strong> rabbit&#39;s agent runs unchanged against the MCP transport, and a generic MCP client
+places one order without reading verex&#39;s source.</p>
+<h3>4) W2 — <code>ci.yml</code>, the missing half of CI/CD · ~0.5–1d</h3>
 <p><strong>Why now:</strong> every PR is unchecked today; the CD half already exists and proved the WIF plumbing,
 so this is the cheap remainder of a task that is 80% done.
 <strong>Gate:</strong> none — no deploy credentials belong in CI, so nothing needs provisioning.
 <strong>Done when:</strong> a PR with a deliberate type error goes red and a clean PR goes green, including
 <code>forge test</code> and <code>prisma validate</code> (<a href="../features/README.html#v2">V2</a>).</p>
-<h3>3) W3 — market group types + probability-sum invariants · ~2–3d</h3>
+<h3>5) W3 — market group types + probability-sum invariants · ~2–3d</h3>
 <p><strong>Why now:</strong> designed 2026-08-21 in <a href="../features/market-groups.html">market-groups.md</a> and the
 schema cannot express it — <code>MarketGroup</code> has no <code>groupType</code>, so exclusive, directional/nested and
 independent groups are indistinguishable and the normalization rules have nothing to key off.
@@ -187,7 +248,7 @@ Seeded groups (World Series, HR Derby, TIME PotY) are live and currently mis-mod
 already sums siblings to 1, which is only correct for <em>exclusive</em> groups.
 <strong>Done when:</strong> each group type round-trips through create → quote → trade with its own invariant
 enforced, and a non-exclusive group&#39;s YES prices are allowed <strong>not</strong> to sum to 100%.</p>
-<h3>4) W4 — observability: OTel on the ChainJob worker · ~1–2d</h3>
+<h3>6) W4 — observability: OTel on the ChainJob worker · ~1–2d</h3>
 <p><strong>Why now:</strong> <a href="../features/observability.html">observability.md</a> (2026-08-17) picked the sequencing
 already — the worker first, because metrics structurally cannot answer &quot;which step is slow&quot;, and
 the worker is where multi-step chain work actually stalls.
@@ -195,7 +256,7 @@ the worker is where multi-step chain work actually stalls.
 now, Datadog later), so this is a config choice, not a rewrite.
 <strong>Done when:</strong> one settled trade produces a single trace spanning API → ChainJob → chain, and the
 metric-cardinality rule in the doc is respected.</p>
-<h3>5) W5 — read-only DB⇄chain consistency checker · ~1d</h3>
+<h3>7) W5 — read-only DB⇄chain consistency checker · ~1d</h3>
 <p><strong>Why now:</strong> the reframing that killed the indexer (<a href="../features/README.html#v3">V3.2</a>) said the
 real value is <em>observability</em>, cheaply had: walk recent trades, compare DB against chain, report
 mismatches, <strong>write nothing</strong>. No schema change, no cursor, no poller. It also closes the one
@@ -204,10 +265,11 @@ returning and <code>updateMany</code> writing <code>CONFIRMED</code> could let a
 <strong>Gate:</strong> none.
 <strong>Done when:</strong> the checker flags a deliberately-introduced mismatch and is silent on a clean
 staging DB; the replay window has a test saying what the exchange actually does.</p>
-<h3>6) <del>S7–S8 AA / cross-chain, Stripe onboarding, <code>packages/mcp-server</code></del> — <strong>not queued</strong></h3>
+<h3>8) <del>S7–S8 AA / cross-chain, Stripe onboarding, <code>packages/mcp-server</code></del> — <strong>not queued</strong></h3>
 <blockquote>
 <p>Real roadmap steps with no code (<a href="../features/README.html#v4">V4</a>), listed so a cold session does
-not mistake their absence for an oversight. They are further from the demo&#39;s claim than anything
+not mistake their absence for an oversight. <strong><code>packages/mcp-server</code> left this list on 2026-08-21</strong>
+— it is now <a href="#w7">W7</a>. They are further from the demo&#39;s claim than anything
 above, and none of them is blocked on a decision — only on being chosen.</p>
 </blockquote>
 <h2>How this file relates to the other docs <a id="relations"></a></h2>
