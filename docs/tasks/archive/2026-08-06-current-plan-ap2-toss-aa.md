@@ -1,14 +1,14 @@
 # Rabbit — Current Plan: AP2 + Toss Payments + Account Abstraction (AA)
 
-- **Originally:** [jun-30-rabbit.md](jun-30-rabbit.md) design doc, covering the full Jun-30 task
+- **Originally:** [jun-30-rabbit.md](../jun-30-rabbit.md) design doc, covering the full Jun-30 task
   list. **Narrowed (2026-08-03, jay):** this file holds only **AP2 + AA** — everything else
   (Portfolio/Market, Auth+LLM gating, Knowledge page, KB-RAG, staging domain, the full backlog,
   all reference/knowledge pages, **and the PoCs hub reorg**) has been moved to
-  **[../features/README.md](../features/README.md)** and its linked docs — nothing was deleted,
+  **[../features/README.md](../../features/README.md)** and its linked docs — nothing was deleted,
   just relocated. The PoCs hub specifically is supporting infrastructure AP2/AA plug into, not
   itself an AP2/AA task, so it now lives at
-  **[../features/pocs-hub.md](../features/pocs-hub.md)**.
-- **IA:** [../features/README.md](../features/README.md)
+  **[../features/pocs-hub.md](../../features/pocs-hub.md)**.
+- **IA:** [../features/README.md](../../features/README.md)
 - **Status:** active — AP2 (§2), Toss Payments (§7), and AA (§3 + §6) are the only tracked tasks in
   this file.
 - **Numbering note:** sections are numbered sequentially in this file, unlike the original doc
@@ -32,13 +32,13 @@ Three build tasks, jay's own framing: **AP2 = Agentic Payment Protocol** (§2, a
 example, USD rail), **Toss Payments** (§7, the KRW-native counterpart to §2 — added 2026-08-04
 after hitting Stripe's country-signup limitation), and **AA = Account Abstraction** (§3's
 ERC-7702/7715 foundation + §6's Agentic AA pillars). All three wire into the **PoCs hub** (`/etc`,
-in progress — [../features/pocs-hub.md](../features/pocs-hub.md)) as cards once built, but the hub
+in progress — [../features/pocs-hub.md](../../features/pocs-hub.md)) as cards once built, but the hub
 itself isn't tracked here.
 
 **History:** this doc stays short on purpose — for the full blow-by-blow of what was actually
 built/tested/decided on a given day, follow the `docs/history/YYYY-MM-DD-rabbit-history.md` link
-next to whichever task you're resuming (e.g. [2026-08-03](../history/2026-08-03-rabbit-history.md),
-[2026-08-04](../history/2026-08-04-rabbit-history.md) for everything below).
+next to whichever task you're resuming (e.g. [2026-08-03](../../history/2026-08-03-rabbit-history.md),
+[2026-08-04](../../history/2026-08-04-rabbit-history.md) for everything below).
 
 **Resume point (2026-08-04 EOD):** all four tasks are built on branch
 **`claude/ap2-toss-aa-demos`** — ⚠️ **uncommitted** (working tree only, does not travel across
@@ -46,7 +46,7 @@ machines until committed/pushed). Next steps, in order: ① jay's browser click-
 wallet flows on `/etc/aa` (MetaMask ERC-7715 grant + thirdweb Connect), Stripe test card on
 `/ap2`, Toss test card on `/etc/toss` (client key was fixed late on 08-04 — O→0 typo — restart
 the dev server first); ② jay reviews the diff → commit/PR; ③ deploy via `scripts/deploy.sh`
-after merge. Full build details: [2026-08-04 history](../history/2026-08-04-rabbit-history.md).
+after merge. Full build details: [2026-08-04 history](../../history/2026-08-04-rabbit-history.md).
 
 ### Task status
 
@@ -85,8 +85,8 @@ Legend: ⬜ To do.
 
 ## 2. AP2 — Stripe settlement example (educational) <a id="s2"></a>
 <sub>[↑ TOC](#toc)</sub>
-- **Status: 🟢 Built (2026-08-04)** — code at [app/ap2/page.tsx](../../app/ap2/page.tsx) +
-  [app/api/ap2/checkout/route.ts](../../app/api/ap2/checkout/route.ts). Live PoCs-hub card.
+- **Status: 🟢 Built (2026-08-04)** — code at [app/ap2/page.tsx](../../../app/ap2/page.tsx) +
+  [app/api/ap2/checkout/route.ts](../../../app/api/ap2/checkout/route.ts). Live PoCs-hub card.
 
 - **Goal:** a simple, educational **fiat** settlement example via **Stripe** (counterpart to the
   on-chain x402 / aiaas track in `../features/ap2-test.md`).
@@ -103,7 +103,7 @@ Legend: ⬜ To do.
 ## 3. ETC — ERC-7702 / 7715 demo (educational) <a id="s3"></a>
 <sub>[↑ TOC](#toc)</sub>
 - **Status: 🟡 Built (2026-08-04), needs jay's own wallet click-through** — code at
-  [app/etc/aa/SessionKeyDemo.tsx](../../app/etc/aa/SessionKeyDemo.tsx). Live PoCs-hub card
+  [app/etc/aa/SessionKeyDemo.tsx](../../../app/etc/aa/SessionKeyDemo.tsx). Live PoCs-hub card
   (`/etc/aa`), but ERC-7715's MetaMask popup can't be clicked through by an agent — see Verified
   below.
 
@@ -143,7 +143,7 @@ key**) / **ERC-7710** (delegation).
 - Added **Toss Payments (§7)** as the KRW-native settlement counterpart to §2 (2026-08-04) — jay
   hit Stripe's country-signup limitation (no live account available for his country), which
   surfaced Toss as the practical Korea-native alternative already scoped in
-  [../features/toss-payments.md](../features/toss-payments.md).
+  [../features/toss-payments.md](../../features/toss-payments.md).
 - AP2 (§2) built with **Stripe Checkout** (not raw PaymentIntent) — simpler, Stripe-hosted UI, no
   card-form UI to build ourselves. No explicit contrast-with-x402 UI added (2026-08-04).
 - Toss Payments (§7) built as a **standalone page** (`/etc/toss`), not an `/ap2` extension — kept
@@ -155,7 +155,7 @@ key**) / **ERC-7710** (delegation).
   section's Status line (mainly: jay's own wallet click-through for §3/§6).
 
 *(All other resolved decisions — Auth/LLM keys, Market defaults, Knowledge serving, MCP scope —
-moved to their respective docs in [../features/](../features/README.md).)*
+moved to their respective docs in [../features/](../../features/README.md).)*
 
 ## 5. Sequence <a id="s5"></a>
 <sub>[↑ TOC](#toc)</sub>
@@ -167,15 +167,15 @@ moved to their respective docs in [../features/](../features/README.md).)*
    wired in as a PoCs-hub card. ✅ Built 2026-08-04, needs jay's own wallet click-through.
 
 All three depend on the **PoCs hub** (`/etc`), which was built and deployed to production
-2026-08-03 — see [../features/pocs-hub.md](../features/pocs-hub.md) for that design and
-[2026-08-03 history](../history/2026-08-03-rabbit-history.md) for what shipped (`/etc` + `/til`
+2026-08-03 — see [../features/pocs-hub.md](../../features/pocs-hub.md) for that design and
+[2026-08-03 history](../../history/2026-08-03-rabbit-history.md) for what shipped (`/etc` + `/til`
 pages, shared `DemoCard` component, nav/middleware/env changes). §2/§3/§6/§7's own build details
-are in [2026-08-04 history](../history/2026-08-04-rabbit-history.md).
+are in [2026-08-04 history](../../history/2026-08-04-rabbit-history.md).
 
 ## 6. Agentic AA — 4 pillars demo (added 2026-07-17) <a id="s6"></a>
 <sub>[↑ TOC](#toc)</sub>
 - **Status: 🟡 Built (2026-08-04), needs jay's own wallet click-through** — pillars ②③ live at
-  code [app/etc/aa/AgenticPillars.tsx](../../app/etc/aa/AgenticPillars.tsx) (① is §3's
+  code [app/etc/aa/AgenticPillars.tsx](../../../app/etc/aa/AgenticPillars.tsx) (① is §3's
   SessionKeyDemo on the same page). **Pillar ④ (KYA) stayed an explainer card, not a live
   demo** — per this section's own note below, ERC-8004 Sepolia registry availability was never
   verified, so building a real demo against it would've been guessing at an unconfirmed contract.
@@ -188,30 +188,30 @@ are in [2026-08-04 history](../history/2026-08-04-rabbit-history.md).
   **③ atomic intent** (swap→bridge→pay in one UserOperation; any failure reverts all),
   **④ KYA** (ERC-8004 identity/reputation — counterparties check the agent before dealing).
 - **Detail:** pillar table + mapping to existing items + demo shape in
-  **[../features/agentic-aa.md](../features/agentic-aa.md)**.
+  **[../features/agentic-aa.md](../../features/agentic-aa.md)**.
 - **Shape:** extend the §3 ETC page — four cards, one per pillar, each with [Run] + tx link.
   **Stack — updated 2026-08-03: thirdweb** (Connect + Account + Engine) instead of the
   ZeroDev/permissionless.js + Pimlico stack originally noted here — see "AA implementation
   stack" below for the reasoning. Pillars 2–3 are the genuinely new work; pillar 4 is
   exploratory (ERC-8004 is young — verify testnet registry availability).
 - **Est.:** pillars 1–3 ≈ 2–3d on top of §3; pillar 4 +1d. Ties the aiaas spend-policy idea
-  ([ap2-test.md](../features/ap2-test.md)) and [dsrv-portal.md](../features/dsrv-portal.md)
+  ([ap2-test.md](../../features/ap2-test.md)) and [dsrv-portal.md](../../features/dsrv-portal.md)
   AA PoC into one coherent demo.
 - **ERC-8021 add-on (added 2026-07-17):** on-chain attribution ("builder codes") — a
   calldata **suffix** (`[schema ID 1B] + [builder code] + [ERC marker 16B]`) the EVM ignores
   but the ledger keeps, proving which app/agent produced a tx (revenue share, agent
   rewards). Companion to pillar 4: **8004 = who the agent is, 8021 = what it produced.**
   Demo: tag pillars 1–3's txs with a rabbit builder code and parse the suffix back in the
-  execution log (~+0.5d). Detail: [agentic-aa.md §4](../features/agentic-aa.md).
+  execution log (~+0.5d). Detail: [agentic-aa.md §4](../../features/agentic-aa.md).
 - **WalletChan case study (added 2026-07-17):** "MetaMask for AI agents" — EIP-1193/6963
   provider injection + **remote signing** in the Bankr backend's TEE (keys never in the
   browser); v3's batch tx = pillar 3, gasless relayer = pillar 2, tx **simulation before
   signing** = a safety rail our demo page should copy. Control-flow inversion vs the aiaas
-  track: human drives the UI, agent executes. Detail: [agentic-aa.md §5](../features/agentic-aa.md).
+  track: human drives the UI, agent executes. Detail: [agentic-aa.md §5](../../features/agentic-aa.md).
 
 ### AA implementation stack — thirdweb vs. what's already decided
 jay asked me to consider **ThirdWeb** (or recommend an alternative) for AA. There's already a
-survey of thirdweb in **[../features/thirdweb.md](../features/thirdweb.md)**, which flags this
+survey of thirdweb in **[../features/thirdweb.md](../../features/thirdweb.md)**, which flags this
 *exact* comparison under "Rabbit touchpoints." My recommendation, split by which AA standard is
 in play — **"AA" here is actually two different standards**, and that split matters:
 
@@ -236,8 +236,8 @@ in play — **"AA" here is actually two different standards**, and that split ma
 
 ## 7. Toss Payments — KRW settlement example (educational) <a id="s7"></a>
 <sub>[↑ TOC](#toc)</sub>
-- **Status: 🟢 Built (2026-08-04)** — code at [app/etc/toss/page.tsx](../../app/etc/toss/page.tsx)
-  + [lib/toss.ts](../../lib/toss.ts). Live PoCs-hub card, standalone page (not an `/ap2`
+- **Status: 🟢 Built (2026-08-04)** — code at [app/etc/toss/page.tsx](../../../app/etc/toss/page.tsx)
+  + [lib/toss.ts](../../../lib/toss.ts). Live PoCs-hub card, standalone page (not an `/ap2`
   extension — see §4).
 
 - **Goal:** the **KRW-native counterpart** to §2 — same "agent buys data, settles via a payment
@@ -246,7 +246,7 @@ in play — **"AA" here is actually two different standards**, and that split ma
   such signup restriction) and mirrors the same pattern well enough to run side by side with §2.
 - **Detail:** full flow, integration pieces (client/secret key handling), surface placement, and
   open questions are already scoped in
-  **[../features/toss-payments.md](../features/toss-payments.md)** — this entry just tracks it as
+  **[../features/toss-payments.md](../../features/toss-payments.md)** — this entry just tracks it as
   an active task alongside §2/§6 rather than backlog.
 - **Keys:** see [§1 Prerequisites](#s1) for where to get test-mode client/secret keys.
-- History: why this was added — [2026-08-04](../history/2026-08-04-rabbit-history.md).
+- History: why this was added — [2026-08-04](../../history/2026-08-04-rabbit-history.md).

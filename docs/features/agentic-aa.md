@@ -91,5 +91,9 @@ reference architecture, and as a UX pattern the 4-pillar demo page can borrow.*
   (TEE/MPC) earns MetaMask-level trust.
 
 ## Status
-Backlog / to do — see `../tasks/current-plan.md` §6. Sequencing: do **§3 first**
-(it is pillar 1), then extend the same page with pillars 2–4 (+ the ERC-8021 suffix demo).
+🟡 Partly built — ① session key + ②③ sponsored/batch tx are live on `/poc/aa`; ④ KYA stayed an
+explainer card (ERC-8004 testnet registry unverified). The autonomy loop that would put these to
+work unattended is [README.md → Backlog B1](README.md#b1); the build detail for what shipped is in
+the [2026-08-06 archived plan §6](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s6).
+*(Updated 2026-08-21 — this line previously pointed at `../tasks/current-plan.md` §6, which was
+archived.)*

@@ -150,8 +150,8 @@ export default function AgentMockPage() {
           </ul>
           <p className="sub" style={{ marginTop: 8, fontSize: 13 }}>
             {t(
-              "가스·키 보관·스케줄러 호스트·저널 저장소 결정은 docs/tasks/current-plan.md의 D1–D5에 있다.",
-              "The gas, key-custody, scheduler-host, and journal-storage decisions live in docs/tasks/current-plan.md as D1–D5."
+              "가스·키 보관·스케줄러 호스트·저널 저장소 결정은 docs/features/README.md의 백로그 B1에 D1–D5로 있다.",
+              "The gas, key-custody, scheduler-host, and journal-storage decisions live in docs/features/README.md, backlog item B1, as D1–D5."
             )}
           </p>
         </div>
