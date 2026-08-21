@@ -140,28 +140,104 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; AML — where the cryptography stops</p>
   <article>
-      <h1><span class="topic-no">14</span>AML — where the cryptography stops <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">Travel Rule, KYC reuse, sanctions screening — the layer this catalogue keeps hitting and calling 'not a technical problem', studied on its own terms.</p>
-      <p class="meta">Not yet scoped — a reading study. Start with Korea's 특금법 (VASP registration, 트래블룰) and FATF Recommendation 16, then map which obligations a protocol can carry and which only a licensed entity can.</p>
+      <h1><span class="topic-no">16</span>AML — where the cryptography stops <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">Travel Rule, KYC reuse, sanctions screening — the layer this catalogue keeps hitting and calling &#39;not a technical problem&#39;, studied on its own terms.</p>
+      <p class="meta">Not yet scoped — a reading study. Start with Korea&#39;s 특금법 (VASP registration, 트래블룰) and FATF Recommendation 16, then map which obligations a protocol can carry and which only a licensed entity can.</p>
       <h2>Why</h2>
-      <p>This card exists because of a sentence written on another one. The institutional custody study card promised a separation — which parts are engineering (MPC, approval state machines, AA policies) and which parts are a licence you either have or do not — and then set the licence half aside. Nearly every card since has hit the same wall from a different angle. Verifiable credentials prove an institution signed something but not that the claim is true, so someone has to decide which issuers count. Zero-knowledge selective disclosure can prove an investor is eligible without revealing a birthday, but eligibility is defined by a regulator, not a circuit. The multichain RWA card's hardest question turns out to be who is liable for overissuance rather than how to detect it. In each case the technical work stops at the same boundary, and the boundary is worth studying directly rather than repeatedly noting in passing.</p>
+      <p>This card exists because of a sentence written on another one. The institutional custody study card promised a separation — which parts are engineering (MPC, approval state machines, AA policies) and which parts are a licence you either have or do not — and then set the licence half aside. Nearly every card since has hit the same wall from a different angle. Verifiable credentials prove an institution signed something but not that the claim is true, so someone has to decide which issuers count. Zero-knowledge selective disclosure can prove an investor is eligible without revealing a birthday, but eligibility is defined by a regulator, not a circuit. The multichain RWA card&#39;s hardest question turns out to be who is liable for overissuance rather than how to detect it. In each case the technical work stops at the same boundary, and the boundary is worth studying directly rather than repeatedly noting in passing.</p>
+<p><strong>Why it is live, 2026-08-20.</strong> At the Financial AX Risk &amp; Compliance 2026 conference in Seoul, 송근섭, head of the Korean association of certified anti-money-laundering specialists, argued that financial crime has gone cross-border faster than AML has: digital assets and new payment rails are dissolving the boundary between sectors, so customer identification, beneficial-ownership checks, sanctions screening and suspicious-transaction analysis have to be raised together rather than firm by firm. His practical instruction was to stop waiting for complete data and AI governance before starting, and to run a proof of concept on a controllable task — STR analysis was his example — then widen the scope once effectiveness is shown. His limit was that AI must not become a shortcut past the expert: an organisation should use it to <strong>strengthen</strong> the analyst&#39;s judgment, not to route around it. Those two instructions point at the same task from opposite directions, and that tension is what this card can actually measure.</p>
       <h2>How it works</h2>
       <p>Planned as a reading study with a map as its output, not an essay. The Korean layer first, since that is the one that would actually bind: 특금법 registration for a VASP, the 실명확인 입출금계정 requirement that gates everything else, 트래블룰 above the threshold, and the domestic solutions that carry it (CODE, VerifyVASP) — which are, structurally, the same institution-to-institution fact transport the RWA card is about, solved by consortium rather than by protocol. Then the international frame: FATF Recommendation 16 and the originator/beneficiary fields it demands, sanctions screening against OFAC and equivalents, STR and CTR reporting duties, and the risk-based approach that decides how much diligence each customer gets. The output worth producing is a two-column map: obligations a protocol can actually carry (screening a destination address, enforcing a transfer allowlist, proving eligibility without disclosure) against obligations that require a licensed entity with staff and liability (filing a suspicious transaction report, deciding a risk rating, answering a regulator). The tension to keep in view throughout is that AML is built on knowing who, and most of this catalogue is built on not needing to know — reusable KYC credentials are the one place those two genuinely meet, and the interesting question is whether a reused credential satisfies a regulator who wants the underlying evidence on file.</p>
+<h3>The tension in the 2026-08-20 position, and how to measure it</h3>
+<p>STR triage is precisely where a model substitutes for the analyst&#39;s first-pass judgment. So &quot;start with STR&quot; and &quot;do not bypass the expert&quot; aim at the same task from opposite directions, and the speech offers no test that tells them apart. On an org chart they are identical — a human signs either way.</p>
+<p>What separates them is measurable:</p>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Augmenting</th>
+<th>Being rubber-stamped</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Analyst override rate</td>
+<td>Non-trivial and stable</td>
+<td>Falls toward zero</td>
+</tr>
+<tr>
+<td>Override precision</td>
+<td>Overrides are right more often than the model</td>
+<td>Overrides are noise</td>
+</tr>
+<tr>
+<td>Time per case</td>
+<td>Falls, then plateaus</td>
+<td>Falls to a signature</td>
+</tr>
+<tr>
+<td>Escalations the model did not flag</td>
+<td>Still happen</td>
+<td>Stop happening</td>
+</tr>
+</tbody></table>
+<p>The claim worth testing: <strong>an AI that augments leaves a non-trivial override rate whose overrides are correct more often than chance; an AI that is being rubber-stamped shows a collapsing one.</strong> That is automation bias, and it needs no bank&#39;s data — a synthetic alert queue and two arms reproduce the shape.</p>
+<h3>One correction to the governance advice</h3>
+<p>&quot;Do not wait for perfect governance&quot; is right, and it is <strong>not</strong> the same as &quot;start without an audit trail.&quot; An STR is a regulated filing examined after the fact, so the minimum a PoC owes is a decision record from day one: inputs, model version, score, what the analyst did, and why. That is a far smaller thing than full AI governance, and conflating the two is how good advice becomes an excuse.</p>
+<h3>Where the partnership point lands</h3>
+<p>The closing argument — that information and expertise sit scattered across firms, supervisors and private specialists, so public-private partnership matters — belongs in this card&#39;s existing two-column map rather than in a new card. Sharing typologies is fact transport, which this catalogue already knows how to think about. Deciding a risk rating and signing a filing is not. Add it as a third row: <strong>obligations a consortium can carry</strong>, sitting between what a protocol can carry and what only a licensed entity can.</p>
       <p><a href="https://www.jaylabs.xyz/poc/aml-compliance">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">14</span>AML — 암호학이 멈추는 자리 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">16</span>AML — 암호학이 멈추는 자리 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">트래블룰·KYC 재사용·제재 스크리닝 — 이 카탈로그가 계속 부딪히고는 &quot;기술 문제가 아니다&quot;라고 넘겼던 층을, 이번엔 그 자체로 공부해 본다.</p>
       <p class="meta">아직 범위 미정 — 정독 스터디. 특금법(가상자산사업자 신고·트래블룰)과 FATF 권고 16번부터 시작해, 어떤 의무가 프로토콜로 옮겨지고 어떤 의무가 라이선스를 가진 법인에만 남는지 매핑.</p>
       <h2>왜</h2>
-      <p>이 카드는 다른 카드에 적어둔 문장 하나 때문에 생겼습니다. **기관 커스터디 스터디** 카드가 분리를 약속했죠 — *어디까지가 엔지니어링(MPC·승인 상태기계·AA 정책)이고, 어디부터가 있거나 없거나인 라이선스인가.* 그러고는 라이선스 쪽을 옆으로 치워뒀습니다. 그 뒤의 거의 모든 카드가 각도만 바꿔 같은 벽에 부딪혔습니다. **VC**는 기관이 서명했다는 사실만 증명하고 그 주장이 참인지는 증명하지 못하므로, 결국 **어느 발급자를 신뢰할지 사람이 정해야** 합니다. **ZK 선택적 공개**는 생년월일을 밝히지 않고 적격 투자자임을 증명하지만, **적격의 정의는 회로가 아니라 규제기관이** 씁니다. **멀티체인 RWA** 카드의 가장 어려운 질문도 결국 과발행을 어떻게 탐지하느냐가 아니라 **누가 책임지느냐**로 귀결됐습니다. 매번 기술적 작업이 같은 경계에서 멈추는데, 그 경계를 지나가며 언급만 하지 말고 정면으로 공부해 볼 값어치가 있습니다.</p>
+      <p>이 카드는 다른 카드에 적어둔 문장 하나 때문에 생겼습니다. <strong>기관 커스터디 스터디</strong> 카드가 분리를 약속했죠 — <em>어디까지가 엔지니어링(MPC·승인 상태기계·AA 정책)이고, 어디부터가 있거나 없거나인 라이선스인가.</em> 그러고는 라이선스 쪽을 옆으로 치워뒀습니다. 그 뒤의 거의 모든 카드가 각도만 바꿔 같은 벽에 부딪혔습니다. <strong>VC</strong>는 기관이 서명했다는 사실만 증명하고 그 주장이 참인지는 증명하지 못하므로, 결국 <strong>어느 발급자를 신뢰할지 사람이 정해야</strong> 합니다. <strong>ZK 선택적 공개</strong>는 생년월일을 밝히지 않고 적격 투자자임을 증명하지만, <strong>적격의 정의는 회로가 아니라 규제기관이</strong> 씁니다. <strong>멀티체인 RWA</strong> 카드의 가장 어려운 질문도 결국 과발행을 어떻게 탐지하느냐가 아니라 <strong>누가 책임지느냐</strong>로 귀결됐습니다. 매번 기술적 작업이 같은 경계에서 멈추는데, 그 경계를 지나가며 언급만 하지 말고 정면으로 공부해 볼 값어치가 있습니다.</p>
+<p><strong>지금 살아 있는 이유, 2026-08-20.</strong> 서울에서 열린 &#39;Financial AX Risk &amp; Compliance 2026&#39; 콘퍼런스에서 송근섭 국제자금세탁방지전문가협회 대표는 금융범죄가 AML보다 빠르게 초국경화됐다고 지적했습니다 — 디지털자산과 새 지급결제 수단이 업권 경계를 허물고 있으므로, 고객확인·지배구조 확인·제재 스크리닝·의심거래 분석을 개별 회사가 아니라 함께 끌어올려야 한다는 것입니다. 실무 지침은 <strong>완벽한 데이터·AI 거버넌스를 기다리지 말고</strong> 통제 가능한 업무부터 개념검증을 돌리라는 것이었고(예로 STR 분석을 들었습니다), 효과성을 확인한 뒤 범위를 넓히라고 했습니다. 다만 선을 그었습니다 — AI가 전문가를 우회하는 지름길이 되어선 안 되고, 전문가의 판단을 <strong>강화</strong>하는 쪽이어야 한다는 것. <strong>두 지침은 같은 업무를 반대 방향에서 가리키고</strong>, 이 카드가 실제로 측정할 수 있는 것이 그 긴장입니다.</p>
       <h2>동작 방식</h2>
-      <p>에세이가 아니라 **지도 하나를 산출물로** 하는 정독 스터디로 계획합니다. 실제로 구속력을 갖는 **국내 층부터**: 가상자산사업자 **특금법 신고**, 나머지 전부의 관문인 **실명확인 입출금계정** 요건, 기준금액 이상의 **트래블룰**, 그리고 그것을 실어 나르는 국내 솔루션(**CODE·VerifyVASP**) — 이건 구조적으로 RWA 카드가 다룬 **기관 간 사실 전달과 같은 문제**인데, 프로토콜이 아니라 **컨소시엄으로 푼 사례**입니다. 다음으로 국제 프레임: **FATF 권고 16번**과 그것이 요구하는 송신인·수취인 필드, **OFAC 등 제재 목록 스크리닝**, **STR(의심거래보고)·CTR(고액현금거래보고)** 의무, 그리고 고객별 실사 강도를 정하는 **위험기반접근법(RBA)**. 만들 값어치가 있는 산출물은 **두 칸짜리 지도**입니다 — 프로토콜이 실제로 질 수 있는 의무(수취 주소 스크리닝, 전송 화이트리스트 강제, 원문 없이 적격성 증명) 대 **사람과 책임을 가진 법인만 질 수 있는 의무**(의심거래보고 제출, 위험등급 판정, 감독당국 응대). 내내 놓치지 말아야 할 긴장은 이것입니다 — **AML은 &quot;누구인지 아는 것&quot; 위에 서 있고, 이 카탈로그의 대부분은 &quot;알 필요가 없게 만드는 것&quot; 위에 서 있습니다.** 재사용 가능한 KYC 크리덴셜이 그 둘이 실제로 만나는 유일한 지점이고, 흥미로운 질문은 **재사용된 증명이 원본 증거를 파일로 갖고 싶어 하는 감독당국을 만족시키는가**입니다.</p>
+      <p>에세이가 아니라 <strong>지도 하나를 산출물로</strong> 하는 정독 스터디로 계획합니다. 실제로 구속력을 갖는 <strong>국내 층부터</strong>: 가상자산사업자 <strong>특금법 신고</strong>, 나머지 전부의 관문인 <strong>실명확인 입출금계정</strong> 요건, 기준금액 이상의 <strong>트래블룰</strong>, 그리고 그것을 실어 나르는 국내 솔루션(<strong>CODE·VerifyVASP</strong>) — 이건 구조적으로 RWA 카드가 다룬 <strong>기관 간 사실 전달과 같은 문제</strong>인데, 프로토콜이 아니라 <strong>컨소시엄으로 푼 사례</strong>입니다. 다음으로 국제 프레임: <strong>FATF 권고 16번</strong>과 그것이 요구하는 송신인·수취인 필드, <strong>OFAC 등 제재 목록 스크리닝</strong>, <strong>STR(의심거래보고)·CTR(고액현금거래보고)</strong> 의무, 그리고 고객별 실사 강도를 정하는 <strong>위험기반접근법(RBA)</strong>. 만들 값어치가 있는 산출물은 <strong>두 칸짜리 지도</strong>입니다 — 프로토콜이 실제로 질 수 있는 의무(수취 주소 스크리닝, 전송 화이트리스트 강제, 원문 없이 적격성 증명) 대 <strong>사람과 책임을 가진 법인만 질 수 있는 의무</strong>(의심거래보고 제출, 위험등급 판정, 감독당국 응대). 내내 놓치지 말아야 할 긴장은 이것입니다 — <strong>AML은 &quot;누구인지 아는 것&quot; 위에 서 있고, 이 카탈로그의 대부분은 &quot;알 필요가 없게 만드는 것&quot; 위에 서 있습니다.</strong> 재사용 가능한 KYC 크리덴셜이 그 둘이 실제로 만나는 유일한 지점이고, 흥미로운 질문은 <strong>재사용된 증명이 원본 증거를 파일로 갖고 싶어 하는 감독당국을 만족시키는가</strong>입니다.</p>
+<h3>2026-08-20 발언의 긴장, 그리고 그것을 재는 법</h3>
+<p>STR 트리아지는 <strong>모델이 분석가의 1차 판단을 대체하는 바로 그 자리</strong>입니다. 그러니 &quot;STR부터 시작하라&quot;와 &quot;전문가를 우회하지 말라&quot;는 같은 업무를 반대 방향에서 겨누고 있고, 발언은 둘을 가르는 시험을 주지 않습니다. 조직도에서는 똑같아 보입니다 — 어느 쪽이든 사람이 서명하니까요.</p>
+<p>둘을 가르는 것은 측정 가능합니다:</p>
+<table>
+<thead>
+<tr>
+<th>신호</th>
+<th>강화하고 있음</th>
+<th>형식적 결재가 되고 있음</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>분석가 번복률</td>
+<td>유의미하고 안정적</td>
+<td>0으로 수렴</td>
+</tr>
+<tr>
+<td>번복의 정확도</td>
+<td>번복이 모델보다 자주 옳음</td>
+<td>번복이 잡음</td>
+</tr>
+<tr>
+<td>건당 소요 시간</td>
+<td>줄다가 평탄해짐</td>
+<td>서명 수준까지 떨어짐</td>
+</tr>
+<tr>
+<td>모델이 안 잡은 건의 상향 보고</td>
+<td>여전히 발생</td>
+<td>사라짐</td>
+</tr>
+</tbody></table>
+<p>시험할 값어치가 있는 주장: <strong>강화하는 AI는 유의미한 번복률을 남기고 그 번복이 우연보다 자주 옳다. 형식적으로 결재되는 AI는 번복률이 붕괴한다.</strong> 이것이 <strong>자동화 편향(automation bias)</strong>이고, 은행 데이터 없이도 됩니다 — 합성 경보 큐와 두 개 군이면 같은 형태가 재현됩니다.</p>
+<h3>거버넌스 조언에 정정 하나</h3>
+<p>&quot;완벽한 거버넌스를 기다리지 말라&quot;는 옳습니다. 그리고 그것은 <strong>&quot;감사 추적 없이 시작하라&quot;와 같은 말이 아닙니다.</strong> STR은 사후에 검사받는 규제 보고이므로, PoC가 첫날부터 지고 있어야 할 최소치는 <strong>결정 기록</strong>입니다 — 입력, 모델 버전, 점수, 분석가가 무엇을 했고 왜 그랬는지. 이것은 완전한 AI 거버넌스보다 훨씬 작은 물건이고, 둘을 뭉뚱그리는 순간 좋은 조언이 핑계로 바뀝니다.</p>
+<h3>민관 파트너십 주장이 놓이는 자리</h3>
+<p>마지막 논점 — 정보와 전문성이 금융회사·감독기관·민간 전문가에게 흩어져 있으니 민관 파트너십이 중요하다 — 은 새 카드가 아니라 <strong>이 카드의 기존 2열 지도</strong>에 놓입니다. 유형(typology) 공유는 사실 전달 문제이고, 이 카탈로그가 이미 다룰 줄 아는 것입니다. 리스크 등급을 정하고 보고서에 서명하는 일은 아닙니다. 세 번째 열로 추가할 것: <strong>컨소시엄이 질 수 있는 의무</strong> — 프로토콜이 질 수 있는 것과 라이선스 보유 기관만 질 수 있는 것 사이에 놓입니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/aml-compliance">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-mcp-stateless-server.html">&larr; 13. Building an MCP server on the stateless spec</a><a href="pocs-dsrv-portal.html">15. Institutional custody study &rarr;</a></div>
+  <div class="pager"><a href="pocs-fisheries-receivable-rail.html">&larr; 15. The custody was never the hard part</a><a href="pocs-dsrv-portal.html">17. Institutional custody study &rarr;</a></div>
 </div>
 </body>
 </html>
