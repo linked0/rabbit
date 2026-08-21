@@ -35,3 +35,15 @@
 **Change:** ① `docs/index.html`의 Verex 링크 5개를 `https://linked0.github.io/verex/...`로 교체(카드 4개 + "View All Verex Tasks"), 외부 링크이므로 `target="_blank" rel="noopener noreferrer"` 추가, 배지 `HTML` → `GH PAGES`, card-path 표기를 URL로 변경, "Latest Log: 2026-08-18" → "Logs". Rabbit 카드는 손대지 않음. ② 링크 대상이 404이던 두 곳을 verex 쪽에서 신규 작성 — `verex/docs/index.md`(사이트 랜딩), `verex/docs/tasks/README.md`(tasks 인덱스). 이어서 jay가 "Verex — Logs 는 history 폴더의 파일 목록을 보여줘야 한다"고 요청해 `verex/docs/history/index.md`를 Liquid 자동 생성 목록으로 추가했다. **Rabbit 로그 카드는 jay의 지시로 원래대로 둔다** — `logs.html`은 `pnpm docs:logs`를 손으로 돌려야 갱신되는 스냅샷이라 자동 갱신되는 Verex 쪽과 성격이 달랐고, jay가 현행 유지를 택했다. ③ 변경 이유를 파일 내 주석으로 기록(기존 한국어 주석 관례 유지).
 
 **Result:** 링크 4개는 즉시 200으로 동작(`features/`, `tasks/current-plan.html`, `tasks/jun-19-verex-design.html`, `history/`). 나머지 2개(사이트 루트, `tasks/`)는 새로 만든 인덱스 파일이 **verex `main`에 머지·푸시된 뒤** 동작한다 — Pages가 `main:/docs`만 서빙하기 때문. 이로써 rabbit 안의 Verex 미러 3종(`docs/history/*verex*.md` 24개, `projects/verex/**`, `docs/html/projects/verex/**` 30개 380KB)과 `scripts/sync-verex-docs.mjs`가 모두 죽은 자산이 됐다 — 삭제는 jay 확인 대기. 삭제 시 "All Logs" 카드 수치는 64 → 약 40(rabbit 전용)으로 줄어든다.
+
+### current-plan을 저장소 간 이음새 문서로 전환 — J2 "mandated trader"
+
+> 소스 문서: [docs/tasks/current-plan.md](../tasks/current-plan.md) (이번에 새로 쓴 이음새 계획) · verex 쪽 몫(W1·W6·W7)은 verex 저장소의 `docs/history/2026-08-21-verex-history.md`. 이 저장소의 앞 항목: 같은 날 "current-plan 리셋" 항목(위).
+
+**Cause:** jay가 두 프로젝트에 걸친 시나리오를 제시했다 — **rabbit에서 무인으로 도는 에이전트가 verex 예측시장에서 스스로 판단해 거래하고 정산까지 받는다.** 아침에 비워둔 rabbit의 P0(다음 작업 고르기)의 답이 이것으로 정해졌고, 동시에 "rabbit 계획서가 두 저장소 구현을 담을 수 있느냐"는 앞선 질문의 답도 확정됐다: **A안 — 이음새만 소유하고 저장소별 상세는 링크**.
+
+**Reasoning:** 쓰기 전에 큰 갈림길 네 개를 jay에게 물었고 전부 답을 받았다 — ① 만다트는 **거래가 아니라 자금 조달**을 강제한다 ② 접속은 **REST 먼저, MCP는 래퍼로** ③ **LLM이 확률을 추정하고 결정적 규칙이 집행**한다 ④ 루프는 **해소·상환까지 전부**. ①이 가장 중요했다: ERC-7710 enforcer는 *호출*을 검사하는데 CTF 주문은 *서명*이라, 세션 키가 주문에 서명해도 enforcer를 통과하지 않는다. 자금 조달을 묶으면 범위는 좁아도 **완전히 정직한 산술 주장**이 된다 — 가진 적 없는 돈은 잃을 수 없다. 더 센 버전(EIP-1271 스마트 계정 + 커스텀 검증 컨트랙트)은 O4로 기록만 하고 만들지 않는다.
+
+**Change:** `docs/tasks/current-plan.md`를 **Rabbit ⇄ Verex 이음새 계획**으로 새로 씀 — 시나리오(관찰→추정→결정→체결→감시→기록), 각 한도가 실제로 어디서 강제되는지 그린 아키텍처, 저장소 상태 요약, **구현 매트릭스**(6열 15행: 항목 · rabbit이 만들 것 · verex가 만들 것 · 의존 · 견적), Phase 0–5 빌드 순서, 열린 질문 O1–O6, "이 데모가 증명하지 않는 것". 문서 소유 규칙을 명시: **한 저장소 안에서 끝나는 일은 그 저장소 계획서로.**
+
+**Result:** 두 가지가 나왔고 둘 다 표를 그리기 전엔 안 보였다. **하나 — 두 저장소가 실제로 맞물리는 행은 딱 두 개다**(R-B 주문 서명 ⇄ V-A 주문 수용, R-G 상환 ⇄ V-D 주소 기반 상환). 나머지는 전부 한쪽이 혼자 하는 일이라 P0·V-A~V-C와 R-A가 병렬로 굴러간다 — 예상보다 훨씬 덜 얽혀 있다. **둘 — verex W1이 먼저여야 하는 이유가 바뀌었다.** 뻔한 이유는 "해소 안 된 마켓에선 상환 불가"인데, 진짜 이유는 W1의 fresh seed가 스테이징 거래 행을 **삭제**한다는 것이다. 에이전트가 먼저 거래하면 재시드가 저널이 가리키는 행을 지운다. 가스 비대칭도 확인했다 — 외부 maker는 **거래엔 가스가 안 들고**(오퍼레이터가 `matchOrders` 전송) **상환에만** 든다. **다음 결정은 O1**: rabbit이 verex `packages/sdk`의 주문 서명 코드를 어떻게 얻느냐(퍼블리시 / 복사 / 얇은 재구현). **Phase 2(R-B)가 여기서 막히고**, 나머지는 안 막힌다.
