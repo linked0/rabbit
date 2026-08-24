@@ -498,6 +498,52 @@ export const POC_CARDS: DemoCard[] = [
     ],
   },
   {
+    // 서비스 탐방 47/113: Chainlink Data Streams (jay, 2026-08-24).
+    // 45(Mountain)·46(Functions) 연속 sunset 이후 47번 Data Streams 생존 확인.
+    // 기존 Data Feeds(Push)와 Data Streams(Pull)의 차이 및 Verex 시점 정산(price-at-a-moment) 적용.
+    key: "chainlink-data-streams",
+    title: "Chainlink Data Streams — push vs. pull oracles and point-in-time settlement",
+    titleKo: "Chainlink Data Streams — Push 대 Pull 오라클과 시점 정산",
+    description:
+      "Data Streams keeps signed market prices off-chain and pulls them on-demand inside user transactions. For prediction markets like Verex, sub-second latency and deterministic resolution costs replace stale push heartbeats.",
+    descriptionKo:
+      "Data Streams는 서명된 시세를 오프체인에 두고 사용자가 트랜잭션 제출 시 당겨와 온체인 검증합니다. Verex 같은 예측시장에선 하트비트 푸시의 데이터 노후화를 밀리초 단위 정밀도와 건당 확정 비용으로 대체합니다.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — trace the off-chain cryptographic signature verification path in Data Streams docs, calculate the bounded gas cost of single-market settlement, and continue catalogue audit for entries 48–55. Source: docs.chain.link/data-streams.",
+    howToKo:
+      "아직 범위 미정 — Data Streams 문서에서 오프체인 서명 리포트의 온체인 검증 흐름을 확인하고, 마켓 1건당 확정 가스비 상한을 계산한 뒤 48~55번 카탈로그 생사 감사로 연결. 출처: docs.chain.link/data-streams.",
+    purpose:
+      "### Catalog Audit Finding: Service 47 Is Alive\n\nFollowing the sunset of Service 45 (Mountain Protocol) and Service 46 (Chainlink Functions, migrating to CRE), Service 47 (Chainlink Data Streams) is confirmed active and featured in Chainlink's primary production suite.\n\n### The Architectural Shift: Push (Data Feeds) vs. Pull (Data Streams)\n\nThe distinction between Chainlink Data Feeds and Data Streams is the architectural boundary between **Push** and **Pull** oracle models:\n\n1. **Data Feeds (Push / Conventional)**: Oracle nodes continuously write prices on-chain based on deviation thresholds (e.g. 0.5%) or heartbeat intervals (e.g. every 1 hour). Smart contracts read the latest state on-chain, but the price is inherently stale between heartbeat writes, and the oracle network bears the gas costs indefinitely.\n2. **Data Streams (Pull / Low-Latency)**: High-frequency market data is continuously aggregated and cryptographically signed off-chain. When a user executes a trade or settles a contract, the caller pulls the timestamped signed report and submits it alongside their transaction. The smart contract verifies the cryptographic signature on-chain and executes immediately against that exact moment's price.\n\n### Three Concrete Advantages of the Pull Model\n\n- **Gas on Demand**: The oracle does not burn gas writing unused prices; the caller pays gas only when a state transition actually requires it.\n- **Sub-Second Latency**: Price delivery is unconstrained by on-chain block times or heartbeat thresholds.\n- **Millisecond Granularity**: Enables high-precision financial derivatives and deterministic prediction-market settlement.",
+    purposeKo:
+      "### 카탈로그 감사 결과: 47번 서비스 생존 확인\n\n45번(Mountain Protocol)과 46번(Chainlink Functions — 2026-06 공식 sunset 후 CRE로 이관)이 연달아 종료되었던 반면, **47번 Chainlink Data Streams는 정상 운영 중**이며 공식 현행 제품군(Data Feeds, Data Streams, VRF, Automation, CCIP)의 핵심 축입니다.\n\n### Push(Data Feeds) vs Pull(Data Streams)의 구조적 차이\n\nChainlink Data Feeds와 Data Streams의 핵심 구분은 **Push(밀어넣기) 대 Pull(당겨오기)** 오라클 아키텍처입니다:\n\n1. **Data Feeds (기존 Push 모델)**: 오라클 노드가 편차 임계치(예: 0.5%)나 하트비트 주기(예: 1시간)마다 온체인에 트랜잭션을 날려 가격을 갱신합니다. 컨트랙트는 저장된 값을 단순 조회하면 되지만, 갱신 사이의 값은 필연적으로 **낡은(stale) 데이터**이며 상시 가스비를 오라클 네트워크가 부담합니다.\n2. **Data Streams (신규 Pull 모델)**: 고빈도 가격 데이터가 **오프체인에서 서명된 상태로 대기**합니다. 사용자가 주문을 넣거나 정산할 때, 해당 시점에 서명된 리포트를 트랜잭션 calldata에 함께 실어 온체인으로 제출합니다. 스마트 컨트랙트는 온체인에서 **서명을 검증하고 그 시점의 확정 가격으로 즉시 실행**합니다.\n\n### Pull 모델이 가져다주는 세 가지 이점\n\n- **온디맨드 가스 비용**: 오라클이 허공에 가스비를 태우며 상시 갱신하지 않고, **실제 가격을 소비하는 사용자/트랜잭션이 해당 호출의 가스를 부담**합니다.\n- **초저지연(Sub-second Latency)**: 블록 생성 주기나 하트비트 임계치에 묶이지 않고 밀리초 단위의 최신 호가를 반영합니다.\n- **정밀한 시점 데이터**: 특정 시각(타임스탬프)에 서명된 리포트를 검증할 수 있어 정산 시점의 분쟁을 방지합니다.",
+    howItWorks:
+      "### Verex Prediction Market Application Scenario\n\n1. **Settlement at an Exact Timestamp**: Prediction markets frequently resolve on \"closing price at 16:00:00 UTC\" or \"price at event occurrence.\" A push feed often lacks the exact timestamp price (if no deviation triggered an update at that second). A pull feed allows retrieving the cryptographic report signed at that exact millisecond. This resolves the core dilemma described in this catalogue's `price-at-a-moment` card.\n2. **Cost Predictability**: Solves the fundamental question — *\"What is the upper bound on settling one market?\"* With a pull model, settlement gas is paid strictly per resolution call, making per-market unit economics transparent and calculable.\n3. **Scope Boundary**: Data Streams is specialized for numeric financial asset prices (crypto, commodities, FX). It does not resolve categorical real-world outcomes (\"Who won the election?\") — which remains the domain of decentralized consensus / CRE (formerly Functions).",
+    howItWorksKo:
+      "### Verex 예측시장 적용 시나리오\n\n1. **시점 정산 문제의 해결**: 예측시장 정산은 \"특정 시각의 종가(예: 16:00:00)\"나 \"이벤트 발생 시점의 가격\"이 필요한 경우가 많습니다. Push 피드는 그 순간 편차가 없었다면 해당 시각의 값을 온체인에 갖고 있지 못하지만, Pull 모델은 **그 시각에 오프체인에서 서명된 리포트**를 온체인으로 가져와 정산할 수 있습니다. 카탈로그의 `price-at-a-moment` 카드가 다룬 핵심 문제가 바로 이 지점입니다.\n2. **비용 구조의 확정**: \"정산 1건의 비용 상한이 얼마인가?\"라는 질문에 Pull 모델은 명쾌하게 답합니다. 호출한 건수만큼만 정산 가스를 부담하므로 마켓 개설당 손익 계산(Unit Economics)이 성립합니다.\n3. **명확한 한계와 영역 분리**: Data Streams는 **수치형 금융 가격 데이터 전용**입니다. \"선거에서 누가 이겼는가\" 같은 범주형 현실 세계 이벤트는 다루지 못하며, 그 영역은 여전히 CRE(구 Functions)와 탈중앙 합의 오라클의 영역으로 남습니다.",
+    diagrams: [
+      {
+        title: "Chainlink Data Streams: Off-chain signed pull flow",
+        titleKo: "Chainlink Data Streams: 오프체인 서명 기반 Pull 검증 흐름",
+        src: `sequenceDiagram
+    autonumber
+    actor Caller as Caller / Verex Keeper
+    participant DON as Chainlink DON (Off-chain)
+    participant C as Settlement Contract
+    participant V as StreamVerifier (On-chain)
+
+    DON->>DON: Continuously aggregate & sign sub-second price reports
+    Caller->>DON: Fetch signed report at target timestamp T
+    DON-->>Caller: SignedReport(price, timestamp T, signatures)
+    Caller->>C: settleMarket(marketId, signedReport)
+    C->>V: verifyReport(signedReport)
+    V->>V: Verify DON signatures & validity window
+    V-->>C: Decoded price at timestamp T
+    C->>C: Execute market payout against exact price`,
+      },
+    ],
+  },
+  {
     // 1inch Aqua 공개(2026-07-27)를 계기로 추가 (jay, 2026-08-17). 광고 문구 한 줄에서
     // 출발했지만 카드가 될 값어치는 그 아래 있다 — "토큰이 지갑에 남는다"는 자기수탁 이야기가
     // 아니라 호가와 체결 가능성이 분리된다는 이야기다. stake-concentration 카드와 논리 구조가
@@ -1140,52 +1186,6 @@ export const POC_CARDS: DemoCard[] = [
       "Reading note: four patterns sharing one shape — a private system of record, a verified bridge that attests to it without publishing it, and on-chain settlement conditioned on that attestation. The load-bearing question in each is what the bridge's attestation is actually worth, since the chain cannot check the private data itself.",
     howItWorksKo:
       "정독 노트: 하나의 모양을 공유하는 네 패턴 — 사설 원장, 그것을 공개하지 않으면서 증명하는 검증된 다리, 그리고 그 증명에 조건부인 온체인 정산. 각각에서 핵심 질문은 **그 다리의 증명이 실제로 얼마짜리인가**입니다. 체인은 사설 데이터 자체를 검사할 수 없으니까요.",
-  },
-  {
-    // 서비스 탐방 47/113: Chainlink Data Streams (jay, 2026-08-24).
-    // 45(Mountain)·46(Functions) 연속 sunset 이후 47번 Data Streams 생존 확인.
-    // 기존 Data Feeds(Push)와 Data Streams(Pull)의 차이 및 Verex 시점 정산(price-at-a-moment) 적용.
-    key: "chainlink-data-streams",
-    title: "Chainlink Data Streams — push vs. pull oracles and point-in-time settlement",
-    titleKo: "Chainlink Data Streams — Push 대 Pull 오라클과 시점 정산",
-    description:
-      "Data Streams keeps signed market prices off-chain and pulls them on-demand inside user transactions. For prediction markets like Verex, sub-second latency and deterministic resolution costs replace stale push heartbeats.",
-    descriptionKo:
-      "Data Streams는 서명된 시세를 오프체인에 두고 사용자가 트랜잭션 제출 시 당겨와 온체인 검증합니다. Verex 같은 예측시장에선 하트비트 푸시의 데이터 노후화를 밀리초 단위 정밀도와 건당 확정 비용으로 대체합니다.",
-    status: "soon",
-    howTo:
-      "Not yet scoped — trace the off-chain cryptographic signature verification path in Data Streams docs, calculate the bounded gas cost of single-market settlement, and continue catalogue audit for entries 48–55. Source: docs.chain.link/data-streams.",
-    howToKo:
-      "아직 범위 미정 — Data Streams 문서에서 오프체인 서명 리포트의 온체인 검증 흐름을 확인하고, 마켓 1건당 확정 가스비 상한을 계산한 뒤 48~55번 카탈로그 생사 감사로 연결. 출처: docs.chain.link/data-streams.",
-    purpose:
-      "### Catalog Audit Finding: Service 47 Is Alive\n\nFollowing the sunset of Service 45 (Mountain Protocol) and Service 46 (Chainlink Functions, migrating to CRE), Service 47 (Chainlink Data Streams) is confirmed active and featured in Chainlink's primary production suite.\n\n### The Architectural Shift: Push (Data Feeds) vs. Pull (Data Streams)\n\nThe distinction between Chainlink Data Feeds and Data Streams is the architectural boundary between **Push** and **Pull** oracle models:\n\n1. **Data Feeds (Push / Conventional)**: Oracle nodes continuously write prices on-chain based on deviation thresholds (e.g. 0.5%) or heartbeat intervals (e.g. every 1 hour). Smart contracts read the latest state on-chain, but the price is inherently stale between heartbeat writes, and the oracle network bears the gas costs indefinitely.\n2. **Data Streams (Pull / Low-Latency)**: High-frequency market data is continuously aggregated and cryptographically signed off-chain. When a user executes a trade or settles a contract, the caller pulls the timestamped signed report and submits it alongside their transaction. The smart contract verifies the cryptographic signature on-chain and executes immediately against that exact moment's price.\n\n### Three Concrete Advantages of the Pull Model\n\n- **Gas on Demand**: The oracle does not burn gas writing unused prices; the caller pays gas only when a state transition actually requires it.\n- **Sub-Second Latency**: Price delivery is unconstrained by on-chain block times or heartbeat thresholds.\n- **Millisecond Granularity**: Enables high-precision financial derivatives and deterministic prediction-market settlement.",
-    purposeKo:
-      "### 카탈로그 감사 결과: 47번 서비스 생존 확인\n\n45번(Mountain Protocol)과 46번(Chainlink Functions — 2026-06 공식 sunset 후 CRE로 이관)이 연달아 종료되었던 반면, **47번 Chainlink Data Streams는 정상 운영 중**이며 공식 현행 제품군(Data Feeds, Data Streams, VRF, Automation, CCIP)의 핵심 축입니다.\n\n### Push(Data Feeds) vs Pull(Data Streams)의 구조적 차이\n\nChainlink Data Feeds와 Data Streams의 핵심 구분은 **Push(밀어넣기) 대 Pull(당겨오기)** 오라클 아키텍처입니다:\n\n1. **Data Feeds (기존 Push 모델)**: 오라클 노드가 편차 임계치(예: 0.5%)나 하트비트 주기(예: 1시간)마다 온체인에 트랜잭션을 날려 가격을 갱신합니다. 컨트랙트는 저장된 값을 단순 조회하면 되지만, 갱신 사이의 값은 필연적으로 **낡은(stale) 데이터**이며 상시 가스비를 오라클 네트워크가 부담합니다.\n2. **Data Streams (신규 Pull 모델)**: 고빈도 가격 데이터가 **오프체인에서 서명된 상태로 대기**합니다. 사용자가 주문을 넣거나 정산할 때, 해당 시점에 서명된 리포트를 트랜잭션 calldata에 함께 실어 온체인으로 제출합니다. 스마트 컨트랙트는 온체인에서 **서명을 검증하고 그 시점의 확정 가격으로 즉시 실행**합니다.\n\n### Pull 모델이 가져다주는 세 가지 이점\n\n- **온디맨드 가스 비용**: 오라클이 허공에 가스비를 태우며 상시 갱신하지 않고, **실제 가격을 소비하는 사용자/트랜잭션이 해당 호출의 가스를 부담**합니다.\n- **초저지연(Sub-second Latency)**: 블록 생성 주기나 하트비트 임계치에 묶이지 않고 밀리초 단위의 최신 호가를 반영합니다.\n- **정밀한 시점 데이터**: 특정 시각(타임스탬프)에 서명된 리포트를 검증할 수 있어 정산 시점의 분쟁을 방지합니다.",
-    howItWorks:
-      "### Verex Prediction Market Application Scenario\n\n1. **Settlement at an Exact Timestamp**: Prediction markets frequently resolve on \"closing price at 16:00:00 UTC\" or \"price at event occurrence.\" A push feed often lacks the exact timestamp price (if no deviation triggered an update at that second). A pull feed allows retrieving the cryptographic report signed at that exact millisecond. This resolves the core dilemma described in this catalogue's `price-at-a-moment` card.\n2. **Cost Predictability**: Solves the fundamental question — *\"What is the upper bound on settling one market?\"* With a pull model, settlement gas is paid strictly per resolution call, making per-market unit economics transparent and calculable.\n3. **Scope Boundary**: Data Streams is specialized for numeric financial asset prices (crypto, commodities, FX). It does not resolve categorical real-world outcomes (\"Who won the election?\") — which remains the domain of decentralized consensus / CRE (formerly Functions).",
-    howItWorksKo:
-      "### Verex 예측시장 적용 시나리오\n\n1. **시점 정산 문제의 해결**: 예측시장 정산은 \"특정 시각의 종가(예: 16:00:00)\"나 \"이벤트 발생 시점의 가격\"이 필요한 경우가 많습니다. Push 피드는 그 순간 편차가 없었다면 해당 시각의 값을 온체인에 갖고 있지 못하지만, Pull 모델은 **그 시각에 오프체인에서 서명된 리포트**를 온체인으로 가져와 정산할 수 있습니다. 카탈로그의 `price-at-a-moment` 카드가 다룬 핵심 문제가 바로 이 지점입니다.\n2. **비용 구조의 확정**: \"정산 1건의 비용 상한이 얼마인가?\"라는 질문에 Pull 모델은 명쾌하게 답합니다. 호출한 건수만큼만 정산 가스를 부담하므로 마켓 개설당 손익 계산(Unit Economics)이 성립합니다.\n3. **명확한 한계와 영역 분리**: Data Streams는 **수치형 금융 가격 데이터 전용**입니다. \"선거에서 누가 이겼는가\" 같은 범주형 현실 세계 이벤트는 다루지 못하며, 그 영역은 여전히 CRE(구 Functions)와 탈중앙 합의 오라클의 영역으로 남습니다.",
-    diagrams: [
-      {
-        title: "Chainlink Data Streams: Off-chain signed pull flow",
-        titleKo: "Chainlink Data Streams: 오프체인 서명 기반 Pull 검증 흐름",
-        src: `sequenceDiagram
-    autonumber
-    actor Caller as Caller / Verex Keeper
-    participant DON as Chainlink DON (Off-chain)
-    participant C as Settlement Contract
-    participant V as StreamVerifier (On-chain)
-
-    DON->>DON: Continuously aggregate & sign sub-second price reports
-    Caller->>DON: Fetch signed report at target timestamp T
-    DON-->>Caller: SignedReport(price, timestamp T, signatures)
-    Caller->>C: settleMarket(marketId, signedReport)
-    C->>V: verifyReport(signedReport)
-    V->>V: Verify DON signatures & validity window
-    V-->>C: Decoded price at timestamp T
-    C->>C: Execute market payout against exact price`,
-      },
-    ],
   },
   {
     key: "thirdweb",
