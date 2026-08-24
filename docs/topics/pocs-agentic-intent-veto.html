@@ -140,9 +140,9 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The budget is the wrong invariant</p>
   <article>
-      <h1><span class="topic-no">9</span>The budget is the wrong invariant <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">1</span>The budget is the wrong invariant <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></h1>
       <p class="lead">A spend cap constrains the amount, not the purchase. An agent that spends $50 of its $100 on the wrong thing passed every check — and on-chain there is no chargeback behind it.</p>
-      <p class="meta">Not yet scoped — designed as a hackathon entry (Google Cloud × Solana agentic commerce, 2026-08). Start with the hostile-merchant demo: prove that a session-key agent buys the wrong thing while staying inside its limit, because that failure is the whole argument.</p>
+      <p class="meta">Why a spend cap is the wrong thing to bound: an agent that spends $50 of its $100 on the wrong item passed every check, and on-chain there is no chargeback behind it. Designed as a hackathon entry (Google Cloud × Solana agentic commerce, 2026-08); the hostile-merchant case is the argument, not a step toward it.</p>
       <h2>Why</h2>
       <p>Autonomous payments are almost always secured with a spend cap, and the cap is the wrong invariant. An agent given $100 that spends $50 on the wrong item has violated nothing — the session key worked, the limit held, the signature verified. The failure that matters is not overspend but wrong spend inside the limit, and unlike a card payment there is no chargeback sitting behind it. So this card is a design for fixing the invariant rather than tightening the cap, written as if entering the Google Cloud × Solana agentic-commerce hackathon, where the stated theme (an agent that settles and signs without human approval inside a budget) all but guarantees that most entries demonstrate the happy path of exactly the mechanism this one argues is insufficient. The competition is not the point; the point is that the strongest form of this argument is a demo in which the audience watches a conventional agent pass every check and lose the money anyway.</p>
       <h2>How it works</h2>
@@ -152,16 +152,16 @@
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">9</span>한도는 틀린 불변식이다 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">1</span>한도는 틀린 불변식이다 <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></h1>
       <p class="lead">한도는 금액을 제약하지 구매를 제약하지 않습니다. $100 중 $50을 엉뚱한 것에 쓴 에이전트는 모든 검사를 통과한 것이고, 온체인에는 그 뒤를 받칠 차지백이 없습니다.</p>
-      <p class="meta">아직 범위 미정 — 해커톤 출품작을 가정한 설계(Google Cloud × Solana 에이전틱 커머스, 2026-08). 적대적 판매자 데모부터: 세션키 에이전트가 한도 안에 머문 채로 엉뚱한 것을 산다는 걸 먼저 증명합니다. 그 실패가 논증의 전부이기 때문입니다.</p>
+      <p class="meta">왜 한도가 묶어야 할 대상이 아닌가 — 100달러 중 50달러를 엉뚱한 것에 쓴 에이전트는 모든 검사를 통과했고, 온체인에는 그 뒤를 받쳐 줄 지급거절이 없습니다. 해커톤 출품작을 가정해 설계했고(Google Cloud × Solana 에이전틱 커머스, 2026-08), 적대적 판매자 사례는 논증으로 가는 단계가 아니라 논증 그 자체입니다.</p>
       <h2>왜</h2>
       <p>자율 결제는 거의 항상 지출 한도로 보호되는데, <strong>한도는 틀린 불변식</strong>입니다. $100을 받은 에이전트가 엉뚱한 물건에 $50을 썼다면 위반한 것이 하나도 없습니다 — 세션키는 동작했고, 한도는 지켜졌고, 서명은 검증됐습니다. 중요한 실패는 초과지출이 아니라 <strong>한도 안에서의 잘못된 지출</strong>이고, 카드 결제와 달리 그 뒤에는 차지백이 없습니다. 그래서 이 카드는 한도를 더 조이는 대신 <strong>불변식을 갈아 끼우는</strong> 설계이고, Google Cloud × Solana 에이전틱 커머스 해커톤에 출품한다는 가정으로 썼습니다. 그 대회의 주제(예산 안에서 사람 승인 없이 정산·서명하는 에이전트) 자체가, 대부분의 출품작이 <strong>바로 이 카드가 불충분하다고 주장하는 메커니즘의 해피패스</strong>를 시연하게 만들기 때문입니다. 대회가 요점은 아닙니다. 요점은 이 논증의 가장 강한 형태가 <strong>관객이 평범한 에이전트가 모든 검사를 통과하고도 돈을 잃는 것을 지켜보는 데모</strong>라는 것입니다.</p>
       <h2>동작 방식</h2>
       <p>메커니즘은 둘이고, 공격을 받을 쪽은 두 번째입니다. <strong>첫째, 한도가 아니라 의도에 서명합니다.</strong> 에이전트가 판매자 콘텐츠를 보기 <strong>전에</strong> <code>(품목 클래스, 최대 단가, 최대 수량, 판매자 allowlist, 만료)</code> 커밋을 발행하고, 온체인 프로그램은 정산을 잔고가 아니라 <strong>그 커밋과</strong> 대조합니다 — 커밋 이후에 컨텍스트가 오염된 에이전트는 자기가 원한다고 커밋한 것과 다른 구매를 정산할 수 없습니다. 이것은 AP2의 Intent Mandate / Cart Mandate 분리를 솔라나로 옮긴 것입니다. AP2 카드가 이미 같은 분리를 만들고 있으므로 <strong>새로운 부분은 만다트 개념이 아니라 정산 시점의 강제</strong>입니다. <strong>둘째, 정산에 거부권 창을 둡니다.</strong> 승인과 최종 정산 사이에 30~60초의 짧은 구간을 두고 그 안에서 <strong>별도의 저권한 감시 키</strong>가 취소할 수 있게 하되, 권한을 의도적으로 서로소로 나눕니다 — 에이전트는 자기 결제를 취소하지 못하고, 감시자는 지출하지 못합니다. 이것은 <code>price-at-a-moment</code> 카드가 청산에 대해 한 주장(지연 0으로 발사되는 동작은 잘못된 입력을 알아챌 수 있었던 유일한 구간을 없앤다)을 오라클이 아니라 <strong>결제에</strong> 적용한 것입니다. 데모는 프롬프트 인젝션이 실린 판매자 API에 대고 <strong>같은 에이전트를 두 번</strong> 돌립니다: 평범한 세션키에서는 한도가 지켜지고 구매는 틀렸고 돈은 사라지며, 이 레일 위에서는 금액이 아니라 <strong>의도 불일치로</strong> 정산이 실패합니다. 모든 출품작이 받는 질문 둘은 설계 안에서 답해 둡니다. <strong>서브초 파이널리티</strong>가 30초 거부권 창을 블록타임의 부산물이 아니라 <strong>제품 결정</strong>으로 만듭니다 — 느린 체인에서는 그 창이 평범한 확정 지연과 구분되지 않고, 그러면 제품이 성립하지 않습니다. 그리고 커밋 발행자와 감시자는 <strong>에이전트가 닿을 수 없는 곳</strong>에 있어야 하므로 온체인이 아니라 감사 로그를 가진 정책 서비스가 됩니다 — 강제는 온체인, 판단은 오프체인. CRE × Cloud 카드가 반대 방향에서 도달한 그 분리입니다. 결제 쪽 청중이 즉시 제기하므로 먼저 답해야 할 반론은 <strong>&quot;어느 판매자가 파이널리티를 30초 기다리느냐&quot;</strong>이고, 답은 <strong>카드망이 이미 이 거래를 했고 이름까지 붙여 두었다</strong>는 것입니다. 승인은 즉시, 매입은 나중. 이것은 새로운 트레이드오프가 아니라 <strong>auth/capture를 에이전트용으로 다시 만든 것</strong>이고, <code>rwa-multichain</code> 카드가 반대편에서 도달한 지점이기도 합니다(지금 한도에 대해 승인하고 나중에 대사). 만든다면 범위는: 솔라나 프로그램 하나(커밋 대조 + 타임락 정산 + 감시자 취소), 의도적으로 적대적인 판매자 API, Cloud Run 정책 서비스. 지갑 UI도, 멀티체인도, 토큰도 없습니다 — 데모에 나오지 않는 것은 전부 만들지 않습니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/agentic-intent-veto">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-l1-zkevm-optional-proofs.html">&larr; 8. L1 zkEVM — the word doing the work is &quot;optional&quot;</a><a href="pocs-senpi-harness.html">10. The harness, not the model &rarr;</a></div>
+  <div class="pager"><span></span><a href="pocs-aqua-shared-liquidity.html">2. Shared liquidity — quoted depth vs. the balance behind it &rarr;</a></div>
 </div>
 </body>
 </html>

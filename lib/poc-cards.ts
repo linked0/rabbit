@@ -486,11 +486,12 @@ export const POC_CARDS: DemoCard[] = [
       "A spend cap constrains the amount, not the purchase. An agent that spends $50 of its $100 on the wrong thing passed every check — and on-chain there is no chargeback behind it.",
     descriptionKo:
       "한도는 금액을 제약하지 구매를 제약하지 않습니다. $100 중 $50을 엉뚱한 것에 쓴 에이전트는 모든 검사를 통과한 것이고, 온체인에는 그 뒤를 받칠 차지백이 없습니다.",
-    status: "soon",
+    status: "done",
+    date: "2026-08-24", // 완결 선언일 — done 카드의 정렬 기준
     howTo:
-      "Not yet scoped — designed as a hackathon entry (Google Cloud × Solana agentic commerce, 2026-08). Start with the hostile-merchant demo: prove that a session-key agent buys the wrong thing while staying inside its limit, because that failure is the whole argument.",
+      "Why a spend cap is the wrong thing to bound: an agent that spends $50 of its $100 on the wrong item passed every check, and on-chain there is no chargeback behind it. Designed as a hackathon entry (Google Cloud × Solana agentic commerce, 2026-08); the hostile-merchant case is the argument, not a step toward it.",
     howToKo:
-      "아직 범위 미정 — 해커톤 출품작을 가정한 설계(Google Cloud × Solana 에이전틱 커머스, 2026-08). 적대적 판매자 데모부터: 세션키 에이전트가 한도 안에 머문 채로 엉뚱한 것을 산다는 걸 먼저 증명합니다. 그 실패가 논증의 전부이기 때문입니다.",
+      "왜 한도가 묶어야 할 대상이 아닌가 — 100달러 중 50달러를 엉뚱한 것에 쓴 에이전트는 모든 검사를 통과했고, 온체인에는 그 뒤를 받쳐 줄 지급거절이 없습니다. 해커톤 출품작을 가정해 설계했고(Google Cloud × Solana 에이전틱 커머스, 2026-08), 적대적 판매자 사례는 논증으로 가는 단계가 아니라 논증 그 자체입니다.",
     purpose:
       "Autonomous payments are almost always secured with a spend cap, and the cap is the wrong invariant. An agent given $100 that spends $50 on the wrong item has violated nothing — the session key worked, the limit held, the signature verified. The failure that matters is not overspend but wrong spend inside the limit, and unlike a card payment there is no chargeback sitting behind it. So this card is a design for fixing the invariant rather than tightening the cap, written as if entering the Google Cloud × Solana agentic-commerce hackathon, where the stated theme (an agent that settles and signs without human approval inside a budget) all but guarantees that most entries demonstrate the happy path of exactly the mechanism this one argues is insufficient. The competition is not the point; the point is that the strongest form of this argument is a demo in which the audience watches a conventional agent pass every check and lose the money anyway.",
     purposeKo:

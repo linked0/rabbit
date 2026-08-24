@@ -140,7 +140,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; L1 zkEVM — the word doing the work is &quot;optional&quot;</p>
   <article>
-      <h1><span class="topic-no">8</span>L1 zkEVM — the word doing the work is &quot;optional&quot; <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">9</span>L1 zkEVM — the word doing the work is &quot;optional&quot; <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">EIP-8025 lets a validator verify a block by checking a proof instead of re-executing it. The number nobody publishes is how many still re-execute once it is cheaper not to.</p>
       <p class="meta">Not yet scoped — start by proving recent mainnet blocks with an off-the-shelf zkVM on rented GPU and plotting wall-clock proving time against gas used, then check where Glamsterdam&#39;s 200M gas target lands relative to the reveal window ePBS opens. Source: EIP-8025 (Optional Execution Proofs), targeted at the Hegotá fork and dependent on Glamsterdam&#39;s EIP-7732 and EIP-7928.</p>
       <h2>Why</h2>
@@ -152,7 +152,7 @@
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">8</span>L1 zkEVM — 정작 일하는 단어는 '선택적'이다 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">9</span>L1 zkEVM — 정작 일하는 단어는 '선택적'이다 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">EIP-8025는 검증자가 재실행 대신 증명을 확인해 블록을 검증하게 합니다. 아무도 발표하지 않는 숫자는, 재실행이 더 비싸진 뒤에도 여전히 재실행하는 노드가 몇이나 남는가입니다.</p>
       <p class="meta">아직 범위 미정 — 최근 메인넷 블록들을 기성 zkVM으로(대여 GPU) 증명해 <strong>실시간 증명 소요 대 가스 사용량</strong> 곡선을 그리고, Glamsterdam의 <strong>200M 가스 목표</strong>가 ePBS가 열어주는 공개 창 대비 어디에 떨어지는지 확인하는 것부터. 출처: EIP-8025(Optional Execution Proofs), Hegotá 포크 대상이며 Glamsterdam의 EIP-7732·EIP-7928에 의존.</p>
       <h2>왜</h2>
@@ -161,7 +161,7 @@
       <p>먼저 문서화된 동작 방식: 검증자는 트랜잭션을 재실행하는 대신 <strong>상태전이의 간결한 증명을 확인</strong>해 블록을 검증할 수 있고, 메인넷 상태전이함수는 <strong>EIP-8079 초안의 <code>EXECUTE</code> 프리컴파일</strong>로 실행 계층에 노출되며 Native Rollups도 같은 원시 기능 위에 섭니다. 증명이 가능해지는 것은 EIP-8025 자체의 변경이 아니라 <strong>위의 Glamsterdam 두 조각 덕분</strong>입니다. <strong>측정은 둘이고, 둘 다 아무것도 만들지 않고 돌릴 만큼 작습니다.</strong> <strong>첫째, 창(window).</strong> 최근 메인넷 블록 수십 개를 대여 GPU 위 기성 zkVM으로 증명하고, <strong>실시간 증명 소요를 가스 사용량에 대해</strong> 그립니다. 산출물은 숫자 하나와 곡선 하나입니다 — <strong>ePBS가 여는 구간 안에 증명이 끝나는 최대 블록</strong>, 그리고 거기까지 든 하드웨어. 그것을 Glamsterdam의 200M 가스 목표에 대보면 간격이 닫히거나 닫히지 않고, 닫히지 않으면 그 선택지는 아직 이론이며 이 카드의 후반부는 시기상조입니다. <strong>둘째, 할인율.</strong> 같은 블록을 가정용 사양 노드에서 재실행하는 비용과 증명을 검증하는 비용을 견줍니다. <strong>그 비율이 곧 채택률이고, 채택률이 곧 재실행 커버리지의 침식</strong>이라, 흥미로운 산출물은 비율 자체가 아니라 <strong>나쁜 증명자를 잡을 사람이 아무도 남지 않게 되는 지분 비율</strong>입니다. 한 섹션은 옆에 두지 말고 이 카드 <strong>안에</strong> 넣습니다: <strong>목록.</strong> ePBS 편이 &quot;어떤 코드가 제안자가 페이로드를 안다고 암묵 가정하는가&quot;를 물었다면, 이 편은 그 쌍둥이 질문을 묻습니다 — <strong>어떤 코드가 누군가 실제로 트랜잭션을 돌렸다고 암묵 가정하는가.</strong> 사기 증명, 리오그 감시, 영수증을 재계산하는 익스플로러, 그리고 어떤 값을 &quot;노드가 만들어내는 것을 봤으니&quot; 믿는 모든 서비스가 후보이고, <strong>이 목록은 지금 쓰면 싸고 테스트넷 도중에 쓰면 비쌉니다.</strong></p>
       <p><a href="https://www.jaylabs.xyz/poc/l1-zkevm-optional-proofs">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-governance-capture-cost.html">&larr; 7. Governance capture — when the exploit is a market order</a><a href="pocs-agentic-intent-veto.html">9. The budget is the wrong invariant &rarr;</a></div>
+  <div class="pager"><a href="pocs-governance-capture-cost.html">&larr; 8. Governance capture — when the exploit is a market order</a><a href="pocs-senpi-harness.html">10. The harness, not the model &rarr;</a></div>
 </div>
 </body>
 </html>

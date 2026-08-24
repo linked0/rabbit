@@ -150,15 +150,15 @@
       <div class="nav-group" data-group>
         <p class="nav-group-label">All PoCs (50)</p>
         <ul>
-        <li><a class="nav-link" href="#aqua-shared-liquidity" data-key="aqua-shared-liquidity"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>Shared liquidity — quoted depth vs. the balance behind it</span></a></li>
-        <li><a class="nav-link" href="#rwa-multichain" data-key="rwa-multichain"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>RWA across chains — the invariant nobody enforces</span></a></li>
-        <li><a class="nav-link" href="#agent" data-key="agent"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">3</span>Autonomous payment agent</span></a></li>
-        <li><a class="nav-link" href="#oz-relayer" data-key="oz-relayer"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">4</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
-        <li><a class="nav-link" href="#dvt" data-key="dvt"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">5</span>DVT in the protocol</span></a></li>
-        <li><a class="nav-link" href="#stake-concentration" data-key="stake-concentration"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">6</span>Stake concentration risk</span></a></li>
-        <li><a class="nav-link" href="#governance-capture-cost" data-key="governance-capture-cost"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">7</span>Governance capture — when the exploit is a market order</span></a></li>
-        <li><a class="nav-link" href="#l1-zkevm-optional-proofs" data-key="l1-zkevm-optional-proofs"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">8</span>L1 zkEVM — the word doing the work is &quot;optional&quot;</span></a></li>
-        <li><a class="nav-link" href="#agentic-intent-veto" data-key="agentic-intent-veto"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">9</span>The budget is the wrong invariant</span></a></li>
+        <li><a class="nav-link" href="#agentic-intent-veto" data-key="agentic-intent-veto"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>The budget is the wrong invariant</span></a></li>
+        <li><a class="nav-link" href="#aqua-shared-liquidity" data-key="aqua-shared-liquidity"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>Shared liquidity — quoted depth vs. the balance behind it</span></a></li>
+        <li><a class="nav-link" href="#rwa-multichain" data-key="rwa-multichain"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">3</span>RWA across chains — the invariant nobody enforces</span></a></li>
+        <li><a class="nav-link" href="#agent" data-key="agent"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">4</span>Autonomous payment agent</span></a></li>
+        <li><a class="nav-link" href="#oz-relayer" data-key="oz-relayer"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">5</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
+        <li><a class="nav-link" href="#dvt" data-key="dvt"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">6</span>DVT in the protocol</span></a></li>
+        <li><a class="nav-link" href="#stake-concentration" data-key="stake-concentration"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">7</span>Stake concentration risk</span></a></li>
+        <li><a class="nav-link" href="#governance-capture-cost" data-key="governance-capture-cost"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">8</span>Governance capture — when the exploit is a market order</span></a></li>
+        <li><a class="nav-link" href="#l1-zkevm-optional-proofs" data-key="l1-zkevm-optional-proofs"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">9</span>L1 zkEVM — the word doing the work is &quot;optional&quot;</span></a></li>
         <li><a class="nav-link" href="#senpi-harness" data-key="senpi-harness"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">10</span>The harness, not the model</span></a></li>
         <li><a class="nav-link" href="#encrypted-mempool" data-key="encrypted-mempool"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">11</span>What encryption does not hide</span></a></li>
         <li><a class="nav-link" href="#price-at-a-moment" data-key="price-at-a-moment"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">12</span>A price at a moment — settlement windows and oracle instants</span></a></li>
@@ -220,8 +220,15 @@
     <article>
       <h1>All PoCs</h1>
       <ul class="topics">
+        <li id="agentic-intent-veto">
+          <div class="topic-head"><span class="topic-no">1</span><span class="topic-title">The budget is the wrong invariant</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <p class="topic-summary">A spend cap constrains the amount, not the purchase. An agent that spends $50 of its $100 on the wrong thing passed every check — and on-chain there is no chargeback behind it.</p>
+          <p class="topic-how"><strong>How it works:</strong> Two mechanisms, and the second is the one that will draw fire. First: sign the intent, not the limit.</p>
+          <p class="topic-why"><strong>Why:</strong> Autonomous payments are almost always secured with a spend cap, and the cap is the wrong invariant. An agent given $100 that spends $50 on the wrong item has violated nothing — the session key worked, the limit held, the signature verified.</p>
+          <p class="topic-link"><a href="topics/pocs-agentic-intent-veto.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/agentic-intent-veto">Open on jaylabs.xyz &rarr;</a></p>
+        </li>
         <li id="aqua-shared-liquidity">
-          <div class="topic-head"><span class="topic-no">1</span><span class="topic-title">Shared liquidity — quoted depth vs. the balance behind it</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">2</span><span class="topic-title">Shared liquidity — quoted depth vs. the balance behind it</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">1inch Aqua leaves LP tokens in the wallet and lets one balance quote across many positions. The number nobody publishes is how much of that quoted depth is actually fillable.</p>
           <p class="topic-how"><strong>How it works:</strong> ### Mechanism, as documented
 
@@ -230,60 +237,53 @@ The LP grants a <strong>revocable allowance</strong> rather than depositing. Sev
           <p class="topic-link"><a href="topics/pocs-aqua-shared-liquidity.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/aqua-shared-liquidity">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="rwa-multichain">
-          <div class="topic-head"><span class="topic-no">2</span><span class="topic-title">RWA across chains — the invariant nobody enforces</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">RWA across chains — the invariant nobody enforces</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">Reading a practitioner&#39;s multichain RWA architecture and finding the one box it leaves empty: who stops the tokens on five chains from summing past the asset behind them.</p>
           <p class="topic-how"><strong>How it works:</strong> The proposed stack, as written: a Private Operational Registry (Canton named as candidate infrastructure) holds the sensitive originals and the authoritative current state — custody balances, NAV, investor eligibility, total issuance, redemption and suspension status. Responsible institutions issue only the necessary facts as verifiable credentials rather than exposing the registry.</p>
           <p class="topic-why"><strong>Why:</strong> Almost every question this catalogue asks shows up in one place here. The post&#39;s thesis is that RWA&#39;s bottleneck is not minting tokens but carrying one off-chain fact to many chains, so the thing to standardise first is the fact-transport interface, not the token contract — which is the same enforce-on-chain-remember-off-chain split the CRE × Cloud card arrives at from the other direction.</p>
           <p class="topic-link"><a href="topics/pocs-rwa-multichain.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/rwa-multichain">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="agent">
-          <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">Autonomous payment agent</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">4</span><span class="topic-title">Autonomous payment agent</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">An agent that wakes on a timer, decides on its own whether to spend, and cannot exceed the mandate it was given.</p>
           <p class="topic-how"><strong>How it works:</strong> A scheduler hits a server endpoint every few minutes with no browser open. Each tick reads a real signal (the Chainlink Sepolia ETH/USD feed), evaluates a threshold rule against the last action, and either spends test USDC through an ERC-7715 session key or records why it declined.</p>
           <p class="topic-why"><strong>Why:</strong> The other demos on this page prove capability: a session key can spend within a bound, a paymaster can cover gas, a batch can revert atomically. Every one of them is started by a human pressing a button, which makes them account abstraction for agents rather than an agent.</p>
           <p class="topic-link"><a href="topics/pocs-agent.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/agent">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="oz-relayer">
-          <div class="topic-head"><span class="topic-no">4</span><span class="topic-title">OpenZeppelin Relayer &amp; Monitor</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">5</span><span class="topic-title">OpenZeppelin Relayer &amp; Monitor</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">The managed service shut down; the tools were opened. Self-hosted transaction plumbing and on-chain alerting.</p>
           <p class="topic-how"><strong>How it works:</strong> Relayer keeps the plumbing: it accepts a transaction over a REST API, signs it, and owns nonce sequencing, gas pricing, and retry — EVM multi-chain plus Solana and Stellar, with keys in HashiCorp Vault or AWS KMS rather than an env var. Monitor watches the other direction: declarative JSON rules over events, function calls, and transaction patterns, firing Slack or webhook alerts.</p>
           <p class="topic-why"><strong>Why:</strong> Two questions this catalogue has not asked yet. First, the operational one: every agent demo here hand-rolls the dullest and most failure-prone part of on-chain work — nonce management, gas strategy, retries — and OpenZeppelin Relayer is that exact layer, extracted and hardened.</p>
           <p class="topic-link"><a href="topics/pocs-oz-relayer.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="dvt">
-          <div class="topic-head"><span class="topic-no">5</span><span class="topic-title">DVT in the protocol</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">6</span><span class="topic-title">DVT in the protocol</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.</p>
           <p class="topic-how"><strong>How it works:</strong> Today&#39;s DVT (Obol, SSV) splits one validator key with Shamir sharing or threshold BLS and runs an off-chain consensus round to reassemble a signature each time; the protocol still sees a single validator, and all distribution lives in middleware. The proposal never splits the key: each participant registers their own (n ≤ 16), the protocol groups them m-of-n, and BLS aggregation plus a participation bitfield — the same grammar as today&#39;s attestation aggregation — decides whether enough took part.</p>
           <p class="topic-why"><strong>Why:</strong> Reading a live protocol-design discussion closely enough to separate three things people usually blur: what the proposal actually changes, what it leaves unresolved, and which parts of the idea can be built one layer up without waiting for it. It is also a second instance of a pattern this site already documents elsewhere — middleware doing a job well until the protocol absorbs it, which is exactly what ERC-4337 bundlers face from native account abstraction.</p>
           <p class="topic-link"><a href="topics/pocs-dvt.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/dvt">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="stake-concentration">
-          <div class="topic-head"><span class="topic-no">6</span><span class="topic-title">Stake concentration risk</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
+          <div class="topic-head"><span class="topic-no">7</span><span class="topic-title">Stake concentration risk</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">How much stake sits behind one router, one ASN, one data centre — and how close that is to halting finality.</p>
           <p class="topic-how"><strong>How it works:</strong> Planned as a measurement, not an essay: pull the active validator set and its stake weights from public RPC, resolve each advertised gossip/TPU endpoint to an IP, map those to ASN and hosting provider with a public IP-intelligence dataset, then aggregate stake by ASN, by provider, and by geographic region. The headline figure is the stake-weighted Herfindahl index plus the single largest correlated bucket, both plotted against the 33% halt line.</p>
           <p class="topic-why"><strong>Why:</strong> In 2026 a routing error on Solana took roughly 29% of stake offline at once and the network came within a few percentage points of losing finality. Nothing was hacked and no key was stolen — the consensus math worked exactly as designed.</p>
           <p class="topic-link"><a href="topics/pocs-stake-concentration.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/stake-concentration">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="governance-capture-cost">
-          <div class="topic-head"><span class="topic-no">7</span><span class="topic-title">Governance capture — when the exploit is a market order</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">8</span><span class="topic-title">Governance capture — when the exploit is a market order</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">$8.5M left Term&#39;s vaults without a line of code breaking. The number nobody publishes for a token-governed vault is what decisive voting power costs against what it controls.</p>
           <p class="topic-how"><strong>How it works:</strong> Mechanics as reported: the attacker cornered a majority of a sparsely held governance token, then passed malicious proposals to seize the strategy vaults, holding 100% of voting power in four of five USDC strategy vaults and roughly 91% in the Ethereum Meta Vault at execution time. The vault contracts then executed the malicious calls as legitimate, because they were.</p>
           <p class="topic-why"><strong>Why:</strong> The distinction is the whole story. Term has two very different products under one brand: the core fixed-rate repo markets use per-loan collateral lockers to isolate borrower and lender exposure, and that design held and was untouched.</p>
           <p class="topic-link"><a href="topics/pocs-governance-capture-cost.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/governance-capture-cost">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="l1-zkevm-optional-proofs">
-          <div class="topic-head"><span class="topic-no">8</span><span class="topic-title">L1 zkEVM — the word doing the work is &quot;optional&quot;</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
+          <div class="topic-head"><span class="topic-no">9</span><span class="topic-title">L1 zkEVM — the word doing the work is &quot;optional&quot;</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">EIP-8025 lets a validator verify a block by checking a proof instead of re-executing it. The number nobody publishes is how many still re-execute once it is cheaper not to.</p>
           <p class="topic-how"><strong>How it works:</strong> Mechanism first, as documented: a validator may verify a block by checking a succinct proof of the state transition rather than re-executing its transactions, with the mainnet state transition function exposed to the execution layer through an EXECUTE precompile in the EIP-8079 draft, and Native Rollups built on the same primitive. Proving is made feasible by the two Glamsterdam pieces above rather than by any change in EIP-8025 itself.</p>
           <p class="topic-why"><strong>Why:</strong> Two forks make one machine, and it is worth stating the dependency plainly because the roadmap coverage rarely does. Glamsterdam sets out two chairs: ePBS (EIP-7732) supplies time, because splitting the slot seats the builder as prover and opens an interval between header commitment and payload reveal; BAL (EIP-7928) supplies partition, because a block that declares the state it will touch is a block whose proving work can be sliced across many provers.</p>
           <p class="topic-link"><a href="topics/pocs-l1-zkevm-optional-proofs.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/l1-zkevm-optional-proofs">Open on jaylabs.xyz &rarr;</a></p>
-        </li>
-        <li id="agentic-intent-veto">
-          <div class="topic-head"><span class="topic-no">9</span><span class="topic-title">The budget is the wrong invariant</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
-          <p class="topic-summary">A spend cap constrains the amount, not the purchase. An agent that spends $50 of its $100 on the wrong thing passed every check — and on-chain there is no chargeback behind it.</p>
-          <p class="topic-how"><strong>How it works:</strong> Two mechanisms, and the second is the one that will draw fire. First: sign the intent, not the limit.</p>
-          <p class="topic-why"><strong>Why:</strong> Autonomous payments are almost always secured with a spend cap, and the cap is the wrong invariant. An agent given $100 that spends $50 on the wrong item has violated nothing — the session key worked, the limit held, the signature verified.</p>
-          <p class="topic-link"><a href="topics/pocs-agentic-intent-veto.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/agentic-intent-veto">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="senpi-harness">
           <div class="topic-head"><span class="topic-no">10</span><span class="topic-title">The harness, not the model</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
