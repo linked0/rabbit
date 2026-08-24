@@ -140,7 +140,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ERC-7812 — one registry for provable identity</p>
   <article>
-      <h1><span class="topic-no">20</span>ERC-7812 — one registry for provable identity <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">21</span>ERC-7812 — one registry for provable identity <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">A singleton on-chain registry where any protocol can store and prove identity statements by ZK, without publishing the data — Vitalik is a co-author.</p>
       <p class="meta">Read-only study — no wallet needed. Start with the Rationale section on why a singleton, then read the reference implementation. eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry</p>
       <h2>Why</h2>
@@ -152,7 +152,7 @@
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">20</span>ERC-7812 — 증명 가능한 신원의 단일 레지스트리 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">21</span>ERC-7812 — 증명 가능한 신원의 단일 레지스트리 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">어떤 프로토콜이든 신원 관련 주장을 저장하고 ZK로 증명하되 데이터는 공개하지 않는 단일 온체인 레지스트리 — 비탈릭이 공저자다.</p>
       <p class="meta">읽기 전용 스터디 — 지갑 불필요. 왜 싱글턴인지를 다룬 Rationale 절부터, 그다음 레퍼런스 구현. eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry</p>
       <h2>왜</h2>
@@ -161,7 +161,7 @@
       <p>레지스트리는 <strong>EvidenceRegistry 싱글턴</strong>으로, 결정론적 배포를 통해 메인넷과 Sepolia에 <strong>같은 주소</strong>로 올라가 있습니다. 그 뒤에 <strong>EvidenceDB</strong>가 있고, <strong>Poseidon 해시를 쓰는 Sparse Merkle Tree</strong>를 보관합니다 — Poseidon인 이유는 트리가 <strong>회로 안에서 싸게 검증돼야</strong> 하기 때문이고, iden3가 secp256k1 대신 Baby Jubjub을 고른 것과 같은 이유입니다. 프로토콜들은 주장을 <strong>잎(leaf)으로 기록</strong>하되 원본 데이터는 아무도 쓰지 않고 <strong>커밋먼트만</strong> 올립니다 — 체인에 남는 건 해시이고, 검증자에게 가는 건 증명입니다. 일반 머클이 아니라 <strong>Sparse</strong>인 이유도 iden3에서와 같습니다: <strong>비포함 증명</strong>이 가능해야 폐기(revocation)가 성립하니까요. 명세는 <strong>의도적으로 추상적</strong>이며 저자들도 그렇게 밝힙니다 — 온체인 여권·소셜 그래프·POAP 같은 구체적 용도는 그 위에 별도 ERC로 올라올 것을 상정한 <strong>기반 계층</strong>입니다. 레퍼런스 구현은 <code>rarimo/evidence-registry</code>이고, Rarimo 자신의 여권·생체 레지스트리가 그 위에 올라가 있습니다. 상태: <strong>2025-02 draft 병합, 2025-06 Review 단계, 컨트랙트는 이미 배포됨</strong>. 읽을 때 들고 갈 질문 셋. <strong>① 싱글턴의 정직한 대가</strong> — 공유 불변 레지스트리는 버그나 잘못된 표준도 함께 공유한다는 뜻이고, 설계상 업그레이드 경로가 없습니다. <strong>② 이 카탈로그가 반복해서 돌아오는 신뢰 문제는 사라지지 않습니다</strong> — 레지스트리는 <em>주장이 기록됐다</em>는 것만 증명하지 <em>그것이 참이라</em>는 것은 절대 증명하지 않으므로, 발급자 허용목록 문제가 한 층 위로 옮겨갈 뿐입니다. <strong>③ 여러 프로토콜이 함께 쓰기 시작해도 단일 전역 트리에 대한 증명이 계속 쌀 것인가.</strong></p>
       <p><a href="https://www.jaylabs.xyz/poc/erc-7812">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-dsrv-portal.html">&larr; 19. Institutional custody study</a><a href="pocs-erc-8141.html">21. ERC-8141 &rarr;</a></div>
+  <div class="pager"><a href="pocs-dsrv-portal.html">&larr; 20. Institutional custody study</a><a href="pocs-erc-8141.html">22. ERC-8141 &rarr;</a></div>
 </div>
 </body>
 </html>
