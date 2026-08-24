@@ -64,11 +64,11 @@ One tick, running on a schedule with no browser open:
 | Step | What happens | Made visible as |
 |---|---|---|
 | **Observe** | Read a verex market: question, current book (best bid/ask on YES), the agent's own position, remaining budget, mandate expiry | the observed row in the journal |
-| **Estimate** | An **LLM** reads the market question and returns `{ p, rationale }` — its probability, plus one line of prose | the estimate column, with the rationale expandable |
+| **Estimate** | An **LLM** reads the market question **plus the stored news for that market** and returns `{ p, rationale, cited }` — its probability, one line of prose, and which news items it used | the estimate column, with the rationale expandable and the cited headlines linked |
 | **Decide** | A **deterministic rule** compares `p` to the book: act only if the edge exceeds a threshold **and** the cooldown has passed **and** the notional fits the remaining budget | the rule evaluated + verdict — **skips logged too** |
 | **Act** | Sign a CTF order with the agent's own key and post it to verex | order hash → the trade on verex |
 | **Watch** | Poll for resolution; when the market settles, redeem the winning position | realised P&L in the journal |
-| **Record** | Append the row: time, market, book, `p`, verdict, order/skip reason, cumulative spend, budget left, expiry countdown | the journal table |
+| **Record** | Append the row: time, market, book, `p`, cited evidence, verdict, order/skip reason, cumulative spend, budget left, expiry countdown | the journal table |
 
 **Skips are the point.** A demo that only shows trades shows capability. A journal where most rows
 read *"book 0.31, model 0.29, edge 0.02 < 0.05 → no action"* is what makes a decision visible as a
@@ -134,7 +134,7 @@ a table, so you can see at a glance which repo owes what and where the two actua
 
 | | Rabbit | Verex |
 |---|---|---|
-| **Items** | 8 (R-A … R-H) | 6 (W1, V-A … V-E) |
+| **Items** | 9 (R-A … R-I) | 6 (W1, V-A … V-E) |
 | **Rough total** | ~4–6d | ~5–8d |
 | **What it is being asked to change** | build the loop it never had — mandate, tick, LLM estimate, journal, scheduler, redeem | **stop being a custodian** — accept, fund-check, read and redeem for an address it holds no key for |
 | **Nothing changes in** | the existing `/poc/aa` mandate demo (reused, not modified) | the CLOB matching engine, LMSR quoting, the CTF contracts — all untouched |
@@ -142,29 +142,33 @@ a table, so you can see at a glance which repo owes what and where the two actua
 
 ### Full matrix
 
-`—` means that repo has nothing to build for this row. Two rows are the only genuinely two-sided
-ones (**R-B ⇄ V-A** and **R-G ⇄ V-D**); everything else is one repo working alone.
+The `#` prefix names the repo — **V** and **P0** are verex, **R** is rabbit. Rows marked **⇄**
+come in pairs and are the only genuinely two-sided work: **V-A ⇄ R-B** (one signs an order, the
+other accepts it) and **V-D ⇄ R-G** (one exposes redeem, the other calls it). They are placed
+adjacent so the seam is visible in the table rather than inferred from the dependency column —
+which means **this table is not a work queue**; the [build order](#order) below is.
 
-| # | Task | Rabbit — what to implement | Verex — what to implement | Depends on | Est. |
-|---|---|---|---|---|---|
-| **P0** | Prove UMA on live Sepolia | — | **W1**: fresh staging seed **including ≥1 short-dated UMA market**, resolve one market through the live adapter, winner redeems, close **A5** | — | ~1–2d |
-| **V-A** | External signed orders | — | `POST /orders` + `POST /trade` accept a client-supplied `SignedOrder` with an arbitrary `maker`; verify EIP-712 server-side; migration making `Order.makerIndex` nullable | P0 | ~1d |
-| **V-B** | Funding stops being the API's job | — | `ensureFunds` **reads and rejects** for external makers instead of faucet+approving on their behalf; address-scoped faucet for testnet convenience | V-A | ~0.5d |
-| **V-C** | Address-scoped reads | — | `/wallet/:address` — balance, positions, open orders, redeems, history (today all `/wallet/:index`) | V-A | ~0.5d |
-| **V-D** | External redeem | — | `POST /redeem` by address; the redeem tx is signed by the **holder**, not the operator | V-C | ~0.5d |
-| **R-A** | Mandate: grant · fund · revoke | ERC-7715 delegation scoped to amount + expiry; redeeming it moves ≤ cap of MockUSDC to the agent EOA; key generated server-side, address-only to the browser, **labelled testnet-grade on the page** | — | — | ~1d |
-| **R-B** | Verex client | Typed client over V-A…V-D that signs CTF EIP-712 orders with the agent key | — *(unless [O1](#open) says publish `@verex/sdk`, which makes this a verex row too)* | V-A…V-D, **O1** | ~1d |
-| **R-C** | The tick, callable by hand | `POST /api/agent/tick` — observe → estimate → decide → act → record; **calling it twice must be safe** | — | R-A, R-B | ~1d |
-| **R-D** | LLM estimate | LLM returns `{ p, rationale }` per market; the **deterministic rule** owns the decision. Reuses `app/api/jay-chat/` plumbing | — | R-C, **O5** | ~0.5d |
-| **R-E** | Journal + persistence | Prisma model, read API, and the `/poc/agent` page showing the three states. Must record **skips** — chain-only reconstruction cannot | — | R-C | ~1d |
-| **R-F** | Actually unattended | Scheduler wired; the loop runs with no browser and no terminal | — | R-C…R-E, **O2** | ~0.5d |
-| **R-G** | Resolution watch + self-redeem | Poll verex for resolution; redeem a winning position; record realised P&L. **Needs a little Sepolia ETH — this leg only** | *(uses V-D; nothing new)* | V-D, R-F | ~1d |
-| **R-H** | The expiry run *(evidence)* | Let a mandate lapse with the scheduler live; capture the journal filling with harmless refusals | — | R-F | ~0.5d |
-| **V-E** | MCP server | Agent swaps transport — no logic change | **`packages/mcp-server`**: `list_markets`, `get_book`, `place_order`, `get_position`, `redeem`, wrapping V-A…V-D's REST. Closes the S3 gap | V-A…V-D | ~1–2d |
+| # | Task | What to implement | Depends on |
+|---|---|---|---|
+| **P0** | Prove UMA on live Sepolia | **W1**: fresh staging seed **including ≥1 short-dated UMA market**, resolve one market through the live adapter, winner redeems, close **A5** | — |
+| **⇄ V-A** | External signed orders | `POST /orders` + `POST /trade` accept a client-supplied `SignedOrder` with an arbitrary `maker`; verify EIP-712 server-side; migration making `Order.makerIndex` nullable | P0 |
+| **⇄ R-B** | Verex client | Typed client over V-A…V-D that signs CTF EIP-712 orders with the agent key. If [O1](#open) says publish `@verex/sdk`, part of this becomes a verex row | V-A…V-D, **O1** |
+| **V-B** | Funding stops being the API's job | `ensureFunds` **reads and rejects** for external makers instead of faucet+approving on their behalf; address-scoped faucet for testnet convenience | V-A |
+| **V-C** | Address-scoped reads | `/wallet/:address` — balance, positions, open orders, redeems, history (today all `/wallet/:index`) | V-A |
+| **⇄ V-D** | External redeem | `POST /redeem` by address; the redeem tx is signed by the **holder**, not the operator | V-C |
+| **⇄ R-G** | Resolution watch + self-redeem | Poll verex for resolution; redeem a winning position; record realised P&L. **Needs a little Sepolia ETH — this leg only** | V-D, R-F |
+| **R-A** | Mandate: grant · fund · revoke | ERC-7715 delegation scoped to **amount + expiry**; redeeming it moves ≤ cap of MockUSDC to the agent EOA; key generated server-side, address-only to the browser, **labelled testnet-grade on the page** | — |
+| **R-C** | The tick, callable by hand | `POST /api/agent/tick` — observe → estimate → decide → act → record; **calling it twice must be safe** | R-A, R-B |
+| **R-I** | **News store — input, list, persistence** | Prisma model `NewsItem` — market scope, headline, body or URL, source, published-at, entered-at, `origin: operator \| feed`. An **input form** and a **list of stored items** for the selected market, with edit and delete. **The estimate reads this store, never a prompt textarea** — so a journal row's cited evidence still resolves to a row that exists tomorrow | — |
+| **R-D** | LLM estimate | LLM returns `{ p, rationale, cited }` for a market — reads the question **plus that market's items from R-I**. `cited` records which `NewsItem` ids the estimate actually used. The **deterministic rule** still owns the decision. Reuses `app/api/jay-chat/` plumbing | R-C, **R-I**, **O5** |
+| **R-E** | Journal + persistence | Prisma model, read API, and the `/poc/agent` page showing the three states. Must record **skips**, and each row must carry **the evidence it cited** (R-I ids, resolvable to headline + source) — chain-only reconstruction can record neither | R-C |
+| **R-F** | Actually unattended | Scheduler wired; the loop runs with no browser and no terminal | R-C…R-E, **O2** |
+| **R-H** | The expiry run *(evidence)* | Let a mandate lapse with the scheduler live; capture the journal filling with harmless refusals | R-F |
+| **V-E** | MCP server | **`packages/mcp-server`**: `list_markets`, `get_book`, `place_order`, `get_position`, `redeem`, wrapping V-A…V-D's REST. Closes the S3 gap. The agent swaps transport — no logic change | V-A…V-D |
 
-**Reading the dependency column:** the only hard cross-repo blocks are **V-A…V-D → R-B** and
-**V-D → R-G**. Everything in R-A, and all of P0/V-A/V-B/V-C, can proceed in parallel — so the two
-repos are not serialised on each other except at those two points.
+**Reading the dependency column:** the only hard cross-repo blocks are the two **⇄** pairs —
+**V-A…V-D → R-B** and **V-D → R-G**. Everything in R-A, and all of P0/V-A/V-B/V-C, can proceed in
+parallel, so the two repos are not serialised on each other except at those two points.
 
 ## Build order <a id="order"></a>
 <sub>[↑ TOC](#toc)</sub>
@@ -202,18 +206,20 @@ for verex on its own — not a favour to rabbit.
 the operator's LMSR ladder, and reads its own position back — with **no `accountIndex` anywhere in
 the exchange**.
 
-### Phase 2 — the agent exists, driven by hand `[R]` · ~2–3d
+### Phase 2 — the agent exists, driven by hand `[R]` · ~3–4d
 
 | | Item | Detail |
 |---|---|---|
 | **R-A** | **Mandate: grant · fund · revoke** | ERC-7715 delegation scoped to amount + expiry; redeeming it transfers ≤ cap of MockUSDC to the agent EOA. Key generated server-side, address-only to the browser, **labelled testnet-grade on the page** — this is D2, answered |
 | **R-B** | **Verex client** | Typed client over V-A..V-D that signs CTF orders with the agent key. Blocked on [O1](#open) — how rabbit obtains verex's order-signing code |
 | **R-C** | **The tick, callable by hand** | `POST /api/agent/tick` — observe → estimate → decide → act → record. **Calling it twice in a row must be safe**, verified by `curl` before any scheduler exists |
-| **R-D** | **LLM estimate** | The LLM returns `{ p, rationale }` for a market question; the **rule** owns the decision. Reuses rabbit's existing LLM plumbing. Rate/cost per tick is [O5](#open) |
-| **R-E** | **Journal + persistence** | Postgres via the existing Prisma setup. Chain-only reconstruction is not an option — it cannot record **skips**, and skips are the point |
+| **R-I** | **News store — input, list, persistence** | `NewsItem` in Postgres (market scope, headline, body/URL, source, published-at, entered-at, `origin`), an input form, and a list of the selected market's items with edit/delete. The estimate reads **the store**, not a prompt textarea, so a journal row's cited evidence outlives the input box. Scope and staleness are [O7](#open) |
+| **R-D** | **LLM estimate** | The LLM returns `{ p, rationale, cited }` for a market question, reading the question **plus R-I's items for that market**; the **rule** owns the decision. Reuses rabbit's existing LLM plumbing. Rate/cost per tick is [O5](#open) |
+| **R-E** | **Journal + persistence** | Postgres via the existing Prisma setup. Chain-only reconstruction is not an option — it cannot record **skips**, and skips are the point. Each row also carries the **evidence it cited** (R-I ids, resolvable to headline + source) |
 
 **Done when:** `curl`-ing the tick twice produces exactly one trade, one journal row per call
-including the skip, and a budget figure that matches the chain.
+including the skip, and a budget figure that matches the chain — and an estimate's row names the
+`NewsItem` rows it cited, which still resolve after the input box is cleared.
 
 ### Phase 3 — actually unattended `[R]` · ~0.5d
 
@@ -252,6 +258,7 @@ can place one order without reading verex's source.
 | **O4** | **Per-trade policy via EIP-1271** — the stronger enforcement recorded but not built. Worth it only if the funding bound proves too coarse in practice | — | ⬜ deferred by design |
 | **O5** | **LLM cost and cadence** — one estimate per market per tick gets expensive on a short interval. Cache per market until the book moves? | R-D | ⬜ open |
 | **O6** | **Does the demo run against staging or a dedicated environment?** The agent trading on staging means its rows sit in the same DB as everything else, and any future re-seed wipes them again | Phase 1 | ⬜ open — surfaced by Phase 0's re-seed problem |
+| **O7** | **News scope and staleness** — is a `NewsItem` scoped to one market or global with market tags? Does an item age out? A headline from three weeks ago should not keep moving `p`, and "store it in Postgres" does not answer that. Default proposal: scoped per market, and the estimate only sees items published inside a configurable window | R-I, R-D | ⬜ open — surfaced by R-I |
 
 ## What this will not prove <a id="not"></a>
 <sub>[↑ TOC](#toc)</sub>
@@ -265,6 +272,10 @@ Written up front so it does not get quietly dropped, and it belongs on the page 
   The demo is about the **bound**, not the trade — and it should be honest about losing money.
 - **Not a full mandate.** The bound is on funding, not on each trade ([O4](#open)). Inside its
   budget the agent may do something stupid; it simply cannot do something *large*.
+- **Not an agent that discovers news.** R-I's store is filled by hand, so the agent reads a
+  world curated by whoever runs the demo. Entering a *headline* supplies evidence and is fair;
+  entering a *stance* would steer the conclusion and is not. This version tests the mechanism.
+  A real feed (`origin: feed`) is what would remove this line.
 - **Expiry is block time, not wall clock**, and nothing notifies the owner when a mandate lapses —
   the agent has to notice its own refusal.
 
