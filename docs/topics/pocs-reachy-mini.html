@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>&quot;Claude Tag&quot; for Slack (on hold) — PoCs</title>
+<title>Reachy Mini — buying a body vs. buying compute — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -138,94 +138,124 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; &quot;Claude Tag&quot; for Slack (on hold)</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Reachy Mini — buying a body vs. buying compute</p>
   <article>
-      <h1><span class="topic-no">57</span>&quot;Claude Tag&quot; for Slack (on hold) <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">On hold — would lean on Notion↔Slack integration features.</p>
-      <p class="meta">On hold, not yet scoped.</p>
+      <h1><span class="topic-no">30</span>Reachy Mini — buying a body vs. buying compute <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">At $299, Reachy Mini clashes directly with the $399 Jetson Orin Nano. Jetson buys 67 TOPS of edge compute for ROS 2 plumbing; Reachy Mini buys an expressive desktop robot body integrated with Hugging Face&#39;s LeRobot.</p>
+      <p class="meta">Not yet scoped — review Hugging Face&#39;s SDK sample code for the human-interaction loop, calculate landed cost (shipping + Korean customs for $299), and place it on the same comparison table as the $399 Jetson Orin Nano Super. Source: huggingface.co/blog/reachy-mini &amp; pollen-robotics.com.</p>
       <h2>Why</h2>
-      <p>Feeds into the Slack · Claude · Notion integration item above rather than standing alone.</p>
+      <p>A blockchain developer preparing for adjacent AI/robotics domains faces a concrete budget dilemma around the $300–$400 price bracket: <strong>Do you buy compute, or do you buy a body?</strong></p>
+<ul>
+<li><strong>Jetson Orin Nano Super ($399)</strong>: Buys raw edge compute — a 67 TOPS board where you wire your own cameras, sensors, and servo motors, learning low-level ROS 2 plumbing and edge inference.</li>
+<li><strong>Reachy Mini ($299, Pollen Robotics / Hugging Face)</strong>: Buys an expressive desktop robotic body — fully motorized with a Python SDK you can script immediately, learning the human-in-the-loop interaction loop.</li>
+</ul>
+<p>Reachy Mini&#39;s primary bet is naming <strong>AI builders</strong> (rather than mechanical/control roboticists) as its target audience. It is built for developers who already understand model APIs and want physical embodiment without building hardware from scratch.</p>
+<p>If <code>lerobot-so101</code> was the open-source software and manipulation arm baseline, Reachy Mini is the cheapest expressive body that the Hugging Face AI ecosystem attaches to.</p>
       <h2>How it works</h2>
-      <p>Would lean on Notion↔Slack integration features to bring a Claude Tag-style presence into Slack.</p>
-      <h2>Related code</h2>
-      <pre><code>&quot;&quot;&quot;'Claude Tag' for Slack (on hold, not yet scoped): a minimal skeleton
-showing the shape of the idea -- a Slack event handler that dispatches
-mentions of @Claude to a stub responder.
-&quot;&quot;&quot;
-
-def handle_slack_event(event):
-    if event.get(&quot;type&quot;) == &quot;app_mention&quot; and &quot;@Claude&quot; in event.get(&quot;text&quot;, &quot;&quot;):
-        return claude_tag_responder(event)
-    return {&quot;handled&quot;: False, &quot;reason&quot;: &quot;not a Claude Tag mention&quot;}
-
-
-def claude_tag_responder(event):
-    # Stub: real version would call Claude with the message + thread context
-    # via Notion&lt;-&gt;Slack connectors. Not yet scoped.
-    return {
-        &quot;handled&quot;: True,
-        &quot;channel&quot;: event[&quot;channel&quot;],
-        &quot;reply&quot;: f&quot;(stub) Claude Tag would respond to: {event['text']!r}&quot;,
-    }
-
-
-mock_events = [
-    {&quot;type&quot;: &quot;app_mention&quot;, &quot;channel&quot;: &quot;#general&quot;, &quot;text&quot;: &quot;@Claude summarize this thread&quot;},
-    {&quot;type&quot;: &quot;message&quot;, &quot;channel&quot;: &quot;#general&quot;, &quot;text&quot;: &quot;no mention here&quot;},
-]
-
-for event in mock_events:
-    result = handle_slack_event(event)
-    print(f&quot;event={event['type']!r} text={event['text']!r} -&gt; {result}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/claude-tag-slack.py">docs/code/pocs/claude-tag-slack.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/claude-tag-slack">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>Jetson Orin Nano Super ($399) vs. Reachy Mini ($299)</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Jetson Orin Nano Super ($399)</th>
+<th>Reachy Mini ($299)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>What You Buy</strong></td>
+<td>Raw compute — 67 TOPS edge AI board</td>
+<td>Physical body — expressive moving desktop robot</td>
+</tr>
+<tr>
+<td><strong>What You Attach</strong></td>
+<td>Cameras, sensors, external servo motors manually</td>
+<td>Runs via Python SDK out of the box</td>
+</tr>
+<tr>
+<td><strong>Primary Skill Learned</strong></td>
+<td>Edge inference optimization, TensorRT, ROS 2</td>
+<td>Human-in-the-loop interaction, multimodal agent loops</td>
+</tr>
+<tr>
+<td><strong>Software Ecosystem</strong></td>
+<td>NVIDIA JetPack, Isaac ROS, DeepStream</td>
+<td>Hugging Face LeRobot, Transformers, Pollen Python SDK</td>
+</tr>
+<tr>
+<td><strong>Hardware Bottleneck</strong></td>
+<td>8GB shared memory (cannot run GR00T natively)</td>
+<td>Requires host machine for heavy inference</td>
+</tr>
+</tbody></table>
+<h3>Action Plan &amp; Roadmap Integration</h3>
+<ol>
+<li><strong>SDK Line Count Test</strong>: Check Hugging Face&#39;s SDK sample code (<code>pollen-robotics/reachy-mini</code>) to evaluate how many lines of Python are required to bind a vision-language model response to physical head/neck motion.</li>
+<li><strong>Landed Cost Calculation</strong>: Calculate US/EU shipping fees and 10% Korean import VAT on $299 vs. locally distributed Jetson kits to determine actual out-of-pocket costs.</li>
+<li><strong>Queue Progression</strong>: Compare Reachy Mini and Jetson side-by-side before evaluating higher-tier mobility hardware such as Unitree Go2 (Air $1,600 / Pro $2,800).</li>
+</ol>
+      <p class="meta">1 diagram(s) on the live page.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/reachy-mini">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">57</span>(보류) Slack용 'Claude Tag' 시도 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
-      <p class="lead">보류 — Notion↔Slack 연동 기능 활용 예정.</p>
-      <p class="meta">보류 — 아직 범위 미정.</p>
+      <h1><span class="topic-no">30</span>Reachy Mini — 연산을 살 것인가, 몸을 살 것인가 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">$299의 Reachy Mini는 $399 Jetson Orin Nano와 가격대가 겹치지만 성격은 정반대입니다. Jetson이 67 TOPS 엣지 연산과 ROS 2 배선을 산다면, Reachy Mini는 LeRobot 생태계와 즉시 연동되는 움직이는 몸을 삽니다.</p>
+      <p class="meta">아직 범위 미정 — Hugging Face SDK 예제 코드로 상호작용 루프 구현 복잡도를 확인하고, $299의 한국 직배송비·관세를 산출해 $399 Jetson Orin Nano Super와 단일 비교표로 정리. 출처: huggingface.co/blog/reachy-mini 및 pollen-robotics.com.</p>
       <h2>왜</h2>
-      <p>위 &#39;Slack · Claude · Notion 통합&#39; 항목과 연결되는 아이디어.</p>
+      <p>블록체인 개발자가 로보틱스·AI 인접 분야를 대비할 때 300~400달러 선에서 직면하는 명확한 갈림길: <strong>&quot;연산을 살 것인가, 몸을 살 것인가.&quot;</strong></p>
+<ul>
+<li><strong>Jetson Orin Nano Super ($399)</strong>: <strong>연산</strong>을 삽니다 — 67 TOPS 엣지 보드 위에 카메라·센서·모터를 직접 배선하며 ROS 2 배관과 엣지 추론 최적화를 배웁니다.</li>
+<li><strong>Reachy Mini ($299, Pollen Robotics / Hugging Face)</strong>: <strong>몸</strong>을 삽니다 — 모터가 내장된 데스크탑 로봇으로, Python SDK를 통해 사람과 상호작용하는 물리적 루프를 즉시 코드로 작성할 수 있습니다.</li>
+</ul>
+<p>Reachy Mini의 노림수는 하드웨어 엔지니어가 아닌 <strong>&quot;AI 빌더&quot;</strong>를 명시적 타깃으로 잡았다는 점입니다. 모델 API와 프롬프트를 다룰 줄 아는 소프트웨어 개발자가 복잡한 기계 가공 없이 물리적 상호작용으로 직행할 수 있도록 설계되었으며, Hugging Face 생태계(LeRobot, Hub 데이터셋·모델)와 한 집에서 호흡합니다.</p>
+<p>큐 1번의 <code>lerobot-so101</code>이 오픈소스 조작기 소프트웨어였다면, Reachy Mini는 그 소프트웨어가 붙을 수 있는 가장 저렴하고 표현력 있는 데스크탑 몸체입니다.</p>
       <h2>동작 방식</h2>
-      <p>Notion↔Slack 연동 기능을 활용.</p>
-      <h2>관련 코드</h2>
-      <pre><code>&quot;&quot;&quot;'Claude Tag' for Slack (on hold, not yet scoped): a minimal skeleton
-showing the shape of the idea -- a Slack event handler that dispatches
-mentions of @Claude to a stub responder.
-&quot;&quot;&quot;
-
-def handle_slack_event(event):
-    if event.get(&quot;type&quot;) == &quot;app_mention&quot; and &quot;@Claude&quot; in event.get(&quot;text&quot;, &quot;&quot;):
-        return claude_tag_responder(event)
-    return {&quot;handled&quot;: False, &quot;reason&quot;: &quot;not a Claude Tag mention&quot;}
-
-
-def claude_tag_responder(event):
-    # Stub: real version would call Claude with the message + thread context
-    # via Notion&lt;-&gt;Slack connectors. Not yet scoped.
-    return {
-        &quot;handled&quot;: True,
-        &quot;channel&quot;: event[&quot;channel&quot;],
-        &quot;reply&quot;: f&quot;(stub) Claude Tag would respond to: {event['text']!r}&quot;,
-    }
-
-
-mock_events = [
-    {&quot;type&quot;: &quot;app_mention&quot;, &quot;channel&quot;: &quot;#general&quot;, &quot;text&quot;: &quot;@Claude summarize this thread&quot;},
-    {&quot;type&quot;: &quot;message&quot;, &quot;channel&quot;: &quot;#general&quot;, &quot;text&quot;: &quot;no mention here&quot;},
-]
-
-for event in mock_events:
-    result = handle_slack_event(event)
-    print(f&quot;event={event['type']!r} text={event['text']!r} -&gt; {result}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/claude-tag-slack.py">docs/code/pocs/claude-tag-slack.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/claude-tag-slack">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>Jetson Orin Nano Super ($399) vs Reachy Mini ($299) 비교</h3>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>Jetson Orin Nano Super ($399)</th>
+<th>Reachy Mini ($299)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>산 것</strong></td>
+<td>연산 — 67 TOPS 엣지 AI 보드</td>
+<td>몸 — 움직이는 데스크탑 로봇 본체</td>
+</tr>
+<tr>
+<td><strong>붙일 것</strong></td>
+<td>카메라·센서·모터를 직접 구매 후 배선</td>
+<td>호스트 PC에 연결하고 Python SDK로 즉시 제어</td>
+</tr>
+<tr>
+<td><strong>배우는 것</strong></td>
+<td>엣지 추론 최적화, TensorRT, ROS 2 배관</td>
+<td>사람과의 상호작용 루프, 멀티모달 물리 에이전트</td>
+</tr>
+<tr>
+<td><strong>소프트웨어 스택</strong></td>
+<td>NVIDIA JetPack, Isaac ROS, DeepStream</td>
+<td>Hugging Face LeRobot, Transformers, Pollen SDK</td>
+</tr>
+<tr>
+<td><strong>하드웨어 한계</strong></td>
+<td>8GB 메모리 한계 (GR00T 온보드 직접 구동 불가)</td>
+<td>온보드 고성능 연산 부재 (호스트 연산 의존)</td>
+</tr>
+</tbody></table>
+<h3>액션 플랜 및 로드맵 연계</h3>
+<ol>
+<li><strong>SDK 코드 라인 수 평가</strong>: Hugging Face 소개 글의 예제 코드를 확인하여 VLM(비전-언어 모델) 출력과 로봇 모션 제어를 묶는 데 필요한 코드 복잡도 파악.</li>
+<li><strong>실구매가 산출</strong>: $299 기준 해외 배송료 및 국내 관세·부가세(10%)를 반영한 최종 한화 비용 산정 후 Jetson 국내 유통가와 동일선상 비교.</li>
+<li><strong>큐 연계 순서</strong>: Reachy Mini($299)와 Jetson($399)의 비교를 확정한 뒤, 가격대가 한 단계 뛰는 사족보행 로봇 Unitree Go2 (Air $1,600 / Pro $2,800) 검토로 단계적 확장.</li>
+</ol>
+      <p class="meta">1 diagram(s) on the live page.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/reachy-mini">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-slack-claude-notion.html">&larr; 56. Slack · Claude · Notion integration</a><span></span></div>
+  <div class="pager"><a href="pocs-lerobot-so101.html">&larr; 29. LeRobot + SO-101 — the cheapest hands-on robotics entry</a><a href="pocs-merkle-vs-verkle.html">31. Merkle vs Verkle &rarr;</a></div>
 </div>
 </body>
 </html>

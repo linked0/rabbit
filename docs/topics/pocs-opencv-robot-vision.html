@@ -140,7 +140,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Pixels to millimetres — the step before the arm moves</p>
   <article>
-      <h1><span class="topic-no">26</span>Pixels to millimetres — the step before the arm moves <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">28</span>Pixels to millimetres — the step before the arm moves <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">Camera calibration, ArUco pose and hand-eye alignment on a built-in webcam and a sheet of A4. The output is not a demo but two error numbers.</p>
       <p class="meta">Not yet scoped — <code>pip install opencv-python opencv-contrib-python</code>, print one DICT_4X4_50 marker from chev.me/arucogen, and check that the axes render on a webcam with rough intrinsics (fx=fy=image width, cx/cy=centre). Real calibration second. docs.opencv.org</p>
       <h2>Why</h2>
@@ -152,7 +152,7 @@
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">26</span>픽셀에서 밀리미터로 — 팔이 움직이기 전 단계 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">28</span>픽셀에서 밀리미터로 — 팔이 움직이기 전 단계 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">노트북 웹캠과 A4 한 장으로 하는 카메라 캘리브레이션·ArUco 자세추정·hand-eye 정렬. 산출물은 데모가 아니라 오차 숫자 두 개입니다.</p>
       <p class="meta">아직 범위 미정 — <code>pip install opencv-python opencv-contrib-python</code>, chev.me/arucogen에서 DICT_4X4_50 마커 하나 인쇄, 대략값 내부 파라미터(fx=fy=이미지 폭, cx·cy=중심)로 웹캠에 축이 그려지는지부터 확인. 제대로 된 캘리브레이션은 그다음. docs.opencv.org</p>
       <h2>왜</h2>
@@ -161,7 +161,7 @@
       <p>단계는 넷이고 뒤의 둘만 선택입니다. <strong>내부 파라미터</strong>: 체스보드나 ChArUco 보드를 15~20장 찍어 <code>cv2.calibrateCamera</code>에 넣으면 행렬 K(fx·fy·cx·cy)와 왜곡계수가 나오고, <strong>재투영 RMS</strong>가 이 카드가 만들려는 두 숫자 중 첫 번째입니다 — 1픽셀 미만이 합격선. <strong>자세추정</strong>: 물체나 그리퍼에 붙인 ArUco 마커가 카메라 기준 6DOF 위치와 회전을 바로 줍니다. 여기 30분을 잡아먹기 전에 알아둘 <strong>버전 함정</strong>이 하나 있습니다 — <code>cv2.aruco.estimatePoseSingleMarkers</code>는 OpenCV 4.7에서 폐기됐으므로, 현행 경로는 <code>cv2.aruco.ArucoDetector</code>로 코너를 검출하고 <code>cv2.solvePnP</code>(플래그 <code>SOLVEPNP_IPPE_SQUARE</code>)로 자세를 푸는 것입니다. 인터넷 예제 상당수가 적힌 대로 돌지 않는 이유가 이것입니다. <strong>hand-eye</strong>: <code>cv2.calibrateHandEye</code>가 카메라 좌표계와 로봇 베이스 좌표계를 정렬하는데, 초보의 첫 실수는 알고리즘 선택(Tsai·Park·Horaud)이 아니라 <strong>설정</strong>입니다 — 카메라가 팔에 붙어 있으면 eye-in-hand, 삼각대에 있으면 eye-to-hand이고, 이걸 반대로 잡으면 <strong>그럴듯해 보이면서 틀린</strong> 변환이 나옵니다. <strong>추론</strong>: <code>cv2.dnn</code>은 별도 프레임워크 없이 ONNX 검출 모델을 돌리는데, Jetson Orin Nano Super 같은 엣지 보드와 짝지을 때의 자연스러운 경량 조합이고 그 항목이 큐에서 다음 순서인 이유이기도 합니다. 이 카메라로 어디까지 할 수 있는지를 실제로 결정하는 것은 <strong>두 번째 숫자</strong>입니다: 마커를 자로 잰 거리에 놓고 <code>tvec</code>과 비교해 오차를 퍼센트로 기록합니다. 위의 전부는 그 두 수치 — <strong>RMS와 거리 오차율</strong> — 를 위한 준비이고, 그것을 보고하는 카드가 &quot;축이 그려졌다&quot;고 보고하는 카드보다 값어치가 큽니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/opencv-robot-vision">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-sub-2bit-local-llm.html">&larr; 25. Sub-2-bit LLMs, locally</a><a href="pocs-lerobot-so101.html">27. LeRobot + SO-101 — the cheapest hands-on robotics entry &rarr;</a></div>
+  <div class="pager"><a href="pocs-sub-2bit-local-llm.html">&larr; 27. Sub-2-bit LLMs, locally</a><a href="pocs-lerobot-so101.html">29. LeRobot + SO-101 — the cheapest hands-on robotics entry &rarr;</a></div>
 </div>
 </body>
 </html>

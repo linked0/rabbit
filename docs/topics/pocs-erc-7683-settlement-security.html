@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ERC-7683 settlement security — the layer left deliberately unstandardized — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ERC-7683 settlement security — the layer left deliberately unstandardized</p>
+  <article>
+      <h1><span class="topic-no">10</span>ERC-7683 settlement security — the layer left deliberately unstandardized <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">ERC-7683 standardizes order envelopes, not settlement proofs. The three settlement models (optimistic, light-client, committee bridge) decide who actually bears the bridge risk and why filler loan spreads diverge.</p>
+      <p class="meta">Not yet scoped — start by comparing the three settlement layers on filler capital turnaround time (minutes to hours), dispute failure blast radius, and spread pricing. Source: ERC-7683 spec (erc7683.org), Across Protocol docs, and EIP-7683.</p>
+      <h2>Why</h2>
+      <p>Intents did not eliminate bridge risk — they moved it from users to fillers. A user signs on the origin chain, escrows input tokens, and the filler advances their own funds on the destination chain immediately. The user gets instant finality, while the filler waits to reclaim the origin escrow.</p>
+<p>The part worth a card is what ERC-7683 deliberately left out. The standard specifies:</p>
+<ul>
+<li>The cross-chain order struct (<code>GaslessCrossChainOrder</code>, <code>OnchainCrossChainOrder</code>)</li>
+<li>Two standard interfaces (<code>IOriginSettler.open()</code>, <code>IDestinationSettler.fill()</code>)</li>
+</ul>
+<p>That defines the envelope. It says nothing about what proof allows the filler to unlock the escrow. ERC-7683 is settlement-agnostic by design, explicitly delegating settlement contract security evaluation to fillers and applications.</p>
+<p>So the same &quot;ERC-7683 compatible&quot; label encompasses three completely different trust architectures:</p>
+<ol>
+<li><strong>Optimistic verification</strong> (Across style): Repaid if nobody disputes within a challenge window.</li>
+<li><strong>Light client</strong>: Cryptographic proof of the origin block header verified on the destination.</li>
+<li><strong>Generic bridge messaging</strong>: A multisig committee attests that the fill occurred.</li>
+</ol>
+<p>What matters is that their failure modes hurt different participants. If optimistic verification fails (e.g. lazy disputers), the filler loses. If a light-client verification bug occurs or a bridge committee is compromised, everyone with funds in escrow loses. The label &quot;7683 compatible&quot; conveys none of this critical distinction.</p>
+      <h2>How it works</h2>
+      <h3>The Three Settlement Models Aligned by Risk</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Filler Retrieval Basis</th>
+<th>Capital Turnaround</th>
+<th>Filler&#39;s Risk Exposure</th>
+<th>Failure Mode &amp; Blast Radius</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Optimistic</strong></td>
+<td>No valid challenge within dispute window</td>
+<td>Tens of minutes to hours</td>
+<td>Capital lockup + challenger liveness risk</td>
+<td>Filler loses principal if false claim slips through</td>
+</tr>
+<tr>
+<td><strong>Light Client</strong></td>
+<td>Destination verifier checks origin header proofs</td>
+<td>Block finality (~12s to 15m)</td>
+<td>Protocol/verifier implementation bugs</td>
+<td>Complete drain of all escrowed funds</td>
+</tr>
+<tr>
+<td><strong>Bridge Messaging</strong></td>
+<td>Multi-sig / oracle committee signs attestation</td>
+<td>Message propagation delay</td>
+<td>Bridge committee compromise</td>
+<td>Complete drain of all escrowed funds</td>
+</tr>
+</tbody></table>
+<h3>Filler Economics: Short-Term Lending &amp; Spread Formation</h3>
+<p>A filler is fundamentally a <strong>short-term lending desk</strong>:</p>
+<ol>
+<li>Fronting liquidity on the destination chain is extending a credit line to the user.</li>
+<li>The settlement layer dictates the <strong>duration of that loan</strong>.</li>
+</ol>
+<p>Under optimistic verification, capital remains locked for the entire challenge window (e.g. 1–2 hours). That reduces capital velocity (turnover), requiring a thicker spread to clear hurdle rates. Under a light-client model, capital turns over with block finality, allowing tighter spreads at the cost of absorbing implementation risk.</p>
+<p>$$\text{Minimum Spread} \ge (\text{Cost of Capital} \times \text{Lockup Time}) + \text{Default / Bug Risk}$$</p>
+<p>When protocol marketing advertises &quot;cheapest cross-chain intent execution,&quot; it is usually advertising a settlement layer that minimizes capital lockup time while silently trading off audit perimeter and blast radius.</p>
+<h3>Prediction Market &amp; Verex Implications</h3>
+<p>In a cross-chain prediction market (e.g. Verex), a user on Chain B wanting to bet on a market on Chain A relies on this exact filler model:</p>
+<ul>
+<li>Verex or the filler must open the position instantly on Chain A while accepting escrow on Chain B.</li>
+<li>If the settlement layer has long latency or high dispute risk, the filler&#39;s quotation spread degrades the user&#39;s betting odds.</li>
+<li>This connects directly to <code>governance-capture-cost</code> (audit perimeter ending at the interface while economic risk lives in the settlement substrate) and <code>l1-zkevm-optional-proofs</code> (trust assumptions resting on economic incentives rather than uniform cryptographic guarantees).</li>
+</ul>
+      <p class="meta">1 diagram(s) on the live page.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/erc-7683-settlement-security">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">10</span>ERC-7683 정산 보안 — 표준이 일부러 비워둔 그 층 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">ERC-7683은 주문 봉투만 표준화하고 정산 증명은 비워뒀습니다. 세 정산 모델(낙관적, 라이트클라이언트, 위원회 브릿지)이 브릿지 리스크를 누가 실제로 지는지와 필러 스프레드가 벌어지는 이유를 결정합니다.</p>
+      <p class="meta">아직 범위 미정 — 세 정산 계층의 필러 자본 회수 시간(수십 분~시간), 분쟁 실패 시 피해 반경, 스프레드 가격 결정을 비교 분석하는 것부터. 출처: ERC-7683 스펙(erc7683.org), Across 프로토콜 문서, EIP-7683.</p>
+      <h2>왜</h2>
+      <p><strong>인텐트는 브릿지 리스크를 없앤 게 아니라 사용자에게서 필러로 옮겼습니다.</strong> 사용자가 서명하면 출발 체인에 입력 토큰이 에스크로되고, 필러가 목적지 체인에서 자기 돈으로 먼저 지급합니다. 사용자는 즉시 자금을 받고, 브릿지 대기 리스크는 에스크로 회수를 기다리는 필러가 집니다.</p>
+<p><strong>카드가 될 값어치는 ERC-7683이 일부러 비워둔 자리에 있습니다.</strong> 표준이 정한 것은:</p>
+<ul>
+<li>크로스체인 주문 구조체(<code>GaslessCrossChainOrder</code>, <code>OnchainCrossChainOrder</code>)</li>
+<li>두 표준 인터페이스(<code>IOriginSettler.open()</code>, <code>IDestinationSettler.fill()</code>)</li>
+</ul>
+<p>즉 <strong>봉투 규격까지</strong>입니다. 필러가 무엇을 근거로 에스크로를 회수해 가는지는 전혀 정하지 않았습니다. ERC-7683은 정산 검증 방식에 의도적으로 불가지론적(agnostic)이며, 정산 컨트랙트의 보안 평가 책임을 필러와 앱에 명시적으로 위임합니다.</p>
+<p>그래서 같은 <strong>&quot;ERC-7683 호환&quot;</strong>이라는 간판 아래 완전히 다른 세 가지 신뢰 모델이 들어갑니다:</p>
+<ol>
+<li><strong>낙관적 검증 (Across류)</strong>: 챌린지 기간 동안 이의 제기가 없으면 참으로 간주.</li>
+<li><strong>라이트클라이언트</strong>: 출발 체인의 블록 헤더를 목적지에서 암호학적으로 검증.</li>
+<li><strong>범용 브릿지 메시징</strong>: 위원회(멀티시그)가 체결되었다고 서명.</li>
+</ol>
+<p><strong>핵심은 셋의 실패 모드가 서로 다른 사람을 다치게 한다는 것입니다.</strong> 낙관적 검증이 실패하면 필러가 잃지만, 라이트클라이언트 구현 버그나 위원회 침해가 발생하면 에스크로에 잠긴 모든 사용자의 자금이 털립니다. &quot;7683 호환&quot;이라는 라벨은 이 구분을 전혀 담지 않습니다.</p>
+      <h2>동작 방식</h2>
+      <h3>세 정산 모델을 리스크로 나란히 놓으면</h3>
+<table>
+<thead>
+<tr>
+<th>모델</th>
+<th>필러가 회수하는 근거</th>
+<th>회수까지 걸리는 시간</th>
+<th>필러가 지는 것</th>
+<th>실패 모드 및 피해 반경</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>낙관적 검증 (Across류)</strong></td>
+<td>챌린지 기간 동안 이의가 없었음</td>
+<td>수십 분~수 시간</td>
+<td>자본 구속 + 분쟁자가 게으를 위험</td>
+<td>거짓 청구가 통과되면 필러 손실</td>
+</tr>
+<tr>
+<td><strong>라이트클라이언트</strong></td>
+<td>출발 체인 헤더를 목적지에서 암호학적 검증</td>
+<td>파이널리티 도달 (약 12초~15분)</td>
+<td>구현 버그 (검증 로직 오류 시 무근거 회수)</td>
+<td>에스크로에 잠긴 <strong>모든 자금 탈취</strong></td>
+</tr>
+<tr>
+<td><strong>브릿지 메시징</strong></td>
+<td>위원회가 체결 사실에 서명함</td>
+<td>메시징 전파 지연</td>
+<td>위원회 침해 (브릿지의 가장 얇은 벽)</td>
+<td>에스크로에 잠긴 <strong>모든 자금 탈취</strong></td>
+</tr>
+</tbody></table>
+<h3>필러 경제학: 단기 대출업과 스프레드 형성</h3>
+<p>필러의 본질은 <strong>단기 대출업</strong>입니다:</p>
+<ol>
+<li>목적지 체인에서 자기 자본으로 먼저 지급하는 것은 사용자에게 단기 신용을 제공하는 것과 같습니다.</li>
+<li>그 대출의 만기(기간)를 정하는 것이 바로 <strong>정산 계층</strong>입니다.</li>
+</ol>
+<p>낙관적 검증에서는 챌린지 기간 내내 자본이 묶이므로, 자본 회전율이 떨어지고 스프레드가 두꺼워지며 사용자가 그 비용을 부담합니다. 반대로 라이트클라이언트는 자본 회전이 빠른 대신 스마트 컨트랙트 검증 버그 위험을 필러와 프로토콜이 떠안습니다.</p>
+<p>$$\text{최소 스프레드} \ge (\text{자본비용} \times \text{구속 시간}) + \text{디폴트/버그 위험}$$</p>
+<p>&quot;어느 인텐트 프로토콜이 가장 싼가&quot;는 결국 &quot;어느 정산 층이 자본을 덜 묶는가&quot;로 귀결되며, 사용자에게 보이는 가격 차이의 상당 부분이 여기서 발생합니다. 프로토콜 마케팅이 이를 자세히 설명하지 않는 이유는 비용을 설명하려면 숨겨진 신뢰·리스크 모델을 함께 공개해야 하기 때문입니다.</p>
+<h3>예측시장 및 Verex 함의</h3>
+<p>Verex 같은 크로스체인 예측시장에서 체인 B의 사용자가 체인 A의 마켓에 즉시 베팅하려 할 때 필러 모델이 그대로 작동합니다:</p>
+<ul>
+<li>사용자는 체인 B에 증거금을 넣고, Verex/필러는 체인 A에서 즉시 포지션을 열어줘야 합니다.</li>
+<li>정산 계층의 지연이 길거나 분쟁 위험이 크면 필러는 불리한 호가 스프레드를 제시하고, 사용자의 베팅 배당률이 깎입니다.</li>
+<li>이는 <code>governance-capture-cost</code>(감사 경계는 주문 인터페이스에서 끝나지만 실제 돈이 걸린 곳은 정산 기저층인 구조) 및 <code>l1-zkevm-optional-proofs</code>(안전이 경제적 할인율 선택에 기대는 구조)와 정확히 같은 논리적 궤를 공유합니다.</li>
+</ul>
+      <p class="meta">1 diagram(s) on the live page.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/erc-7683-settlement-security">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-l1-zkevm-optional-proofs.html">&larr; 9. L1 zkEVM — the word doing the work is &quot;optional&quot;</a><a href="pocs-chainlink-data-streams.html">11. Chainlink Data Streams — push vs. pull oracles and point-in-time settlement &rarr;</a></div>
+</div>
+</body>
+</html>

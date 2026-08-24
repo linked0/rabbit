@@ -445,6 +445,105 @@ export const POC_CARDS: DemoCard[] = [
       "먼저 문서화된 동작 방식: 검증자는 트랜잭션을 재실행하는 대신 **상태전이의 간결한 증명을 확인**해 블록을 검증할 수 있고, 메인넷 상태전이함수는 **EIP-8079 초안의 `EXECUTE` 프리컴파일**로 실행 계층에 노출되며 Native Rollups도 같은 원시 기능 위에 섭니다. 증명이 가능해지는 것은 EIP-8025 자체의 변경이 아니라 **위의 Glamsterdam 두 조각 덕분**입니다. **측정은 둘이고, 둘 다 아무것도 만들지 않고 돌릴 만큼 작습니다.** **첫째, 창(window).** 최근 메인넷 블록 수십 개를 대여 GPU 위 기성 zkVM으로 증명하고, **실시간 증명 소요를 가스 사용량에 대해** 그립니다. 산출물은 숫자 하나와 곡선 하나입니다 — **ePBS가 여는 구간 안에 증명이 끝나는 최대 블록**, 그리고 거기까지 든 하드웨어. 그것을 Glamsterdam의 200M 가스 목표에 대보면 간격이 닫히거나 닫히지 않고, 닫히지 않으면 그 선택지는 아직 이론이며 이 카드의 후반부는 시기상조입니다. **둘째, 할인율.** 같은 블록을 가정용 사양 노드에서 재실행하는 비용과 증명을 검증하는 비용을 견줍니다. **그 비율이 곧 채택률이고, 채택률이 곧 재실행 커버리지의 침식**이라, 흥미로운 산출물은 비율 자체가 아니라 **나쁜 증명자를 잡을 사람이 아무도 남지 않게 되는 지분 비율**입니다. 한 섹션은 옆에 두지 말고 이 카드 **안에** 넣습니다: **목록.** ePBS 편이 \"어떤 코드가 제안자가 페이로드를 안다고 암묵 가정하는가\"를 물었다면, 이 편은 그 쌍둥이 질문을 묻습니다 — **어떤 코드가 누군가 실제로 트랜잭션을 돌렸다고 암묵 가정하는가.** 사기 증명, 리오그 감시, 영수증을 재계산하는 익스플로러, 그리고 어떤 값을 \"노드가 만들어내는 것을 봤으니\" 믿는 모든 서비스가 후보이고, **이 목록은 지금 쓰면 싸고 테스트넷 도중에 쓰면 비쌉니다.**",
   },
   {
+    // 인텐트 정산의 보안 모델과 ERC-7683의 미표준화 층을 분석하고 추가 (jay, 2026-08-24).
+    // 주문 형식(GaslessCrossChainOrder)은 표준화됐지만 정산 검증과 리스크는 필러가 지는 구조.
+    // governance-capture-cost(감사 경계 vs 신뢰 경계) 및 l1-zkevm-optional-proofs(경제적 선택에 기댄 안전)와 같은 계열.
+    key: "erc-7683-settlement-security",
+    title: "ERC-7683 settlement security — the layer left deliberately unstandardized",
+    titleKo: "ERC-7683 정산 보안 — 표준이 일부러 비워둔 그 층",
+    description:
+      "ERC-7683 standardizes order envelopes, not settlement proofs. The three settlement models (optimistic, light-client, committee bridge) decide who actually bears the bridge risk and why filler loan spreads diverge.",
+    descriptionKo:
+      "ERC-7683은 주문 봉투만 표준화하고 정산 증명은 비워뒀습니다. 세 정산 모델(낙관적, 라이트클라이언트, 위원회 브릿지)이 브릿지 리스크를 누가 실제로 지는지와 필러 스프레드가 벌어지는 이유를 결정합니다.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — start by comparing the three settlement layers on filler capital turnaround time (minutes to hours), dispute failure blast radius, and spread pricing. Source: ERC-7683 spec (erc7683.org), Across Protocol docs, and EIP-7683.",
+    howToKo:
+      "아직 범위 미정 — 세 정산 계층의 필러 자본 회수 시간(수십 분~시간), 분쟁 실패 시 피해 반경, 스프레드 가격 결정을 비교 분석하는 것부터. 출처: ERC-7683 스펙(erc7683.org), Across 프로토콜 문서, EIP-7683.",
+    purpose:
+      "Intents did not eliminate bridge risk — they moved it from users to fillers. A user signs on the origin chain, escrows input tokens, and the filler advances their own funds on the destination chain immediately. The user gets instant finality, while the filler waits to reclaim the origin escrow.\n\nThe part worth a card is what ERC-7683 deliberately left out. The standard specifies:\n- The cross-chain order struct (`GaslessCrossChainOrder`, `OnchainCrossChainOrder`)\n- Two standard interfaces (`IOriginSettler.open()`, `IDestinationSettler.fill()`)\n\nThat defines the envelope. It says nothing about what proof allows the filler to unlock the escrow. ERC-7683 is settlement-agnostic by design, explicitly delegating settlement contract security evaluation to fillers and applications.\n\nSo the same \"ERC-7683 compatible\" label encompasses three completely different trust architectures:\n1. **Optimistic verification** (Across style): Repaid if nobody disputes within a challenge window.\n2. **Light client**: Cryptographic proof of the origin block header verified on the destination.\n3. **Generic bridge messaging**: A multisig committee attests that the fill occurred.\n\nWhat matters is that their failure modes hurt different participants. If optimistic verification fails (e.g. lazy disputers), the filler loses. If a light-client verification bug occurs or a bridge committee is compromised, everyone with funds in escrow loses. The label \"7683 compatible\" conveys none of this critical distinction.",
+    purposeKo:
+      "**인텐트는 브릿지 리스크를 없앤 게 아니라 사용자에게서 필러로 옮겼습니다.** 사용자가 서명하면 출발 체인에 입력 토큰이 에스크로되고, 필러가 목적지 체인에서 자기 돈으로 먼저 지급합니다. 사용자는 즉시 자금을 받고, 브릿지 대기 리스크는 에스크로 회수를 기다리는 필러가 집니다.\n\n**카드가 될 값어치는 ERC-7683이 일부러 비워둔 자리에 있습니다.** 표준이 정한 것은:\n- 크로스체인 주문 구조체(`GaslessCrossChainOrder`, `OnchainCrossChainOrder`)\n- 두 표준 인터페이스(`IOriginSettler.open()`, `IDestinationSettler.fill()`)\n\n즉 **봉투 규격까지**입니다. 필러가 무엇을 근거로 에스크로를 회수해 가는지는 전혀 정하지 않았습니다. ERC-7683은 정산 검증 방식에 의도적으로 불가지론적(agnostic)이며, 정산 컨트랙트의 보안 평가 책임을 필러와 앱에 명시적으로 위임합니다.\n\n그래서 같은 **\"ERC-7683 호환\"**이라는 간판 아래 완전히 다른 세 가지 신뢰 모델이 들어갑니다:\n1. **낙관적 검증 (Across류)**: 챌린지 기간 동안 이의 제기가 없으면 참으로 간주.\n2. **라이트클라이언트**: 출발 체인의 블록 헤더를 목적지에서 암호학적으로 검증.\n3. **범용 브릿지 메시징**: 위원회(멀티시그)가 체결되었다고 서명.\n\n**핵심은 셋의 실패 모드가 서로 다른 사람을 다치게 한다는 것입니다.** 낙관적 검증이 실패하면 필러가 잃지만, 라이트클라이언트 구현 버그나 위원회 침해가 발생하면 에스크로에 잠긴 모든 사용자의 자금이 털립니다. \"7683 호환\"이라는 라벨은 이 구분을 전혀 담지 않습니다.",
+    howItWorks:
+      "### The Three Settlement Models Aligned by Risk\n\n| Model | Filler Retrieval Basis | Capital Turnaround | Filler's Risk Exposure | Failure Mode & Blast Radius |\n|---|---|---|---|---|\n| **Optimistic** | No valid challenge within dispute window | Tens of minutes to hours | Capital lockup + challenger liveness risk | Filler loses principal if false claim slips through |\n| **Light Client** | Destination verifier checks origin header proofs | Block finality (~12s to 15m) | Protocol/verifier implementation bugs | Complete drain of all escrowed funds |\n| **Bridge Messaging** | Multi-sig / oracle committee signs attestation | Message propagation delay | Bridge committee compromise | Complete drain of all escrowed funds |\n\n### Filler Economics: Short-Term Lending & Spread Formation\n\nA filler is fundamentally a **short-term lending desk**:\n1. Fronting liquidity on the destination chain is extending a credit line to the user.\n2. The settlement layer dictates the **duration of that loan**.\n\nUnder optimistic verification, capital remains locked for the entire challenge window (e.g. 1–2 hours). That reduces capital velocity (turnover), requiring a thicker spread to clear hurdle rates. Under a light-client model, capital turns over with block finality, allowing tighter spreads at the cost of absorbing implementation risk.\n\n$$\\text{Minimum Spread} \\ge (\\text{Cost of Capital} \\times \\text{Lockup Time}) + \\text{Default / Bug Risk}$$\n\nWhen protocol marketing advertises \"cheapest cross-chain intent execution,\" it is usually advertising a settlement layer that minimizes capital lockup time while silently trading off audit perimeter and blast radius.\n\n### Prediction Market & Verex Implications\n\nIn a cross-chain prediction market (e.g. Verex), a user on Chain B wanting to bet on a market on Chain A relies on this exact filler model:\n- Verex or the filler must open the position instantly on Chain A while accepting escrow on Chain B.\n- If the settlement layer has long latency or high dispute risk, the filler's quotation spread degrades the user's betting odds.\n- This connects directly to `governance-capture-cost` (audit perimeter ending at the interface while economic risk lives in the settlement substrate) and `l1-zkevm-optional-proofs` (trust assumptions resting on economic incentives rather than uniform cryptographic guarantees).",
+    howItWorksKo:
+      "### 세 정산 모델을 리스크로 나란히 놓으면\n\n| 모델 | 필러가 회수하는 근거 | 회수까지 걸리는 시간 | 필러가 지는 것 | 실패 모드 및 피해 반경 |\n|---|---|---|---|---|\n| **낙관적 검증 (Across류)** | 챌린지 기간 동안 이의가 없었음 | 수십 분~수 시간 | 자본 구속 + 분쟁자가 게으를 위험 | 거짓 청구가 통과되면 필러 손실 |\n| **라이트클라이언트** | 출발 체인 헤더를 목적지에서 암호학적 검증 | 파이널리티 도달 (약 12초~15분) | 구현 버그 (검증 로직 오류 시 무근거 회수) | 에스크로에 잠긴 **모든 자금 탈취** |\n| **브릿지 메시징** | 위원회가 체결 사실에 서명함 | 메시징 전파 지연 | 위원회 침해 (브릿지의 가장 얇은 벽) | 에스크로에 잠긴 **모든 자금 탈취** |\n\n### 필러 경제학: 단기 대출업과 스프레드 형성\n\n필러의 본질은 **단기 대출업**입니다:\n1. 목적지 체인에서 자기 자본으로 먼저 지급하는 것은 사용자에게 단기 신용을 제공하는 것과 같습니다.\n2. 그 대출의 만기(기간)를 정하는 것이 바로 **정산 계층**입니다.\n\n낙관적 검증에서는 챌린지 기간 내내 자본이 묶이므로, 자본 회전율이 떨어지고 스프레드가 두꺼워지며 사용자가 그 비용을 부담합니다. 반대로 라이트클라이언트는 자본 회전이 빠른 대신 스마트 컨트랙트 검증 버그 위험을 필러와 프로토콜이 떠안습니다.\n\n$$\\text{최소 스프레드} \\ge (\\text{자본비용} \\times \\text{구속 시간}) + \\text{디폴트/버그 위험}$$\n\n\"어느 인텐트 프로토콜이 가장 싼가\"는 결국 \"어느 정산 층이 자본을 덜 묶는가\"로 귀결되며, 사용자에게 보이는 가격 차이의 상당 부분이 여기서 발생합니다. 프로토콜 마케팅이 이를 자세히 설명하지 않는 이유는 비용을 설명하려면 숨겨진 신뢰·리스크 모델을 함께 공개해야 하기 때문입니다.\n\n### 예측시장 및 Verex 함의\n\nVerex 같은 크로스체인 예측시장에서 체인 B의 사용자가 체인 A의 마켓에 즉시 베팅하려 할 때 필러 모델이 그대로 작동합니다:\n- 사용자는 체인 B에 증거금을 넣고, Verex/필러는 체인 A에서 즉시 포지션을 열어줘야 합니다.\n- 정산 계층의 지연이 길거나 분쟁 위험이 크면 필러는 불리한 호가 스프레드를 제시하고, 사용자의 베팅 배당률이 깎입니다.\n- 이는 `governance-capture-cost`(감사 경계는 주문 인터페이스에서 끝나지만 실제 돈이 걸린 곳은 정산 기저층인 구조) 및 `l1-zkevm-optional-proofs`(안전이 경제적 할인율 선택에 기대는 구조)와 정확히 같은 논리적 궤를 공유합니다.",
+    diagrams: [
+      {
+        title: "Intent settlement lifecycle & filler loan recovery",
+        titleKo: "인텐트 정산 수명주기 및 필러 대출 회수 흐름",
+        src: `sequenceDiagram
+    autonumber
+    actor U as User
+    participant O as Origin Chain (Escrow)
+    participant F as Filler (Liquidity Desk)
+    participant D as Destination Chain
+    participant S as Settlement Verifier
+
+    U->>O: GaslessCrossChainOrder (Escrow input funds)
+    F->>D: IDestinationSettler.fill() (Fronts destination funds immediately)
+    D-->>U: Instant payout
+    Note over F,O: Filler waits to recover escrow (Loan duration)
+    F->>S: Submit proof of fill
+    alt Optimistic (Across)
+      S->>S: Dispute window elapsed (no challenger)
+    else Light Client
+      S->>S: Cryptographic origin header verification
+    else Bridge Committee
+      S->>S: Multi-sig quorum signature check
+    end
+    S->>O: IOriginSettler.open() unlock
+    O-->>F: Escrow released to Filler + Fee`,
+      },
+    ],
+  },
+  {
+    // 서비스 탐방 47/113: Chainlink Data Streams (jay, 2026-08-24).
+    // 45(Mountain)·46(Functions) 연속 sunset 이후 47번 Data Streams 생존 확인.
+    // 기존 Data Feeds(Push)와 Data Streams(Pull)의 차이 및 Verex 시점 정산(price-at-a-moment) 적용.
+    key: "chainlink-data-streams",
+    title: "Chainlink Data Streams — push vs. pull oracles and point-in-time settlement",
+    titleKo: "Chainlink Data Streams — Push 대 Pull 오라클과 시점 정산",
+    description:
+      "Data Streams keeps signed market prices off-chain and pulls them on-demand inside user transactions. For prediction markets like Verex, sub-second latency and deterministic resolution costs replace stale push heartbeats.",
+    descriptionKo:
+      "Data Streams는 서명된 시세를 오프체인에 두고 사용자가 트랜잭션 제출 시 당겨와 온체인 검증합니다. Verex 같은 예측시장에선 하트비트 푸시의 데이터 노후화를 밀리초 단위 정밀도와 건당 확정 비용으로 대체합니다.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — trace the off-chain cryptographic signature verification path in Data Streams docs, calculate the bounded gas cost of single-market settlement, and continue catalogue audit for entries 48–55. Source: docs.chain.link/data-streams.",
+    howToKo:
+      "아직 범위 미정 — Data Streams 문서에서 오프체인 서명 리포트의 온체인 검증 흐름을 확인하고, 마켓 1건당 확정 가스비 상한을 계산한 뒤 48~55번 카탈로그 생사 감사로 연결. 출처: docs.chain.link/data-streams.",
+    purpose:
+      "### Catalog Audit Finding: Service 47 Is Alive\n\nFollowing the sunset of Service 45 (Mountain Protocol) and Service 46 (Chainlink Functions, migrating to CRE), Service 47 (Chainlink Data Streams) is confirmed active and featured in Chainlink's primary production suite.\n\n### The Architectural Shift: Push (Data Feeds) vs. Pull (Data Streams)\n\nThe distinction between Chainlink Data Feeds and Data Streams is the architectural boundary between **Push** and **Pull** oracle models:\n\n1. **Data Feeds (Push / Conventional)**: Oracle nodes continuously write prices on-chain based on deviation thresholds (e.g. 0.5%) or heartbeat intervals (e.g. every 1 hour). Smart contracts read the latest state on-chain, but the price is inherently stale between heartbeat writes, and the oracle network bears the gas costs indefinitely.\n2. **Data Streams (Pull / Low-Latency)**: High-frequency market data is continuously aggregated and cryptographically signed off-chain. When a user executes a trade or settles a contract, the caller pulls the timestamped signed report and submits it alongside their transaction. The smart contract verifies the cryptographic signature on-chain and executes immediately against that exact moment's price.\n\n### Three Concrete Advantages of the Pull Model\n\n- **Gas on Demand**: The oracle does not burn gas writing unused prices; the caller pays gas only when a state transition actually requires it.\n- **Sub-Second Latency**: Price delivery is unconstrained by on-chain block times or heartbeat thresholds.\n- **Millisecond Granularity**: Enables high-precision financial derivatives and deterministic prediction-market settlement.",
+    purposeKo:
+      "### 카탈로그 감사 결과: 47번 서비스 생존 확인\n\n45번(Mountain Protocol)과 46번(Chainlink Functions — 2026-06 공식 sunset 후 CRE로 이관)이 연달아 종료되었던 반면, **47번 Chainlink Data Streams는 정상 운영 중**이며 공식 현행 제품군(Data Feeds, Data Streams, VRF, Automation, CCIP)의 핵심 축입니다.\n\n### Push(Data Feeds) vs Pull(Data Streams)의 구조적 차이\n\nChainlink Data Feeds와 Data Streams의 핵심 구분은 **Push(밀어넣기) 대 Pull(당겨오기)** 오라클 아키텍처입니다:\n\n1. **Data Feeds (기존 Push 모델)**: 오라클 노드가 편차 임계치(예: 0.5%)나 하트비트 주기(예: 1시간)마다 온체인에 트랜잭션을 날려 가격을 갱신합니다. 컨트랙트는 저장된 값을 단순 조회하면 되지만, 갱신 사이의 값은 필연적으로 **낡은(stale) 데이터**이며 상시 가스비를 오라클 네트워크가 부담합니다.\n2. **Data Streams (신규 Pull 모델)**: 고빈도 가격 데이터가 **오프체인에서 서명된 상태로 대기**합니다. 사용자가 주문을 넣거나 정산할 때, 해당 시점에 서명된 리포트를 트랜잭션 calldata에 함께 실어 온체인으로 제출합니다. 스마트 컨트랙트는 온체인에서 **서명을 검증하고 그 시점의 확정 가격으로 즉시 실행**합니다.\n\n### Pull 모델이 가져다주는 세 가지 이점\n\n- **온디맨드 가스 비용**: 오라클이 허공에 가스비를 태우며 상시 갱신하지 않고, **실제 가격을 소비하는 사용자/트랜잭션이 해당 호출의 가스를 부담**합니다.\n- **초저지연(Sub-second Latency)**: 블록 생성 주기나 하트비트 임계치에 묶이지 않고 밀리초 단위의 최신 호가를 반영합니다.\n- **정밀한 시점 데이터**: 특정 시각(타임스탬프)에 서명된 리포트를 검증할 수 있어 정산 시점의 분쟁을 방지합니다.",
+    howItWorks:
+      "### Verex Prediction Market Application Scenario\n\n1. **Settlement at an Exact Timestamp**: Prediction markets frequently resolve on \"closing price at 16:00:00 UTC\" or \"price at event occurrence.\" A push feed often lacks the exact timestamp price (if no deviation triggered an update at that second). A pull feed allows retrieving the cryptographic report signed at that exact millisecond. This resolves the core dilemma described in this catalogue's `price-at-a-moment` card.\n2. **Cost Predictability**: Solves the fundamental question — *\"What is the upper bound on settling one market?\"* With a pull model, settlement gas is paid strictly per resolution call, making per-market unit economics transparent and calculable.\n3. **Scope Boundary**: Data Streams is specialized for numeric financial asset prices (crypto, commodities, FX). It does not resolve categorical real-world outcomes (\"Who won the election?\") — which remains the domain of decentralized consensus / CRE (formerly Functions).",
+    howItWorksKo:
+      "### Verex 예측시장 적용 시나리오\n\n1. **시점 정산 문제의 해결**: 예측시장 정산은 \"특정 시각의 종가(예: 16:00:00)\"나 \"이벤트 발생 시점의 가격\"이 필요한 경우가 많습니다. Push 피드는 그 순간 편차가 없었다면 해당 시각의 값을 온체인에 갖고 있지 못하지만, Pull 모델은 **그 시각에 오프체인에서 서명된 리포트**를 온체인으로 가져와 정산할 수 있습니다. 카탈로그의 `price-at-a-moment` 카드가 다룬 핵심 문제가 바로 이 지점입니다.\n2. **비용 구조의 확정**: \"정산 1건의 비용 상한이 얼마인가?\"라는 질문에 Pull 모델은 명쾌하게 답합니다. 호출한 건수만큼만 정산 가스를 부담하므로 마켓 개설당 손익 계산(Unit Economics)이 성립합니다.\n3. **명확한 한계와 영역 분리**: Data Streams는 **수치형 금융 가격 데이터 전용**입니다. \"선거에서 누가 이겼는가\" 같은 범주형 현실 세계 이벤트는 다루지 못하며, 그 영역은 여전히 CRE(구 Functions)와 탈중앙 합의 오라클의 영역으로 남습니다.",
+    diagrams: [
+      {
+        title: "Chainlink Data Streams: Off-chain signed pull flow",
+        titleKo: "Chainlink Data Streams: 오프체인 서명 기반 Pull 검증 흐름",
+        src: `sequenceDiagram
+    autonumber
+    actor Caller as Caller / Verex Keeper
+    participant DON as Chainlink DON (Off-chain)
+    participant C as Settlement Contract
+    participant V as StreamVerifier (On-chain)
+
+    DON->>DON: Continuously aggregate & sign sub-second price reports
+    Caller->>DON: Fetch signed report at target timestamp T
+    DON-->>Caller: SignedReport(price, timestamp T, signatures)
+    Caller->>C: settleMarket(marketId, signedReport)
+    C->>V: verifyReport(signedReport)
+    V->>V: Verify DON signatures & validity window
+    V-->>C: Decoded price at timestamp T
+    C->>C: Execute market payout against exact price`,
+      },
+    ],
+  },
+  {
     // 1inch Aqua 공개(2026-07-27)를 계기로 추가 (jay, 2026-08-17). 광고 문구 한 줄에서
     // 출발했지만 카드가 될 값어치는 그 아래 있다 — "토큰이 지갑에 남는다"는 자기수탁 이야기가
     // 아니라 호가와 체결 가능성이 분리된다는 이야기다. stake-concentration 카드와 논리 구조가
@@ -959,6 +1058,43 @@ export const POC_CARDS: DemoCard[] = [
       "LeRobot bills itself as the `transformers` of robotics: one package holding a dataset standard (`LeRobotDataset`), pretrained policies (ACT, Diffusion Policy, π0, GR00T-N family) and the training/eval scripts, so the loop runs against Hub datasets and simulated environments before any hardware exists. The hardware half is the SO-101 — a 6-DOF arm of 3D-printed frame plus six STS3215 servos, roughly $100-130 a kit and $220-260 for a leader+follower pair (Seeed Studio, WowRobo, PartaBot). The leader arm is moved by hand to record teleoperated demonstrations; fine-tuning an ACT policy on those recordings makes the follower arm reproduce the motion on its own — assembly included, a weekend-sized project. The staging matters: simulation first, one arm second, and LeRobot's planned NVIDIA Cosmos 3 support is the bridge back to the GR00T stack rather than a separate track. Source: github.com/huggingface/lerobot · huggingface.co/docs/lerobot/so101",
     howItWorksKo:
       "LeRobot은 스스로를 \"로보틱스판 `transformers`\"로 표방합니다 — 데이터셋 표준(`LeRobotDataset`), 사전학습 정책(ACT·Diffusion Policy·π0·GR00T-N 계열), 학습·평가 스크립트가 한 패키지에 들어 있어서, **로봇이 없어도** Hub 공개 데이터셋과 시뮬레이션 환경으로 루프를 먼저 돌릴 수 있습니다. 하드웨어 쪽은 SO-101 — 3D 프린트 프레임 + STS3215 서보 6개의 6DOF 팔로, 킷 기준 $100~130, 리더+팔로워 페어는 $220~260입니다(Seeed Studio·WowRobo·PartaBot). 사람이 직접 쥐고 움직이는 **리더 팔**로 teleop 시연을 녹화하고, 그 데이터로 ACT 정책을 파인튜닝하면 **팔로워 팔**이 동작을 자율적으로 재현합니다 — 조립 포함 주말 프로젝트 규모. 순서가 중요합니다: 시뮬레이션이 먼저, 실물 팔이 그다음이고, LeRobot의 NVIDIA Cosmos 3 지원 예정은 별도 트랙이 아니라 GR00T 스택으로 돌아가는 다리입니다. 출처: github.com/huggingface/lerobot · huggingface.co/docs/lerobot/so101",
+  },
+  {
+    // 로보틱스/AI 큐 2번: Hugging Face / Pollen Robotics Reachy Mini ($299) 분석 (jay, 2026-08-24).
+    // Jetson Orin Nano Super($399)와 가격대가 겹치지만 "연산 우선" vs "몸체 우선"으로 성격이 정반대.
+    // LeRobot(SO-101) 소프트웨어와 결합하는 가장 저렴한 표현형 데스크탑 로봇 몸체.
+    key: "reachy-mini",
+    title: "Reachy Mini — buying a body vs. buying compute",
+    titleKo: "Reachy Mini — 연산을 살 것인가, 몸을 살 것인가",
+    description:
+      "At $299, Reachy Mini clashes directly with the $399 Jetson Orin Nano. Jetson buys 67 TOPS of edge compute for ROS 2 plumbing; Reachy Mini buys an expressive desktop robot body integrated with Hugging Face's LeRobot.",
+    descriptionKo:
+      "$299의 Reachy Mini는 $399 Jetson Orin Nano와 가격대가 겹치지만 성격은 정반대입니다. Jetson이 67 TOPS 엣지 연산과 ROS 2 배선을 산다면, Reachy Mini는 LeRobot 생태계와 즉시 연동되는 움직이는 몸을 삽니다.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — review Hugging Face's SDK sample code for the human-interaction loop, calculate landed cost (shipping + Korean customs for $299), and place it on the same comparison table as the $399 Jetson Orin Nano Super. Source: huggingface.co/blog/reachy-mini & pollen-robotics.com.",
+    howToKo:
+      "아직 범위 미정 — Hugging Face SDK 예제 코드로 상호작용 루프 구현 복잡도를 확인하고, $299의 한국 직배송비·관세를 산출해 $399 Jetson Orin Nano Super와 단일 비교표로 정리. 출처: huggingface.co/blog/reachy-mini 및 pollen-robotics.com.",
+    purpose:
+      "A blockchain developer preparing for adjacent AI/robotics domains faces a concrete budget dilemma around the $300–$400 price bracket: **Do you buy compute, or do you buy a body?**\n\n- **Jetson Orin Nano Super ($399)**: Buys raw edge compute — a 67 TOPS board where you wire your own cameras, sensors, and servo motors, learning low-level ROS 2 plumbing and edge inference.\n- **Reachy Mini ($299, Pollen Robotics / Hugging Face)**: Buys an expressive desktop robotic body — fully motorized with a Python SDK you can script immediately, learning the human-in-the-loop interaction loop.\n\nReachy Mini's primary bet is naming **AI builders** (rather than mechanical/control roboticists) as its target audience. It is built for developers who already understand model APIs and want physical embodiment without building hardware from scratch.\n\nIf `lerobot-so101` was the open-source software and manipulation arm baseline, Reachy Mini is the cheapest expressive body that the Hugging Face AI ecosystem attaches to.",
+    purposeKo:
+      "블록체인 개발자가 로보틱스·AI 인접 분야를 대비할 때 300~400달러 선에서 직면하는 명확한 갈림길: **\"연산을 살 것인가, 몸을 살 것인가.\"**\n\n- **Jetson Orin Nano Super ($399)**: **연산**을 삽니다 — 67 TOPS 엣지 보드 위에 카메라·센서·모터를 직접 배선하며 ROS 2 배관과 엣지 추론 최적화를 배웁니다.\n- **Reachy Mini ($299, Pollen Robotics / Hugging Face)**: **몸**을 삽니다 — 모터가 내장된 데스크탑 로봇으로, Python SDK를 통해 사람과 상호작용하는 물리적 루프를 즉시 코드로 작성할 수 있습니다.\n\nReachy Mini의 노림수는 하드웨어 엔지니어가 아닌 **\"AI 빌더\"**를 명시적 타깃으로 잡았다는 점입니다. 모델 API와 프롬프트를 다룰 줄 아는 소프트웨어 개발자가 복잡한 기계 가공 없이 물리적 상호작용으로 직행할 수 있도록 설계되었으며, Hugging Face 생태계(LeRobot, Hub 데이터셋·모델)와 한 집에서 호흡합니다.\n\n큐 1번의 `lerobot-so101`이 오픈소스 조작기 소프트웨어였다면, Reachy Mini는 그 소프트웨어가 붙을 수 있는 가장 저렴하고 표현력 있는 데스크탑 몸체입니다.",
+    howItWorks:
+      "### Jetson Orin Nano Super ($399) vs. Reachy Mini ($299)\n\n| Feature | Jetson Orin Nano Super ($399) | Reachy Mini ($299) |\n|---|---|---|\n| **What You Buy** | Raw compute — 67 TOPS edge AI board | Physical body — expressive moving desktop robot |\n| **What You Attach** | Cameras, sensors, external servo motors manually | Runs via Python SDK out of the box |\n| **Primary Skill Learned** | Edge inference optimization, TensorRT, ROS 2 | Human-in-the-loop interaction, multimodal agent loops |\n| **Software Ecosystem** | NVIDIA JetPack, Isaac ROS, DeepStream | Hugging Face LeRobot, Transformers, Pollen Python SDK |\n| **Hardware Bottleneck** | 8GB shared memory (cannot run GR00T natively) | Requires host machine for heavy inference |\n\n### Action Plan & Roadmap Integration\n\n1. **SDK Line Count Test**: Check Hugging Face's SDK sample code (`pollen-robotics/reachy-mini`) to evaluate how many lines of Python are required to bind a vision-language model response to physical head/neck motion.\n2. **Landed Cost Calculation**: Calculate US/EU shipping fees and 10% Korean import VAT on $299 vs. locally distributed Jetson kits to determine actual out-of-pocket costs.\n3. **Queue Progression**: Compare Reachy Mini and Jetson side-by-side before evaluating higher-tier mobility hardware such as Unitree Go2 (Air $1,600 / Pro $2,800).",
+    howItWorksKo:
+      "### Jetson Orin Nano Super ($399) vs Reachy Mini ($299) 비교\n\n| 항목 | Jetson Orin Nano Super ($399) | Reachy Mini ($299) |\n|---|---|---|\n| **산 것** | 연산 — 67 TOPS 엣지 AI 보드 | 몸 — 움직이는 데스크탑 로봇 본체 |\n| **붙일 것** | 카메라·센서·모터를 직접 구매 후 배선 | 호스트 PC에 연결하고 Python SDK로 즉시 제어 |\n| **배우는 것** | 엣지 추론 최적화, TensorRT, ROS 2 배관 | 사람과의 상호작용 루프, 멀티모달 물리 에이전트 |\n| **소프트웨어 스택** | NVIDIA JetPack, Isaac ROS, DeepStream | Hugging Face LeRobot, Transformers, Pollen SDK |\n| **하드웨어 한계** | 8GB 메모리 한계 (GR00T 온보드 직접 구동 불가) | 온보드 고성능 연산 부재 (호스트 연산 의존) |\n\n### 액션 플랜 및 로드맵 연계\n\n1. **SDK 코드 라인 수 평가**: Hugging Face 소개 글의 예제 코드를 확인하여 VLM(비전-언어 모델) 출력과 로봇 모션 제어를 묶는 데 필요한 코드 복잡도 파악.\n2. **실구매가 산출**: $299 기준 해외 배송료 및 국내 관세·부가세(10%)를 반영한 최종 한화 비용 산정 후 Jetson 국내 유통가와 동일선상 비교.\n3. **큐 연계 순서**: Reachy Mini($299)와 Jetson($399)의 비교를 확정한 뒤, 가격대가 한 단계 뛰는 사족보행 로봇 Unitree Go2 (Air $1,600 / Pro $2,800) 검토로 단계적 확장.",
+    diagrams: [
+      {
+        title: "Reachy Mini interaction loop with LeRobot & VLM",
+        titleKo: "LeRobot 및 VLM 기반 Reachy Mini 상호작용 루프",
+        src: `flowchart LR
+    V["Camera / Mic<br/>Sensors"] --> H["Host / Cloud VLM<br/>(Hugging Face / API)"]
+    H --> S["Pollen Python SDK<br/>Motor intent & pose"]
+    S --> R["Reachy Mini Body<br/>($299 expressive robot)"]
+    R --> U["Human User"]
+    U --> V`,
+      },
+    ],
   },
   // ── 참조 전용 (README 의 "📎 Reference only" 행). 읽고 이해한 것이지 만들 항목이 아니라
   // href 가 없다 — 원문은 docs/knowledge/*.html, docs/features/*.md 에 있다.

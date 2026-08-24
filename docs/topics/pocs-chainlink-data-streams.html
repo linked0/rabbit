@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chainlink Data Streams — push vs. pull oracles and point-in-time settlement — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Chainlink Data Streams — push vs. pull oracles and point-in-time settlement</p>
+  <article>
+      <h1><span class="topic-no">11</span>Chainlink Data Streams — push vs. pull oracles and point-in-time settlement <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">Data Streams keeps signed market prices off-chain and pulls them on-demand inside user transactions. For prediction markets like Verex, sub-second latency and deterministic resolution costs replace stale push heartbeats.</p>
+      <p class="meta">Not yet scoped — trace the off-chain cryptographic signature verification path in Data Streams docs, calculate the bounded gas cost of single-market settlement, and continue catalogue audit for entries 48–55. Source: docs.chain.link/data-streams.</p>
+      <h2>Why</h2>
+      <h3>Catalog Audit Finding: Service 47 Is Alive</h3>
+<p>Following the sunset of Service 45 (Mountain Protocol) and Service 46 (Chainlink Functions, migrating to CRE), Service 47 (Chainlink Data Streams) is confirmed active and featured in Chainlink&#39;s primary production suite.</p>
+<h3>The Architectural Shift: Push (Data Feeds) vs. Pull (Data Streams)</h3>
+<p>The distinction between Chainlink Data Feeds and Data Streams is the architectural boundary between <strong>Push</strong> and <strong>Pull</strong> oracle models:</p>
+<ol>
+<li><strong>Data Feeds (Push / Conventional)</strong>: Oracle nodes continuously write prices on-chain based on deviation thresholds (e.g. 0.5%) or heartbeat intervals (e.g. every 1 hour). Smart contracts read the latest state on-chain, but the price is inherently stale between heartbeat writes, and the oracle network bears the gas costs indefinitely.</li>
+<li><strong>Data Streams (Pull / Low-Latency)</strong>: High-frequency market data is continuously aggregated and cryptographically signed off-chain. When a user executes a trade or settles a contract, the caller pulls the timestamped signed report and submits it alongside their transaction. The smart contract verifies the cryptographic signature on-chain and executes immediately against that exact moment&#39;s price.</li>
+</ol>
+<h3>Three Concrete Advantages of the Pull Model</h3>
+<ul>
+<li><strong>Gas on Demand</strong>: The oracle does not burn gas writing unused prices; the caller pays gas only when a state transition actually requires it.</li>
+<li><strong>Sub-Second Latency</strong>: Price delivery is unconstrained by on-chain block times or heartbeat thresholds.</li>
+<li><strong>Millisecond Granularity</strong>: Enables high-precision financial derivatives and deterministic prediction-market settlement.</li>
+</ul>
+      <h2>How it works</h2>
+      <h3>Verex Prediction Market Application Scenario</h3>
+<ol>
+<li><strong>Settlement at an Exact Timestamp</strong>: Prediction markets frequently resolve on &quot;closing price at 16:00:00 UTC&quot; or &quot;price at event occurrence.&quot; A push feed often lacks the exact timestamp price (if no deviation triggered an update at that second). A pull feed allows retrieving the cryptographic report signed at that exact millisecond. This resolves the core dilemma described in this catalogue&#39;s <code>price-at-a-moment</code> card.</li>
+<li><strong>Cost Predictability</strong>: Solves the fundamental question — <em>&quot;What is the upper bound on settling one market?&quot;</em> With a pull model, settlement gas is paid strictly per resolution call, making per-market unit economics transparent and calculable.</li>
+<li><strong>Scope Boundary</strong>: Data Streams is specialized for numeric financial asset prices (crypto, commodities, FX). It does not resolve categorical real-world outcomes (&quot;Who won the election?&quot;) — which remains the domain of decentralized consensus / CRE (formerly Functions).</li>
+</ol>
+      <p class="meta">1 diagram(s) on the live page.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/chainlink-data-streams">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">11</span>Chainlink Data Streams — Push 대 Pull 오라클과 시점 정산 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">Data Streams는 서명된 시세를 오프체인에 두고 사용자가 트랜잭션 제출 시 당겨와 온체인 검증합니다. Verex 같은 예측시장에선 하트비트 푸시의 데이터 노후화를 밀리초 단위 정밀도와 건당 확정 비용으로 대체합니다.</p>
+      <p class="meta">아직 범위 미정 — Data Streams 문서에서 오프체인 서명 리포트의 온체인 검증 흐름을 확인하고, 마켓 1건당 확정 가스비 상한을 계산한 뒤 48~55번 카탈로그 생사 감사로 연결. 출처: docs.chain.link/data-streams.</p>
+      <h2>왜</h2>
+      <h3>카탈로그 감사 결과: 47번 서비스 생존 확인</h3>
+<p>45번(Mountain Protocol)과 46번(Chainlink Functions — 2026-06 공식 sunset 후 CRE로 이관)이 연달아 종료되었던 반면, <strong>47번 Chainlink Data Streams는 정상 운영 중</strong>이며 공식 현행 제품군(Data Feeds, Data Streams, VRF, Automation, CCIP)의 핵심 축입니다.</p>
+<h3>Push(Data Feeds) vs Pull(Data Streams)의 구조적 차이</h3>
+<p>Chainlink Data Feeds와 Data Streams의 핵심 구분은 <strong>Push(밀어넣기) 대 Pull(당겨오기)</strong> 오라클 아키텍처입니다:</p>
+<ol>
+<li><strong>Data Feeds (기존 Push 모델)</strong>: 오라클 노드가 편차 임계치(예: 0.5%)나 하트비트 주기(예: 1시간)마다 온체인에 트랜잭션을 날려 가격을 갱신합니다. 컨트랙트는 저장된 값을 단순 조회하면 되지만, 갱신 사이의 값은 필연적으로 <strong>낡은(stale) 데이터</strong>이며 상시 가스비를 오라클 네트워크가 부담합니다.</li>
+<li><strong>Data Streams (신규 Pull 모델)</strong>: 고빈도 가격 데이터가 <strong>오프체인에서 서명된 상태로 대기</strong>합니다. 사용자가 주문을 넣거나 정산할 때, 해당 시점에 서명된 리포트를 트랜잭션 calldata에 함께 실어 온체인으로 제출합니다. 스마트 컨트랙트는 온체인에서 <strong>서명을 검증하고 그 시점의 확정 가격으로 즉시 실행</strong>합니다.</li>
+</ol>
+<h3>Pull 모델이 가져다주는 세 가지 이점</h3>
+<ul>
+<li><strong>온디맨드 가스 비용</strong>: 오라클이 허공에 가스비를 태우며 상시 갱신하지 않고, <strong>실제 가격을 소비하는 사용자/트랜잭션이 해당 호출의 가스를 부담</strong>합니다.</li>
+<li><strong>초저지연(Sub-second Latency)</strong>: 블록 생성 주기나 하트비트 임계치에 묶이지 않고 밀리초 단위의 최신 호가를 반영합니다.</li>
+<li><strong>정밀한 시점 데이터</strong>: 특정 시각(타임스탬프)에 서명된 리포트를 검증할 수 있어 정산 시점의 분쟁을 방지합니다.</li>
+</ul>
+      <h2>동작 방식</h2>
+      <h3>Verex 예측시장 적용 시나리오</h3>
+<ol>
+<li><strong>시점 정산 문제의 해결</strong>: 예측시장 정산은 &quot;특정 시각의 종가(예: 16:00:00)&quot;나 &quot;이벤트 발생 시점의 가격&quot;이 필요한 경우가 많습니다. Push 피드는 그 순간 편차가 없었다면 해당 시각의 값을 온체인에 갖고 있지 못하지만, Pull 모델은 <strong>그 시각에 오프체인에서 서명된 리포트</strong>를 온체인으로 가져와 정산할 수 있습니다. 카탈로그의 <code>price-at-a-moment</code> 카드가 다룬 핵심 문제가 바로 이 지점입니다.</li>
+<li><strong>비용 구조의 확정</strong>: &quot;정산 1건의 비용 상한이 얼마인가?&quot;라는 질문에 Pull 모델은 명쾌하게 답합니다. 호출한 건수만큼만 정산 가스를 부담하므로 마켓 개설당 손익 계산(Unit Economics)이 성립합니다.</li>
+<li><strong>명확한 한계와 영역 분리</strong>: Data Streams는 <strong>수치형 금융 가격 데이터 전용</strong>입니다. &quot;선거에서 누가 이겼는가&quot; 같은 범주형 현실 세계 이벤트는 다루지 못하며, 그 영역은 여전히 CRE(구 Functions)와 탈중앙 합의 오라클의 영역으로 남습니다.</li>
+</ol>
+      <p class="meta">1 diagram(s) on the live page.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/chainlink-data-streams">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-erc-7683-settlement-security.html">&larr; 10. ERC-7683 settlement security — the layer left deliberately unstandardized</a><a href="pocs-senpi-harness.html">12. The harness, not the model &rarr;</a></div>
+</div>
+</body>
+</html>
