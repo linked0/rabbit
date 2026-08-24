@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L1 zkEVM — the word doing the work is &quot;optional&quot; — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; L1 zkEVM — the word doing the work is &quot;optional&quot;</p>
+  <article>
+      <h1><span class="topic-no">8</span>L1 zkEVM — the word doing the work is &quot;optional&quot; <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">EIP-8025 lets a validator verify a block by checking a proof instead of re-executing it. The number nobody publishes is how many still re-execute once it is cheaper not to.</p>
+      <p class="meta">Not yet scoped — start by proving recent mainnet blocks with an off-the-shelf zkVM on rented GPU and plotting wall-clock proving time against gas used, then check where Glamsterdam&#39;s 200M gas target lands relative to the reveal window ePBS opens. Source: EIP-8025 (Optional Execution Proofs), targeted at the Hegotá fork and dependent on Glamsterdam&#39;s EIP-7732 and EIP-7928.</p>
+      <h2>Why</h2>
+      <p>Two forks make one machine, and it is worth stating the dependency plainly because the roadmap coverage rarely does. Glamsterdam sets out two chairs: ePBS (EIP-7732) supplies time, because splitting the slot seats the builder as prover and opens an interval between header commitment and payload reveal; BAL (EIP-7928) supplies partition, because a block that declares the state it will touch is a block whose proving work can be sliced across many provers. Neither alone makes a twelve-second proof possible, which is why EIP-8025 sits in Hegotá rather than in Glamsterdam. That much is architecture. The part worth a card is the adjective. These are <em>optional</em> execution proofs, and the option is the whole design: a validator may check a succinct proof of the state transition instead of running the transactions. Proof-checking has to be cheaper than re-execution or nobody takes the option, and if it is cheaper then a rational validator takes it — all of them. At that point the network&#39;s ability to notice a prover bug rests entirely on whoever is still paying more to re-execute, which is to say on validators behaving irrationally. Safety that depends on people declining a discount is the same shape this catalogue already recorded in the Aqua card, where quoted depth is real but only for whoever arrives first, and in the note on Tempo, where a single client plus a halt-rather-than-be-wrong posture turns one bug into an outage. The question is not whether the proofs are sound. It is what fraction of the network keeps the capacity to disagree with them.</p>
+      <h2>How it works</h2>
+      <p>Mechanism first, as documented: a validator may verify a block by checking a succinct proof of the state transition rather than re-executing its transactions, with the mainnet state transition function exposed to the execution layer through an EXECUTE precompile in the EIP-8079 draft, and Native Rollups built on the same primitive. Proving is made feasible by the two Glamsterdam pieces above rather than by any change in EIP-8025 itself. Two measurements, both small enough to run without building anything. First, the window. Take a few dozen recent mainnet blocks, prove them with an off-the-shelf zkVM on a rented GPU, and plot wall-clock proving time against gas used. The output is one number and one curve: the largest block that proves inside the interval ePBS opens, and the hardware it took to get there. Set that against Glamsterdam&#39;s 200M gas target and the gap either closes or it does not, and if it does not then the option is theoretical and this card&#39;s second half is premature. Second, the discount. Price the cost of verifying a proof against the cost of re-executing the same block on a home-spec node. That ratio is the adoption rate, and the adoption rate is the erosion of re-execution coverage, so the interesting output is not the ratio itself but the fraction of stake at which nobody is left to catch a bad prover. One section belongs inside this card rather than beside it: the list. The ePBS card asked which code silently assumes the proposer knows the payload; this one asks the twin question, which code silently assumes somebody actually ran the transactions. Fraud proofs, re-org monitors, block explorers that recompute receipts, and any service that trusts a value because it saw a node produce it are all candidates, and the list is cheap to write now and expensive to write during a testnet.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/l1-zkevm-optional-proofs">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">8</span>L1 zkEVM — 정작 일하는 단어는 '선택적'이다 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">EIP-8025는 검증자가 재실행 대신 증명을 확인해 블록을 검증하게 합니다. 아무도 발표하지 않는 숫자는, 재실행이 더 비싸진 뒤에도 여전히 재실행하는 노드가 몇이나 남는가입니다.</p>
+      <p class="meta">아직 범위 미정 — 최근 메인넷 블록들을 기성 zkVM으로(대여 GPU) 증명해 <strong>실시간 증명 소요 대 가스 사용량</strong> 곡선을 그리고, Glamsterdam의 <strong>200M 가스 목표</strong>가 ePBS가 열어주는 공개 창 대비 어디에 떨어지는지 확인하는 것부터. 출처: EIP-8025(Optional Execution Proofs), Hegotá 포크 대상이며 Glamsterdam의 EIP-7732·EIP-7928에 의존.</p>
+      <h2>왜</h2>
+      <p><strong>두 포크가 합쳐져 하나의 기계가 됩니다.</strong> 로드맵 기사들이 잘 짚지 않으니 의존 관계를 분명히 적어둘 값어치가 있습니다. Glamsterdam은 의자 둘을 놓습니다 — <strong>ePBS(EIP-7732)가 시간을 주고</strong>(슬롯이 쪼개지며 빌더가 증명자 자리에 앉고, 헤더 커밋과 페이로드 공개 사이에 구간이 생깁니다), <strong>BAL(EIP-7928)이 분할을 줍니다</strong>(건드릴 상태를 미리 선언한 블록은 증명 작업을 여러 증명자에게 쪼개 줄 수 있습니다). 둘 중 하나만으로는 12초 안의 증명이 성립하지 않고, 그래서 EIP-8025가 Glamsterdam이 아니라 Hegotá에 있습니다. 여기까지는 아키텍처입니다. <strong>카드가 될 값어치는 형용사 하나에 있습니다.</strong> 이것은 <em>선택적(optional)</em> 실행 증명이고, 그 선택이 설계의 전부입니다 — 검증자는 트랜잭션을 돌리는 대신 상태전이의 간결한 증명을 확인해도 됩니다. <strong>증명 확인이 재실행보다 싸야만</strong> 아무도 그 선택을 하지 않을 이유가 없고, 싸다면 <strong>합리적인 검증자는 전부 그쪽을 고릅니다.</strong> 그 순간 네트워크가 증명자 버그를 알아챌 능력은 <strong>여전히 더 비싼 재실행을 하고 있는 쪽</strong>, 즉 비합리적으로 행동하는 검증자들에게만 남습니다. <strong>안전이 &quot;모두가 할인을 받지는 않는다&quot;에 기대는 구조</strong> — 이 카탈로그가 이미 두 번 기록한 형태입니다. Aqua 카드에서 호가된 깊이는 실재하지만 먼저 도착한 사람에게만 실재했고, Tempo 메모에서는 단일 클라이언트에 &quot;틀리느니 멈춘다&quot;가 겹쳐 버그 하나가 곧 중단이 됐습니다. 질문은 증명이 건전한가가 아닙니다. <strong>네트워크의 몇 퍼센트가 그 증명에 이의를 제기할 능력을 유지하는가</strong>입니다.</p>
+      <h2>동작 방식</h2>
+      <p>먼저 문서화된 동작 방식: 검증자는 트랜잭션을 재실행하는 대신 <strong>상태전이의 간결한 증명을 확인</strong>해 블록을 검증할 수 있고, 메인넷 상태전이함수는 <strong>EIP-8079 초안의 <code>EXECUTE</code> 프리컴파일</strong>로 실행 계층에 노출되며 Native Rollups도 같은 원시 기능 위에 섭니다. 증명이 가능해지는 것은 EIP-8025 자체의 변경이 아니라 <strong>위의 Glamsterdam 두 조각 덕분</strong>입니다. <strong>측정은 둘이고, 둘 다 아무것도 만들지 않고 돌릴 만큼 작습니다.</strong> <strong>첫째, 창(window).</strong> 최근 메인넷 블록 수십 개를 대여 GPU 위 기성 zkVM으로 증명하고, <strong>실시간 증명 소요를 가스 사용량에 대해</strong> 그립니다. 산출물은 숫자 하나와 곡선 하나입니다 — <strong>ePBS가 여는 구간 안에 증명이 끝나는 최대 블록</strong>, 그리고 거기까지 든 하드웨어. 그것을 Glamsterdam의 200M 가스 목표에 대보면 간격이 닫히거나 닫히지 않고, 닫히지 않으면 그 선택지는 아직 이론이며 이 카드의 후반부는 시기상조입니다. <strong>둘째, 할인율.</strong> 같은 블록을 가정용 사양 노드에서 재실행하는 비용과 증명을 검증하는 비용을 견줍니다. <strong>그 비율이 곧 채택률이고, 채택률이 곧 재실행 커버리지의 침식</strong>이라, 흥미로운 산출물은 비율 자체가 아니라 <strong>나쁜 증명자를 잡을 사람이 아무도 남지 않게 되는 지분 비율</strong>입니다. 한 섹션은 옆에 두지 말고 이 카드 <strong>안에</strong> 넣습니다: <strong>목록.</strong> ePBS 편이 &quot;어떤 코드가 제안자가 페이로드를 안다고 암묵 가정하는가&quot;를 물었다면, 이 편은 그 쌍둥이 질문을 묻습니다 — <strong>어떤 코드가 누군가 실제로 트랜잭션을 돌렸다고 암묵 가정하는가.</strong> 사기 증명, 리오그 감시, 영수증을 재계산하는 익스플로러, 그리고 어떤 값을 &quot;노드가 만들어내는 것을 봤으니&quot; 믿는 모든 서비스가 후보이고, <strong>이 목록은 지금 쓰면 싸고 테스트넷 도중에 쓰면 비쌉니다.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/l1-zkevm-optional-proofs">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-governance-capture-cost.html">&larr; 7. Governance capture — when the exploit is a market order</a><a href="pocs-agentic-intent-veto.html">9. The budget is the wrong invariant &rarr;</a></div>
+</div>
+</body>
+</html>
