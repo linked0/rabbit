@@ -208,6 +208,10 @@
 <li>If the settlement layer has long latency or high dispute risk, the filler&#39;s quotation spread degrades the user&#39;s betting odds.</li>
 <li>This connects directly to <code>governance-capture-cost</code> (audit perimeter ending at the interface while economic risk lives in the settlement substrate) and <code>l1-zkevm-optional-proofs</code> (trust assumptions resting on economic incentives rather than uniform cryptographic guarantees).</li>
 </ul>
+<h3>Update 2026-08-25 — the same blank, one layer over</h3>
+<p>The Term Labs incident ($8.5M, no line of code broken) has the identical shape. ERC-7683 specifies the order envelope and leaves settlement verification blank; Yearn v3 specifies vault logic and privileged roles and leaves the holder of those roles blank. In both, the integrating team fills the blank and no auditor reviews it, so &quot;built on audited components&quot; is true and insufficient — the gap between components belongs to nobody&#39;s audit scope.</p>
+<p>The mitigation transfers too. The decisive step in the Term attack was registering an attacker-controlled contract as a strategy, possible only because a general <code>call(target, calldata)</code> was reachable through governance. Narrowing a settlement path to a pre-registered whitelist of functions and addresses binds the blast radius in code, whichever trust model the settlement layer uses — and unlike a timelock, a whitelist works with nobody watching the queue.</p>
+<p>So the cheapest first measurement is not the challenge-window number but a single yes/no: <strong>does our settlement path expose a general call?</strong> If it does, the security of that path is not a property of the code but the market price of whoever holds the permission.</p>
       <p class="meta">1 diagram(s) on the live page.</p>
       <p><a href="https://www.jaylabs.xyz/poc/erc-7683-settlement-security">Open on jaylabs.xyz &rarr;</a></p>
     </article>
@@ -282,6 +286,10 @@
 <li>정산 계층의 지연이 길거나 분쟁 위험이 크면 필러는 불리한 호가 스프레드를 제시하고, 사용자의 베팅 배당률이 깎입니다.</li>
 <li>이는 <code>governance-capture-cost</code>(감사 경계는 주문 인터페이스에서 끝나지만 실제 돈이 걸린 곳은 정산 기저층인 구조) 및 <code>l1-zkevm-optional-proofs</code>(안전이 경제적 할인율 선택에 기대는 구조)와 정확히 같은 논리적 궤를 공유합니다.</li>
 </ul>
+<h3>2026-08-25 보강 — 같은 빈칸, 한 층 위</h3>
+<p>Term Labs 사건($8.5M, 코드는 한 줄도 안 깨짐)이 <strong>정확히 같은 모양</strong>입니다. ERC-7683은 주문 봉투를 정하고 <strong>정산 검증을 비워뒀고</strong>, Yearn v3는 금고 로직과 권한 역할을 정하고 <strong>그 역할을 누가 갖는지를 비워뒀습니다.</strong> 둘 다 빈칸을 채우는 것은 통합하는 팀이고 감사인은 보지 않으므로, <strong>&quot;감사받은 컴포넌트로 지었다&quot;는 참이면서 불충분합니다</strong> — 컴포넌트 사이의 빈칸은 누구의 감사 범위도 아닙니다.</p>
+<p><strong>완화책도 그대로 옮겨옵니다.</strong> Term 공격의 결정적 단계는 공격자 컨트랙트를 전략으로 등록한 것이고, 그게 가능했던 이유는 거버넌스를 통해 <strong>범용 <code>call(target, calldata)</code>에 도달할 수 있었기</strong> 때문입니다. 정산 경로를 <strong>사전 등록된 함수·주소 화이트리스트로 좁히면</strong> 정산 층의 신뢰 모델이 무엇이든 <strong>피해 반경이 코드로 묶입니다.</strong> 그리고 타임락과 달리 화이트리스트는 <strong>큐를 지켜보는 사람이 없어도 작동합니다.</strong></p>
+<p>그래서 가장 싼 첫 측정은 챌린지 기간 숫자가 아니라 예/아니오 한 줄입니다 — <strong>우리 정산 경로에 범용 call이 노출돼 있는가.</strong> 있다면 그 경로의 보안은 코드의 속성이 아니라 <strong>그 권한을 쥔 주체의 시장 가격</strong>입니다.</p>
       <p class="meta">1 diagram(s) on the live page.</p>
       <p><a href="https://www.jaylabs.xyz/poc/erc-7683-settlement-security">Open on jaylabs.xyz &rarr;</a></p>
     </article>
