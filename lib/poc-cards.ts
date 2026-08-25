@@ -498,6 +498,59 @@ export const POC_CARDS: DemoCard[] = [
     ],
   },
   {
+    // 채용 신호를 요구사항 명세로 읽는 카드 (jay, 2026-08-25).
+    // Gemini Titan이 Apex Fintech의 독점 규제 거래소가 되면서 브로커리지의 이벤트 계약 배관이 실제 프로젝트가 됨.
+    // 뽑는 사람이 "예측시장 전문가"가 아니라 청산·정산·주문 라우팅·규제 보고 백엔드라는 것이 신호의 전부.
+    // 같은 주 한국은 Polymarket을 형법상 도박으로 차단 — 같은 상품, 두 법역, 다른 재료.
+    key: "event-contract-plumbing",
+    title: "The hiring signal is the spec — event-contract plumbing",
+    titleKo: "채용 신호가 곧 명세서다 — 이벤트 계약 배관",
+    description:
+      "Brokerages wiring crypto event contracts into their apps are hiring backends who know clearing, settlement, order routing and regulatory reporting — not prediction-market specialists. Those job posts are a free requirements document for the same plumbing built on contracts instead of a licence.",
+    descriptionKo:
+      "브로커리지가 크립토 이벤트 계약을 자기 앱에 붙이면서 뽑는 사람은 \"예측시장 전문가\"가 아니라 청산·정산·주문 라우팅·규제 보고를 아는 백엔드입니다. 그 공고들이 곧 공짜 요구사항 명세서입니다.",
+    status: "soon",
+    howTo:
+      "Not yet scoped — collect a dozen event-contract job descriptions from CFTC-designated venues and brokerages, extract the required competencies verbatim, and sort each into three buckets: free on-chain, must-build, no-answer. Source: the Gemini Titan / Apex Fintech exclusive arrangement announced 2026-08-24, plus public postings.",
+    howToKo:
+      "아직 범위 미정 — CFTC DCM 거래소·브로커리지의 이벤트 계약 직무 공고 열두어 개를 모아 요구 역량을 그대로 뽑아낸 뒤, 각각을 세 칸으로 분류하는 것부터: 온체인이 공짜로 주는 것 / 직접 만들어야 하는 것 / 아예 답이 없는 것. 출처: Gemini Titan·Apex Fintech 독점 계약(2026-08-24 발표)과 공개 채용공고.",
+    purpose:
+      "A single line in a hiring feed is worth a card. With Gemini's Titan becoming Apex Fintech's exclusive regulated venue, wiring crypto event contracts into brokerage apps stopped being a thesis and became a staffed project — and the people being hired are not prediction-market specialists. They are backends who know clearing, settlement, order routing and regulatory reporting.\n\nThat is the whole signal. The hard part was never the domain. Anyone can explain what a binary contract on an event pays out; the market-design literature is public and the pricing is arithmetic. What is scarce is the plumbing, and the plumbing is the same plumbing every venue has needed since the nineteenth century.\n\nThe second half is the part worth building against. This is the same plumbing this project intends to build — theirs resting on a DCM licence, this one on contracts. It is a rare position: two jurisdictions solving one problem with different materials, in public, at the same time. Job descriptions are an unusually honest artifact because a company will not pay for a competency it does not need, so a posting is a requirements document with the marketing removed.\n\nSharpening the contrast: in the same week that Korea's communications standards commission classified Polymarket as criminal gambling and blocked access, a CFTC-licensed venue became the exclusive partner of a large US brokerage network, having cleared over 225 million event contracts since obtaining its designation in December 2025. The same product is a criminal matter on one side and a brokerage product line on the other. Whatever else that divergence means, it means the regulated stack's requirements list is now visible and free to read.",
+    purposeKo:
+      "채용 피드의 한 줄이 카드가 될 값어치가 있습니다. **Gemini의 Titan이 Apex Fintech의 독점 규제 거래소**가 되면서, 브로커리지 앱에 크립토 이벤트 계약을 붙이는 일이 논제에서 **인력이 배치된 실제 프로젝트**로 넘어갔습니다. 그리고 뽑는 사람은 예측시장 전문가가 아닙니다 — **청산·정산·주문 라우팅·규제 보고를 아는 백엔드**입니다.\n\n**그게 신호의 전부입니다.** 어려운 부분은 애초에 도메인이 아니었습니다. 이벤트에 걸린 이진 계약이 무엇을 지급하는지는 누구나 설명할 수 있고, 시장 설계 문헌은 공개돼 있으며 가격 계산은 산수입니다. **희소한 것은 배관이고, 그 배관은 19세기부터 모든 거래소가 필요로 했던 바로 그 배관입니다.**\n\n**후반부가 실제로 써먹을 자리입니다.** 이건 이 프로젝트가 만들려는 것과 **같은 배관**입니다 — 다만 그쪽은 DCM 라이선스 위에, 이쪽은 컨트랙트 위에 얹을 뿐입니다. 드문 자리예요: **같은 문제를 두 법역이 다른 재료로, 공개적으로, 동시에** 풀고 있습니다. 그리고 채용공고는 유난히 정직한 자료입니다 — 회사는 필요 없는 역량에 돈을 쓰지 않으니, **공고 한 장은 마케팅이 제거된 요구사항 명세서**입니다.\n\n대조를 더 세우면: 한국 방심위가 Polymarket을 형법상 도박으로 판정해 접속을 차단한 바로 그 주에, 미국에서는 **CFTC 라이선스를 가진 거래소가 대형 브로커리지 네트워크의 독점 파트너**가 됐습니다(2025-12 DCM 취득 후 2.25억 건 이상의 이벤트 계약 처리). **같은 상품이 한쪽에서는 형사 사건, 한쪽에서는 증권사 상품 라인입니다.** 그 분기가 무엇을 뜻하든, 최소한 이것 하나는 뜻합니다 — **규제 스택의 요구사항 목록이 지금 공개돼 있고, 공짜로 읽을 수 있다는 것.**",
+    howItWorks:
+      "### The measurement: one table, no code\n\nCollect event-contract job descriptions from designated venues and brokerages, extract required competencies verbatim, and sort each into three buckets.\n\n| Requirement in the regulated stack | On-chain equivalent | Bucket |\n|---|---|---|\n| **Settlement / DvP** — delivery versus payment, T+1 | Atomic on-chain settlement; no delivery-versus-payment gap exists | **Free** |\n| **Audit trail** — CAT-style consolidated reporting | The chain *is* the audit trail, publicly and by construction | **Free** |\n| **Custody segregation** — client assets ring-fenced | Self-custody; no commingling to prevent | **Free** |\n| **Clearing** — novation, netting, margin, default waterfall | No CCP. Collateral is per-position, so netting and mutualized default handling are absent | **Must build** |\n| **Order routing / best execution** | No obligation exists on-chain, but the *economics* of routing reappear as MEV and filler spreads | **Must build** |\n| **Position limits & market surveillance** | Enforceable in contract, but nobody has specified what should be enforced | **Must build** |\n| **Regulatory reporting** — large-trader, transaction reporting | No reporting layer, and no addressee to report to | **No answer** |\n| **Suitability / customer protection** | Structurally absent; this is the divergence, not an oversight | **No answer** |\n\n### What the buckets actually tell you\n\nThe pattern is not random. **Everything on-chain gets for free is something that existed only because intermediaries did.** Settlement risk exists because delivery and payment are separated by an institution; segregation rules exist because someone else holds the assets; consolidated audit trails exist because the record is fragmented across venues. Remove the intermediary and the requirement evaporates rather than being satisfied.\n\n**Everything in the must-build column is a function the intermediary performed rather than caused.** Clearing is the clearest case: novation and mutualized default handling are genuine risk-management services, and removing the clearinghouse removes the service, not the risk. A prediction market without a CCP has not solved counterparty risk — it has made every position fully collateralized instead, which is a different trade with a real capital cost.\n\n**The no-answer column is where the two jurisdictions diverge**, and it is worth being honest that the absence is structural rather than a backlog item.\n\n### Why this is worth doing before it is needed\n\nA build backlog derived from someone else's payroll costs a few hours and no code. It also doubles as a diligence checklist: an institutional counterparty evaluating this project will ask about exactly the middle column, and the difference between answering *\"that is on the roadmap\"* and *\"here is the bucket it falls in and why\"* is the difference between a second call and no second call.",
+    howItWorksKo:
+      "### 측정: 표 하나, 코드 없음\n\n지정 거래소·브로커리지의 이벤트 계약 직무 공고를 모아 요구 역량을 그대로 뽑아낸 뒤, 각각을 세 칸으로 분류합니다.\n\n| 규제 스택의 요구사항 | 온체인 등가물 | 분류 |\n|---|---|---|\n| **정산 / DvP** — 인도 대 지급, T+1 | 원자적 온체인 정산. 인도와 지급이 벌어지는 구간 자체가 없음 | **공짜** |\n| **감사 추적** — CAT식 통합 보고 | 체인이 **곧** 감사 추적. 공개적으로, 구조적으로 | **공짜** |\n| **고객자산 분별관리** | 셀프 커스터디. 섞일 자산이 없음 | **공짜** |\n| **청산** — 경개(novation)·네팅·증거금·디폴트 폭포 | CCP 없음. 담보가 포지션별이라 네팅과 손실 공동부담이 부재 | **만들어야 함** |\n| **주문 라우팅 / 최선집행** | 온체인에 의무는 없지만, 라우팅의 **경제학**이 MEV와 필러 스프레드로 다시 나타남 | **만들어야 함** |\n| **포지션 한도·시장 감시** | 컨트랙트로 강제 가능하나, **무엇을 강제할지 아무도 정하지 않음** | **만들어야 함** |\n| **규제 보고** — 대량보유·거래 보고 | 보고 계층도 없고, **보고할 상대도 없음** | **답 없음** |\n| **적합성 / 투자자 보호** | 구조적으로 부재. 이건 누락이 아니라 **분기 지점** | **답 없음** |\n\n### 세 칸이 실제로 알려주는 것\n\n**패턴이 무작위가 아닙니다. 온체인이 공짜로 얻는 것은 전부 애초에 중개자가 있었기 때문에 존재하던 요구사항입니다.** 정산 리스크는 인도와 지급을 기관이 갈라놓았기 때문에 생기고, 분별관리 규정은 남이 자산을 들고 있기 때문에 생기며, 통합 감사 추적은 기록이 여러 거래소에 흩어져 있기 때문에 필요합니다. **중개자를 없애면 요구사항이 충족되는 게 아니라 증발합니다.**\n\n**만들어야 하는 칸은 중개자가 *유발한* 것이 아니라 *수행하던* 기능입니다.** 청산이 가장 분명합니다 — 경개와 손실 공동부담은 진짜 리스크 관리 서비스이고, 청산소를 없애면 **서비스가 사라지지 리스크가 사라지지 않습니다.** CCP 없는 예측시장은 거래상대방 리스크를 푼 게 아니라 **모든 포지션을 전액 담보로 바꾼 것**이고, 그건 실제 자본 비용을 수반하는 다른 선택입니다.\n\n**답 없는 칸이 두 법역이 갈라지는 자리**이고, 그 부재가 백로그 항목이 아니라 구조적이라는 점은 솔직하게 적어두는 편이 낫습니다.\n\n### 왜 필요해지기 전에 해야 하는가\n\n**남의 급여명세에서 뽑아낸 빌드 백로그**는 몇 시간이 들고 코드가 0줄입니다. 그리고 그대로 **실사 체크리스트**가 됩니다 — 기관 상대는 정확히 가운데 칸을 물어볼 것이고, *\"로드맵에 있습니다\"* 와 *\"어느 칸에 속하고 왜 그런지 여기 있습니다\"* 의 차이가 **두 번째 통화가 잡히느냐 마느냐**의 차이입니다.",
+    diagrams: [
+      {
+        title: "Regulated stack vs. contract stack \u2014 which requirements survive",
+        titleKo: "\uaddc\uc81c \uc2a4\ud0dd \ub300 \ucee8\ud2b8\ub799\ud2b8 \uc2a4\ud0dd \u2014 \uc5b4\ub290 \uc694\uad6c\uc0ac\ud56d\uc774 \uc0b4\uc544\ub0a8\ub294\uac00",
+        src: `flowchart LR
+    subgraph REG["Regulated stack (DCM licence)"]
+      direction TB
+      R1[Order routing / best execution]
+      R2[Clearing house: novation, netting, margin]
+      R3[Settlement T+1 / DvP]
+      R4[Regulatory reporting]
+      R1 --> R2 --> R3 --> R4
+    end
+    subgraph CHAIN["Contract stack (on-chain)"]
+      direction TB
+      C1[Order flow: AMM / CLOB / batch auction]
+      C2["Collateral per position<br/>(no CCP, no netting)"]
+      C3[Atomic settlement - DvP gap absent]
+      C4["No reporting layer<br/>no addressee"]
+      C1 --> C2 --> C3 --> C4
+    end
+    R1 -. "economics reappear as MEV" .-> C1
+    R2 -. "MUST BUILD" .-> C2
+    R3 -. "FREE" .-> C3
+    R4 -. "NO ANSWER" .-> C4`,
+      },
+    ],
+  },
+  {
     // 서비스 탐방 47/113: Chainlink Data Streams (jay, 2026-08-24).
     // 45(Mountain)·46(Functions) 연속 sunset 이후 47번 Data Streams 생존 확인.
     // 기존 Data Feeds(Push)와 Data Streams(Pull)의 차이 및 Verex 시점 정산(price-at-a-moment) 적용.
