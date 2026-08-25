@@ -47,14 +47,21 @@ to let an agent act unattended, and verex has to accept a counterparty it does n
 | Who decides the trade? | **LLM estimates the probability, a deterministic rule executes** |
 | How deep does the loop go? | **All the way** — trade, wait for resolution, self-redeem |
 
-**Consequence of the fourth answer, and it reorders everything:** the full loop needs a market
-resolved on live Sepolia, which is verex's **W1**. And W1's fresh seed **deletes staging's
-`Trade`/`PricePoint`/`Outcome`/`Market` rows** — so if the agent starts trading on staging first,
-its journal ends up pointing at rows that no longer exist. **W1 goes first**, not because
-redemption needs it later, but because re-seeding after the agent has traded destroys the demo.
+**Consequence of the fourth answer:** the full loop needs a market resolved on live Sepolia, which
+is verex's **W1**. W1's fresh seed **deletes staging's `Trade`/`PricePoint`/`Outcome`/`Market`
+rows**, so re-seeding after the agent has traded on staging would leave its journal citing deleted
+rows.
 
-**Next step:** the [open questions](#open) — O1 (how rabbit gets verex's order-signing code) is the
-one that blocks Phase 2.
+**Where W1 sits, revised (jay, 2026-08-25).** That constraint says **W1 before the first staging
+run** — not W1 before everything. Locally it never applies: `./scripts/reset.sh` wipes and re-seeds
+on demand, and the **mock** oracle resolves instantly, so Phases 1–4 including redemption are fully
+testable on anvil. W1 therefore moved to [Phase 6](#order), immediately before the first staging
+use. One piece is pulled forward: a [smoke probe](#probe) against the live adapter, because W1 is
+the only thing in this plan that has never worked and it should not be discovered at the end.
+
+**Next step:** build. The testable slice is **V-A · V-B · V-C · R-A · R-B · R-C** — mandate →
+funded agent → real trade → visible position — and as of the O1 answer below it has **no
+blockers**.
 
 ## The scenario <a id="scenario"></a>
 <sub>[↑ TOC](#toc)</sub>
@@ -122,7 +129,7 @@ Summary only — each repo's own plan is authoritative.
 | Plan | this file + [features README](../features/README.md) | [current-plan.md](../../projects/verex/docs/tasks/current-plan.md) |
 | Relevant, built | ERC-7715/7710 mandate grant + revoke (`app/poc/aa/SessionKeyDemo.tsx`), LLM plumbing (`app/api/jay-chat/`), Prisma/Postgres, `/poc/agent` route | CLOB + CTF backbone on Sepolia, LMSR operator maker, UMA adapter deployed against the **live** oracle, `packages/sdk` with `signOrder` |
 | Relevant, missing | the loop itself — no `app/api/agent`, no store, no scheduler ([B1](../features/README.md#b1)) | any external-account path; `packages/mcp-server` ([V4](../../projects/verex/docs/features/README.md#v4)) |
-| Blocking decision | **D2 — answered by J2**: the agent key lives on rabbit's server, not verex's | **W1** — no market has ever been resolved through the live adapter |
+| Blocking decision | **none open.** D2 answered by J2 (agent key on rabbit's server); [O1](#open) answered 2026-08-25 (`file:` link now, publish before deploy) | **W1** — no market has ever been resolved through the live adapter. Moved to [Phase 6](#order); does **not** gate Phases 1–4 |
 
 ## Implementation matrix — who builds what <a id="matrix"></a>
 <sub>[↑ TOC](#toc)</sub>
@@ -134,7 +141,7 @@ a table, so you can see at a glance which repo owes what and where the two actua
 
 | | Rabbit | Verex |
 |---|---|---|
-| **Items** | 9 (R-A … R-I) | 6 (W1, V-A … V-E) |
+| **Items** | 9 (R-A … R-I) | 7 (W0, W1, V-A … V-E) |
 | **Rough total** | ~4–6d | ~5–8d |
 | **What it is being asked to change** | build the loop it never had — mandate, tick, LLM estimate, journal, scheduler, redeem | **stop being a custodian** — accept, fund-check, read and redeem for an address it holds no key for |
 | **Nothing changes in** | the existing `/poc/aa` mandate demo (reused, not modified) | the CLOB matching engine, LMSR quoting, the CTF contracts — all untouched |
@@ -142,7 +149,7 @@ a table, so you can see at a glance which repo owes what and where the two actua
 
 ### Full matrix
 
-The `#` prefix names the repo — **V** and **P0** are verex, **R** is rabbit. Rows marked **⇄**
+The `#` prefix names the repo — **V**, **W0** and **W1** are verex, **R** is rabbit. Rows marked **⇄**
 come in pairs and are the only genuinely two-sided work: **V-A ⇄ R-B** (one signs an order, the
 other accepts it) and **V-D ⇄ R-G** (one exposes redeem, the other calls it). They are placed
 adjacent so the seam is visible in the table rather than inferred from the dependency column —
@@ -150,8 +157,7 @@ which means **this table is not a work queue**; the [build order](#order) below 
 
 | # | Task | What to implement | Depends on |
 |---|---|---|---|
-| **P0** | Prove UMA on live Sepolia | **W1**: fresh staging seed **including ≥1 short-dated UMA market**, resolve one market through the live adapter, winner redeems, close **A5** | — |
-| **⇄ V-A** | External signed orders | `POST /orders` + `POST /trade` accept a client-supplied `SignedOrder` with an arbitrary `maker`; verify EIP-712 server-side; migration making `Order.makerIndex` nullable | P0 |
+| **⇄ V-A** | External signed orders | `POST /orders` + `POST /trade` accept a client-supplied `SignedOrder` with an arbitrary `maker`; verify EIP-712 server-side; migration making `Order.makerIndex` nullable. **Also: `/config` must return the CTF Exchange address** — rabbit builds the EIP-712 domain from `chainId` + `verifyingContract`, and `./scripts/reset.sh` changes that address on every local reset, so it has to be read, not hardcoded | — |
 | **⇄ R-B** | Verex client | Typed client over V-A…V-D that signs CTF EIP-712 orders with the agent key. If [O1](#open) says publish `@verex/sdk`, part of this becomes a verex row | V-A…V-D, **O1** |
 | **V-B** | Funding stops being the API's job | `ensureFunds` **reads and rejects** for external makers instead of faucet+approving on their behalf; address-scoped faucet for testnet convenience | V-A |
 | **V-C** | Address-scoped reads | `/wallet/:address` — balance, positions, open orders, redeems, history (today all `/wallet/:index`) | V-A |
@@ -165,6 +171,8 @@ which means **this table is not a work queue**; the [build order](#order) below 
 | **R-F** | Actually unattended | Scheduler wired; the loop runs with no browser and no terminal | R-C…R-E, **O2** |
 | **R-H** | The expiry run *(evidence)* | Let a mandate lapse with the scheduler live; capture the journal filling with harmless refusals | R-F |
 | **V-E** | MCP server | **`packages/mcp-server`**: `list_markets`, `get_book`, `place_order`, `get_position`, `redeem`, wrapping V-A…V-D's REST. Closes the S3 gap. The agent swaps transport — no logic change | V-A…V-D |
+| **W0** | Live-oracle smoke probe | One `initialize` on the **staging** adapter with **Sepolia WETH** as reward token. Minutes, not a day. Answers the only question that can genuinely surprise W1: does the live oracle accept a request from this adapter at all? **Run early, in parallel with anything** | — |
+| **W1** | Prove UMA on live Sepolia | Fresh staging seed **including ≥1 short-dated UMA market**, resolve one market end-to-end through the live adapter, winner redeems, close **A5**. Sits at [Phase 6](#order) — before the first staging run, not before everything | W0 (advisory) |
 
 **Reading the dependency column:** the only hard cross-repo blocks are the two **⇄** pairs —
 **V-A…V-D → R-B** and **V-D → R-G**. Everything in R-A, and all of P0/V-A/V-B/V-C, can proceed in
@@ -173,22 +181,26 @@ parallel, so the two repos are not serialised on each other except at those two 
 ## Build order <a id="order"></a>
 <sub>[↑ TOC](#toc)</sub>
 
-> Ordered as jay described it: verex opens up, rabbit's agent arrives, then the loop closes.
+> Ordered as jay described it: verex opens up, rabbit's agent arrives, the loop closes, and only
+> then does any of it touch a real testnet. **Phases 1–4 run entirely on the local Foundry chain**
+> — `anvil` + the mock oracle, which resolves instantly — so nothing here waits on Sepolia.
 > `[V]` = verex repo, `[R]` = rabbit repo. Estimates are focused-work days.
 
-### Phase 0 — verex W1, first and for a non-obvious reason `[V]` · ~1–2d
+### Run early, in parallel — W0, the live-oracle smoke probe `[V]` <a id="probe"></a> · minutes
 
-Finish verex's wave 3: fresh staging seed, one market resolved end-to-end through the live Sepolia
-UMA adapter, a winner redeeming, **A5** closed. Detail lives in
-[verex's plan → W1](../../projects/verex/docs/tasks/current-plan.md#w1); it is repeated here only
-because of the sequencing consequence.
+Not a phase and not on anyone's critical path. **W1 is the only thing in this plan that has never
+worked**, and everything it depends on belongs to a contract verex did not write — UMA's collateral
+whitelist, its final fee, a real liveness window. Deferring the single riskiest unknown to the very
+end is how you find out too late.
 
-**Why first:** the obvious reason is that Phase 4 cannot redeem from a market that never resolves.
-The real reason is the re-seed — it **wipes staging's trade history**, so doing it after the agent
-has been trading leaves the journal citing deleted rows.
-**Done when:** W1's own gate passes, and the staging seed includes **at least one short-dated
-UMA market** the agent can plausibly see resolve inside a demo. *(That last clause is new and is
-J2's requirement on W1, not W1's own.)*
+The probe is one call: **`initialize` on the staging adapter with Sepolia WETH as the reward
+token.** If the live oracle accepts the request, the rest of W1 is waiting and configuration and
+can safely sit at the end. If it reverts, you learn it now.
+
+**Do not use MockUSDC.** [`UmaCtfAdapter`](../../projects/verex/packages/contracts/src/UmaCtfAdapter.sol)'s
+own docblock says it: the reward token must be on UMA's `AddressWhitelist`, MockUSDC is not, and
+Sepolia WETH `0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9` is — self-service via `deposit()`. This
+is the trap that passes locally and reverts on Sepolia.
 
 ### Phase 1 — verex accepts a counterparty it does not custody `[V]` · ~2–3d
 
@@ -203,8 +215,18 @@ for verex on its own — not a favour to rabbit.
 | **V-D** | **External redeem** | `POST /redeem` takes an address; the redeem transaction is signed by the holder, not the operator (see the gas note in [Architecture](#arch)) |
 
 **Done when:** a wallet verex has never heard of funds itself, signs an order, gets filled against
-the operator's LMSR ladder, and reads its own position back — with **no `accountIndex` anywhere in
-the exchange**.
+the operator's LMSR ladder, and reads its own position back — with **no `accountIndex` required in
+the external-maker path**.
+
+> **Not** "no `accountIndex` anywhere" (jay, 2026-08-25). Index 0 **is** the operator's LMSR maker —
+> the counterparty an external order fills against — so it cannot leave. And `Order.makerIndex`
+> becomes *nullable*, not removed: the demo wallets on the web page keep trading exactly as today.
+> **Phase 1 is additive.** Retiring the user-facing index path later is [O8](#open).
+>
+> **Milestone before Phase 2 — the MetaMask-signed order.** After V-A…V-C, place an order from
+> rabbit's `/poc/agent` page signed by **MetaMask**, not by an agent key. Same wire format, same
+> endpoints; the only thing that changes later is who holds the key. It proves this whole gate from
+> a browser and needs neither R-B nor the [O1](#open) decision.
 
 ### Phase 2 — the agent exists, driven by hand `[R]` · ~3–4d
 
@@ -232,7 +254,7 @@ nobody triggered.
 
 | | Item | Detail |
 |---|---|---|
-| **R-G** | **Resolution watch + self-redeem** | Poll verex for resolution; when a held position wins, redeem it and record realised P&L. The agent needs a little Sepolia ETH for this leg only |
+| **R-G** | **Resolution watch + self-redeem** | **Poll** verex for resolution; when a held position wins, redeem it and record realised P&L. The agent needs a little Sepolia ETH for this leg only. **Poll, never `await` inline** — the mock oracle settles instantly, live UMA has a liveness window, so an inline wait passes on anvil and hangs on Sepolia |
 | **R-H** | **The expiry run** *(evidence, not code)* | Let a mandate lapse with the scheduler live. Capture the journal filling with harmless refusals. Add it to the PoC card's tech notes |
 
 **Done when:** one round trip — estimate, trade, resolution, redeem — appears as a connected set of
@@ -247,17 +269,40 @@ Closes verex's S3 gap and makes any MCP client — not just rabbit's agent — a
 **Done when:** rabbit's agent runs unchanged against the MCP transport, and a generic MCP client
 can place one order without reading verex's source.
 
+### Phase 6 — go to Sepolia: W1 and the first staging run `[V]` · ~1–2d
+
+**Why last (jay, 2026-08-25).** The re-seed rule says *W1 before the first staging run*, and this
+is that moment. Everything before it ran on anvil against the mock, so there was never staging
+history to protect. Testing on a testnet gets redone at the end regardless, so doing it early would
+be doing it twice. What makes this safe rather than reckless is [W0](#probe), run early.
+
+**The steps live in verex's plan**, not here — W1 is verex's item and this file only owns the
+seam. Seven steps with the trap next to each:
+[verex current-plan.md → W1](../../projects/verex/docs/tasks/current-plan.md#w1). The short version
+is: fund Sepolia WETH (**not MockUSDC** — it is not on UMA's whitelist), fresh seed with a
+short-dated market, propose, wait out real liveness, settle, redeem, close A5.
+
+**Take the undisputed path.** The dispute branch is **not walkable on Sepolia**: a real dispute
+escalates to UMA's DVM — a ~2-day staked commit/reveal round that testnet does not reliably
+provide. The mock's jury exists precisely because that half is only demonstrable locally. Do not
+design the demo around a dispute resolving.
+
+**Done when:** one market resolved end-to-end through the live adapter, a winner redeemed, **A5**
+closed, and the seed left at least one short-dated market the agent can plausibly see resolve
+inside a demo. *(That last clause is J2's requirement on W1, not W1's own.)*
+
 ## Open questions <a id="open"></a>
 <sub>[↑ TOC](#toc)</sub>
 
 | | Question | Blocks | State |
 |---|---|---|---|
-| **O1** | **How does rabbit get verex's order-signing code?** `packages/sdk` has `signOrder`, `SignedOrder` and the order domain. Options: publish it (`@verex/sdk` to npm or a GitHub package), vendor a copy into rabbit, or re-implement the EIP-712 struct thinly. Copying means two definitions of one wire format — the exact drift the docs pipeline exists to prevent | **R-B**, so Phase 2 | ⛔ open — **the one to answer next** |
+| **O1** | **Where does rabbit's copy of the order-signing code come from?** The signed thing is an EIP-712 hash over 12 fields plus the domain; two copies that drift produce a *valid signature of the wrong message*, and the error never mentions the struct — the same one-source rule the docs pipeline enforces | deploying R-B — **not** building it | ✅ **answered 2026-08-25.** Local: `"@verex/sdk": "file:../verex/packages/sdk"` — pnpm symlinks, so verex stays the single definition. Publish `@verex/sdk` (flip its `"private": true`) **before rabbit deploys**, since `file:` paths do not exist on Cloud Run. Import line is identical either way. Build the SDK first (`pnpm --filter @verex/sdk build`) — it resolves to `dist/`, and a symlink does not rebuild itself. viem is compatible: rabbit `^2.55.10` satisfies the SDK's `^2.21.0` |
 | **O2** | **Scheduler host** — Cloud Run job + Cloud Scheduler · GitHub Actions cron (note: rabbit has **no** `.github/workflows/` at all) · hosted cron pinging the tick | R-F | ⬜ open. Cheapest thing that survives a day unattended wins |
 | **O3** | **Which markets may the agent touch?** A funding bound says nothing about *what* it trades. A whitelist is policy in rabbit's code today; making it a contract-level bound is O4 | R-C's rule | ⬜ open |
 | **O4** | **Per-trade policy via EIP-1271** — the stronger enforcement recorded but not built. Worth it only if the funding bound proves too coarse in practice | — | ⬜ deferred by design |
 | **O5** | **LLM cost and cadence** — one estimate per market per tick gets expensive on a short interval. Cache per market until the book moves? | R-D | ⬜ open |
 | **O6** | **Does the demo run against staging or a dedicated environment?** The agent trading on staging means its rows sit in the same DB as everything else, and any future re-seed wipes them again | Phase 1 | ⬜ open — surfaced by Phase 0's re-seed problem |
+| **O8** | **Does the user-facing `accountIndex` path get retired once the external path is proven?** Removing it would give one funding behaviour instead of two, and a cleaner claim (*verex holds no user keys*). It would also cost seven web components and turn verex's demo from "open the page and trade" into "install MetaMask first". **Index 0 stays regardless** — it is the operator's LMSR maker. Trigger: external orders working **and** a MetaMask flow in the web. Until then both paths coexist, and **one test on the index path** is what stops it rotting | — | ⬜ deferred — not before its trigger |
 | **O7** | **News scope and staleness** — is a `NewsItem` scoped to one market or global with market tags? Does an item age out? A headline from three weeks ago should not keep moving `p`, and "store it in Postgres" does not answer that. Default proposal: scoped per market, and the estimate only sees items published inside a configurable window | R-I, R-D | ⬜ open — surfaced by R-I |
 
 ## What this will not prove <a id="not"></a>

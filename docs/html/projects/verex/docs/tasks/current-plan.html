@@ -161,15 +161,22 @@ they are verex&#39;s share of the J2 track. W2–W5 remain a menu.</p>
 <p>jay picked the cross-repo <strong>J2</strong> track. Verex&#39;s share of it, in order: <strong>W1 → W6 → W7</strong>. The
 recommendation on the table had been W1 alone; J2 keeps W1 first for a <strong>different and stronger
 reason</strong> than the one originally given — see the sequencing note in W1 below.</p>
-<h3>1) W1 — finish wave 3: prove UMA on live Sepolia · <strong>ACTIVE, J2 phase 0</strong> · ~1–2d <a id="w1"></a></h3>
+<h3>1) W1 — finish wave 3: prove UMA on live Sepolia · <strong>J2 phase 6</strong> · ~1–2d <a id="w1"></a></h3>
 <p><strong>Why now:</strong> the adapter is deployed against the real oracle and has never answered anything. Until
 one market resolves through it, S6 is partial and <strong>A5</strong> — the MEDIUM-severity operator-SPOF, the
 roadmap&#39;s biggest trust gain — stays open on a technicality that is one afternoon wide.</p>
-<p><strong>Why it must come <em>before</em> W6, not after</strong> (found while designing J2, 2026-08-21): the obvious
-reason is that an agent cannot redeem from a market that never resolves. The real reason is the
-<strong>fresh seed</strong> — it deletes staging&#39;s <code>Trade</code>/<code>PricePoint</code>/<code>Outcome</code>/<code>Market</code> rows, so re-seeding
-<em>after</em> an external agent has been trading leaves its journal citing rows that no longer exist.
-Re-seed first, then open the door.</p>
+<p><strong>Why it must come before the first <em>staging</em> run — revised 2026-08-25.</strong> The 08-21 reading was
+&quot;W1 before W6&quot;. The constraint is narrower than that: the <strong>fresh seed</strong> deletes staging&#39;s
+<code>Trade</code>/<code>PricePoint</code>/<code>Outcome</code>/<code>Market</code> rows, so re-seeding <em>after</em> an external agent has traded
+<strong>on staging</strong> leaves its journal citing rows that no longer exist. That says nothing about local
+work. W6 and all of J2&#39;s rabbit-side phases run on <code>anvil</code> against <code>MockOptimisticOracleV2</code>, which
+resolves instantly and can be wiped by <code>./scripts/reset.sh</code> at will — so <strong>W6 is built first and
+W1 lands immediately before staging is used for real</strong> (J2 phase 6). Testnet testing gets redone at
+the end regardless; doing it early would be doing it twice.</p>
+<p><strong>Pulled forward instead — the smoke probe (minutes).</strong> W1 is the only item here that has never
+worked, and what it depends on belongs to a contract verex did not write. One <code>initialize</code> on the
+staging adapter with Sepolia WETH answers the only question that can genuinely surprise: <em>does the
+live oracle accept a request from this adapter at all?</em> Run it early, in parallel with anything.</p>
 <p><strong>One addition to W1&#39;s scope, owed to J2 rather than to W1 itself:</strong> the fresh seed should include
 <strong>at least one short-dated UMA market</strong> — something that can plausibly resolve inside a demo
 session rather than in 2026. Without it, J2 phase 4 has nothing to watch.
@@ -180,7 +187,87 @@ recoverable on undisputed settlement).
 expected for staging, but it must be a conscious call. Prod is untouched. Also expect a <strong>one-time
 price jump</strong> on already-traded markets as LMSR centres re-derive from inventory rather than last
 print — intended, not a bug.
-<strong>Done when:</strong> one market resolved end-to-end by the live adapter with a winner redeeming, A5
+<strong>The steps, in order</strong> (moved here from rabbit&#39;s plan 2026-08-25 — W1 is verex&#39;s item, so its
+execution detail lives here and the cross-repo plan links to it):</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Step</th>
+<th>Watch for</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>Fund the reward token.</strong> <code>deposit()</code> on Sepolia WETH <code>0x7b79995e…98E7f9</code>; make sure the adapter holds it / has approval for the reward</td>
+<td><strong>MockUSDC will not work</strong> — it is not on UMA&#39;s <code>AddressWhitelist</code>, and <code>UmaCtfAdapter</code>&#39;s own <code>@param rewardToken</code> docblock says so. Whether <code>reward: 0</code> sidesteps the whitelist entirely is <strong>unverified</strong> — check it during the smoke probe</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Fresh staging seed</strong> including <strong>≥1 short-dated UMA market</strong> — pass a small <code>liveness</code> to <code>initialize</code> (<code>0</code> keeps UMA&#39;s 7200s default)</td>
+<td>This is the step that deletes <code>Trade</code>/<code>PricePoint</code>/<code>Outcome</code>/<code>Market</code>. Nothing an external agent has done on staging survives it — hence &quot;before the first staging run&quot;. Expect the one-time LMSR price jump noted above</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Propose</strong> an answer, posting the bond</td>
+<td>Real UMA charges a <strong>final fee</strong> per currency on top of the bond (0.001 WETH here); the mock&#39;s is zero, so a bond that works on anvil can be short here</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Wait out liveness</strong> — real wall-clock time, no <code>evm_increaseTime</code></td>
+<td>The reason J2&#39;s R-G polls instead of awaiting inline</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Settle</strong> — the adapter&#39;s <code>resolve</code> calls <code>settleAndGetPrice</code> and copies the price onto the CTF condition</td>
+<td>The adapter has no discretion. If the result is wrong, the oracle said so</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Winner redeems</strong> — CTF <code>redeemPositions</code>, signed by the <strong>holder</strong></td>
+<td>Needs a little Sepolia ETH on the holder. Trading costs an external maker nothing; only this leg does</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Close A5</strong> in the audit tracker, and let the CD workflow perform the staging deploy rather than doing it by hand (<a href="../features/README.html#v1">V1</a>)</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p><strong>Four ways the mock is more permissive than the live oracle</strong> — every one of them passes on anvil
+and can fail here:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>MockOptimisticOracleV2</code></th>
+<th>UMA on Sepolia</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Collateral</strong></td>
+<td><code>requestPrice</code> just does a <code>transferFrom</code> — no check</td>
+<td>Reward token must be on UMA&#39;s <code>AddressWhitelist</code>. <strong>MockUSDC is not</strong>; Sepolia WETH <code>0x7b79995e…98E7f9</code> is. <code>UmaCtfAdapter</code>&#39;s own docblock says so. Whether <code>reward: 0</code> sidesteps it is <strong>unverified</strong></td>
+</tr>
+<tr>
+<td><strong>Final fee</strong></td>
+<td>zero — the only stake is the bond</td>
+<td>charged per currency on top of the bond, so locally-correct bond amounts can be wrong</td>
+</tr>
+<tr>
+<td><strong>Liveness</strong></td>
+<td><code>DEFAULT_LIVENESS</code> 7200s, skippable with <code>evm_increaseTime</code></td>
+<td>real wall-clock time. Any code that awaits settlement inline passes locally and hangs here</td>
+</tr>
+<tr>
+<td><strong>Disputes</strong></td>
+<td>an on-chain jury: <code>vote</code> / <code>finalizeVote</code>, settles immediately</td>
+<td>escalates to the DVM — a ~2-day staked commit/reveal round testnet does not reliably provide</td>
+</tr>
+</tbody></table>
+<p><strong>Take the undisputed path.</strong> Following from the last row: the dispute branch is <strong>not walkable on
+Sepolia</strong>, which is exactly why the mock&#39;s jury exists. Propose → let liveness expire → settle. Do
+not design the demo around a dispute being resolved.</p>
+<p><strong>Done when:</strong> one market resolved end-to-end by the live adapter with a winner redeeming, A5
 closed in the audit tracker, and the staging deploy performed by the CD workflow itself rather
 than by hand (<a href="../features/README.html#v1">V1</a>).</p>
 <h3>2) W6 — accept a counterparty verex does not custody · <strong>ACTIVE, J2 phase 1</strong> · ~2–3d <a id="w6"></a></h3>
