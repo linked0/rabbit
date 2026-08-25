@@ -140,7 +140,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; What encryption does not hide</p>
   <article>
-      <h1><span class="topic-no">14</span>What encryption does not hide <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">15</span>What encryption does not hide <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">Two competing encrypted-mempool EIPs leave the sender, the gas, and the size in plaintext. Measure how much of the sandwich survives on metadata alone.</p>
       <p class="meta">Not yet scoped — read EIP-8105&#39;s plaintext envelope field list first, then the Ethereum protocol pattern page&#39;s leakage paragraph, and check the two against each other. Sources: the 2026-08-19 &quot;Encrypt the Mempool&quot; call (cryptoslate.com), eips.ethereum.org/EIPS/eip-8105, EIP-8184 (LUCID), ethsystems.org threshold-encrypted-mempool pattern, Shutter Network on Gnosis Chain.</p>
       <h2>Why</h2>
@@ -152,7 +152,7 @@
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">14</span>암호화가 가리지 못하는 것 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">15</span>암호화가 가리지 못하는 것 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">경합 중인 암호화 멤풀 EIP 두 건 모두 발신자·가스·크기를 평문으로 남깁니다. 메타데이터만으로 샌드위치가 얼마나 살아남는지를 측정합니다.</p>
       <p class="meta">아직 범위 미정 — 먼저 <strong>EIP-8105 의 평문 봉투(envelope) 필드 목록</strong>을 읽고, 그다음 이더리움 프로토콜 패턴 문서의 <strong>유출(leakage) 문단</strong>을 읽어 둘을 서로 대조하는 것부터. 출처: 2026-08-19 &quot;Encrypt the Mempool&quot; 콜(cryptoslate.com), eips.ethereum.org/EIPS/eip-8105, EIP-8184(LUCID), ethsystems.org 임계암호 멤풀 패턴, Gnosis 체인의 Shutter Network.</p>
       <h2>왜</h2>
@@ -161,7 +161,7 @@
       <p>측정 셋을, 싼 것부터. <strong>하나, 잔여 MEV 재현.</strong> 과거 메인넷 블록 구간을 잡아 모든 트랜잭션을 <strong>EIP-8105 가 평문으로 남기는 필드만으로 깎아낸 뒤</strong>(발신자·논스·가스량·우선 수수료·최대 수수료), 그것만으로 샌드위치 가능한 것들을 골라 봅니다. 같은 구간에서 <strong>실제로 추출된 샌드위치</strong>를 정답으로 두고 채점하는데, 라벨링 경로는 라이브 <code>pbs</code> 카드가 이미 만들어 둔 릴레이·번들 배관을 그대로 씁니다 — 새 인프라가 아니라 <strong>기존 인프라 위의 분석</strong>입니다. 산출물은 분수 하나: <strong>메타데이터만 보는 공격자가 여전히 조준할 수 있었던 추출 이익의 비율.</strong> 어느 쪽으로 나오든 그대로 공개합니다 — <strong>낮게 나오면 그게 EIP 들에 대한 가장 강한 지지</strong>이고, 높게 나오면 <strong>이걸 해결됐다고 부르는 것에 대한 가장 강한 반박</strong>입니다. <strong>둘, 두 블록짜리 청구서.</strong> EIP-8105 는 봉투를 한 블록에서 실행하고(논스 증가, 수수료 지불) 복호화된 페이로드를 그다음 블록에서 실행하며, <strong>복호화가 실패해도 수수료는 이미 지불된 상태</strong>입니다. 즉 암호화의 대가는 <strong>한 블록의 지연 + 사용자가 아무것도 못 받고 지불하는 실패 양식</strong>이고, 비교 대상인 현상 유지는 <strong>사용 시점 비용이 0인 프라이빗 릴레이</strong>입니다. 교차점을 모델링합니다: <strong>피하는 샌드위치가 감수하는 지연·실패 비용을 넘어서는 거래 규모는 얼마부터인가?</strong> 그 선 아래에서는 사용자가 프라이빗 릴레이를 계속 쓰는 게 합리적이고, <strong>가장 큰 거래자들이 우회하는 암호화 멤풀은 애초에 고치려던 중앙화를 고치지 못한 것</strong>입니다. <strong>셋, 누구에게도 귀속되지 않는 실패.</strong> 콜에서 미해결로 남은 항목이 바로 이것입니다 — 프로토콜은 <strong>키가 왜 도착하지 않았는지, 제공자가 그것을 미리 팔았는지 확정할 수 없습니다.</strong> 가능한 가장 작은 시뮬레이터를 만듭니다(제공자 n, 임계값 k, 담합 부분집합 하나) 그리고 트레이스 셋을 생성합니다: <strong>고의로 보류된 키</strong>, <strong>미리 유출된 키</strong>, <strong>그냥 늦은 키</strong>. 그다음 강제(enforcement)에 유일하게 중요한 질문을 던집니다: <strong>바깥에서 이 셋이 구별되는가?</strong> 구별되지 않는다면 <strong>슬래싱은 물 곳이 없고</strong>, 정직한 임계값 가정은 가정이 아니라 <strong>보안 모델 전체</strong>입니다. 같은 시장의 추출 쪽에 앉아 있는 라이브 <code>pbs</code> 카드와 대조해 읽고, 모든 임계 기법에 같은 위원회 장악 질문을 던지는 <code>third-party-blast-radius</code> 와 함께 읽습니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/encrypted-mempool">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-senpi-harness.html">&larr; 13. The harness, not the model</a><a href="pocs-price-at-a-moment.html">15. A price at a moment — settlement windows and oracle instants &rarr;</a></div>
+  <div class="pager"><a href="pocs-senpi-harness.html">&larr; 14. The harness, not the model</a><a href="pocs-price-at-a-moment.html">16. A price at a moment — settlement windows and oracle instants &rarr;</a></div>
 </div>
 </body>
 </html>

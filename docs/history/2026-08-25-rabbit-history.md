@@ -37,3 +37,15 @@
 **Change:** `lib/poc-cards.ts`의 `l1-zkevm-optional-proofs` 카드 `status: "soon"` → `"done"`. `node scripts/generate-pocs-html.mjs` 실행.
 
 **Result:** 상세 페이지에 DONE 배지, done 그룹으로 이동. 부수 변경 둘은 번호 재배열뿐 — `stake-concentration` 8 → 9, `erc-7683-settlement-security`의 이웃 링크 갱신. 카드 총 59장.
+
+### PoC 카드 `monad-last-general-purpose-l1` 신설 — 통합이 닫는 것은 아무도 재지 않는다
+
+> 소스 문서: Four Pillars · Validated, *Monad: The Last General-Purpose L1*(c4lvin, 2026, 71쪽) — jay가 PDF를 건네고 카드화를 지시. 대상은 [lib/poc-cards.ts](../../lib/poc-cards.ts).
+
+**Cause:** jay가 Monad 리포트 PDF를 읽게 하고 그 내용을 PoC 항목으로 추가하라고 요청.
+
+**Reasoning:** "마지막 범용 L1"이라는 표제를 그대로 카드로 옮기면 이 카탈로그의 규칙을 어긴다 — 항목은 **재서 답할 수 있는 질문**이어야 한다. 그래서 리포트가 반복해서 다는 각주를 카드의 축으로 세웠다: 보고서의 강한 수치 대부분이 살아 있는 인센티브 프로그램과 겹치는데 **인센티브를 보정한 값은 아무도 발표하지 않는다.** 여기에 더 날카로운 두 번째 축을 붙였다 — **통합이 닫아버리는 카테고리는 아무도 채점하지 않는다.** Monad에 이미 깨끗한 사례가 있다: LST 4곳이 $46M을 조달했는데 합산 TVL은 약 $12M이고, 이유는 팀의 실패가 아니라 Monad가 네이티브 스테이킹을 합의 안에 넣고 슬래싱을 구현하지 않았다는 설계 자체다. 체인이 그 앱의 존재 이유를 흡수했다. 모놀리식 체인은 통합이 **만드는** 프리미엄만 재고 **닫는** 것은 재지 않는데, 둘은 같은 선택의 결과다. 대조군도 이미 있다 — Neverland는 프로그램이 끝나 감쇠 곡선(차입 -87%, 일일 수수료 3주 만에 $18–19K → $3,700)이 실측돼 있어, 다른 프로그램을 맞춰 볼 형판이 된다.
+
+**Change:** `lib/poc-cards.ts`에 카드 신설(EN/KO 전체) — 측정 셋(인센티브 보정 수요 · 봉쇄된 카테고리 수 · 컴포저빌리티 프리미엄), Opinion Labs가 BNB로 떠나고 HelloTrade가 들어온 양방향 사례, 그리고 예측시장 메모(Polymarket 2025-12·Kalshi 7월이 Monad를 입금 레일로 쓰는데 네이티브 승자는 없음). `status: "soon"` — 신규 항목은 done 으로 올리지 않는다. `node scripts/generate-pocs-html.mjs` 실행.
+
+**Result:** 카드 총 59 → **60장**. 상세 페이지 생성(21.6KB, PLANNED 배지, 표 2개, EN/KO 각 4개 절). `npx tsc --noEmit` 통과. **부수 변경 52개 파일은 전부 번호 재배열** — `event-contract-plumbing` 뒤에 끼워 넣어 이후 카드의 번호와 이웃 링크가 한 칸씩 밀렸다. 배치를 뒤로 옮기면 이 churn 은 사라진다.

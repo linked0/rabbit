@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monad — the last general-purpose L1, and the number nobody adjusts for — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
+  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
+  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
+  .pager span { color:var(--text2); }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text2); margin:0 0 14px;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Monad — the last general-purpose L1, and the number nobody adjusts for</p>
+  <article>
+      <h1><span class="topic-no">12</span>Monad — the last general-purpose L1, and the number nobody adjusts for <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">Monad bet a record $412M on one thesis: a chain fast enough to hold everything. Nine months of mainnet data now exists, but nearly every headline number overlaps a live incentive program, and nobody publishes the incentive-adjusted figure.</p>
+      <p class="meta">Not yet scoped — start by lining each sector&#39;s headline metric up against the start and end dates of the incentive program running underneath it, then measure the decay in the 30 days after each program closes. Source: Four Pillars · Validated, &quot;Monad: The Last General-Purpose L1&quot; (c4lvin, 2026), plus DefiLlama and the Monad Foundation&#39;s monthly roundups.</p>
+      <h2>Why</h2>
+      <p><strong>Three conditions, and the second one already failed once.</strong> The report sets Monad&#39;s success conditions as: prove a composability premium only integration can create, keep successful apps from leaving, and create demand that runs without incentives. The second is the one with a verdict already in.</p>
+<p><strong>Opinion Labs</strong> was rated Monad&#39;s most promising prediction market before mainnet. In October 2025 it launched <strong>solo on BNB Chain</strong> after taking investment from YZi Labs — at almost the same moment as Monad&#39;s own mainnet — and then posted $130M average daily notional in three weeks and <strong>31% industry share</strong> by January 2026. In June, <strong>HelloTrade moved the other way</strong>, from MegaETH to Monad. Both directions prove the same sentence: <em>chain choice follows capital and distribution, not the funnel.</em> Monad ran what is probably the most elaborate founder funnel in the industry — four years of tokenless community building, Monad Madness, Nitro paying $500K on day one, DeltaV listing 578 startups — and it does not decide the outcome.</p>
+<p><strong>The part worth a card is the adjective in &quot;general-purpose.&quot;</strong> Integration is supposed to create value that specialization cannot. But the same integration also destroys categories, and Monad already has a clean case: liquid staking raised <strong>$46M across four protocols and holds about $12M in TVL</strong>. Not because the teams failed — because Monad put native staking <strong>inside consensus</strong> with delegation through a precompile, and has not implemented slashing. The chain absorbed the job the app existed to do.</p>
+<p>That is the general-purpose thesis running in reverse, and nobody scores it. A monolithic chain measures the premium it creates by integrating; it does not measure the categories it forecloses by integrating. Both are consequences of the same design choice.</p>
+      <h2>How it works</h2>
+      <h3>The three numbers this card wants</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Question</th>
+<th>Why it is not published today</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. Incentive-adjusted demand</strong></td>
+<td>For each venue, volume <strong>during</strong> an incentive program vs. the 30 days <strong>after</strong> it closes</td>
+<td>Programs are announced; their expiries are not marketed, and the post-expiry series is never re-published</td>
+</tr>
+<tr>
+<td><strong>2. Foreclosure count</strong></td>
+<td>Which app categories the chain&#39;s own design removes the need for</td>
+<td>Chains publish what integration creates, never what it forecloses</td>
+</tr>
+<tr>
+<td><strong>3. Composability premium</strong></td>
+<td>Share of newly issued RWA that becomes collateral within N days, benchmarked against Ethereum and Solana</td>
+<td>Everyone claims the premium; nobody defines a unit for it</td>
+</tr>
+</tbody></table>
+<h3>Why measurement 1 is the cheapest and most damaging</h3>
+<p>Almost every strong figure in the report carries the same footnote. <strong>Kuru</strong> took a 36.4% DEX share, passing Uniswap — and its June rebound overlaps a $1.2M trading incentive. <strong>LeverUp&#39;s</strong> June recovery overlaps a team points competition. <strong>AUSD</strong> grew $54.2M in a month, which is more than the chain&#39;s entire net stablecoin increase, on the back of Pendle placing $100K/week on two pools.</p>
+<p><strong>Neverland</strong> is the clean control case, because its program already ended. DUST emissions rewarded supply <em>and</em> borrowing, so recursive looping pushed borrowing to <strong>2.7× TVL</strong> — $122.5M of borrows against $42M of deposits. When the loop unwound, borrowing fell <strong>87%</strong> and daily fees went from $18–19K to <strong>$3,700 in three weeks.</strong> That decay curve is the shape to fit every other program against.</p>
+<h3>Where the premium is actually appearing</h3>
+<p>Not in trading, where the thesis was staked. In <strong>RWA</strong>: active market cap passed $430M, third across all chains behind Ethereum ($2.05B) and Solana ($480M), and the report&#39;s one piece of composability evidence is that RWAs are used as collateral and trading inventory <strong>as soon as they arrive</strong> — Valos vaults past $105M serving as collateral in Morpho markets. That is a measurable claim, and it is the only one in 71 pages.</p>
+<h3>The prediction-market note</h3>
+<p>Monad has become a <strong>funding rail</strong> for a category it has no native winner in. Polymarket has supported MON and USDC deposits over Monad since December 2025, and Kalshi added Monad in July — while Opinion Labs, the native contender, left. Native attempts are thin: Blinq, Parletto (Polymarket alumni), and CRSH Market, which discloses roughly 300 new users a day and about $3,000 of volume per stream.</p>
+<p>For anyone building a prediction market, that is the useful reading: <strong>Monad is currently better as a deposit path than as a home.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/monad-last-general-purpose-l1">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <hr class="lang-divider">
+    <article lang="ko">
+      <p class="lang-label">한국어</p>
+      <h1><span class="topic-no">12</span>Monad, 마지막 범용 L1 — 그리고 아무도 보정하지 않는 숫자 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <p class="lead">Monad는 &quot;모든 것을 담을 만큼 빠른 체인&quot;이라는 명제 하나에 기록적인 $412M을 걸었습니다. 메인넷 9개월치 데이터가 쌓였지만, 눈에 띄는 숫자 대부분이 진행 중인 인센티브와 겹치고, 인센티브를 보정한 값은 아무도 발표하지 않습니다.</p>
+      <p class="meta">아직 범위 미정 — 각 섹터의 대표 지표를 그 아래에서 돌고 있는 인센티브 프로그램의 시작·종료일에 나란히 놓고, 프로그램 종료 후 30일간의 감쇠를 재는 것부터. 출처: Four Pillars · Validated, &quot;Monad: The Last General-Purpose L1&quot;(c4lvin, 2026), DefiLlama, Monad 재단 월간 라운드업.</p>
+      <h2>왜</h2>
+      <p><strong>조건은 셋이고, 두 번째는 이미 한 번 실패했습니다.</strong> 보고서는 Monad의 성공 조건을 이렇게 잡습니다 — 통합만이 만들 수 있는 컴포저빌리티 프리미엄을 증명할 것, 성공한 앱이 떠나지 않게 할 것, 인센티브 없이 도는 수요를 만들 것. 이 중 두 번째는 <strong>이미 판결이 나와 있습니다.</strong></p>
+<p><strong>Opinion Labs</strong>는 메인넷 전 Monad 최고 유망 예측시장으로 꼽혔습니다. 2025년 10월, YZi Labs 투자를 받은 뒤 <strong>BNB 체인에 단독 출시</strong>했고 — Monad 메인넷과 거의 같은 시점에 — 3주 만에 일평균 명목 $130M, 2026년 1월 <strong>업계 점유율 31%</strong>를 기록했습니다. 6월에는 <strong>HelloTrade가 반대 방향으로</strong> MegaETH에서 Monad로 옮겨 왔습니다. 두 방향이 같은 문장을 증명합니다 — <em>체인 선택은 퍼널이 아니라 자본과 유통 채널을 따라간다.</em> Monad는 업계에서 가장 정교했을 창업자 퍼널을 돌렸습니다. 토큰 없는 4년의 커뮤니티 빌딩, Monad Madness, 첫날 $500K를 주는 Nitro, 578개 스타트업을 올린 DeltaV — 그런데도 결과를 결정하지 못합니다.</p>
+<p><strong>카드가 될 값어치는 &quot;범용&quot;이라는 형용사에 있습니다.</strong> 통합은 특화가 못 만드는 가치를 만든다고 합니다. 그런데 같은 통합이 <strong>카테고리를 없애기도</strong> 하고, Monad에 이미 깨끗한 사례가 있습니다. 리퀴드 스테이킹은 프로토콜 넷이 <strong>$46M을 조달했는데 합산 TVL은 약 $12M</strong>입니다. 팀들이 못해서가 아닙니다 — Monad가 네이티브 스테이킹을 <strong>합의 안에</strong> 넣고 위임을 프리컴파일로 처리했으며, 슬래싱은 구현하지 않았기 때문입니다. <strong>그 앱이 존재하던 이유를 체인이 흡수했습니다.</strong></p>
+<p>이것이 범용 명제를 거꾸로 돌린 모습이고, 아무도 채점하지 않습니다. 모놀리식 체인은 통합으로 <strong>만들어내는</strong> 프리미엄은 재지만, 통합으로 <strong>닫아버리는</strong> 카테고리는 재지 않습니다. 둘 다 같은 설계 선택의 결과입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>이 카드가 원하는 숫자 셋</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>질문</th>
+<th>왜 지금 발표되지 않는가</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. 인센티브 보정 수요</strong></td>
+<td>각 거래소별로 인센티브 <strong>기간 중</strong> 거래량 대 <strong>종료 후 30일</strong> 거래량</td>
+<td>프로그램 시작은 공지되지만 만료는 홍보되지 않고, 만료 이후 시계열은 다시 게시되지 않음</td>
+</tr>
+<tr>
+<td><strong>2. 봉쇄된 카테고리 수</strong></td>
+<td>체인 자체 설계가 필요를 없애버린 앱 카테고리는 무엇인가</td>
+<td>체인은 통합이 <strong>만드는 것</strong>만 발표하고 <strong>닫는 것</strong>은 발표하지 않음</td>
+</tr>
+<tr>
+<td><strong>3. 컴포저빌리티 프리미엄</strong></td>
+<td>새로 발행된 RWA 중 N일 안에 담보로 쓰이는 비율, 이더리움·솔라나 대비</td>
+<td>모두가 프리미엄을 주장하지만 아무도 단위를 정의하지 않음</td>
+</tr>
+</tbody></table>
+<h3>왜 1번 측정이 가장 싸고 가장 아픈가</h3>
+<p>보고서의 강한 수치 대부분에 같은 각주가 붙습니다. <strong>Kuru</strong>는 DEX 점유율 36.4%로 Uniswap을 추월했지만 6월 반등이 $1.2M 트레이딩 인센티브와 겹칩니다. <strong>LeverUp</strong>의 6월 회복은 팀 포인트 경쟁과 겹칩니다. <strong>AUSD</strong>는 한 달에 $54.2M 늘어 체인 전체 스테이블코인 순증가분을 넘겼는데, Pendle이 풀 두 개에 주당 $100K를 얹은 결과입니다.</p>
+<p><strong>Neverland</strong>가 깨끗한 대조군입니다. 프로그램이 이미 끝났기 때문입니다. DUST 배출이 공급과 차입 <strong>양쪽</strong>에 보상을 줘서 재귀 루핑이 차입을 <strong>TVL의 2.7배</strong>까지 밀어 올렸습니다 — 예치 $42M에 차입 $122.5M. 루프가 풀리자 차입은 <strong>87%</strong> 감소했고 일일 수수료는 $18–19K에서 <strong>3주 만에 $3,700</strong>이 됐습니다. 이 감쇠 곡선이 다른 모든 프로그램을 맞춰 볼 형판입니다.</p>
+<h3>프리미엄이 실제로 나타나고 있는 곳</h3>
+<p>명제를 건 트레이딩이 아닙니다. <strong>RWA</strong>입니다 — 활성 시가총액 $430M 돌파로 이더리움($2.05B)·솔라나($480M)에 이어 전체 3위이고, 보고서에서 컴포저빌리티의 유일한 증거가 RWA가 <strong>도착하자마자</strong> 담보와 거래 재고로 쓰인다는 것입니다(Valos 볼트 $105M 초과, Morpho 마켓 담보로 사용). 측정 가능한 주장이고, 71쪽 중 그것 하나뿐입니다.</p>
+<h3>예측시장 메모</h3>
+<p>Monad는 <strong>네이티브 승자가 없는 카테고리의 자금 레일</strong>이 됐습니다. Polymarket은 2025년 12월부터 Monad를 통한 MON·USDC 입금을 지원하고 Kalshi도 7월에 추가했는데, 정작 네이티브 후보였던 Opinion Labs는 떠났습니다. 네이티브 시도는 얇습니다 — Blinq, Parletto(Polymarket 출신), 그리고 스스로 일 신규 약 300명·스트림당 약 $3,000를 공개한 CRSH Market.</p>
+<p>예측시장을 만드는 입장에서 유용한 독법은 이것입니다: <strong>지금의 Monad는 서식지보다 입금 경로로서 더 낫습니다.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/monad-last-general-purpose-l1">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-event-contract-plumbing.html">&larr; 11. The hiring signal is the spec — event-contract plumbing</a><a href="pocs-chainlink-data-streams.html">13. Chainlink Data Streams — push vs. pull oracles and point-in-time settlement &rarr;</a></div>
+</div>
+</body>
+</html>

@@ -140,7 +140,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Sub-2-bit LLMs, locally</p>
   <article>
-      <h1><span class="topic-no">29</span>Sub-2-bit LLMs, locally <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">30</span>Sub-2-bit LLMs, locally <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">A 2.4T model in 397GB — shrinking the codebook below IQ1_S, and what the last half-bit costs.</p>
       <p class="meta">Not yet scoped — start with the 27B model on a 16GB machine via llama.cpp, sweep the 1-bit dtypes, and reproduce the quality curve locally.</p>
       <h2>Why</h2>
@@ -152,7 +152,7 @@
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">29</span>2비트 미만 LLM 로컬 실행 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">30</span>2비트 미만 LLM 로컬 실행 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
       <p class="lead">2.4T 모델을 397GB에 — IQ1_S 아래로 코드북 줄이기, 그리고 마지막 반 비트의 대가.</p>
       <p class="meta">아직 범위 미정 — 16GB 머신에서 llama.cpp로 27B 모델부터 시작해, 1비트 dtype들을 훑고 품질 곡선을 직접 재현합니다.</p>
       <h2>왜</h2>
@@ -161,7 +161,7 @@
       <p>압축 기법 자체는 헤드라인보다 훨씬 좁은 이야기입니다. llama.cpp의 IQ1_S는 가중치당 1.5625비트를 쓰는데, 그중 11비트가 2048개짜리 코드북을 가리키는 인덱스입니다. Unsloth 변형은 그 코드북을 줄이기만 합니다 — 1024개, 512개, 256개 — 그러면 인덱스가 10·9·8비트로 줄고 가중치가 1.4375·1.3125·1.1875 bpw가 됩니다(각각 TQ2_0·TQ1_0·Q1_0으로 배포되며, 이름은 Hugging Face 저장소에 아예 노출되도록 고른 것입니다). 중요한 주장은 이것들이 <strong>평범한 사후 양자화(PTQ)</strong>라는 점입니다 — QAT나 증류가 없고, 바로 그 점이 생산 비용을 낮추는 동시에 독립적으로 검증할 가치를 만듭니다. 계획은 27B 모델을 이 dtype들로 제가 가진 하드웨어에서 돌려 PPL/KLD/top-p 곡선을 인용하는 대신 직접 재현하고, 실용 규칙(RAM+VRAM ≈ 양자화 크기, 그 선을 넘으면 디스크 오프로딩이 20 tok/s라는 숫자를 조용히 전혀 다른 것으로 바꿔 놓는다)을 확인하는 것입니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/sub-2bit-local-llm">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-confidential-settlement-metadata.html">&larr; 28. Hiding the amount is the easy half</a><a href="pocs-opencv-robot-vision.html">30. Pixels to millimetres — the step before the arm moves &rarr;</a></div>
+  <div class="pager"><a href="pocs-confidential-settlement-metadata.html">&larr; 29. Hiding the amount is the easy half</a><a href="pocs-opencv-robot-vision.html">31. Pixels to millimetres — the step before the arm moves &rarr;</a></div>
 </div>
 </body>
 </html>

@@ -140,7 +140,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ERC-7683 settlement security — the layer left deliberately unstandardized</p>
   <article>
-      <h1><span class="topic-no">10</span>ERC-7683 settlement security — the layer left deliberately unstandardized <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">9</span>ERC-7683 settlement security — the layer left deliberately unstandardized <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></h1>
       <p class="lead">ERC-7683 standardizes order envelopes, not settlement proofs. The three settlement models (optimistic, light-client, committee bridge) decide who actually bears the bridge risk and why filler loan spreads diverge.</p>
       <p class="meta">Not yet scoped — start by comparing the three settlement layers on filler capital turnaround time (minutes to hours), dispute failure blast radius, and spread pricing. Source: ERC-7683 spec (erc7683.org), Across Protocol docs, and EIP-7683.</p>
       <h2>Why</h2>
@@ -159,7 +159,75 @@
 </ol>
 <p>What matters is that their failure modes hurt different participants. If optimistic verification fails (e.g. lazy disputers), the filler loses. If a light-client verification bug occurs or a bridge committee is compromised, everyone with funds in escrow loses. The label &quot;7683 compatible&quot; conveys none of this critical distinction.</p>
       <h2>How it works</h2>
-      <h3>The Three Settlement Models Aligned by Risk</h3>
+      <h3>How the money actually moves — t=0, t=1, t=2</h3>
+<p>Intents changed what the user specifies, not what has to happen. The old way named a route — bridge here, swap there — and the user carried the failure of every step. An intent names only the outcome: <em>100 USDC on Arbitrum, want at least 99 on Base.</em> One signature, and fillers compete over the route. The user no longer needs to know what a bridge is, which is why it sold.</p>
+<p>But the money moves in three beats, and this whole card lives in the gap between two of them.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>what happens</th>
+<th>who is exposed</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>t=0</strong></td>
+<td>User locks 100 USDC in origin escrow and signs the order — <code>IOriginSettler.open()</code></td>
+<td>nobody yet</td>
+</tr>
+<tr>
+<td><strong>t=1</strong></td>
+<td>Filler pays the user 99 USDC <strong>of their own money</strong> on the destination chain — <code>IDestinationSettler.fill()</code></td>
+<td><strong>the user is finished here</strong> — instant finality</td>
+</tr>
+<tr>
+<td><strong>t=2</strong></td>
+<td>Filler submits <em>proof of having paid</em> and reclaims the 100 USDC escrow. Profit: 1 USDC</td>
+<td><strong>the filler</strong>, for the entire t=1 → t=2 gap</td>
+</tr>
+</tbody></table>
+<p>So intents did not remove bridge risk. <strong>They moved it, at t=1, from the user to the filler.</strong> And this card is about exactly one question: <strong>what counts as proof at t=2?</strong></p>
+<h3>What the standard fixes, and what it leaves blank</h3>
+<pre><code>fixed:   GaslessCrossChainOrder / OnchainCrossChainOrder
+         IOriginSettler.open()        &amp;lt;- t=0
+         IDestinationSettler.fill()   &amp;lt;- t=1
+
+blank:   what releases the escrow     &amp;lt;- t=2
+</code></pre>
+<p>The envelope is specified. What opens the envelope is not.</p>
+<h3>Why the blank is not laziness</h3>
+<p>Had ERC-7683 picked one settlement model it would not have been adopted — the optimal choice differs per chain pair, and the field is still moving. Staying agnostic is <em>why</em> it spread. That generalises into something close to a law of standards:</p>
+<p>&gt; <strong>A standard&#39;s adoption speed and the amount it guarantees move in opposite directions.</strong></p>
+<p>ERC-20 is the same case, one generation earlier: the interface was fixed and the <em>behaviour</em> was not. Fee-on-transfer and rebasing tokens followed, and integrations written against &quot;ERC-20 compatible&quot; still break on them today. A token where <code>transfer(100)</code> delivers 97 is not violating the standard.</p>
+<p><strong>&quot;7683 compatible&quot; is a promise of the same size</strong> — smaller than it sounds.</p>
+<h3>What the three models actually do at t=2</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>what the filler presents</th>
+<th>how it is checked</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Optimistic</strong></td>
+<td>a claim to have paid, plus a bond</td>
+<td><strong>treated as true if nobody objects</strong></td>
+</tr>
+<tr>
+<td><strong>Light client</strong></td>
+<td>a header proof from the destination chain</td>
+<td><strong>verified cryptographically</strong> on the origin chain</td>
+</tr>
+<tr>
+<td><strong>Bridge messaging</strong></td>
+<td>a committee signature</td>
+<td><strong>the committee is trusted</strong></td>
+</tr>
+</tbody></table>
+<p>The third reduces t=2 to <em>&quot;someone said so&quot;</em> — which is why a compromised committee drains the escrow, not one filler&#39;s principal but <strong>everyone&#39;s</strong>. The table below re-sorts the same three by who absorbs that loss.</p>
+<p><strong>And the gap is the spread.</strong> t=1 → t=2 <em>is</em> the filler&#39;s capital lockup, and the settlement model sets its length — which is precisely what the formula further down prices. So &quot;the cheapest intent protocol&quot; means &quot;the settlement layer that locks capital for the shortest time,&quot; and that is usually <strong>risk placed differently</strong>, not risk removed. The advertising quotes only the first half.</p>
+<h3>The Three Settlement Models Aligned by Risk</h3>
 <table>
 <thead>
 <tr>
@@ -218,7 +286,7 @@
     <hr class="lang-divider">
     <article lang="ko">
       <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">10</span>ERC-7683 정산 보안 — 표준이 일부러 비워둔 그 층 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+      <h1><span class="topic-no">9</span>ERC-7683 정산 보안 — 표준이 일부러 비워둔 그 층 <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></h1>
       <p class="lead">ERC-7683은 주문 봉투만 표준화하고 정산 증명은 비워뒀습니다. 세 정산 모델(낙관적, 라이트클라이언트, 위원회 브릿지)이 브릿지 리스크를 누가 실제로 지는지와 필러 스프레드가 벌어지는 이유를 결정합니다.</p>
       <p class="meta">아직 범위 미정 — 세 정산 계층의 필러 자본 회수 시간(수십 분~시간), 분쟁 실패 시 피해 반경, 스프레드 가격 결정을 비교 분석하는 것부터. 출처: ERC-7683 스펙(erc7683.org), Across 프로토콜 문서, EIP-7683.</p>
       <h2>왜</h2>
@@ -237,7 +305,75 @@
 </ol>
 <p><strong>핵심은 셋의 실패 모드가 서로 다른 사람을 다치게 한다는 것입니다.</strong> 낙관적 검증이 실패하면 필러가 잃지만, 라이트클라이언트 구현 버그나 위원회 침해가 발생하면 에스크로에 잠긴 모든 사용자의 자금이 털립니다. &quot;7683 호환&quot;이라는 라벨은 이 구분을 전혀 담지 않습니다.</p>
       <h2>동작 방식</h2>
-      <h3>세 정산 모델을 리스크로 나란히 놓으면</h3>
+      <h3>돈이 실제로 어떻게 흐르는가 — t=0, t=1, t=2</h3>
+<p>인텐트가 바꾼 것은 <strong>사용자가 무엇을 지정하는가</strong>이지 실제로 무슨 일이 일어나야 하는가가 아닙니다. 기존 방식은 경로를 지정했고 — 브릿지 A로 옮기고, DEX B에서 스왑하고 — <strong>각 단계의 실패를 사용자가 떠안았습니다.</strong> 인텐트는 결과만 지정합니다: <em>Arbitrum에 100 USDC 있음, Base에서 99 USDC 이상 받고 싶음.</em> 서명 한 번이면 경로는 필러들이 경쟁해서 알아서 찾습니다. <strong>사용자는 이제 브릿지가 뭔지 몰라도 되고</strong>, 그게 인텐트가 팔린 이유입니다.</p>
+<p>그런데 돈은 세 박자로 움직이고, 이 카드 전체가 그중 두 박자 사이의 틈에 있습니다.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>무슨 일이 일어나는가</th>
+<th>누가 노출되는가</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>t=0</strong></td>
+<td>사용자가 출발 체인 에스크로에 100 USDC를 잠그고 주문에 서명 — <code>IOriginSettler.open()</code></td>
+<td>아직 없음</td>
+</tr>
+<tr>
+<td><strong>t=1</strong></td>
+<td>필러가 목적지 체인에서 <strong>자기 돈</strong> 99 USDC를 사용자에게 지급 — <code>IDestinationSettler.fill()</code></td>
+<td><strong>사용자는 여기서 끝</strong> — 즉시 수령</td>
+</tr>
+<tr>
+<td><strong>t=2</strong></td>
+<td>필러가 <em>지급했다는 증명</em>을 제출하고 에스크로 100 USDC 회수. 이익 1 USDC</td>
+<td><strong>필러</strong>, t=1 → t=2 구간 전체</td>
+</tr>
+</tbody></table>
+<p>즉 인텐트는 브릿지 리스크를 없앤 게 아닙니다. <strong><code>t=1</code>에서 사용자에게서 필러로 옮긴 것입니다.</strong> 그리고 이 카드의 주제는 질문 하나입니다 — <strong><code>t=2</code>에서 무엇이 증명으로 인정되는가.</strong></p>
+<h3>표준이 정한 것과 비워둔 것</h3>
+<pre><code>정함:   GaslessCrossChainOrder / OnchainCrossChainOrder
+        IOriginSettler.open()        &amp;lt;- t=0
+        IDestinationSettler.fill()   &amp;lt;- t=1
+
+비움:   무엇이 에스크로를 풀어주는가   &amp;lt;- t=2
+</code></pre>
+<p><strong>봉투 규격은 정했고, 봉투를 열어주는 근거는 정하지 않았습니다.</strong></p>
+<h3>그런데 이 빈칸은 게으름이 아닙니다</h3>
+<p>ERC-7683이 정산 모델 하나를 골랐다면 채택되지 않았을 겁니다 — 체인 쌍마다 최적이 다르고 이 분야는 아직 움직이는 중입니다. <strong>불가지론으로 남긴 덕분에 빨리 퍼졌습니다.</strong> 이건 표준 일반의 법칙에 가깝습니다:</p>
+<p>&gt; <strong>표준의 채택 속도와 그 표준이 보장하는 것의 양은 반대 방향으로 움직입니다.</strong></p>
+<p><strong>ERC-20이 한 세대 앞선 같은 사례입니다.</strong> 인터페이스는 정하고 <em>동작</em>은 정하지 않았습니다. 그래서 수수료를 떼는 토큰과 리베이싱 토큰이 나왔고, &quot;ERC-20 호환&quot;만 믿고 짠 통합은 지금도 그 위에서 깨집니다. <code>transfer(100)</code>을 불렀는데 97이 도착하는 토큰은 <strong>표준을 어긴 것이 아닙니다.</strong></p>
+<p><strong>&quot;7683 호환&quot;도 정확히 같은 크기의 약속입니다</strong> — 들리는 것보다 작습니다.</p>
+<h3>세 모델이 <code>t=2</code>에서 실제로 하는 일</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>필러가 내미는 것</th>
+<th>검사 방식</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>낙관적</strong></td>
+<td>지급했다는 주장 + 담보</td>
+<td><strong>아무도 반박하지 않으면 참으로 침</strong></td>
+</tr>
+<tr>
+<td><strong>라이트클라이언트</strong></td>
+<td>목적지 체인의 헤더 증명</td>
+<td>출발 체인이 <strong>암호학적으로 검증</strong></td>
+</tr>
+<tr>
+<td><strong>브릿지 메시징</strong></td>
+<td>위원회 서명</td>
+<td><strong>위원회를 믿음</strong></td>
+</tr>
+</tbody></table>
+<p>세 번째는 <code>t=2</code>를 사실상 *&quot;누가 그렇다고 말했다&quot;*로 줄입니다 — 그래서 위원회가 뚫리면 한 필러의 원금이 아니라 <strong>에스크로 전체</strong>가 나갑니다. 아래 표는 같은 셋을 <strong>그 손실을 누가 흡수하는가</strong>로 다시 정렬한 것입니다.</p>
+<p><strong>그리고 그 틈이 곧 스프레드입니다.</strong> <code>t=1</code> → <code>t=2</code>가 바로 필러 자본의 구속 시간이고, 그 길이를 정하는 것이 정산 모델이며, 아래 수식이 가격을 매기는 대상이 정확히 그것입니다. 그래서 *&quot;가장 싼 인텐트 프로토콜&quot;*은 *&quot;자본을 가장 덜 묶는 정산 층&quot;*을 뜻하고, 그건 대개 리스크를 없앤 것이 아니라 <strong>다르게 배치한 것</strong>입니다. 광고는 앞의 절반만 인용합니다.</p>
+<h3>세 정산 모델을 리스크로 나란히 놓으면</h3>
 <table>
 <thead>
 <tr>
@@ -293,7 +429,7 @@
       <p class="meta">1 diagram(s) on the live page.</p>
       <p><a href="https://www.jaylabs.xyz/poc/erc-7683-settlement-security">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-stake-concentration.html">&larr; 9. Stake concentration risk</a><a href="pocs-event-contract-plumbing.html">11. The hiring signal is the spec — event-contract plumbing &rarr;</a></div>
+  <div class="pager"><a href="pocs-l1-zkevm-optional-proofs.html">&larr; 8. L1 zkEVM — the word doing the work is &quot;optional&quot;</a><a href="pocs-stake-concentration.html">10. Stake concentration risk &rarr;</a></div>
 </div>
 </body>
 </html>
