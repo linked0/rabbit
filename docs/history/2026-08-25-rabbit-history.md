@@ -25,3 +25,15 @@
 **Change:** [current-plan.md](../tasks/current-plan.md) — Phase 0 삭제 후 **W0 스모크 프로브**(비-phase, `#probe`)로 대체, **Phase 6 "go to Sepolia"** 신설(7단계 표 + 함정 + "분쟁 없는 경로만"), Phase 1 done-when을 *외부 maker 경로에 `accountIndex` 불요*로 재작성 + "Phase 1은 추가적" 인용문, **V-C 이후 MetaMask 서명 주문 마일스톤**(O1 비의존) 추가, R-G에 "폴링하라, 인라인 await 금지"의 **이유** 추가, V-A에 `/config`가 거래소 주소를 노출해야 한다는 요구(로컬 리셋마다 주소가 바뀜) 추가, 매트릭스에서 **V-A의 `Depends on: P0` 제거**(기술적 의존이 아니라 스테이징 데이터 순서 제약이 의존의 옷을 입은 것), W0·W1 행 추가, §0 요약과 Repo status의 blocking decision 갱신, **O1을 ✅ 답함으로 재작성**(로컬 `file:` 링크 → 배포 전 퍼블리시), **O8 신설**(사용자 인덱스 경로 폐기는 트리거가 올 때). verex 쪽 verex 저장소의 `docs/tasks/current-plan.md`(W1) — W1 헤더를 J2 phase 6으로, 순서 근거를 "W6보다 먼저"에서 "첫 스테이징 실행보다 먼저"로 정정, mock 대 라이브 비교표와 undisputed-only 지침 추가. **코드 변경 없음.**
 
 **Result:** rabbit 계획서 +79/−28, verex 계획서 +28/−6. 내부 앵커 전수 검사 통과(끊긴 링크 0). 빌드 순서는 W0(병렬) → Phase 1–5(전부 로컬 anvil) → Phase 6(Sepolia)이 됐고, **테스트 가능한 슬라이스 {V-A, V-B, V-C, R-A, R-B, R-C}에 남은 블로커가 0개**다 — O1이 답해지면서 R-B가 풀렸다. **남은 결정(jay):** O2(스케줄러 호스트), O5(LLM 비용·주기), O6(스테이징 vs 전용 환경), O7(뉴스 스코프·만료), O8(트리거 대기), O3(에이전트가 건드릴 마켓).
+
+### `l1-zkevm-optional-proofs` → done
+
+> 소스 문서: [lib/poc-cards.ts](../../lib/poc-cards.ts) — PoC 카드의 유일한 원본. 생성물은 `docs/topics/pocs-<key>.html`, `docs/pocs.html`, `docs/index.html`의 PoCs 구간.
+
+**Cause:** jay가 네 질문(①싸다면 누가 재실행하나 ②증명 다양성이 해결하나 ③밑바닥 메커니즘 ④해시만으로 트랜잭션이 옳다는 보장이 되나)으로 정리한 요약을 상세 페이지에 넣고 카드를 done 으로 올려달라고 요청.
+
+**Reasoning:** 요약을 넣기 전에 카드를 먼저 대조했더니 **네 질문의 결론이 이미 `Update 2026-08-25` 절에 EN/KO 양쪽으로 들어가 있었다**(커밋 `1dda113`) — 증명이 주장하는 것(공개 입력 대 증인), 블록 해시가 약점이 아닌 이유, 보장하지 않는 셋(포함·순서·데이터 가용성), 재실행 집단 넷과 거부권 비대칭, 다양성이 새는 곳 셋과 집계의 아이러니, 다양성 대 표본 재실행 표, 그리고 추가된 측정(공유 의존성 그래프)까지. 같은 내용을 다시 붙이면 상세 페이지에 같은 논증이 두 번 실린다. 그래서 **본문은 그대로 두고 상태만 올렸다.** 질문 ①~④ 형태의 재구성은 표현 문제라 별건으로 남긴다.
+
+**Change:** `lib/poc-cards.ts`의 `l1-zkevm-optional-proofs` 카드 `status: "soon"` → `"done"`. `node scripts/generate-pocs-html.mjs` 실행.
+
+**Result:** 상세 페이지에 DONE 배지, done 그룹으로 이동. 부수 변경 둘은 번호 재배열뿐 — `stake-concentration` 8 → 9, `erc-7683-settlement-security`의 이웃 링크 갱신. 카드 총 59장.

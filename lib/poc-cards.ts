@@ -433,7 +433,7 @@ export const POC_CARDS: DemoCard[] = [
       "EIP-8025 lets a validator verify a block by checking a proof instead of re-executing it. The number nobody publishes is how many still re-execute once it is cheaper not to.",
     descriptionKo:
       "EIP-8025는 검증자가 재실행 대신 증명을 확인해 블록을 검증하게 합니다. 아무도 발표하지 않는 숫자는, 재실행이 더 비싸진 뒤에도 여전히 재실행하는 노드가 몇이나 남는가입니다.",
-    status: "soon",
+    status: "done",
     howTo:
       "Not yet scoped — start by proving recent mainnet blocks with an off-the-shelf zkVM on rented GPU and plotting wall-clock proving time against gas used, then check where Glamsterdam's 200M gas target lands relative to the reveal window ePBS opens. Source: EIP-8025 (Optional Execution Proofs), targeted at the Hegotá fork and dependent on Glamsterdam's EIP-7732 and EIP-7928.",
     howToKo:
