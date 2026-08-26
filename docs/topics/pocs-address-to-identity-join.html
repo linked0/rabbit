@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The chain gives you the graph and never the names — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The chain gives you the graph and never the names</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#27</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>The chain gives you the graph and never the names</h1>
+      <p class="lead">Chainalysis ran a multi-agency operation that turned existing crypto intelligence into 14,300 investigative leads and 7,700 identified accounts. The intelligence already existed; what the operation supplied was the join between an on-chain address and an off-chain identity, which only intermediaries hold.</p>
+      <p class="meta">Not yet scoped — and the first task is arithmetic on the published figures, which is all that can be done honestly today. Write the funnel as ratios: 29,120 addresses and identifiers examined, 14,300 investigative leads, 7,700+ suspect accounts identified, 125 countries, 16 confirmed registered sex offenders, 100+ platforms and distribution networks traced. Then mark the step that has no number yet — leads to arrests, prosecutions and account sanctions, which Chainalysis says it will share as they arrive. Source: Chainalysis, 2026-08-26, on Operation Lighthouse; held at the NCFTA in New York after months of data enrichment, with 9+ law-enforcement agencies (Europol, the Australian Federal Police, the RCMP, the UK National Crime Agency) and 13+ private and non-profit participants (Binance, Coinbase, Block, the Internet Watch Foundation). To confirm against the primary release.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>The stated purpose of the operation is the finding.</strong> It was not run to detect anything — the crypto intelligence already existed, and the operation&#39;s job was to convert it into leads investigators could act on. That sentence locates the bottleneck precisely, and it is not where most people assume. <strong>On-chain analysis was never the scarce part.</strong> The transaction graph is public, permanent and complete; anyone can trace flows between addresses and cluster them. What the graph never contains, at any depth of analysis, is <strong>a name</strong>.</p>
+<p><strong>So the operation was a join, and the join key lives off-chain.</strong> An address becomes a person only where the chain touches an intermediary that performed identity verification — an exchange, a payment platform. That is why the participant list matters more than the tooling: 9+ agencies for legal authority and 13+ private firms because the identity half is theirs, held in systems that compete with each other. Getting Binance, Coinbase and Block to contribute against the same address set, in one place, over several days, is an <strong>organisational</strong> achievement, not a technical one. Chainalysis says it intends to reuse that model for other crime types, which is the honest description of what was actually built.</p>
+<p><strong>The distribution of the numbers says the same thing again.</strong> 125 countries and 100+ platforms across clear and dark web on one side; 16 confirmed registered offenders on the other. The wide numbers describe the graph, which is easy to see. The narrow number describes identification, which requires the join. <strong>The ratio between them is the price of the missing key.</strong></p>
+<p><strong>And this catalogue has already asked the constructive version of the question.</strong> <code>pet-clean-room</code> studies computing over data that cannot leave its owner, and <code>confidential-settlement-metadata</code> asks which parties see which fields. Put those next to a fusion operation and a real question appears: <strong>how much of this join could be done without anyone pooling raw identity data</strong> — private set intersection over address lists, clean-room queries answering <em>does this address match a verified account at your institution</em> without disclosing the account. Not a criticism of the operation, which used what exists. A statement of what the technique would have to become to run without a room.</p>
+      <h2>How it works</h2>
+      <h3>The funnel, and where it stops</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Published</th>
+<th>What the step requires</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Addresses and identifiers examined</strong></td>
+<td><strong>29,120</strong></td>
+<td>On-chain analysis — public data, no permission needed</td>
+</tr>
+<tr>
+<td><strong>Investigative leads produced</strong></td>
+<td><strong>14,300</strong></td>
+<td>Enrichment and correlation across months of prior work</td>
+</tr>
+<tr>
+<td><strong>Suspect accounts identified</strong></td>
+<td><strong>7,700+</strong></td>
+<td><strong>The join</strong> — only exchanges and payment platforms can supply it</td>
+</tr>
+<tr>
+<td><strong>Registered offenders confirmed</strong></td>
+<td><strong>16</strong></td>
+<td>Cross-reference against an external registry</td>
+</tr>
+<tr>
+<td><strong>Arrests, prosecutions, sanctions</strong></td>
+<td><strong>not yet published</strong></td>
+<td>Courts and jurisdictions — 125 of them are in scope</td>
+</tr>
+</tbody></table></div>
+<p><strong>Every published figure sits upstream of the one that decides whether the operation worked.</strong> That is not concealment: the outcomes genuinely have not happened yet, and Chainalysis says it will share them as they arrive. It does mean the honest reading of the announcement today is <em>a pipeline was built and filled</em>, not <em>a result was achieved</em> — and the follow-up worth diarising is whether the bottom row ever gets a number.</p>
+<h3>Why the participant list is the artifact</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Contribution</th>
+<th>Who supplied it</th>
+<th>Why it cannot come from elsewhere</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Transaction graph, clustering</td>
+<td>Chainalysis</td>
+<td>Public data — the one part anyone could reproduce</td>
+</tr>
+<tr>
+<td><strong>Identity behind an account</strong></td>
+<td>Binance, Coinbase, Block</td>
+<td>Held under KYC obligations, in competing systems</td>
+</tr>
+<tr>
+<td>Legal authority to act</td>
+<td>Europol, AFP, RCMP, NCA</td>
+<td>Jurisdictional, and there are 125 jurisdictions here</td>
+</tr>
+<tr>
+<td>Content classification</td>
+<td>IWF and specialist non-profits</td>
+<td>Neither exchanges nor analysts are positioned to do it</td>
+</tr>
+<tr>
+<td>The room itself</td>
+<td>NCFTA</td>
+<td>Somewhere all of the above can sit together lawfully</td>
+</tr>
+</tbody></table></div>
+<h3>The question this catalogue can actually work on</h3>
+<p><strong>How much of the join survives without pooling?</strong> The operation&#39;s shape — bring every holder of a fragment into one room — is the version available today. The version worth studying is whether the same answer can be reached by parties who never exchange raw records: private set intersection over address lists, or a clean-room query returning <em>matched / not matched</em> against a verified-account set without revealing the account. <code>pet-clean-room</code> is where the technique lives; this is a concrete problem to point it at, with a public funnel to measure any proposal against.</p>
+<h3>Reading it soberly</h3>
+<p>The subject is the most serious one this catalogue touches, and the discipline is unchanged: report only the published numbers, mark the step that has none, and do not treat leads as outcomes. The Korean note in the announcement — that these cases keep arising domestically and that blockchain intelligence will be offered to support investigations — is a statement of intent, and belongs in the same column as everything else that has not happened yet.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/address-to-identity-join">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>체인은 그래프를 주고 이름은 절대 주지 않는다</h1>
+      <p class="lead">체이널리시스가 여러 기관과 함께, <strong>이미 갖고 있던</strong> 가상자산 인텔리전스를 <strong>수사 단서 1만 4,300건</strong>과 <strong>식별된 계정 7,700개</strong>로 바꾸는 작전을 진행했습니다. 인텔리전스는 이미 있었습니다. 작전이 공급한 것은 <strong>온체인 주소와 오프체인 신원 사이의 조인</strong>이고, 그건 <strong>중개기관만</strong> 갖고 있습니다.</p>
+      <p class="meta">아직 범위 미정 — 첫 작업은 <strong>발표된 수치에 대한 산수</strong>이고, 오늘 정직하게 할 수 있는 것은 그것뿐입니다. 깔때기를 비율로 적습니다 — 조사한 주소·식별자 <strong>29,120</strong>, 수사 단서 <strong>14,300</strong>, 식별된 용의 계정 <strong>7,700+</strong>, <strong>125개국</strong>, 등록 성범죄자 확인 <strong>16명</strong>, 추적된 플랫폼·유통 네트워크 <strong>100+</strong>. 그다음 <strong>아직 숫자가 없는 단계</strong>를 표시합니다 — 단서에서 체포·기소·계정 제재로 이어지는 부분이며, 체이널리시스는 나오는 대로 공유하겠다고 했습니다. 출처: 체이널리시스 2026-08-26 Operation Lighthouse 발표. 수개월 데이터 보강 뒤 뉴욕 NCFTA 에서 수일간 진행, 법집행기관 9곳 이상(Europol, 호주연방경찰, 캐나다 왕립기마경찰, 영국 국가범죄청)과 민간·비영리 13곳 이상(바이낸스, 코인베이스, 블록, Internet Watch Foundation) 참여. 원문으로 확인할 것.</p>
+      <h2>왜</h2>
+      <p><strong>작전의 목적 자체가 발견입니다.</strong> 무언가를 탐지하려고 돌린 게 아닙니다 — <strong>가상자산 인텔리전스는 이미 있었고</strong>, 작전의 일은 그것을 <strong>수사관이 움직일 수 있는 단서로 바꾸는 것</strong>이었습니다. 그 문장이 병목의 위치를 정확히 짚고, 그 위치는 대부분이 짐작하는 곳이 아닙니다. <strong>온체인 분석은 애초에 희소한 부분이 아니었습니다.</strong> 거래 그래프는 공개돼 있고, 영구적이며, 완전합니다. 누구나 주소 간 흐름을 추적하고 군집화할 수 있습니다. 그래프가 <strong>아무리 깊이 분석해도 담고 있지 않은 것은 이름</strong>입니다.</p>
+<p><strong>그래서 이 작전은 조인이었고, 조인 키는 오프체인에 있습니다.</strong> 주소가 사람이 되는 지점은 <strong>체인이 신원확인을 수행한 중개기관과 닿는 자리</strong>뿐입니다 — 거래소, 결제 플랫폼. 참여 기관 목록이 도구보다 중요한 이유가 그것입니다. 법적 권한을 위해 기관 9곳 이상, 그리고 <strong>신원 절반을 그들이 쥐고 있기 때문에</strong> 민간 13곳 이상 — 그것도 <strong>서로 경쟁하는 시스템 안에</strong> 들어 있습니다. 바이낸스·코인베이스·블록이 <strong>같은 주소 집합에 대해, 한 자리에서, 수일간</strong> 기여하게 만드는 것은 기술적 성취가 아니라 <strong>조직적 성취</strong>입니다. 체이널리시스가 그 모델을 다른 범죄 유형에도 재사용하겠다고 한 것은, <strong>실제로 만들어진 것이 무엇인지에 대한 정직한 서술</strong>입니다.</p>
+<p><strong>숫자의 분포가 같은 말을 다시 합니다.</strong> 한쪽에는 <strong>125개국</strong>과 클리어·다크웹에 걸친 <strong>플랫폼 100+</strong>, 다른 쪽에는 <strong>확인된 등록 성범죄자 16명.</strong> 큰 숫자들은 <strong>보기 쉬운 그래프</strong>를 서술하고, 작은 숫자는 <strong>조인이 필요한 식별</strong>을 서술합니다. <strong>둘 사이의 비율이 곧 없는 키의 값입니다.</strong></p>
+<p><strong>그리고 이 카탈로그는 이미 그 질문의 건설적 판본을 던져 뒀습니다.</strong> <code>pet-clean-room</code> 은 <strong>소유자를 떠날 수 없는 데이터 위에서의 연산</strong>을 다루고, <code>confidential-settlement-metadata</code> 는 <strong>어느 참여자가 어떤 필드를 보는가</strong>를 묻습니다. 그 둘을 이 융합 작전 옆에 놓으면 진짜 질문이 나타납니다 — <strong>이 조인의 얼마만큼을 누구도 원본 신원 데이터를 모으지 않고 할 수 있는가.</strong> 주소 목록에 대한 <strong>프라이빗 셋 인터섹션</strong>, <em>이 주소가 귀 기관의 검증된 계정과 일치하는가</em> 를 <strong>계정을 공개하지 않고</strong> 답하는 클린룸 질의. 있는 것을 쓴 이 작전에 대한 비판이 아닙니다. <strong>그 기법이 방(room) 없이 돌려면 무엇이 되어야 하는지에 대한 진술</strong>입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>깔때기, 그리고 멈춘 자리</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>단계</th>
+<th>발표치</th>
+<th>그 단계가 요구하는 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>조사한 주소·식별자</strong></td>
+<td><strong>29,120</strong></td>
+<td>온체인 분석 — 공개 데이터, 허가 불필요</td>
+</tr>
+<tr>
+<td><strong>생산된 수사 단서</strong></td>
+<td><strong>14,300</strong></td>
+<td>수개월 선행 작업의 보강과 상관분석</td>
+</tr>
+<tr>
+<td><strong>식별된 용의 계정</strong></td>
+<td><strong>7,700+</strong></td>
+<td><strong>조인</strong> — 거래소·결제 플랫폼만 공급 가능</td>
+</tr>
+<tr>
+<td><strong>확인된 등록 성범죄자</strong></td>
+<td><strong>16</strong></td>
+<td>외부 등록부와의 대조</td>
+</tr>
+<tr>
+<td><strong>체포·기소·제재</strong></td>
+<td><strong>아직 미발표</strong></td>
+<td>법원과 법역 — 여기 걸린 법역이 125개</td>
+</tr>
+</tbody></table></div>
+<p><strong>발표된 모든 수치가, 작전의 성패를 결정하는 수치보다 위쪽에 있습니다.</strong> 은폐가 아닙니다 — 결과는 <strong>아직 일어나지 않았고</strong>, 체이널리시스도 나오는 대로 공유하겠다고 했습니다. 다만 오늘 시점의 정직한 독법은 <em><strong>파이프라인이 만들어지고 채워졌다</strong></em> 이지 <em><strong>성과가 났다</strong></em> 가 아니며, 적어 둘 후속은 <strong>맨 아랫줄에 언젠가 숫자가 붙는가</strong> 입니다.</p>
+<h3>왜 참여 기관 목록이 산출물인가</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>기여</th>
+<th>누가 공급했나</th>
+<th>왜 다른 데서 못 오나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>거래 그래프, 군집화</td>
+<td>체이널리시스</td>
+<td>공개 데이터 — 누구나 재현 가능한 유일한 부분</td>
+</tr>
+<tr>
+<td><strong>계정 뒤의 신원</strong></td>
+<td>바이낸스, 코인베이스, 블록</td>
+<td>KYC 의무 아래, <strong>경쟁하는 시스템 안에</strong> 보관</td>
+</tr>
+<tr>
+<td>집행할 법적 권한</td>
+<td>Europol, 호주연방경찰, RCMP, NCA</td>
+<td>법역별. 여기 걸린 법역이 125개</td>
+</tr>
+<tr>
+<td>콘텐츠 분류</td>
+<td>IWF 등 전문 비영리</td>
+<td>거래소도 분석가도 할 위치가 아님</td>
+</tr>
+<tr>
+<td><strong>방 그 자체</strong></td>
+<td>NCFTA</td>
+<td>위 전부가 <strong>합법적으로 한자리에</strong> 앉을 수 있는 곳</td>
+</tr>
+</tbody></table></div>
+<h3>이 카탈로그가 실제로 붙들 수 있는 질문</h3>
+<p><strong>조인의 얼마만큼이 데이터를 모으지 않고도 성립하는가?</strong> 조각을 가진 모두를 한 방에 모으는 것이 <strong>오늘 가능한 판본</strong>입니다. 연구할 값이 있는 판본은, <strong>원본 기록을 결코 주고받지 않는 당사자들</strong>이 같은 답에 도달할 수 있는가입니다 — 주소 목록에 대한 프라이빗 셋 인터섹션, 또는 검증된 계정 집합에 대해 <strong>계정을 드러내지 않고</strong> <em>일치/불일치</em> 만 돌려주는 클린룸 질의. <code>pet-clean-room</code> 이 그 기법이 사는 곳이고, 이건 <strong>거기에 겨눌 구체적 문제</strong>이며, 어떤 제안이든 대볼 <strong>공개된 깔때기</strong>가 있습니다.</p>
+<h3>담담하게 읽기</h3>
+<p>이 카탈로그가 다루는 주제 중 가장 무겁고, 규율은 그대로입니다 — <strong>발표된 숫자만 보고</strong>, <strong>숫자가 없는 단계를 표시하고</strong>, <strong>단서를 성과로 취급하지 않는다.</strong> 발표문의 한국 관련 언급(국내에서도 관련 사건이 계속 발생하며 블록체인 인텔리전스로 수사를 지원하겠다)은 <strong>의향의 진술</strong>이고, 아직 일어나지 않은 나머지와 같은 칸에 속합니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/address-to-identity-join">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-storage-collision-admin-takeover.html">&larr; 26. The code was right and the layout was wrong</a><a href="pocs-chainlink-data-streams.html">28. Chainlink Data Streams — push vs. pull oracles and point-in-time settlement &rarr;</a></div>
+</div>
+</body>
+</html>
