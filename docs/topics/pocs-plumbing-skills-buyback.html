@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Four capabilities, each buying back what the chain gave away — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Four capabilities, each buying back what the chain gave away</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#25</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Four capabilities, each buying back what the chain gave away</h1>
+      <p class="lead">The must-build column of the plumbing table turns into four engineering capabilities: netting, hybrid matching with a verifiable audit trail, intent routing, and oracle failure with surveillance. Each one re-acquires, at a cost, a property the on-chain design discarded for free.</p>
+      <p class="meta">Not yet scoped — and the discipline is to keep this a price list rather than a syllabus. For each of the four rows below, write the one number that says whether the capability exists in a given system, not whether it has been studied: required collateral over net exposure, the fraction of the order lifecycle provable to an outsider, realised slippage against the executable side of the book, and time-to-resolution when the primary oracle is unavailable. Anything that cannot be reduced to such a number belongs in reading, not in a card. Successor to <code>event-contract-plumbing</code>, whose three-bucket table is the input to this one.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>The four capabilities look unrelated and are the same move four times.</strong> Clearing, matching, routing and resolution each name a property the on-chain design already has for free — and each is the price of keeping that property once the system has to be fast, capital-efficient, or connected to the world. That symmetry is the finding, and it is what stops the list from being a syllabus.</p>
+<p><strong>Netting is the clearest case.</strong> Full collateralisation is not a safety feature the chain gives you; it is what remains after the clearing house is removed. Novation, multilateral netting, margin models and the default waterfall exist to make capital go further, and every scheme that recovers that efficiency — portfolio margin at the account level, a hybrid engine with an off-chain credit pool — <strong>re-introduces exactly the credit relationship whose absence was the selling point.</strong> The honest framing is not <em>how do we net on chain</em> but <em>what are we willing to trust again, and how much capital does that buy back.</em></p>
+<p><strong>Matching repeats it with a different noun.</strong> The chain is the audit trail only while the order lifecycle happens on it; move matching off-chain for cost and latency and the trail leaves with it. Sequencer log commitments, Merkle proofs and ZK state-transition proofs are how a hybrid venue <strong>buys back auditability it stopped getting for free</strong> — and the residual question is always which parts of the lifecycle remain unprovable, since amendments and cancellations are harder to commit to honestly than fills.</p>
+<p><strong>Routing and resolution close the pattern.</strong> There is no best-execution duty on chain, but the economics of routing return as MEV — an agency cost paid to whoever sequences, which auctions, private order flow and slashable solver commitments try to price rather than abolish. And the chain cannot see the world at all, so every oracle fallback, dispute escrow and TLS-attested feed is a trusted party added back one at a time, while surveillance — the invariant checks, circuit breakers and rate limits that a traditional venue staffs a desk for — has to be written as code that runs without anyone watching.</p>
+<p><strong>Which is the positioning argument, stated precisely.</strong> The scarce engineer is not the one who can deploy a token or an AMM. It is the one who can read a nineteenth-century clearing mechanism, identify which of its guarantees a chain already provides and which it merely removed, and then re-implement the second group under gas, asynchrony and permissionlessness. <code>event-contract-plumbing</code> established that the requirements list is public and free to read. This card is what reading it costs.</p>
+      <h2>How it works</h2>
+      <h3>The four rows, and the number each one is measured by</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>What the chain gives free</th>
+<th>What re-acquiring it costs</th>
+<th>The number</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Clearing and netting</strong> — novation, multilateral netting, SPAN/VaR margin, default waterfall; on-chain portfolio margin and hybrid credit pools</td>
+<td>No counterparty risk, because every position is fully collateralised</td>
+<td><strong>A credit relationship comes back.</strong> Netting without a CCP means somebody is exposed between the trade and the cover</td>
+<td><strong>Required collateral ÷ net exposure.</strong> 1.0 means no netting exists; the gap below 1.0 is what was bought and from whom</td>
+</tr>
+<tr>
+<td><strong>Hybrid matching</strong> — off-chain LOB with batch settlement; sequencer log commitments, Merkle proofs, ZK state-transition proofs</td>
+<td>The chain <em>is</em> the audit trail, publicly and by construction</td>
+<td><strong>The trail leaves with the matching.</strong> It has to be re-bought cryptographically, and amendments and cancellations are the hard part, not fills</td>
+<td><strong>Share of the order lifecycle provable to an outsider</strong> — submissions, amendments, cancellations, fills</td>
+</tr>
+<tr>
+<td><strong>Intent routing</strong> — Dutch and batch auctions, private order flow, solver networks with slashable commitments</td>
+<td>No best-execution obligation to satisfy</td>
+<td><strong>The obligation returns as MEV</strong>, paid to whoever sequences. Auctions price the agency cost rather than removing it</td>
+<td><strong>Realised slippage against the executable side of the book</strong> — ask when buying, bid when selling, never the mid</td>
+</tr>
+<tr>
+<td><strong>Oracle failure and surveillance</strong> — multi-oracle fallback, dispute escrow, TLS-attested feeds, MPC feeds; invariant checks, circuit breakers, rate limits</td>
+<td>Deterministic settlement, once the input is known</td>
+<td><strong>The chain cannot see the world.</strong> Every fallback adds a trusted party, and surveillance must run with nobody watching</td>
+<td><strong>Time to resolution when the primary oracle is unavailable</strong>, and how many parties had to be trusted to get there</td>
+</tr>
+</tbody></table></div>
+<h3>Why the symmetry matters more than the list</h3>
+<p>Read the middle column downward and the same sentence appears four times: <strong>the free property was free because something had been removed, and putting the capability back puts the thing back too.</strong> That is not an argument against building any of it — a venue that refuses all four is slow, capital-hungry, unauditable and blind. It is an argument for <strong>stating the price each time</strong>, because a design that adds netting without naming the credit it re-introduced has not solved counterparty risk; it has stopped measuring it.</p>
+<h3>The order to learn them in, and why</h3>
+<p>Not the order above. <strong>Start with resolution</strong>, because a market that cannot settle correctly makes every other capability irrelevant, and because it is the row with the least public prior art. <strong>Then netting</strong>, which decides the capital structure everything else runs on. <strong>Then matching</strong>, which is a performance decision that can be deferred until volume exists. <strong>Routing last</strong>, because MEV is a cost that only appears at size — and by then the first three have determined how much of it there is to extract.</p>
+<h3>The honest limit of a card like this</h3>
+<p>Four capabilities is a career, not a sprint, and a list of things to learn is the least reliable artifact in this catalogue — it survives contact with reality only if each row is reduced to a number that can be produced for a real system. That is why the fourth column exists, and why a row without one should be dropped rather than admired.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/plumbing-skills-buyback">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>네 가지 역량, 각각은 체인이 버린 것을 되사는 일</h1>
+      <p class="lead">배관 표의 <strong>만들어야 함</strong> 칸은 네 가지 엔지니어링 역량으로 바뀝니다 — 네팅, 검증 가능한 감사 추적을 갖춘 하이브리드 매칭, 인텐트 라우팅, 오라클 장애 대응과 시장 감시. <strong>넷 모두 온체인 설계가 공짜로 버린 속성을 값을 치르고 되사는 일</strong>입니다.</p>
+      <p class="meta">아직 범위 미정 — 규율은 이걸 <strong>커리큘럼이 아니라 가격표로</strong> 유지하는 것입니다. 아래 네 줄 각각에 대해, <strong>공부했는지가 아니라 그 역량이 어떤 시스템에 존재하는지</strong>를 말하는 숫자 하나를 적습니다 — 순노출 대비 필요 담보, 외부인에게 증명 가능한 주문 생애주기의 비율, 호가의 <strong>체결되는 쪽</strong> 대비 실현 슬리피지, 주 오라클 부재 시 해결까지 걸리는 시간. <strong>그런 숫자로 환원되지 않는 것은 카드가 아니라 독서 목록에 속합니다.</strong> 세 칸 표를 입력으로 삼는 <code>event-contract-plumbing</code> 의 후속입니다.</p>
+      <h2>왜</h2>
+      <p><strong>네 역량은 무관해 보이지만 같은 수를 네 번 두는 것입니다.</strong> 청산·매칭·라우팅·판정은 각각 <strong>온체인 설계가 이미 공짜로 갖고 있는 속성</strong>의 이름이고, 동시에 시스템이 빨라지거나 자본 효율적이 되거나 세상과 연결되는 순간 <strong>그 속성을 유지하기 위해 치러야 하는 값</strong>입니다. 그 대칭이 발견이고, 이 목록이 커리큘럼으로 전락하지 않게 막는 것입니다.</p>
+<p><strong>네팅이 가장 분명합니다.</strong> 전액 담보는 체인이 주는 안전장치가 아니라 <strong>청산소를 없애고 남은 것</strong>입니다. 경개·다자간 상계·증거금 모델·디폴트 폭포는 자본을 더 멀리 가게 하려고 존재하고, 그 효율을 되찾는 모든 설계 — 계정 단위 포트폴리오 마진, 오프체인 크레딧 풀을 결합한 하이브리드 엔진 — 은 <strong>부재가 곧 세일즈 포인트였던 신용 관계를 정확히 다시 들여옵니다.</strong> 정직한 질문은 <em>온체인에서 어떻게 네팅하나</em> 가 아니라 <em><strong>무엇을 다시 신뢰할 용의가 있고, 그것이 자본을 얼마나 되사 주는가</strong></em> 입니다.</p>
+<p><strong>매칭이 명사만 바꿔 같은 일을 반복합니다.</strong> 체인이 감사 추적인 것은 <strong>주문 생애주기가 그 위에서 일어나는 동안뿐</strong>입니다. 비용과 지연 때문에 매칭을 내리면 추적도 함께 내려갑니다. 시퀀서 로그 커밋, 머클 증명, ZK 상태 전이 증명은 하이브리드 거래소가 <strong>공짜로 받던 감사 가능성을 되사는 방법</strong>이고, 남는 질문은 언제나 <strong>생애주기의 어느 부분이 증명 불가로 남는가</strong>입니다 — 정정과 취소는 체결보다 정직하게 커밋하기 어렵기 때문입니다.</p>
+<p><strong>라우팅과 판정이 패턴을 닫습니다.</strong> 온체인에 최선집행 의무는 없지만 <strong>라우팅의 경제학은 MEV로 돌아옵니다</strong> — 순서를 정하는 쪽에게 지불되는 대리인 비용이고, 경매·프라이빗 오더플로·슬래시 가능한 솔버 약정은 그것을 없애기보다 <strong>값을 매기려는</strong> 시도입니다. 그리고 체인은 세상을 전혀 볼 수 없으므로, 모든 오라클 폴백·분쟁 에스크로·TLS 증명 피드는 <strong>신뢰 주체를 하나씩 다시 들이는 일</strong>이며, 시장 감시 — 전통 거래소가 사람을 앉혀 두는 불변식 점검·서킷 브레이커·레이트 리밋 — 는 <strong>아무도 지켜보지 않아도 도는 코드</strong>로 쓰여야 합니다.</p>
+<p><strong>이것이 포지셔닝 논지를 정확히 말한 것입니다.</strong> 희소한 엔지니어는 토큰이나 AMM을 배포할 줄 아는 사람이 아닙니다. <strong>19세기 청산 메커니즘을 읽고, 그 보장 중 무엇을 체인이 이미 제공하고 무엇을 단지 제거했을 뿐인지 가려낸 뒤, 두 번째 무리를 가스·비동기성·무허가성 위에서 다시 구현할 수 있는 사람</strong>입니다. <code>event-contract-plumbing</code> 은 요구사항 목록이 공개돼 있고 공짜로 읽을 수 있음을 확인했습니다. <strong>이 카드는 그것을 읽는 데 드는 값입니다.</strong></p>
+      <h2>동작 방식</h2>
+      <h3>네 줄, 그리고 각각을 재는 숫자</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>역량</th>
+<th>체인이 공짜로 주는 것</th>
+<th>되사는 데 드는 비용</th>
+<th>그 숫자</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>청산·네팅</strong> — 경개, 다자간 상계, SPAN/VaR 증거금, 디폴트 폭포. 온체인 포트폴리오 마진과 하이브리드 크레딧 풀</td>
+<td>모든 포지션이 전액 담보라 <strong>거래상대방 리스크가 없음</strong></td>
+<td><strong>신용 관계가 되돌아옴.</strong> CCP 없는 네팅은 거래와 담보 사이에 <strong>누군가 노출</strong>된다는 뜻</td>
+<td><strong>필요 담보 ÷ 순노출.</strong> 1.0이면 네팅 없음. 1.0 아래로 벌어진 만큼이 <strong>무엇을 누구에게서 샀는지</strong></td>
+</tr>
+<tr>
+<td><strong>하이브리드 매칭</strong> — 오프체인 LOB + 배치 정산. 시퀀서 로그 커밋, 머클 증명, ZK 상태 전이 증명</td>
+<td>체인이 <strong>곧</strong> 감사 추적. 공개적으로, 구조적으로</td>
+<td><strong>매칭과 함께 추적도 떠남.</strong> 암호학으로 되사야 하고, <strong>어려운 쪽은 체결이 아니라 정정과 취소</strong></td>
+<td><strong>외부인에게 증명 가능한 주문 생애주기의 비율</strong> — 제출·정정·취소·체결</td>
+</tr>
+<tr>
+<td><strong>인텐트 라우팅</strong> — 더치·배치 경매, 프라이빗 오더플로, 슬래시 가능한 솔버 네트워크</td>
+<td>지켜야 할 <strong>최선집행 의무가 없음</strong></td>
+<td><strong>의무가 MEV로 돌아옴.</strong> 순서를 정하는 쪽에게 지불되고, 경매는 그 대리인 비용을 <strong>없애는 게 아니라 값을 매김</strong></td>
+<td><strong>호가의 체결되는 쪽 대비 실현 슬리피지</strong> — 살 때 ask, 팔 때 bid. 중간값은 아님</td>
+</tr>
+<tr>
+<td><strong>오라클 장애·시장 감시</strong> — 다중 오라클 폴백, 분쟁 에스크로, TLS 증명 피드, MPC 피드. 불변식 점검, 서킷 브레이커, 레이트 리밋</td>
+<td>입력이 정해지면 <strong>결정론적 정산</strong></td>
+<td><strong>체인은 세상을 볼 수 없음.</strong> 모든 폴백이 <strong>신뢰 주체를 하나씩</strong> 더하고, 감시는 <strong>아무도 안 볼 때도</strong> 돌아야 함</td>
+<td><strong>주 오라클 부재 시 해결까지의 시간</strong>, 그리고 거기 닿기까지 <strong>신뢰해야 했던 주체 수</strong></td>
+</tr>
+</tbody></table></div>
+<h3>목록보다 대칭이 중요한 이유</h3>
+<p>가운데 칸을 위에서 아래로 읽으면 같은 문장이 네 번 나옵니다 — <strong>공짜였던 속성은 무언가가 제거됐기 때문에 공짜였고, 역량을 되돌리면 그 무언가도 함께 돌아온다.</strong> 넷 중 무엇도 만들지 말라는 논지가 아닙니다. 넷 다 거부한 거래소는 느리고 자본을 많이 먹고 감사 불가능하며 눈이 멉니다. <strong>매번 값을 명시하라</strong>는 논지입니다 — <strong>다시 들인 신용을 이름 붙이지 않은 채 네팅을 더한 설계는 거래상대방 리스크를 푼 것이 아니라 재기를 그만둔 것</strong>이기 때문입니다.</p>
+<h3>배우는 순서, 그리고 왜</h3>
+<p>위의 순서가 아닙니다. <strong>판정부터.</strong> 정산이 틀리는 시장에서는 나머지 역량이 전부 무의미하고, <strong>공개된 선행 사례가 가장 적은 줄</strong>이기 때문입니다. <strong>그다음 네팅</strong> — 나머지 전부가 올라탈 자본 구조를 결정합니다. <strong>그다음 매칭</strong> — 거래량이 생기기 전까지 미룰 수 있는 <strong>성능 결정</strong>입니다. <strong>라우팅이 마지막</strong> — MEV는 규모가 있어야 나타나는 비용이고, 그때쯤이면 앞의 셋이 <strong>뽑아갈 양이 얼마인지를 이미 정해 놓았기</strong> 때문입니다.</p>
+<h3>이런 카드의 정직한 한계</h3>
+<p>네 역량은 스프린트가 아니라 <strong>커리어</strong>이고, <strong>배울 것 목록은 이 카탈로그에서 가장 신뢰도가 낮은 산출물</strong>입니다. 각 줄이 실제 시스템에 대해 산출할 수 있는 숫자로 환원될 때만 현실과의 접촉에서 살아남습니다. 네 번째 칸이 존재하는 이유이자, <strong>숫자가 없는 줄은 감탄하지 말고 버려야 하는 이유</strong>입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/plumbing-skills-buyback">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-decision-market-uncontrollability.html">&larr; 24. The property that makes a market work is the one that makes it gambling</a><a href="pocs-storage-collision-admin-takeover.html">26. The code was right and the layout was wrong &rarr;</a></div>
+</div>
+</body>
+</html>
