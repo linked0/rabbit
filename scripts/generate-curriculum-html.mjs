@@ -424,7 +424,7 @@ ${cards}
     INDEX_HTML,
     index.replace(
       new RegExp(`(${begin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})[\\s\\S]*?(${end.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`),
-      (_m, b, e) => `${b}\n${section}\n            ${e}`
+      `$1\n${section}\n            $2`
     ),
     'utf8'
   );
