@@ -1,4 +1,4 @@
-// /poc/aa 의 "이 구성요소로 만드는 에이전트" 4가지 시나리오 — 목록(요약)과 상세 페이지가 함께 쓴다.
+// /live/aa 의 "이 구성요소로 만드는 에이전트" 4가지 시나리오 — 목록(요약)과 상세 페이지가 함께 쓴다.
 // 각 시나리오는 두 장의 그림을 갖는다: 관계도(누가 누구에게 무엇을 주는가)와 순서도(시간 순서).
 // 둘이 답하는 질문이 다르다 — 관계도는 "권한과 돈이 어느 방향으로 흐르나", 순서도는 "언제 무슨 일이".
 // 설계 배경: docs/tasks/current-plan.md §6, 이름 변경 경위는 docs/history/2026-08-05-rabbit-history.md.
@@ -14,7 +14,7 @@ export type AgentScenario = {
   slug: string;
   title: string;
   titleKo: string;
-  summary: string; // /poc/aa 목록용 한 줄
+  summary: string; // /live/aa 목록용 한 줄
   summaryKo: string;
   blocks: string; // 쓰이는 구성요소 — 예: "① + ③"
   live: boolean; // 오늘 실제로 동작하는 구성인지
@@ -41,9 +41,9 @@ export const AGENT_SCENARIOS: AgentScenario[] = [
     blocks: "① + ③",
     live: true,
     thesis:
-      "This is the /poc/ap2 and /poc/toss demos with the human taken out of every individual purchase. You approve a budget once; the agent decides which providers to buy from and settles with each. The interesting property is not that it can pay — it is that a partially-completed order is impossible.",
+      "This is the /live/ap2 and /live/toss demos with the human taken out of every individual purchase. You approve a budget once; the agent decides which providers to buy from and settles with each. The interesting property is not that it can pay — it is that a partially-completed order is impossible.",
     thesisKo:
-      "/poc/ap2와 /poc/toss 데모에서, 개별 구매마다 사람이 빠진 형태입니다. 예산은 한 번 승인하고, 어느 공급자에서 살지는 에이전트가 정해 각각 정산합니다. 흥미로운 성질은 결제할 수 있다는 게 아니라, 절반만 완료된 주문이 불가능하다는 점입니다.",
+      "/live/ap2와 /live/toss 데모에서, 개별 구매마다 사람이 빠진 형태입니다. 예산은 한 번 승인하고, 어느 공급자에서 살지는 에이전트가 정해 각각 정산합니다. 흥미로운 성질은 결제할 수 있다는 게 아니라, 절반만 완료된 주문이 불가능하다는 점입니다.",
     entities: [
       {
         name: "You (owner wallet)",

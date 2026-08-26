@@ -46,8 +46,8 @@ not just doc text — several rows are flagged stale below (see notes under the 
 enumerated from <code>app/**/page.tsx</code>, the top menu read from <code>app/Nav.tsx</code>, not from doc text.
 One row was materially wrong and is corrected below (AI Chat). Verified facts used as the
 basis: the top menu is exactly <code>/</code> · <code>/portfolio</code> · <code>/projects</code> · <code>/game</code> · <code>/poc</code> · <code>/live</code>;
-<code>.github/workflows/</code> still does not exist; <code>/market</code>, <code>/xyz</code>, <code>/poc/aa</code>, <code>/poc/ap2</code>, <code>/poc/7702</code>
-and <code>/poc/agent</code> all exist as routes. <strong>Plan reset 2026-08-21</strong> (jay): the autonomy-loop plan
+<code>.github/workflows/</code> still does not exist; <code>/market</code>, <code>/xyz</code>, <code>/live/aa</code>, <code>/live/ap2</code>, <code>/live/7702</code>
+and <code>/live/agent</code> all exist as routes. <strong>Plan reset 2026-08-21</strong> (jay): the autonomy-loop plan
 was archived unstarted, so <strong>this table is now the single status source for the whole repo</strong> —
 <a href="../tasks/current-plan.html">current-plan.md</a> holds no active task until jay picks the next one.
 Per-milestone marks for the autonomy loop moved to <a href="#backlog">Backlog</a> below.
@@ -85,9 +85,9 @@ their rows below are now the live status. The PoCs hub they all plug into is tra
 </tr>
 <tr>
 <td>AP2 Test</td>
-<td><code>/poc/ap2</code></td>
+<td><code>/live/ap2</code></td>
 <td><a href="ap2-test.html">ap2-test.md</a> — build detail in the <a href="../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.html#s2">archived plan §2</a></td>
-<td>✅ Done — Stripe Checkout settlement example (test mode), server-side <code>payment_status</code> verification; moved from <code>/ap2</code> to <code>/poc/ap2</code></td>
+<td>✅ Done — Stripe Checkout settlement example (test mode), server-side <code>payment_status</code> verification; moved from <code>/ap2</code> to <code>/live/ap2</code></td>
 </tr>
 <tr>
 <td>XYZ Demo</td>
@@ -115,31 +115,31 @@ their rows below are now the live status. The PoCs hub they all plug into is tra
 </tr>
 <tr>
 <td><em>Agentic AA — building blocks</em></td>
-<td><code>/poc/aa</code></td>
+<td><code>/live/aa</code></td>
 <td><a href="agentic-aa.html">agentic-aa.md</a> — session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix</td>
 <td>🟡 Built — ① session key (ERC-7715/7710) + ②③ sponsored/batch tx (thirdweb 4337) live; ④ KYA stayed an explainer card (ERC-8004 testnet registry unverified). All human-triggered — that gap is what the row below addresses</td>
 </tr>
 <tr>
 <td><em>Agentic AA — autonomy loop</em></td>
-<td><code>/poc/agent</code> (mock only)</td>
+<td><code>/live/agent</code> (mock only)</td>
 <td><a href="#b1">Backlog → B1</a> · design in the <a href="../tasks/archive/2026-08-21-current-plan-agentic-aa.html">archived plan</a></td>
-<td>⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes <code>lib/agent-scenarios.ts</code>&#39;s <code>scheduled-operator</code> actually run. <strong>Route exists but is a mock</strong> — <code>app/poc/agent/AgentJournalMock.tsx</code>, a 7-tick script walked by a button; no store, no scheduler, no chain. Blocked on <strong>D2</strong> (session-key custody)</td>
+<td>⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes <code>lib/agent-scenarios.ts</code>&#39;s <code>scheduled-operator</code> actually run. <strong>Route exists but is a mock</strong> — <code>app/live/agent/AgentJournalMock.tsx</code>, a 7-tick script walked by a button; no store, no scheduler, no chain. Blocked on <strong>D2</strong> (session-key custody)</td>
 </tr>
 <tr>
 <td><em>Agentic AA — Unity visualization</em></td>
-<td><code>/poc/agent</code> toggle (planned)</td>
+<td><code>/live/agent</code> toggle (planned)</td>
 <td><a href="#b2">Backlog → B2</a> · <a href="game.html">game.md</a></td>
 <td>⬜ Deferred, not dropped — side-quest, explicitly off the critical path; blocked on <strong>U1</strong> (submodule strategy) and sequenced after the loop actually runs</td>
 </tr>
 <tr>
 <td><em>EIP-7702 inspector</em></td>
-<td><code>/poc/7702</code></td>
+<td><code>/live/7702</code></td>
 <td><a href="erc-8141.html">erc-8141.md</a> is the <em>native</em>-AA sibling study; this page is the app-layer inspector</td>
 <td>✅ Done — read-only <code>eth_getCode</code> account inspector (plain EOA / 7702-delegated / contract), no wallet required</td>
 </tr>
 <tr>
 <td><em>Toss Payments</em></td>
-<td><code>/poc/toss</code></td>
+<td><code>/live/toss</code></td>
 <td><a href="toss-payments.html">toss-payments.md</a> — KRW settlement example, counterpart to the AP2 Stripe example</td>
 <td>✅ Done — standalone page (not an <code>/ap2</code> extension); test-mode client/secret keys. Detail in the <a href="../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.html#s7">archived plan §7</a></td>
 </tr>
@@ -215,7 +215,13 @@ Nothing was deleted. The full design prose stays verbatim in
 <a href="../tasks/archive/2026-08-21-current-plan-agentic-aa.html">../tasks/archive/2026-08-21-current-plan-agentic-aa.md</a>;
 this is the status surface, and it is what the next plan will draw from.</p>
 </blockquote>
-<h3>B1 — Agentic AA: the autonomy loop (<code>/poc/agent</code>) <a id="b1"></a></h3>
+<h3>B1 — Agentic AA: the autonomy loop (<code>/live/agent</code>) <a id="b1"></a></h3>
+<blockquote>
+<p><strong>Partly built, 2026-08-26.</strong> The loop exists as J2 — mandate, news store, LLM estimate, tick and
+journal — driveable by hand at <code>/live/agent/console</code>. What B1 still owes is the <strong>scheduler</strong>.
+As-built description: <a href="autonomous-trading-agent.html">autonomous-trading-agent.md</a>. Plan:
+<a href="../tasks/current-plan.html">docs/tasks/current-plan.md</a>.</p>
+</blockquote>
 <p>The claim it would demonstrate: <strong>the safety of an unattended agent is arithmetic, not trust</strong> —
 the mandate&#39;s amount cap and expiry are enforced by contracts the agent cannot touch, so a buggy
 or compromised agent&#39;s worst case is bounded in advance and observable after the fact. Audited
@@ -248,7 +254,7 @@ against the code on <code>main</code>, not the commit log.</p>
 <td><strong>M3</strong></td>
 <td>Journal + persistence</td>
 <td>🟡 mock only</td>
-<td><code>/poc/agent</code> renders <code>app/poc/agent/AgentJournalMock.tsx</code>, a hand-written 7-tick script walked by a button — no store, no read API, no real ticks</td>
+<td><code>/live/agent</code> renders <code>app/live/agent/AgentJournalMock.tsx</code>, a hand-written 7-tick script walked by a button — no store, no read API, no real ticks</td>
 <td>1d</td>
 </tr>
 <tr>
@@ -314,7 +320,7 @@ physical — in a journal a rejection is a red word, in a scene it is a gate tha
 <p>Two rules that survive from the design and should not be re-litigated: <strong>Unity is a dumb
 renderer</strong> (it gets journal rows via <code>SendMessage</code> and never touches a chain, a key, or an RPC —
 a second path to the chain could disagree with the journal, and the journal <em>is</em> the record), and
-it lives behind a <strong>toggle on <code>/poc/agent</code></strong>, not its own route, for the same reason.</p>
+it lives behind a <strong>toggle on <code>/live/agent</code></strong>, not its own route, for the same reason.</p>
 <p><strong>Open — U1 blocks the rest.</strong> U1: submodule strategy for <code>rabbit-hole</code> (source + CI build ·
 source + committed WebGL build ⭐ recommended · no submodule, iframe a published build) — the
 same question <a href="game.html">game.md</a> already asks, so whatever is picked should serve both. U2:

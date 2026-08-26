@@ -20,6 +20,9 @@ importers:
       '@react-three/fiber':
         specifier: ^8.18.0
         version: 8.18.0(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.185.1)
+      '@verex/sdk':
+        specifier: file:../verex/packages/sdk
+        version: file:../verex/packages/sdk(bufferutil@4.1.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.75)
       '@x402/core':
         specifier: ^2.20.0
         version: 2.20.0
@@ -1770,6 +1773,9 @@ packages:
 
   '@upsetjs/venn.js@2.0.0':
     resolution: {integrity: sha512-WbBhLrooyePuQ1VZxrJjtLvTc4NVfpOyKx0sKqioq9bX1C1m7Jgykkn8gLrtwumBioXIqam8DLxp88Adbue6Hw==}
+
+  '@verex/sdk@file:../verex/packages/sdk':
+    resolution: {directory: ../verex/packages/sdk, type: directory}
 
   '@wagmi/connectors@6.2.0':
     resolution: {integrity: sha512-2NfkbqhNWdjfibb4abRMrn7u6rPjEGolMfApXss6HCDVt9AW2oVC6k8Q5FouzpJezElxLJSagWz9FW1zaRlanA==}
@@ -6404,6 +6410,15 @@ snapshots:
     optionalDependencies:
       d3-selection: 3.0.0
       d3-transition: 3.0.1(d3-selection@3.0.0)
+
+  '@verex/sdk@file:../verex/packages/sdk(bufferutil@4.1.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.75)':
+    dependencies:
+      viem: 2.55.10(bufferutil@4.1.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.75)
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - zod
 
   '@wagmi/connectors@6.2.0(2c686df8c26f1be383ead6e07e5dcf64)':
     dependencies:

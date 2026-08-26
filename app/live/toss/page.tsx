@@ -48,7 +48,7 @@ export default async function TossPage({
     <>
       <Nav />
       <main>
-        <BackLink lang={lang} />
+        <BackLink lang={lang} href="/live" ko="라이브" en="Live" />
         <h1>{pick(lang, "Toss Payments — KRW 정산 데모", "Toss Payments — KRW Settlement Demo")}</h1>
         <p className="sub">
           {pick(

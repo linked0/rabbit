@@ -8,10 +8,17 @@ import AgentJournalMock from "./AgentJournalMock";
 
 const AGENT_CARD = POC_CARDS.find((c) => c.key === "agent")!;
 
-// 자율 결제 에이전트 — 논의용 목업 (jay 요청, 2026-08-06). 설계: docs/tasks/current-plan.md.
-// 아직 구현이 아니다. 화면에 보이는 값은 전부 AgentJournalMock.tsx의 각본이고, 체인·지갑·
-// 스케줄러 어느 것도 붙어 있지 않다. PoCs 카드가 "준비 중"인 이유도 그것 — 카드에서 링크되지
-// 않으므로 이 페이지는 URL로만 들어온다. 실제 구현(M3)에서 카드를 live로 바꾼다.
+// 자율 거래 에이전트 — 공개 개요 페이지. 설계: docs/tasks/current-plan.md,
+// 실제 구조: docs/features/autonomous-trading-agent.md.
+//
+// 2026-08-26, 카드가 live 로 올라갔다(jay). 그래서 이 페이지의 역할이 바뀐다 — 예전엔
+// "아직 아무것도 안 돈다"고 말하는 목업 페이지였지만, 이제는 **무엇이 만들어졌는지 보여주는
+// 공개 페이지**다. 조작판(`/live/agent/console`)은 anvil 과 verex API 가 도는 기계에서만
+// 열리므로 카드가 그쪽을 걸 수 없고, 그 역할을 이 페이지가 대신한다.
+//
+// 아래 AgentJournalMock 은 **지우지 않았다.** 손으로 쓴 각본이지만 저널의 모양을 설명하는
+// 삽화로는 여전히 최선이고, 방문자는 체인 없이 그 모양을 볼 방법이 달리 없다. 다만 "이건
+// 각본"이라고 그 자리에서 말한다 — 실제 저널은 조작판에 있다.
 export default function AgentMockPage() {
   const lang = getLang();
   const t = (ko: string, en: string) => pick(lang, ko, en);
@@ -20,7 +27,7 @@ export default function AgentMockPage() {
     <>
       <Nav />
       <main>
-        <BackLink lang={lang} />
+        <BackLink lang={lang} href="/live" ko="라이브" en="Live" />
         <h1>{t("자율 결제 에이전트", "Autonomous payment agent")}</h1>
         <p className="sub">
           {t(
@@ -31,15 +38,62 @@ export default function AgentMockPage() {
 
         <div
           className="panel"
-          style={{ marginTop: 16, borderColor: "#f59e0b", borderWidth: 2, borderStyle: "solid" }}
+          style={{ marginTop: 16, borderColor: "#16a34a", borderWidth: 2, borderStyle: "solid" }}
         >
-          <strong style={{ color: "#b45309" }}>
-            {t("목업 — 아직 아무것도 실제로 돌지 않습니다", "Mock — nothing here is running yet")}
+          <strong style={{ color: "#166534" }}>
+            {t("만들어졌고, 로컬 체인 위에서 돕니다", "Built, and running against a local chain")}
           </strong>
           <p className="sub" style={{ marginTop: 4, fontSize: 13 }}>
             {t(
-              "체인도, 지갑도, 스케줄러도 붙어 있지 않습니다. 아래 값은 전부 손으로 적은 각본이고, 「다음 틱」 버튼이 그것을 한 줄씩 보여줄 뿐입니다. 만들기 전에 화면의 모양을 두고 이야기하기 위한 페이지입니다.",
-              "No chain, no wallet, no scheduler. Every value below is a hand-written script, and the “next tick” button just reveals it one row at a time. This page exists so the shape can be argued about before it is built."
+              "에이전트가 뉴스를 읽고, LLM 에게 확률을 묻고, 살아 있는 호가와 비교해, 계정도 없는 예측시장(verex)에서 거래합니다. 상한과 기한은 제 코드가 아니라 온체인 컨트랙트 둘이 강제합니다 — ",
+              "The agent reads news, asks an LLM for a probability, compares it to a live order book, and trades on a prediction market (verex) it has no account with. The cap and the deadline are enforced not by its own code but by two on-chain contracts — ",
+            )}
+            <code>ERC20TransferAmountEnforcer</code>
+            {t(" 와 ", " and ")}
+            <code>TimestampEnforcer</code>.
+          </p>
+          <p className="sub" style={{ marginTop: 8, fontSize: 13 }}>
+            {t("조작하려면 ", "To drive it, the ")}
+            <a href="/live/agent/console">{t("조작판", "operator console")}</a>
+            {t(
+              " 이 있습니다 — 다만 anvil 과 verex API 가 도는 기계에서만 열립니다. 그래서 이 페이지가 대신 설명합니다.",
+              " is where you do it — but it only opens in front of a running anvil and verex API. Hence this page.",
+            )}
+          </p>
+        </div>
+
+        {/* 데모의 주장이 참인지 방문자가 코드 없이 확인할 수 있는 유일한 지점 — 컨트랙트가
+            실제로 뭐라고 거절했는지 그대로 옮긴다. `pnpm delegation:verify` 의 출력이다. */}
+        <div className="panel" style={{ marginTop: 16 }}>
+          <strong>{t("경계가 진짜라는 증거", "The boundaries, actually refusing")}</strong>
+          <p className="sub" style={{ marginTop: 4, fontSize: 13 }}>
+            {t(
+              "verex 도 지갑도 없이 로컬 체인 하나만으로 재현됩니다 (rabbit 저장소에서 ",
+              "Reproducible on a bare local chain — no verex, no wallet (in the rabbit repo: ",
+            )}
+            <code>pnpm delegation:verify</code>
+            {t("):", "):")}
+          </p>
+          <pre className="sub" style={{ marginTop: 8, fontSize: 12.5, overflowX: "auto" }}>{`1. draw 4 of 10 …………  agent USDC: 4
+2. cap exceeded ………  ERC20TransferAmountEnforcer:allowance-exceeded   (still 4)
+3. after expiry ………  TimestampEnforcer:expired-delegation             (still 4)`}</pre>
+          <p className="sub" style={{ marginTop: 8, fontSize: 13 }}>
+            {t(
+              "3번이 이 데모의 전부입니다 — 아무도 취소하지 않았습니다. 창이 닫혔을 뿐인데 같은 코드가 같은 키로 계속 돌면서 계속 무해하게 거절당합니다.",
+              "Line 3 is the whole argument — nobody revoked anything. The window closed, and the same code with the same key keeps running and keeps being harmlessly refused.",
+            )}
+          </p>
+        </div>
+
+        {/* 아직 아닌 것을 카드가 live 라는 이유로 숨기지 않는다. */}
+        <div className="panel" style={{ marginTop: 16, borderColor: "#f59e0b", borderWidth: 2, borderStyle: "solid" }}>
+          <strong style={{ color: "#b45309" }}>
+            {t("아직 무인 운영은 아닙니다", "Not unattended yet")}
+          </strong>
+          <p className="sub" style={{ marginTop: 4, fontSize: 13 }}>
+            {t(
+              "스케줄러가 아직 붙지 않아 지금은 사람이 틱을 누릅니다. 그러니 이 데모가 증명하는 것은 무인 운영이 아니라 경계 지어진 자율성입니다 — 판단은 에이전트가 하고, 피해의 크기는 컨트랙트가 정합니다. 그리고 이 페이지도, 배포된 사이트에서는 체인이 없어 조작판이 열리지 않습니다.",
+              "The scheduler is not wired, so a human presses tick. What this proves is therefore bounded autonomy, not unattended operation — the agent makes the judgement, the contracts fix the worst case. And on the deployed site there is no chain, so the console will not run.",
             )}
           </p>
         </div>
@@ -65,6 +119,14 @@ export default function AgentMockPage() {
           </ol>
         </div>
 
+        {/* 손으로 쓴 각본이다. 실제 저널은 조작판에 있고 체인이 필요하다 — 방문자가 저널의
+            모양을 볼 수 있는 유일한 방법이라 남겨두되, 그 사실을 여기서 말한다. */}
+        <p className="sub" style={{ marginTop: 24, fontSize: 13 }}>
+          {t(
+            "아래는 저널의 모양을 보여주는 손으로 쓴 삽화입니다 — 체인 없이도 열리도록. 진짜 저널은 조작판에 있습니다.",
+            "Below is a hand-written illustration of the journal's shape, so it opens with no chain attached. The real journal lives in the console.",
+          )}
+        </p>
         <AgentJournalMock />
 
         {/* 2026-08-11 — jay와 이 시나리오를 한 줄씩 따라가며 나온 오해들을 그대로 옮겼다.
@@ -120,38 +182,41 @@ export default function AgentMockPage() {
           </ol>
         </div>
 
+        {/* 2026-08-26 — 이 자리는 원래 "이 목업을 두고 정해야 할 것"이라는 열린 질문 넷이었다.
+            구현이 끝나면서 전부 답해졌으므로 질문을 지우지 않고 **답과 함께** 남긴다. 무엇을
+            물었는지가 사라지면 왜 지금 모양이 이런지도 사라진다. */}
         <div className="panel" style={{ marginTop: 24 }}>
-          <strong>{t("이 목업을 두고 정해야 할 것", "What this mock is meant to settle")}</strong>
+          <strong>{t("이 목업이 물었던 것, 그리고 구현이 낸 답", "What this mock asked, and what the build answered")}</strong>
           <ul className="sub" style={{ marginTop: 8, paddingLeft: 20, fontSize: 13.5 }}>
             <li>
               {t(
-                "저널의 열 구성이 맞나 — 시각·관측·규칙·결과·기록. 빠진 열(가스비, 누적 지출, 다음 틱 예정 시각)이 있나?",
-                "Are these the right columns — time, observation, rule, outcome, note? Anything missing (gas cost, cumulative spend, next scheduled tick)?"
+                "「저널의 열 구성이 맞나」 → 두 열이 더 필요했다. **인용한 증거**(어떤 뉴스를 근거로 삼았나 — 삭제된 항목도 「삭제됨」으로 남는다)와 **그 시점의 남은 예산**. 두 번째는 나중에 계산하지 않고 찍어 둔다 — 위임이 바뀌어도 그때 무엇을 보고 판단했는지가 남아야 한다.",
+                "“Are these the right columns?” → two more were needed. **The evidence cited** (which news items backed the estimate — a deleted one still shows as “deleted”), and **the budget as it stood at that moment**, stamped rather than recomputed: the mandate can change, but what the agent was looking at when it decided must not.",
               )}
             </li>
             <li>
               {t(
-                "신호를 무엇으로 할까 — 지금 각본은 ETH/USD 가격 변동이다. 이 데모에서 가격이 그럴듯한 방아쇠인가, 아니면 「구독 갱신」처럼 더 단순한 게 나은가?",
-                "What should the signal be? The script uses an ETH/USD move. Is a price the right trigger here, or is something plainer — a subscription renewal — a better fit?"
+                "「신호를 무엇으로 할까」 → 가격이 아니라 **뉴스**다. 가격 방아쇠는 에이전트를 규칙 실행기로 만든다. 뉴스를 읽고 확률을 스스로 추정하게 하면 판단이 실제로 판단이 되고, 그 판단을 살아 있는 호가라는 **독립된 기준**과 겨룰 수 있다.",
+                "“What should the signal be?” → **news**, not a price. A price trigger makes the agent a rule-executor. Reading news and forming its own probability makes the judgement real — and gives it an independent yardstick to be wrong against: the live order book.",
               )}
             </li>
             <li>
               {t(
-                "직접 조작할 부분이 어디까지인가 — 방문자가 위임을 직접 부여하나, 아니면 내 위임으로 도는 걸 읽기만 하나? 후자면 지갑 없이도 볼 수 있다.",
-                "How much should a visitor drive? Do they grant their own mandate, or only read a journal from mine? The latter works with no wallet at all."
+                "「방문자가 어디까지 조작하나」 → 방문자는 읽고, 소유자는 조작한다. 조작판은 anvil 과 verex 가 도는 기계에서만 열리므로 갈림길이 저절로 정해졌다.",
+                "“How much should a visitor drive?” → visitors read, the owner drives. The console needs a running anvil and verex, so the split decided itself.",
               )}
             </li>
             <li>
               {t(
-                "만료 상태를 어떻게 유지해 보여줄까 — 실제로는 만료된 위임을 계속 두면 저널이 거부로만 채워진다. 그게 좋은 건가, 아니면 새 위임으로 리셋할 수단이 필요한가?",
-                "How do we keep the expiry state visible? In reality a lapsed mandate fills the journal with nothing but rejections. Is that the point, or does it need a reset?"
+                "「만료 상태를 어떻게 보여줄까」 → 저널이 거부로 채워지는 것이 **맞다.** 다만 DB 의 시각만 보고 「체인이 거절했다」고 적으면 거짓말이므로, 틱이 실제로 체인에 물어보고(가스 0 시뮬레이션) enforcer 가 낸 문장을 그대로 적는다.",
+                "“How do we keep the expiry visible?” → a journal filling with refusals **is** the point. But reading the DB's timestamp and writing “the chain refused” would be a lie, so the tick actually asks the chain — a zero-gas simulation — and records the enforcer's own words.",
               )}
             </li>
           </ul>
           <p className="sub" style={{ marginTop: 8, fontSize: 13 }}>
             {t(
-              "가스·키 보관·스케줄러 호스트·저널 저장소 결정은 docs/features/README.md의 백로그 B1에 D1–D5로 있다.",
-              "The gas, key-custody, scheduler-host, and journal-storage decisions live in docs/features/README.md, backlog item B1, as D1–D5."
+              "가스·키 보관·스케줄러 호스트·저널 저장소 결정은 docs/features/README.md 의 백로그 B1 에 D1–D5 로 있고, 지금 도는 구조는 docs/features/autonomous-trading-agent.md 에 있다.",
+              "The gas, key-custody, scheduler-host, and journal-storage decisions live in docs/features/README.md, backlog item B1, as D1–D5; the architecture as it now runs is in docs/features/autonomous-trading-agent.md.",
             )}
           </p>
         </div>

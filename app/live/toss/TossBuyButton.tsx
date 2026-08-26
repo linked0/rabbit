@@ -41,8 +41,8 @@ export default function TossBuyButton({
         amount,
         orderId,
         orderName,
-        successUrl: `${window.location.origin}/poc/toss`,
-        failUrl: `${window.location.origin}/poc/toss`,
+        successUrl: `${window.location.origin}/live/toss`,
+        failUrl: `${window.location.origin}/live/toss`,
       });
     } catch (e) {
       // 사용자가 결제창을 닫는 경우도 여기로 온다 — 에러로 취급하지 않는다.

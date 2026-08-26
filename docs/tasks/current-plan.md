@@ -24,6 +24,7 @@
 - [Repo status](#status)
 - [Implementation matrix — who builds what](#matrix)
 - [Build order](#order)
+- [Built so far — and how to check it](#built)
 - [Open questions](#open)
 - [What this will not prove](#not)
 - [Ownership rules](#relations)
@@ -59,9 +60,11 @@ testable on anvil. W1 therefore moved to [Phase 6](#order), immediately before t
 use. One piece is pulled forward: a [smoke probe](#probe) against the live adapter, because W1 is
 the only thing in this plan that has never worked and it should not be discovered at the end.
 
-**Next step:** build. The testable slice is **V-A · V-B · V-C · R-A · R-B · R-C** — mandate →
-funded agent → real trade → visible position — and as of the O1 answer below it has **no
-blockers**.
+**Next step (2026-08-26): the slice is built and driveable by hand.** Phase 1 (V-A…V-D) and Phase 2
+(R-A…R-E, R-I) are done, with a console at `/live/agent/console` to drive them; see
+[Built so far](#built) for the 18-step walkthrough. The mandate's cap and deadline are enforced by
+**contracts on the local chain**, not by the server — jay chose option (c) and it verified on anvil
+([details](#onchain)). What remains for "unattended" is R-F, and for the closed loop R-G/R-H.
 
 ## The scenario <a id="scenario"></a>
 <sub>[↑ TOC](#toc)</sub>
@@ -85,6 +88,11 @@ window simply closed.
 
 ## Architecture — where each bound actually lives <a id="arch"></a>
 <sub>[↑ TOC](#toc)</sub>
+
+> **This section is the design.** Two parts of it changed while building: the mandate is **not**
+> granted through ERC-7715, and the delegator is **not** the owner's EOA. For the system as it
+> actually runs, see [autonomous-trading-agent.md](../features/autonomous-trading-agent.md); the reasons are in
+> [The mandate is enforced on chain](#onchain).
 
 ```
   Owner wallet (MetaMask)
@@ -127,8 +135,8 @@ Summary only — each repo's own plan is authoritative.
 | | Rabbit | Verex |
 |---|---|---|
 | Plan | this file + [features README](../features/README.md) | [current-plan.md](../../projects/verex/docs/tasks/current-plan.md) |
-| Relevant, built | ERC-7715/7710 mandate grant + revoke (`app/poc/aa/SessionKeyDemo.tsx`), LLM plumbing (`app/api/jay-chat/`), Prisma/Postgres, `/poc/agent` route | CLOB + CTF backbone on Sepolia, LMSR operator maker, UMA adapter deployed against the **live** oracle, `packages/sdk` with `signOrder` |
-| Relevant, missing | the loop itself — no `app/api/agent`, no store, no scheduler ([B1](../features/README.md#b1)) | any external-account path; `packages/mcp-server` ([V4](../../projects/verex/docs/features/README.md#v4)) |
+| Relevant, built | ERC-7715/7710 mandate grant + revoke (`app/live/aa/SessionKeyDemo.tsx`, **Sepolia-only**), LLM plumbing (`app/api/jay-chat/`), Prisma/Postgres, `/live/agent` mock + `/live/agent/console` | CLOB + CTF backbone on Sepolia, LMSR operator maker, UMA adapter deployed against the **live** oracle, `packages/sdk` with `signOrder` |
+| Relevant, missing | **the scheduler only** — `app/api/agent`, the news store, the journal and the console all exist as of 2026-08-26; the loop still needs a human to press *tick* ([B1](../features/README.md#b1)) | any external-account path; `packages/mcp-server` ([V4](../../projects/verex/docs/features/README.md#v4)) |
 | Blocking decision | **none open.** D2 answered by J2 (agent key on rabbit's server); [O1](#open) answered 2026-08-25 (`file:` link now, publish before deploy) | **W1** — no market has ever been resolved through the live adapter. Moved to [Phase 6](#order); does **not** gate Phases 1–4 |
 
 ## Implementation matrix — who builds what <a id="matrix"></a>
@@ -144,7 +152,7 @@ a table, so you can see at a glance which repo owes what and where the two actua
 | **Items** | 9 (R-A … R-I) | 7 (W0, W1, V-A … V-E) |
 | **Rough total** | ~4–6d | ~5–8d |
 | **What it is being asked to change** | build the loop it never had — mandate, tick, LLM estimate, journal, scheduler, redeem | **stop being a custodian** — accept, fund-check, read and redeem for an address it holds no key for |
-| **Nothing changes in** | the existing `/poc/aa` mandate demo (reused, not modified) | the CLOB matching engine, LMSR quoting, the CTF contracts — all untouched |
+| **Nothing changes in** | the existing `/live/aa` mandate demo (reused, not modified) | the CLOB matching engine, LMSR quoting, the CTF contracts — all untouched |
 | **Where the seam is** | R-B signs a CTF order | V-A accepts one |
 
 ### Full matrix
@@ -167,7 +175,7 @@ which means **this table is not a work queue**; the [build order](#order) below 
 | **R-C** | The tick, callable by hand | `POST /api/agent/tick` — observe → estimate → decide → act → record; **calling it twice must be safe** | R-A, R-B |
 | **R-I** | **News store — input, list, persistence** | Prisma model `NewsItem` — market scope, headline, body or URL, source, published-at, entered-at, `origin: operator \| feed`. An **input form** and a **list of stored items** for the selected market, with edit and delete. **The estimate reads this store, never a prompt textarea** — so a journal row's cited evidence still resolves to a row that exists tomorrow | — |
 | **R-D** | LLM estimate | LLM returns `{ p, rationale, cited }` for a market — reads the question **plus that market's items from R-I**. `cited` records which `NewsItem` ids the estimate actually used. The **deterministic rule** still owns the decision. Reuses `app/api/jay-chat/` plumbing | R-C, **R-I**, **O5** |
-| **R-E** | Journal + persistence | Prisma model, read API, and the `/poc/agent` page showing the three states. Must record **skips**, and each row must carry **the evidence it cited** (R-I ids, resolvable to headline + source) — chain-only reconstruction can record neither | R-C |
+| **R-E** | Journal + persistence | Prisma model, read API, and the `/live/agent` page showing the three states. Must record **skips**, and each row must carry **the evidence it cited** (R-I ids, resolvable to headline + source) — chain-only reconstruction can record neither | R-C |
 | **R-F** | Actually unattended | Scheduler wired; the loop runs with no browser and no terminal | R-C…R-E, **O2** |
 | **R-H** | The expiry run *(evidence)* | Let a mandate lapse with the scheduler live; capture the journal filling with harmless refusals | R-F |
 | **V-E** | MCP server | **`packages/mcp-server`**: `list_markets`, `get_book`, `place_order`, `get_position`, `redeem`, wrapping V-A…V-D's REST. Closes the S3 gap. The agent swaps transport — no logic change | V-A…V-D |
@@ -224,7 +232,7 @@ the external-maker path**.
 > **Phase 1 is additive.** Retiring the user-facing index path later is [O8](#open).
 >
 > **Milestone before Phase 2 — the MetaMask-signed order.** After V-A…V-C, place an order from
-> rabbit's `/poc/agent` page signed by **MetaMask**, not by an agent key. Same wire format, same
+> rabbit's `/live/agent` page signed by **MetaMask**, not by an agent key. Same wire format, same
 > endpoints; the only thing that changes later is who holds the key. It proves this whole gate from
 > a browser and needs neither R-B nor the [O1](#open) decision.
 
@@ -291,6 +299,168 @@ design the demo around a dispute resolving.
 closed, and the seed left at least one short-dated market the agent can plausibly see resolve
 inside a demo. *(That last clause is J2's requirement on W1, not W1's own.)*
 
+## Built so far — and how to check it <a id="built"></a>
+<sub>[↑ TOC](#toc)</sub>
+
+> Written 2026-08-25, extended 2026-08-26 with R-A · R-E · R-I and the on-chain mandate.
+> Branch **`claude/j2-phase-1-2`** (same name in both repos). Nothing is committed — review first.
+> Full narrative: [2026-08-26-rabbit-history.md](../history/2026-08-26-rabbit-history.md).
+
+### What landed
+
+| # | Status | Where |
+|---|---|---|
+| **V-A** | ✅ | `packages/api/src/book.ts` — `verifyExternalOrder`, `limitAmountsE6`, the external branch in `placeOrder`, and the settle handler using the **stored** signature with a partial `takerFillAmount`. Migration `20260825000000_maker_index_nullable` |
+| **V-B** | ✅ | `checkExternalFunds` (reads and rejects), `faucetTo` + `POST /faucet {address}` |
+| **V-C** | ✅ | `walletSummaryByAddress` / `walletHistoryByAddress`; `/wallet/:x` branches on `isAddress` |
+| **V-D** | ✅ | `recordExternalRedeem` — verifies the receipt's `PayoutRedemption` before recording. `/config` gained `ctf` + `usdc` |
+| **SDK** | ✅ | `recoverOrderSigner` + 3 tests |
+| **R-A** | ✅ | `lib/agent-wallet.ts`, `lib/delegation.ts`, `app/api/agent/mandate` + `/prepare`, `MandatePanel.tsx`. **The cap and the expiry are enforced by contracts on-chain** — see [the mandate is real now](#onchain) |
+| **R-B** | ✅ | `lib/verex-client.ts`. `@verex/sdk` via `file:` link ([O1](#open)) |
+| **R-C** | ✅ | `app/api/agent/tick` — observe → estimate → decide → act → record |
+| **R-D** | ✅ | `lib/agent-estimate.ts` — Qwen via the existing DashScope key, strict-JSON `{p, rationale}` |
+| **R-E** | ✅ | `AgentTick` model, `GET /api/agent/tick` (resolves cited ids to headline + source), `JournalPanel.tsx` — six verdicts, six distinct chips |
+| **R-I** | ✅ | `NewsItem` model, `app/api/agent/news`, `NewsPanel.tsx` — with a badge for how many items are **inside the window the estimate actually reads** |
+| **console** | ✅ | `app/live/agent/console/` — preflight + the three panels. **Local only**; the mock at `/live/agent` is untouched and now links to it |
+
+**Not started:** R-F (scheduler), R-G (resolution watch), R-H (expiry run), V-E (MCP), W1.
+
+### The mandate is enforced on chain, not by the server <a id="onchain"></a>
+
+jay chose **option (c)** on 2026-08-26: deploy MetaMask's delegation framework to the local anvil
+rather than let the server play at holding the boundary. It worked, and it is cheaper than the
+plan assumed — `@metamask/smart-accounts-kit` (already a dependency) ships
+`deploySmartAccountsEnvironment()`, which puts DelegationManager, SimpleFactory, the
+implementations and ~35 caveat enforcers on any chain. **240 ms on anvil.**
+
+Two of those enforcers are exactly R-A's two boundaries:
+
+| Boundary | Contract | What it says when it refuses |
+|---|---|---|
+| Amount | `ERC20TransferAmountEnforcer` | `allowance-exceeded` |
+| Deadline | `TimestampEnforcer` | `expired-delegation` |
+
+**Not** via `wallet_requestExecutionPermissions` (ERC-7715). That call is answered by the MetaMask
+extension, which supplies the DelegationManager address in its response — the SDK hardcodes none,
+which is the proof. Our deployment is not CREATE2, so its addresses could not match what the wallet
+expects even if chainId 31337 were on its list. Instead the mandate is a plain EIP-712 `Delegation`
+whose `verifyingContract` and `chainId` **we** pass, so `eth_signTypedData_v4` works on any chain.
+The console has a button that asks the wallet for its real supported-chain list, so the day 31337
+appears there, this decision can be revisited from evidence rather than memory.
+
+Consequence to know: the delegator is a **Hybrid smart account** owned by the MetaMask EOA, because
+`redeemDelegations` executes in the delegator's context and therefore needs contract code there.
+The USDC lives at the smart-account address, not at the EOA. It is funded by **V-B's address-scoped
+faucet** — a Phase 1 piece that slotted in unchanged. Upside: no EIP-7702, so anvil never needs the
+Prague hardfork.
+
+**The tick now draws through the delegation before it places an order.** Order-first would leave a
+book entry that cannot settle if the draw is refused — the same failure shape as verex's W6.5.
+
+### Three decisions taken while building, not asked
+
+1. **External orders are limit-only.** A market order needs the client to sign worst-case terms —
+   that is its slippage policy, not verex's. Index-based market orders are untouched.
+2. **V-D records instead of executing.** Verex holds no key for an external holder, so it cannot
+   send `redeemPositions`. The holder redeems and reports the tx; verex verifies the receipt.
+3. **The estimate is skipped when there is no news.** A pure prior is frozen at the model's
+   training cutoff and competes with a live book — the market wins by construction. Recorded as
+   `SKIP_NO_ESTIMATE` with a reason rather than silently guessing.
+
+### One gap this created, deliberately left open
+
+Funds are checked **at placement**. An external maker can place a resting order and then withdraw,
+leaving a book entry that cannot settle — a demo wallet cannot, because verex holds its key.
+Recorded as **W6.5** in verex's plan. Cheap fix: re-check at match time. Thorough fix: W5.
+
+### How to check it <a id="check"></a>
+
+**Setup** — four terminals, and `AGENT_PRIVATE_KEY` must be set or the agent's address changes on
+every restart and orphans the mandate.
+
+```bash
+# 1 — chain
+anvil
+
+# 2 — verex: postgres + schema + seed, then the API
+cd ~/work/verex && ./scripts/dev-local.sh
+pnpm --filter @verex/sdk build          # rabbit's file: link resolves to dist/
+pnpm --filter @verex/api dev
+
+# 3 — rabbit
+cd ~/work/rabbit
+export AGENT_PRIVATE_KEY=0x…            # any test key; must be stable
+export VEREX_API_URL=http://127.0.0.1:4000
+export AI_API_KEY=…                     # the DashScope key jay-chat already uses
+npx prisma db push                      # NewsItem, Mandate, AgentTick
+pnpm delegation:deploy                  # DelegationManager + ~35 enforcers → anvil (~0.2s)
+pnpm dev                                # rabbit → :3100  (verex's web already has :3000)
+```
+
+> Console: **http://localhost:3100/live/agent/console**. The system as it actually runs — processes,
+> ports, keys, seams — is [autonomous-trading-agent.md](../features/autonomous-trading-agent.md).
+
+**Prove the boundaries are real before touching the UI.** This needs nothing but anvil and the
+deploy above — no verex, no postgres, no MetaMask:
+
+```bash
+pnpm delegation:verify
+```
+
+It draws inside the mandate, then over the cap, then past the expiry, and prints what the contracts
+say. Expect exactly this, and treat any other outcome as the demo being broken:
+
+```
+1. draw 4 of 10 …………………  agent USDC: 4
+2. cap exceeded …………………  ERC20TransferAmountEnforcer:allowance-exceeded   (still 4)
+3. after expiry ………………… TimestampEnforcer:expired-delegation             (still 4)
+```
+
+Step 3 is the whole argument: **nobody revoked anything.** The window closed, and the same code with
+the same key keeps running and keeps being refused.
+
+**The checks, in order.** Each one either passes or names what broke.
+
+| # | Do this | Expect |
+|---|---|---|
+| 1 | `curl localhost:4000/config` | `exchange`, `ctf`, `usdc` all present and non-null. **This is what makes the EIP-712 domain buildable** — hardcoding it breaks on every `reset.sh` |
+| 2 | Open **`/live/agent/console`** | the preflight strip: verex chain, exchange, DelegationManager, agent address and balance. **Everything below depends on this row being green** |
+| 3 | Read the preflight's chain row | verex's chainId and the framework's must **match**. If they differ the page says so in red — a cap governing one chain's token while the trade happens on another makes the demo's claim false |
+| 4 | Check `agentKeyIsPersistent` | `true`. If false, `AGENT_PRIVATE_KEY` is unset and every mandate you grant will be orphaned by the next restart |
+| 5 | **Connect MetaMask**, cap `10`, expiry `60` min → *Grant mandate* | one signature popup showing a `Delegation` struct. Then the panel shows the owner **smart account** address, its funded balance, and an **ON-CHAIN** badge |
+| 6 | Expand *"Why not MetaMask's own permission popup"* → *Ask the wallet* | the wallet's real ERC-7715 chain list. **If 31337 is absent, that is the evidence for option (c)**; if it ever appears, this decision is worth revisiting |
+| 7 | Run a tick with the news store empty | `SKIP_NO_ESTIMATE`. **With no news the LLM is not called at all** — a pure prior loses to a live book by construction |
+| 8 | Add a headline in panel 2 | the badge counts items **inside the window**, not everything stored. Set the window to `1`h and watch a stale item grey out — that is what the estimate will ignore |
+| 9 | *Run one tick* | a row. `TRADED` if the edge cleared, otherwise a **named** skip — both are correct outcomes. A traded row carries the on-chain draw's tx hash |
+| 10 | **Press it again immediately** | `SKIP_COOLDOWN` with seconds remaining. **This is the "calling it twice must be safe" gate** |
+| 11 | Set edge threshold to `0.9`, wait out cooldown, tick | `SKIP_EDGE` quoting book, model, and the shortfall |
+| 12 | Keep ticking until the cap is gone | `SKIP_BUDGET`, then `SKIP_EXHAUSTED` — **these must not look alike**, and they don't: different chips, different sentences |
+| 13 | Grant a mandate expiring in ~2 min, let it lapse, tick | `SKIP_EXPIRED`, and the reason carries **`TimestampEnforcer:expired-delegation`** — the contract's own words, because the tick simulates the draw rather than reading the DB and asserting. Nobody revoked anything |
+| 14 | Delete a news item that a journal row cited | the row keeps the citation and shows **"deleted item"**. Evidence that vanished is itself a fact worth recording |
+| 15 | Read the journal header | *"N of M ticks did nothing."* If only trades were there, the demo's whole claim would be missing |
+| 16 | `curl localhost:4000/wallet/<agent>` | **V-C** — position and balance for an address verex holds no key for |
+| 17 | `curl localhost:4000/wallet/1` | still works. **Phase 1 is additive** — demo wallets were not removed |
+| 18 | `POST /api/agent/tick` **after revoking** | 400 *"no active mandate"*. Revocation and expiry are different events and read differently |
+
+**Automated checks that already pass:**
+
+```bash
+cd ~/work/verex && pnpm --filter @verex/api exec tsc --noEmit   # clean
+pnpm --filter @verex/sdk test                                    # 6/6, incl. tampered-amount
+cd ~/work/rabbit && npx tsc --noEmit                             # clean
+npx next build                                                   # clean
+pnpm delegation:verify                                           # 3/3 on a live chain
+```
+
+**What a failure most likely means.** A valid signature that the exchange rejects is almost always
+a **stale exchange address** — `reset.sh` deploys a fresh backbone, and a cached `verifyingContract`
+produces a perfectly valid signature of the wrong message. Re-read `/config` — the preflight strip
+puts that address on screen for exactly this reason.
+
+A *mandate* failure reads differently: if the signature is refused, the delegator is usually the
+**EOA rather than the smart account**, and if `redeemDelegations` reverts with no enforcer name, the
+smart account is probably not deployed yet.
+
 ## Open questions <a id="open"></a>
 <sub>[↑ TOC](#toc)</sub>
 
@@ -302,8 +472,10 @@ inside a demo. *(That last clause is J2's requirement on W1, not W1's own.)*
 | **O4** | **Per-trade policy via EIP-1271** — the stronger enforcement recorded but not built. Worth it only if the funding bound proves too coarse in practice | — | ⬜ deferred by design |
 | **O5** | **LLM cost and cadence** — one estimate per market per tick gets expensive on a short interval. Cache per market until the book moves? | R-D | ⬜ open |
 | **O6** | **Does the demo run against staging or a dedicated environment?** The agent trading on staging means its rows sit in the same DB as everything else, and any future re-seed wipes them again | Phase 1 | ⬜ open — surfaced by Phase 0's re-seed problem |
+| **O10** | **The console ships the delegation SDK to the browser** — `/live/agent/console` is 165 kB of first-load JS, and the only thing that needs the SDK client-side is the ERC-7715 probe button. Everything else is signed server-side and posted. Dropping the probe (or lazy-loading it) would take the page back to ~10 kB. Left as-is because the page is local-only and the probe is the evidence for option (c) | — | ⬜ open — cosmetic until the page is ever public |
 | **O8** | **Does the user-facing `accountIndex` path get retired once the external path is proven?** Removing it would give one funding behaviour instead of two, and a cleaner claim (*verex holds no user keys*). It would also cost seven web components and turn verex's demo from "open the page and trade" into "install MetaMask first". **Index 0 stays regardless** — it is the operator's LMSR maker. Trigger: external orders working **and** a MetaMask flow in the web. Until then both paths coexist, and **one test on the index path** is what stops it rotting | — | ⬜ deferred — not before its trigger |
-| **O7** | **News scope and staleness** — is a `NewsItem` scoped to one market or global with market tags? Does an item age out? A headline from three weeks ago should not keep moving `p`, and "store it in Postgres" does not answer that. Default proposal: scoped per market, and the estimate only sees items published inside a configurable window | R-I, R-D | ⬜ open — surfaced by R-I |
+| **O7** | **News scope and staleness** — is a `NewsItem` scoped to one market or global with market tags? Does an item age out? A headline from three weeks ago should not keep moving `p` | R-I, R-D | ◐ **half-answered 2026-08-26.** Scope is per market, and the estimate only reads items published inside a window (default 48h) that the console exposes as a dial — the news panel shows how many items are *inside* it, so an ignored item is visible rather than mysterious. **Still open:** whether the window is the right ageing model at all, or whether relevance should decay rather than cut off |
+| **O9** | **Does the mandate's chain enforcement survive the move to Sepolia?** Locally the framework is deployed by `pnpm delegation:deploy` at addresses we chose. On Sepolia MetaMask's own deployment already exists, so [Phase 6](#order) can either reuse it (and possibly switch to the native ERC-7715 popup) or deploy a second copy. Reusing it is better — the popup is a real wallet UI rather than a raw typed-data blob — but it depends on the wallet's supported-chain list, which the console's probe button reads | Phase 6 | ⬜ open — surfaced by option (c) |
 
 ## What this will not prove <a id="not"></a>
 <sub>[↑ TOC](#toc)</sub>

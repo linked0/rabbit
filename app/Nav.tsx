@@ -3,7 +3,9 @@ import ThemeToggle from "./ThemeToggle";
 import LangToggle from "./LangToggle";
 import UserMenu from "./UserMenu";
 import SignInLink from "./SignInLink";
+import { Suspense } from "react";
 import NavLinks, { type NavItem } from "./NavLinks";
+import NavLinksLive from "./NavLinksLive";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 
@@ -25,10 +27,19 @@ const MENU: NavItem[] = [
   // 여기서 함께 바꾸면 배포 환경(Cloud Run)의 env 도 같은 시점에 바꿔야 하고, 안 바꾸면 메뉴가
   // 조용히 사라진다 — 실패가 눈에 안 띄는 종류라 URL 이동과 분리했다. 이름을 맞추고 싶으면
   // `ALLOW_POC` 을 배포 env 에 먼저 넣은 뒤 이 값을 "POC" 로 바꿀 것.
-  // PoCs 가 라이브보다 앞 (2026-08-11, jay) — 이 사이트의 성격은 "무엇을 만들고 있나"가
-  // 먼저고, 라이브는 그중 완성된 것을 모아 보여주는 쪽이다.
-  { href: "/poc", ko: "PoCs", en: "PoCs", code: "ETC", pub: true },
-  // 라이브 — 실제로 돌아가는 카드만. /poc 는 만들고 있는 것과 계획을 맡는다.
+  // PoCs 메뉴 제거 (2026-08-26, jay) — "rabbit 사이트에 PoCs 는 필요 없다".
+  // 2026-08-11 에는 PoCs 가 라이브보다 앞이었다("이 사이트의 성격은 무엇을 만들고 있나가
+  // 먼저"). 그 판단이 뒤집힌 것이므로 근거를 남긴다.
+  //
+  // **라우트는 지우지 않았다.** `/poc`, `/poc/[key]`, `/live/aa` 같은 상세는 그대로 살아 있고
+  // 미들웨어에서도 여전히 공개다 — 라이브 카드가 `/poc/<key>` 상세로 들어가므로 지우면
+  // 라이브가 깨진다. 사라진 것은 **진입점 하나**뿐이다.
+  //
+  // 되살리려면 이 줄만 복원하면 된다:
+  //   { href: "/poc", ko: "PoCs", en: "PoCs", code: "ETC", pub: true },
+  // 배포 env 의 `ALLOW_ETC` 는 이제 아무 메뉴도 제어하지 않는다(지워도 무해).
+  //
+  // 라이브 — 실제로 돌아가는 카드만. 이제 카드로 들어가는 **유일한** 메뉴다.
   // ⚠️ 새 메뉴는 `ALLOW_LIVE=true` 가 있어야 뜬다 — .env 에 넣었고, deploy.sh 가
   // ALLOW_* 를 전부 Cloud Run env 로 전달하므로 배포 시 자동으로 따라간다.
   { href: "/live", ko: "라이브", en: "Live", code: "LIVE", pub: true },
@@ -37,7 +48,7 @@ const MENU: NavItem[] = [
   // TIL 메뉴는 제거 — /poc 안의 섹션으로 흡수했다 (2026-08-11, jay). /til 은 /poc 로
   // 리다이렉트하고, 상세(/til/lmsr-hybrid-amm)는 그대로 살아 있다.
   // AP2(Stripe 정산 데모)도 마켓·XYZ와 같은 이유로 PoCs 허브 카드로 통합 (2026-08-04, jay) —
-  // /poc/ap2 라우트는 그대로 공개, 진입점만 /poc 카드로. 설계: docs/tasks/current-plan.md §2.
+  // /live/ap2 라우트는 그대로 공개, 진입점만 /poc 카드로. 설계: docs/tasks/current-plan.md §2.
   // JayVerse 제거 (2026-08-11, jay) — 메뉴와 PoC 카드 둘 다. /jayverse 라우트는 남아 있지만
   // 어디서도 링크하지 않는다. 되살리려면 이 줄과 카드를 함께 복원할 것.
   // Verex 항목은 제거 (2026-07-25, jay) — 홈의 피처드 카드로 대체 (app/home/page.tsx, lib/verex.ts).
@@ -65,7 +76,12 @@ export default async function Nav() {
   return (
     <header className="site-header">
       <div className="topbar" style={{ justifyContent: "space-between" }}>
-        <NavLinks items={items} />
+        {/* useSearchParams 는 Suspense 경계를 요구한다 — 없으면 정적 렌더링 라우트
+            (/poc/[key] 등)가 빌드에서 걸린다. fallback 은 훅을 쓰지 않는 NavLinks 라
+            파라미터를 읽기 전에도 메뉴가 그대로 보인다(경로 기준 강조). BackLink 와 같은 처리. */}
+        <Suspense fallback={<NavLinks items={items} />}>
+          <NavLinksLive items={items} />
+        </Suspense>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div className="seg">
             <LangToggle />

@@ -79,9 +79,11 @@ gap is the single most valuable thing left on the board.</p>
 with the last full roadmap audit at <a href="" data-missing="../history/2026-08-18-verex-history.md">2026-08-18</a> and the
 wave 2 UMA work at <a href="" data-missing="../history/2026-08-05-verex-history.md">2026-08-05</a> /
 <a href="" data-missing="../history/2026-08-06-verex-history.md">2026-08-06</a>.</p>
-<p><strong>Next step:</strong> <a href="#w1">W1</a> — J2&#39;s phase 0. It must land before <a href="#w6">W6</a> opens the exchange to
-external makers, because W1&#39;s fresh seed wipes staging&#39;s trade rows and would take an agent&#39;s
-journal with it.</p>
+<p><strong>Next step (revised 2026-08-25):</strong> <a href="#w6">W6</a> — J2&#39;s phase 1, and it is <strong>not</strong> gated on W1. The
+re-seed rule says W1 before the first <em>staging</em> run, not before W6 is built; local work runs on
+<code>anvil</code> against the mock. W1 moved to J2 phase 6. Worth running W1&#39;s <strong>smoke probe</strong> early though —
+one <code>initialize</code> on the staging adapter with Sepolia WETH — because W1 is the only item here that
+has never worked.</p>
 <h2>Roadmap status <a id="roadmap"></a></h2>
 <p><sub><a href="#toc">↑ TOC</a></sub></p>
 <blockquote>
@@ -271,12 +273,27 @@ not design the demo around a dispute being resolved.</p>
 closed in the audit tracker, and the staging deploy performed by the CD workflow itself rather
 than by hand (<a href="../features/README.html#v1">V1</a>).</p>
 <h3>2) W6 — accept a counterparty verex does not custody · <strong>ACTIVE, J2 phase 1</strong> · ~2–3d <a id="w6"></a></h3>
+<blockquote>
+<p><strong>Status 2026-08-26: W6.1–W6.4 are built</strong> on branch <code>claude/j2-phase-1-2</code> (uncommitted).
+The consumer side landed too — rabbit&#39;s agent signs CTF orders with <code>@verex/sdk</code> and reads its
+own wallet by address. W6.5 below is still open. Walkthrough: rabbit&#39;s
+<code>docs/tasks/current-plan.md</code>, section <em>Built so far</em>.</p>
+</blockquote>
 <p><strong>Why now:</strong> J2&#39;s agent holds its own key, by design — that was the whole point of jay&#39;s call that
 the agent key must not live on verex&#39;s server. So the exchange has to accept an order it did not
 sign. <strong>The codebase is closer to this than it looks:</strong> <code>model Order</code> already carries <code>maker</code> (a
 real address), <code>signedOrder</code> (Json) and a unique <code>orderHash</code>; <code>buildSignedOrder</code> then signs <em>on the
 client&#39;s behalf</em> with <code>account(index)</code>. Accepting an external order is mostly <strong>removing that
 step</strong>.</p>
+<blockquote>
+<p><strong>That last sentence was wrong, and building it proved so (2026-08-25).</strong> There are <em>two</em> signing
+moments, not one. Resting limit orders are indeed just a deletion. But the <strong>taker leg at
+settlement</strong> was signed <em>per fill</em>, for amounts that only exist after matching — a client cannot
+pre-sign those. The fix was already in the contract: <code>matchOrders</code> takes <code>takerFillAmount</code>
+<strong>separately</strong> from the order, so one client signature for the full size settles each fill
+partially. Per-fill signing was possible only because the server held the key; the exchange never
+required it.</p>
+</blockquote>
 <table>
 <thead>
 <tr>
@@ -293,7 +310,7 @@ step</strong>.</p>
 <tr>
 <td><strong>W6.2</strong></td>
 <td>Funding stops being the API&#39;s job</td>
-<td><code>ensureFunds</code> faucets and approves <em>on behalf of</em> the maker — impossible for a key we do not hold. For external makers it <strong>reads and rejects</strong>: insufficient balance or allowance is a 400, not something the server silently fixes. Add an address-scoped faucet for testnet convenience</td>
+<td><code>ensureFunds</code> faucets and approves <em>on behalf of</em> the maker — impossible for a key we do not hold. For external makers it <strong>reads and rejects</strong>: insufficient balance or allowance is a 400, not something the server silently fixes. Add an address-scoped faucet for testnet convenience. <strong>Note (2026-08-26):</strong> that faucet turned out to have a second consumer — rabbit funds the <em>owner&#39;s smart account</em> with it before the agent draws its mandate, so the address it funds is often not a trader at all</td>
 </tr>
 <tr>
 <td><strong>W6.3</strong></td>
@@ -303,15 +320,24 @@ step</strong>.</p>
 <tr>
 <td><strong>W6.4</strong></td>
 <td>External redeem</td>
-<td><code>POST /redeem</code> by address, signed by the holder. Note the asymmetry: <strong>trading costs an external maker no gas</strong> (<code>book.ts:694</code> — the operator sends <code>matchOrders</code>), but <strong>redeeming does</strong>, since CTF <code>redeemPositions</code> must come from the position holder</td>
+<td>Verex holds no key for the holder, so it <strong>cannot send</strong> <code>redeemPositions</code> — the endpoint records instead of executing. The holder redeems for itself and reports the tx; verex verifies the receipt&#39;s <code>PayoutRedemption</code> (redeemer + conditionId) before writing the REDEEM row. <code>/config</code> gained <code>ctf</code> + <code>usdc</code> so the holder can build the call. Note the asymmetry: <strong>trading costs an external maker no gas</strong> (<code>book.ts:694</code> — the operator sends <code>matchOrders</code>), but <strong>redeeming does</strong></td>
 </tr>
 </tbody></table>
+<p><strong>W6.5 — the gap W6 creates, still open (2026-08-25).</strong> Funds are checked <strong>at placement</strong>.
+A demo wallet cannot betray that check because verex holds its key; an external maker can — place
+a resting limit order, withdraw the USDC, and leave a book entry that looks live and can never
+settle. Two sizes of fix: <strong>re-check funds at match time</strong> (cheap, inside the existing
+transaction), or let <a href="#w5">W5</a> catch it after the fact. Not fixed yet — recorded so it is a
+decision rather than a surprise. Also the reason <a href="../features/README.html#v3">V3.2</a>&#39;s drop rationale
+no longer holds: <em>&quot;the DB is written only by the API&quot;</em> stops being true here.</p>
 <p><strong>Gate:</strong> none technically. Worth deciding <strong>O6</strong> in the seam plan
 (<code>rabbit/docs/tasks/current-plan.md</code>) — whether the agent trades against staging or a dedicated
 environment — before external rows start landing in staging&#39;s DB.
 <strong>Done when:</strong> a wallet verex has never heard of funds itself, signs an order, fills against the
-operator&#39;s LMSR ladder, and reads its own position back — with <strong>no <code>accountIndex</code> anywhere in the
-exchange path</strong>.</p>
+operator&#39;s LMSR ladder, and reads its own position back — with <strong>no <code>accountIndex</code> required in the
+external-maker path</strong>. Not &quot;none anywhere&quot;: index 0 <strong>is</strong> the operator&#39;s LMSR maker, the
+counterparty an external order fills against, and <code>Order.makerIndex</code> becomes <em>nullable</em> rather than
+removed — the demo wallets keep trading unchanged. W6 is additive.</p>
 <h3>3) W7 — <code>packages/mcp-server</code> · <strong>queued, J2 phase 5</strong> · ~1–2d <a id="w7"></a></h3>
 <p><strong>Why now:</strong> it closes the S3 gap that has been open since the roadmap was written
 (<a href="../features/README.html#v4">V4</a>), and after W6 it is genuinely <strong>thin</strong> — the MCP tools
@@ -343,7 +369,7 @@ the worker is where multi-step chain work actually stalls.
 now, Datadog later), so this is a config choice, not a rewrite.
 <strong>Done when:</strong> one settled trade produces a single trace spanning API → ChainJob → chain, and the
 metric-cardinality rule in the doc is respected.</p>
-<h3>7) W5 — read-only DB⇄chain consistency checker · ~1d</h3>
+<h3>7) W5 — read-only DB⇄chain consistency checker · ~1d <a id="w5"></a></h3>
 <p><strong>Why now:</strong> the reframing that killed the indexer (<a href="../features/README.html#v3">V3.2</a>) said the
 real value is <em>observability</em>, cheaply had: walk recent trades, compare DB against chain, report
 mismatches, <strong>write nothing</strong>. No schema change, no cursor, no poller. It also closes the one

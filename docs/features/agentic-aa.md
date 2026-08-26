@@ -91,7 +91,7 @@ reference architecture, and as a UX pattern the 4-pillar demo page can borrow.*
   (TEE/MPC) earns MetaMask-level trust.
 
 ## Status
-🟡 Partly built — ① session key + ②③ sponsored/batch tx are live on `/poc/aa`; ④ KYA stayed an
+🟡 Partly built — ① session key + ②③ sponsored/batch tx are live on `/live/aa`; ④ KYA stayed an
 explainer card (ERC-8004 testnet registry unverified). The autonomy loop that would put these to
 work unattended is [README.md → Backlog B1](README.md#b1); the build detail for what shipped is in
 the [2026-08-06 archived plan §6](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s6).
