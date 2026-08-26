@@ -22,7 +22,7 @@ export default function AaPage() {
     <>
       <Nav />
       <main>
-        <BackLink lang={lang} />
+        <BackLink lang={lang} href="/live" ko="라이브" en="Live" />
         <h1>{t("AA — 위임형 계정 & 세션 키", "AA — Delegatable Accounts & Session Keys")}</h1>
         <p className="sub">
           {/* 세 표준의 역할이 다르다 — 이 페이지가 실제로 시연하는 건 7715/7710이고,
@@ -67,7 +67,7 @@ export default function AaPage() {
                 {t("쓰이는 구성요소: ", "Blocks used: ")}
                 {s.blocks}
                 {" · "}
-                <a href={`/poc/aa/scenarios/${s.slug}`}>
+                <a href={`/live/aa/scenarios/${s.slug}`}>
                   {t("관계도와 순서도 보기 →", "See the diagrams →")}
                 </a>
               </p>

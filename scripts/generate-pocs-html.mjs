@@ -9,6 +9,30 @@
 // 읽으므로 카드가 바뀌어도 두 표면이 갈라지지 않는다(TIL 라벨 표류의 재발 방지).
 // lib/*.ts 는 확장자 없는 ESM import 라 Node 가 직접 못 읽는다. tsc 로 CommonJS 로 임시
 // 컴파일한 뒤 require 한다 — 새 의존성 없이 기존 devDep(tsc)만 쓴다.
+//
+// ── 2026-08-26: 비활성화 (jay) ────────────────────────────────────────────────
+// "rabbit 사이트에 PoCs 는 필요 없다" — 상단 메뉴에서 PoCs 를 뺐고, 이 생성기가 만들던
+// 정적 산출물(docs/pocs.html, docs/topics/pocs-*.html, docs/index.html 의 POCS 구간)도
+// 더는 만들지 않는다.
+//
+// 파일을 지우지 않고 가드만 둔 이유:
+//   1) 이 생성기는 `docs/topics/pocs-*.html` 중 자기가 쓰지 않은 파일을 **삭제한다**
+//      (아래 written/claimed 정리 루프). 무심코 한 번 실행되면 66개 파일이 사라진다.
+//      가드가 없으면 그 사고는 `pnpm docs:pocs` 를 습관적으로 친 순간 일어난다.
+//   2) `lib/poc-cards.ts` 는 여전히 앱의 정본이다 — `/live` 허브와 `/poc/[key]` 상세가
+//      그걸 읽는다. 데이터가 살아 있으므로 생성기도 언젠가 되살릴 수 있어야 한다.
+//
+// 되살리려면: POCS_HTML=1 node scripts/generate-pocs-html.mjs
+// (혹은 이 블록을 지우고 package.json 에 "docs:pocs" 를 복원)
+if (!process.env.POCS_HTML) {
+  console.log(
+    'generate-pocs-html: disabled (2026-08-26 — PoCs removed from the rabbit site).\n' +
+      '  lib/poc-cards.ts still drives the app (/live, /poc/[key]); only the static\n' +
+      '  HTML under docs/ is frozen. To run anyway: POCS_HTML=1 node scripts/generate-pocs-html.mjs',
+  );
+  process.exit(0);
+}
+// ─────────────────────────────────────────────────────────────────────────────
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';

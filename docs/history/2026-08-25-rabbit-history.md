@@ -49,3 +49,14 @@
 **Change:** `lib/poc-cards.ts`에 카드 신설(EN/KO 전체) — 측정 셋(인센티브 보정 수요 · 봉쇄된 카테고리 수 · 컴포저빌리티 프리미엄), Opinion Labs가 BNB로 떠나고 HelloTrade가 들어온 양방향 사례, 그리고 예측시장 메모(Polymarket 2025-12·Kalshi 7월이 Monad를 입금 레일로 쓰는데 네이티브 승자는 없음). `status: "soon"` — 신규 항목은 done 으로 올리지 않는다. `node scripts/generate-pocs-html.mjs` 실행.
 
 **Result:** 카드 총 59 → **60장**. 상세 페이지 생성(21.6KB, PLANNED 배지, 표 2개, EN/KO 각 4개 절). `npx tsc --noEmit` 통과. **부수 변경 52개 파일은 전부 번호 재배열** — `event-contract-plumbing` 뒤에 끼워 넣어 이후 카드의 번호와 이웃 링크가 한 칸씩 밀렸다. 배치를 뒤로 옮기면 이 churn 은 사라진다.
+### J2 Phase 1 구현 + Phase 2 골격 — 그리고 계획서가 틀렸던 두 곳
+
+**Cause:** jay가 로컬 Foundry 체인 위에서 Phase 1·2를 `claude/j2-phase-1-2` 브랜치에 구현하라고 지시. 완료 후 확인하겠다며 "무엇을 했고 어떻게 확인하는지"를 계획서에 정리해달라고 요청.
+
+**Reasoning:** 코드를 읽는 과정에서 계획서의 주장 두 개가 틀렸음이 드러났다. ① **"외부 주문 수용은 대체로 서명 단계를 삭제하는 것"이 아니다.** 서명 시점이 둘이고, 대기 지정가 주문만 삭제로 끝난다. 정산 시점의 taker 다리는 `book.ts`가 **체결마다 새 하위 주문**을 maker의 정확한 가격과 그 체결 수량으로 서명하는데, 그 수량은 매칭 **이후에야** 존재하므로 클라이언트가 미리 서명할 수 없다. 해법은 이미 있었다 — `matchOrders`가 `takerFillAmount`를 주문과 **별도로** 받는다. 그래서 외부 클라이언트는 전체 수량에 대해 주문 하나를 서명하고 같은 서명이 각 체결을 부분 정산한다. 체결별 서명은 서버가 키를 쥐고 있어서 가능했던 것이지 거래소가 요구한 게 아니었다. ② **V-D는 명세대로 만들 수 없다.** `POST /redeem`을 주소 기반으로 바꾸라고 되어 있지만, `redeemPositions`는 보유자가 보내야 하고 verex는 그 키가 없다. 그래서 엔드포인트의 의미를 *실행*에서 **기록**으로 바꿨다 — 보유자가 redeem 하고 tx를 보고하면 verex가 영수증의 `PayoutRedemption`(redeemer + conditionId)을 검증한 뒤에야 REDEEM 행을 쓴다. 말을 믿는 게 아니라 체인이 낸 증거를 읽는 것이고, V-A의 나머지와 같은 형태다(클라이언트가 행동하고 서버가 확인한다).
+
+O1은 `file:` 링크로 답했다 — 서명 대상이 12개 필드 + 도메인에 대한 EIP-712 해시라, 사본이 한 글자만 어긋나도 **틀린 메시지에 대한 유효한 서명**이 나오고 에러는 구조체를 언급하지 않는다. `recoverOrderSigner`를 SDK에 넣어 검증이 *같은* `ORDER_TYPES`를 재사용하게 한 것도 같은 이유다.
+
+**Change:** **verex** — `verifyExternalOrder`(서명 타입·maker≡signer·taker 미지정·tokenId·side·수수료·만료 + **선언된 가격·수량 대비 정확한 금액** 확인 후 서명자 복원), `checkExternalFunds`(읽고 거절), `walletSummaryByAddress`/`walletHistoryByAddress`, `faucetTo`, `recordExternalRedeem`, `/config`에 `exchange`·`ctf`·`usdc`, `makerIndex Int?` 마이그레이션, SDK `recoverOrderSigner` + 테스트 3건. 라우트는 `/wallet/:x`가 `isAddress`로 **분기**한다 — `:index`와 `:address`를 따로 등록하면 라우터에겐 같은 라우트라 먼저 등록된 쪽이 둘 다 삼킨다. **rabbit** — `@verex/sdk` file: 링크, `lib/agent-wallet.ts`(키는 서버, 브라우저엔 주소만), `lib/verex-client.ts`, `lib/agent-estimate.ts`(뉴스 없으면 LLM을 부르지 않음), `NewsItem`·`Mandate`·`AgentTick` 모델, `app/api/agent/{news,mandate,tick}`. 계획서에 **"Built so far — and how to check it"** 절 신설(16단계 확인 절차 + 자동 검사 명령).
+
+**Result:** verex `tsc --noEmit` 통과, SDK 테스트 **6/6**(변조된 `makerAmount`가 서명자로 복원되지 않는 케이스 포함), rabbit `tsc --noEmit` 통과. anvil이 꺼져 있어 종단 실행은 못 했고, 그래서 확인 절차를 계획서에 적어 jay가 직접 밟을 수 있게 했다. **의도적으로 남긴 빈틈:** 자금을 배치 시점에만 확인하므로 외부 maker가 대기 주문을 넣고 인출할 수 있다 — verex 계획서에 **W6.5**로 기록(싼 해법은 매칭 시점 재확인, 철저한 해법은 W5). 이 사실이 V3.2(인덱서 드롭)의 전제 *"DB는 API만 쓴다"*도 끝내므로 두 번째 재검토 트리거로 함께 적었다. **미착수:** R-A/R-E/R-I의 UI, R-F 스케줄러, R-G, R-H, V-E, W1.

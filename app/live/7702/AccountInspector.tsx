@@ -177,8 +177,8 @@ export default function AccountInspector() {
 
       <p className="sub" style={{ marginTop: 16, fontSize: 12 }}>
         {t(
-          "팁: /poc/aa에서 세션 키 권한을 부여하기 전과 후에 각각 본인 주소를 확인해 보세요 — 그 사이에 일어난 변화가 EIP-7702입니다.",
-          "Tip: inspect your own address before and after granting a session key on /poc/aa — the difference between the two is EIP-7702."
+          "팁: /live/aa에서 세션 키 권한을 부여하기 전과 후에 각각 본인 주소를 확인해 보세요 — 그 사이에 일어난 변화가 EIP-7702입니다.",
+          "Tip: inspect your own address before and after granting a session key on /live/aa — the difference between the two is EIP-7702."
         )}
       </p>
     </div>

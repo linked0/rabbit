@@ -280,7 +280,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Ten-second slots — the constant nobody wrote down</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#13</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <p class="topic-kicker"><span class="topic-no">#12</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
       <h1>Ten-second slots — the constant nobody wrote down</h1>
       <p class="lead">Cutting slot time from 12s to 10s changes no API, which is exactly what makes it dangerous. Every poll interval, confirmation rule, oracle heartbeat and deadline in an application encodes 12 seconds somewhere, and almost none of them say so.</p>
       <p class="meta">Not yet scoped — and the first step is a grep, not a design. Pull every time-valued constant out of the codebase (poll intervals, confirmation counts, signature deadlines, cache TTLs, cron periods) and mark each one: derived from slot time, coincidentally equal to a multiple of it, or genuinely independent. Only the middle bucket is a bug. Source: EIP-8198 Quick Slots, listed S-tier in the 2026-08-26 protocol roundup — confirm the proposal&#39;s actual status and target fork at eips.ethereum.org before building anything on it.</p>
@@ -397,7 +397,7 @@
 라운드업의 S티어 세 항목은 </strong>전혀 바뀌지 않은 애플리케이션 아래에서 기반의 서로 다른 세 부분을 바꿉니다.<strong> </strong>8198은 시간을<strong>, </strong>8131·8279는 자원의 가격을<strong>(<code>l1-data-pricing-dimensions</code>), </strong>8141은 트랜잭션의 모양을<strong>(<code>erc-8141</code>) 바꿉니다. 셋 다 앱을 다시 쓰라고 요구하지 않고, 셋 다 </strong>앱이 조용히 전제하던 것</strong>을 바꿉니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/quick-slots-10s">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-monad-last-general-purpose-l1.html">&larr; 12. Monad — the last general-purpose L1, and the number nobody adjusts for</a><a href="pocs-l1-data-pricing-dimensions.html">14. When gas stops being one number — data pricing and bandwidth accounting &rarr;</a></div>
+  <div class="pager"><a href="pocs-monad-last-general-purpose-l1.html">&larr; 11. Monad — the last general-purpose L1, and the number nobody adjusts for</a><a href="pocs-l1-data-pricing-dimensions.html">13. When gas stops being one number — data pricing and bandwidth accounting &rarr;</a></div>
 </div>
 </body>
 </html>

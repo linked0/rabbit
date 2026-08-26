@@ -14,13 +14,22 @@ import { pick } from "@/lib/i18n";
 // 카드를 추가할 때마다 페이지도 만들어야 하는 규칙이 하나 더 생긴다. 여기서는 카드를
 // 추가하면 상세가 저절로 생긴다.
 //
-// 전용 페이지가 있는 카드(/poc/aa, /poc/agent, /poc/dvt, /poc/oz-relayer …)는 정적 세그먼트가
+// 전용 페이지가 **같은 트리에 있는** 카드(/poc/dvt, /poc/oz-relayer)는 정적 세그먼트가
 // 동적 세그먼트보다 우선하므로 이 파일이 가로채지 않는다.
+//
+// 2026-08-26: live 상세 5개가 /live 로 옮겨가면서 그 전제가 절반 깨졌다 — `/poc/aa` 를
+// 가려 주던 정적 세그먼트가 이제 없다. 실제로는 next.config.js 의 영구 리다이렉트가
+// 라우팅보다 먼저 잡아 주지만, 그러면 이 라우트가 **닿을 수 없는 페이지를 생성**하게 된다.
+// 그래서 전용 페이지를 가진 카드는 generateStaticParams 에서 뺀다 — 아래 hasOwnPage 와
+// 같은 판정이고, 판정이 하나뿐이어야 둘이 갈라지지 않는다.
 
 const ALL = [...POC_CARDS, ...TIL_CARDS];
 
+/// 이 라우트가 정본인 카드인가 — href 가 없거나(=soon) 정확히 /poc/<key> 를 가리킬 때.
+const ownedHere = (c: { key: string; href?: string }) => !c.href || c.href === `/poc/${c.key}`;
+
 export function generateStaticParams() {
-  return ALL.map((c) => ({ key: c.key }));
+  return ALL.filter(ownedHere).map((c) => ({ key: c.key }));
 }
 
 export default function CardDetailPage({ params }: { params: { key: string } }) {
@@ -30,7 +39,7 @@ export default function CardDetailPage({ params }: { params: { key: string } }) 
   if (!card) notFound();
 
   // 전용 페이지가 있는 카드가 여기로 오면(직접 URL 입력 등) 그쪽이 정본이다.
-  const hasOwnPage = !!card.href && card.href !== `/poc/${card.key}`;
+  const hasOwnPage = !ownedHere(card);
 
   return (
     <>

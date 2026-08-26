@@ -9,7 +9,7 @@ import { POC_CARDS } from "@/lib/poc-cards";
 
 const CARD = POC_CARDS.find((c) => c.key === "erc-7702")!;
 
-// EIP-7702 — /poc/aa 에서 "보이지 않는 전제조건"으로만 등장하던 표준을 따로 떼어낸 페이지.
+// EIP-7702 — /live/aa 에서 "보이지 않는 전제조건"으로만 등장하던 표준을 따로 떼어낸 페이지.
 // 시연할 버튼이 없다고 봤지만(2026-08-05, jay 지적으로 재검토) eth_getCode 로 계정 상태 변화를
 // 직접 보여줄 수 있어, 가스 없는 읽기 전용 인스펙터 + 활용 사례 카탈로그로 구성했다.
 export default function Erc7702Page() {
@@ -32,8 +32,8 @@ export default function Erc7702Page() {
     {
       title: "Session keys / delegation",
       titleKo: "세션 키 / 위임",
-      body: "grant a bounded, expiring permission to another key — this is what /poc/aa demonstrates.",
-      bodyKo: "다른 키에 한도와 만료가 걸린 권한을 부여합니다 — /poc/aa가 시연하는 것이 이것입니다.",
+      body: "grant a bounded, expiring permission to another key — this is what /live/aa demonstrates.",
+      bodyKo: "다른 키에 한도와 만료가 걸린 권한을 부여합니다 — /live/aa가 시연하는 것이 이것입니다.",
     },
     {
       title: "Passkey signers",
@@ -59,7 +59,7 @@ export default function Erc7702Page() {
     <>
       <Nav />
       <main>
-        <BackLink lang={lang} />
+        <BackLink lang={lang} href="/live" ko="라이브" en="Live" />
         <h1>{t("EIP-7702 — 주소를 바꾸지 않는 스마트 계정", "EIP-7702 — A Smart Account Without a New Address")}</h1>
         <p className="sub">
           {t(

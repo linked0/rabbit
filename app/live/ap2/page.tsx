@@ -47,7 +47,7 @@ export default async function Ap2Page({
     <>
       <Nav />
       <main>
-        <BackLink lang={lang} />
+        <BackLink lang={lang} href="/live" ko="라이브" en="Live" />
         <h1>{pick(lang, "AP2 — Stripe 정산 데모", "AP2 — Stripe Settlement Demo")}</h1>
         <p className="sub">
           {pick(

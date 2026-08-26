@@ -6,7 +6,7 @@ import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 import { AGENT_SCENARIOS, findScenario } from "@/lib/agent-scenarios";
 
-// 시나리오 상세 — /poc/aa 의 "이 구성요소로 만드는 에이전트" 각 항목이 여기로 들어온다.
+// 시나리오 상세 — /live/aa 의 "이 구성요소로 만드는 에이전트" 각 항목이 여기로 들어온다.
 // 그림 두 장을 나란히 두는 이유: 관계도는 "권한과 돈이 어느 방향으로 흐르나", 순서도는 "언제
 // 무슨 일이 일어나나"를 답한다 — 한 장에 합치면 둘 다 흐려진다 (jay, 2026-08-05).
 export function generateStaticParams() {
@@ -24,7 +24,7 @@ export default function ScenarioPage({ params }: { params: { slug: string } }) {
     <>
       <Nav />
       <main>
-        <BackLink lang={lang} href="/poc/aa" ko="에이전트를 위한 AA" en="AA for agents" />
+        <BackLink lang={lang} href="/live/aa" ko="에이전트를 위한 AA" en="AA for agents" />
         <h1>{t(scenario.titleKo, scenario.title)}</h1>
         <p className="sub">
           {t("쓰이는 구성요소: ", "Blocks used: ")}
@@ -62,7 +62,7 @@ export default function ScenarioPage({ params }: { params: { slug: string } }) {
         <p style={{ marginTop: 8, maxWidth: 640 }}>{t(scenario.limitationKo, scenario.limitation)}</p>
 
         <p className="sub" style={{ marginTop: 40, fontSize: 13 }}>
-          <a href="/poc/aa">← {t("다른 시나리오 보기", "Back to the other scenarios")}</a>
+          <a href="/live/aa">← {t("다른 시나리오 보기", "Back to the other scenarios")}</a>
         </p>
       </main>
     </>

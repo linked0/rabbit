@@ -34,3 +34,131 @@ model Trade {
   @@index([userEmail, tradedAt])
   @@index([symbol])
 }
+
+// ── J2 / R-I — the agent's evidence store ────────────────────────────────
+// 설계: docs/tasks/current-plan.md의 R-I. LLM 추정(R-D)이 읽는 뉴스는 프롬프트
+// 텍스트가 아니라 **영속된 행**이어야 한다 — 저널 행이 "cited: Reuters 13:47"이라고
+// 적는 순간, 그 증거는 일주일 뒤에도 해석돼야 하기 때문이다. 입력 박스에만 있었다면
+// 박스를 비우는 순간 과거 추정 전부가 감사 불가능해진다.
+model NewsItem {
+  id String @id @default(cuid())
+
+  /// 어느 verex 마켓에 대한 증거인가 (verex의 market slug). 전역 태그 방식은
+  /// 채택하지 않았다 — 스코프와 만료는 계획서 O7의 열린 질문이고, 기본값을
+  /// "마켓 단위"로 두는 편이 되돌리기 쉽다.
+  marketSlug String
+
+  headline String
+  /// 본문 또는 원문 URL. 헤드라인만으로 충분한 경우가 많아 선택.
+  body   String?
+  source String? // "Reuters", "연합뉴스" …
+
+  /// 기사 발행 시각. 입력 시각과 다르다 — 추정이 "발행 기준 N시간 이내"만 보게
+  /// 하려면(O7) 이 값이 기준이 된다.
+  publishedAt DateTime
+  enteredAt   DateTime @default(now())
+
+  /// operator = 사람이 손으로 넣음, feed = 자동 수집. 지금은 전부 operator이고,
+  /// 그래서 계획서의 "이 데모는 에이전트가 뉴스를 *발견*하는 것을 증명하지 않는다"가
+  /// 성립한다. 실제 피드가 붙는 날 이 필드만 바뀐다.
+  origin NewsOrigin @default(operator)
+
+  @@index([marketSlug, publishedAt])
+}
+
+enum NewsOrigin {
+  operator
+  feed
+}
+
+// ── J2 / R-A — the mandate ───────────────────────────────────────────────
+// ERC-7715 위임: 소유자 지갑(MetaMask)이 **금액 상한과 만료** 두 경계를 서명한다.
+// 이것이 계획서가 말하는 **유일한 온체인 강제 지점**이다. 에이전트가 무엇을 살지는
+// 강제하지 않는다 — 얼마나 가질 수 있는지만 강제한다. 그래서 안전 주장이
+// "코드가 약속한다"가 아니라 "체인이 산술로 막는다"가 된다.
+model Mandate {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  owner String // MetaMask 주소 — 위임한 쪽
+  agent String // 에이전트 EOA — 위임받은 쪽. 키는 서버에 있고 브라우저엔 주소만 간다
+
+  /// 상한(USDC). 에이전트는 이만큼만 **풀려받을 수** 있다. 잃을 수 있는 최대치가
+  /// 아니라 가질 수 있는 최대치이며, 그 둘이 같아지는 것이 논지의 핵심이다.
+  capUsdc Decimal @db.Decimal(20, 6)
+
+  /// 만료. 계획서의 "money shot" — 이 시각이 지나면 아무도 취소하지 않아도
+  /// 체인이 계속 거절한다. 블록 시간 기준이고 벽시계와 다르다.
+  expiresAt DateTime
+
+  /// 소유자가 명시적으로 취소한 시각. 만료(expiresAt)와는 **다른 사건**이고,
+  /// 저널에서도 다르게 읽혀야 한다 — 하나는 사람이 껐고 하나는 창이 닫혔다.
+  revokedAt DateTime?
+
+  /// 서명된 ERC-7715 위임 원본. 체인이 진실이고 이 행은 거울이다.
+  delegation Json?
+
+  /// 지금까지 실제로 풀려난 금액. 상한과의 차이가 남은 예산이다.
+  drawnUsdc Decimal @default(0) @db.Decimal(20, 6)
+
+  ticks AgentTick[]
+
+  @@index([agent, createdAt])
+}
+
+// ── J2 / R-E — the journal ───────────────────────────────────────────────
+// **skip 이 핵심이다.** 거래만 보여주는 데모는 능력을 보여주고, 대부분의 행이
+// "edge 0.02 < 0.05 → 행동 없음"인 저널은 **판단이 판단임을 보여준다.**
+// 체인만으로는 재구성할 수 없는 것이 정확히 이것 — 하지 않은 일은 체인에 없다.
+model AgentTick {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  mandateId String?
+  mandate   Mandate? @relation(fields: [mandateId], references: [id])
+
+  marketSlug String
+  outcome    String
+
+  /// 관측된 호가. edge 는 **체결되는 쪽 가격**에 대해 재야 한다 — 중간값 기준이면
+  /// 스프레드 절반만큼 edge 가 체계적으로 과대평가된다.
+  bestBid Decimal? @db.Decimal(10, 6)
+  bestAsk Decimal? @db.Decimal(10, 6)
+
+  /// LLM 의 확률 추정과 한 줄 근거. 게이트에 걸려 추정을 부르지 않은 틱에서는 null.
+  p         Decimal? @db.Decimal(10, 6)
+  rationale String?
+
+  /// 이 추정이 인용한 NewsItem id 들. 외래키를 걸지 않은 이유: 뉴스가 삭제돼도
+  /// 저널은 남아야 하고, "인용한 증거가 삭제됨"으로 읽히는 편이 정직하다.
+  citedNewsIds String[] @default([])
+
+  verdict TickVerdict
+  /// 사람이 읽는 판정 문장. **이것이 산출물이다** — 여섯 가지 거절이 하나의
+  /// "행동 없음"으로 뭉개지면 데모의 주장이 사라진다.
+  reason String
+
+  /// 거래한 틱에만 있음.
+  verexOrderId String?
+  spentUsdc    Decimal @default(0) @db.Decimal(20, 6)
+
+  /// 이 틱 시점의 예산 상태 — 나중에 계산하지 않고 찍어 둔다. mandate 가
+  /// 바뀌어도 그때 무엇을 보고 판단했는지가 남아야 한다.
+  budgetLeftUsdc Decimal? @db.Decimal(20, 6)
+
+  @@index([marketSlug, createdAt])
+  @@index([mandateId, createdAt])
+}
+
+/// 거절 사유는 여섯 갈래이고, 화면에서 서로 구별돼야 한다. 특히
+/// `SKIP_EXHAUSTED`(예산 소진)와 `SKIP_EXPIRED`(만료)는 **다른 경계가 작동한
+/// 것**이라 같은 모양으로 렌더링되면 안 된다.
+enum TickVerdict {
+  TRADED
+  SKIP_COOLDOWN
+  SKIP_EDGE
+  SKIP_BUDGET // 이번 주문 규모가 남은 예산을 넘음
+  SKIP_EXHAUSTED // 예산을 전부 씀
+  SKIP_EXPIRED // mandate 만료 — 체인이 거절
+  SKIP_NO_ESTIMATE // 게이트/뉴스 없음 등으로 추정 자체를 부르지 않음
+}

@@ -11,8 +11,8 @@ not just doc text — several rows are flagged stale below (see notes under the 
 enumerated from `app/**/page.tsx`, the top menu read from `app/Nav.tsx`, not from doc text.
 One row was materially wrong and is corrected below (AI Chat). Verified facts used as the
 basis: the top menu is exactly `/` · `/portfolio` · `/projects` · `/game` · `/poc` · `/live`;
-`.github/workflows/` still does not exist; `/market`, `/xyz`, `/poc/aa`, `/poc/ap2`, `/poc/7702`
-and `/poc/agent` all exist as routes. **Plan reset 2026-08-21** (jay): the autonomy-loop plan
+`.github/workflows/` still does not exist; `/market`, `/xyz`, `/live/aa`, `/live/ap2`, `/live/7702`
+and `/live/agent` all exist as routes. **Plan reset 2026-08-21** (jay): the autonomy-loop plan
 was archived unstarted, so **this table is now the single status source for the whole repo** —
 [current-plan.md](../tasks/current-plan.md) holds no active task until jay picks the next one.
 Per-milestone marks for the autonomy loop moved to [Backlog](#backlog) below.
@@ -27,16 +27,16 @@ their rows below are now the live status. The PoCs hub they all plug into is tra
 | Home | `/` | [main-page.md](main-page.md) | ✅ Done — `/` rewrites to `app/home/page.tsx` |
 | Portfolio & Market | `/portfolio` + `/market` | [portfolio-and-market.md](portfolio-and-market.md) | 🟡 Stale row — already split into **Portfolio** (`/portfolio`, ✅ done) and **Market** (`/market`, 🟡 in progress — Hyperliquid trading, see the doc); this table's Menu column needs a nav-update pass to reflect the split as two rows |
 | AI Chat | ~~`/chat`~~ → Home | [ai-chat.md](ai-chat.md) — full design incl. Auth+LLM gating and KB-via-MCP+RAG | 🟡 **Corrected 2026-08-18** — the previous row said "route exists but was dropped from the nav"; in fact **`app/chat/` does not exist at all**. The surface shipped instead as Jay Chat embedded in Home (`app/home/page.tsx` + `app/api/jay-chat/route.ts`), so there is no `/chat` route to drop. Jay Chat public surface ✅ · Ask-about-me ✅ · gating/BYO-key ⬜ · KB-RAG ⬜ |
-| AP2 Test | `/poc/ap2` | [ap2-test.md](ap2-test.md) — build detail in the [archived plan §2](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s2) | ✅ Done — Stripe Checkout settlement example (test mode), server-side `payment_status` verification; moved from `/ap2` to `/poc/ap2` |
+| AP2 Test | `/live/ap2` | [ap2-test.md](ap2-test.md) — build detail in the [archived plan §2](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s2) | ✅ Done — Stripe Checkout settlement example (test mode), server-side `payment_status` verification; moved from `/ap2` to `/live/ap2` |
 | XYZ Demo | `/xyz` | [xyz-demo.md](xyz-demo.md) | 🟡 In progress — C2 bundle-submit + C4 PBS relay dashboard live; other items pending |
 | Verex | ↗ external | [verex-link.md](verex-link.md) | ✅ Done, but **not as designed here** — the nav item was removed (2026-07-25); replaced with a featured card on the Home page (`app/home/page.tsx`, `lib/verex.ts`) instead of a top-menu external link |
 | _UI/UX_ | — | [ui-ux.md](ui-ux.md) — 디자인 접근법: frontend-design 스킬 + UI/UX Pro Max + 6단계 빌드 워크플로 | 🔄 Ongoing — applied per-feature, not a single deliverable |
 | _Cross-cutting_ | — | [common.md](common.md) — navigation/top-menu (Common #1) + CI/CD (Common #2) | 🟡 Partial — Nav restructure done (`app/Nav.tsx`, owner/public gating); **CI/CD not found** — no `.github/workflows/` directory exists in the repo despite `common.md` describing a `deploy.yml` |
-| _Agentic AA — building blocks_ | `/poc/aa` | [agentic-aa.md](agentic-aa.md) — session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix | 🟡 Built — ① session key (ERC-7715/7710) + ②③ sponsored/batch tx (thirdweb 4337) live; ④ KYA stayed an explainer card (ERC-8004 testnet registry unverified). All human-triggered — that gap is what the row below addresses |
-| _Agentic AA — autonomy loop_ | `/poc/agent` (mock only) | [Backlog → B1](#b1) · design in the [archived plan](../tasks/archive/2026-08-21-current-plan-agentic-aa.md) | ⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes `lib/agent-scenarios.ts`'s `scheduled-operator` actually run. **Route exists but is a mock** — `app/poc/agent/AgentJournalMock.tsx`, a 7-tick script walked by a button; no store, no scheduler, no chain. Blocked on **D2** (session-key custody) |
-| _Agentic AA — Unity visualization_ | `/poc/agent` toggle (planned) | [Backlog → B2](#b2) · [game.md](game.md) | ⬜ Deferred, not dropped — side-quest, explicitly off the critical path; blocked on **U1** (submodule strategy) and sequenced after the loop actually runs |
-| _EIP-7702 inspector_ | `/poc/7702` | [erc-8141.md](erc-8141.md) is the *native*-AA sibling study; this page is the app-layer inspector | ✅ Done — read-only `eth_getCode` account inspector (plain EOA / 7702-delegated / contract), no wallet required |
-| _Toss Payments_ | `/poc/toss` | [toss-payments.md](toss-payments.md) — KRW settlement example, counterpart to the AP2 Stripe example | ✅ Done — standalone page (not an `/ap2` extension); test-mode client/secret keys. Detail in the [archived plan §7](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s7) |
+| _Agentic AA — building blocks_ | `/live/aa` | [agentic-aa.md](agentic-aa.md) — session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix | 🟡 Built — ① session key (ERC-7715/7710) + ②③ sponsored/batch tx (thirdweb 4337) live; ④ KYA stayed an explainer card (ERC-8004 testnet registry unverified). All human-triggered — that gap is what the row below addresses |
+| _Agentic AA — autonomy loop_ | `/live/agent` (mock only) | [Backlog → B1](#b1) · design in the [archived plan](../tasks/archive/2026-08-21-current-plan-agentic-aa.md) | ⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes `lib/agent-scenarios.ts`'s `scheduled-operator` actually run. **Route exists but is a mock** — `app/live/agent/AgentJournalMock.tsx`, a 7-tick script walked by a button; no store, no scheduler, no chain. Blocked on **D2** (session-key custody) |
+| _Agentic AA — Unity visualization_ | `/live/agent` toggle (planned) | [Backlog → B2](#b2) · [game.md](game.md) | ⬜ Deferred, not dropped — side-quest, explicitly off the critical path; blocked on **U1** (submodule strategy) and sequenced after the loop actually runs |
+| _EIP-7702 inspector_ | `/live/7702` | [erc-8141.md](erc-8141.md) is the *native*-AA sibling study; this page is the app-layer inspector | ✅ Done — read-only `eth_getCode` account inspector (plain EOA / 7702-delegated / contract), no wallet required |
+| _Toss Payments_ | `/live/toss` | [toss-payments.md](toss-payments.md) — KRW settlement example, counterpart to the AP2 Stripe example | ✅ Done — standalone page (not an `/ap2` extension); test-mode client/secret keys. Detail in the [archived plan §7](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s7) |
 | _Staging Domain_ | — (infra, not a menu item) | [staging-domain.md](staging-domain.md) — `staging.rabbit.jaylabs.xyz` via Firebase Hosting rewrite | 🚫 Not pursuing |
 | _PoCs hub_ | `/poc` | [pocs-hub.md](pocs-hub.md) — consolidated demo menu wrapping Hyperliquid Trading, PBS, AP2, and AA under one top-menu item | ✅ Done — shipped 2026-08-03, routes moved `/etc` → `/poc`; cards registered in [`lib/poc-cards.ts`](../../lib/poc-cards.ts) |
 
@@ -77,7 +77,12 @@ the Hyperliquid testnet integration lands cleanly.
 > [../tasks/archive/2026-08-21-current-plan-agentic-aa.md](../tasks/archive/2026-08-21-current-plan-agentic-aa.md);
 > this is the status surface, and it is what the next plan will draw from.
 
-### B1 — Agentic AA: the autonomy loop (`/poc/agent`) <a id="b1"></a>
+### B1 — Agentic AA: the autonomy loop (`/live/agent`) <a id="b1"></a>
+
+> **Partly built, 2026-08-26.** The loop exists as J2 — mandate, news store, LLM estimate, tick and
+> journal — driveable by hand at `/live/agent/console`. What B1 still owes is the **scheduler**.
+> As-built description: [autonomous-trading-agent.md](autonomous-trading-agent.md). Plan:
+> [docs/tasks/current-plan.md](../tasks/current-plan.md).
 
 The claim it would demonstrate: **the safety of an unattended agent is arithmetic, not trust** —
 the mandate's amount cap and expiry are enforced by contracts the agent cannot touch, so a buggy
@@ -88,7 +93,7 @@ against the code on `main`, not the commit log.
 |---|-----------|--------|----------------|------|
 | **M1** | Agent identity + mandate | ⬜ not started | no server-held session account, no grant/revoke flow; **blocked by D2** | 1d |
 | **M2** | The tick, callable by hand | ⬜ not started | no `POST /api/agent/tick` — `app/api/` has no `agent` route at all | 1d |
-| **M3** | Journal + persistence | 🟡 mock only | `/poc/agent` renders `app/poc/agent/AgentJournalMock.tsx`, a hand-written 7-tick script walked by a button — no store, no read API, no real ticks | 1d |
+| **M3** | Journal + persistence | 🟡 mock only | `/live/agent` renders `app/live/agent/AgentJournalMock.tsx`, a hand-written 7-tick script walked by a button — no store, no read API, no real ticks | 1d |
 | **M4** | Actually unattended | ⬜ not started | no scheduler wired. **This is the milestone that earns the word "agentic"** — M1–M3 without it is still a button | 0.5d |
 | **M5** | Expiry run *(evidence, not code)* | ⬜ not started | blocked on M4; nothing to capture until the loop runs unattended | 0.5d |
 
@@ -118,7 +123,7 @@ physical — in a journal a rejection is a red word, in a scene it is a gate tha
 Two rules that survive from the design and should not be re-litigated: **Unity is a dumb
 renderer** (it gets journal rows via `SendMessage` and never touches a chain, a key, or an RPC —
 a second path to the chain could disagree with the journal, and the journal *is* the record), and
-it lives behind a **toggle on `/poc/agent`**, not its own route, for the same reason.
+it lives behind a **toggle on `/live/agent`**, not its own route, for the same reason.
 
 **Open — U1 blocks the rest.** U1: submodule strategy for `rabbit-hole` (source + CI build ·
 source + committed WebGL build ⭐ recommended · no submodule, iframe a published build) — the
