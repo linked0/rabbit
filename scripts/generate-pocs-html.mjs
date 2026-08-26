@@ -15,7 +15,7 @@ import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 // 페이지 껍데기(레일+본문 레이아웃, 항목 상세 페이지)는 algorithms.html·math.html 과
 // 공유한다 — scripts/rtd-shell.mjs.
-import { renderRtdPage, renderTopicPage, escapeHtml } from './rtd-shell.mjs';
+import { renderRtdPage, renderTopicPage, escapeHtml, wrapTables } from './rtd-shell.mjs';
 import { marked as mdEngine } from 'marked'; // 아래쪽 지역 변수 marked 와 이름이 겹쳐 별칭을 쓴다
 // 카드 본문은 마크다운이다 — 제목·표·목록·**강조**·`코드`·빈 줄 문단이 데이터에 들어간다.
 // 예전에는 escapeHtml 만 거쳐 <p> 하나에 통째로 들어가서 별표가 화면에 그대로 찍히고
@@ -43,9 +43,12 @@ function mdRender(v, { inline = false } = {}) {
   const html = inline
     ? mdEngine.parseInline(tokenised, { async: false })
     : mdEngine.parse(tokenised, { async: false });
-  return html
+  const restored = html
     .replace(/@@B(\d+)@@/g, (_, i) => `<strong>${mdEngine.parseInline(bold[Number(i)], { async: false })}</strong>`)
     .trim();
+  // 표는 가로 스크롤 상자로 감싼다 (jay, 2026-08-26) — 좁은 화면에서 열이 짜부라지거나
+  // 페이지 전체가 옆으로 밀리는 것을 막는 유일한 방법이다. inline 렌더에는 표가 없다.
+  return inline ? restored : wrapTables(restored);
 }
 const md = (v) => mdRender(v);
 const mdInline = (v) => mdRender(v, { inline: true });
@@ -159,20 +162,28 @@ for (const [idx, c] of numbered.entries()) {
     renderTopicPage({
       title: `${c.title} — PoCs`,
       crumbHtml: `<a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ${escapeHtml(c.title)}`,
-      bodyHtml: `  <article>
-      <h1><span class="topic-no">${c.no}</span>${escapeHtml(c.title)} <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></h1>
+      // 표제부를 본문에서 분리한다 (jay, 2026-08-26). 예전에는 h1·요약·howTo 가 본문
+      // 문단들과 같은 상자 안에 그냥 얹혀 있어서 글이 어디서 시작하는지 보이지 않았다.
+      // 번호·상태·제목·요약·언어 전환을 hero 한 곳에 모으고, 본문 두 덩어리(영/한)는
+      // 각자 상자를 갖는다 — 이중언어 페이지에서 위아래로 훑지 않고 건너뛸 수 있다.
+      bodyHtml: `  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#${c.no}</span><span>PoC</span><span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></p>
+      <h1>${escapeHtml(c.title)}</h1>
       <p class="lead">${mdInline(c.description)}</p>
       <p class="meta">${mdInline(c.howTo)}</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
       ${md(c.purpose)}
       <h2>How it works</h2>
       ${md(c.howItWorks)}
 ${diagramNote}${codeHtml}      <p>${openLink}</p>
     </article>
-    <hr class="lang-divider">
-    <article lang="ko">
-      <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">${c.no}</span>${escapeHtml(c.titleKo)} <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></h1>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>${escapeHtml(c.titleKo)}</h1>
       <p class="lead">${mdInline(c.descriptionKo)}</p>
       <p class="meta">${mdInline(c.howToKo)}</p>
       <h2>왜</h2>

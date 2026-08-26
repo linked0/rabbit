@@ -10,18 +10,34 @@
   :root {
     --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
     --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
       --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
     }
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
      17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
   body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
   a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
 
   .layout { display:flex; align-items:flex-start; }
 
@@ -75,6 +91,7 @@
   p { margin:10px 0; word-wrap:break-word; }
   .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
   .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
   /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
@@ -113,18 +130,131 @@
   .topic-why strong { color:var(--text); font-style:normal; }
   .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
-  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
-  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
-  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
-  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
-  .pager span { color:var(--text2); }
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
 
   /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
   .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
   .lang-label {
-    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--text2); margin:0 0 14px;
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
   }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
@@ -134,15 +264,30 @@
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
   }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
 </style>
 </head>
 <body>
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The custody was never the hard part</p>
-  <article>
-      <h1><span class="topic-no">21</span>The custody was never the hard part <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#29</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>The custody was never the hard part</h1>
       <p class="lead">A fisheries bank just bought 14.95% of a digital-asset custodian. Design the one service only those two could ship — then find the number that decides whether it should exist.</p>
       <p class="meta">Not yet scoped — the first task is not code. Ask one question: today&#39;s gap between auction hammer and settlement, and what a fisher pays to close it. Sources: 연합뉴스 2026-08-20 (수협은행 · 인피닛블록 지분 14.95%, 공동 2대 주주), 은행법 제37조 (15% 한도) — to verify.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
       <p>On 2026-08-20 Sh Suhyup Bank took a <strong>14.95%</strong> stake in 인피닛블록, a licensed Korean VASP whose business is digital-asset custody, becoming joint second-largest shareholder alongside a partnership agreement. The company&#39;s stack is described as extending to internal controls, security and <strong>stablecoin issuance management</strong>.</p>
 <p><strong>The number worth noticing is 14.95%.</strong> Under the Banking Act a bank may not hold more than 15% of the voting shares of a company that is not its subsidiary; crossing that line makes the target a subsidiary and pulls in approval and consolidation. So 14.95% looks deliberate — influence bought while staying outside consolidation. <em>(That reading fits the number and should be verified against the statute before the card leans on it.)</em> The consequence is operational rather than legal: <strong>the bank cannot direct the custodian.</strong> Anything they ship has to work as a partnership between two independently-governed firms, and that constrains the design more than any technology choice does.</p>
@@ -151,7 +296,7 @@
       <h2>How it works</h2>
       <h3>The imaginary service: catch-to-cash</h3>
 <p>At a 위판장 auction a lot sells and the fisher holds a claim on proceeds that settle later. Tokenise that claim at the moment the hammer falls, custody it, and advance against it. <strong>The fisher is paid at the hammer instead of at settlement.</strong></p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Layer</th>
@@ -174,12 +319,12 @@
 <td>수협은행</td>
 <td>An advance against the claim; settlement extinguishes it</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <h3>Why only these two could ship it</h3>
 <p>Not because of the chain. Because <strong>Suhyup is the counterparty at both ends</strong> — it banks the auction house, the fisher, and frequently the buyer. That closes the loop that kills most receivables-tokenisation pilots, where the party who must honour the claim is a stranger to the party who issued it. Here they are inside the same institution, which is a structural advantage no amount of protocol design substitutes for.</p>
 <h3>The gap, and it is the same gap three other cards found</h3>
 <p>The token is the easy half. The instrument is worth exactly what the auction attestation is worth — <strong>true, and timely.</strong> That is the box <code>rwa-multichain</code> left open (who signs the fact, and who is liable when the fact is wrong) and the question <code>price-at-a-moment</code> asks about a settlement price nobody verified. A signed catch record is a verifiable credential in every respect, and the hard part is never the signature. It is <strong>correction and revocation</strong>:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Real-world event</th>
@@ -202,7 +347,7 @@
 <td>The fisher already borrowed against the same catch elsewhere</td>
 <td><strong>Double pledge</strong> — needs a registry, not a chain</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p><strong>The last row decides the product.</strong> A chain proves the claim exists; it cannot prove the claim was not already pledged somewhere off-chain. Whatever registry answers that is the real dependency, and it is institutional.</p>
 <h3>The measurable question, and it comes first</h3>
 <p>Before any code: <strong>how long is the gap between hammer and settlement today, and what does a fisher currently pay to close it?</strong></p>
@@ -215,10 +360,9 @@
 <p>The article flags stablecoin issuance management as part of the custodian&#39;s stack, and Korea&#39;s framework is still moving. The honest ordering is worth stating: <strong>a settlement token only matters after the attestation problem is solved.</strong> Issuing a won-denominated token to settle claims nobody can verify moves the unverified claim faster; it does not make it true.</p>
       <p><a href="https://www.jaylabs.xyz/poc/fisheries-receivable-rail">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-    <hr class="lang-divider">
-    <article lang="ko">
-      <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">21</span>수탁은 애초에 어려운 쪽이 아니었다 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>수탁은 애초에 어려운 쪽이 아니었다</h1>
       <p class="lead">수산 전문 은행이 디지털자산 수탁사 지분 14.95%를 샀습니다. 그 둘만 만들 수 있는 서비스를 설계하고, 그것이 존재할 값어치가 있는지 가르는 숫자를 찾습니다.</p>
       <p class="meta">아직 범위 미정 — 첫 작업은 코드가 아닙니다. 질문 하나부터: 오늘 낙찰과 정산 사이 간격, 그리고 어업인이 그것을 메우는 데 내는 값. 출처: 연합뉴스 2026-08-20(수협은행·인피닛블록 지분 14.95%, 공동 2대 주주), 은행법 제37조 15% 한도 — 확인 필요.</p>
       <h2>왜</h2>
@@ -229,7 +373,7 @@
       <h2>동작 방식</h2>
       <h3>상상해 본 서비스: 위판대금 즉시지급(catch-to-cash)</h3>
 <p>위판장에서 물량이 낙찰되면 어업인은 나중에 정산될 대금에 대한 청구권을 갖습니다. <strong>낙찰 순간</strong> 그 청구권을 토큰화해 수탁하고, 그것을 담보로 선지급합니다. <strong>어업인은 정산일이 아니라 낙찰 시점에 돈을 받습니다.</strong></p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>층</th>
@@ -252,12 +396,12 @@
 <td>수협은행</td>
 <td>청구권에 대한 선지급, 정산으로 소멸</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <h3>왜 이 둘만 만들 수 있나</h3>
 <p>체인 때문이 아닙니다. <strong>수협이 양쪽 끝의 거래상대</strong>이기 때문입니다 — 위판장도, 어업인도, 흔히 매수인도 수협 거래처입니다. 이것이 대부분의 매출채권 토큰화 파일럿을 죽이는 고리를 닫아줍니다: 보통은 <strong>청구권을 이행할 쪽과 발행한 쪽이 남남</strong>인데, 여기서는 같은 기관 안에 있습니다. 프로토콜 설계로는 대체할 수 없는 구조적 우위입니다.</p>
 <h3>빈칸 — 그리고 다른 카드 셋이 찾아낸 그 빈칸과 같습니다</h3>
 <p>토큰은 쉬운 쪽입니다. 증서의 값어치는 위판 증명이 <strong>참이고 제때인가</strong>에 정확히 달려 있습니다. 그것이 <code>rwa-multichain</code> 카드가 열어둔 칸(누가 사실에 서명하며, 사실이 틀렸을 때 누가 책임지는가)이고, <code>price-at-a-moment</code> 카드가 아무도 검증하지 않은 정산 가격에 대해 묻는 질문입니다. 서명된 위판 기록은 모든 면에서 검증가능 자격증명이고, 어려운 부분은 서명이 아니라 <strong>정정과 폐기</strong>입니다:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>현실에서 벌어지는 일</th>
@@ -280,7 +424,7 @@
 <td>어업인이 같은 어획물로 다른 곳에서 이미 대출</td>
 <td><strong>이중담보</strong> — 체인이 아니라 등록부가 필요</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p><strong>마지막 행이 제품의 성패를 가릅니다.</strong> 체인은 청구권이 존재한다는 것을 증명할 뿐, 그 청구권이 오프체인 어딘가에 이미 담보로 잡히지 않았음을 증명하지 못합니다. 그것에 답하는 등록부가 진짜 의존성이고, 그건 기술이 아니라 제도입니다.</p>
 <h3>측정할 질문, 그리고 이게 먼저입니다</h3>
 <p>코드보다 먼저: <strong>오늘 낙찰과 정산 사이 간격은 얼마이고, 어업인은 그 간격을 메우는 데 지금 얼마를 내는가?</strong></p>
@@ -293,7 +437,7 @@
 <p>기사는 수탁사의 스택에 스테이블코인 발행관리가 포함된다고 밝히고 있고, 국내 제도는 아직 움직이는 중입니다. 정직한 순서를 적어두는 편이 낫습니다 — <strong>정산 토큰은 증명 문제가 풀린 다음에야 의미가 있습니다.</strong> 아무도 검증할 수 없는 청구권을 원화 토큰으로 정산하면 검증되지 않은 청구권이 더 빨리 움직일 뿐, 참이 되지는 않습니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/fisheries-receivable-rail">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-mcp-stateless-server.html">&larr; 20. Building an MCP server on the stateless spec</a><a href="pocs-cap-table-ceiling.html">22. The ceiling is per holder, the control is not &rarr;</a></div>
+  <div class="pager"><a href="pocs-mcp-stateless-server.html">&larr; 28. Building an MCP server on the stateless spec</a><a href="pocs-cap-table-ceiling.html">30. The ceiling is per holder, the control is not &rarr;</a></div>
 </div>
 </body>
 </html>

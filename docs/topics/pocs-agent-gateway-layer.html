@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>After the standard, the operations layer — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; After the standard, the operations layer</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#20</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>After the standard, the operations layer</h1>
+      <p class="lead">The MCP SDK now outpaces every tracked AI package on npm, and once a standard stops being contested an operations layer grows on top of it. What is hot is not a model but the gateway sitting between agents and their tools — and per-agent spend limits are a cell this project leaves empty.</p>
+      <p class="meta">Ten minutes: run LiteLLM in proxy mode from its README and stop at the point where cost tracking switches on — that single moment is the whole demonstration. Optional: write one line on what would become visible if this project&#39;s own agent tool calls ran behind a gateway. Sources to confirm, because all of the figures below are vendor or secondary: the MCP npm SDK download count, and TrueFoundry&#39;s published latency and throughput numbers.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>A standard winning is not the end of a story, it is the start of a different one.</strong> While the protocol was contested, the interesting work was the protocol. Once it stopped being contested — the MCP SDK is now reported at roughly 195.9 million monthly npm downloads, ahead of every other tracked AI package — the interesting work moved one layer up, to whatever sits between an agent and the tools it calls. That layer is where identity, spend and access controls live, and it did not exist a year ago because nothing was standard enough to put a gateway in front of.</p>
+<p><strong>This is not a blockchain item, and that is the point.</strong> The report&#39;s rotation reached the general build stack, and the general stack turns out to be needed sooner than the queue implies. This catalogue already has <code>mcp-stateless-server</code> for building a server on the spec, <code>agent</code> for an autonomous payment agent, and <code>senpi-harness</code> for running one — three cards about producing agents, none about <strong>governing</strong> them.</p>
+<p><strong>The empty cell is specific and close to home.</strong> This report is itself produced by an agent, with real tool calls and a real bill, and there is currently no per-agent identity, no spend ceiling and no record of which tool consumed what. Those are exactly the three things an agent gateway provides. The question worth asking is not which vendor to pick — it is what the ledger would say if one were switched on for a week.</p>
+      <h2>How it works</h2>
+      <h3>What is in the layer</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>What it does</th>
+<th>Where it fits</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LiteLLM</strong></td>
+<td>Rust-core gateway putting <strong>100+ LLM APIs</strong> behind one interface, with cost tracking and load balancing</td>
+<td>Makes model swaps a config change rather than a code change</td>
+</tr>
+<tr>
+<td><strong>TrueFoundry</strong></td>
+<td>Split into an <strong>MCP gateway</strong> governing every tool connection and an <strong>agent gateway</strong> carrying per-agent identity and spend limits</td>
+<td>The governance half; published at roughly 3-4ms added latency and 350+ RPS on 1 vCPU</td>
+</tr>
+<tr>
+<td><strong>katanemo/plano</strong></td>
+<td>AI-native proxy and data plane with smart LLM routing</td>
+<td>The routing half, for agent apps</td>
+</tr>
+<tr>
+<td><strong>vLLM</strong></td>
+<td>High-throughput serving on <strong>PagedAttention</strong></td>
+<td>The default once serving moves in-house</td>
+</tr>
+<tr>
+<td><strong>Context compression</strong></td>
+<td>Separating into its own infrastructure layer</td>
+<td>Emerging, because agents have hit real token-cost ceilings</td>
+</tr>
+</tbody></table></div>
+<h3>The measurement, and it is one week long</h3>
+<p>Put this project&#39;s agent tool calls behind a gateway for a week and read three numbers off the ledger: <strong>cost per report section</strong>, <strong>which tool dominates the bill</strong>, and <strong>how much of the spend is context rather than output</strong>. None of the three is currently knowable, and all three change what is worth optimizing. The last one is the reason context compression is becoming its own layer, and a measured ratio would say whether that matters here or is somebody else&#39;s problem.</p>
+<h3>The unglamorous reason this belongs on the list</h3>
+<p>Every card in this catalogue about agents is about making one work. <strong>A gateway is about what happens when one misbehaves</strong> — a loop that calls a paid tool a thousand times, a credential reachable by an agent that should not reach it. Those are operational failures rather than interesting ones, which is exactly why the layer exists and exactly why it gets added after the incident rather than before.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/agent-gateway-layer">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>표준 다음에 오는 운영 계층</h1>
+      <p class="lead">MCP SDK가 npm에서 추적되는 모든 AI 패키지를 앞질렀고, <strong>표준 경쟁이 끝나면 그 위에 운영 계층이 자랍니다.</strong> 지금 뜨거운 것은 모델이 아니라 <strong>에이전트와 툴 사이에 앉는 게이트웨이</strong>이고 — <strong>에이전트별 비용 한도</strong>는 이 프로젝트가 비워 둔 칸입니다.</p>
+      <p class="meta"><strong>10분</strong>: LiteLLM README의 프록시 모드를 한 줄로 띄우고 <strong>비용 추적이 켜지는 지점에서 멈춥니다</strong> — 그 순간 하나가 시연의 전부입니다. 선택: 이 프로젝트의 에이전트 툴 호출을 게이트웨이 뒤로 옮기면 <strong>무엇이 보이게 되는지</strong> 한 줄로 적기. 확인이 필요한 출처 — 아래 수치는 전부 벤더 또는 2차 자료입니다: MCP npm SDK 다운로드 수, TrueFoundry가 공개한 지연·처리량 수치.</p>
+      <h2>왜</h2>
+      <p><strong>표준이 이겼다는 것은 이야기의 끝이 아니라 다른 이야기의 시작입니다.</strong> 프로토콜이 다퉈지는 동안에는 흥미로운 일이 프로토콜이었습니다. 다퉈지지 않게 된 순간 — MCP SDK가 월 약 <strong>1억 9,590만</strong> npm 다운로드로 추적되는 다른 모든 AI 패키지를 앞섰다고 보고됩니다 — <strong>흥미로운 일이 한 층 위로</strong>, 에이전트와 그것이 호출하는 툴 사이로 옮겨갔습니다. <strong>신원·비용·접근 통제가 사는 층</strong>이고, 1년 전에는 존재하지 않았습니다. 게이트웨이를 앞에 세울 만큼 표준화된 것이 없었으니까요.</p>
+<p><strong>블록체인 항목이 아니라는 점이 오히려 요점입니다.</strong> 리포트의 순환이 일반 빌드 스택에 닿았는데, 그 일반 스택이 <strong>큐가 암시하는 것보다 빨리 필요합니다.</strong> 이 카탈로그에는 명세 위에 서버를 만드는 <code>mcp-stateless-server</code>, 자율 결제 에이전트 <code>agent</code>, 그것을 돌리는 <code>senpi-harness</code> 가 있습니다 — <strong>에이전트를 만드는 카드 셋, 에이전트를 통치하는 카드 영.</strong></p>
+<p><strong>비어 있는 칸은 구체적이고 가깝습니다.</strong> 이 리포트 자체가 에이전트가 만들고, 실제 툴 호출과 실제 청구서가 있는데, 지금 <strong>에이전트별 신원도, 지출 상한도, 어떤 툴이 얼마를 썼는지의 기록도 없습니다.</strong> 에이전트 게이트웨이가 주는 것이 정확히 그 셋입니다. 물어야 할 질문은 어느 벤더를 고를까가 아니라 — <strong>일주일 켜 두면 그 장부가 무엇을 말할까</strong> 입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>이 층에 무엇이 있나</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>조각</th>
+<th>하는 일</th>
+<th>어디에 맞는가</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LiteLLM</strong></td>
+<td>Rust 코어 게이트웨이. <strong>100개 이상 LLM API</strong>를 단일 인터페이스로 묶고 비용 추적·로드밸런싱</td>
+<td>모델 교체를 코드 변경이 아니라 <strong>설정 변경</strong>으로 만듦</td>
+</tr>
+<tr>
+<td><strong>TrueFoundry</strong></td>
+<td><strong>MCP 게이트웨이</strong>(모든 툴 연결 통제) + <strong>Agent 게이트웨이</strong>(에이전트별 신원·비용 한도)</td>
+<td><strong>통치 쪽 절반.</strong> 공개 수치 1 vCPU에서 약 3~4ms 추가 지연, 350+ RPS</td>
+</tr>
+<tr>
+<td><strong>katanemo/plano</strong></td>
+<td>에이전트 앱용 AI 네이티브 프록시·데이터플레인, 스마트 LLM 라우팅</td>
+<td><strong>라우팅 쪽 절반</strong></td>
+</tr>
+<tr>
+<td><strong>vLLM</strong></td>
+<td><strong>PagedAttention</strong> 기반 고처리량 서빙</td>
+<td>자체 호스팅으로 내려갈 때의 기본값</td>
+</tr>
+<tr>
+<td><strong>컨텍스트 압축</strong></td>
+<td>별도 인프라 층으로 분리되는 중</td>
+<td>에이전트가 <strong>실제 토큰 비용 한계에 닿았기</strong> 때문에 부상</td>
+</tr>
+</tbody></table></div>
+<h3>측정, 그리고 기간은 일주일</h3>
+<p>이 프로젝트의 에이전트 툴 호출을 일주일간 게이트웨이 뒤로 넣고 장부에서 숫자 셋을 읽습니다 — <strong>리포트 꼭지당 비용</strong>, <strong>청구서를 지배하는 툴</strong>, <strong>지출 중 출력이 아니라 컨텍스트가 차지하는 비중</strong>. 지금은 <strong>셋 다 알 수 없고</strong>, 셋 다 무엇을 최적화할지를 바꿉니다. 마지막 것이 컨텍스트 압축이 자기 층이 되어 가는 이유이고, 비율을 재 보면 <strong>그게 여기서 문제인지 남의 문제인지</strong>가 정해집니다.</p>
+<h3>목록에 있어야 하는 멋없는 이유</h3>
+<p>이 카탈로그의 에이전트 카드들은 전부 <strong>하나를 작동시키는</strong> 이야기입니다. <strong>게이트웨이는 하나가 잘못 굴러갈 때의 이야기입니다</strong> — 유료 툴을 천 번 호출하는 루프, 닿으면 안 될 자격증명에 닿는 에이전트. 흥미로운 실패가 아니라 <strong>운영상의 실패</strong>이고, 그래서 이 층이 존재하며, 그래서 <strong>사고 전이 아니라 사고 후에</strong> 추가됩니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/agent-gateway-layer">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-lerobot-groot-one-workflow.html">&larr; 19. The entry cost stopped being a robot</a><a href="pocs-chainlink-data-streams.html">21. Chainlink Data Streams — push vs. pull oracles and point-in-time settlement &rarr;</a></div>
+</div>
+</body>
+</html>

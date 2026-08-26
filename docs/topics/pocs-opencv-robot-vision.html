@@ -10,18 +10,34 @@
   :root {
     --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
     --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
       --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
     }
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
      17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
   body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
   a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
 
   .layout { display:flex; align-items:flex-start; }
 
@@ -75,6 +91,7 @@
   p { margin:10px 0; word-wrap:break-word; }
   .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
   .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
   /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
@@ -113,18 +130,131 @@
   .topic-why strong { color:var(--text); font-style:normal; }
   .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
-  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
-  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
-  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
-  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
-  .pager span { color:var(--text2); }
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
 
   /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
   .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
   .lang-label {
-    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--text2); margin:0 0 14px;
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
   }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
@@ -134,25 +264,39 @@
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
   }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
 </style>
 </head>
 <body>
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Pixels to millimetres — the step before the arm moves</p>
-  <article>
-      <h1><span class="topic-no">31</span>Pixels to millimetres — the step before the arm moves <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#39</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Pixels to millimetres — the step before the arm moves</h1>
       <p class="lead">Camera calibration, ArUco pose and hand-eye alignment on a built-in webcam and a sheet of A4. The output is not a demo but two error numbers.</p>
       <p class="meta">Not yet scoped — <code>pip install opencv-python opencv-contrib-python</code>, print one DICT_4X4_50 marker from chev.me/arucogen, and check that the axes render on a webcam with rough intrinsics (fx=fy=image width, cx/cy=centre). Real calibration second. docs.opencv.org</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
       <p>The LeRobot card is about moving the arm; this is the step in front of it, and skipping it is why a cheap arm grabs at empty air. A policy trained on demonstrations learns actions in the robot&#39;s own coordinate frame, but everything the camera reports is in pixels, and nothing in the imitation-learning loop converts between them for you. So the question this card answers is the plainest one in robotics vision — two hundred pixels on screen is how many millimetres in the world? — and the reason it belongs in this catalogue rather than in a bookmark folder is that the honest answer is a measurement, not a pipeline. It also happens to be free: a built-in webcam and a sheet of A4 are the entire bill of materials, which makes it the cheapest way to find out where the ceiling actually is before spending anything on hardware. The V in VLA starts here.</p>
       <h2>How it works</h2>
       <p>Four steps, and only the last two are optional. Intrinsics: fifteen to twenty chessboard or ChArUco shots through <code>cv2.calibrateCamera</code> yield the matrix K (fx, fy, cx, cy) and the distortion coefficients, and reprojection RMS is the first of the two numbers this card exists to produce — under one pixel is the pass mark. Pose: an ArUco marker on the object or the gripper gives full 6-DOF position and rotation relative to the camera, and there is one version trap worth knowing before it costs half an hour — <code>cv2.aruco.estimatePoseSingleMarkers</code> was deprecated in OpenCV 4.7, so the current path is <code>cv2.aruco.ArucoDetector</code> for corners followed by <code>cv2.solvePnP</code> with SOLVEPNP_IPPE_SQUARE, which is why a large share of the tutorials online no longer run as written. Hand-eye: <code>cv2.calibrateHandEye</code> aligns the camera frame with the robot base frame, and the classic first mistake is not the algorithm choice (Tsai, Park, Horaud) but the setup — a camera mounted on the arm is eye-in-hand, a camera on a tripod is eye-to-hand, and getting that backwards produces a transform that is wrong in a way that still looks plausible. Inference: <code>cv2.dnn</code> runs an ONNX detector with no second framework, which is the natural lightweight pairing for an edge board like the Jetson Orin Nano Super and the reason that item sits next in the queue. The second number is the one that actually settles what this camera can do: put the marker at a distance measured with a ruler, compare it to tvec, and record the error as a percentage. Everything above is setup for those two figures — RMS and range error — and a card that reports them is worth more than one that reports that the axes rendered.</p>
       <p><a href="https://www.jaylabs.xyz/poc/opencv-robot-vision">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-    <hr class="lang-divider">
-    <article lang="ko">
-      <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">31</span>픽셀에서 밀리미터로 — 팔이 움직이기 전 단계 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>픽셀에서 밀리미터로 — 팔이 움직이기 전 단계</h1>
       <p class="lead">노트북 웹캠과 A4 한 장으로 하는 카메라 캘리브레이션·ArUco 자세추정·hand-eye 정렬. 산출물은 데모가 아니라 오차 숫자 두 개입니다.</p>
       <p class="meta">아직 범위 미정 — <code>pip install opencv-python opencv-contrib-python</code>, chev.me/arucogen에서 DICT_4X4_50 마커 하나 인쇄, 대략값 내부 파라미터(fx=fy=이미지 폭, cx·cy=중심)로 웹캠에 축이 그려지는지부터 확인. 제대로 된 캘리브레이션은 그다음. docs.opencv.org</p>
       <h2>왜</h2>
@@ -161,7 +305,7 @@
       <p>단계는 넷이고 뒤의 둘만 선택입니다. <strong>내부 파라미터</strong>: 체스보드나 ChArUco 보드를 15~20장 찍어 <code>cv2.calibrateCamera</code>에 넣으면 행렬 K(fx·fy·cx·cy)와 왜곡계수가 나오고, <strong>재투영 RMS</strong>가 이 카드가 만들려는 두 숫자 중 첫 번째입니다 — 1픽셀 미만이 합격선. <strong>자세추정</strong>: 물체나 그리퍼에 붙인 ArUco 마커가 카메라 기준 6DOF 위치와 회전을 바로 줍니다. 여기 30분을 잡아먹기 전에 알아둘 <strong>버전 함정</strong>이 하나 있습니다 — <code>cv2.aruco.estimatePoseSingleMarkers</code>는 OpenCV 4.7에서 폐기됐으므로, 현행 경로는 <code>cv2.aruco.ArucoDetector</code>로 코너를 검출하고 <code>cv2.solvePnP</code>(플래그 <code>SOLVEPNP_IPPE_SQUARE</code>)로 자세를 푸는 것입니다. 인터넷 예제 상당수가 적힌 대로 돌지 않는 이유가 이것입니다. <strong>hand-eye</strong>: <code>cv2.calibrateHandEye</code>가 카메라 좌표계와 로봇 베이스 좌표계를 정렬하는데, 초보의 첫 실수는 알고리즘 선택(Tsai·Park·Horaud)이 아니라 <strong>설정</strong>입니다 — 카메라가 팔에 붙어 있으면 eye-in-hand, 삼각대에 있으면 eye-to-hand이고, 이걸 반대로 잡으면 <strong>그럴듯해 보이면서 틀린</strong> 변환이 나옵니다. <strong>추론</strong>: <code>cv2.dnn</code>은 별도 프레임워크 없이 ONNX 검출 모델을 돌리는데, Jetson Orin Nano Super 같은 엣지 보드와 짝지을 때의 자연스러운 경량 조합이고 그 항목이 큐에서 다음 순서인 이유이기도 합니다. 이 카메라로 어디까지 할 수 있는지를 실제로 결정하는 것은 <strong>두 번째 숫자</strong>입니다: 마커를 자로 잰 거리에 놓고 <code>tvec</code>과 비교해 오차를 퍼센트로 기록합니다. 위의 전부는 그 두 수치 — <strong>RMS와 거리 오차율</strong> — 를 위한 준비이고, 그것을 보고하는 카드가 &quot;축이 그려졌다&quot;고 보고하는 카드보다 값어치가 큽니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/opencv-robot-vision">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-sub-2bit-local-llm.html">&larr; 30. Sub-2-bit LLMs, locally</a><a href="pocs-lerobot-so101.html">32. LeRobot + SO-101 — the cheapest hands-on robotics entry &rarr;</a></div>
+  <div class="pager"><a href="pocs-sub-2bit-local-llm.html">&larr; 38. Sub-2-bit LLMs, locally</a><a href="pocs-lerobot-so101.html">40. LeRobot + SO-101 — the cheapest hands-on robotics entry &rarr;</a></div>
 </div>
 </body>
 </html>

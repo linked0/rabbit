@@ -10,18 +10,34 @@
   :root {
     --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
     --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
       --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
     }
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
      17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
   body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
   a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
 
   .layout { display:flex; align-items:flex-start; }
 
@@ -75,6 +91,7 @@
   p { margin:10px 0; word-wrap:break-word; }
   .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
   .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
   /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
@@ -113,18 +130,131 @@
   .topic-why strong { color:var(--text); font-style:normal; }
   .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
-  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
-  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
-  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
-  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
-  .pager span { color:var(--text2); }
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
 
   /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
   .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
   .lang-label {
-    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--text2); margin:0 0 14px;
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
   }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
@@ -134,15 +264,30 @@
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
   }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
 </style>
 </head>
 <body>
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; L1 zkEVM — the word doing the work is &quot;optional&quot;</p>
-  <article>
-      <h1><span class="topic-no">8</span>L1 zkEVM — the word doing the work is &quot;optional&quot; <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></h1>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#8</span><span>PoC</span><span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></p>
+      <h1>L1 zkEVM — the word doing the work is &quot;optional&quot;</h1>
       <p class="lead">EIP-8025 lets a validator verify a block by checking a proof instead of re-executing it. The number nobody publishes is how many still re-execute once it is cheaper not to.</p>
       <p class="meta">Not yet scoped — start by proving recent mainnet blocks with an off-the-shelf zkVM on rented GPU and plotting wall-clock proving time against gas used, then check where Glamsterdam&#39;s 200M gas target lands relative to the reveal window ePBS opens. Source: EIP-8025 (Optional Execution Proofs), targeted at the Hegotá fork and dependent on Glamsterdam&#39;s EIP-7732 and EIP-7928.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
       <p>Two forks make one machine, and it is worth stating the dependency plainly because the roadmap coverage rarely does. Glamsterdam sets out two chairs: ePBS (EIP-7732) supplies time, because splitting the slot seats the builder as prover and opens an interval between header commitment and payload reveal; BAL (EIP-7928) supplies partition, because a block that declares the state it will touch is a block whose proving work can be sliced across many provers. Neither alone makes a twelve-second proof possible, which is why EIP-8025 sits in Hegotá rather than in Glamsterdam. That much is architecture. The part worth a card is the adjective. These are <em>optional</em> execution proofs, and the option is the whole design: a validator may check a succinct proof of the state transition instead of running the transactions. Proof-checking has to be cheaper than re-execution or nobody takes the option, and if it is cheaper then a rational validator takes it — all of them. At that point the network&#39;s ability to notice a prover bug rests entirely on whoever is still paying more to re-execute, which is to say on validators behaving irrationally. Safety that depends on people declining a discount is the same shape this catalogue already recorded in the Aqua card, where quoted depth is real but only for whoever arrives first, and in the note on Tempo, where a single client plus a halt-rather-than-be-wrong posture turns one bug into an outage. The question is not whether the proofs are sound. It is what fraction of the network keeps the capacity to disagree with them.</p>
       <h2>How it works</h2>
@@ -162,7 +307,7 @@ block valid  ⟺  valid ≥ N
 <p><strong>Where diversity leaks.</strong> Three places, and the third is the interesting one. First, the diversity may be surface-only: client diversity worked because implementations were written independently from a spec, whereas zkVMs frequently share proof-system families, hash and curve implementations, and base libraries — a bug beneath the diversity layer produces the same wrong answer three times. Second, requiring N proofs multiplies proving cost and lets the slowest prover set the pace, so a single system&#39;s outage becomes a liveness failure. Third and most important, <strong>the same discount dynamic reappears one level down</strong>: if one zkVM is meaningfully cheaper, provers concentrate on it and the monoculture returns. Ethereum&#39;s ongoing client-diversity concern is the live demonstration that a norm is not a rule. Diversity therefore only works if the protocol names the required systems in consensus — which is a real departure from Ethereum&#39;s practice of keeping implementation names out of the protocol — and it makes several verifier implementations consensus-critical, adding attack surface at the verification layer to remove it at the proving layer.</p>
 <p><strong>And the aggregation irony.</strong> Carrying three proofs per block is heavy, so the practical construction is recursive aggregation: one circuit proves that A, B and C all verified, emitting a single small proof. Elegant, and almost certainly where this goes — except the aggregation circuit is shared code again. The efficient implementation of diversity reintroduces a monoculture at the aggregation layer.</p>
 <p><strong>What diversity still cannot catch, and the resulting design.</strong> Diversity defends against an implementation bug in one prover. It does not defend against a bug shared by all provers, whether through a common dependency or through an ambiguous specification, because every system proves the same statement about the same spec. Only re-execution is grounded in actually running the thing. The two are complementary rather than alternative:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th></th>
@@ -180,15 +325,14 @@ block valid  ⟺  valid ≥ N
 <td>caught</td>
 <td><strong>caught</strong></td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p>Sampling a small random subset of validators per slot — the machinery attestation committees already use — keeps cost low while making &quot;nobody re-executes&quot; structurally impossible.</p>
 <p><strong>Measurement added to this card.</strong> Alongside the window and the discount, a third number: <strong>the shared-dependency graph across candidate zkVMs.</strong> Diversity is only worth what the independence beneath it is worth, and that overlap is computable today from public dependency manifests. Nobody publishes it.</p>
       <p><a href="https://www.jaylabs.xyz/poc/l1-zkevm-optional-proofs">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-    <hr class="lang-divider">
-    <article lang="ko">
-      <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">8</span>L1 zkEVM — 정작 일하는 단어는 '선택적'이다 <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></h1>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>L1 zkEVM — 정작 일하는 단어는 '선택적'이다</h1>
       <p class="lead">EIP-8025는 검증자가 재실행 대신 증명을 확인해 블록을 검증하게 합니다. 아무도 발표하지 않는 숫자는, 재실행이 더 비싸진 뒤에도 여전히 재실행하는 노드가 몇이나 남는가입니다.</p>
       <p class="meta">아직 범위 미정 — 최근 메인넷 블록들을 기성 zkVM으로(대여 GPU) 증명해 <strong>실시간 증명 소요 대 가스 사용량</strong> 곡선을 그리고, Glamsterdam의 <strong>200M 가스 목표</strong>가 ePBS가 열어주는 공개 창 대비 어디에 떨어지는지 확인하는 것부터. 출처: EIP-8025(Optional Execution Proofs), Hegotá 포크 대상이며 Glamsterdam의 EIP-7732·EIP-7928에 의존.</p>
       <h2>왜</h2>
@@ -210,7 +354,7 @@ valid = count(S in required where Verify_S(oldRoot, blockCommit, newRoot, proof_
 <p><strong>다양성이 새는 곳 셋, 그리고 셋째가 진짜입니다.</strong> ① <strong>표면만 다양할 수 있습니다</strong> — 클라이언트 다양성이 작동한 이유는 명세를 보고 독립적으로 구현했기 때문인데, zkVM들은 증명 시스템 계열·해시와 곡선 구현·기반 라이브러리를 자주 공유합니다. <strong>다양성 층 아래의 버그 하나는 셋이 같은 틀린 답을 내게 만듭니다.</strong> ② N개를 요구하면 증명 비용이 곱해지고 <strong>가장 느린 증명자가 속도를 정하며</strong>, 한 시스템의 장애가 곧 라이브니스 실패가 됩니다. ③ 그리고 가장 중요한 것 — <strong>같은 할인 동학이 한 층 아래에서 그대로 재현됩니다.</strong> 한 zkVM이 뚜렷하게 싸면 증명자들이 그리로 몰리고 단일 문화가 돌아옵니다. <strong>이더리움의 클라이언트 다양성 문제가 바로 그 살아 있는 증거</strong>입니다 — 규범은 규칙이 아닙니다. 그래서 다양성이 작동하려면 <strong>프로토콜이 요구 시스템을 합의에 명시</strong>해야 하는데, 이는 구현 이름을 프로토콜 밖에 두어 온 이더리움 관행에서 실질적으로 벗어나는 일이고, 동시에 <strong>검증자 구현 여러 개를 합의 임계 코드로 만들어</strong> 증명 계층의 공격 표면을 검증 계층으로 옮기는 결과가 됩니다.</p>
 <p><strong>그리고 집계의 아이러니.</strong> 블록마다 증명 셋을 싣는 건 무거우니 실무적 구성은 <strong>재귀 집계</strong>입니다 — 회로 하나가 <em>&quot;A·B·C가 모두 검증됐다&quot;</em> 를 증명해 작은 증명 하나로 압축합니다. 우아하고 거의 확실히 그리로 갈 텐데, <strong>그 집계 회로가 다시 공유 코드</strong>입니다. <strong>다양성의 효율적 구현이 집계 계층에서 단일 문화를 재도입합니다.</strong></p>
 <p><strong>다양성으로도 못 잡는 것, 그리고 그 결과의 설계.</strong> 다양성은 <strong>한 증명자의 구현 버그</strong>를 막습니다. <strong>모든 증명자가 함께 틀리는 경우</strong> — 공유 의존성 때문이든 명세가 모호해서든 — 는 못 막습니다. 모두가 <strong>같은 명세에 대한 같은 문장</strong>을 증명하니까요. <strong>실제로 돌려본다는 근거를 갖는 것은 재실행뿐</strong>입니다. 둘은 대체재가 아니라 보완재입니다:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th></th>
@@ -228,7 +372,7 @@ valid = count(S in required where Verify_S(oldRoot, blockCommit, newRoot, proof_
 <td>잡음</td>
 <td><strong>잡음</strong></td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p>매 슬롯 <strong>무작위 소수 검증자에게만 재실행 의무</strong>를 지우면 — 증명 위원회가 이미 쓰는 기계입니다 — 비용은 거의 안 늘면서 <strong>&quot;아무도 안 돌리는 상태&quot;가 구조적으로 불가능</strong>해집니다.</p>
 <p><strong>이 카드에 추가되는 측정.</strong> 창(window)과 할인율에 더해 <strong>셋째 숫자: 후보 zkVM들 사이의 공유 의존성 그래프.</strong> <strong>다양성의 값어치는 그 아래 독립성의 값어치를 넘지 못하고</strong>, 그 겹침은 공개된 의존성 목록으로 오늘 당장 계산할 수 있습니다. 그리고 아무도 발표하지 않습니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/l1-zkevm-optional-proofs">Open on jaylabs.xyz &rarr;</a></p>

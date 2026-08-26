@@ -10,18 +10,34 @@
   :root {
     --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
     --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
       --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
     }
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
      17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
   body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
   a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
 
   .layout { display:flex; align-items:flex-start; }
 
@@ -75,6 +91,7 @@
   p { margin:10px 0; word-wrap:break-word; }
   .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
   .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
   /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
@@ -113,18 +130,131 @@
   .topic-why strong { color:var(--text); font-style:normal; }
   .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
-  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
-  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
-  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
-  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
-  .pager span { color:var(--text2); }
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
 
   /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
   .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
   .lang-label {
-    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--text2); margin:0 0 14px;
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
   }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
@@ -134,15 +264,30 @@
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
   }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
 </style>
 </head>
 <body>
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; AML — where the cryptography stops</p>
-  <article>
-      <h1><span class="topic-no">24</span>AML — where the cryptography stops <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#32</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>AML — where the cryptography stops</h1>
       <p class="lead">Travel Rule, KYC reuse, sanctions screening — the layer this catalogue keeps hitting and calling &#39;not a technical problem&#39;, studied on its own terms.</p>
       <p class="meta">Not yet scoped — a reading study. Start with Korea&#39;s 특금법 (VASP registration, 트래블룰) and FATF Recommendation 16, then map which obligations a protocol can carry and which only a licensed entity can.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
       <p>This card exists because of a sentence written on another one. The institutional custody study card promised a separation — which parts are engineering (MPC, approval state machines, AA policies) and which parts are a licence you either have or do not — and then set the licence half aside. Nearly every card since has hit the same wall from a different angle. Verifiable credentials prove an institution signed something but not that the claim is true, so someone has to decide which issuers count. Zero-knowledge selective disclosure can prove an investor is eligible without revealing a birthday, but eligibility is defined by a regulator, not a circuit. The multichain RWA card&#39;s hardest question turns out to be who is liable for overissuance rather than how to detect it. In each case the technical work stops at the same boundary, and the boundary is worth studying directly rather than repeatedly noting in passing.</p>
 <p><strong>Why it is live, 2026-08-20.</strong> At the Financial AX Risk &amp; Compliance 2026 conference in Seoul, 송근섭, head of the Korean association of certified anti-money-laundering specialists, argued that financial crime has gone cross-border faster than AML has: digital assets and new payment rails are dissolving the boundary between sectors, so customer identification, beneficial-ownership checks, sanctions screening and suspicious-transaction analysis have to be raised together rather than firm by firm. His practical instruction was to stop waiting for complete data and AI governance before starting, and to run a proof of concept on a controllable task — STR analysis was his example — then widen the scope once effectiveness is shown. His limit was that AI must not become a shortcut past the expert: an organisation should use it to <strong>strengthen</strong> the analyst&#39;s judgment, not to route around it. Those two instructions point at the same task from opposite directions, and that tension is what this card can actually measure.</p>
@@ -151,7 +296,7 @@
 <h3>The tension in the 2026-08-20 position, and how to measure it</h3>
 <p>STR triage is precisely where a model substitutes for the analyst&#39;s first-pass judgment. So &quot;start with STR&quot; and &quot;do not bypass the expert&quot; aim at the same task from opposite directions, and the speech offers no test that tells them apart. On an org chart they are identical — a human signs either way.</p>
 <p>What separates them is measurable:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Signal</th>
@@ -179,7 +324,7 @@
 <td>Still happen</td>
 <td>Stop happening</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p>The claim worth testing: <strong>an AI that augments leaves a non-trivial override rate whose overrides are correct more often than chance; an AI that is being rubber-stamped shows a collapsing one.</strong> That is automation bias, and it needs no bank&#39;s data — a synthetic alert queue and two arms reproduce the shape.</p>
 <h3>One correction to the governance advice</h3>
 <p>&quot;Do not wait for perfect governance&quot; is right, and it is <strong>not</strong> the same as &quot;start without an audit trail.&quot; An STR is a regulated filing examined after the fact, so the minimum a PoC owes is a decision record from day one: inputs, model version, score, what the analyst did, and why. That is a far smaller thing than full AI governance, and conflating the two is how good advice becomes an excuse.</p>
@@ -187,10 +332,9 @@
 <p>The closing argument — that information and expertise sit scattered across firms, supervisors and private specialists, so public-private partnership matters — belongs in this card&#39;s existing two-column map rather than in a new card. Sharing typologies is fact transport, which this catalogue already knows how to think about. Deciding a risk rating and signing a filing is not. Add it as a third row: <strong>obligations a consortium can carry</strong>, sitting between what a protocol can carry and what only a licensed entity can.</p>
       <p><a href="https://www.jaylabs.xyz/poc/aml-compliance">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-    <hr class="lang-divider">
-    <article lang="ko">
-      <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">24</span>AML — 암호학이 멈추는 자리 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>AML — 암호학이 멈추는 자리</h1>
       <p class="lead">트래블룰·KYC 재사용·제재 스크리닝 — 이 카탈로그가 계속 부딪히고는 &quot;기술 문제가 아니다&quot;라고 넘겼던 층을, 이번엔 그 자체로 공부해 본다.</p>
       <p class="meta">아직 범위 미정 — 정독 스터디. 특금법(가상자산사업자 신고·트래블룰)과 FATF 권고 16번부터 시작해, 어떤 의무가 프로토콜로 옮겨지고 어떤 의무가 라이선스를 가진 법인에만 남는지 매핑.</p>
       <h2>왜</h2>
@@ -201,7 +345,7 @@
 <h3>2026-08-20 발언의 긴장, 그리고 그것을 재는 법</h3>
 <p>STR 트리아지는 <strong>모델이 분석가의 1차 판단을 대체하는 바로 그 자리</strong>입니다. 그러니 &quot;STR부터 시작하라&quot;와 &quot;전문가를 우회하지 말라&quot;는 같은 업무를 반대 방향에서 겨누고 있고, 발언은 둘을 가르는 시험을 주지 않습니다. 조직도에서는 똑같아 보입니다 — 어느 쪽이든 사람이 서명하니까요.</p>
 <p>둘을 가르는 것은 측정 가능합니다:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>신호</th>
@@ -229,7 +373,7 @@
 <td>여전히 발생</td>
 <td>사라짐</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p>시험할 값어치가 있는 주장: <strong>강화하는 AI는 유의미한 번복률을 남기고 그 번복이 우연보다 자주 옳다. 형식적으로 결재되는 AI는 번복률이 붕괴한다.</strong> 이것이 <strong>자동화 편향(automation bias)</strong>이고, 은행 데이터 없이도 됩니다 — 합성 경보 큐와 두 개 군이면 같은 형태가 재현됩니다.</p>
 <h3>거버넌스 조언에 정정 하나</h3>
 <p>&quot;완벽한 거버넌스를 기다리지 말라&quot;는 옳습니다. 그리고 그것은 <strong>&quot;감사 추적 없이 시작하라&quot;와 같은 말이 아닙니다.</strong> STR은 사후에 검사받는 규제 보고이므로, PoC가 첫날부터 지고 있어야 할 최소치는 <strong>결정 기록</strong>입니다 — 입력, 모델 버전, 점수, 분석가가 무엇을 했고 왜 그랬는지. 이것은 완전한 AI 거버넌스보다 훨씬 작은 물건이고, 둘을 뭉뚱그리는 순간 좋은 조언이 핑계로 바뀝니다.</p>
@@ -237,7 +381,7 @@
 <p>마지막 논점 — 정보와 전문성이 금융회사·감독기관·민간 전문가에게 흩어져 있으니 민관 파트너십이 중요하다 — 은 새 카드가 아니라 <strong>이 카드의 기존 2열 지도</strong>에 놓입니다. 유형(typology) 공유는 사실 전달 문제이고, 이 카탈로그가 이미 다룰 줄 아는 것입니다. 리스크 등급을 정하고 보고서에 서명하는 일은 아닙니다. 세 번째 열로 추가할 것: <strong>컨소시엄이 질 수 있는 의무</strong> — 프로토콜이 질 수 있는 것과 라이선스 보유 기관만 질 수 있는 것 사이에 놓입니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/aml-compliance">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-korea-digital-asset-act.html">&larr; 23. The bill count is not the disagreement count</a><a href="pocs-dsrv-portal.html">25. Institutional custody study &rarr;</a></div>
+  <div class="pager"><a href="pocs-korea-digital-asset-act.html">&larr; 31. The bill count is not the disagreement count</a><a href="pocs-dsrv-portal.html">33. Institutional custody study &rarr;</a></div>
 </div>
 </body>
 </html>

@@ -10,18 +10,34 @@
   :root {
     --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
     --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
       --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
     }
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
      17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
   body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
   a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
 
   .layout { display:flex; align-items:flex-start; }
 
@@ -75,6 +91,7 @@
   p { margin:10px 0; word-wrap:break-word; }
   .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
   .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
   /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
@@ -113,18 +130,131 @@
   .topic-why strong { color:var(--text); font-style:normal; }
   .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
-  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
-  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
-  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
-  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
-  .pager span { color:var(--text2); }
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
 
   /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
   .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
   .lang-label {
-    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--text2); margin:0 0 14px;
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
   }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
@@ -134,22 +264,37 @@
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
   }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
 </style>
 </head>
 <body>
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The ceremony ends, the committee doesn't</p>
-  <article>
-      <h1><span class="topic-no">17</span>The ceremony ends, the committee doesn't <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#25</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>The ceremony ends, the committee doesn't</h1>
       <p class="lead">Distributed key generation is written up as a one-time event. Every real deployment is a committee whose membership changes — and the second ceremony, resharing, is the one nobody budgets for.</p>
       <p class="meta">Not yet scoped — run an off-the-shelf DKG at n=7, t=5, then remove one participant and check whether the group public key survives. Measure operations, not cryptography. First thing to go looking for: a live deployment that has actually reshared in production, not one that documents it could.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
       <p>Distributed key generation is the protocol by which <strong>n</strong> parties jointly produce one keypair such that the private key is never assembled anywhere, and any <strong>t</strong> of them can sign or decrypt with it. It is the primitive underneath four things this catalogue already has cards for: DVT validator keys (<code>dvt</code>), the keyper committees in threshold-encrypted mempools (<code>encrypted-mempool</code>), MPC custody (the custodian in <code>fisheries-receivable-rail</code>), and randomness beacons.</p>
 <p>Every write-up states the same property — <em>t-of-n, no single point of compromise</em> — and it is true. <strong>What almost none of them state is what happens after the ceremony.</strong> A DKG is described as an event; every real deployment is a <strong>committee</strong>, and committees change. An operator leaves. A new one joins. One loses its share to a dead disk. Each of those needs a <em>second</em> ceremony — <strong>resharing</strong> — that has to be at least as trustworthy as the first, and it is the part that gets skipped in the documentation and, suspiciously often, in the deployment.</p>
 <p>That matters more than it sounds, because of one property worth stating precisely: <strong>resharing can preserve the group&#39;s public key.</strong> Shares are re-randomised, membership changes, the public key stays. And the public key is usually the part nailed down somewhere else — a validator pubkey registered on the beacon chain, a deposit address a customer saved, a key ID baked into an already-broadcast encrypted transaction. If a deployment can reshare, changing the operator set is an operation. If it cannot, <strong>&quot;change the operator set&quot; quietly means &quot;migrate everything that ever referenced the old key.&quot;</strong></p>
       <h2>How it works</h2>
       <h3>What a DKG actually produces</h3>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Output</th>
@@ -177,10 +322,10 @@
 <td>Should be public</td>
 <td>The evidence that the key was generated as claimed</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p>The last row deserves the hardest look. A threshold claim is only as good as the ability of an outsider to check that the ceremony really ran with the claimed participants and the claimed threshold.</p>
 <h3>The three membership events</h3>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Event</th>
@@ -203,7 +348,7 @@
 <td>Recover from ≥ t others, or reshare</td>
 <td><strong>Is recovery distinguishable from theft?</strong></td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p>That last question is the sharp one. A recovery procedure that lets <em>t</em> participants reconstruct a share for a member who lost theirs is, structurally, also a procedure that lets <em>t</em> colluding participants hand a share to anyone. Whatever separates the two is policy sitting outside the cryptography — which is the same boundary the <code>aml-compliance</code> card is about.</p>
 <h3>The measurement, and it is small</h3>
 <p>Run a real DKG locally — n = 7, t = 5, using an existing library rather than hand-rolling one — then measure the <strong>operations</strong>, not the cryptography:</p>
@@ -215,7 +360,7 @@
 <li>Have an outsider verify the transcript using public data only.</li>
 </ol>
 <p>Output is one table nobody publishes and every operator needs:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Event</th>
@@ -225,12 +370,12 @@
 <th>Public key preserved</th>
 </tr>
 </thead>
-</table>
+</table></div>
 <h3>Where the n stops being n</h3>
 <p>Same shape as <code>stake-concentration</code> and <code>aqua-shared-liquidity</code>: a set that looks like n independent units while the real unit of independence is smaller. For a key committee the correlated axes are concrete — same cloud region, same client implementation, same jurisdiction, one operator running several nominally separate nodes.</p>
 <p><strong>The threshold t is arithmetic. The independence of the n is an empirical claim, and it is the one nobody measures.</strong> <code>encrypted-mempool</code> hit this from the other side — fewer than k honest keypers restores mempool-stage MEV — and <code>third-party-blast-radius</code> asks it about committee capture.</p>
 <h3>What breaks in each card if resharing turns out to be impossible</h3>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Card</th>
@@ -253,7 +398,7 @@
 <td>The custody address a customer saved</td>
 <td>&quot;Rotate the operator set&quot; becomes &quot;move the assets&quot;</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <h3>Open questions</h3>
 <ul>
 <li><strong>Does anyone publish the ceremony transcript?</strong> If not, the threshold is an assertion rather than a verifiable fact, and every downstream card is trusting a claim it cannot check.</li>
@@ -262,10 +407,9 @@
 </ul>
       <p><a href="https://www.jaylabs.xyz/poc/dkg-resharing">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-    <hr class="lang-divider">
-    <article lang="ko">
-      <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">17</span>의식은 끝나지만 위원회는 남는다 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>의식은 끝나지만 위원회는 남는다</h1>
       <p class="lead">분산 키 생성은 일회성 사건으로 서술됩니다. 그런데 실제 배포된 것은 전부 구성원이 바뀌는 위원회이고, 두 번째 의식인 리셰어링은 아무도 예산에 넣지 않는 쪽입니다.</p>
       <p class="meta">아직 범위 미정 — 기존 라이브러리로 n=7, t=5 DKG를 돌린 뒤 참여자 하나를 빼고 그룹 공개키가 살아남는지 본다. 암호학이 아니라 운영을 잰다. 가장 먼저 찾아볼 것: 운영 중에 실제로 리셰어링을 해 본 배포 — 문서상 가능하다고만 적힌 것 말고.</p>
       <h2>왜</h2>
@@ -274,7 +418,7 @@
 <p>이게 들리는 것보다 중요한 이유는 성질 하나 때문입니다: <strong>리셰어링은 그룹의 공개키를 보존할 수 있습니다.</strong> 지분은 다시 무작위화되고 구성원은 바뀌지만 공개키는 그대로입니다. 그리고 <strong>공개키야말로 대개 다른 곳에 못 박혀 있는 부분</strong>입니다 — 비콘 체인에 등록된 검증인 공개키, 고객이 저장해 둔 입금 주소, 이미 브로드캐스트된 암호화 트랜잭션에 박힌 key ID. 리셰어링이 되면 운영자 교체는 <strong>운영 작업</strong>입니다. 안 되면 <strong>&quot;운영자 집합을 바꾼다&quot;는 말은 조용히 &quot;그 키를 참조한 모든 것을 이전한다&quot;가 됩니다.</strong></p>
       <h2>동작 방식</h2>
       <h3>DKG가 실제로 만들어 내는 것</h3>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>산출물</th>
@@ -302,10 +446,10 @@
 <td>공개되어야 함</td>
 <td>주장한 대로 키가 생성됐다는 증거</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p>마지막 행을 가장 세게 봐야 합니다. 임계 주장은 <strong>외부인이 그 의식이 정말 주장된 참여자와 주장된 임계치로 돌았는지 확인할 수 있는 만큼만</strong> 값어치가 있습니다.</p>
 <h3>구성원 변경 세 가지</h3>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>사건</th>
@@ -328,7 +472,7 @@
 <td>t개 이상에서 복구, 또는 리셰어</td>
 <td><strong>복구와 절도가 구별되나?</strong></td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p>마지막 질문이 날카로운 쪽입니다. 지분을 잃은 구성원을 위해 <em>t</em>명이 지분을 복원해 주는 절차는, 구조적으로 *<em>공모한 <em>t</em>명이 아무에게나 지분을 넘겨줄 수 있는 절차와 같습니다.<strong> 둘을 가르는 것이 무엇이든 그것은 암호학 </strong>바깥의 정책<strong>이고, <code>aml-compliance</code> 카드가 다루는 바로 그 경계입니다.
 
 ### 측정 — 작습니다
@@ -367,7 +511,7 @@
 - </strong>운영 중에 실제로 리셰어링을 해 본 배포가 있는가<strong> — &quot;할 수 있다&quot;고 문서에 적은 것 말고. </strong>그 데이터 한 점이 어떤 스펙 독해보다 값어치가 큽니다</em>*, 그리고 가장 먼저 찾아볼 것입니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/dkg-resharing">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-price-at-a-moment.html">&larr; 16. A price at a moment — settlement windows and oracle instants</a><a href="pocs-third-party-blast-radius.html">18. Trusted third parties — the blast radius nobody maps &rarr;</a></div>
+  <div class="pager"><a href="pocs-price-at-a-moment.html">&larr; 24. A price at a moment — settlement windows and oracle instants</a><a href="pocs-third-party-blast-radius.html">26. Trusted third parties — the blast radius nobody maps &rarr;</a></div>
 </div>
 </body>
 </html>

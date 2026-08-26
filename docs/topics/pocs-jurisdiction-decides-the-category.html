@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Same product, three verdicts in eight days — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Same product, three verdicts in eight days</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#16</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Same product, three verdicts in eight days</h1>
+      <p class="lead">Between 8/18 and 8/25 one activity was criminal gambling in Korea, a brokerage product line in the US, and something a US company sells only outside the US. The axis is not the product — it is the jurisdiction, and no design document has a box for it.</p>
+      <p class="meta">Not yet scoped — and the deliverable is one sentence, not a system. Translate the Korean regulator&#39;s stated grounds into design levers, decide where this project sits on each lever, and write the result as: what this product is, and is not, under Korean law. Sources to confirm against the primary documents: the 방심위 access block of 2026-08-18, the Gemini Titan / Apex Fintech exclusive of 2026-08-24, the non-US restriction on Coinbase&#39;s tokenized equities of 2026-08-25, and the announced Jackson Hole 2026 theme, Financial Innovation: Implications for Payments and Policy.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>Three events, eight days, one axis.</strong> Korea&#39;s communications standards commission classified Polymarket as criminal gambling and blocked access. Six days later a CFTC-designated venue became the exclusive regulated partner of a large US brokerage network. The day after that, a US company put Apple and Nvidia shares on a public chain — and sold them only to people outside the US. Put the three in one table and the product column barely changes while the verdict column changes completely.</p>
+<p><strong>What is missing is not legal research, it is a box in the design document.</strong> Every architecture doc in this project has boxes for data model, settlement, oracle and failure modes. None has a box that says which jurisdiction this is legal in and what specifically makes it so. That absence is why the question keeps arriving as news rather than as a constraint — and a constraint that arrives as news arrives too late to design around.</p>
+<p><strong>The regulator did the hard half already.</strong> The stated grounds — a winner-take-all payout, an event the user cannot control, direct retail access — are not vague policy language. They are three product properties, each of which a design can move. Nobody has published that translation, which makes it available work rather than a summary of someone else&#39;s.</p>
+      <h2>How it works</h2>
+      <h3>The three events, side by side</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Event</th>
+<th>Verdict on the activity</th>
+<th>What actually differed</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>2026-08-18</strong></td>
+<td>Korea blocks access to Polymarket</td>
+<td>Criminal gambling</td>
+<td>Payout shape, event type, retail access — no licence available</td>
+</tr>
+<tr>
+<td><strong>2026-08-24</strong></td>
+<td>Gemini Titan becomes Apex Fintech&#39;s exclusive venue</td>
+<td>A brokerage product line</td>
+<td>A CFTC designation, obtained in December 2025</td>
+</tr>
+<tr>
+<td><strong>2026-08-25</strong></td>
+<td>Coinbase lists tokenized equities on Base</td>
+<td>Sellable, but not to US persons</td>
+<td>The buyer&#39;s residence, nothing else</td>
+</tr>
+</tbody></table></div>
+<h3>The grounds, turned into levers</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Stated ground</th>
+<th>The design lever underneath it</th>
+<th>What moving it costs</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Winner-take-all payout</strong></td>
+<td>Payout curve — binary versus scalar or continuous settlement</td>
+<td>A continuous payout is a different product, and possibly a less useful one</td>
+</tr>
+<tr>
+<td><strong>User cannot control the event</strong></td>
+<td>Subject matter — exogenous events versus outcomes tied to the user&#39;s own action or skill</td>
+<td>Narrows the market catalogue sharply</td>
+</tr>
+<tr>
+<td><strong>Direct retail access</strong></td>
+<td>Access path — retail direct versus intermediated or institution-only</td>
+<td>Changes the business model, not the code</td>
+</tr>
+</tbody></table></div>
+<p><strong>Reading the second table is the whole exercise.</strong> Each lever is movable, none is free, and the combination decides which jurisdiction the product can stand in. A design that has not chosen a position on all three has, in effect, chosen the position that was blocked.</p>
+<h3>Why the December document needs two branches, not one</h3>
+<p>The legislative date is a date, not an outcome. Meanwhile the supervisory track proceeds regardless: implementing rules for the stablecoin statute are already being written, and the 2026 Jackson Hole symposium&#39;s announced theme puts roughly a hundred and twenty central bankers from seventy countries on payments and financial innovation for three days. <strong>Rules arrive without legislation</strong>, and <strong>the intensity of lobbying is not the probability of passage.</strong> So the document needs a legislation branch and a rulemaking-only branch — and the honest expectation is that the two differ more in timing than in substance.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/jurisdiction-decides-the-category">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>같은 상품, 8일 사이 세 개의 판정</h1>
+      <p class="lead">8/18부터 8/25 사이, <strong>같은 행위</strong>가 한국에서는 형법상 도박, 미국에서는 증권사 상품 라인, 그리고 미국 회사가 <strong>미국 밖에서만</strong> 파는 것이 됐습니다. 축은 상품이 아닙니다 — <strong>법역</strong>이고, 어떤 설계 문서에도 그 칸이 없습니다.</p>
+      <p class="meta">아직 범위 미정 — 산출물은 시스템이 아니라 <strong>문장 하나</strong>입니다. 방심위가 밝힌 논거를 <strong>설계 레버</strong>로 옮기고, 이 프로젝트가 각 레버의 어디에 서 있는지 정한 뒤, 결과를 이렇게 씁니다 — <strong>내 제품이 한국법상 무엇이고 무엇이 아닌가.</strong> 원문으로 확인할 출처: 2026-08-18 방심위 접속 차단, 2026-08-24 Gemini Titan·Apex Fintech 독점, 2026-08-25 Coinbase 토큰화 주식의 미국 외 한정, 그리고 발표된 잭슨홀 2026 주제 — Financial Innovation: Implications for Payments and Policy.</p>
+      <h2>왜</h2>
+      <p><strong>세 사건, 8일, 하나의 축.</strong> 방심위가 Polymarket을 형법상 도박으로 판정하고 접속을 차단했습니다. 6일 뒤 CFTC 지정 거래소가 대형 미국 브로커리지 네트워크의 <strong>독점 규제 파트너</strong>가 됐습니다. 그다음 날, 미국 회사가 애플·엔비디아 주식을 퍼블릭 체인에 올리면서 <strong>미국 밖 사람에게만</strong> 팔았습니다. 셋을 한 표에 놓으면 <strong>상품 칸은 거의 그대로인데 판정 칸은 완전히 달라집니다.</strong></p>
+<p><strong>모자란 것은 법률 리서치가 아니라 설계 문서의 칸 하나입니다.</strong> 이 프로젝트의 모든 아키텍처 문서에는 데이터 모델·정산·오라클·실패 모드 칸이 있습니다. <strong>어느 법역에서 합법이며 무엇이 그것을 합법으로 만드는가</strong>를 적는 칸은 없습니다. 그 부재 때문에 이 질문이 <strong>제약이 아니라 뉴스로</strong> 도착하고, <strong>뉴스로 도착한 제약은 설계에 반영하기엔 이미 늦습니다.</strong></p>
+<p><strong>어려운 절반은 규제기관이 이미 했습니다.</strong> 밝혀진 논거 — <strong>승자독식 페이아웃, 이용자가 통제할 수 없는 사건, 리테일 직접 접근</strong> — 은 모호한 정책 언어가 아닙니다. <strong>세 개의 상품 속성</strong>이고, 각각을 설계가 움직일 수 있습니다. 그 번역을 아직 아무도 공개하지 않았으니, 이건 남의 요약이 아니라 <strong>비어 있는 작업</strong>입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>세 사건을 나란히</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>날짜</th>
+<th>사건</th>
+<th>그 행위에 대한 판정</th>
+<th>실제로 달랐던 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>2026-08-18</strong></td>
+<td>한국, Polymarket 접속 차단</td>
+<td><strong>형법상 도박</strong></td>
+<td>페이아웃 형태·사건 종류·리테일 접근 — 받을 수 있는 라이선스가 없음</td>
+</tr>
+<tr>
+<td><strong>2026-08-24</strong></td>
+<td>Gemini Titan이 Apex Fintech 독점 거래소로</td>
+<td><strong>증권사 상품 라인</strong></td>
+<td>2025년 12월 취득한 <strong>CFTC 지정</strong></td>
+</tr>
+<tr>
+<td><strong>2026-08-25</strong></td>
+<td>Coinbase, Base에 토큰화 주식 상장</td>
+<td><strong>판매 가능, 단 미국인 제외</strong></td>
+<td><strong>매수자의 거주지</strong>, 그 외에는 없음</td>
+</tr>
+</tbody></table></div>
+<h3>논거를 레버로 옮기면</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>밝혀진 논거</th>
+<th>그 아래의 설계 레버</th>
+<th>움직일 때의 대가</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>승자독식 페이아웃</strong></td>
+<td>페이아웃 곡선 — 이진이냐 스칼라·연속 정산이냐</td>
+<td>연속 페이아웃은 <strong>다른 상품</strong>이고, 덜 쓸모 있을 수도 있음</td>
+</tr>
+<tr>
+<td><strong>이용자가 통제할 수 없는 사건</strong></td>
+<td>대상 — 외생적 사건이냐, 이용자의 행위·역량에 묶인 결과냐</td>
+<td>마켓 카탈로그가 <strong>크게 좁아짐</strong></td>
+</tr>
+<tr>
+<td><strong>리테일 직접 접근</strong></td>
+<td>접근 경로 — 리테일 직접이냐, 중개 또는 기관 전용이냐</td>
+<td>코드가 아니라 <strong>사업 모델</strong>이 바뀜</td>
+</tr>
+</tbody></table></div>
+<p><strong>두 번째 표를 읽는 것이 이 작업의 전부입니다.</strong> 레버는 전부 움직일 수 있고, 공짜인 것은 하나도 없으며, 조합이 <strong>이 상품이 설 수 있는 법역</strong>을 결정합니다. <strong>세 레버 모두에 입장을 정하지 않은 설계는, 사실상 차단당한 그 입장을 고른 것입니다.</strong></p>
+<h3>12월 문서에 왜 가지가 둘이어야 하는가</h3>
+<p>입법 일정은 <strong>날짜이지 결과가 아닙니다.</strong> 그와 무관하게 감독 트랙은 진행됩니다 — 스테이블코인 법의 시행규칙은 이미 쓰이는 중이고, 발표된 2026 잭슨홀 심포지엄 주제는 <strong>70개국 약 120명의 중앙은행가를 사흘간 결제와 금융혁신 위에</strong> 올려놓습니다. <strong>법안 없이도 규칙은 옵니다.</strong> 그리고 <strong>로비의 강도는 통과 확률이 아닙니다.</strong> 그러니 문서에는 <strong>입법 가지</strong>와 <strong>시행규칙만의 가지</strong>가 둘 다 필요하고, 정직한 예상은 <strong>둘의 차이가 내용보다 시점에 있다</strong>는 것입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/jurisdiction-decides-the-category">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-tokenized-equity-claim-rail.html">&larr; 15. A claim, not a derivative — the three jobs a tokenized share creates</a><a href="pocs-publish-by-default-rule.html">17. The draft already exists — a selection rule, not a new channel &rarr;</a></div>
+</div>
+</body>
+</html>

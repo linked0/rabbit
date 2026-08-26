@@ -10,18 +10,34 @@
   :root {
     --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
     --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
       --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
     }
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
      17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
   body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
   a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
 
   .layout { display:flex; align-items:flex-start; }
 
@@ -75,6 +91,7 @@
   p { margin:10px 0; word-wrap:break-word; }
   .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
   .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
   .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
 
   /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
@@ -113,18 +130,131 @@
   .topic-why strong { color:var(--text); font-style:normal; }
   .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
-  /* 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편. */
-  .solo { max-width:760px; margin:0 auto; padding:34px 24px 90px; }
-  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; }
-  .pager { display:flex; justify-content:space-between; gap:14px; margin-top:26px; font-size:0.9rem; }
-  .pager span { color:var(--text2); }
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
   .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
 
   /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
   .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
   .lang-label {
-    font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--text2); margin:0 0 14px;
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
   }
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
@@ -134,25 +264,39 @@
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
   }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
 </style>
 </head>
 <body>
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; What tokenization actually removed</p>
-  <article>
-      <h1><span class="topic-no">43</span>What tokenization actually removed <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#51</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>What tokenization actually removed</h1>
       <p class="lead">Toyota Finance sold a ¥1B bond through its own payments app with no securities firm distributing it. The intermediary did not disappear — the account-opening step did.</p>
       <p class="meta">Not yet scoped — start by writing out who is still in the deal and what each one is paid for, then compare against the pre-token bond. Sources: Toyota Finance news release, 2026-08-18 issuance (self-offering, ibet for Fin); the 2025-03 first issuance for the before-picture.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
       <p>The headline is disintermediation — Toyota Finance recruits investors itself, no securities firm distributing, subscribe from the TOYOTA Wallet app with no brokerage account. The interesting part is what that sentence quietly does not say. A securities firm is still in the deal: SMBC Nikko as financial advisor, Sumitomo Mitsui Bank as bond administrator. And the reason Toyota can self-distribute at all is not that a token removed a licensing requirement — the ibet for Fin consortium restricts security-token sales to FSA-registered financial instruments operators and registered financial institutions, and Toyota Finance is one. So the rail is permissioned to exactly the licensed parties it always was. What actually went away is narrower and more valuable than &quot;the middleman&quot;: the <strong>account-opening step</strong>. In retail securities that step is where the funnel dies — a customer who already has your app is a customer who does not have to open a brokerage account, pass a new KYC, and fund it before they can buy anything. That is the claim worth testing, and it is a distribution claim, not a settlement one. Two more things are worth noticing because the Korean reporting omits them. The first issuance in 2025-03 ran on <strong>Progmat</strong>; this one runs on <strong>ibet for Fin</strong> — they switched platforms between bond one and bond two, which tells you the chain is the replaceable part. And ¥1B at a ¥100,000 minimum caps the book at 10,000 investors, which for Toyota Finance is not funding. This is a customer-engagement pilot wearing a bond.</p>
       <h2>How it works</h2>
       <p>Three things to work out, and the first is just bookkeeping. Write the participant list for this deal and for an ordinary retail bond side by side, and mark what each party is paid for: underwriter, distributor, transfer agent, bond administrator, custodian, financial advisor. The claim to test is not &quot;fewer parties&quot; but &quot;the same parties, different jobs&quot; — and if the fee stack is roughly unchanged while the customer experience is transformed, that is a finding about where value actually sat. Second, the funnel arithmetic, which is where the real number is. The pre-token path costs a customer a brokerage account, a KYC pass and a funding transfer before the first yen is invested; the token path costs an app they already opened. Model the conversion difference and it prices the whole exercise, because ¥1B is not the point — 10,000 investors already inside Toyota&#39;s ecosystem is. Third, and this is the part with no established answer: <strong>the coupon is not all of the return.</strong> Qualifying investors receive TOYOTA Wallet QUICPay balance, and a lottery distributes Fuji Speedway tickets and special test-drive experiences. Part of the yield is paid in ecosystem value that is only redeemable inside the issuer, which raises a question a bond desk cannot answer with a spreadsheet: what is the implied yield including perks, how do you value a non-transferable benefit, and is it a security feature or a marketing expense that happens to be attached to a security? A loyalty programme fused with a debt instrument is the actual novelty here, more than the ledger. Reads with tokenized-money-banks (the balance-sheet half of putting an asset onchain) and cross-border-rail-interop (the other case where the ledger turns out to be the replaceable part).</p>
       <p><a href="https://www.jaylabs.xyz/poc/st-self-distribution">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-    <hr class="lang-divider">
-    <article lang="ko">
-      <p class="lang-label">한국어</p>
-      <h1><span class="topic-no">43</span>토큰화가 실제로 없앤 것 <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></h1>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>토큰화가 실제로 없앤 것</h1>
       <p class="lead">토요타파이낸스가 증권사 판매 없이 자사 결제 앱으로 10억엔 채권을 팔았습니다. 사라진 것은 중개자가 아니라 증권계좌 개설 단계입니다.</p>
       <p class="meta">아직 범위 미정 — 이 거래에 <strong>아직 누가 남아 있고 각자 무엇의 대가를 받는지</strong>를 적어 보고, 토큰화 이전 채권과 나란히 놓는 것부터. 출처: 토요타파이낸스 뉴스릴리스, 2026-08-18 발행(자체모집, ibet for Fin), 비교군으로 2025-03 1차 발행.</p>
       <h2>왜</h2>
@@ -161,7 +305,7 @@
       <p>따져 볼 것 셋이고, 첫째는 그냥 장부 정리입니다. <strong>이 거래의 참여자 목록과 평범한 리테일 채권의 참여자 목록을 나란히 적고</strong>, 각자가 무엇의 대가를 받는지 표시합니다 — 인수인, 판매사, 명의개서대리인, 사채관리자, 수탁자, 재무 어드바이저. 검증할 주장은 &quot;참여자가 줄었다&quot;가 아니라 <strong>&quot;같은 참여자, 다른 역할&quot;</strong>이고, <strong>수수료 스택이 거의 그대로인데 고객 경험만 바뀌었다면</strong> 그것 자체가 가치가 실제로 어디에 있었는지에 대한 발견입니다. 둘째, <strong>퍼널 산수</strong> — 진짜 숫자가 여기 있습니다. 토큰 이전 경로는 첫 1엔을 넣기 전에 고객에게 <strong>증권계좌 + KYC 통과 + 입금 이체</strong>를 요구하고, 토큰 경로는 <strong>이미 열어 둔 앱</strong>을 요구합니다. 그 전환율 차이를 모델링하면 이 실험 전체의 값이 매겨집니다. <strong>10억엔이 요점이 아니라, 이미 토요타 생태계 안에 있는 1만 명이 요점</strong>이기 때문입니다. 셋째, 정답이 정해져 있지 않은 부분: <strong>쿠폰이 수익의 전부가 아닙니다.</strong> 조건을 충족한 투자자에게 <strong>TOYOTA Wallet QUICPay 잔액</strong>을 주고, 추첨으로 <strong>후지 스피드웨이 관람권과 특별 시승 체험</strong>을 제공합니다. 수익의 일부가 <strong>발행사 안에서만 상환되는 생태계 가치</strong>로 지급되는 것이고, 이는 채권 데스크가 스프레드시트로 답할 수 없는 질문을 만듭니다: <strong>혜택을 포함한 내재 수익률은 얼마이고, 양도 불가능한 편익을 어떻게 평가하며, 이것은 증권의 특성인가 아니면 증권에 붙은 마케팅 비용인가?</strong> <strong>로열티 프로그램과 채무증권의 융합</strong>이 여기서의 진짜 새로움이지 원장이 아닙니다. <code>tokenized-money-banks</code>(자산을 온체인에 올릴 때의 대차대조표 절반), <code>cross-border-rail-interop</code>(원장이 교체 가능한 부품으로 드러나는 또 다른 사례)과 함께 읽습니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/st-self-distribution">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-agents-computer-use.html">&larr; 42. Can Agents Use a Computer Yet?</a><a href="pocs-cross-border-rail-interop.html">44. Linking payment systems is a routing problem &rarr;</a></div>
+  <div class="pager"><a href="pocs-agents-computer-use.html">&larr; 50. Can Agents Use a Computer Yet?</a><a href="pocs-cross-border-rail-interop.html">52. Linking payment systems is a routing problem &rarr;</a></div>
 </div>
 </body>
 </html>
