@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Docbank — self-sovereign document vault — PoCs</title>
+<title>A bank-owned network, and what happened to the last four — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -278,34 +278,172 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Docbank — self-sovereign document vault</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; A bank-owned network, and what happened to the last four</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#64</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>Docbank — self-sovereign document vault</h1>
-      <p class="lead">A Go document system where stable node IDs and immutable SHA-256 versions — not paths or a provider account — are the authority for your archive.</p>
-      <p class="meta">Not yet scoped — install, then <code>docbank add ~/Documents --dest /archive</code> → <code>docbank tree /archive</code> → <code>docbank web</code>. Alpha software, so keep independent copies of anything irreplaceable. github.com/kenn-io/docbank</p>
+      <p class="topic-kicker"><span class="topic-no">#22</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>A bank-owned network, and what happened to the last four</h1>
+      <p class="lead">Thirty-nine state bankers associations launched BankChain Alliance to build a network the banking industry owns, designed so community banks can issue tokenized deposits and stablecoins too. Bank-owned consortia are not new — Visa and Mastercard both began as one.</p>
+      <p class="meta">Not yet scoped — and the first task is history, not architecture. Take four bank-owned networks that already ran this play — the card associations, the shared ATM networks, the bankers&#39; banks, the ACH operators — and for each one record two dates: when it launched under industry ownership, and when that ownership ended or was diluted. The gap is the number. Sources: BankChain Alliance&#39;s launch statement of 2026-08-25 (39 state associations, launch target 2027, technology partner not yet selected, interoperability with other networks planned, ownership open to banks nationwide, interim chair Kathy Kraninger of the Florida Bankers Association) — to confirm against the primary release.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
-      <p>Agents that file, retrieve, and revise documents need a system of record, not a sync folder — and a file path makes a poor long-term identity once things get moved and renamed. Docbank is the clearest example so far of the opposite bet: the catalog stays on your machine, a document keeps its identity through moves, every version is named by a verifiable digest, and stale automation hits an explicit revision conflict instead of silently overwriting. Worth running hands-on as a candidate substrate for agent-facing archives — and as a contrast with the sync-and-share model it deliberately isn&#39;t.</p>
+      <p><strong>This is the distribution half of a question <code>tokenized-money-banks</code> left open.</strong> That card works out what each product family costs a bank&#39;s balance sheet — tokenized deposits cheapest under Basel, first-party stablecoins expensive, third-party stablecoins cheapest of all because the claim leaves entirely. What it does not ask is whether a bank with four branches can issue any of them. The answer has never been about Basel. It is that the fixed cost of building and running the infrastructure does not scale down, and a consortium is the only structure that has ever solved that for small banks.</p>
+<p><strong>So the interesting part is not the technology, it is the ownership clause — and that clause has a track record.</strong> Banks have built industry-owned networks before, repeatedly, and the pattern is consistent enough to be worth measuring rather than asserting: a consortium forms because no member can afford the rail alone, the rail succeeds, the rail&#39;s economics stop resembling its members&#39; economics, and ownership separates. Visa and Mastercard are the loudest case, having gone from bank-owned associations to public companies that now price <em>to</em> banks rather than <em>for</em> them. That is not a cynical prediction about this alliance. It is the base rate, and a card that writes down the base rate is more useful than one that repeats the press release.</p>
+<p><strong>The detail that says how early this is: no technology partner has been selected.</strong> What launched is a governance structure, not a system — thirty-nine associations agreeing on who owns the thing before anyone has decided what the thing is. For a network whose entire premise is <em>industry-owned</em>, that order is arguably correct, and it also means the 2027 target is a target for something not yet specified.</p>
       <h2>How it works</h2>
-      <p>One authenticated daemon owns a vault, and the CLI, web app, TUI, scripts, and external agents all speak the same loopback-authenticated HTTP/OpenAPI contract — Go programs can skip the daemon and embed an independently rooted vault in-process via go.kenn.io/docbank. A node ID survives moves and renames, each content version is immutable and addressed by SHA-256, and writes carry revision preconditions so a stale agent gets a conflict rather than a silent overwrite. Deletion is staged deliberately: trash, permanent delete, GC, and pack reclamation are separate decisions, with revision-bound restore in between. Blobs live loose or packed, optionally in fenced filesystem or S3-compatible stores that hold content without becoming the catalog (Docbank verifies but does not encrypt them). Recovery is provable rather than assumed — incremental snapshot repositories are verified end-to-end before a restore is published, and restore is topology-independent. Apache-2.0, Go 1.26+ with CGO and Node 24+ to build from source; installers refuse any archive whose digest doesn&#39;t match the release SHA256SUMS. Sibling project to msgvault, which does the same for messages.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/docbank">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>What the alliance says it will carry</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Service</th>
+<th>What it needs that a single community bank lacks</th>
+<th>Where it lands in <code>tokenized-money-banks</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Tokenized deposits</strong></td>
+<td>A ledger other banks also honour</td>
+<td>Cheapest Basel treatment, narrowest reach — reach is exactly what a consortium adds</td>
+</tr>
+<tr>
+<td><strong>Stablecoins</strong></td>
+<td>Reserve management, redemption ops, an issuer entity</td>
+<td>The expensive conversion: the claim stops being a deposit</td>
+</tr>
+<tr>
+<td><strong>Smart payments</strong></td>
+<td>Counterparties on the same rail</td>
+<td>Not covered there — this is new ground</td>
+</tr>
+<tr>
+<td><strong>Automated settlement</strong></td>
+<td>Shared timing and dispute rules</td>
+<td>The plumbing half, and the part nobody demos</td>
+</tr>
+</tbody></table></div>
+<h3>The hard problem is confidentiality, not settlement</h3>
+<p>The stated design keeps existing bank regulation and security standards. On a shared ledger among thousands of institutions, that constraint bites in one specific place: <strong>a bank&#39;s balances and counterparties are not visible to its competitors</strong>, and a naive shared chain publishes exactly that. So the real engineering question is not throughput — it is which parties see which fields, which is the subject <code>confidential-settlement-metadata</code> and <code>pet-clean-room</code> already circle. Any answer here will be an answer to that, whether or not the announcement frames it that way.</p>
+<h3>The two-date table, and why it is the whole card</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Network</th>
+<th>Launched industry-owned</th>
+<th>Ownership ended or diluted</th>
+<th>Years</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Card associations (Visa, Mastercard)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Shared ATM networks</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Bankers&#39; banks</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>ACH operators</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table></div>
+<p><strong>Filling that table is an afternoon of reading and produces a number nobody publishes:</strong> how long industry ownership has historically lasted once the rail succeeded. It is not a prediction — it is the prior a prediction would have to argue against, and it applies to every consortium chain, not only this one. Read alongside <code>cross-border-rail-interop</code>, where the same lesson appears in a different costume: <strong>governance, not throughput, decides which rail wins.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/bankchain-consortium">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>Docbank — 자기주권형 문서 보관소</h1>
-      <p class="lead">경로나 클라우드 계정이 아니라, 안정적인 노드 ID와 불변 SHA-256 버전이 아카이브의 권위가 되는 Go 문서 시스템.</p>
-      <p class="meta">아직 범위 미정 — 설치 후 <code>docbank add ~/Documents --dest /archive</code> → <code>docbank tree /archive</code> → <code>docbank web</code>. 알파 단계이므로 대체 불가능한 자료는 별도 사본을 유지한 채로. github.com/kenn-io/docbank</p>
+      <h1>은행이 소유한 네트워크, 그리고 앞선 넷은 어떻게 됐나</h1>
+      <p class="lead">39개 주 은행협회가 <strong>은행업계가 직접 소유·설계·운영하는</strong> 공동 네트워크를 만들겠다며 BankChain Alliance를 출범했습니다. 지역·중소 은행도 토큰화 예금·스테이블코인을 낼 수 있게 하는 것이 목표입니다. <strong>은행 소유 컨소시엄은 처음이 아닙니다</strong> — Visa도 Mastercard도 그렇게 시작했습니다.</p>
+      <p class="meta">아직 범위 미정 — 첫 작업은 아키텍처가 아니라 <strong>역사</strong>입니다. 같은 수를 이미 둔 은행 소유 네트워크 넷을 골라 — 카드 협회, 공동 ATM망, 뱅커스 뱅크, ACH 운영기관 — 각각에 대해 <strong>두 날짜</strong>를 적습니다: 업계 소유로 출범한 날, 그리고 그 소유 구조가 끝났거나 희석된 날. <strong>그 간격이 숫자입니다.</strong> 출처: 2026-08-25 BankChain Alliance 출범 성명(39개 주 협회, 2027년 출시 목표, 기술 파트너 미선정, 타 네트워크와 상호운용 설계, 전국 은행에 소유권 개방, 임시 의장 캐시 크레이닝거 플로리다은행협회장) — 원문으로 확인할 것.</p>
       <h2>왜</h2>
-      <p>문서를 정리하고 찾아오고 고치는 에이전트에게 필요한 것은 동기화 폴더가 아니라 기록 시스템입니다 — 파일 경로는 이동·이름변경 한 번이면 장기 식별자로서 무너집니다. Docbank는 그 반대편 선택을 가장 선명하게 보여주는 사례입니다: 카탈로그는 내 기기에 남고, 문서는 옮겨져도 정체성을 유지하며, 모든 버전은 검증 가능한 다이제스트로 이름 붙고, 뒤처진 자동화는 조용히 덮어쓰는 대신 명시적 리비전 충돌로 막힙니다. 에이전트용 아카이브의 기반 후보로 직접 돌려볼 가치가 있고, 동시에 이것이 의도적으로 되기를 거부한 sync-and-share 모델과의 대조 사례이기도 합니다.</p>
+      <p><strong>이건 <code>tokenized-money-banks</code> 가 열어 둔 질문의 유통 쪽 절반입니다.</strong> 그 카드는 각 상품군이 은행 대차대조표에 얼마를 물리는지 따집니다 — 토큰화 예금이 바젤상 가장 싸고, 1자 스테이블코인은 비싸며, 3자 스테이블코인은 청구권이 아예 떠나므로 제일 쌉니다. 그런데 <strong>지점 네 개짜리 은행이 그중 무엇이라도 낼 수 있느냐</strong>는 묻지 않습니다. 답은 애초에 바젤이 아니었습니다. <strong>인프라를 짓고 굴리는 고정비가 규모에 따라 줄어들지 않는다</strong>는 것이고, 소규모 은행에게 그걸 풀어 준 구조는 역사상 <strong>컨소시엄</strong>뿐이었습니다.</p>
+<p><strong>그래서 흥미로운 곳은 기술이 아니라 소유 조항이고, 그 조항에는 전적이 있습니다.</strong> 은행들은 업계 소유 네트워크를 전에도 여러 번 만들었고, 패턴이 충분히 일관돼서 <strong>주장하기보다 재는 편이 낫습니다</strong>: 아무도 혼자서는 레일을 감당할 수 없어 컨소시엄이 생기고, 레일이 성공하고, 레일의 경제학이 회원사의 경제학과 달라지고, 소유가 분리된다. <strong>Visa와 Mastercard</strong>가 가장 시끄러운 사례입니다 — 은행 소유 협회에서 출발해, 지금은 은행을 <strong>위해서</strong>가 아니라 은행<strong>에게</strong> 가격을 매기는 상장사가 됐습니다. 이 얼라이언스에 대한 냉소적 예측이 아닙니다. <strong>기저율</strong>이고, 기저율을 적어 두는 카드가 보도자료를 반복하는 카드보다 쓸모 있습니다.</p>
+<p><strong>얼마나 이른 단계인지 말해 주는 항목: 기술 파트너가 아직 선정되지 않았습니다.</strong> 출범한 것은 시스템이 아니라 <strong>거버넌스 구조</strong>입니다 — 그것이 무엇인지 아무도 정하기 전에, 39개 협회가 <strong>누가 소유하는지</strong>부터 합의한 것입니다. 전제 자체가 <em>업계 소유</em>인 네트워크라면 그 순서가 오히려 맞을 수 있고, 동시에 <strong>2027년 목표는 아직 명세되지 않은 것에 대한 목표</strong>라는 뜻이기도 합니다.</p>
       <h2>동작 방식</h2>
-      <p>인증된 데몬 하나가 볼트를 소유하고, CLI·웹앱·TUI·스크립트·외부 에이전트가 모두 같은 루프백 인증 HTTP/OpenAPI 계약을 씁니다 — Go 애플리케이션은 데몬 없이 go.kenn.io/docbank 모듈로 독립 루트 볼트를 인프로세스로 임베드할 수도 있습니다. 노드 ID는 이동·이름변경 후에도 유지되고, 각 콘텐츠 버전은 불변이며 SHA-256으로 주소가 매겨지고, 쓰기에는 리비전 사전조건이 붙어 뒤처진 에이전트는 조용한 덮어쓰기 대신 충돌을 받습니다. 삭제는 단계로 분리됩니다: 휴지통 · 영구 삭제 · GC · 팩 회수가 각각 별개의 결정이고, 그 사이에 리비전 기반 복원이 있습니다. 블롭은 loose 또는 packed 형태로, 필요하면 격리된 파일시스템/S3 호환 스토어에 둘 수 있지만 그 스토어가 카탈로그가 되지는 않습니다(Docbank는 검증은 하되 암호화는 하지 않습니다). 복구는 가정이 아니라 증명 대상입니다 — 증분 스냅샷 저장소를 끝까지 검증한 뒤에야 복원 결과를 공개하고, 복원은 토폴로지에 무관합니다. Apache-2.0이고 소스 빌드에는 Go 1.26+ · CGO · Node 24+가 필요하며, 설치 스크립트는 릴리스 SHA256SUMS와 다이제스트가 맞지 않는 아카이브를 설치하지 않습니다. 메시지에 대해 같은 일을 하는 msgvault의 자매 프로젝트입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/docbank">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>얼라이언스가 싣겠다는 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>서비스</th>
+<th>단일 지역은행에 없는 것</th>
+<th><code>tokenized-money-banks</code> 기준 위치</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>토큰화 예금</strong></td>
+<td><strong>다른 은행도 인정하는</strong> 원장</td>
+<td>바젤상 가장 싸고 도달 범위가 가장 좁음 — 컨소시엄이 더하는 것이 정확히 그 도달 범위</td>
+</tr>
+<tr>
+<td><strong>스테이블코인</strong></td>
+<td>준비금 운용, 상환 운영, 발행 주체</td>
+<td>비싼 전환: 청구권이 예금이기를 그만둠</td>
+</tr>
+<tr>
+<td><strong>스마트 결제</strong></td>
+<td>같은 레일 위의 거래상대방</td>
+<td>그 카드에 없음 — 새 영역</td>
+</tr>
+<tr>
+<td><strong>자동 결제·정산</strong></td>
+<td>공유된 시점 규칙과 분쟁 규칙</td>
+<td>배관 절반, 그리고 아무도 시연하지 않는 부분</td>
+</tr>
+</tbody></table></div>
+<h3>어려운 문제는 정산이 아니라 기밀성이다</h3>
+<p>밝혀진 설계는 <strong>기존 은행 규제와 보안 기준을 유지</strong>한다고 합니다. 수천 개 기관이 공유하는 원장에서 그 제약은 한 곳을 정확히 물어뜯습니다 — <strong>은행의 잔고와 거래상대방은 경쟁 은행에게 보이면 안 되는데</strong>, 순진하게 만든 공유 체인은 바로 그것을 공개합니다. 그러니 진짜 공학 질문은 처리량이 아니라 <strong>어느 참여자가 어떤 필드를 보는가</strong>이고, <code>confidential-settlement-metadata</code>·<code>pet-clean-room</code> 이 이미 돌고 있는 주제입니다. 발표가 그렇게 프레이밍하든 아니든, 여기서 나올 답은 <strong>그 질문에 대한 답</strong>이 됩니다.</p>
+<h3>두 날짜 표, 그리고 그게 카드의 전부인 이유</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>네트워크</th>
+<th>업계 소유로 출범</th>
+<th>소유 종료·희석</th>
+<th>햇수</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>카드 협회(Visa, Mastercard)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>공동 ATM망</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>뱅커스 뱅크</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>ACH 운영기관</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table></div>
+<p><strong>이 표를 채우는 데 반나절의 독서가 들고, 아무도 발표하지 않는 숫자가 나옵니다</strong> — 레일이 성공한 뒤 <strong>업계 소유가 역사적으로 얼마나 오래 갔는가.</strong> 예측이 아닙니다. <strong>예측이라면 반박해야 할 사전 확률</strong>이고, 이 얼라이언스뿐 아니라 <strong>모든 컨소시엄 체인</strong>에 적용됩니다. <code>cross-border-rail-interop</code> 과 함께 읽습니다 — 같은 교훈이 다른 옷을 입고 나옵니다: <strong>어느 레일이 이기는지는 처리량이 아니라 거버넌스가 정한다.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/bankchain-consortium">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="../knowledge/isaac-groot.html">&larr; 63. NVIDIA Isaac GR00T — humanoid foundation model</a><a href="pocs-geometric-series-dcf.html">65. Geometric series → DCF valuation &rarr;</a></div>
+  <div class="pager"><a href="pocs-japan-t0-settlement.html">&larr; 21. T+0 removes settlement risk, and removes netting with it</a><a href="pocs-chainlink-data-streams.html">23. Chainlink Data Streams — push vs. pull oracles and point-in-time settlement &rarr;</a></div>
 </div>
 </body>
 </html>
