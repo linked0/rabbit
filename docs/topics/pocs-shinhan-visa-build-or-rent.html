@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Microservice patterns — Circuit Breaker &amp; Saga — PoCs</title>
+<title>Build the rail or rent it — two banking answers in one week — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -278,200 +278,162 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Microservice patterns — Circuit Breaker &amp; Saga</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Build the rail or rent it — two banking answers in one week</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#69</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>Microservice patterns — Circuit Breaker &amp; Saga</h1>
-      <p class="lead">Circuit Breaker (fail fast on inter-service calls, probe recovery half-open) and Saga (distributed transactions as local-transaction chains plus compensations) — verex&#39;s settlement pipeline is a Saga; its RPC/indexer calls want a breaker.</p>
-      <p class="meta">Not yet scoped — a reading note. (Notion queue, added 2026-08-07.)</p>
+      <p class="topic-kicker"><span class="topic-no">#23</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Build the rail or rent it — two banking answers in one week</h1>
+      <p class="lead">Shinhan will verify issuance, remittance and redemption on Visa&#39;s stablecoin platform, and pilot stablecoins for card settlement. Days earlier, 39 US state bankers associations announced a network they would own instead. Same question, opposite answers — and Visa is what the last bank-owned consortium became.</p>
+      <p class="meta">Not yet scoped — and the first task is one classification, not a build. Read the announcement against the three product families in <code>tokenized-money-banks</code> and decide which one this is: a tokenized deposit, a first-party stablecoin, or a third-party stablecoin accessed through a partner. The announcement does not say, and that single unstated fact decides the Basel treatment — LCR runoff of 25% versus 100%, NSFR ASF of 50% versus 0%. Source: Digital Asset, 2026-08-26, on the strategic MOU signed 2026-08-24 covering digital assets, AI-based payments and B2B, with Shinhan Bank, Shinhan Card and Jeju Bank to be linked to Visa&#39;s global network — to confirm against the primary release.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
-      <p>Verex&#39;s settlement pipeline (oracle lookup → settlement → payout) is literally a Saga, and its RPC/indexer calls want a circuit breaker as a baseline.</p>
+      <p><strong>Two banking systems answered the same question in one week, and picked opposite sides.</strong> Thirty-nine US state bankers associations launched a network the industry would own, precisely so member banks would not depend on somebody else&#39;s rail (<code>bankchain-consortium</code>). Shinhan signed to verify issuance, remittance and redemption <strong>on Visa&#39;s platform</strong>. Neither is wrong. What makes the pair worth a card is that <strong>Visa is the finished form of the choice the American banks are making</strong> — it began as a bank-owned association and ended as the company banks now pay. The Korean group is renting from the outcome; the American associations are re-running the beginning.</p>
+<p><strong>The three verbs in the announcement are the demo. Card settlement is the business.</strong> Issuance, remittance and redemption are what every stablecoin pilot verifies, and verifying them proves almost nothing — the mechanics have been public for years. The line worth reading twice is the pilot for <strong>card settlement</strong>, because that is where a card issuer&#39;s money and float actually sit: a multi-party, multi-day netting chain from acquirer to network to issuer, much of it cross-border. If stablecoins do anything measurable to a bank&#39;s P&amp;L in the near term, it is there and not in retail payments. Note the shape it shares with <code>japan-t0-settlement</code>: the value is in compressing a settlement interval, and the cost is whatever netting that interval was providing.</p>
+<p><strong>And the timing is a legal fact, not a strategic one.</strong> Who may issue a won stablecoin is exactly one of the contested clauses <code>korea-digital-asset-act</code> is built around — bank-led issuance with a majority holding on one side, licensed non-bank issuers on the other, unsettled as of this month. <strong>Verifying issuance on someone else&#39;s platform is what a bank does while waiting to learn whether it will be allowed to issue on its own.</strong> Read that way, the MOU is a position taken before a rule exists, which is the only kind of position available right now.</p>
       <h2>How it works</h2>
-      <p>Circuit Breaker (inter-service calls): trip the circuit and fail fast once failures cross a threshold, then probe recovery half-open after a cooldown. Saga (data consistency): resolve a distributed transaction as a chain of local transactions plus compensating transactions — eventual consistency without 2PC.</p>
-      <h2>Related code</h2>
-      <pre><code>&quot;&quot;&quot;Circuit Breaker + Saga: two microservice patterns in one toy demo.
-
-Circuit Breaker: an inter-service call site that trips OPEN after N failures,
-fails fast while open, then probes recovery via a HALF_OPEN trial after a
-cooldown. Saga: a settlement pipeline of local steps, each with a compensating
-rollback, undone in reverse order the moment one step fails.
-&quot;&quot;&quot;
-import time
-
-
-class CircuitBreaker:
-    def __init__(self, fail_threshold=3, cooldown=0.05):
-        self.fail_threshold = fail_threshold
-        self.cooldown = cooldown
-        self.failures = 0
-        self.state = &quot;CLOSED&quot;
-        self.opened_at = None
-
-    def call(self, fn):
-        if self.state == &quot;OPEN&quot;:
-            if time.monotonic() - self.opened_at &gt;= self.cooldown:
-                self.state = &quot;HALF_OPEN&quot;
-            else:
-                raise RuntimeError(&quot;circuit open: failing fast&quot;)
-        try:
-            result = fn()
-        except Exception:
-            self.failures += 1
-            if self.state == &quot;HALF_OPEN&quot; or self.failures &gt;= self.fail_threshold:
-                self.state, self.opened_at = &quot;OPEN&quot;, time.monotonic()
-            raise
-        else:
-            self.failures, self.state = 0, &quot;CLOSED&quot;
-            return result
-
-
-def flaky_rpc(calls=[0]):
-    calls[0] += 1
-    if calls[0] &lt;= 3:
-        raise ConnectionError(&quot;oracle RPC timeout&quot;)
-    return &quot;oracle_price=42&quot;
-
-
-breaker = CircuitBreaker(fail_threshold=2, cooldown=0.02)
-for i in range(5):
-    try:
-        print(f&quot;attempt {i}: {breaker.call(flaky_rpc)} (state={breaker.state})&quot;)
-    except Exception as e:
-        print(f&quot;attempt {i}: failed ({e}) (state={breaker.state})&quot;)
-    time.sleep(0.03)
-
-# --- Saga: oracle lookup -&gt; settlement -&gt; payout, with compensations ---
-ledger = []
-
-def oracle_lookup():
-    ledger.append(&quot;oracle_locked&quot;)
-def undo_oracle_lookup():
-    ledger.remove(&quot;oracle_locked&quot;)
-
-def settle():
-    ledger.append(&quot;settled&quot;)
-def undo_settle():
-    ledger.remove(&quot;settled&quot;)
-
-def payout():
-    raise RuntimeError(&quot;payout provider unavailable&quot;)
-
-steps = [(oracle_lookup, undo_oracle_lookup), (settle, undo_settle), (payout, None)]
-completed = []
-try:
-    for step, compensate in steps:
-        step()
-        completed.append(compensate)
-    print(&quot;saga completed:&quot;, ledger)
-except Exception as e:
-    print(f&quot;saga failed at step: {e} -- rolling back&quot;)
-    for compensate in reversed(completed):
-        if compensate:
-            compensate()
-    print(&quot;ledger after rollback:&quot;, ledger)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/circuit-breaker-saga.py">docs/code/pocs/circuit-breaker-saga.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/circuit-breaker-saga">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>The unstated fact that decides the cost</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>If this turns out to be</th>
+<th>The claim becomes</th>
+<th>Basel treatment</th>
+<th>Who holds the reserve</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A tokenized deposit</strong></td>
+<td>Still a deposit, wrapped</td>
+<td>Cheapest — 25% LCR runoff, 50% NSFR ASF for the permissioned form</td>
+<td>The bank</td>
+</tr>
+<tr>
+<td><strong>A first-party stablecoin</strong></td>
+<td>A redemption contract</td>
+<td>Expensive — LCR runoff jumps to 100%, NSFR ASF drops to 0%</td>
+<td>A segregated pool</td>
+</tr>
+<tr>
+<td><strong>A third-party stablecoin reached via a partner</strong></td>
+<td>Leaves the balance sheet entirely</td>
+<td>No issuance cost, no claim either</td>
+<td>Someone else</td>
+</tr>
+</tbody></table></div>
+<p><strong>The announcement is compatible with all three</strong>, which is why classification is the first task rather than a formality. The three product families and their treatments come from <code>tokenized-money-banks</code>; this is the first live Korean case to hold up against that table.</p>
+<h3>Why card settlement is the line to watch</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Leg of a card transaction</th>
+<th>Where the delay is</th>
+<th>What a stablecoin could compress</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Authorization</td>
+<td>Seconds</td>
+<td>Nothing — already instant</td>
+</tr>
+<tr>
+<td>Clearing</td>
+<td>Same day to next day</td>
+<td>Little; this is messaging</td>
+</tr>
+<tr>
+<td><strong>Interchange and settlement between acquirer, network and issuer</strong></td>
+<td><strong>Days, and netted in batches</strong></td>
+<td><strong>The float, and the prefunding held against it</strong></td>
+</tr>
+<tr>
+<td>Cross-border leg</td>
+<td>Adds correspondent banking and FX</td>
+<td>The part with the largest spread</td>
+</tr>
+</tbody></table></div>
+<p>The measurable question is the same one <code>cross-border-rail-interop</code> asks of payment corridors: <strong>how much prefunded balance does the current arrangement require, and what does compressing the interval free up.</strong> A bank group that owns both an issuer and a card company is unusually well placed to measure it, because it can see both ends of the chain.</p>
+<h3>The pair, in one line</h3>
+<p><strong>Same question, opposite answers, one week apart</strong> — and each side&#39;s risk is the other side&#39;s premise. Renting means the rail&#39;s economics are set by someone whose interests diverge from yours over time; owning means bearing the cost of building a rail whose ownership, historically, does not stay where it started. Filling in the two-date table from <code>bankchain-consortium</code> is what turns that sentence from a slogan into an estimate.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/shinhan-visa-build-or-rent">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>마이크로서비스 디자인 패턴 2제 정리</h1>
-      <p class="lead">Circuit Breaker(서비스 간 통신 — 실패 임계치 넘으면 회로 개방, 유예 후 half-open 복구 탐색)와 Saga(분산 트랜잭션을 로컬 트랜잭션 연쇄+보상 트랜잭션으로) 정리.</p>
-      <p class="meta">아직 범위 미정 — 정독 노트. (Notion 지시, 2026-08-07 추가.)</p>
+      <h1>레일을 만들 것인가 빌릴 것인가 — 한 주에 나온 은행권의 두 답</h1>
+      <p class="lead">신한금융이 <strong>Visa의 스테이블코인 플랫폼</strong>에서 발행·송금·상환을 검증하고 <strong>카드대금 정산</strong>에 스테이블코인을 실증합니다. 며칠 전 미국 39개 주 은행협회는 <strong>직접 소유하는</strong> 네트워크를 만들겠다고 발표했습니다. 같은 질문에 정반대 답 — 그리고 <strong>Visa는 지난번 은행 소유 컨소시엄이 도달한 결과물</strong>입니다.</p>
+      <p class="meta">아직 범위 미정 — 첫 작업은 만들기가 아니라 <strong>분류 하나</strong>입니다. <code>tokenized-money-banks</code> 의 세 상품군에 발표문을 대고 <strong>이것이 무엇인지</strong> 정합니다 — 토큰화 예금인가, 1자 스테이블코인인가, 파트너를 통해 접근하는 3자 스테이블코인인가. <strong>발표문은 말하지 않고, 말하지 않은 그 사실 하나가 바젤 처리를 결정합니다</strong> — LCR 유출 25% 대 100%, NSFR ASF 50% 대 0%. 출처: 디지털애셋 2026-08-26, 2026-08-24 체결된 전략적 업무협약(디지털자산·AI 기반 결제·B2B, 신한은행·신한카드·제주은행을 Visa 글로벌 네트워크와 연계) — 원문으로 확인할 것.</p>
       <h2>왜</h2>
-      <p>Verex 연결: 정산 파이프라인(오라클 조회→정산→페이아웃)이 정확히 Saga 구조이고, RPC·인덱서 호출부에는 Circuit Breaker가 기본기입니다.</p>
+      <p><strong>두 금융권이 한 주 안에 같은 질문에 정반대로 답했습니다.</strong> 미국 39개 주 은행협회는 회원 은행이 <strong>남의 레일에 의존하지 않도록</strong> 업계 소유 네트워크를 만들겠다고 했습니다(<code>bankchain-consortium</code>). 신한은 <strong>Visa의 플랫폼 위에서</strong> 발행·송금·상환을 검증하기로 했습니다. 어느 쪽도 틀리지 않았습니다. 이 쌍이 카드가 되는 이유는 — <strong>Visa가 바로 그 미국 은행들이 지금 하는 선택의 완성형</strong>이라는 데 있습니다. 은행 소유 협회로 시작해 <strong>은행이 돈을 내는 회사</strong>로 끝났습니다. 한국 금융지주는 <strong>그 결과물에서 빌리고 있고</strong>, 미국 협회들은 <strong>그 시작을 다시 돌리고 있습니다.</strong></p>
+<p><strong>발표문의 동사 셋은 시연이고, 사업은 카드대금 정산입니다.</strong> 발행·송금·상환은 모든 스테이블코인 파일럿이 검증하는 것이고, 검증해 봐야 증명되는 게 거의 없습니다 — 원리는 몇 년째 공개돼 있습니다. 두 번 읽을 줄은 <strong>카드대금 정산 실증</strong>입니다. 카드 발행사의 돈과 플로트가 실제로 앉아 있는 자리이기 때문입니다 — 매입사에서 네트워크를 거쳐 발행사까지, <strong>여러 주체·여러 날에 걸친 네팅 사슬</strong>이고 상당 부분이 국경을 넘습니다. 스테이블코인이 단기에 은행 손익에 <strong>잴 수 있는</strong> 무언가를 한다면 그건 리테일 결제가 아니라 <strong>거기</strong>입니다. <code>japan-t0-settlement</code> 과 모양이 같다는 점도 적어 둡니다 — <strong>가치는 결제 간격을 줄이는 데 있고, 대가는 그 간격이 제공하던 네팅입니다.</strong></p>
+<p><strong>그리고 시점은 전략이 아니라 법률적 사실입니다.</strong> 원화 스테이블코인을 <strong>누가 발행할 수 있는가</strong>는 <code>korea-digital-asset-act</code> 카드가 딛고 선 쟁점 조문 중 정확히 하나입니다 — 한쪽은 지분 과반의 은행 주도 발행, 다른 쪽은 인가받은 비은행 발행자이고, 이번 달 기준 미결입니다. <strong>남의 플랫폼에서 발행을 검증하는 것은, 스스로 발행할 수 있게 될지를 기다리는 동안 은행이 하는 일입니다.</strong> 그렇게 읽으면 이 MOU는 <strong>규칙이 생기기 전에 잡아 둔 자리</strong>이고, 지금 잡을 수 있는 자리는 그것뿐입니다.</p>
       <h2>동작 방식</h2>
-      <p>① Circuit Breaker(서비스 간 통신): 연쇄 장애 방지 — 실패가 임계치를 넘으면 회로를 열어 호출을 즉시 실패시키고, 유예 후 half-open으로 회복을 탐색. ② Saga(데이터 일관성): 분산 트랜잭션을 로컬 트랜잭션의 연쇄 + 보상 트랜잭션(compensation)으로 풀기 — 2PC 없이 최종 일관성.</p>
-      <h2>관련 코드</h2>
-      <pre><code>&quot;&quot;&quot;Circuit Breaker + Saga: two microservice patterns in one toy demo.
-
-Circuit Breaker: an inter-service call site that trips OPEN after N failures,
-fails fast while open, then probes recovery via a HALF_OPEN trial after a
-cooldown. Saga: a settlement pipeline of local steps, each with a compensating
-rollback, undone in reverse order the moment one step fails.
-&quot;&quot;&quot;
-import time
-
-
-class CircuitBreaker:
-    def __init__(self, fail_threshold=3, cooldown=0.05):
-        self.fail_threshold = fail_threshold
-        self.cooldown = cooldown
-        self.failures = 0
-        self.state = &quot;CLOSED&quot;
-        self.opened_at = None
-
-    def call(self, fn):
-        if self.state == &quot;OPEN&quot;:
-            if time.monotonic() - self.opened_at &gt;= self.cooldown:
-                self.state = &quot;HALF_OPEN&quot;
-            else:
-                raise RuntimeError(&quot;circuit open: failing fast&quot;)
-        try:
-            result = fn()
-        except Exception:
-            self.failures += 1
-            if self.state == &quot;HALF_OPEN&quot; or self.failures &gt;= self.fail_threshold:
-                self.state, self.opened_at = &quot;OPEN&quot;, time.monotonic()
-            raise
-        else:
-            self.failures, self.state = 0, &quot;CLOSED&quot;
-            return result
-
-
-def flaky_rpc(calls=[0]):
-    calls[0] += 1
-    if calls[0] &lt;= 3:
-        raise ConnectionError(&quot;oracle RPC timeout&quot;)
-    return &quot;oracle_price=42&quot;
-
-
-breaker = CircuitBreaker(fail_threshold=2, cooldown=0.02)
-for i in range(5):
-    try:
-        print(f&quot;attempt {i}: {breaker.call(flaky_rpc)} (state={breaker.state})&quot;)
-    except Exception as e:
-        print(f&quot;attempt {i}: failed ({e}) (state={breaker.state})&quot;)
-    time.sleep(0.03)
-
-# --- Saga: oracle lookup -&gt; settlement -&gt; payout, with compensations ---
-ledger = []
-
-def oracle_lookup():
-    ledger.append(&quot;oracle_locked&quot;)
-def undo_oracle_lookup():
-    ledger.remove(&quot;oracle_locked&quot;)
-
-def settle():
-    ledger.append(&quot;settled&quot;)
-def undo_settle():
-    ledger.remove(&quot;settled&quot;)
-
-def payout():
-    raise RuntimeError(&quot;payout provider unavailable&quot;)
-
-steps = [(oracle_lookup, undo_oracle_lookup), (settle, undo_settle), (payout, None)]
-completed = []
-try:
-    for step, compensate in steps:
-        step()
-        completed.append(compensate)
-    print(&quot;saga completed:&quot;, ledger)
-except Exception as e:
-    print(f&quot;saga failed at step: {e} -- rolling back&quot;)
-    for compensate in reversed(completed):
-        if compensate:
-            compensate()
-    print(&quot;ledger after rollback:&quot;, ledger)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/circuit-breaker-saga.py">docs/code/pocs/circuit-breaker-saga.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/circuit-breaker-saga">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>비용을 결정하는, 말하지 않은 사실</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>이것이 결국 무엇이냐</th>
+<th>청구권은</th>
+<th>바젤 처리</th>
+<th>준비금을 쥐는 쪽</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>토큰화 예금</strong></td>
+<td>여전히 예금, 감싸기만</td>
+<td>가장 쌈 — 퍼미션드 형태 LCR 유출 25%, NSFR ASF 50%</td>
+<td><strong>은행</strong></td>
+</tr>
+<tr>
+<td><strong>1자 스테이블코인</strong></td>
+<td><strong>상환 계약</strong>으로 전환</td>
+<td>비쌈 — LCR 유출 100%로, NSFR ASF 0%로</td>
+<td>분리된 준비금 풀</td>
+</tr>
+<tr>
+<td><strong>파트너를 통한 3자 스테이블코인</strong></td>
+<td><strong>대차대조표를 완전히 떠남</strong></td>
+<td>발행 비용 없음, 청구권도 없음</td>
+<td>남</td>
+</tr>
+</tbody></table></div>
+<p><strong>발표문은 셋 다와 양립합니다.</strong> 그래서 분류가 형식이 아니라 <strong>첫 작업</strong>입니다. 세 상품군과 그 처리는 <code>tokenized-money-banks</code> 에서 왔고, 이건 그 표에 대 볼 수 있는 <strong>첫 한국 실사례</strong>입니다.</p>
+<h3>왜 카드대금 정산이 지켜볼 줄인가</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>카드 거래의 다리</th>
+<th>지연이 있는 곳</th>
+<th>스테이블코인이 줄일 수 있는 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>승인</td>
+<td>초 단위</td>
+<td>없음 — 이미 즉시</td>
+</tr>
+<tr>
+<td>클리어링</td>
+<td>당일~익일</td>
+<td>적음. 이건 메시징</td>
+</tr>
+<tr>
+<td><strong>매입사·네트워크·발행사 간 정산과 인터체인지</strong></td>
+<td><strong>며칠, 그리고 배치 네팅</strong></td>
+<td><strong>플로트, 그리고 그에 대비해 세워 두는 선충전</strong></td>
+</tr>
+<tr>
+<td>국경 간 다리</td>
+<td>코레스 뱅킹과 FX가 추가</td>
+<td><strong>스프레드가 가장 큰 부분</strong></td>
+</tr>
+</tbody></table></div>
+<p>잴 수 있는 질문은 <code>cross-border-rail-interop</code> 이 결제 코리도에 던지는 것과 같습니다 — <strong>지금 구조가 요구하는 선충전 잔고는 얼마이고, 간격을 줄이면 무엇이 풀리는가.</strong> 발행사와 카드사를 <strong>둘 다</strong> 가진 금융지주는 <strong>사슬의 양 끝을 볼 수 있어서</strong> 이걸 재기에 유난히 좋은 자리에 있습니다.</p>
+<h3>이 쌍을 한 줄로</h3>
+<p><strong>같은 질문, 정반대 답, 일주일 간격</strong> — 그리고 <strong>한쪽의 리스크가 다른 쪽의 전제</strong>입니다. 빌리면 레일의 경제학을 <strong>시간이 갈수록 이해가 갈라지는 쪽</strong>이 정하고, 소유하면 <strong>역사적으로 소유가 처음 자리에 머물지 않는</strong> 레일을 짓는 비용을 집니다. <code>bankchain-consortium</code> 의 두 날짜 표를 채우는 일이, <strong>이 문장을 구호에서 추정치로</strong> 바꿉니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/shinhan-visa-build-or-rent">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-moralis-wallet-api.html">&larr; 68. Moralis — wallet snapshot via API</a><a href="pocs-slack-claude-notion.html">70. Slack · Claude · Notion integration &rarr;</a></div>
+  <div class="pager"><a href="pocs-bankchain-consortium.html">&larr; 22. A bank-owned network, and what happened to the last four</a><a href="pocs-chainlink-data-streams.html">24. Chainlink Data Streams — push vs. pull oracles and point-in-time settlement &rarr;</a></div>
 </div>
 </body>
 </html>
