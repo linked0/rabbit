@@ -266,9 +266,14 @@ ${sectionCards}
             </div>`;
 
 const index = fs.readFileSync(INDEX_HTML, 'utf8');
+// 치환문에 문자열이 아니라 함수를 쓴다 (jay, 2026-08-26). String.replace 의 치환 문자열
+// 안에서는 `$1`·`$&` 가 캡처 그룹 참조로 해석되므로, 카드 본문에 달러 금액이 들어 있으면
+// 그 자리가 조용히 망가진다 — `agentic-intent-veto` 의 "$100" 이 실제로 캡처 그룹 1
+// (`<!-- POCS:BEGIN -->`)로 치환돼 docs/index.html 에 "$5... <!-- POCS:BEGIN -->00" 으로
+// 커밋돼 있었다. 함수 치환은 반환값을 그대로 쓰므로 `$` 가 리터럴로 남는다.
 const marked = index.replace(
   /(<!-- POCS:BEGIN -->)[\s\S]*?(<!-- POCS:END -->)/,
-  `$1\n${section}\n            $2`,
+  (_m, begin, end) => `${begin}\n${section}\n            ${end}`,
 );
 if (marked === index && !index.includes('<!-- POCS:BEGIN -->')) {
   throw new Error('docs/index.html 에 POCS:BEGIN/END 마커가 없습니다.');
