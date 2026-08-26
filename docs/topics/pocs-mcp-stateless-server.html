@@ -280,7 +280,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Building an MCP server on the stateless spec</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#31</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <p class="topic-kicker"><span class="topic-no">#33</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
       <h1>Building an MCP server on the stateless spec</h1>
       <p class="lead">The 2026-07-28 revision drops the session handshake, so an MCP server becomes an ordinary stateless HTTP service — deployable to serverless and edge, and authorized like any enterprise API.</p>
       <p class="meta">Not yet scoped — build one narrow tool server against 2026-07-28 from the start rather than porting a 2025-11-25 one, deploy it to Cloud Run, and connect it to Claude. Spec: blog.modelcontextprotocol.io, release candidate 2026-07-28.</p>
@@ -305,7 +305,7 @@
       <p>좁은 서버 하나 — 실제 데이터 소스 위의 도구 한두 개 — 를 포팅하지 말고 <strong>처음부터 2026-07-28로</strong> 만듭니다. Tasks가 명시적 파괴적 변경(폴링 기반 <code>tasks/get</code>·<code>tasks/update</code>, 협조적 <code>tasks/cancel</code>)이라, 포팅은 옛 모델을 두 번 배우는 일이 되기 때문입니다. 읽지 말고 <strong>해봐야</strong> 확인되는 것 셋. 첫째, 콜드 스타트한 서버리스 인스턴스가 <strong>선행 상태 없이</strong> 요청을 처리하는가 — 무상태 코어의 주장 전부가 이것이고, 실제 콜드 스타트에서 성립하거나 아니거나입니다. 둘째, 핸드셰이크 없이 클라이언트가 동작하려면 <code>_meta</code>가 실제로 무엇을 실어야 하는가 — 스펙 요약만으로는 구현할 만큼 구체화되지 않는 부분입니다. 셋째, list·resource-read 결과의 캐시 가능성이 실제 배포에서도 유지되는가 — 무상태 설계가 늘어난 요청당 페이로드값을 하는지가 여기서 갈립니다. <strong>인가 절반에 시간을 가장 많이 써야 합니다</strong>: 서버를 OAuth/OIDC 제공자 뒤에 두고 토큰 경로를 끝까지 걸어 봅니다. &quot;이제 회사 데이터 승인 경로가 표준화됐다&quot;는 주장은 한 시간이면 참이거나 일주일 내내 거짓이거나 둘 중 하나이기 때문입니다. 기존 항목 둘과 이어집니다. <strong>google-adk-mcp</strong> 카드는 프레임워크 질문(verex-desk 서브에이전트를 ADK로 감싸 MCP로 서빙할 수 있는가)이고 이 카드는 그 아래의 프로토콜 질문이므로, <strong>이 카드를 먼저 하면</strong> 그쪽은 미지수 둘이 아니라 래퍼 연습 하나가 됩니다. LLM 트랙 <strong>Day 39(MCP 서버 직접 구현)</strong>도 작성 당시 스펙이 아니라 이 스펙으로 재개하는 편이 낫습니다. 만들기 전 주의 하나: Roots·Sampling·Logging은 대체 수단이 문서화된 채 deprecated이고, 제거까지 최소 12개월이 보장됩니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/mcp-stateless-server">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-stablecoin-redemption-desk.html">&larr; 30. The redemption desk — what actually makes a stablecoin's denominator</a><a href="pocs-fisheries-receivable-rail.html">32. The custody was never the hard part &rarr;</a></div>
+  <div class="pager"><a href="pocs-stablecoin-redemption-desk.html">&larr; 32. The redemption desk — what actually makes a stablecoin's denominator</a><a href="pocs-fisheries-receivable-rail.html">34. The custody was never the hard part &rarr;</a></div>
 </div>
 </body>
 </html>

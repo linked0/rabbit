@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PET clean room (FHE) — PoCs</title>
+<title>Procedural, not generated — when the model is a program — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -278,138 +278,119 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; PET clean room (FHE)</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Procedural, not generated — when the model is a program</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#41</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>PET clean room (FHE)</h1>
-      <p class="lead">Homomorphic encryption for data that cannot leave its owner — a hands-on study.</p>
-      <p class="meta">Not yet scoped — start with one FHE operation end to end, then decide if a page is worth it.</p>
+      <p class="topic-kicker"><span class="topic-no">#24</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Procedural, not generated — when the model is a program</h1>
+      <p class="lead">A post claims Kimi K3 built an app turning 2D schematics into fully procedural 3D models, with a code-generated tank swappable for anything else. The load-bearing word is procedural: the output is code that makes geometry, not a mesh. Whether the arrow really points 2D → 3D is testable in one shot.</p>
+      <p class="meta">Not yet scoped — and the whole first step is one falsifiable test, not a build. Feed it a schematic it has never seen: a drawing of something that is not a vehicle, from a domain the demo never showed. If the arrow points 2D → 3D, a model comes out. If nothing usable comes out, the app is a parameterized generator with a blueprint view, which is a different and still interesting thing — just not the claimed one. Source: an X post by @RoundtableSpace, 2026-08-26, showing a 55-second video of a browser app with view buttons (ISO, 3/4, SIDE, FRONT, PLAN) and action buttons (RUN, DRIVE, FIRE, EXPLODE). No repository, paper or primary link accompanies it; treat every claim here as unverified.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
-      <p>The one problem in this catalogue that cryptography solves and a blockchain does not. On-chain work makes data public and verifiable; a clean room needs the opposite — compute over data that never becomes readable, so two parties can learn a joint result without either seeing the other&#39;s input. Worth understanding as a distinct tool rather than assuming encryption-at-rest covers it.</p>
+      <p><strong>The interesting word is procedural, and it is not a synonym for generated.</strong> A generated model is a mesh: a bag of vertices that arrived somehow and can now only be edited by hand. A procedural model is <strong>code that produces geometry when run</strong>, so its subject is an argument, its proportions are variables, and changing it means changing a line rather than re-sculpting a surface. That is why the post can say the tank <em>can be swapped out for anything else</em> — if the tank is a function, the tank is a parameter.</p>
+<p><strong>This repository already made the same move, one domain over.</strong> Nothing in <code>docs/topics/</code> is written by hand; every page is produced from <code>lib/poc-cards.ts</code> by a generator. The consequence showed up concretely this week: when two workspaces both regenerated those pages, the fifty resulting conflicts were not resolved by merging HTML — they were resolved by merging the <em>source</em> and re-running the generator, because <strong>a conflict in a derived file is never fixed in the derived file.</strong> An LLM that emits the generator instead of the artifact inherits exactly that property, and it is worth more than the visual: <strong>code can be diffed, reviewed and parameterized; a mesh can only be looked at.</strong></p>
+<p><strong>And the claim has a direction problem worth catching.</strong> <em>2D schematics into 3D models</em> says the drawing is the input. But the demo&#39;s own buttons — FRONT, PLAN, ISO — are the standard orthographic projections that CAD software produces <strong>from</strong> a 3D model, and the blueprint aesthetic is the cheapest of those views to render. So the arrow may point the other way: one parametric model, six camera angles, one of which looks like a schematic. That is not an accusation; it is the first thing to check, and it is checkable in a single attempt.</p>
       <h2>How it works</h2>
-      <p>Planned as a hands-on rather than a survey: take one FHE library, run a single aggregate (a sum or a count over encrypted inputs) end to end, and measure what it actually costs in latency and ciphertext size — the two numbers that decide whether any of this is usable. The reference case is a hospital/registry data collaboration, where the legal constraint is that raw records cannot leave the owner at all.</p>
-      <h2>Related code</h2>
-      <pre><code>&quot;&quot;&quot;PET clean room (FHE) PoC -- toy additive homomorphic-style scheme.
-ILLUSTRATIVE ONLY, not real FHE/crypto: shows the *idea* of computing on data that
-never becomes readable, using modular addition as a stand-in for a homomorphic scheme.
-&quot;&quot;&quot;
-
-import random
-
-MODULUS = 2**16  # toy field; real FHE uses lattice-based schemes, not plain mod-add
-
-
-def keygen() -&gt; int:
-    &quot;&quot;&quot;A random additive mask stands in for a real FHE secret key.&quot;&quot;&quot;
-    return random.randrange(MODULUS)
-
-
-def encrypt(value: int, key: int) -&gt; int:
-    return (value + key) % MODULUS
-
-
-def decrypt(ciphertext: int, key: int) -&gt; int:
-    return (ciphertext - key) % MODULUS
-
-
-def homomorphic_add(ct_a: int, ct_b: int, key_a: int, key_b: int) -&gt; int:
-    &quot;&quot;&quot;Adding two ciphertexts under DIFFERENT keys needs the combined key to decrypt --
-    the clean room only ever sees ciphertexts and the combined sum, never the inputs.&quot;&quot;&quot;
-    return (ct_a + ct_b) % MODULUS
-
-
-if __name__ == &quot;__main__&quot;:
-    # Two hospitals each hold a private count they will never reveal to each other.
-    hospital_a_count = 143
-    hospital_b_count = 289
-
-    key_a, key_b = keygen(), keygen()
-    ct_a = encrypt(hospital_a_count, key_a)
-    ct_b = encrypt(hospital_b_count, key_b)
-
-    print(f&quot;hospital A's true count: {hospital_a_count} -&gt; ciphertext sent to clean room: {ct_a}&quot;)
-    print(f&quot;hospital B's true count: {hospital_b_count} -&gt; ciphertext sent to clean room: {ct_b}&quot;)
-
-    # The clean room only ever handles ciphertexts.
-    combined_key = (key_a + key_b) % MODULUS
-    ct_sum = homomorphic_add(ct_a, ct_b, key_a, key_b)
-    print(f&quot;\nclean room computes on ciphertexts only, never sees raw counts: sum(ct) = {ct_sum}&quot;)
-
-    joint_result = decrypt(ct_sum, combined_key)
-    print(f&quot;joint result decrypted with the combined key: {joint_result}&quot;)
-    print(f&quot;matches true total ({hospital_a_count + hospital_b_count}): {joint_result == hospital_a_count + hospital_b_count}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/pet-clean-room.py">docs/code/pocs/pet-clean-room.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/pet-clean-room">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>Three things that get called the same thing</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>What the output is</th>
+<th>Editing it means</th>
+<th>Can it be reviewed?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Generated mesh</strong></td>
+<td>Vertices</td>
+<td>Sculpting by hand</td>
+<td>No — you can only look at it</td>
+</tr>
+<tr>
+<td><strong>Parameterized model</strong></td>
+<td>Fixed code, exposed knobs</td>
+<td>Turning a knob the author anticipated</td>
+<td>Partly — the knobs, not the shape</td>
+</tr>
+<tr>
+<td><strong>Procedural, as claimed here</strong></td>
+<td><strong>Code written per subject</strong></td>
+<td><strong>Editing a line</strong></td>
+<td><strong>Yes — it is a diff</strong></td>
+</tr>
+</tbody></table></div>
+<p>The post claims the third. The demo is consistent with the second. <strong>The difference is invisible in a video and obvious in one experiment.</strong></p>
+<h3>The experiment, in full</h3>
+<p>One attempt, one input: a schematic of something from a domain it has never rendered — not a vehicle, not military, ideally something with an irregular shape rather than boxes and cylinders. Then read the result against three outcomes:</p>
+<ul>
+<li><strong>A model appears and is roughly right</strong> — the claim holds, and the interesting question moves to how the code represents shape.</li>
+<li><strong>A model appears but is a tank with different proportions</strong> — it is a parameterized generator. Still useful, differently framed.</li>
+<li><strong>Nothing usable appears</strong> — the schematic was never the input; the blueprint was an output view all along.</li>
+</ul>
+<h3>Why it belongs in this catalogue at all</h3>
+<p>Not for the tank. <strong>For the shape of the output.</strong> The recurring difficulty with model-produced artifacts is that they cannot be checked — a paragraph, an image, a mesh all arrive as finished surfaces with no seam to inspect. <strong>A model that emits a program instead moves the artifact into a form that already has review tooling around it</strong>: version control, diffs, tests, parameters with names. That is the same reason this repo keeps card data as the source of truth and treats every page under <code>docs/topics/</code> as disposable output, and it generalizes far past 3D.</p>
+<h3>Honesty about the source</h3>
+<p>This is a social post with no repository, no paper and no primary link, forty-two minutes old at capture, carrying 19 likes against 16,000 views — engagement that says <em>seen</em> rather than <em>verified</em>. Nothing here should be repeated as fact. The card exists because the <strong>distinction</strong> is worth holding, not because the demo is established.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/procedural-not-generated">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>PET 클린룸 (동형암호)</h1>
-      <p class="lead">소유자를 떠날 수 없는 데이터를 위한 동형암호 — 손으로 해보는 스터디.</p>
-      <p class="meta">아직 범위 미정 — FHE 연산 하나를 끝까지 해본 뒤에 페이지를 만들지 정합니다.</p>
+      <h1>생성이 아니라 절차적 — 모델이 프로그램일 때</h1>
+      <p class="lead">Kimi K3가 2D 도면을 <strong>완전 절차적</strong> 3D 모델로 바꾸는 앱을 만들었고, 코드로 생성된 전차를 무엇으로든 교체할 수 있다는 게시물입니다. 하중을 받는 단어는 <strong>절차적</strong>입니다 — 산출물이 메시가 아니라 <strong>기하를 만드는 코드</strong>입니다. 화살표가 정말 2D → 3D 를 가리키는지는 <strong>한 번의 실험으로 갈립니다.</strong></p>
+      <p class="meta">아직 범위 미정 — 첫 단계 전부가 만들기가 아니라 <strong>반증 가능한 실험 하나</strong>입니다. <strong>한 번도 본 적 없는 도면</strong>을 넣습니다 — 차량이 아닌 것, 데모가 보여준 적 없는 분야의 그림으로. 화살표가 2D → 3D 를 가리킨다면 모델이 나옵니다. 쓸 만한 것이 안 나오면, 그 앱은 <strong>청사진 뷰가 달린 파라미터 생성기</strong>입니다 — 그것도 다르고 여전히 흥미롭지만, <strong>주장된 그것은 아닙니다.</strong> 출처: @RoundtableSpace 의 2026-08-26 X 게시물. 뷰 버튼(ISO·3/4·SIDE·FRONT·PLAN)과 동작 버튼(RUN·DRIVE·FIRE·EXPLODE)이 있는 브라우저 앱의 55초 영상. <strong>저장소도 논문도 1차 링크도 없습니다</strong> — 여기의 모든 주장을 미검증으로 다룰 것.</p>
       <h2>왜</h2>
-      <p>이 카탈로그에서 유일하게 <strong>암호학이 풀고 블록체인은 못 푸는</strong> 문제입니다. 온체인 작업은 데이터를 공개·검증 가능하게 만들지만, 클린룸에 필요한 건 정반대입니다 — 끝내 읽히지 않는 데이터 위에서 계산해서, 두 주체가 서로의 입력을 보지 않고도 공동 결과만 알아내는 것. 저장 시 암호화로 덮인다고 가정하지 말고 별개의 도구로 이해할 가치가 있습니다.</p>
+      <p><strong>흥미로운 단어는 &quot;절차적&quot;이고, 이것은 &quot;생성된&quot;의 동의어가 아닙니다.</strong> 생성된 모델은 <strong>메시</strong>입니다 — 어떻게든 도착한 정점 덩어리이고, 이제는 손으로만 고칠 수 있습니다. 절차적 모델은 <strong>실행하면 기하를 만들어내는 코드</strong>입니다. 그래서 대상이 인자가 되고, 비율이 변수가 되며, 바꾼다는 것이 표면을 다시 깎는 게 아니라 <strong>한 줄을 고치는 일</strong>이 됩니다. 게시물이 <em>전차를 무엇으로든 교체할 수 있다</em> 고 말할 수 있는 이유가 그것입니다 — <strong>전차가 함수라면, 전차는 파라미터입니다.</strong></p>
+<p><strong>이 저장소는 한 분야 건너에서 이미 같은 수를 뒀습니다.</strong> <code>docs/topics/</code> 의 어떤 페이지도 손으로 쓰지 않습니다 — 전부 <code>lib/poc-cards.ts</code> 에서 생성기가 만듭니다. 그 결과가 이번 주에 구체적으로 드러났습니다: 두 작업 공간이 같은 페이지들을 재생성했을 때 생긴 *<em>50개의 충돌은 HTML을 병합해서 푼 게 아니라, <em>소스</em>를 병합하고 생성기를 다시 돌려서<strong> 풀렸습니다. </strong>파생 파일의 충돌은 결코 파생 파일에서 고쳐지지 않기<strong> 때문입니다. </strong>산출물 대신 생성기를 내놓는 LLM은 정확히 그 성질을 물려받고<strong>, 그것이 보기 좋은 화면보다 값이 큽니다 — </strong>코드는 diff 하고 리뷰하고 파라미터화할 수 있지만, 메시는 쳐다볼 수만 있습니다.<strong>
+
+</strong>그리고 주장에는 잡아 둘 만한 방향 문제가 있습니다.</em>* <em>2D 도면을 3D 모델로</em> 는 <strong>그림이 입력</strong>이라는 뜻입니다. 그런데 데모의 버튼들 — FRONT·PLAN·ISO — 은 CAD 소프트웨어가 <strong>3D 모델로부터</strong> 만들어내는 표준 정투영이고, 청사진 스타일은 그 뷰들 중 <strong>렌더링이 가장 싼</strong> 축입니다. 그러니 화살표가 반대일 수 있습니다 — <strong>파라메트릭 모델 하나, 카메라 각도 여섯, 그중 하나가 도면처럼 보이는 것.</strong> 고발이 아닙니다. <strong>가장 먼저 확인할 것</strong>이고, <strong>한 번의 시도로 확인됩니다.</strong></p>
       <h2>동작 방식</h2>
-      <p>서베이가 아니라 실습으로 계획했습니다: FHE 라이브러리 하나를 골라 암호문 입력에 대한 집계 하나(합계나 카운트)를 끝까지 돌려보고, 지연과 암호문 크기를 실제로 측정합니다 — 이 기술이 쓸 만한지를 정하는 건 결국 이 두 숫자입니다. 참조 사례는 원본 레코드가 소유자를 아예 떠날 수 없다는 법적 제약이 걸린 병원·레지스트리 데이터 협업입니다.</p>
-      <h2>관련 코드</h2>
-      <pre><code>&quot;&quot;&quot;PET clean room (FHE) PoC -- toy additive homomorphic-style scheme.
-ILLUSTRATIVE ONLY, not real FHE/crypto: shows the *idea* of computing on data that
-never becomes readable, using modular addition as a stand-in for a homomorphic scheme.
-&quot;&quot;&quot;
-
-import random
-
-MODULUS = 2**16  # toy field; real FHE uses lattice-based schemes, not plain mod-add
-
-
-def keygen() -&gt; int:
-    &quot;&quot;&quot;A random additive mask stands in for a real FHE secret key.&quot;&quot;&quot;
-    return random.randrange(MODULUS)
-
-
-def encrypt(value: int, key: int) -&gt; int:
-    return (value + key) % MODULUS
-
-
-def decrypt(ciphertext: int, key: int) -&gt; int:
-    return (ciphertext - key) % MODULUS
-
-
-def homomorphic_add(ct_a: int, ct_b: int, key_a: int, key_b: int) -&gt; int:
-    &quot;&quot;&quot;Adding two ciphertexts under DIFFERENT keys needs the combined key to decrypt --
-    the clean room only ever sees ciphertexts and the combined sum, never the inputs.&quot;&quot;&quot;
-    return (ct_a + ct_b) % MODULUS
-
-
-if __name__ == &quot;__main__&quot;:
-    # Two hospitals each hold a private count they will never reveal to each other.
-    hospital_a_count = 143
-    hospital_b_count = 289
-
-    key_a, key_b = keygen(), keygen()
-    ct_a = encrypt(hospital_a_count, key_a)
-    ct_b = encrypt(hospital_b_count, key_b)
-
-    print(f&quot;hospital A's true count: {hospital_a_count} -&gt; ciphertext sent to clean room: {ct_a}&quot;)
-    print(f&quot;hospital B's true count: {hospital_b_count} -&gt; ciphertext sent to clean room: {ct_b}&quot;)
-
-    # The clean room only ever handles ciphertexts.
-    combined_key = (key_a + key_b) % MODULUS
-    ct_sum = homomorphic_add(ct_a, ct_b, key_a, key_b)
-    print(f&quot;\nclean room computes on ciphertexts only, never sees raw counts: sum(ct) = {ct_sum}&quot;)
-
-    joint_result = decrypt(ct_sum, combined_key)
-    print(f&quot;joint result decrypted with the combined key: {joint_result}&quot;)
-    print(f&quot;matches true total ({hospital_a_count + hospital_b_count}): {joint_result == hospital_a_count + hospital_b_count}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/pet-clean-room.py">docs/code/pocs/pet-clean-room.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/pet-clean-room">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>같은 이름으로 불리는 서로 다른 셋</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>산출물이 무엇인가</th>
+<th>고친다는 것은</th>
+<th>리뷰 가능한가</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>생성된 메시</strong></td>
+<td>정점들</td>
+<td>손으로 깎기</td>
+<td><strong>아니오</strong> — 쳐다볼 수만 있음</td>
+</tr>
+<tr>
+<td><strong>파라미터화된 모델</strong></td>
+<td>고정된 코드 + 노출된 손잡이</td>
+<td>저자가 예상해 둔 손잡이 돌리기</td>
+<td>부분적 — 형상이 아니라 손잡이만</td>
+</tr>
+<tr>
+<td><strong>여기서 주장하는 절차적</strong></td>
+<td><strong>대상마다 새로 쓰인 코드</strong></td>
+<td><strong>한 줄 고치기</strong></td>
+<td><strong>예 — 그것은 diff 다</strong></td>
+</tr>
+</tbody></table></div>
+<p>게시물은 세 번째를 주장합니다. <strong>데모는 두 번째와도 모순되지 않습니다.</strong> 그 차이는 <strong>영상에서는 안 보이고 실험 한 번이면 드러납니다.</strong></p>
+<h3>실험, 전체</h3>
+<p>시도 한 번, 입력 하나 — <strong>한 번도 렌더한 적 없는 분야</strong>의 도면. 차량이 아니고, 군사가 아니며, 상자와 원기둥이 아닌 <strong>불규칙한 형상</strong>이면 더 좋습니다. 결과를 세 갈래에 대고 읽습니다:</p>
+<ul>
+<li><strong>모델이 나오고 대체로 맞다</strong> — 주장이 성립하고, 흥미로운 질문은 <strong>코드가 형상을 어떻게 표현하는가</strong>로 옮겨간다.</li>
+<li><strong>모델이 나오는데 비율만 다른 전차다</strong> — <strong>파라미터 생성기</strong>다. 여전히 쓸모 있지만 프레임이 다르다.</li>
+<li><strong>쓸 만한 게 안 나온다</strong> — <strong>도면은 애초에 입력이 아니었고</strong>, 청사진은 처음부터 <strong>출력 뷰</strong>였다.</li>
+</ul>
+<h3>애초에 왜 이 카탈로그에 두는가</h3>
+<p>전차 때문이 아닙니다. <strong>산출물의 모양 때문입니다.</strong> 모델이 만든 결과물의 반복되는 난점은 <strong>검사할 수 없다</strong>는 것입니다 — 문단이든 이미지든 메시든, <strong>이음매 없는 완성된 표면</strong>으로 도착합니다. <strong>대신 프로그램을 내놓는 모델은 결과물을 이미 리뷰 도구가 갖춰진 형태로 옮깁니다</strong> — 버전 관리, diff, 테스트, 이름 있는 파라미터. 이 저장소가 카드 데이터를 정본으로 두고 <code>docs/topics/</code> 전부를 <strong>버려도 되는 출력</strong>으로 다루는 것과 같은 이유이고, <strong>3D를 훨씬 넘어 일반화됩니다.</strong></p>
+<h3>출처에 대한 정직함</h3>
+<p>저장소도 논문도 1차 링크도 없는 소셜 게시물이고, 캡처 시점 42분 경과, 조회 1.6만에 좋아요 19 — <strong>&quot;봤다&quot;는 말이지 &quot;검증됐다&quot;는 말이 아닌</strong> 반응입니다. <strong>여기의 어떤 것도 사실로 옮겨 적으면 안 됩니다.</strong> 이 카드가 존재하는 이유는 데모가 확립돼서가 아니라 <strong>그 구분이 들고 있을 값어치가 있기</strong> 때문입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/procedural-not-generated">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-erc-8141.html">&larr; 40. ERC-8141</a><a href="pocs-confidential-settlement-metadata.html">42. Hiding the amount is the easy half &rarr;</a></div>
+  <div class="pager"><a href="pocs-shinhan-visa-build-or-rent.html">&larr; 23. Build the rail or rent it — two banking answers in one week</a><a href="pocs-decision-market-uncontrollability.html">25. The property that makes a market work is the one that makes it gambling &rarr;</a></div>
 </div>
 </body>
 </html>
