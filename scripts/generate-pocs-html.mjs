@@ -205,10 +205,16 @@ function topicPagerHref(card) {
 
 
 // ── 1) index.html 의 PoCs 섹션 ──────────────────────────────────────────────
-// 인덱스에는 상위 6장만 (jay, 2026-08-12) — 전체 목록은 pocs.html("View All PoCs")이 맡는다.
-// 정렬이 live→done→soon + 날짜순이라, 6장은 "가장 완성됐고 가장 최근인" 카드들이 된다.
-const INDEX_CARD_LIMIT = 6;
-const sectionCards = cards
+// 인덱스에는 "마지막으로 검토한" 두 장만 (jay, 2026-08-28) — 전체 목록은 pocs.html
+// ("View All PoCs")이 맡는다. 이전에는 정렬 상위 6장이었는데, 정렬이 live→done→soon 이라
+// 몇 달 된 라이브 데모가 늘 자리를 차지했다 — 인덱스는 "무엇이 가장 완성됐나"가 아니라
+// "내가 방금 무엇을 봤나"를 보여줘야 한다. reviewed 가 없는 카드는 후보에서 빠지고,
+// 아무 카드에도 없으면 예전 규칙(정렬 상위)으로 되돌아간다.
+const INDEX_CARD_LIMIT = 2;
+const reviewedCards = cards
+  .filter((c) => c.reviewed)
+  .sort((a, b) => b.reviewed.localeCompare(a.reviewed)); // 같은 날이면 배열 순서 유지
+const sectionCards = (reviewedCards.length ? reviewedCards : cards)
   .slice(0, INDEX_CARD_LIMIT)
   .map((c) => {
     const b = badge(c);

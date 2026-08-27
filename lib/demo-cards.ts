@@ -27,6 +27,11 @@ export type DemoCard = {
   // 기본값이 후자이므로 프로토콜·코어 기술 카드에만 group: "protocol" 을 붙인다.
   // 기존 later 플래그는 남겨 두되 더 이상 구획을 가르지 않는다 — Later 묶음은 폐지됐다.
   group?: "protocol" | "economics" | "future";
+  // "마지막으로 손본 날" (jay, 2026-08-28) — date 와 다르다. date 는 "그 데모가 동작하게 된
+  // 날"이라 아직 안 만든 카드에는 없고, 그래서 인덱스 상위는 늘 오래된 live 데모가 차지했다.
+  // reviewed 는 "내가 이 카드를 마지막으로 검토한 날"이라 계획 카드에도 붙는다.
+  // index.html 의 PoCs 섹션은 이 값이 가장 최근인 두 장만 싣는다 — 없는 카드는 안 나온다.
+  reviewed?: string;
   howTo: string;
   howToKo: string;
   // Longer technical write-up rendered in the "Technical Notes" section at the page bottom

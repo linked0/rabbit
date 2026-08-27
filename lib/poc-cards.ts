@@ -976,6 +976,7 @@ export const POC_CARDS: DemoCard[] = [
     // 정산할 수 있게 되는가"라고 적은 바로 그 사건의 첫 사례이므로 서로 잇는다.
     // KRW1·참여사·범위는 기사와 배너 기준 — 원문과 이후 공시로 확인 필요.
     key: "float-not-the-paperwork",
+    reviewed: "2026-08-28",
     title: "The stablecoin replaces the float, not the paperwork",
     titleKo: "스테이블코인이 대체하는 것은 플로트이지 서류가 아니다",
     description:
@@ -1535,6 +1536,7 @@ export const POC_CARDS: DemoCard[] = [
     // layerzero-default-is-a-choice 와 같은 축의 반대 끝 — 저기선 고를 수 있고 여긴 "독점"이다.
     // CCT 의 발행 권한 위임 구조·$7.5B·독점 여부는 게시물 기준이므로 원문 확인 필요.
     key: "the-bridge-is-inside-the-token",
+    reviewed: "2026-08-28",
     title: "The bridge is not beside the token any more — it is inside it",
     titleKo: "브리지는 이제 토큰 옆이 아니라 토큰 안에 있다",
     description:
@@ -1674,6 +1676,7 @@ export const POC_CARDS: DemoCard[] = [
     // 않는다 — 여기는 시장 구조와 그 숫자가 무엇을 재는가이다. 30% 수치·계좌 규제 세부는
     // 게시물 기준이므로 원문과 현행 규정으로 확인 필요.
     key: "korea-spot-share-is-an-artifact",
+    reviewed: "2026-08-28",
     title: "Thirty percent of spot is a restriction, not a market size",
     titleKo: "현물의 30%는 시장 규모가 아니라 제약의 흔적이다",
     description:
@@ -2048,6 +2051,7 @@ export const POC_CARDS: DemoCard[] = [
     // 그 숫자로 돈을 모으는 쪽이므로, 반복하지 말고 다시 유도한다.
     // 아래 tok/s 는 대역폭 ÷ 토큰당 바이트의 이론 상한이며 실측은 그보다 낮다.
     key: "bandwidth-not-capacity",
+    reviewed: "2026-08-28",
     title: "Capacity loads the model; bandwidth serves it",
     titleKo: "용량은 모델을 올리고, 대역폭이 모델을 서빙한다",
     group: "future",
