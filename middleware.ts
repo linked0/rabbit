@@ -64,6 +64,22 @@ export default auth((req) => {
   const isHome = pathname === "/home" || pathname.startsWith("/home/");
   if (PUBLIC_PATHS.has(pathname) || isHome || isPublicDemoPath(pathname) || pathname.startsWith("/api/auth/")) return;
   if (!isOwnerEmail(req.auth?.user?.email)) {
+    // **API 는 리다이렉트하지 않는다** (2026-08-27, jay 가 콘솔에서 이 에러를 만나서).
+    //
+    // 로그인 페이지로 튕기면 `fetch(...).json()` 이 HTML 을 받아 이렇게 터진다:
+    //
+    //   SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+    //
+    // 그 문장은 원인을 한 글자도 말하지 않는다 — 로그인이 필요하다는 사실이
+    // 파서 에러로 위장된다. 라우트 핸들러들은 이미 401 JSON 을 돌려주는데,
+    // 미들웨어가 그 앞에서 가로채기 때문에 그 정직한 응답이 화면에 닿지 못했다.
+    // API 에는 API 가 이해하는 언어로 답한다.
+    if (pathname.startsWith("/api/")) {
+      return Response.json(
+        { error: "unauthorized — sign in as the owner at /login" },
+        { status: 401 },
+      );
+    }
     // 원래 가려던 곳을 들려보낸다 — 로그인 성공 후 여기로 돌려보내기 위해 (2026-07-27, jay).
     const login = new URL("/login", req.nextUrl);
     login.searchParams.set("callbackUrl", pathname + req.nextUrl.search);

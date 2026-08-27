@@ -20,6 +20,7 @@
 ## Table of contents <a id="toc"></a>
 - [§0 — Summary](#s0)
 - [The scenario](#scenario)
+- [A second scenario — nested-market arbitrage *(not built)*](#scenario2)
 - [Architecture — where each bound actually lives](#arch)
 - [Repo status](#status)
 - [Implementation matrix — who builds what](#matrix)
@@ -60,11 +61,22 @@ testable on anvil. W1 therefore moved to [Phase 6](#order), immediately before t
 use. One piece is pulled forward: a [smoke probe](#probe) against the live adapter, because W1 is
 the only thing in this plan that has never worked and it should not be discovered at the end.
 
-**Next step (2026-08-26): the slice is built and driveable by hand.** Phase 1 (V-A…V-D) and Phase 2
+**Next step (2026-08-27): run the walkthrough, then R-F.** Phase 1 (V-A…V-D) and Phase 2
 (R-A…R-E, R-I) are done, with a console at `/live/agent/console` to drive them; see
 [Built so far](#built) for the 18-step walkthrough. The mandate's cap and deadline are enforced by
 **contracts on the local chain**, not by the server — jay chose option (c) and it verified on anvil
 ([details](#onchain)). What remains for "unattended" is R-F, and for the closed loop R-G/R-H.
+
+**Why the walkthrough comes first.** It has never been run end to end, and until 2026-08-27 it
+could not have passed — a broken faucet left the owner smart account unfunded and swallowed the
+error ([note](#built)). Phase 2's own gate says *verified by `curl` before any scheduler exists*;
+starting R-F now would make the scheduler's first unattended day also the first time that path ever
+ran. The evidence it needs is now seeded — [the demo case](#democase).
+
+**A second scenario is written down but not built** — [nested-market arbitrage](#scenario2), added
+2026-08-27 so the design is not read as "an LLM that trades on news". The mandate, the tick and the
+journal are indifferent to where the signal comes from, and that section shows one that needs no
+LLM at all. It carries a hand-test procedure; nothing in it is in the build order.
 
 ## The scenario <a id="scenario"></a>
 <sub>[↑ TOC](#toc)</sub>
@@ -85,6 +97,92 @@ read *"book 0.31, model 0.29, edge 0.02 < 0.05 → no action"* is what makes a d
 decision. **Expiry is the money shot** — leave the agent running past the deadline: it keeps
 ticking, keeps wanting to top up, and the chain keeps refusing. Nobody revoked anything; the
 window simply closed.
+
+## A second scenario — nested-market arbitrage <a id="scenario2"></a>
+<sub>[↑ TOC](#toc)</sub>
+
+> **Not built, and not scheduled.** This section is an illustration of a *second* shape the same
+> machinery could take, written at jay's request (2026-08-27) so the agent's design is not read as
+> "an LLM that trades on news" when the mandate, the tick and the journal are indifferent to where
+> the signal comes from. Nothing below is in the build order. It is here to be argued with.
+
+**The signal is arithmetic, not a forecast.** Verex already seeds two markets that are logically
+nested:
+
+| Market | Question | YES |
+|---|---|---|
+| `eth-above-10k-2026` | Will ETH close above **$10,000** in 2026? | 0.44 |
+| `uma-eth-above-6k-2026` | Will ETH close above **$6,000** in 2026? *(UMA-resolved)* | 0.62 |
+
+Closing above $10,000 **implies** closing above $6,000. So `P(≥10k) ≤ P(≥6k)` must hold at all
+times, and the tradeable form of a violation is:
+
+```
+best BID on eth-above-10k  >  best ASK on uma-eth-above-6k
+```
+
+When that happens the agent sells the 10k YES at the bid and buys the 6k YES at the ask, taking a
+net credit for a position that can never lose: the leg it bought pays out in every world where the
+leg it sold does.
+
+**Why this scenario is worth writing down.** It removes the LLM entirely. The news scenario's
+journal rows say *"the model thought 0.58"* — a claim a reader has to take on trust. These rows
+would say *"0.64 > 0.63, and the first implies the second"* — a claim a reader can check. Same
+mandate, same tick, same journal; a different `estimate` step and a two-leg `act` step.
+
+**The honest caveat, which belongs in the demo rather than under it.** The two markets resolve
+through **different oracles** — `eth-above-10k-2026` is operator-resolved, `uma-eth-above-6k-2026`
+goes through the UMA adapter. They can disagree about the same underlying fact, so the position is
+not *actually* riskless; it carries **basis risk** between two settlement processes. A demo that
+claims "risk-free" without saying this is selling something.
+
+### Testing it by hand <a id="scenario2-test"></a>
+
+The agent side is not built, so this procedure only creates and observes the **condition**. It is
+worth running anyway: it answers "could this ever fire?" before anyone writes the code.
+
+**First, the finding that makes the naive version fail.** The seeded LMSR ladders are five levels
+deep, ±5¢ around each mid — so the *reachable* price ranges do not overlap:
+
+```
+eth-above-10k-2026      0.39 ─── 0.44 ─── 0.49      (bids 0.43..0.39, asks 0.45..0.49)
+uma-eth-above-6k-2026            0.57 ─── 0.62 ─── 0.67
+```
+
+Buying the 10k market until its ask is exhausted stops at **0.49**; selling the 6k market to its
+floor stops at **0.57**. **Eating the ladders can never make them cross.** The violation has to be
+*posted*, not walked to — a resting limit order priced past the whole ladder.
+
+**Steps.** Verex API on `:4000`, anvil up, demo wallets seeded (wallet 1 holds 7,000 USDC).
+
+| # | Do this | Why / expect |
+|---|---|---|
+| 1 | `curl -s localhost:4000/markets/eth-above-10k-2026/book?outcome=Yes` and the same for `uma-eth-above-6k-2026` | Record both books. Expect `0.44` and `0.62` — the constraint **holds**, so there is nothing to arb |
+| 2 | Post a limit BUY that outruns the ladder — from **wallet 1**, the only one with enough: <br>`curl -s -X POST localhost:4000/orders -H 'content-type: application/json' -d '{"slug":"eth-above-10k-2026","outcome":"Yes","side":"BUY","accountIndex":1,"type":"limit","amount":2100,"price":0.64}'` | `amount` is **tokens**. The first 2,000 fill against the whole ask ladder (≈ **927 USDC**); the remaining 100 **rest as a bid at 0.64** (≈ 64 USDC escrowed). Total ≈ **991 USDC** |
+| 3 | Re-read both books | `eth-above-10k` best bid **0.64**, `uma-eth-above-6k` best ask **0.63**. `0.64 > 0.63` — **the constraint is violated and the violation is tradeable** |
+| 4 | Compute what an agent would take | Sell 10k YES at 0.64, buy 6k YES at 0.63 → **+0.01 per share, credit**, for a position that pays in every world where the sold leg pays |
+| 5 | Execute the two legs by hand from **wallet 2** — a market SELL on `eth-above-10k` and a market BUY on `uma-eth-above-6k`, same token size | Wallet 2 must already hold 10k-YES tokens to sell; if it does not, buy some first and note that the round trip costs the spread. **This is the step that shows why the agent would need a two-leg `act`** — one leg filling without the other is an open position, not an arbitrage |
+| 6 | Re-read the books | The bid at 0.64 is consumed and the constraint is restored. **A violation that no one takes is not evidence; a violation that closes when taken is** |
+| 7 | Cancel whatever is left resting: <br>`curl -s -X DELETE localhost:4000/orders/<orderId> -H 'content-type: application/json' -d '{"accountIndex":1}'` | Returns `{"status":"CANCELLED"}` and the bid leaves the book immediately — **verified 2026-08-27** with a 10-token probe at 0.30, posted and cancelled with the book restored byte-for-byte |
+| 8 | Restore the seeded state | `cd ~/work/verex && ./scripts/reset.sh`. ⚠️ **This deploys a fresh backbone** — the Exchange address changes, so re-read `/config` and grant a new mandate. A cached `verifyingContract` produces a valid signature of the wrong message |
+
+**On the ≈991 USDC.** That is not a fee. Roughly 927 of it *buys 2,000 YES tokens* at an average
+0.46 — a position, not a loss — and the remaining ~64 is escrow behind the resting bid, released by
+step 7. The only real cost of the round trip is the spread on selling those tokens back. Wallet 1
+holds 7,000 USDC and is the only demo wallet with room; the others hold 1,000.
+
+**Two things this procedure does not prove.** It does not show the agent *finding* the violation —
+step 2 is a human posting it. And step 5 is two separate orders that can partially fill
+independently; a real implementation needs the legs to be atomic or the position bounded, which is
+work this plan has not scoped.
+
+### The other candidates, and why this one
+
+| Shape | Why not chosen |
+|---|---|
+| **Market making** — quote both sides, earn the spread, manage inventory | Closest to what the industry actually runs, and to verex's own LMSR operator. But it needs continuous quoting and inventory limits, which is a much larger build — and it demonstrates a trading strategy rather than the mandate |
+| **Price-change mean reversion** — buy after an X% move not explained by stored news | Simple, and needs no LLM. Weak locally: the operator's LMSR book only moves when someone trades, so the signal has to be manufactured by hand every time |
+| **Time-decay convergence** — push toward 0/1 as resolution nears | Needs short-dated markets, which is [Phase 6](#order)'s W1 requirement. Blocked until then |
 
 ## Architecture — where each bound actually lives <a id="arch"></a>
 <sub>[↑ TOC](#toc)</sub>
@@ -303,15 +401,28 @@ inside a demo. *(That last clause is J2's requirement on W1, not W1's own.)*
 <sub>[↑ TOC](#toc)</sub>
 
 > Written 2026-08-25, extended 2026-08-26 with R-A · R-E · R-I and the on-chain mandate.
-> Branch **`claude/j2-phase-1-2`** (same name in both repos). Nothing is committed — review first.
+> **Merged and pushed 2026-08-26** — `claude/j2-phase-1-2` is on `main` in both repos
+> (rabbit `306811b`, verex `5154c4f`). Nothing is deployed: rabbit has no workflow and verex's is
+> `workflow_dispatch` only. Both repos have moved on since, so read `git log`, not this line.
 > Full narrative: [2026-08-26-rabbit-history.md](../history/2026-08-26-rabbit-history.md).
+>
+> **2026-08-27 — V-B did not actually run.** The row below was true about the code and false about
+> whether it worked: verex's API signed as an operator with no gas on the local chain, so every
+> faucet call died as `Insufficient funds for gas * price + value`. Because
+> `app/api/agent/mandate/prepare/route.ts` funds the owner smart account **through that faucet**,
+> and swallows its failure with `.catch(() => null)`, **steps 5–13 of the walkthrough below could
+> not have passed** — the mandate would grant with an unfunded smart account and every tick would
+> fail to draw, with nothing on screen saying why. Root cause: `scripts/dev-local.sh` exports a
+> default `VEREX_OPERATOR_KEY` that the seed inherits, while a separate terminal running the API
+> picks a *different* key out of `packages/api/.env` — dotenv never overrides a shell variable.
+> Fixed on verex branch `claude/faucet-operator-and-target`.
 
 ### What landed
 
 | # | Status | Where |
 |---|---|---|
 | **V-A** | ✅ | `packages/api/src/book.ts` — `verifyExternalOrder`, `limitAmountsE6`, the external branch in `placeOrder`, and the settle handler using the **stored** signature with a partial `takerFillAmount`. Migration `20260825000000_maker_index_nullable` |
-| **V-B** | ✅ | `checkExternalFunds` (reads and rejects), `faucetTo` + `POST /faucet {address}` |
+| **V-B** | ✅ | `checkExternalFunds` (reads and rejects), `faucetTo` + `POST /faucet {address}`. **Written 2026-08-26, working 2026-08-27** — see the note above; the UI for it (an address field on the faucet, showing the MockUSDC address) landed with the fix |
 | **V-C** | ✅ | `walletSummaryByAddress` / `walletHistoryByAddress`; `/wallet/:x` branches on `isAddress` |
 | **V-D** | ✅ | `recordExternalRedeem` — verifies the receipt's `PayoutRedemption` before recording. `/config` gained `ctf` + `usdc` |
 | **SDK** | ✅ | `recoverOrderSigner` + 3 tests |
@@ -394,6 +505,7 @@ export VEREX_API_URL=http://127.0.0.1:4000
 export AI_API_KEY=…                     # the DashScope key jay-chat already uses
 npx prisma db push                      # NewsItem, Mandate, AgentTick
 pnpm delegation:deploy                  # DelegationManager + ~35 enforcers → anvil (~0.2s)
+pnpm agent:seed-news                    # the demo's evidence — see below
 pnpm dev                                # rabbit → :3100  (verex's web already has :3000)
 ```
 
@@ -418,6 +530,31 @@ say. Expect exactly this, and treat any other outcome as the demo being broken:
 
 Step 3 is the whole argument: **nobody revoked anything.** The window closed, and the same code with
 the same key keeps running and keeps being refused.
+
+### The demo case, seeded <a id="democase"></a>
+
+The news store starts empty, so until 2026-08-27 the only way to see the scenario was to type a
+headline and hope. `pnpm agent:seed-news` (rabbit, `scripts/seed-agent-news.mjs`) fills it with
+**two cases on purpose** — jay's decision, because the demo has to show both halves:
+
+| Market | Evidence | Expected |
+|---|---|---|
+| `us-federal-stablecoin-law-2026` — *Will the US enact a federal stablecoin law in 2026?* (YES 0.58, ask 0.59) | three headlines pointing one way: committee advances the bill 18–6, floor vote scheduled, Treasury calls it a 2026 priority | **TRADED** — `p` should clear 0.59 + 0.05 |
+| `eth-above-10k-2026` — *Will ETH close above $10,000 in 2026?* (YES 0.44, ask 0.45) | jay's own example: *"The CLARITY Act has not been approved by the Senate before recess"* | **SKIP_EDGE** — a real signal whose link to a price market is indirect |
+
+**The second row is the more important one.** This plan's claim is not "the agent trades", it is
+"a decision is legible as a decision" — and a skip carrying its reasoning and its cited headline is
+what proves that. A demo where everything trades has quietly dropped the argument.
+
+**Expected is not guaranteed.** The verdict depends on where the LLM puts `p`, which can differ run
+to run. **Do not tune `edgeThreshold` until it says what you want** — the moment the threshold is
+chosen to produce a verdict, the journal stops being evidence and becomes staging. Read what comes
+out.
+
+The public page at `/live/agent` tells this same story as a hand-written script
+(`AgentJournalMock.tsx`, rewritten 2026-08-27) — same columns, same verdict names and colours as
+the console's `JournalPanel`, so a visitor with no local chain and an operator with one are looking
+at the same agent. It walks all seven verdicts and ends on two consecutive `SKIP_EXPIRED` rows.
 
 **The checks, in order.** Each one either passes or names what broke.
 

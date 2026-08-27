@@ -53,13 +53,33 @@ export default function AgentMockPage() {
             <code>TimestampEnforcer</code>.
           </p>
           <p className="sub" style={{ marginTop: 8, fontSize: 13 }}>
-            {t("조작하려면 ", "To drive it, the ")}
-            <a href="/live/agent/console">{t("조작판", "operator console")}</a>
             {t(
-              " 이 있습니다 — 다만 anvil 과 verex API 가 도는 기계에서만 열립니다. 그래서 이 페이지가 대신 설명합니다.",
-              " is where you do it — but it only opens in front of a running anvil and verex API. Hence this page.",
+              "조작판은 anvil 과 verex API 가 도는 기계에서만 열립니다. 그래서 이 페이지가 대신 설명합니다.",
+              "The operator console only opens in front of a running anvil and verex API. Hence this page.",
             )}
           </p>
+          {/* 링크가 아니라 버튼인 이유 (jay, 2026-08-27): 여기엔 문장 안에 「조작판」
+              두 글자짜리 인라인 링크가 있었는데, 13px 본문에 묻혀 사실상 보이지
+              않았다 — jay 가 조작판을 찾지 못했다. 이 페이지의 유일한 행동
+              가능한 다음 단계이므로 행동처럼 보여야 한다. */}
+          <a
+            href="/live/agent/console"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              marginTop: 12,
+              background: "var(--primary)",
+              color: "var(--primary-foreground)",
+              borderRadius: "calc(var(--radius) - 0.125rem)",
+              padding: "8px 14px",
+              fontSize: 14,
+              fontWeight: 500,
+              textDecoration: "none",
+            }}
+          >
+            {t("조작판 열기 →", "Open the operator console →")}
+          </a>
         </div>
 
         {/* 데모의 주장이 참인지 방문자가 코드 없이 확인할 수 있는 유일한 지점 — 컨트랙트가
