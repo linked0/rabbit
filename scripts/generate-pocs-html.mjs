@@ -231,8 +231,16 @@ ${sectionCards}
                 </div>
                 <div style="text-align: right; margin-top: 12px;">
                     <a href="pocs.html"
-                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">View
-                        All PoCs &rarr;</a>
+                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All
+                        PoCs &rarr;</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="algorithms.html"
+                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All
+                        Algorithms &rarr;</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="math.html"
+                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All
+                        Math &rarr;</a>
                 </div>
             </div>`;
 

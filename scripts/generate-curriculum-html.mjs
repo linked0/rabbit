@@ -220,48 +220,13 @@ ${sections}`;
     'utf8'
   );
 
-  // 2) index.html 섹션 — 완료한 것 먼저, 그다음 아직인 것 순으로 6개.
-  //    "지금 어디까지 왔나"가 색인에서 답해야 할 유일한 질문이다.
-  const picked = [...doneItems, ...all.filter((i) => !i.done)].slice(0, INDEX_CARD_LIMIT);
-  const cards = picked
-    .map((i) => {
-      const color = i.done ? DONE_COLOR : TODO_COLOR;
-      const badge = i.done ? 'DONE' : `DAY ${i.no}/${all.length}`;
-      const href = itemUrl(cfg, i);
-      const group = groups.find((g) => g.items.includes(i));
-      return `                    <a href="${escapeHtml(href)}" class="card" style="border-left: 4px solid ${color};">
-                        <span class="card-title">${inline(shortLabel(i.text))} <span class="badge" style="background: ${color}33; color: ${color};">${badge}</span></span>
-                        <span class="card-path">${escapeHtml(group?.label ?? '')}</span>
-                    </a>`;
-    })
-    .join('\n');
-
-  const section = `            <div class="section">
-                <h2 class="section-title">${escapeHtml(cfg.sectionTitle)}</h2>
-                <div class="grid">
-${cards}
-                </div>
-                <div style="text-align: right; margin-top: 12px;">
-                    <a href="${escapeHtml(cfg.viewAllHref)}"
-                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">${escapeHtml(cfg.viewAllLabel)} &rarr;</a>
-                </div>
-            </div>`;
-
-  const index = fs.readFileSync(INDEX_HTML, 'utf8');
-  const begin = `<!-- ${cfg.marker}:BEGIN -->`;
-  const end = `<!-- ${cfg.marker}:END -->`;
-  if (!index.includes(begin)) throw new Error(`docs/index.html 에 ${begin} 마커가 없습니다.`);
-  fs.writeFileSync(
-    INDEX_HTML,
-    index.replace(
-      new RegExp(`(${begin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})[\\s\\S]*?(${end.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`),
-      `$1\n${section}\n            $2`
-    ),
-    'utf8'
-  );
-
+  // index.html 에는 더 이상 섹션을 만들지 않는다 (jay, 2026-08-28). 인덱스에서
+  // Algorithms·Math 섹션을 없애고, 두 목록으로 가는 길은 PoCs 섹션 아래의
+  // "All Algorithms" · "All Math" 링크가 맡는다 — 커리큘럼 152개가 인덱스에서
+  // 카드 12장을 차지하고 있었는데, 그 12장이 답하는 질문("지금 어디까지 왔나")은
+  // algorithms.html · math.html 이 훨씬 잘 답한다.
   console.log(
-    `${cfg.sectionTitle}: ${cfg.out} (${all.length} topics, ${doneItems.length} done) + index section (${picked.length} cards)`
+    `${cfg.sectionTitle}: ${cfg.out} (${all.length} topics, ${doneItems.length} done)`
   );
 }
 

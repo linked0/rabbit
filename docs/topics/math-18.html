@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
