@@ -116,11 +116,14 @@ const cards = [
 // "Later" 묶음 (jay, 2026-08-14) — 지금 중요하지 않은 항목을 목록 아래로 내린다. status
 // 로는 표현이 안 되는 구분이라 카드의 later 플래그로 가른다: 이것들도 여전히 계획이지만,
 // 목록 위쪽을 차지할 이유가 없다. 번호는 본 목록 다음으로 이어져 전체 개수는 그대로다.
-const mainCards = cards.filter((c) => !c.later);
-const laterCards = cards.filter((c) => c.later);
-const numbered = [...mainCards, ...laterCards].map((c, i) => ({ ...c, no: i + 1 }));
-const numberedMain = numbered.slice(0, mainCards.length);
-const numberedLater = numbered.slice(mainCards.length);
+// 두 구획으로 가른다 (jay, 2026-08-27): 이더리움 프로토콜·코어 기술이 앞, 그 밖의 전부가
+// 뒤. 예전의 "Later" 묶음은 없앴고 그 항목들은 뒤 구획으로 합쳐졌다 — 지금 중요하지 않다는
+// 표시가 목록을 셋으로 가를 만큼의 값을 하지 못했다. 번호는 두 구획을 가로질러 이어진다.
+const protocolCards = cards.filter((c) => c.group === 'protocol');
+const appliedCards = cards.filter((c) => c.group !== 'protocol');
+const numbered = [...protocolCards, ...appliedCards].map((c, i) => ({ ...c, no: i + 1 }));
+const numberedMain = numbered.slice(0, protocolCards.length);
+const numberedLater = numbered.slice(protocolCards.length);
 
 // DemoCard.tsx 와 같은 구분 — 오직 status 로만 정한다 (2026-08-12). "href 가 있으면 목업"
 // 이라는 추론은 지웠다: DVT 는 읽을 페이지가 있어도 계획이고, 게임·에이전트는 완료다.
@@ -294,9 +297,9 @@ function navItems(list) {
 }
 // 레일도 같은 두 묶음으로 나눈다 — 아래로 내린 것을 위에서 다시 만나면 내린 의미가 없다.
 const navGroups = [
-  { label: `All PoCs (${numberedMain.length})`, items: navItems(numberedMain) },
+  { label: `Protocol (${numberedMain.length})`, items: navItems(numberedMain) },
   ...(numberedLater.length
-    ? [{ label: `Later (${numberedLater.length})`, items: navItems(numberedLater) }]
+    ? [{ label: `Applied (${numberedLater.length})`, items: navItems(numberedLater) }]
     : []),
 ];
 
@@ -337,8 +340,8 @@ function rowsFor(list) {
 const laterHtml = numberedLater.length
   ? `
     <article>
-      <h1>Later</h1>
-      <p class="lead">Not important right now. Kept because the idea is still worth having, not because it is queued.</p>
+      <h1>Applied</h1>
+      <p class="lead">Everything built on top: services, APIs, chains, payments, robotics and AI, and the market and regulatory reading that decides what any of it is allowed to be.</p>
       <ul class="topics">
 ${rowsFor(numberedLater)}
       </ul>
@@ -346,7 +349,8 @@ ${rowsFor(numberedLater)}
   : '';
 
 const contentHtml = `    <article>
-      <h1>All PoCs</h1>
+      <h1>Protocol</h1>
+      <p class="lead">Ethereum protocol and core technologies &mdash; consensus, EIPs, cryptography, and the mechanisms everything else is standing on.</p>
       <ul class="topics">
 ${rowsFor(numberedMain)}
       </ul>

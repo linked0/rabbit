@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The other end of the robotics stack — one loop, one GPU, minutes — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The other end of the robotics stack — one loop, one GPU, minutes</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#45</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>The other end of the robotics stack — one loop, one GPU, minutes</h1>
+      <p class="lead">MuJoCo Playground puts simulation and rendering both on the GPU, so training a policy takes minutes rather than hours. Where the Isaac and LeRobot path is a whole pipeline, this is the training loop alone — and which one is right depends entirely on what you are trying to see.</p>
+      <p class="meta">One evening, no hardware: <code>pip install playground</code>, one GPU, and train a single policy end to end until it does something. Stop there — the goal is watching a reinforcement-learning loop actually turn, not producing a result worth keeping. Then write one paragraph on what the loop did that reading about it had not conveyed. Source: MuJoCo Playground on MJX (MuJoCo XLA — JAX-based, GPU-accelerated MuJoCo), a fully open framework from researchers at UC Berkeley, Google DeepMind, Toronto and Cambridge, covering quadrupeds, humanoids, dexterous hands and arms, targeting zero-shot sim-to-real from both state and pixel inputs. To confirm against the project&#39;s own documentation.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>Yesterday&#39;s card said the entry cost is no longer a robot. This one says it is not an ecosystem either.</strong> <code>lerobot-groot-one-workflow</code> describes four stages — collect, train, evaluate, deploy — folded into one workflow, which is genuinely valuable and comes with a commitment: you take the stack. MuJoCo Playground is the opposite end. <strong>One line of install, one GPU, a policy training in minutes.</strong> Neither is better; they answer different questions, and the honest way to choose is to name the question first.</p>
+<p><strong>The difference in one line: a pipeline versus a loop.</strong> Isaac and LeRobot make sense when the goal is to understand how robotics <em>ships</em> — where demonstrations come from, how evaluation is standardised, what deployment to real hardware involves. Playground makes sense when the goal is to watch <strong>reinforcement learning actually turn</strong>: an agent, a reward, a policy improving, and the specific disappointment of watching it improve at the wrong thing. <strong>That second thing is not learnable by reading</strong>, and it is thirty minutes of compute away.</p>
+<p><strong>Where the speed comes from is worth understanding, because it generalises.</strong> The usual bottleneck in this kind of work is not the maths — it is the <strong>round trip between CPU physics and GPU learning</strong>, paid every step. MJX runs simulation <em>and</em> rendering on the GPU, so the trip disappears and hours become minutes. That is the same shape as most real speedups: not a faster component, but <strong>a boundary removed</strong>.</p>
+<p><strong>The limits belong in the card, not in a footnote.</strong> It binds you to JAX, and if that ecosystem is unfamiliar the learning curve is the actual cost of admission rather than an aside. And <strong>zero-shot sim-to-real is the stated target, not a guarantee</strong> — transfer to hardware remains its own problem, unchanged by how fast the loop runs. What Playground removes is the excuse for never having watched one.</p>
+      <h2>How it works</h2>
+      <h3>Two open paths, chosen by the question</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Isaac + LeRobot</th>
+<th><strong>MuJoCo Playground (MJX)</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>What it is</strong></td>
+<td>Collect, train, evaluate, deploy as one workflow</td>
+<td><strong>The training loop alone</strong></td>
+</tr>
+<tr>
+<td><strong>Commitment</strong></td>
+<td>Adopt the ecosystem</td>
+<td><code>pip install</code>, one GPU</td>
+</tr>
+<tr>
+<td><strong>Answers</strong></td>
+<td>How does robotics ship?</td>
+<td><strong>How does an RL loop actually turn?</strong></td>
+</tr>
+<tr>
+<td><strong>First result</strong></td>
+<td>After setup</td>
+<td><strong>Minutes</strong></td>
+</tr>
+<tr>
+<td><strong>Binds you to</strong></td>
+<td>NVIDIA stack</td>
+<td><strong>JAX</strong></td>
+</tr>
+<tr>
+<td><strong>Sim-to-real</strong></td>
+<td>Documented hardware path</td>
+<td>Zero-shot is the <strong>target</strong>, not a guarantee</td>
+</tr>
+</tbody></table></div>
+<h3>Why it is fast</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Conventional</th>
+<th>MJX</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Physics</td>
+<td><strong>CPU</strong></td>
+<td>GPU</td>
+</tr>
+<tr>
+<td>Rendering</td>
+<td>Mixed</td>
+<td>GPU</td>
+</tr>
+<tr>
+<td>Learning</td>
+<td>GPU</td>
+<td>GPU</td>
+</tr>
+<tr>
+<td><strong>Per-step cost</strong></td>
+<td><strong>A round trip across the boundary</strong></td>
+<td><strong>No boundary to cross</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>The lesson is not about robotics.</strong> Most large speedups in practice are not a faster component but a removed boundary, and the way to find them is to ask which line in the loop crosses a hardware or process edge every iteration.</p>
+<h3>What to actually take away from one evening</h3>
+<p>Not a trained policy — those are cheap now. <strong>The reward-shaping experience</strong>: watching an agent optimise exactly what you asked for rather than what you meant. That failure has a specific texture that no write-up conveys, and it is the same failure mode that shows up in every incentive-driven system this catalogue covers. <code>agentic-intent-veto</code> is the on-chain version of it — a spend cap constrains the amount, not the purchase; a reward function constrains the score, not the intent.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/policy-loop-in-minutes">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>로보틱스 스택의 반대쪽 끝 — 루프 하나, GPU 한 장, 몇 분</h1>
+      <p class="lead">MuJoCo Playground는 <strong>시뮬레이션과 렌더링을 둘 다 GPU에서</strong> 돌려, 정책 학습이 <strong>몇 시간이 아니라 몇 분</strong>이 됩니다. Isaac·LeRobot 경로가 <strong>파이프라인 전체</strong>라면 이건 <strong>학습 루프 하나</strong>이고 — <strong>어느 쪽이 맞는지는 무엇을 보려 하는지가 전부 결정합니다.</strong></p>
+      <p class="meta"><strong>하루 저녁, 하드웨어 없이</strong>: <code>pip install playground</code>, GPU 한 장, <strong>정책 하나를 끝까지 학습시켜 무언가를 하게</strong> 만듭니다. <strong>거기서 멈춥니다</strong> — 목표는 간직할 결과물이 아니라 <strong>강화학습 루프가 실제로 도는 것을 보는 것</strong>입니다. 그다음 <strong>읽어서는 전달되지 않던 무엇을 그 루프가 보여줬는지</strong> 한 문단으로 씁니다. 출처: <strong>MJX</strong>(MuJoCo XLA — JAX 기반 GPU 가속 MuJoCo) 위의 MuJoCo Playground. UC 버클리·Google DeepMind·토론토·케임브리지 연구진의 완전 오픈 프레임워크로 4족 보행·휴머노이드·다관절 손·로봇 팔을 포함하고, <strong>상태 입력과 픽셀 입력 양쪽에서 제로샷 sim-to-real</strong>을 목표로 함. 프로젝트 문서로 확인할 것.</p>
+      <h2>왜</h2>
+      <p><strong>어제 카드는 진입 비용이 더 이상 로봇이 아니라고 했습니다. 오늘 것은 생태계도 아니라고 말합니다.</strong> <code>lerobot-groot-one-workflow</code> 는 네 단계 — 수집·학습·평가·배포 — 를 하나의 워크플로로 접은 것이고, 진짜로 값어치가 있으며 <strong>대가가 따릅니다: 그 스택을 통째로 받아들여야</strong> 합니다. MuJoCo Playground는 <strong>반대쪽 끝</strong>입니다. <strong>설치 한 줄, GPU 한 장, 몇 분 만에 학습되는 정책.</strong> 어느 쪽이 낫지 않습니다 — <strong>다른 질문에 답하고</strong>, 정직한 선택법은 <strong>질문을 먼저 이름 짓는 것</strong>입니다.</p>
+<p><strong>차이를 한 줄로: 파이프라인이냐 루프냐.</strong> Isaac·LeRobot 은 목표가 <strong>로보틱스가 어떻게 출하되는지 이해하는 것</strong>일 때 맞습니다 — 시연이 어디서 오고, 평가가 어떻게 표준화되며, 실기 배포에 무엇이 따르는지. Playground 는 목표가 <strong>강화학습이 실제로 도는 것을 보는 것</strong>일 때 맞습니다 — 에이전트, 보상, 개선되는 정책, 그리고 <strong>엉뚱한 것을 잘하게 되는 것을 지켜보는 특유의 실망.</strong> <strong>두 번째는 읽어서 배워지지 않고</strong>, 연산 30분 거리에 있습니다.</p>
+<p><strong>속도가 어디서 오는지는 알아 둘 값이 있습니다. 일반화되기 때문입니다.</strong> 이런 작업의 통상 병목은 수학이 아니라 <strong>CPU 물리 연산과 GPU 학습 사이의 왕복</strong>이고, 매 스텝마다 지불됩니다. MJX 는 시뮬레이션 <strong>과</strong> 렌더링을 <strong>둘 다 GPU에서</strong> 돌려 그 왕복을 지웁니다 — 그래서 몇 시간이 몇 분이 됩니다. <strong>대부분의 진짜 속도 향상과 같은 모양입니다 — 더 빠른 부품이 아니라 경계 하나를 없앤 것.</strong></p>
+<p><strong>한계는 각주가 아니라 카드 본문에 둡니다.</strong> <strong>JAX 생태계에 묶입니다.</strong> 익숙하지 않다면 그 학습 곡선이 <strong>곁가지가 아니라 실제 입장료</strong>입니다. 그리고 <strong>제로샷 sim-to-real 은 목표이지 보장이 아닙니다</strong> — 하드웨어 이전은 여전히 별개 문제이고, 루프가 빨라진다고 달라지지 않습니다. Playground 가 없애는 것은 <strong>루프를 한 번도 본 적 없다는 변명</strong>입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>두 개의 오픈 경로, 질문이 선택을 정한다</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Isaac + LeRobot</th>
+<th><strong>MuJoCo Playground (MJX)</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>정체</strong></td>
+<td>수집·학습·평가·배포를 하나의 워크플로로</td>
+<td><strong>학습 루프 하나</strong></td>
+</tr>
+<tr>
+<td><strong>대가</strong></td>
+<td><strong>생태계를 받아들일 것</strong></td>
+<td><code>pip install</code>, GPU 한 장</td>
+</tr>
+<tr>
+<td><strong>답하는 질문</strong></td>
+<td>로보틱스는 어떻게 출하되는가?</td>
+<td><strong>RL 루프는 실제로 어떻게 도는가?</strong></td>
+</tr>
+<tr>
+<td><strong>첫 결과</strong></td>
+<td>세팅 이후</td>
+<td><strong>몇 분</strong></td>
+</tr>
+<tr>
+<td><strong>묶이는 곳</strong></td>
+<td>NVIDIA 스택</td>
+<td><strong>JAX</strong></td>
+</tr>
+<tr>
+<td><strong>sim-to-real</strong></td>
+<td>문서화된 하드웨어 경로</td>
+<td>제로샷은 <strong>목표</strong>이지 보장이 아님</td>
+</tr>
+</tbody></table></div>
+<h3>왜 빠른가</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>단계</th>
+<th>통상</th>
+<th>MJX</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>물리 연산</td>
+<td><strong>CPU</strong></td>
+<td>GPU</td>
+</tr>
+<tr>
+<td>렌더링</td>
+<td>혼재</td>
+<td>GPU</td>
+</tr>
+<tr>
+<td>학습</td>
+<td>GPU</td>
+<td>GPU</td>
+</tr>
+<tr>
+<td><strong>스텝당 비용</strong></td>
+<td><strong>경계를 넘는 왕복</strong></td>
+<td><strong>넘을 경계가 없음</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>교훈은 로보틱스에 관한 것이 아닙니다.</strong> 실무에서 큰 속도 향상은 대개 <strong>더 빠른 부품이 아니라 없앤 경계</strong>이고, 찾는 방법은 <strong>루프의 어느 줄이 매 반복마다 하드웨어나 프로세스의 경계를 넘는지</strong> 묻는 것입니다.</p>
+<h3>하루 저녁에서 실제로 가져올 것</h3>
+<p>학습된 정책이 아닙니다 — <strong>그건 이제 쌉니다.</strong> <strong>보상 설계(reward shaping) 경험</strong>입니다 — 에이전트가 <strong>의도한 것이 아니라 요청한 것을 정확히 최적화하는 것</strong>을 지켜보기. 그 실패에는 <strong>어떤 글도 전달하지 못하는 고유한 질감</strong>이 있고, 이 카탈로그가 다루는 <strong>모든 인센티브 기반 시스템에서 나타나는 같은 실패 모드</strong>입니다. <code>agentic-intent-veto</code> 가 그것의 온체인 판본입니다 — <strong>지출 상한은 금액을 제약하지 구매를 제약하지 않고, 보상 함수는 점수를 제약하지 의도를 제약하지 않습니다.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/policy-loop-in-minutes">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-one-page-not-the-curriculum.html">&larr; 44. Pull the page you are stuck on, not the next one in order</a><a href="pocs-layerzero-default-is-a-choice.html">46. LayerZero — the default verifier is a trust assumption nobody wrote down &rarr;</a></div>
+</div>
+</body>
+</html>

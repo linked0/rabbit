@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choosing a chain is signing a lease — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Choosing a chain is signing a lease</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#43</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Choosing a chain is signing a lease</h1>
+      <p class="lead">An L2&#39;s pitch moved from cheap blockspace to run your chain here, which is a revenue model moving from transaction fees to rent on settlement space. That makes chain selection a commercial negotiation, and the terms — sequencer control, fee sharing, exit cost — are the product&#39;s margin.</p>
+      <p class="meta">Not yet scoped — and the deliverable is a term sheet, not an evaluation. For each candidate host, fill four rows: who runs the sequencer and can they censor or reorder; how fees are split and who can change the split; what it costs to leave, in engineering weeks and in liquidity that does not follow; and what happens to open positions if the host stops operating. Price the fourth row first, because it is the only one nobody markets. Source: Offchain Labs&#39; shift toward custom and app-specific chains, read against LayerZero&#39;s ATLAS announcement of 2026-08-26 — two starting points converging on selling a place rather than a tool. Both to confirm against primary material.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>A self-description changed, and self-descriptions are where revenue models announce themselves early.</strong> <em>Use Ethereum cheaply</em> sells transactions and earns per transaction. <em>Run your chain here</em> sells space and earns rent. The second is a better business — recurring, less elastic, harder to leave — and it is a different relationship with whoever builds on top. <strong>Tenants and users are not the same thing</strong>, and the shift is visible in the sentence before it is visible in the accounts.</p>
+<p><strong>The convergence is what makes it worth a card rather than a note.</strong> <code>headless-exchange-engines</code> describes an interop project selling matching, clearing and settlement so others can run venues on it. This is an L2 selling settlement space so others can run chains on it. <strong>Different starting points, one destination: sell the place, not the tool.</strong> When two competitive positions arrive at the same model independently, it is usually because the tool has commoditised and the place has not.</p>
+<p><strong>Which reframes a decision this project actually has to make.</strong> <em>Which chain do we launch on</em> looks like a technical question — throughput, fees, tooling, ecosystem. Under a rent model it is a <strong>commercial negotiation</strong>, and the terms are the ones any tenant should ask about: <strong>who controls the sequencer, how are fees split, and what does leaving cost.</strong> Those three determine margin more than gas prices do, and none of them appears in a benchmark.</p>
+<p><strong>The exit cost is the term to price first, because it is the one nobody markets.</strong> Migration is quoted in engineering weeks, which understates it — <strong>liquidity does not migrate with the code</strong>, integrations have to be re-agreed, and users have to be told to move. A host that is cheap to join and expensive to leave has priced the second half into the first, and the honest way to compare two offers is to compare them at the moment you want to go.</p>
+      <h2>How it works</h2>
+      <h3>The lease term sheet</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>The question</th>
+<th>Why it is margin, not architecture</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Sequencer control</strong></td>
+<td>Who orders transactions, and can they censor or reorder?</td>
+<td>Ordering rights are MEV rights; whoever holds them holds a claim on your flow</td>
+</tr>
+<tr>
+<td><strong>Fee split</strong></td>
+<td>What share goes to the host, and who can change it?</td>
+<td>A split that the host can revise unilaterally is not a price, it is an option</td>
+</tr>
+<tr>
+<td><strong>Exit cost</strong></td>
+<td>Engineering weeks, plus liquidity that will not follow, plus integrations to re-agree</td>
+<td>The only term that grows the longer you stay</td>
+</tr>
+<tr>
+<td><strong>Host failure</strong></td>
+<td>What happens to open positions if the host stops operating?</td>
+<td>For a settlement product this is not a business risk, it is a correctness question</td>
+</tr>
+</tbody></table></div>
+<h3>Two pitches, one destination</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Was selling</th>
+<th>Now selling</th>
+<th>Earns from</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L2 / Offchain Labs</strong></td>
+<td>Cheap blockspace on Ethereum</td>
+<td>Somewhere to run your own chain</td>
+<td><strong>Rent on settlement space</strong></td>
+</tr>
+<tr>
+<td><strong>Interop / LayerZero ATLAS</strong></td>
+<td>Messaging between chains</td>
+<td>An engine to run your own venue</td>
+<td><strong>The venues built on it</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Both moved from selling a tool to selling a place</strong>, which usually means the tool stopped being scarce. For a tenant the practical consequence is identical either way: <strong>the thing being negotiated is no longer performance, it is control.</strong></p>
+<h3>The row to price first</h3>
+<p><strong>Exit.</strong> Everything else is quoted openly because it helps the host compete; exit cost is the one term that only matters after you have committed. Estimate it honestly and it changes the ranking more often than fees do: a host that is 30% cheaper per transaction and locks liquidity behind a bridge nobody else supports is not cheaper. <code>cross-border-rail-interop</code> reached the same conclusion about payment corridors — <strong>governance, not throughput, decides which rail wins</strong> — and a lease is governance written as a contract.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/choosing-a-chain-is-a-lease">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>체인을 고르는 일은 임대 계약을 맺는 일이다</h1>
+      <p class="lead">L2의 소개 문장이 <strong>싼 블록스페이스</strong>에서 <strong>당신의 체인을 여기서 돌려라</strong>로 옮겨갔습니다. 이는 수익 모델이 <strong>거래 수수료에서 정산 공간의 임대료</strong>로 옮겨간 것입니다. 그러면 <strong>체인 선택은 상업적 협상</strong>이 되고, 조건 — <strong>시퀀서 통제권·수수료 분배·이탈 비용</strong> — 이 곧 <strong>제품의 마진</strong>입니다.</p>
+      <p class="meta">아직 범위 미정 — 산출물은 평가서가 아니라 <strong>텀시트</strong>입니다. 후보 호스트마다 네 줄을 채웁니다 — <strong>시퀀서를 누가 돌리고 검열·재정렬이 가능한가</strong>, <strong>수수료를 어떻게 나누고 그 배분을 누가 바꿀 수 있는가</strong>, <strong>떠나는 데 얼마가 드는가</strong>(엔지니어링 주 수와 <strong>따라오지 않는 유동성</strong>), 그리고 <strong>호스트가 운영을 멈추면 열린 포지션은 어떻게 되는가.</strong> <strong>네 번째 줄을 먼저 값 매기세요</strong> — <strong>아무도 마케팅하지 않는 유일한 줄</strong>이기 때문입니다. 출처: 커스텀·앱 전용 체인 쪽으로 옮겨간 Offchain Labs 의 방향을, 2026-08-26 LayerZero ATLAS 발표에 대고 읽은 것 — <strong>출발점 둘이 도구가 아니라 장소를 파는 지점으로 수렴</strong>. 둘 다 1차 자료로 확인할 것.</p>
+      <h2>왜</h2>
+      <p><strong>자기소개 문장이 바뀌었고, 자기소개는 수익 모델이 일찍 스스로를 알리는 자리입니다.</strong> <em>이더리움을 싸게 쓰게 해준다</em> 는 <strong>거래를 팔고 건당</strong> 법니다. <em>당신의 체인을 여기서 돌려라</em> 는 <strong>공간을 팔고 임대료</strong>를 법니다. 두 번째가 더 좋은 사업입니다 — <strong>반복적이고, 덜 탄력적이며, 떠나기 어렵습니다</strong> — 그리고 그 위에 짓는 쪽과 <strong>다른 관계</strong>를 맺습니다. <strong>임차인과 사용자는 같은 것이 아니고</strong>, 이 이동은 <strong>회계에 보이기 전에 문장에 보입니다.</strong></p>
+<p><strong>메모가 아니라 카드가 되는 이유는 수렴입니다.</strong> <code>headless-exchange-engines</code> 는 <strong>매칭·청산·정산을 팔아 남이 거래 장소를 돌리게 하는</strong> 인터옵 진영을 서술합니다. 이건 <strong>정산 공간을 팔아 남이 체인을 돌리게 하는</strong> L2입니다. <strong>출발점은 다르고 도착점은 하나 — 도구가 아니라 장소를 판다.</strong> <strong>경쟁 위치가 서로 독립적으로 같은 모델에 도달할 때는, 대개 도구가 범용재가 됐고 장소는 아직 아니기 때문</strong>입니다.</p>
+<p><strong>그래서 이 프로젝트가 실제로 내려야 할 결정의 틀이 바뀝니다.</strong> <em>어느 체인에 올릴까</em> 는 기술 질문처럼 보입니다 — 처리량, 수수료, 툴링, 생태계. <strong>임대 모델 아래에서는 상업적 협상</strong>이고, 조건은 <strong>어느 임차인이든 물어야 할 것들</strong>입니다 — <strong>시퀀서를 누가 통제하는가, 수수료를 어떻게 나누는가, 떠나는 데 얼마가 드는가.</strong> <strong>이 셋이 가스 가격보다 마진을 더 결정하고, 셋 다 벤치마크에 나오지 않습니다.</strong></p>
+<p><strong>가장 먼저 값 매길 조건은 이탈 비용입니다. 아무도 마케팅하지 않는 항목이니까요.</strong> 마이그레이션은 보통 <strong>엔지니어링 주 수</strong>로 견적되는데 그건 <strong>과소평가</strong>입니다 — <strong>유동성은 코드를 따라 옮겨가지 않고</strong>, 연동은 다시 합의해야 하며, 사용자에게는 옮기라고 말해야 합니다. <strong>들어오기 싸고 나가기 비싼 호스트는 뒤쪽 절반을 앞쪽에 반영해 둔 것</strong>이고, 두 제안을 정직하게 비교하는 방법은 <strong>떠나고 싶어지는 시점에 놓고 비교하는 것</strong>입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>임대 텀시트</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>조건</th>
+<th>질문</th>
+<th>왜 아키텍처가 아니라 마진인가</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>시퀀서 통제권</strong></td>
+<td>누가 트랜잭션 순서를 정하고, 검열·재정렬이 가능한가?</td>
+<td><strong>순서 권한이 곧 MEV 권한.</strong> 쥔 쪽이 <strong>당신 흐름에 대한 청구권</strong>을 가짐</td>
+</tr>
+<tr>
+<td><strong>수수료 분배</strong></td>
+<td>호스트 몫은 얼마이고, <strong>누가 바꿀 수 있는가?</strong></td>
+<td>호스트가 일방적으로 바꿀 수 있는 배분은 <strong>가격이 아니라 옵션</strong></td>
+</tr>
+<tr>
+<td><strong>이탈 비용</strong></td>
+<td>엔지니어링 주 수 + <strong>따라오지 않는 유동성</strong> + 다시 합의할 연동</td>
+<td><strong>머무를수록 커지는 유일한 조건</strong></td>
+</tr>
+<tr>
+<td><strong>호스트 장애</strong></td>
+<td>호스트가 운영을 멈추면 <strong>열린 포지션은?</strong></td>
+<td>정산 상품에서 이건 사업 리스크가 아니라 <strong>정확성 문제</strong></td>
+</tr>
+</tbody></table></div>
+<h3>두 개의 제안, 하나의 도착점</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>예전에 팔던 것</th>
+<th>지금 파는 것</th>
+<th>무엇으로 버는가</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L2 / Offchain Labs</strong></td>
+<td>이더리움 위의 싼 블록스페이스</td>
+<td><strong>당신의 체인을 돌릴 곳</strong></td>
+<td><strong>정산 공간의 임대료</strong></td>
+</tr>
+<tr>
+<td><strong>인터옵 / LayerZero ATLAS</strong></td>
+<td>체인 간 메시징</td>
+<td><strong>당신의 거래 장소를 돌릴 엔진</strong></td>
+<td><strong>그 위에 지어진 거래 장소들</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>둘 다 도구를 파는 데서 장소를 파는 데로 옮겨갔고</strong>, 대개 그건 <strong>도구가 희소하기를 그만뒀다</strong>는 뜻입니다. 임차인 입장에서의 실질 결과는 어느 쪽이든 같습니다 — <strong>협상 대상이 더 이상 성능이 아니라 통제권</strong>입니다.</p>
+<h3>가장 먼저 값 매길 줄</h3>
+<p><strong>이탈.</strong> 나머지는 호스트의 경쟁에 도움이 되니 <strong>공개적으로 견적</strong>됩니다. <strong>이탈 비용만이 이미 묶인 뒤에야 중요해지는 조건</strong>입니다. 정직하게 추정하면 <strong>수수료보다 더 자주 순위를 바꿉니다</strong> — 건당 30% 싸면서 <strong>아무도 지원하지 않는 브리지 뒤에 유동성을 가두는 호스트는 싼 게 아닙니다.</strong> <code>cross-border-rail-interop</code> 이 결제 코리도에 대해 같은 결론에 도달했습니다 — <strong>어느 레일이 이기는지는 처리량이 아니라 거버넌스가 정한다</strong> — 그리고 <strong>임대차는 계약으로 쓰인 거버넌스</strong>입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/choosing-a-chain-is-a-lease">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-jurisdiction-below-the-country.html">&larr; 42. Jurisdiction is not country-sized</a><a href="pocs-one-page-not-the-curriculum.html">44. Pull the page you are stuck on, not the next one in order &rarr;</a></div>
+</div>
+</body>
+</html>

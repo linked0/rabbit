@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jurisdiction is not country-sized — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Jurisdiction is not country-sized</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#42</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Jurisdiction is not country-sized</h1>
+      <p class="lead">A fourth US state blocked Kalshi, so the same product is now legal and illegal inside one country. The axis has not changed — jurisdiction decides the category — but the unit has: the design document needs a row per ruling, not per country, and an eligibility policy keyed the same way.</p>
+      <p class="meta">Not yet scoped — but unlike most cards here the deliverable is a thing stakeholders can hold. Build one table whose key is (jurisdiction, ruling, date, ground cited, product property implicated), fill it with the four events below, and make it the input to an eligibility policy rather than a memo. Legal owns the rows, product owns the property column, engineering reads it at runtime. Sources to confirm individually: Korea&#39;s access block of Polymarket 2026-08-18; Gemini Titan becoming Apex Fintech&#39;s exclusive venue 2026-08-24; Coinbase restricting tokenised equities to non-US users 2026-08-25; Washington becoming the fourth US state to block Kalshi 2026-08-26.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>The axis held and the unit broke.</strong> <code>jurisdiction-decides-the-category</code> put three events on one line and found that the product barely changed while the verdict changed completely. A fourth event keeps that finding and destroys the convenient part of it: <strong>a US state blocked a CFTC-designated venue.</strong> So <em>the US</em> is not a jurisdiction for this purpose. It is a set of them, and they disagree.</p>
+<p><strong>That is not a legal curiosity, it is a schema error waiting in every design document.</strong> A jurisdiction box that reads <em>Korea / US</em> encodes an assumption that a country has one answer. Once a state can rule against a federally designated venue, the same field has to hold <em>Washington</em>, <em>four states and counting</em>, and eventually <em>this county, this regulator, this ruling</em>. A field that cannot represent the disagreement will be resolved by someone guessing, at runtime, in production.</p>
+<p><strong>And the fix is small if it is made before the field exists.</strong> Not a country code — <strong>a triple</strong>: which authority ruled, what it ruled, and which property of the product the ruling attached to. That last column is what makes it usable rather than decorative, because it is the join to the design levers <code>jurisdiction-decides-the-category</code> already worked out: payout shape, event controllability, access path. A ruling that cites winner-take-all payouts constrains a different part of the product than one that cites direct retail access, and a table that records only <em>blocked / allowed</em> has thrown that away.</p>
+<p><strong>What each stakeholder gets from the same table</strong> is the reason to build it as a table rather than a memo. Legal maintains rows and cites sources. Product reads the property column and sees which levers are under pressure and where. Engineering reads it at runtime for eligibility, and every restriction in production can name the ruling that justifies it — which is also the answer when someone asks why a user was refused.</p>
+      <h2>How it works</h2>
+      <h3>Four events, one axis, a finer unit</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Authority</th>
+<th>Ruling</th>
+<th>Ground cited</th>
+<th>Product property implicated</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>08-18</strong></td>
+<td>Korea, 방심위</td>
+<td>Access blocked</td>
+<td>Winner-take-all payout; uncontrollable event; direct retail access</td>
+<td>Payout shape, subject matter, access path</td>
+</tr>
+<tr>
+<td><strong>08-24</strong></td>
+<td>US, CFTC designation</td>
+<td>Permitted, exclusive brokerage partner</td>
+<td>Federal designation held since 2025-12</td>
+<td>Licence status</td>
+</tr>
+<tr>
+<td><strong>08-25</strong></td>
+<td>US federal / issuer choice</td>
+<td>Sold to non-US users only</td>
+<td>Not stated publicly</td>
+<td>Buyer residence</td>
+</tr>
+<tr>
+<td><strong>08-26</strong></td>
+<td><strong>Washington State</strong></td>
+<td><strong>Blocked — fourth US state</strong></td>
+<td>State-level gaming law</td>
+<td><strong>Same product, same federal licence</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>The fourth row is the one that changes the schema.</strong> Rows two and four describe the same country and the same product with opposite verdicts, which a country-keyed field cannot represent at all.</p>
+<h3>The artifact stakeholders can actually use</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What it holds</th>
+<th>Who owns it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Ruling table</strong></td>
+<td>(jurisdiction, ruling, date, ground, property, source link)</td>
+<td>Legal — rows and citations</td>
+</tr>
+<tr>
+<td><strong>Lever map</strong></td>
+<td>Ground → design lever, from <code>jurisdiction-decides-the-category</code></td>
+<td>Product — what is under pressure</td>
+</tr>
+<tr>
+<td><strong>Eligibility policy</strong></td>
+<td>Data, not code: which rulings restrict which capability</td>
+<td>Engineering — read at runtime</td>
+</tr>
+<tr>
+<td><strong>Decision log</strong></td>
+<td>Every production restriction names the ruling behind it</td>
+<td>Everyone — and it is the answer to <em>why was I refused</em></td>
+</tr>
+</tbody></table></div>
+<p><strong>The point of the shape is that no one has to re-derive the reasoning.</strong> A new ruling is a row, not a redesign, and the December document&#39;s jurisdiction box becomes a view over the table rather than a paragraph that goes stale the next time a state acts.</p>
+<h3>The design consequence worth stating plainly</h3>
+<p><strong>Country-level geofencing is already insufficient</strong>, and it will keep degrading in one direction only — finer. Any eligibility check that hardcodes a country list has the same defect as a contract that hardcodes a signature length in <code>irreversible-switch-design</code>: it holds an opinion about something it does not control. <strong>The fix is the same fix — make it data, and let the judgement live where the rulings are recorded.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/jurisdiction-below-the-country">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>법역은 국가 크기가 아니다</h1>
+      <p class="lead"><strong>네 번째 주</strong>가 Kalshi를 차단하면서, <strong>같은 상품이 한 나라 안에서 합법이자 불법</strong>이 됐습니다. 축은 그대로입니다 — <strong>법역이 카테고리를 정한다</strong> — 그런데 <strong>단위가 바뀌었습니다.</strong> 설계 문서에는 <strong>국가별이 아니라 판정별로 줄</strong>이 필요하고, 적격성 정책도 <strong>같은 키</strong>를 써야 합니다.</p>
+      <p class="meta">아직 범위 미정 — 다만 여기 대부분의 카드와 달리 <strong>산출물이 이해관계자가 손에 쥘 수 있는 물건</strong>입니다. 키가 <strong>(관할, 판정, 날짜, 인용된 근거, 걸린 제품 속성)</strong> 인 표 하나를 만들고, 아래 네 사건으로 채운 뒤, <strong>메모가 아니라 적격성 정책의 입력</strong>으로 씁니다. <strong>줄은 법무가, 속성 칸은 제품이, 런타임 조회는 엔지니어링이</strong> 맡습니다. 개별 확인이 필요한 출처: 2026-08-18 한국의 Polymarket 접속 차단, 2026-08-24 Gemini Titan의 Apex Fintech 독점, 2026-08-25 Coinbase 토큰화 주식의 미국 외 한정, 2026-08-26 워싱턴주의 Kalshi 차단(네 번째 주).</p>
+      <h2>왜</h2>
+      <p><strong>축은 버텼고 단위가 깨졌습니다.</strong> <code>jurisdiction-decides-the-category</code> 는 세 사건을 한 줄에 놓고 <strong>상품은 거의 그대로인데 판정이 완전히 달라지는 것</strong>을 찾았습니다. 네 번째 사건은 그 발견을 유지하면서 <strong>편리했던 부분을 부숩니다</strong> — <strong>한 주(州)가 CFTC 지정 거래소를 차단했습니다.</strong> 그러니 <strong>이 목적에서 <em>미국</em> 은 법역이 아닙니다.<strong> </strong>법역들의 집합<strong>이고, </strong>서로 의견이 다릅니다.<strong>
+
+</strong>이건 법률적 흥밋거리가 아니라 모든 설계 문서 안에서 대기 중인 스키마 오류입니다.</strong> <em>한국 / 미국</em> 이라고 적힌 법역 칸은 <strong>한 나라에 답이 하나</strong>라는 전제를 인코딩합니다. 주가 연방 지정 거래소에 반하는 판정을 내릴 수 있게 되는 순간, 같은 필드가 <em>워싱턴</em>, <em>네 개 주, 계속 증가</em>, 그리고 언젠가는 <em>이 카운티, 이 규제기관, 이 판정</em> 을 담아야 합니다. <strong>불일치를 표현하지 못하는 필드는 결국 누군가가 런타임에, 프로덕션에서, 추측으로 채우게 됩니다.</strong></p>
+<p><strong>그리고 필드가 생기기 전에 고치면 비용이 작습니다.</strong> 국가 코드가 아니라 — <strong>삼중항</strong>입니다: <strong>어느 기관이 판정했는가, 무엇을 판정했는가, 그 판정이 제품의 어느 속성에 붙었는가.</strong> 마지막 칸이 이것을 <strong>장식이 아니라 쓸모 있게</strong> 만듭니다. <code>jurisdiction-decides-the-category</code> 가 이미 정리한 <strong>설계 레버</strong>로 이어지는 조인이기 때문입니다 — 페이아웃 형태, 사건 통제 가능성, 접근 경로. <strong>승자독식 페이아웃을 근거로 든 판정과 리테일 직접 접근을 근거로 든 판정은 제품의 다른 부분을 제약</strong>하고, <em>차단/허용</em> 만 기록한 표는 <strong>그것을 버린 것</strong>입니다.</p>
+<p><strong>같은 표에서 이해관계자마다 무엇을 얻는가</strong> — 이것이 메모가 아니라 표로 만들 이유입니다. <strong>법무</strong>는 줄을 유지하고 출처를 답니다. <strong>제품</strong>은 속성 칸을 읽고 <strong>어느 레버가 어디서 압력을 받는지</strong> 봅니다. <strong>엔지니어링</strong>은 런타임에 적격성 판정으로 읽고, <strong>프로덕션의 모든 제한이 자기를 정당화하는 판정을 이름 댈 수 있게</strong> 됩니다 — 그건 <em>왜 이 사용자가 거절됐는가</em> 에 대한 답이기도 합니다.</p>
+      <h2>동작 방식</h2>
+      <h3>네 사건, 하나의 축, 더 잘게 쪼개진 단위</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>날짜</th>
+<th>기관</th>
+<th>판정</th>
+<th>인용된 근거</th>
+<th>걸린 제품 속성</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>08-18</strong></td>
+<td>한국 방심위</td>
+<td>접속 차단</td>
+<td>승자독식 페이아웃, 통제 불가 사건, 리테일 직접 접근</td>
+<td>페이아웃 형태, 대상, 접근 경로</td>
+</tr>
+<tr>
+<td><strong>08-24</strong></td>
+<td>미국 CFTC 지정</td>
+<td>허용, 브로커리지 독점 파트너</td>
+<td>2025-12 취득한 연방 지정</td>
+<td>라이선스 지위</td>
+</tr>
+<tr>
+<td><strong>08-25</strong></td>
+<td>미국 연방 / 발행사 선택</td>
+<td>미국 외 사용자에게만 판매</td>
+<td>공개적으로 미기재</td>
+<td>매수자 거주지</td>
+</tr>
+<tr>
+<td><strong>08-26</strong></td>
+<td><strong>워싱턴주</strong></td>
+<td><strong>차단 — 네 번째 주</strong></td>
+<td>주 단위 게이밍법</td>
+<td><strong>같은 상품, 같은 연방 라이선스</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>스키마를 바꾸는 것은 네 번째 줄입니다.</strong> 두 번째와 네 번째 줄이 <strong>같은 나라, 같은 상품에 정반대 판정</strong>을 서술하고, <strong>국가로 키를 잡은 필드는 이것을 아예 표현할 수 없습니다.</strong></p>
+<h3>이해관계자가 실제로 쓸 수 있는 산출물</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>층</th>
+<th>담는 것</th>
+<th>주인</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>판정 표</strong></td>
+<td>(관할, 판정, 날짜, 근거, 속성, 출처 링크)</td>
+<td><strong>법무</strong> — 줄과 인용</td>
+</tr>
+<tr>
+<td><strong>레버 지도</strong></td>
+<td>근거 → 설계 레버(<code>jurisdiction-decides-the-category</code>)</td>
+<td><strong>제품</strong> — 무엇이 압력을 받는가</td>
+</tr>
+<tr>
+<td><strong>적격성 정책</strong></td>
+<td><strong>코드가 아니라 데이터</strong> — 어느 판정이 어느 기능을 제한하는가</td>
+<td><strong>엔지니어링</strong> — 런타임 조회</td>
+</tr>
+<tr>
+<td><strong>결정 로그</strong></td>
+<td>프로덕션의 모든 제한이 <strong>근거 판정을 이름 댐</strong></td>
+<td>전원 — <em>나는 왜 거절됐나</em> 에 대한 답</td>
+</tr>
+</tbody></table></div>
+<p><strong>이 모양의 요점은 아무도 논리를 다시 도출하지 않아도 된다는 것입니다.</strong> 새 판정은 <strong>재설계가 아니라 한 줄</strong>이고, 12월 문서의 법역 칸은 <strong>주가 움직일 때마다 낡는 문단이 아니라 표에 대한 뷰</strong>가 됩니다.</p>
+<h3>분명히 적어 둘 설계상의 귀결</h3>
+<p><strong>국가 단위 지오펜싱은 이미 불충분하고</strong>, 앞으로도 <strong>한 방향으로만 — 더 잘게 — 나빠집니다.</strong> 국가 목록을 하드코딩한 적격성 검사는 <code>irreversible-switch-design</code> 에서 서명 길이를 하드코딩한 컨트랙트와 <strong>같은 결함</strong>을 갖습니다 — <strong>자기가 통제하지 않는 것에 대해 의견을 갖고 있는 것.</strong> <strong>해법도 같습니다 — 데이터로 만들고, 판단은 판정이 기록되는 곳에 살게 하라.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/jurisdiction-below-the-country">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-headless-exchange-engines.html">&larr; 41. Headless arrives — the company that sells the engine, not the app</a><a href="pocs-choosing-a-chain-is-a-lease.html">43. Choosing a chain is signing a lease &rarr;</a></div>
+</div>
+</body>
+</html>

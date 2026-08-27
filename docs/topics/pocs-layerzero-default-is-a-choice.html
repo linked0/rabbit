@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LayerZero — the default verifier is a trust assumption nobody wrote down — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; LayerZero — the default verifier is a trust assumption nobody wrote down</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#46</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>LayerZero — the default verifier is a trust assumption nobody wrote down</h1>
+      <p class="lead">LayerZero moves arbitrary messages between chains and lets the application pick its own verifier set. That is the real feature and the real trap: skip the choice and you have still made one, and nothing in your codebase records who you are now trusting.</p>
+      <p class="meta">Thirty minutes, two testnets. Deploy one OApp and send a single message round trip; then run <code>lz:oapp:config:get</code> and write one line answering the only question that matters — who am I trusting right now. Paste that output into the README, because it is the trust assumption and it lives in configuration rather than code. Optional third step: take the four-way split ATLAS publishes (matching, clearing, settlement, risk) into the settlement design notes. Sources: layerzero.network and docs.layerzero.network; ATLAS announced 2026-08-26, running on the Zero L1 shipped in February, published at p50 sub-millisecond and p99 2.641ms under vendor stress testing, part of fees routed to ZRO buyback and burn, launch stated for this autumn, with Citadel Securities, DTCC, ARK Invest and ICE named. Vendor figures and an unreleased product — confirm before relying on any of it.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>The product is not a bridge, and reading it as one hides the interesting part.</strong> LayerZero is a message layer: an application inherits <code>OApp</code> and sends an arbitrary payload from its contract on one chain to its contract on another, with <code>OFT</code> and <code>ONFT</code> as the token-shaped wrappers over that. The design choice underneath is that <strong>verification is modular</strong> — a Decentralized Verifier Network set that the application selects and composes, rather than a security assumption fixed by the protocol.</p>
+<p><strong>That modularity is genuinely better and it relocates a decision onto you, silently.</strong> A protocol with fixed security has one trust assumption and everyone inherits it, for good and ill. A protocol with selectable verification has as many assumptions as there are applications — and <strong>an application that never makes the choice does not escape it, it accepts a default.</strong> The failure is not that the default is bad. It is that <strong>the default is invisible</strong>: nothing in the repository says who verifies your messages, so the most security-relevant fact about the integration is absent from every code review of it.</p>
+<p><strong>Which is why the practical habit is worth more than the tutorial.</strong> Run the config query after the first deploy and paste the output where people read it. The question <em>who am I trusting right now</em> has an answer at every moment; the only variable is whether anyone has written it down. Compare <code>third-party-blast-radius</code>, which asks the same thing about dependencies, and <code>storage-collision-admin-takeover</code>, where the load-bearing fact also lived outside any single file.</p>
+<p><strong>The second trap is a silent one, and worth stating precisely.</strong> The sender pre-pays destination gas by encoding it in <code>options</code>. Under-provision it and the send <strong>looks successful</strong> while execution fails on the destination — a message that appears delivered and did nothing. Any production path over this needs a retry story written before it is needed, because the failure does not announce itself at the call site.</p>
+<p><strong>And the strategic note belongs to a different card.</strong> ATLAS moves LayerZero from infrastructure to market infrastructure, which changes who its competitors are — no longer Wormhole and Axelar but chains that own an exchange. <code>headless-exchange-engines</code> carries that argument. What belongs here is the engineering residue: <strong>the four-way split ATLAS publishes — matching, clearing, settlement, risk — is a usable module boundary</strong>, and separating risk from settlement is the part worth copying whether or not the product is ever used.</p>
+      <h2>How it works</h2>
+      <h3>The first contact, and the three lines that matter</h3>
+<p>Endpoint address, destination EID, and options encoding — everything else is ordinary Solidity.</p>
+<pre><code class="language-solidity">import { OApp, Origin, MessagingFee } from &amp;quot;@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol&amp;quot;;
+import { OptionsBuilder } from &amp;quot;@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol&amp;quot;;
+
+contract PingPong is OApp {
+    using OptionsBuilder for bytes;
+    string public lastMessage;
+
+    constructor(address _endpoint, address _owner) OApp(_endpoint, _owner) {}
+
+    function send(uint32 dstEid, string calldata text) external payable {
+        bytes memory payload = abi.encode(text);
+        // destination gas is chosen by the sender — the UX core and the first trap
+        bytes memory options = OptionsBuilder.newOptions()
+            .addExecutorLzReceiveOption(80_000, 0);
+        _lzSend(dstEid, payload, options, MessagingFee(msg.value, 0), payable(msg.sender));
+    }
+
+    function _lzReceive(
+        Origin calldata, bytes32, bytes calldata payload, address, bytes calldata
+    ) internal override {
+        lastMessage = abi.decode(payload, (string));
+    }
+}
+</code></pre>
+<pre><code class="language-bash">npx hardhat lz:oapp:config:get     # read the defaults — this is the trust assumption
+npx hardhat lz:oapp:send --dst-eid 40161 --text &amp;quot;hello&amp;quot;
+</code></pre>
+<h3>The two traps, and why both are silent</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Trap</th>
+<th>What it looks like</th>
+<th>Why nothing catches it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Under-provisioned destination gas</strong></td>
+<td>Send succeeds, destination execution fails</td>
+<td>The failure is on another chain; the call site returns fine</td>
+</tr>
+<tr>
+<td><strong>Untouched DVN configuration</strong></td>
+<td>Everything works</td>
+<td><strong>Nothing in the repo names the verifier</strong>, so review has nothing to object to</td>
+</tr>
+</tbody></table></div>
+<p><strong>Both are the same class</strong>: a decision made by omission, recorded nowhere. The habit that fixes both costs one command and one paragraph in a README.</p>
+<h3>Cost, and where it varies</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Paid to</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Source-chain gas</td>
+<td>The source chain</td>
+<td>Ordinary</td>
+</tr>
+<tr>
+<td><strong>Destination execution gas</strong></td>
+<td>Pre-paid at send</td>
+<td><strong>Quoted at send time — a congested destination moves the quote a lot</strong></td>
+</tr>
+<tr>
+<td>DVN fees</td>
+<td>The verifier set you chose</td>
+<td>Varies with the set; a reason to know what it is</td>
+</tr>
+<tr>
+<td>Protocol subscription</td>
+<td>—</td>
+<td>None</td>
+</tr>
+</tbody></table></div>
+<h3>What to take for a settlement design</h3>
+<p><strong>Use the message layer, minimise the bridge.</strong> For a market whose collateral sits on several chains, the common first design is to make the collateral token omnichain — and the principle worth keeping is that <strong>settlement finality happens on exactly one chain</strong>, with everything else restricted to display and deposit paths. A message layer widens what you can reach; it does not widen where truth lives. And ATLAS&#39;s module boundary — <strong>risk separated from settlement</strong> — is worth copying independently of the product, because it is the split <code>plumbing-skills-buyback</code> argues most systems never make.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/layerzero-default-is-a-choice">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>LayerZero — 기본 검증자는 아무도 적어두지 않은 신뢰 가정이다</h1>
+      <p class="lead">LayerZero는 체인 간 <strong>임의 메시지</strong>를 옮기고, <strong>검증자 집합을 애플리케이션이 직접 고르게</strong> 합니다. 그게 진짜 기능이자 진짜 함정입니다 — <strong>고르지 않아도 고른 것</strong>이고, <strong>지금 누구를 신뢰하는지 코드 어디에도 기록되지 않습니다.</strong></p>
+      <p class="meta"><strong>30분, 테스트넷 두 곳.</strong> OApp 하나를 배포해 메시지 한 번 왕복시키고, <code>lz:oapp:config:get</code> 을 돌린 뒤 <strong>중요한 유일한 질문</strong>에 한 줄로 답합니다 — <strong>나는 지금 누구를 신뢰하는가.</strong> 그 출력을 <strong>README 에 붙여 두세요.</strong> 그것이 신뢰 가정이고, <strong>코드가 아니라 설정에 살기</strong> 때문입니다. 선택 3단계: ATLAS 가 공개한 <strong>4분할(매칭·청산·정산·리스크)</strong> 을 정산 설계 노트로 옮기기. 출처: layerzero.network, docs.layerzero.network. ATLAS 는 2026-08-26 발표, 2월에 낸 <strong>Zero L1</strong> 위에서 구동, 벤더 스트레스 테스트 기준 <strong>p50 서브밀리초·p99 2.641ms</strong>, 수수료 일부 <strong>ZRO 바이백·소각</strong>, <strong>올가을 출시</strong> 예정, 협력사 Citadel Securities·DTCC·ARK Invest·ICE. <strong>벤더 수치이고 미출시 제품</strong> — 기대기 전에 확인할 것.</p>
+      <h2>왜</h2>
+      <p><strong>이 제품은 브릿지가 아니고, 브릿지로 읽으면 흥미로운 부분이 가려집니다.</strong> LayerZero는 <strong>메시지 레이어</strong>입니다 — 애플리케이션이 <code>OApp</code> 을 상속해 한 체인의 자기 컨트랙트에서 다른 체인의 자기 컨트랙트로 <strong>임의 페이로드</strong>를 보내고, 토큰 모양의 래퍼가 <code>OFT</code>·<code>ONFT</code> 입니다. 그 아래의 설계 선택은 <strong>검증이 모듈</strong>이라는 것입니다 — 프로토콜이 고정한 보안 가정이 아니라, <strong>애플리케이션이 고르고 조합하는 DVN 집합.</strong></p>
+<p><strong>그 모듈성은 진짜로 더 낫고, 동시에 결정을 조용히 당신에게 떠넘깁니다.</strong> 보안이 고정된 프로토콜은 <strong>신뢰 가정이 하나</strong>이고 좋든 나쁘든 모두가 물려받습니다. 검증을 고를 수 있는 프로토콜은 <strong>애플리케이션 수만큼의 가정</strong>을 갖고 — <strong>한 번도 고르지 않은 애플리케이션은 그 선택을 피한 게 아니라 기본값을 받아들인 것</strong>입니다. 문제는 기본값이 나쁘다는 게 아닙니다. <strong>기본값이 보이지 않는다</strong>는 것입니다 — <strong>누가 당신의 메시지를 검증하는지 저장소 어디에도 적혀 있지 않으므로</strong>, 그 통합에서 <strong>가장 보안에 직결되는 사실이 모든 코드 리뷰에서 빠져 있습니다.</strong></p>
+<p><strong>그래서 튜토리얼보다 실무 습관이 값집니다.</strong> 첫 배포 뒤 설정 조회를 돌리고 <strong>사람들이 읽는 자리에 출력을 붙이세요.</strong> <em>나는 지금 누구를 신뢰하는가</em> 는 <strong>매 순간 답이 존재하는 질문</strong>이고, 변수는 <strong>누군가 그것을 적어 뒀는가</strong> 뿐입니다. 의존성에 대해 같은 질문을 던지는 <code>third-party-blast-radius</code>, 그리고 하중을 받는 사실이 <strong>어떤 단일 파일 바깥에</strong> 있었던 <code>storage-collision-admin-takeover</code> 와 비교해 보세요.</p>
+<p><strong>두 번째 함정은 조용한 종류이고, 정확히 적어 둘 값이 있습니다.</strong> 발신자가 <code>options</code> 에 인코딩해 <strong>목적지 가스를 선지불</strong>합니다. 적게 주면 <strong>전송은 성공한 것처럼 보이는데</strong> 목적지에서 실행이 실패합니다 — <strong>배달된 것처럼 보이지만 아무것도 하지 않은 메시지.</strong> 이 위에 올리는 프로덕션 경로는 <strong>필요해지기 전에 재시도 이야기가 쓰여 있어야</strong> 합니다. <strong>호출 지점에서는 실패가 스스로를 알리지 않기</strong> 때문입니다.</p>
+<p><strong>그리고 전략적 메모는 다른 카드의 몫입니다.</strong> ATLAS는 LayerZero를 <strong>인프라에서 시장 인프라로</strong> 옮기고, 그러면 경쟁자가 바뀝니다 — Wormhole·Axelar 가 아니라 <strong>자기 거래소를 가진 체인들</strong>. 그 논지는 <code>headless-exchange-engines</code> 가 지고 갑니다. 여기 남는 것은 <strong>공학적 잔여물</strong>입니다 — <strong>ATLAS가 공개한 4분할(매칭·청산·정산·리스크)은 그대로 쓸 수 있는 모듈 경계</strong>이고, <strong>리스크를 정산에서 분리한 것</strong>이 그 제품을 쓰든 안 쓰든 <strong>베낄 값이 있는 부분</strong>입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>첫 접촉, 그리고 중요한 세 줄</h3>
+<p><strong>엔드포인트 주소, 목적지 EID, options 인코딩</strong> — 나머지는 평범한 Solidity 입니다.</p>
+<pre><code class="language-solidity">import { OApp, Origin, MessagingFee } from &amp;quot;@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol&amp;quot;;
+import { OptionsBuilder } from &amp;quot;@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol&amp;quot;;
+
+contract PingPong is OApp {
+    using OptionsBuilder for bytes;
+    string public lastMessage;
+
+    constructor(address _endpoint, address _owner) OApp(_endpoint, _owner) {}
+
+    function send(uint32 dstEid, string calldata text) external payable {
+        bytes memory payload = abi.encode(text);
+        // 목적지 가스를 발신 측이 정한다 — UX 의 핵심이자 첫 함정
+        bytes memory options = OptionsBuilder.newOptions()
+            .addExecutorLzReceiveOption(80_000, 0);
+        _lzSend(dstEid, payload, options, MessagingFee(msg.value, 0), payable(msg.sender));
+    }
+
+    function _lzReceive(
+        Origin calldata, bytes32, bytes calldata payload, address, bytes calldata
+    ) internal override {
+        lastMessage = abi.decode(payload, (string));
+    }
+}
+</code></pre>
+<pre><code class="language-bash">npx hardhat lz:oapp:config:get     # 기본값을 읽는다 — 이것이 곧 신뢰 가정
+npx hardhat lz:oapp:send --dst-eid 40161 --text &amp;quot;hello&amp;quot;
+</code></pre>
+<h3>함정 둘, 그리고 왜 둘 다 조용한가</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>함정</th>
+<th>어떻게 보이나</th>
+<th>왜 아무도 못 잡나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>목적지 가스 부족</strong></td>
+<td>전송은 성공, 목적지 실행은 실패</td>
+<td><strong>실패가 다른 체인에</strong> 있고, 호출 지점은 정상 반환</td>
+</tr>
+<tr>
+<td><strong>DVN 설정을 안 건드림</strong></td>
+<td>전부 잘 돌아감</td>
+<td><strong>저장소 어디에도 검증자 이름이 없어</strong>, 리뷰가 반대할 대상이 없음</td>
+</tr>
+</tbody></table></div>
+<p><strong>둘은 같은 종류입니다</strong> — <strong>하지 않음으로써 내려진 결정이고, 어디에도 기록되지 않습니다.</strong> 둘 다 고치는 습관의 비용은 <strong>명령 하나와 README 한 문단</strong>입니다.</p>
+<h3>비용, 그리고 어디서 흔들리나</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>지불 대상</th>
+<th>메모</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>발신 체인 가스</td>
+<td>발신 체인</td>
+<td>평범</td>
+</tr>
+<tr>
+<td><strong>목적지 실행 가스</strong></td>
+<td>발신 시 선지불</td>
+<td><strong>발신 시점에 견적 — 목적지가 혼잡하면 크게 흔들림</strong></td>
+</tr>
+<tr>
+<td>DVN 수수료</td>
+<td><strong>당신이 고른</strong> 검증자 집합</td>
+<td>집합에 따라 다름. 그게 무엇인지 알아야 할 이유</td>
+</tr>
+<tr>
+<td>프로토콜 구독료</td>
+<td>—</td>
+<td>없음</td>
+</tr>
+</tbody></table></div>
+<h3>정산 설계로 가져갈 것</h3>
+<p><strong>메시지 레이어는 쓰되 브릿지는 최소화한다.</strong> 담보가 여러 체인에 있는 마켓에서 흔한 첫 설계는 담보 토큰을 옴니체인화하는 것이고 — 지킬 원칙은 <strong>정산 확정이 정확히 한 체인에서만 일어나고</strong>, 나머지는 <strong>표시와 입금 경로로 제한</strong>하는 것입니다. <strong>메시지 레이어는 닿을 수 있는 범위를 넓히지, 진실이 사는 곳을 넓히지 않습니다.</strong> 그리고 ATLAS 의 모듈 경계 — <strong>리스크를 정산에서 분리</strong> — 는 그 제품과 무관하게 베낄 값이 있습니다. <code>plumbing-skills-buyback</code> 이 <strong>대부분의 시스템이 끝내 하지 않는다</strong>고 지적한 바로 그 분리이기 때문입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/layerzero-default-is-a-choice">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-policy-loop-in-minutes.html">&larr; 45. The other end of the robotics stack — one loop, one GPU, minutes</a><a href="pocs-chainlink-data-streams.html">47. Chainlink Data Streams — push vs. pull oracles and point-in-time settlement &rarr;</a></div>
+</div>
+</body>
+</html>
