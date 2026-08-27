@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not what a stablecoin can do — what needs one — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Not what a stablecoin can do — what needs one</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#47</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Not what a stablecoin can do — what needs one</h1>
+      <p class="lead">Start from &quot;where could we use a won stablecoin?&quot; and you will find somewhere. Start from &quot;which transactions are painful enough today?&quot; and the list gets much shorter — and in Korea the incumbent to beat is not slow settlement, it is an instant free transfer.</p>
+      <p class="meta">A day, no code. Take one candidate transaction and record four numbers as it works today: elapsed time from instruction to usable funds, all-in cost, how many institutions the money passes through, and how many times a human confirms something. Then write the same four for the stablecoin version, honestly — including the on- and off-ramp at both ends, which is where most of the saving usually goes. If any row fails to move, the candidate is something a stablecoin <em>can</em> do, not something that <em>needs</em> one. Source: a Korean practitioner note on won-stablecoin use-case discovery, 2026-08-27, proposing transaction size, existing friction, and whether a won token actually reduces that friction as the screen. The framing is the contribution; the candidate list is where it has to be tested.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>The ordering flip is right and it is the whole point.</strong> Ask &quot;where can we use a won stablecoin?&quot; and the answers arrive immediately — retail payments, remittance, games, tourist payments, local currency vouchers — because that question cannot fail. Any transaction can be routed through a token. Ask instead &quot;which transactions in today&#39;s finance are uncomfortable enough to be worth changing?&quot; and the question can return nothing, which is exactly what makes it useful. <strong>A screen that never rejects is not a screen.</strong></p>
+<p><strong>The three-part test in the source is the strongest version of it.</strong> Size and count alone select for large volume, not for pain. Adding <em>how large is the existing friction</em> and <em>does a won-denominated token actually reduce it</em> turns a wish list into something that can disqualify, and the closing line is the disqualifier stated plainly: if time and cost do not fall and reconciliation does not improve, it is a <em>can</em>, not a <em>needs</em>.</p>
+<p><strong>But the test has to be run, and running it on the source&#39;s own four candidates kills or reshapes three of them.</strong> That is not a criticism of the list — it is the test working, which is the best thing that can be said about a test.</p>
+<p><strong>Corporate cross-border payments have the most friction and the weakest answer to &quot;why won.&quot;</strong> Business hours, FX, correspondent banks and pre-funded liquidity are real costs, and none of them sit on the domestic leg. The far side wants dollars. A won token improves the half of the journey that is already instant and nearly free in Korea, and the half that hurts is displaced by a <em>dollar</em> stablecoin plus an FX venue, not by a won one. The honest form of this candidate is a two-token design where the won leg is a settlement convenience, not the source of the saving.</p>
+<p><strong>Policy funds and subsidies have the clearest answer to &quot;why won&quot; and the least fashionable friction.</strong> The currency is not a choice — a government disburses in won, to won-denominated recipients, under audit. And the friction is not speed. It is <strong>control and proof</strong>: what may this money be spent on, was it, and who can show that later. That is programmability rather than settlement, and it is the one candidate where the money being a token changes what the money <em>is</em> rather than how fast it moves. The catch is that the incumbent is not a bank transfer — Korea already restricts purpose with cards and vouchers, so the bar is a merchant-category rule that works today, and the gain has to be measured against that rather than against nothing.</p>
+<p><strong>Agent and machine-to-machine payments cannot be screened by this method at all, and saying so is more useful than fudging it.</strong> The friction of a transaction nobody makes is unmeasurable. These are not use cases with hidden pain; they are transactions that do not exist because the approval model makes them impossible, and the correct label is an option, not a candidate. <code>agentic-intent-veto</code> is where the actual hard part lives, and it is not settlement.</p>
+<p><strong>Repo, collateral and securities settlement is the largest and the one whose instrument is probably not a stablecoin.</strong> The won leg here is genuine — domestic bonds settle in won — and the friction is real, but it needs the central bank and the market infrastructure to move together, which makes it market-structure change rather than something to pilot. And when that moves, the instrument is more likely a deposit token issued by banks under central-bank settlement than an issuer-backed stablecoin. <code>japan-t0-settlement</code> and <code>tokenized-money-banks</code> are the two cards already holding that thread.</p>
+<p><strong>One thing the source is right about deserves extending further than it goes.</strong> Dollar stablecoin growth carries global dollar demand inside it, so the cases do not transfer. But <strong>the method does not transfer either</strong> — a US stablecoin is measured against ACH, which is slow and expensive, while a won stablecoin is measured against real-time account transfer that already costs almost nothing. Import the friction estimates along with the use cases and every Korean candidate is scored against the wrong incumbent. That is the trap underneath the trap the source names.</p>
+      <h2>How it works</h2>
+      <h3>The screen, with the disqualifier made explicit</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Selects for</th>
+<th>Fails if</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Is the transaction large or frequent?</td>
+<td>Volume</td>
+<td>— (necessary, never sufficient)</td>
+</tr>
+<tr>
+<td><strong>How large is the friction today?</strong></td>
+<td><strong>Pain</strong></td>
+<td>The incumbent is already instant and free</td>
+</tr>
+<tr>
+<td><strong>Does a <em>won</em> token reduce it?<strong> | </strong>Currency necessity<strong> | The painful leg is denominated in something else |
+| </strong>Do time, cost and reconciliation all move?<strong> | </strong>Need over possibility<strong> | </strong>Any one row stays flat → it is a <em>can</em>, not a <em>needs</em><strong> |
+
+### The four candidates, scored on the source&#39;s own test
+
+| Candidate | Friction | Why won? | Verdict |
+|---|---|---|---|
+| </strong>Corporate cross-border / treasury<strong> | </strong>High<strong> — hours, FX, correspondents, pre-funding | </strong>Weak<strong> — the far leg wants dollars | Reshape: the saving is in the FX leg, not the won leg |
+| </strong>Policy funds and subsidies<strong> | Moderate, and it is </strong>control, not speed<strong> | </strong>Strongest<strong> — disbursement is legally won | </strong>Best candidate<strong>, measured against cards and vouchers rather than transfers |
+| </strong>Agent / machine-to-machine<strong> | </strong>Unmeasurable<strong> — the transactions do not exist | Neutral | </strong>Not a candidate — an option.<strong> The method does not apply |
+| </strong>Repo, collateral, securities settlement<strong> | High, and genuinely won-denominated | </strong>Strong<strong> | Market-structure change, and the instrument is likely a </strong>deposit token</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table></div>
+<h3>The trap underneath the trap</h3>
+<p>The source warns against importing dollar-stablecoin <em>use cases</em>. The sharper version is that importing the <em>method</em> fails too, because the incumbent differs:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>United States</th>
+<th>Korea</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Domestic retail baseline</td>
+<td>ACH — slow, batched, priced</td>
+<td><strong>Real-time transfer, effectively free</strong></td>
+</tr>
+<tr>
+<td>So a stablecoin must beat</td>
+<td>A weak incumbent</td>
+<td><strong>A strong one</strong></td>
+</tr>
+<tr>
+<td>Which means</td>
+<td>Retail payment cases score well</td>
+<td><strong>Retail payment cases mostly fail the screen</strong></td>
+</tr>
+</tbody></table></div>
+<p>This is why retail payments and tourist payments keep appearing on Korean lists and keep going nowhere: they are scored against the wrong baseline. The candidates that survive here are the ones where the incumbent is weak for a <em>structural</em> reason — a border, an audit requirement, a market infrastructure — not for a technical one.</p>
+<h3>What this catalogue already holds on the same thread</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Card</th>
+<th>What it settles that this one assumes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>two-currencies-one-ledger</code></td>
+<td>The same &quot;why <em>this</em> currency&quot; question, asked of a euro stablecoin — and the four different products the answers imply</td>
+</tr>
+<tr>
+<td><code>stablecoin-redemption-desk</code></td>
+<td>Circulation is won at the redemption desk; a use case with no redemption path is not a use case</td>
+</tr>
+<tr>
+<td><code>korea-digital-asset-act</code></td>
+<td><strong>Who may issue a won stablecoin at all</strong> — unresolved, and it changes which candidates are even reachable</td>
+</tr>
+<tr>
+<td><code>tokenized-money-banks</code></td>
+<td>The deposit-token alternative for the settlement candidate</td>
+</tr>
+<tr>
+<td><code>agentic-intent-veto</code></td>
+<td>Why the agent candidate&#39;s hard problem is authority, not payment</td>
+</tr>
+</tbody></table></div>
+<h3>The one-day version</h3>
+<p>Pick the policy-fund candidate, since it scores best, and fill four rows for a single real disbursement — time, cost, institutions touched, human confirmations — first as it happens today, then as it would with a token, ramps included. <strong>Publish the row that does not move.</strong> That row is the finding, and it is worth more than a list of possibilities.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/what-needs-a-stablecoin">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>스테이블코인으로 할 수 있는 일이 아니라, 스테이블코인이 필요한 일</h1>
+      <p class="lead">&quot;원화 스테이블코인을 어디에 쓸 수 있을까&quot;에서 출발하면 <strong>어디든 찾아냅니다.</strong> &quot;오늘 어떤 거래가 충분히 불편한가&quot;에서 출발하면 <strong>목록이 훨씬 짧아집니다</strong> — 그리고 한국에서 이겨야 할 상대는 느린 정산이 아니라 <strong>즉시·무료 계좌이체</strong>입니다.</p>
+      <p class="meta"><strong>하루, 코드 없이.</strong> 후보 거래 하나를 골라 <strong>오늘의 숫자 넷</strong>을 기록합니다 — 지시부터 실제 사용 가능한 자금까지의 <strong>경과 시간</strong>, <strong>총비용</strong>, 돈이 거쳐 가는 <strong>기관 수</strong>, 사람이 확인하는 <strong>횟수</strong>. 그다음 스테이블코인 버전의 같은 넷을 <strong>정직하게</strong> 씁니다 — <strong>양 끝의 온·오프램프를 포함해서.</strong> 절감분 대부분이 거기서 사라지기 때문입니다. <strong>한 행이라도 움직이지 않으면</strong>, 그 후보는 스테이블코인으로 <em>할 수 있는</em> 일이지 <em>필요한</em> 일이 아닙니다. 출처: 원화 스테이블코인 유즈케이스 발굴 방법에 대한 국내 실무자 메모, 2026-08-27. <strong>거래 규모·기존 금융의 마찰·원화 토큰이 실제로 그 마찰을 줄이는가</strong>를 선별 기준으로 제시. <strong>프레이밍이 기여이고, 후보 목록은 시험대</strong>입니다.</p>
+      <h2>왜</h2>
+      <p><strong>순서를 뒤집은 것이 맞고, 그게 요점 전부입니다.</strong> &quot;원화 스테이블코인을 어디에 쓸 수 있을까&quot;라고 물으면 답이 즉시 옵니다 — 리테일 결제, 해외송금, 게임, 관광객 결제, 지역화폐 — <strong>그 질문은 실패할 수가 없기 때문</strong>입니다. 어떤 거래든 토큰으로 태울 수는 있으니까요. 대신 &quot;오늘 금융에서 어떤 거래가 바꿀 값어치가 있을 만큼 불편한가&quot;라고 물으면 <strong>아무것도 안 나올 수 있고</strong>, 바로 그것이 이 질문을 쓸모 있게 만듭니다. <strong>한 번도 탈락시키지 않는 기준은 기준이 아닙니다.</strong></p>
+<p><strong>원문의 3단 시험이 그것의 가장 강한 형태입니다.</strong> 금액과 건수만 보면 <strong>불편함이 아니라 물량</strong>을 고르게 됩니다. 여기에 <em>기존 마찰이 얼마나 큰가</em> 와 <em>원화 표시 토큰이 실제로 그것을 줄이는가</em> 를 더하면, 희망 목록이 <strong>탈락시킬 수 있는 것</strong>으로 바뀝니다. 그리고 마지막 문장이 그 탈락 조건을 그대로 적어 놓았습니다 — <strong>시간과 비용이 줄지 않고 대사가 나아지지 않으면 &#39;필요한 일&#39;이 아니라 &#39;할 수 있는 일&#39;.</strong></p>
+<p><strong>다만 시험은 실제로 돌려야 하고, 원문의 후보 넷에 돌리면 셋이 죽거나 모양이 바뀝니다.</strong> 목록에 대한 비판이 아닙니다 — <strong>시험이 작동한 것</strong>이고, 시험에 대해 할 수 있는 최고의 말입니다.</p>
+<p><strong>기업 해외송금은 마찰이 가장 크고 &quot;왜 원화인가&quot;에 대한 답이 가장 약합니다.</strong> 영업시간·환전·중계은행·선예치 유동성은 진짜 비용이고, <strong>그중 어느 것도 국내 구간에 있지 않습니다.</strong> 반대편은 달러를 원합니다. 원화 토큰은 <strong>한국에서 이미 즉시이고 거의 무료인 절반</strong>을 개선하고, 아픈 절반을 대체하는 것은 <strong>달러 스테이블코인 + FX 창구</strong>이지 원화 토큰이 아닙니다. 이 후보의 정직한 형태는 <strong>두 토큰 설계</strong>이고, 거기서 원화 구간은 절감의 원천이 아니라 <strong>정산의 편의</strong>입니다.</p>
+<p><strong>정책자금·보조금은 &quot;왜 원화인가&quot;에 대한 답이 가장 분명하고, 마찰은 가장 안 멋있습니다.</strong> 통화가 선택이 아닙니다 — 정부가 <strong>원화로</strong>, 원화 표시 수급자에게, <strong>감사 아래</strong> 지급합니다. 그리고 마찰은 속도가 아닙니다. <strong>통제와 증명</strong>입니다 — 이 돈은 어디에 쓸 수 있는 돈인가, 실제로 그렇게 쓰였는가, 그것을 나중에 누가 보일 수 있는가. 이건 정산이 아니라 <strong>프로그래머빌리티</strong>이고, <strong>돈이 토큰이라는 사실이 돈의 이동 속도가 아니라 돈의 정체를 바꾸는 유일한 후보</strong>입니다. 함정은 <strong>기존 대안이 계좌이체가 아니라는 것</strong> — 한국은 이미 카드와 상품권으로 용도를 제한합니다. 그러니 넘어야 할 기준선은 <strong>오늘도 잘 돌아가는 가맹점 업종 제한</strong>이고, 이득은 <strong>무(無)가 아니라 그것에 대고</strong> 재야 합니다.</p>
+<p><strong>AI 에이전트·기계 간 거래는 이 방법으로 아예 선별할 수 없고, 그렇다고 말하는 편이 얼버무리는 것보다 유용합니다.</strong> <strong>아무도 하지 않는 거래의 마찰은 측정 불가</strong>입니다. 이것들은 숨은 고통이 있는 유즈케이스가 아니라, <strong>승인 모델 때문에 불가능해서 존재하지 않는 거래</strong>이고, 올바른 이름표는 <strong>후보가 아니라 옵션</strong>입니다. 진짜 어려운 부분은 <code>agentic-intent-veto</code> 에 있고, <strong>그건 정산이 아닙니다.</strong></p>
+<p><strong>Repo·담보·증권결제는 가장 크고, 그 수단이 아마도 스테이블코인이 아닌 후보입니다.</strong> 여기서 원화 구간은 <strong>진짜</strong>입니다 — 국내 채권은 원화로 결제되니까요 — 마찰도 진짜지만, <strong>중앙은행과 시장 인프라가 같이 움직여야</strong> 하므로 파일럿할 것이 아니라 <strong>시장구조 변화</strong>입니다. 그리고 그것이 움직일 때의 수단은 발행사 담보형 스테이블코인보다 <strong>중앙은행 결제 아래 은행이 발행하는 예금토큰</strong>일 가능성이 큽니다. 그 실을 이미 붙들고 있는 카드가 <code>japan-t0-settlement</code> 와 <code>tokenized-money-banks</code> 입니다.</p>
+<p><strong>원문이 옳게 짚은 것 하나는 원문보다 더 멀리 밀 값이 있습니다.</strong> 달러 스테이블코인의 성장에는 <strong>달러 자체에 대한 글로벌 수요</strong>가 들어 있어서 사례가 이전되지 않습니다. 그런데 <strong>방법론도 이전되지 않습니다</strong> — 미국 스테이블코인은 <strong>느리고 비싼 ACH</strong>에 대고 재지만, 원화 스테이블코인은 <strong>이미 거의 공짜인 실시간 계좌이체</strong>에 대고 재야 합니다. 사례와 함께 마찰 추정치까지 수입하면 <strong>모든 국내 후보가 엉뚱한 기준선으로 채점됩니다.</strong> 원문이 지적한 함정 <strong>아래에 있는 함정</strong>입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>선별 기준, 탈락 조건을 드러낸 형태</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>질문</th>
+<th>무엇을 고르나</th>
+<th>언제 탈락하나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>금액이 크거나 건수가 많은가?</td>
+<td>물량</td>
+<td>— (필요조건일 뿐, 결코 충분조건 아님)</td>
+</tr>
+<tr>
+<td><strong>오늘의 마찰이 얼마나 큰가?</strong></td>
+<td><strong>불편함</strong></td>
+<td>기존 대안이 이미 즉시이고 무료</td>
+</tr>
+<tr>
+<td><strong>원화 토큰이 그것을 줄이는가?</strong></td>
+<td><strong>통화의 필연성</strong></td>
+<td><strong>아픈 구간이 다른 통화로 표시됨</strong></td>
+</tr>
+<tr>
+<td><strong>시간·비용·대사가 전부 움직이는가?</strong></td>
+<td><strong>가능성이 아니라 필요</strong></td>
+<td><strong>한 행이라도 그대로 → &#39;필요한 일&#39;이 아니라 &#39;할 수 있는 일&#39;</strong></td>
+</tr>
+</tbody></table></div>
+<h3>후보 넷, 원문 자신의 기준으로 채점</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>후보</th>
+<th>마찰</th>
+<th>왜 원화인가?</th>
+<th>판정</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>기업 해외송금·자금관리</strong></td>
+<td><strong>큼</strong> — 시간, 환전, 중계, 선예치</td>
+<td><strong>약함</strong> — 반대편은 달러를 원함</td>
+<td>모양 변경: 절감은 <strong>FX 구간</strong>에 있지 원화 구간에 없음</td>
+</tr>
+<tr>
+<td><strong>정책자금·보조금</strong></td>
+<td>중간, 그리고 <strong>속도가 아니라 통제</strong></td>
+<td><strong>가장 강함</strong> — 지급이 법적으로 원화</td>
+<td><strong>최선 후보.</strong> 단 계좌이체가 아니라 <strong>카드·상품권</strong>에 대고 잴 것</td>
+</tr>
+<tr>
+<td><strong>에이전트·기계 간 거래</strong></td>
+<td><strong>측정 불가</strong> — 그 거래가 존재하지 않음</td>
+<td>중립</td>
+<td><strong>후보가 아니라 옵션.</strong> 이 방법이 적용되지 않음</td>
+</tr>
+<tr>
+<td><strong>Repo·담보·증권결제</strong></td>
+<td>큼, 그리고 진짜 원화 표시</td>
+<td><strong>강함</strong></td>
+<td>시장구조 변화이고, 수단은 아마 <strong>예금토큰</strong></td>
+</tr>
+</tbody></table></div>
+<h3>함정 아래의 함정</h3>
+<p>원문은 달러 스테이블코인의 <strong>사례</strong>를 수입하지 말라고 경고합니다. 더 날카로운 형태는 <strong>방법론도 수입하면 안 된다</strong>는 것입니다. <strong>기존 대안이 다르기</strong> 때문입니다:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>미국</th>
+<th>한국</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>국내 리테일 기준선</td>
+<td><strong>ACH</strong> — 느리고, 배치이고, 유료</td>
+<td><strong>실시간 이체, 사실상 무료</strong></td>
+</tr>
+<tr>
+<td>그래서 스테이블코인이 이겨야 할 상대</td>
+<td><strong>약한 상대</strong></td>
+<td><strong>강한 상대</strong></td>
+</tr>
+<tr>
+<td>결과</td>
+<td>리테일 결제 사례가 잘 나옴</td>
+<td><strong>리테일 결제 사례는 대부분 탈락</strong></td>
+</tr>
+</tbody></table></div>
+<p>리테일 결제·관광객 결제가 국내 목록에 계속 등장하고 계속 아무 데도 못 가는 이유가 이것입니다 — <strong>엉뚱한 기준선으로 채점</strong>되고 있습니다. 여기서 살아남는 후보는 기존 대안이 <strong>기술적 이유가 아니라 구조적 이유</strong>로 약한 것들입니다 — <strong>국경, 감사 요건, 시장 인프라.</strong></p>
+<h3>이 카탈로그가 같은 실 위에 이미 갖고 있는 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>카드</th>
+<th>이 카드가 전제하는 것 중 무엇을 정산하나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>two-currencies-one-ledger</code></td>
+<td>유로 스테이블코인에 던진 <strong>똑같은 &quot;왜 이 통화인가&quot;</strong> 질문, 그리고 답에 따라 갈리는 네 가지 상품</td>
+</tr>
+<tr>
+<td><code>stablecoin-redemption-desk</code></td>
+<td>유통은 <strong>상환 창구</strong>에서 갈린다 — 상환 경로 없는 유즈케이스는 유즈케이스가 아님</td>
+</tr>
+<tr>
+<td><code>korea-digital-asset-act</code></td>
+<td><strong>애초에 원화 스테이블코인을 누가 발행할 수 있는가</strong> — 미정이고, 어떤 후보가 닿을 수 있는지를 바꿈</td>
+</tr>
+<tr>
+<td><code>tokenized-money-banks</code></td>
+<td>증권결제 후보의 <strong>예금토큰 대안</strong></td>
+</tr>
+<tr>
+<td><code>agentic-intent-veto</code></td>
+<td>에이전트 후보의 어려운 부분이 결제가 아니라 <strong>권한</strong>인 이유</td>
+</tr>
+</tbody></table></div>
+<h3>하루짜리 버전</h3>
+<p>채점이 가장 좋은 <strong>정책자금 후보</strong>를 골라, <strong>실제 지급 건 하나</strong>로 네 행을 채웁니다 — 시간, 비용, 거쳐 가는 기관 수, 사람이 확인하는 횟수 — 먼저 <strong>오늘 벌어지는 대로</strong>, 그다음 <strong>토큰이라면 어떻게 되는지</strong>, 램프까지 포함해서. <strong>움직이지 않는 행을 발표하십시오.</strong> <strong>그 행이 곧 발견</strong>이고, 가능성 목록보다 값어치가 큽니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/what-needs-a-stablecoin">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-layerzero-default-is-a-choice.html">&larr; 46. LayerZero — the default verifier is a trust assumption nobody wrote down</a><a href="pocs-chainlink-data-streams.html">48. Chainlink Data Streams — push vs. pull oracles and point-in-time settlement &rarr;</a></div>
+</div>
+</body>
+</html>
