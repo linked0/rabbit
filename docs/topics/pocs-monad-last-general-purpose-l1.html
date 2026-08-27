@@ -50,6 +50,20 @@
   .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
   .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
   .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-planned { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
   .rail-search { padding:14px 16px 8px; }
   .rail-search input {
     width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
@@ -77,6 +91,11 @@
 
   /* ── 본문 ── */
   .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
   .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
   .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
   .group-heading:first-child { margin-top:0; }
@@ -273,7 +292,9 @@
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
-    .layout { flex-direction:column; }
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
     .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
@@ -291,10 +312,80 @@
 </style>
 </head>
 <body>
-<div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Monad — the last general-purpose L1, and the number nobody adjusts for</p>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-protocol" title="Protocol &mdash; planned (13) / all (19)">Protocol<b><span class="count-planned">13</span><span class="count-all">/19</span></b></a><a href="../pocs.html#sec-applied" title="Applied &mdash; planned (43) / all (49)">Applied<b><span class="count-planned">43</span><span class="count-all">/49</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; planned (6) / all (6)">Economics<b><span class="count-planned">6</span><span class="count-all">/6</span></b></a><a href="../pocs.html#sec-future" title="Future &mdash; planned (5) / all (5)">Future<b><span class="count-planned">5</span><span class="count-all">/5</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; planned (97) / all (100)">Algorithms<b><span class="count-planned">97</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; planned (49) / all (52)">Math<b><span class="count-planned">49</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-applied" data-group>
+        <p class="nav-group-label">Applied (49)</p>
+        <ul>
+        <li><a class="nav-link" href="pocs-aqua-shared-liquidity.html" data-key="aqua-shared-liquidity"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">20</span>Shared liquidity — quoted depth vs. the balance behind it</span></a></li>
+        <li><a class="nav-link" href="pocs-rwa-multichain.html" data-key="rwa-multichain"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">21</span>RWA across chains — the invariant nobody enforces</span></a></li>
+        <li><a class="nav-link" href="pocs-oz-relayer.html" data-key="oz-relayer"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">22</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
+        <li><a class="nav-link" href="pocs-event-contract-plumbing.html" data-key="event-contract-plumbing"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">23</span>The hiring signal is the spec — event-contract plumbing</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenized-money-banks.html" data-key="tokenized-money-banks"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">24</span>Tokenized Money for Banks</span></a></li>
+        <li><a class="nav-link active" href="pocs-monad-last-general-purpose-l1.html" data-key="monad-last-general-purpose-l1"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">25</span>Monad — the last general-purpose L1, and the number nobody adjusts for</span></a></li>
+        <li><a class="nav-link" href="pocs-what-needs-a-stablecoin.html" data-key="what-needs-a-stablecoin"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">26</span>Not what a stablecoin can do — what needs one</span></a></li>
+        <li><a class="nav-link" href="pocs-build-rent-or-own-the-rail.html" data-key="build-rent-or-own-the-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">27</span>Build the rail, rent it, or own it together — three answers in one month</span></a></li>
+        <li><a class="nav-link" href="pocs-stablecoin-redemption-desk.html" data-key="stablecoin-redemption-desk"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">28</span>The redemption desk — what actually makes a stablecoin's denominator</span></a></li>
+        <li><a class="nav-link" href="pocs-two-currencies-one-ledger.html" data-key="two-currencies-one-ledger"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">29</span>Two currencies on one ledger — the spread is the claim</span></a></li>
+        <li><a class="nav-link" href="pocs-arb-bots-are-the-peg.html" data-key="arb-bots-are-the-peg"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">30</span>Nobody runs the peg — the competing bots are the mechanism</span></a></li>
+        <li><a class="nav-link" href="pocs-the-harness-not-the-model.html" data-key="the-harness-not-the-model"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">31</span>The harness, not the model — governing agents instead of building them</span></a></li>
+        <li><a class="nav-link" href="pocs-mcp-three-sides.html" data-key="mcp-three-sides"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">32</span>MCP from three sides — build one, consume one, wrap an agent as one</span></a></li>
+        <li><a class="nav-link" href="pocs-agents-computer-use.html" data-key="agents-computer-use"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">33</span>Can an agent drive a computer yet — and if so, whose?</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenized-equity-claim-rail.html" data-key="tokenized-equity-claim-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">34</span>A claim, not a derivative — the three jobs a tokenized share creates</span></a></li>
+        <li><a class="nav-link" href="pocs-japan-t0-settlement.html" data-key="japan-t0-settlement"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">35</span>T+0 removes settlement risk, and removes netting with it</span></a></li>
+        <li><a class="nav-link" href="pocs-cross-border-rail-interop.html" data-key="cross-border-rail-interop"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">36</span>Linking payment systems is a routing problem</span></a></li>
+        <li><a class="nav-link" href="pocs-non-reserve-currency-seat.html" data-key="non-reserve-currency-seat"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">37</span>The seat is the point — a non-reserve currency at the standards table</span></a></li>
+        <li><a class="nav-link" href="pocs-st-self-distribution.html" data-key="st-self-distribution"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">38</span>What tokenization actually removed</span></a></li>
+        <li><a class="nav-link" href="pocs-headless-exchange-engines.html" data-key="headless-exchange-engines"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">39</span>Headless arrives — the company that sells the engine, not the app</span></a></li>
+        <li><a class="nav-link" href="pocs-choosing-a-chain-is-a-lease.html" data-key="choosing-a-chain-is-a-lease"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">40</span>Choosing a chain is signing a lease</span></a></li>
+        <li><a class="nav-link" href="pocs-base-app-mini-app.html" data-key="base-app-mini-app"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">41</span>Base App — what a Mini App buys, and what it rents</span></a></li>
+        <li><a class="nav-link" href="pocs-layerzero-default-is-a-choice.html" data-key="layerzero-default-is-a-choice"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">42</span>LayerZero — the default verifier is a trust assumption nobody wrote down</span></a></li>
+        <li><a class="nav-link" href="pocs-third-party-blast-radius.html" data-key="third-party-blast-radius"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">43</span>Trusted third parties — the blast radius nobody maps</span></a></li>
+        <li><a class="nav-link" href="pocs-aml-compliance.html" data-key="aml-compliance"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">44</span>AML — where the cryptography stops</span></a></li>
+        <li><a class="nav-link" href="pocs-address-to-identity-join.html" data-key="address-to-identity-join"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">45</span>The chain gives you the graph and never the names</span></a></li>
+        <li><a class="nav-link" href="pocs-korea-digital-asset-act.html" data-key="korea-digital-asset-act"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">46</span>The bill count is not the disagreement count</span></a></li>
+        <li><a class="nav-link" href="pocs-jurisdiction-decides-the-category.html" data-key="jurisdiction-decides-the-category"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">47</span>Same product, three verdicts in eight days</span></a></li>
+        <li><a class="nav-link" href="pocs-jurisdiction-below-the-country.html" data-key="jurisdiction-below-the-country"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">48</span>Jurisdiction is not country-sized</span></a></li>
+        <li><a class="nav-link" href="pocs-cap-table-ceiling.html" data-key="cap-table-ceiling"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">49</span>The ceiling is per holder, the control is not</span></a></li>
+        <li><a class="nav-link" href="pocs-fisheries-receivable-rail.html" data-key="fisheries-receivable-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">50</span>The custody was never the hard part</span></a></li>
+        <li><a class="nav-link" href="pocs-dsrv-portal.html" data-key="dsrv-portal"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">51</span>Institutional custody study</span></a></li>
+        <li><a class="nav-link" href="pocs-decision-market-uncontrollability.html" data-key="decision-market-uncontrollability"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">52</span>The property that makes a market work is the one that makes it gambling</span></a></li>
+        <li><a class="nav-link" href="pocs-priced-by-the-wrong-thing.html" data-key="priced-by-the-wrong-thing"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">53</span>Priced by the wrong thing — a question, an instrument, and the gap between them</span></a></li>
+        <li><a class="nav-link" href="pocs-cre-cloud.html" data-key="cre-cloud"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">54</span>CRE × Cloud — four hybrid patterns</span></a></li>
+        <li><a class="nav-link" href="pocs-solana.html" data-key="solana"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">55</span>Solana</span></a></li>
+        <li><a class="nav-link" href="pocs-linera-microchains.html" data-key="linera-microchains"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">56</span>Linera microchains</span></a></li>
+        <li><a class="nav-link" href="pocs-thirdweb.html" data-key="thirdweb"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">57</span>Thirdweb — platform survey</span></a></li>
+        <li><a class="nav-link" href="pocs-plumbing-skills-buyback.html" data-key="plumbing-skills-buyback"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">58</span>Four capabilities, each buying back what the chain gave away</span></a></li>
+        <li><a class="nav-link" href="pocs-steal-the-structure.html" data-key="steal-the-structure"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">59</span>Two reading lists, and the same instruction — steal the structure, not the content</span></a></li>
+        <li><a class="nav-link" href="pocs-claude-in-slack.html" data-key="claude-in-slack"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">60</span>Claude in Slack — the workflow first, the presence second</span></a></li>
+        <li><a class="nav-link" href="pocs-circuit-breaker-saga.html" data-key="circuit-breaker-saga"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">61</span>Microservice patterns — Circuit Breaker &amp; Saga</span></a></li>
+        <li><a class="nav-link" href="pocs-web-stack-layers.html" data-key="web-stack-layers"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">62</span>Web stack layers</span></a></li>
+        <li><a class="nav-link" href="pocs-one-page-not-the-curriculum.html" data-key="one-page-not-the-curriculum"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">63</span>Pull the page you are stuck on, not the next one in order</span></a></li>
+        <li><a class="nav-link" href="pocs-publish-by-default-rule.html" data-key="publish-by-default-rule"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">64</span>The draft already exists — a selection rule, not a new channel</span></a></li>
+        <li><a class="nav-link" href="pocs-apple-container.html" data-key="apple-container"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">65</span>Apple container</span></a></li>
+        <li><a class="nav-link" href="pocs-geometric-series-dcf.html" data-key="geometric-series-dcf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">66</span>Geometric series → DCF valuation</span></a></li>
+        <li><a class="nav-link" href="pocs-amortized-potential-function.html" data-key="amortized-potential-function"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">67</span>Amortized analysis via potential functions</span></a></li>
+        <li><a class="nav-link" href="pocs-moralis-wallet-api.html" data-key="moralis-wallet-api"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">68</span>Moralis — wallet snapshot via API</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Monad — the last general-purpose L1, and the number nobody adjusts for</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#40</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <p class="topic-kicker"><span class="topic-no">#25</span><span>PoC</span><span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></p>
       <h1>Monad — the last general-purpose L1, and the number nobody adjusts for</h1>
       <p class="lead">Monad bet a record $412M on one thesis: a chain fast enough to hold everything. Nine months of mainnet data now exists, but nearly every headline number overlaps a live incentive program, and nobody publishes the incentive-adjusted figure.</p>
       <p class="meta">Not yet scoped — start by lining each sector&#39;s headline metric up against the start and end dates of the incentive program running underneath it, then measure the decay in the 30 days after each program closes. Source: Four Pillars · Validated, &quot;Monad: The Last General-Purpose L1&quot; (c4lvin, 2026), plus DefiLlama and the Monad Foundation&#39;s monthly roundups.</p>
@@ -341,6 +432,194 @@
 <h3>The prediction-market note</h3>
 <p>Monad has become a <strong>funding rail</strong> for a category it has no native winner in. Polymarket has supported MON and USDC deposits over Monad since December 2025, and Kalshi added Monad in July — while Opinion Labs, the native contender, left. Native attempts are thin: Blinq, Parletto (Polymarket alumni), and CRSH Market, which discloses roughly 300 new users a day and about $3,000 of volume per stream.</p>
 <p>For anyone building a prediction market, that is the useful reading: <strong>Monad is currently better as a deposit path than as a home.</strong></p>
+<h3>Monad review &amp;mdash; 2026-08-27</h3>
+<p>A conversation summary with jay. <strong>&amp;#10003; confirmed &amp;middot; &amp;#128310; derived arithmetic &amp;middot; &amp;#11036; structural inference</strong></p>
+<p><strong>In one line: the engineering is careful and the numbers are inflated &amp;mdash; but the larger problem is that Monad gave nothing up, and where there is no sacrifice there is nothing for a copier to sacrifice either.</strong></p>
+<h4>1. Architecture &amp;mdash; not four advantages but a dependency chain</h4>
+<p><strong>The missing pillar is deferred execution.</strong> Consensus orders; execution follows behind. Ethereum keeps execution inside the critical path of consensus, which is what pins the gas limit. Monad separates <strong>throughput and latency into independent budgets</strong> &amp;mdash; that is the real design move underneath both headline numbers.</p>
+<p><strong>EVM compatibility forces optimistic concurrency.</strong> Demanding declared access lists would break <em>your existing Solidity, unchanged</em>. So the only option is execute-then-detect-conflicts, which degrades under contention &amp;mdash; and DeFi, where everyone hits the same AMM pool, is precisely the worst workload for it.</p>
+<p><strong>MonadDb is a precondition, not an optimisation.</strong> If one SLOAD remains dozens of I/O operations, parallel threads simply queue at the disk together.</p>
+<p><strong>The cost: finality splits in two &amp;#11036;.</strong> Ordering finality is not execution finality. Most users never feel the difference; a prediction market does, because settlement depends on the execution result. If Verex ran on Monad it would have to state which finality it quotes &amp;mdash; and bridges and exchanges ask exactly that question.</p>
+<h4>2. The numbers &amp;mdash; a looping identity</h4>
+<p>When incentives are paid on both deposits and borrows, recursive looping runs. With outside money X and collateral ratio c:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Formula</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Total deposits</td>
+<td><strong>D = X / (1 &amp;minus; c)</strong></td>
+</tr>
+<tr>
+<td>Total borrows</td>
+<td><strong>B = cX / (1 &amp;minus; c)</strong></td>
+</tr>
+<tr>
+<td><strong>Net TVL</strong></td>
+<td><strong>D &amp;minus; B = X</strong> &amp;mdash; <em>net TVL is exactly the external capital</em> &amp;#128310;</td>
+</tr>
+</tbody></table></div>
+<p><strong>Neverland, substituted &amp;#128310;:</strong> borrows $122.5M exceed deposits $42M, so the $42M is already a net figure. Total deposits $164.5M, c &amp;asymp; 0.745, <strong>multiple 3.9&amp;times;</strong>. $42M wearing four coats.</p>
+<p><strong>So there is nothing to wait for.</strong> Gross &amp;divide; net is the recycling multiple; it applies to a live programme today and needs no market-beta correction.</p>
+<p><strong>Why fees are superlinear &amp;#128310;:</strong> revenue accrues on total borrows, so it scales as c/(1&amp;minus;c). That is why borrows &amp;minus;87% and fees &amp;minus;80% moved together. <strong>Those fees were a leverage gauge, not a demand gauge.</strong></p>
+<p><strong>What the card already did without naming it:</strong> <em>AUSD grew by more than the whole chain’s net stablecoin increase</em> &amp;mdash; the excess cannot be new capital, so it was rotation. <strong>The hardest number in the card, and it assumes nothing.</strong></p>
+<p><strong>General form: everyone reports gross and calls it net.</strong></p>
+<h4>3. Current state &amp;#10003;</h4>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TVL</td>
+<td><strong>$947M</strong> (May $410M &amp;rarr; more than doubled in three months)</td>
+</tr>
+<tr>
+<td>Daily fees</td>
+<td><strong>under $3,000</strong> &amp;rarr; fee yield &amp;asymp; <strong>0.12%</strong> &amp;#128310;</td>
+</tr>
+<tr>
+<td>MON</td>
+<td><strong>+44% weekly</strong>, <strong>&amp;minus;50%</strong> from peak FDV</td>
+</tr>
+<tr>
+<td>Liquidity Program</td>
+<td><strong>ended 8/18</strong> &amp;mdash; the 30-day window is running now (&amp;asymp;9/17) &amp;#9888;</td>
+</tr>
+<tr>
+<td>Slashing</td>
+<td><strong>not implemented</strong> (docs: <em>subject to change</em>; logging only)</td>
+</tr>
+<tr>
+<td>Unlock</td>
+<td><strong>11/24</strong>, close to <strong>20% of supply</strong>, the same day as the mainnet anniversary</td>
+</tr>
+</tbody></table></div>
+<p><strong>Neverland alone earned $18&amp;ndash;19K a day at peak. The entire chain now produces less than a sixth of that.</strong></p>
+<p><strong>The LST blockade is conditional.</strong> An LST does five things &amp;mdash; liquidity, aggregation, operator choice, slashing mutualisation, use as collateral. Monad removed three. A precompiled balance is not an ERC-20, so <strong>use as collateral (&amp;#9315;) survives</strong>; add slashing and <strong>&amp;#9314; returns and the category reopens.</strong> A deferred decision, not a permanent blockade.</p>
+<h4>4. Against other chains</h4>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Chain</th>
+<th>What it bought</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Monad</strong></td>
+<td>Throughput &amp;mdash; <strong>a depreciating asset</strong></td>
+<td>TVL $947M / fees &amp;asymp; 0</td>
+</tr>
+<tr>
+<td><strong>Tempo</strong> (Stripe &amp;middot; Paradigm)</td>
+<td>Distribution &amp;mdash; <strong>but borrowed</strong></td>
+<td>$500M at $5B; validators include Stripe, Visa. <strong>Logos are not yet volume</strong></td>
+</tr>
+<tr>
+<td><strong>Canton</strong></td>
+<td>Market infrastructure &amp;mdash; <strong>users are owners</strong></td>
+<td>~$300B daily volume. DTCC, JPM, HSBC live. <strong>A different order of magnitude</strong></td>
+</tr>
+<tr>
+<td><strong>Aztec</strong></td>
+<td>Privacy</td>
+<td>Mainnet live but feature-limited; adoption unproven</td>
+</tr>
+<tr>
+<td><strong>Base</strong></td>
+<td>Coinbase’s users</td>
+<td>Borrows the OP Stack &amp;mdash; <strong>an admission that the edge is not technical</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Worth noting:</strong> 3 of 73 L2s carry 90% of volume, and Base and OP Mainnet share a codebase &amp;mdash; <strong>so by stack there are two winners, not three.</strong> And <strong>Paradigm backed both Monad and Tempo</strong>, which is a signal that nobody holds exclusive conviction in the general-purpose thesis.</p>
+<p><strong>Three chains inflate three different ways &amp;#128310;:</strong> Monad through emissions, Tempo through logos, Canton through turnover (overnight repo recounts the same collateral daily). <strong>The same question has to be asked three times.</strong></p>
+<h4>5. The moat test</h4>
+<p><strong>For a technical advantage to be a moat, the copier has to give up its own identity.</strong></p>
+<p>What Ethereum cannot abandon: <strong>global shared state &amp;middot; a huge validator set &amp;middot; EVM compatibility &amp;middot; credible neutrality.</strong></p>
+<p>Already being absorbed &amp;#10003;: parallel execution &amp;rarr; BAL; modular DA &amp;rarr; blobs (done); privacy &amp;rarr; EIP-8182 (under Hegot&amp;aacute; consideration); ZK execution &amp;rarr; L1 zkEVM. <strong>All four modular-era advantages sit on Ethereum’s roadmap.</strong></p>
+<p>What survives: <strong>Canton</strong> (privacy as architecture rather than feature &amp;mdash; it removes the global ledger itself), <strong>Sui</strong> (object fast path, not replicable in an account model), and <strong>anything that explicitly buys less decentralisation.</strong></p>
+<p><strong>Make privacy a feature and you get absorbed; make it an architecture and you do not.</strong></p>
+<p><strong>Why Monad hurts: it kept EVM compatibility, did not abandon decentralisation, kept global state. It gave nothing up.</strong></p>
+<h4>6. Economic survival paths &amp;#11036;</h4>
+<p>Premise: <strong>Monad does not die</strong> &amp;mdash; runway is sufficient. The question is whether it finds a reason to exist inside that runway.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Likelihood</th>
+<th>Justifies the valuation?</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A. Deposit-rail lock-in</strong></td>
+<td><strong>High</strong> (already happening)</td>
+<td>&amp;#10007;</td>
+<td>Polymarket and Kalshi support deposits; Opinion Labs left. <strong>Transport is thin-margin and easily replaced</strong></td>
+</tr>
+<tr>
+<td><strong>B. RWA habitat</strong></td>
+<td>Medium</td>
+<td>&amp;#9651;</td>
+<td>Where the premium actually appeared. But <strong>$105M of $430M is Valos</strong> &amp;mdash; one commercial relationship possibly dressed as a metric</td>
+</tr>
+<tr>
+<td><strong>C. Absorb a distributor</strong></td>
+<td>Low&amp;ndash;medium</td>
+<td>&amp;#10007;</td>
+<td><strong>Large distributors already own chains</strong> (Coinbase &amp;rarr; Base, Stripe &amp;rarr; Tempo)</td>
+</tr>
+<tr>
+<td><strong>D. Technical re-differentiation</strong></td>
+<td>Low</td>
+<td><strong>&amp;#10003;</strong></td>
+<td><strong>The only path that justifies the valuation</strong> &amp;mdash; and EVM compatibility is the shackle</td>
+</tr>
+<tr>
+<td><strong>E. Convert to an L2</strong></td>
+<td>Low</td>
+<td>&amp;#10007;</td>
+<td>The Celo model. A standard late-runway exit</td>
+</tr>
+<tr>
+<td><strong>F. Search the runway</strong></td>
+<td><strong>Default</strong></td>
+<td>&amp;mdash;</td>
+<td>The <strong>11/24 unlock raises the cost</strong>: price falls &amp;rarr; emission unit cost rises &amp;rarr; more tokens for the same TVL</td>
+</tr>
+</tbody></table></div>
+<p><strong>Most plausible combination: hold on F while A hardens, quietly redefining the thesis through B. D is wanted but bound by EVM compatibility.</strong></p>
+<p><strong>Why RWA &amp;#11036;:</strong> a composability premium arises when the same asset is reused inside one transaction. A swap is self-contained, so nothing is reused. <strong>Collateralisation needs oracle, lending and liquidation at once, so reuse happens.</strong> Trading &amp;mdash; the thing the thesis was staked on &amp;mdash; was structurally the wrong place to look.</p>
+<h4>7. To turn into cards</h4>
+<ol>
+<li><strong>Gross &amp;divide; net (the recycling multiple)</strong> &amp;mdash; computable today &amp;rarr; now <code>gross-over-net</code></li>
+<li><strong>Fees &amp;divide; TVL</strong> &amp;mdash; the cleanest incentive-corrected demand measure &amp;rarr; now inside <code>where-yield-comes-from</code></li>
+<li><strong>Fees &amp;divide; security budget per chain</strong> &amp;mdash; who pays for their own security. Nobody publishes it &amp;rarr; now <code>fees-over-security-budget</code></li>
+<li><strong>The 8/18&amp;ndash;9/17 decay baseline</strong> &amp;mdash; <strong>&amp;#9888; capture it now or it is gone</strong></li>
+</ol>
+<h4>8. To verify</h4>
+<ul>
+<li><strong>The $412M in the card’s first sentence.</strong> VC total is about <strong>$244M</strong> (pre-seed 9 + seed 10 + Series A 225). The difference looks like public sale included &amp;mdash; possibly an unadjusted figure bundling VC and retail distribution, <strong>which would contradict the card’s own title.</strong></li>
+<li><strong>That the $42M is a net figure is an inference &amp;#128310;</strong> &amp;mdash; the source does not say so. <strong>The ambiguity the card indicts is inside the card’s own control group.</strong></li>
+<li>The identity is exact only for <strong>single-asset recursion</strong>; cross-asset loops double-count.</li>
+<li>Four Pillars figures cited (Kuru 36.4%, RWA $430M) are <strong>unverified</strong>.</li>
+<li><strong>EIP-8182 is not confirmed</strong> &amp;mdash; only 1 of 66 Hegot&amp;aacute; candidates is, per the 9/10 preference list.</li>
+</ul>
+<h4>9. The lines worth keeping</h4>
+<ul>
+<li><strong>Net TVL is exactly equal to external capital.</strong></li>
+<li><strong>Those fees were a leverage gauge, not a demand gauge.</strong></li>
+<li><strong>Performance is a depreciating asset; distribution is an appreciating one.</strong></li>
+<li><strong>Throughput is a property of transport, not of demand.</strong></li>
+<li><strong>In open source a technical advantage is not a moat but a lead time. The only moat is something incompatible with the copier’s identity &amp;mdash; and that is not technology, it is a promise.</strong></li>
+<li><strong>Where there is no sacrifice, the copier has nothing to sacrifice either.</strong></li>
+</ul>
       <p><a href="https://www.jaylabs.xyz/poc/monad-last-general-purpose-l1">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
@@ -387,9 +666,273 @@
 <h3>예측시장 메모</h3>
 <p>Monad는 <strong>네이티브 승자가 없는 카테고리의 자금 레일</strong>이 됐습니다. Polymarket은 2025년 12월부터 Monad를 통한 MON·USDC 입금을 지원하고 Kalshi도 7월에 추가했는데, 정작 네이티브 후보였던 Opinion Labs는 떠났습니다. 네이티브 시도는 얇습니다 — Blinq, Parletto(Polymarket 출신), 그리고 스스로 일 신규 약 300명·스트림당 약 $3,000를 공개한 CRSH Market.</p>
 <p>예측시장을 만드는 입장에서 유용한 독법은 이것입니다: <strong>지금의 Monad는 서식지보다 입금 경로로서 더 낫습니다.</strong></p>
+<h3>Monad 정리 &amp;mdash; 2026-08-27</h3>
+<p>jay 와의 대화 요약. <strong>&amp;#10003; 확인 &amp;middot; &amp;#128310; 산술 유도 &amp;middot; &amp;#11036; 구조 추론</strong></p>
+<p><strong>한 줄: 기술은 정교하고 숫자는 부풀려져 있다. 더 큰 문제는 Monad 가 아무것도 포기하지 않았다는 것 &amp;mdash; 포기가 없으면 베끼는 쪽도 포기할 게 없다.</strong></p>
+<h4>1. 아키텍처 &amp;mdash; 장점 넷이 아니라 의존 사슬</h4>
+<p><strong>빠진 기둥: 지연 실행.</strong> 합의는 순서만 정하고 실행은 뒤에서 따라온다. 이더리움은 <strong>실행이 합의의 임계 경로 안에</strong> 있어 가스 한도가 묶인다. Monad 는 <strong>처리량과 지연시간을 독립 예산으로 분리</strong>했다 &amp;mdash; 이게 두 숫자 밑의 진짜 설계 수다.</p>
+<p><strong>EVM 호환이 낙관적 동시성을 강제한다.</strong> 접근 리스트를 선언받으면 <em>기존 Solidity 그대로</em> 가 깨진다. 그래서 <strong>실행 후 충돌 감지</strong> 방식일 수밖에 없고, <strong>경합에서 무너진다.</strong> 다들 같은 AMM 풀을 치는 <strong>DeFi 가 하필 최악의 워크로드</strong>다.</p>
+<p><strong>MonadDb 는 최적화가 아니라 전제조건.</strong> SLOAD 한 번이 수십 I/O 가 되는 구조를 안 고치면 <strong>병렬화해도 스레드가 다 같이 디스크에서 막힌다.</strong></p>
+<p><strong>대가: 최종성이 둘로 쪼개진다 &amp;#11036;</strong> &amp;mdash; <strong>순서 최종성 &amp;ne; 실행 최종성.</strong> 대부분은 못 느끼지만 <strong>예측시장은 느낀다.</strong> 정산이 실행 결과에 걸리기 때문. Verex 가 Monad 를 쓴다면 <strong>어느 최종성을 인용하는지 명시</strong>해야 하고, <strong>브릿지·거래소가 정확히 그걸 묻는다.</strong></p>
+<h4>2. 숫자 &amp;mdash; 루핑 항등식</h4>
+<p>인센티브가 예치·차입 양쪽에 붙으면 재귀 루핑이 돈다. 외부 자금 X, 담보비율 c 일 때:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>양</th>
+<th>식</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>총 예치</td>
+<td><strong>D = X / (1 − c)</strong></td>
+</tr>
+<tr>
+<td>총 차입</td>
+<td><strong>B = cX / (1 − c)</strong></td>
+</tr>
+<tr>
+<td><strong>순 TVL</strong></td>
+<td><strong>D − B = X</strong> &amp;mdash; <em>순 TVL 이 곧 외부 자본</em> &amp;#128310;</td>
+</tr>
+</tbody></table></div>
+<p><strong>Neverland 대입 &amp;#128310;:</strong> 차입 $122.5M &gt; 예치 $42M 이니 <strong>$42M 은 순액.</strong> 총 예치 $164.5M, c ≈ 0.745, <strong>배수 3.9배.</strong> <strong>$42M 이 외투를 네 겹 껴입고 있었다.</strong></p>
+<p><strong>따라서 기다릴 필요 없다.</strong> 총액 ÷ 순액 = 재활용 배수. <strong>살아있는 프로그램에도 오늘 적용</strong>되고 <strong>시장 베타 교란도 없다.</strong></p>
+<p><strong>수수료가 초선형인 이유 &amp;#128310;:</strong> 수익은 <strong>총 차입</strong>에 붙으니 c/(1−c) 에 비례. 차입 −87% ↔ 수수료 −80% 가 나란히 간 이유. <strong>그 수수료는 수요가 아니라 레버리지 지표였다.</strong></p>
+<p><strong>카드가 이미 해놓고 이름 안 붙인 것:</strong> <em>AUSD 가 체인 전체 스테이블코인 순증가분보다 많이 늘었다</em> &amp;mdash; <strong>초과분은 새 자본일 수 없고 갈아탄 것.</strong> <strong>가정 없는, 카드에서 제일 단단한 숫자.</strong></p>
+<p><strong>일반형: 모두가 총액을 발표하면서 그걸 순액이라고 부른다.</strong></p>
+<h4>3. 현재 상태 &amp;#10003;</h4>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TVL</td>
+<td><strong>$947M</strong> (5월 $410M → 3개월 2배+)</td>
+</tr>
+<tr>
+<td>일일 수수료</td>
+<td><strong>$3,000 미만</strong> → 수수료 수익률 약 <strong>0.12%</strong> &amp;#128310;</td>
+</tr>
+<tr>
+<td>MON</td>
+<td><strong>주간 +44%</strong>, FDV 정점 대비 <strong>−50%</strong></td>
+</tr>
+<tr>
+<td>Liquidity Program</td>
+<td><strong>8/18 종료</strong> &amp;mdash; 30일 창이 <strong>지금 돌고 있음</strong>(~9/17) &amp;#9888;</td>
+</tr>
+<tr>
+<td>슬래싱</td>
+<td><strong>미구현</strong> (문서: <em>향후 바뀔 수 있음</em>, 로깅만)</td>
+</tr>
+<tr>
+<td>언락</td>
+<td><strong>11/24</strong>, 공급 <strong>20% 가까이</strong>, 메인넷 1주년과 같은 날</td>
+</tr>
+</tbody></table></div>
+<p><strong>Neverland 한 곳이 정점에 일 $18–19K 를 벌었다. 지금 체인 전체가 그 6분의 1도 못 만든다.</strong></p>
+<p><strong>LST 봉쇄는 조건부다.</strong> LST 가 하는 일은 다섯 &amp;mdash; 유동성·집약·운영자선택·슬래싱분담·담보사용 &amp;mdash; 인데 <strong>Monad 가 없앤 건 셋.</strong> 프리컴파일 잔고는 ERC-20 이 아니라 <strong>담보 사용(&amp;#9315;)은 남는다.</strong> <strong>슬래싱을 넣으면 &amp;#9314; 가 돌아와 카테고리가 재개장한다.</strong> <strong>영구 봉쇄가 아니라 미뤄둔 결정.</strong></p>
+<h4>4. 다른 체인 비교</h4>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>체인</th>
+<th>무엇을 샀나</th>
+<th>상태</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Monad</strong></td>
+<td>처리량 &amp;mdash; <strong>감가 자산</strong></td>
+<td>TVL $947M / 수수료 ≈ 0</td>
+</tr>
+<tr>
+<td><strong>Tempo</strong> (Stripe · Paradigm)</td>
+<td>유통 &amp;mdash; <strong>다만 빌린 것</strong></td>
+<td>$500M · $5B 밸류, 검증자에 Stripe·Visa. <strong>로고는 아직 거래량이 아님</strong></td>
+</tr>
+<tr>
+<td><strong>Canton</strong></td>
+<td>시장 인프라 &amp;mdash; <strong>사용자 = 소유자</strong></td>
+<td>일 약 $3,000억 거래량. DTCC·JPM·HSBC 라이브. <strong>자릿수가 다름</strong></td>
+</tr>
+<tr>
+<td><strong>Aztec</strong></td>
+<td>프라이버시</td>
+<td>메인넷은 떴으나 기능 제한 · 채택 미검증</td>
+</tr>
+<tr>
+<td><strong>Base</strong></td>
+<td>Coinbase 사용자</td>
+<td>OP Stack 차용 → <strong>우위가 기술이 아니라는 자백</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>중요:</strong> L2 73개 중 <strong>3개가 거래량 90%</strong> 인데 <strong>Base·OP Mainnet 이 같은 코드베이스</strong>라 <strong>스택으로는 승자가 2개</strong>다. 그리고 <strong>Paradigm 이 Monad 와 Tempo 양쪽에 다 걸었다</strong> &amp;mdash; <strong>범용 명제에 배타적 확신은 없다는 신호.</strong></p>
+<p><strong>세 체인이 각각 다르게 부풀린다 &amp;#128310;:</strong> Monad 는 <strong>배출</strong>로, Tempo 는 <strong>로고</strong>로, Canton 은 <strong>회전율</strong>로(오버나이트 레포는 같은 담보를 매일 재계상). <strong>같은 질문이 세 번 필요하다.</strong></p>
+<h4>5. 해자 판별 기준</h4>
+<p><strong>기술 우위가 해자가 되려면, 베끼는 쪽이 자기 정체성을 포기해야 한다.</strong></p>
+<p>이더리움이 못 버리는 것: <strong>전역 공유 상태 · 거대 검증자 집합 · EVM 호환 · 신뢰 중립성.</strong></p>
+<p>이미 흡수 중 &amp;#10003;: 병렬 실행 → BAL / 모듈러 DA → blob(끝남) / 프라이버시 → EIP-8182(Hegotá 검토) / ZK 실행 → L1 zkEVM. <strong>모듈러 시대 우위 넷이 전부 이더리움 로드맵 위에 있다.</strong></p>
+<p>살아남는 것: <strong>Canton</strong>(프라이버시를 기능이 아니라 <strong>아키텍처</strong>로 &amp;mdash; 전역 원장 자체를 없앰) · <strong>Sui</strong>(객체 fast path, 계정 모델로는 복제 불가) · <strong>탈중앙화를 명시적으로 덜 사는 설계.</strong></p>
+<p><strong>프라이버시를 기능으로 만든 쪽은 흡수당하고, 아키텍처로 만든 쪽은 안 당한다.</strong></p>
+<p><strong>Monad 가 아픈 이유: EVM 호환 지켰고, 탈중앙화 안 버렸고, 전역 상태 유지했다. 아무것도 안 버렸다.</strong></p>
+<h4>6. 경제적 생존 경로 &amp;#11036;</h4>
+<p>전제: <strong>Monad 는 안 죽는다</strong>(런웨이 충분). 질문은 <strong>런웨이 안에 존재 이유를 찾는가.</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>경로</th>
+<th>가능성</th>
+<th>밸류 정당화</th>
+<th>메모</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A. 입금 레일 고착</strong></td>
+<td><strong>높음</strong> (진행 중)</td>
+<td>&amp;#10007;</td>
+<td>Polymarket·Kalshi 가 입금 지원, Opinion Labs 는 떠남. <strong>운송은 마진 얇고 대체 쉬움</strong></td>
+</tr>
+<tr>
+<td><strong>B. RWA 서식지</strong></td>
+<td>중간</td>
+<td>&amp;#9651;</td>
+<td><strong>프리미엄이 실제 나온 곳.</strong> 단 $430M 중 <strong>Valos $105M</strong> &amp;mdash; 하나의 사업관계가 지표 옷을 입었을 수 있음</td>
+</tr>
+<tr>
+<td><strong>C. 유통사 흡수</strong></td>
+<td>낮음~중간</td>
+<td>&amp;#10007;</td>
+<td><strong>큰 유통사는 이미 자기 체인 보유</strong>(Coinbase→Base, Stripe→Tempo)</td>
+</tr>
+<tr>
+<td><strong>D. 기술 재차별화</strong></td>
+<td>낮음</td>
+<td><strong>&amp;#10003;</strong></td>
+<td><strong>유일하게 밸류를 정당화.</strong> EVM 호환이 발목</td>
+</tr>
+<tr>
+<td><strong>E. L2 전환</strong></td>
+<td>낮음</td>
+<td>&amp;#10007;</td>
+<td>Celo 모델. 런웨이 후반 표준 탈출구</td>
+</tr>
+<tr>
+<td><strong>F. 런웨이 탐색</strong></td>
+<td><strong>기본값</strong></td>
+<td>&amp;mdash;</td>
+<td><strong>11/24 언락이 비용을 올림</strong> &amp;mdash; 가격 하락 → 배출 단가 상승 → <strong>같은 TVL 에 더 많은 토큰</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>가장 그럴듯한 조합: F 로 버티며 A 가 굳어지고, B 로 명제를 조용히 재정의. D 는 하고 싶어도 EVM 호환에 묶인다.</strong></p>
+<p><strong>왜 RWA 였나 &amp;#11036;:</strong> 컴포저빌리티 프리미엄은 <strong>같은 자산이 한 트랜잭션 안에서 재사용될 때</strong> 생긴다. <strong>스왑은 자기완결적이라 재사용이 없다.</strong> <strong>담보화는 오라클·대출·청산이 동시에 필요해 재사용이 일어난다.</strong> <strong>명제를 건 트레이딩이 구조적으로 잘못 짚은 자리였다.</strong></p>
+<h4>7. 카드로 만들 것</h4>
+<ol>
+<li><strong>총액 ÷ 순액(재활용 배수)</strong> &amp;mdash; 오늘 계산 가능 → <code>gross-over-net</code> 으로 만듦</li>
+<li><strong>수수료 ÷ TVL</strong> &amp;mdash; 인센티브 보정 수요의 가장 깨끗한 판본 → <code>where-yield-comes-from</code> 안에 들어감</li>
+<li><strong>체인별 수수료 ÷ 보안 예산</strong> &amp;mdash; 자기 보안을 자기 수수료로 내는 체인 순위. 아무도 발표 안 함 → <code>fees-over-security-budget</code> 으로 만듦</li>
+<li><strong>8/18~9/17 감쇠 기준선</strong> &amp;mdash; <strong>&amp;#9888; 지금 안 잡으면 사라짐</strong></li>
+</ol>
+<h4>8. 확인 필요</h4>
+<ul>
+<li><strong>카드 첫 문장의 $412M.</strong> VC 합계는 약 <strong>$244M</strong>(프리시드 9 + 시드 10 + 시리즈A 225). 차이는 <strong>공개 세일 합산</strong>으로 보임 &amp;mdash; VC 와 리테일 분배를 한 숫자로 묶은 미보정 값일 가능성. <strong>카드 제목과 모순.</strong></li>
+<li><strong>$42M 이 순액이라는 것은 추론 &amp;#128310;</strong> &amp;mdash; 출처가 명시 안 함. <strong>카드가 고발하는 모호함이 카드 자신의 대조군 안에 있다.</strong></li>
+<li>항등식은 <strong>단일 자산 재귀에서만 정확.</strong> 교차 자산 루프는 이중계상.</li>
+<li>Kuru 36.4%, RWA $430M 등 <strong>Four Pillars 인용 수치 미검증.</strong></li>
+<li><strong>EIP-8182 는 아직 확정 아님</strong> &amp;mdash; Hegotá 66개 중 1개만 확정 (9/10 선호목록에서 드러남).</li>
+</ul>
+<h4>9. 한 줄들</h4>
+<ul>
+<li><strong>순 TVL 은 외부 자본과 정확히 같다.</strong></li>
+<li><strong>그 수수료는 수요가 아니라 레버리지 지표였다.</strong></li>
+<li><strong>성능은 감가 자산, 유통은 증가 자산.</strong></li>
+<li><strong>처리량은 운송의 속성이지 수요의 속성이 아니다.</strong></li>
+<li><strong>오픈소스에서 기술 우위는 해자가 아니라 리드타임이다. 유일한 해자는 상대의 정체성과 양립 불가능한 것이고, 그건 기술이 아니라 약속이다.</strong></li>
+<li><strong>포기가 없으면 베끼는 쪽도 포기할 게 없다.</strong></li>
+</ul>
       <p><a href="https://www.jaylabs.xyz/poc/monad-last-general-purpose-l1">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-base-app-mini-app.html">&larr; 39. Base App — what a Mini App buys, and what it rents</a><a href="pocs-layerzero-default-is-a-choice.html">41. LayerZero — the default verifier is a trust assumption nobody wrote down &rarr;</a></div>
+    <div class="pager"><a href="pocs-tokenized-money-banks.html">&larr; 24. Tokenized Money for Banks</a><a href="pocs-what-needs-a-stablecoin.html">26. Not what a stablecoin can do — what needs one &rarr;</a></div>
+  </div>
+  </main>
 </div>
+<script><script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('.rail-jump a')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  let revealTimer;
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    const first = order.find((k) => seen.has(k));
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) io.observe(el);
+  }
+</script></script>
 </body>
 </html>

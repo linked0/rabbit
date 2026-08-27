@@ -26,7 +26,7 @@ export type DemoCard = {
   // 목록 구획 (jay, 2026-08-27) — "Ethereum Protocol / Core Technologies" 와 그 밖의 모든 것.
   // 기본값이 후자이므로 프로토콜·코어 기술 카드에만 group: "protocol" 을 붙인다.
   // 기존 later 플래그는 남겨 두되 더 이상 구획을 가르지 않는다 — Later 묶음은 폐지됐다.
-  group?: "protocol";
+  group?: "protocol" | "economics" | "future";
   howTo: string;
   howToKo: string;
   // Longer technical write-up rendered in the "Technical Notes" section at the page bottom

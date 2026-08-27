@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gross over net — the recycling multiple — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-planned { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-protocol" title="Protocol &mdash; planned (13) / all (19)">Protocol<b><span class="count-planned">13</span><span class="count-all">/19</span></b></a><a href="../pocs.html#sec-applied" title="Applied &mdash; planned (43) / all (49)">Applied<b><span class="count-planned">43</span><span class="count-all">/49</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; planned (6) / all (6)">Economics<b><span class="count-planned">6</span><span class="count-all">/6</span></b></a><a href="../pocs.html#sec-future" title="Future &mdash; planned (5) / all (5)">Future<b><span class="count-planned">5</span><span class="count-all">/5</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; planned (97) / all (100)">Algorithms<b><span class="count-planned">97</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; planned (49) / all (52)">Math<b><span class="count-planned">49</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-economics" data-group>
+        <p class="nav-group-label">Economics (6)</p>
+        <ul>
+        <li><a class="nav-link" href="pocs-where-yield-comes-from.html" data-key="where-yield-comes-from"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">69</span>Every yield is somebody's cost — the three places it can come from</span></a></li>
+        <li><a class="nav-link active" href="pocs-gross-over-net.html" data-key="gross-over-net"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">70</span>Gross over net — the recycling multiple</span></a></li>
+        <li><a class="nav-link" href="pocs-risk-free-rate-is-the-floor.html" data-key="risk-free-rate-is-the-floor"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">71</span>The risk-free rate is the floor under every yield</span></a></li>
+        <li><a class="nav-link" href="pocs-m2-and-the-dollar.html" data-key="m2-and-the-dollar"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">72</span>M2, the dollar, and why crypto is a liquidity trade</span></a></li>
+        <li><a class="nav-link" href="pocs-lp-is-a-short-volatility-position.html" data-key="lp-is-a-short-volatility-position"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">73</span>Providing liquidity is selling volatility, and the loss is not impermanent</span></a></li>
+        <li><a class="nav-link" href="pocs-fees-over-security-budget.html" data-key="fees-over-security-budget"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">74</span>Does a chain pay for its own security?</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Gross over net — the recycling multiple</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#70</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Gross over net — the recycling multiple</h1>
+      <p class="lead">When a protocol pays incentives on both deposits and borrows, the same capital loops. Total deposits inflate, outside money does not — and net TVL turns out to equal external capital exactly. The ratio between the headline and the net is a number you can compute today.</p>
+      <p class="meta">Pick any lending market running a deposit-and-borrow incentive programme and take two figures it already publishes: total deposits and total borrows. Net is the difference. Gross divided by net is the recycling multiple. It needs no waiting, no modelling and no market-beta correction, and it applies to a live programme today. Then check whether the protocol&#39;s own reporting calls the gross number TVL.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>The identity is short enough to hold in your head, which is what makes it useful.</strong> Outside money X, collateral ratio c. Deposit X, borrow cX against it, redeposit, repeat. Total deposits converge to <strong>X/(1&amp;minus;c)</strong> and total borrows to <strong>cX/(1&amp;minus;c)</strong>. Subtract: <strong>net TVL = X.</strong> <em>Net TVL is exactly the external capital.</em> Everything above it is the same money wearing more coats.</p>
+<p><strong>The consequence that matters is that gross divided by net is a leverage multiple, and it is published without being labelled.</strong> A market showing deposits of $164.5M against borrows of $122.5M has $42M actually in it and a multiple of 3.9&amp;times;. Nothing is hidden &amp;mdash; both numbers are on the page &amp;mdash; but only the larger one gets quoted, and it gets quoted under a word, <em>TVL</em>, that most readers hear as <em>money present</em>.</p>
+<p><strong>A second consequence explains a pattern that otherwise looks strange: fee revenue moves superlinearly with the multiple.</strong> Fees accrue on total borrows, which scale as c/(1&amp;minus;c) &amp;mdash; so a modest fall in the collateral ratio collapses both together. When borrows fall 87% and fees fall 80% in the same window, that is not two facts. <strong>It is one fact, and it says the fees were a leverage gauge rather than a demand gauge.</strong></p>
+<p><strong>And the general form is worth stating plainly, because it is not confined to lending: everyone reports gross and calls it net.</strong> A chain reports TVL that is partly looped. An exchange reports volume that is partly wash or partly the same collateral re-pledged overnight. A payments network reports throughput that counts both legs of a round trip. <strong>The discipline is a single division, and the reason nobody performs it is that the larger number is the one being sold.</strong></p>
+<p><strong>The honest limits belong here too.</strong> The identity is exact only for <strong>single-asset recursion</strong>; cross-asset loops double-count and need a per-asset decomposition. And a high multiple is not fraud &amp;mdash; leverage is a legitimate product, and a lending market exists precisely to provide it. <strong>The claim is narrower and harder to argue with: the multiple should be published, and it never is.</strong></p>
+      <h2>How it works</h2>
+      <h3>The identity</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Formula</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Total deposits</td>
+<td><strong>D = X / (1 &amp;minus; c)</strong></td>
+<td>The headline</td>
+</tr>
+<tr>
+<td>Total borrows</td>
+<td><strong>B = cX / (1 &amp;minus; c)</strong></td>
+<td>What the incentive pays on</td>
+</tr>
+<tr>
+<td><strong>Net TVL</strong></td>
+<td><strong>D &amp;minus; B = X</strong></td>
+<td><strong>The external capital, exactly</strong></td>
+</tr>
+<tr>
+<td><strong>Recycling multiple</strong></td>
+<td><strong>D / (D &amp;minus; B)</strong></td>
+<td>The number nobody publishes</td>
+</tr>
+</tbody></table></div>
+<h3>Worked example</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Reported</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Total deposits</td>
+<td>$164.5M</td>
+</tr>
+<tr>
+<td>Total borrows</td>
+<td>$122.5M</td>
+</tr>
+<tr>
+<td><strong>Net</strong></td>
+<td><strong>$42M</strong></td>
+</tr>
+<tr>
+<td>Implied collateral ratio</td>
+<td><strong>c &amp;asymp; 0.745</strong></td>
+</tr>
+<tr>
+<td><strong>Recycling multiple</strong></td>
+<td><strong>3.9&amp;times;</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>$42M wearing four coats.</strong> Note the tell that comes free: when borrows exceed deposits in a headline, the smaller figure is already a net number and the reporting has mixed units.</p>
+<h3>Why fees move superlinearly</h3>
+<p>Fees accrue on <strong>B</strong>, and B/X = c/(1&amp;minus;c):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>c</th>
+<th>Multiple D/X</th>
+<th>Fee base B/X</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0.50</td>
+<td>2.0&amp;times;</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>0.70</td>
+<td>3.3&amp;times;</td>
+<td>2.3</td>
+</tr>
+<tr>
+<td><strong>0.745</strong></td>
+<td><strong>3.9&amp;times;</strong></td>
+<td><strong>2.9</strong></td>
+</tr>
+<tr>
+<td>0.80</td>
+<td>5.0&amp;times;</td>
+<td>4.0</td>
+</tr>
+</tbody></table></div>
+<p><strong>A small move in c swings the fee base hard in both directions</strong> &amp;mdash; which is why an incentive programme ending can take fees down 80% without a single user leaving.</p>
+<h3>The general form</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Gross number reported</th>
+<th>What net would be</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Lending</td>
+<td>TVL</td>
+<td>Deposits &amp;minus; borrows</td>
+</tr>
+<tr>
+<td>Chains</td>
+<td>TVL</td>
+<td>Same, summed across markets</td>
+</tr>
+<tr>
+<td>Exchanges</td>
+<td>Volume</td>
+<td>Net of wash and of re-pledged collateral</td>
+</tr>
+<tr>
+<td>Repo</td>
+<td>Daily turnover</td>
+<td><strong>The same collateral re-counted every night</strong></td>
+</tr>
+<tr>
+<td>Payments</td>
+<td>Throughput</td>
+<td>One leg, not both</td>
+</tr>
+</tbody></table></div>
+<p><strong>Everyone reports gross and calls it net.</strong> The division is the whole method.</p>
+<h3>Limits, stated up front</h3>
+<ul>
+<li>Exact only for <strong>single-asset recursion</strong>. Cross-asset loops need decomposition or they double-count.</li>
+<li><strong>A high multiple is not fraud.</strong> Leverage is the product. The objection is to the label, not the leverage.</li>
+<li>The multiple is a <strong>snapshot</strong>; it moves with c, which moves with price.</li>
+</ul>
+      <p><a href="https://www.jaylabs.xyz/poc/gross-over-net">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>총액 ÷ 순액 — 재활용 배수</h1>
+      <p class="lead">프로토콜이 <strong>예치와 차입 양쪽에</strong> 인센티브를 주면 <strong>같은 자본이 루프를 돕니다.</strong> 총 예치는 부풀고 외부 자금은 그대로이며 — <strong>순 TVL 은 외부 자본과 정확히 같아집니다.</strong> <strong>헤드라인과 순액의 비율은 오늘 계산할 수 있는 숫자</strong>입니다.</p>
+      <p class="meta"><strong>예치·차입 양쪽에 인센티브를 주는 대출 시장</strong> 아무거나 골라, <strong>이미 발표된 두 숫자</strong>를 가져옵니다 — <strong>총 예치</strong>와 <strong>총 차입.</strong> <strong>순액은 그 차이</strong>입니다. <strong>총액 ÷ 순액이 재활용 배수</strong>입니다. <strong>기다릴 필요도, 모델링도, 시장 베타 보정도 필요 없고</strong>, <strong>살아 있는 프로그램에 오늘 적용</strong>됩니다. 그다음 <strong>그 프로토콜 자신의 발표가 총액을 TVL 이라 부르는지</strong> 확인합니다.</p>
+      <h2>왜</h2>
+      <p><strong>항등식이 머릿속에 담길 만큼 짧고, 그래서 쓸모 있습니다.</strong> 외부 자금 X, 담보비율 c. X 를 예치하고 cX 를 빌려 다시 예치하고 반복. 총 예치는 <strong>X/(1−c)</strong>, 총 차입은 <strong>cX/(1−c)</strong> 로 수렴합니다. 빼면 <strong>순 TVL = X.</strong> <em>순 TVL 은 외부 자본과 정확히 같습니다.</em> <strong>그 위의 전부는 같은 돈이 외투를 더 껴입은 것</strong>입니다.</p>
+<p><strong>중요한 결과는 총액 ÷ 순액이 레버리지 배수이고, 이름표 없이 발표된다는 것입니다.</strong> 예치 $164.5M 대 차입 $122.5M 인 시장에는 <strong>실제로 $42M 이 있고 배수는 3.9배</strong>입니다. <strong>아무것도 숨겨지지 않았습니다</strong> — 두 숫자 다 페이지에 있습니다 — 다만 <strong>큰 쪽만 인용되고</strong>, 그것도 대부분의 독자가 <em>실재하는 돈</em> 으로 듣는 <strong>TVL</strong> 이라는 단어 아래 인용됩니다.</p>
+<p><strong>두 번째 결과가, 그러지 않으면 이상해 보이는 패턴을 설명합니다 — 수수료 매출이 배수에 대해 초선형으로 움직입니다.</strong> 수수료는 <strong>총 차입</strong>에 붙고 총 차입은 <strong>c/(1−c)</strong> 로 커지므로, <strong>담보비율이 조금만 내려도 둘이 함께 무너집니다.</strong> 차입이 −87%, 수수료가 −80% 로 같은 창에서 움직였다면 <strong>그건 사실 두 개가 아닙니다.</strong> <strong>하나의 사실이고, 그 수수료가 수요 계기판이 아니라 레버리지 계기판이었다고 말합니다.</strong></p>
+<p><strong>그리고 일반형은 분명히 적을 값이 있습니다. 대출에 국한되지 않기 때문입니다 — 모두가 총액을 발표하면서 그것을 순액이라 부릅니다.</strong> 체인은 <strong>일부가 루프인 TVL</strong> 을 발표합니다. 거래소는 <strong>일부가 워시이거나 밤새 같은 담보를 다시 잡은</strong> 거래량을 발표합니다. 결제망은 <strong>왕복의 양쪽 구간을 다 센</strong> 처리량을 발표합니다. <strong>규율은 나눗셈 한 번이고, 아무도 하지 않는 이유는 큰 숫자가 팔리고 있는 그 숫자이기 때문</strong>입니다.</p>
+<p><strong>정직한 한계도 여기 둡니다.</strong> 항등식은 <strong>단일 자산 재귀에서만 정확</strong>합니다. <strong>교차 자산 루프는 이중계상</strong>되어 자산별 분해가 필요합니다. 그리고 <strong>높은 배수가 사기는 아닙니다</strong> — 레버리지는 정당한 상품이고, 대출 시장은 정확히 그것을 제공하려고 존재합니다. <strong>주장은 더 좁고 반박하기 어렵습니다: 배수는 발표되어야 하는데, 한 번도 발표되지 않습니다.</strong></p>
+      <h2>동작 방식</h2>
+      <h3>항등식</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>양</th>
+<th>식</th>
+<th>뜻</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>총 예치</td>
+<td><strong>D = X / (1 − c)</strong></td>
+<td>헤드라인</td>
+</tr>
+<tr>
+<td>총 차입</td>
+<td><strong>B = cX / (1 − c)</strong></td>
+<td><strong>인센티브가 붙는 대상</strong></td>
+</tr>
+<tr>
+<td><strong>순 TVL</strong></td>
+<td><strong>D − B = X</strong></td>
+<td><strong>외부 자본, 정확히</strong></td>
+</tr>
+<tr>
+<td><strong>재활용 배수</strong></td>
+<td><strong>D / (D − B)</strong></td>
+<td><strong>아무도 발표하지 않는 숫자</strong></td>
+</tr>
+</tbody></table></div>
+<h3>계산 예</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>발표된 것</th>
+<th>값</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>총 예치</td>
+<td>$164.5M</td>
+</tr>
+<tr>
+<td>총 차입</td>
+<td>$122.5M</td>
+</tr>
+<tr>
+<td><strong>순액</strong></td>
+<td><strong>$42M</strong></td>
+</tr>
+<tr>
+<td>함축된 담보비율</td>
+<td><strong>c ≈ 0.745</strong></td>
+</tr>
+<tr>
+<td><strong>재활용 배수</strong></td>
+<td><strong>3.9배</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>$42M 이 외투를 네 겹 껴입은 것.</strong> 공짜로 따라오는 단서 하나: <strong>헤드라인에서 차입이 예치를 넘으면, 작은 쪽은 이미 순액</strong>이고 <strong>발표가 단위를 섞은 것</strong>입니다.</p>
+<h3>왜 수수료가 초선형인가</h3>
+<p>수수료는 <strong>B</strong> 에 붙고, B/X = c/(1−c):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>c</th>
+<th>배수 D/X</th>
+<th>수수료 기반 B/X</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0.50</td>
+<td>2.0배</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>0.70</td>
+<td>3.3배</td>
+<td>2.3</td>
+</tr>
+<tr>
+<td><strong>0.745</strong></td>
+<td><strong>3.9배</strong></td>
+<td><strong>2.9</strong></td>
+</tr>
+<tr>
+<td>0.80</td>
+<td>5.0배</td>
+<td>4.0</td>
+</tr>
+</tbody></table></div>
+<p><strong>c 가 조금만 움직여도 수수료 기반이 양방향으로 크게 흔들립니다</strong> — 그래서 <strong>인센티브 프로그램 종료만으로 사용자가 한 명도 안 떠나도 수수료가 80% 빠질 수 있습니다.</strong></p>
+<h3>일반형</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>영역</th>
+<th>발표되는 총액</th>
+<th>순액이라면</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>대출</td>
+<td>TVL</td>
+<td>예치 − 차입</td>
+</tr>
+<tr>
+<td>체인</td>
+<td>TVL</td>
+<td>같은 것을 시장별로 합산</td>
+</tr>
+<tr>
+<td>거래소</td>
+<td>거래량</td>
+<td><strong>워시와 재담보를 뺀 것</strong></td>
+</tr>
+<tr>
+<td>레포</td>
+<td>일일 회전</td>
+<td><strong>같은 담보를 매일 밤 다시 센 것</strong></td>
+</tr>
+<tr>
+<td>결제</td>
+<td>처리량</td>
+<td><strong>왕복이 아니라 한 구간</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>모두가 총액을 발표하면서 그것을 순액이라 부릅니다.</strong> <strong>나눗셈이 방법의 전부입니다.</strong></p>
+<h3>한계, 미리 적기</h3>
+<ul>
+<li><strong>단일 자산 재귀에서만 정확.</strong> 교차 자산 루프는 분해하지 않으면 <strong>이중계상</strong>.</li>
+<li><strong>높은 배수가 사기는 아님.</strong> <strong>레버리지가 곧 상품</strong>입니다. 반대하는 것은 <strong>레버리지가 아니라 이름표</strong>입니다.</li>
+<li>배수는 <strong>스냅샷</strong>입니다. <strong>c 에 따라 움직이고, c 는 가격에 따라 움직입니다.</strong></li>
+</ul>
+      <p><a href="https://www.jaylabs.xyz/poc/gross-over-net">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-where-yield-comes-from.html">&larr; 69. Every yield is somebody's cost — the three places it can come from</a><a href="pocs-risk-free-rate-is-the-floor.html">71. The risk-free rate is the floor under every yield &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script><script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('.rail-jump a')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  let revealTimer;
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    const first = order.find((k) => seen.has(k));
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) io.observe(el);
+  }
+</script></script>
+</body>
+</html>

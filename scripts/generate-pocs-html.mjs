@@ -40,6 +40,13 @@ import { createRequire } from 'node:module';
 // 페이지 껍데기(레일+본문 레이아웃, 항목 상세 페이지)는 algorithms.html·math.html 과
 // 공유한다 — scripts/rtd-shell.mjs.
 import { renderRtdPage, renderTopicPage, escapeHtml, wrapTables } from './rtd-shell.mjs';
+// Algorithms·Math 를 같은 페이지의 섹션으로 그린다 (jay, 2026-08-27) — 파서는
+// curriculum-shared.mjs 한 곳에만 있고, docs/algorithms.html·math.html 도 같은 것을 쓴다.
+import {
+  CURRICULA, DONE_COLOR, EXPLAINERS, parseCurriculum,
+  inline as curInline, shortLabel, subtitle,
+  firstSentences as curFirstSentences, sentenceRange, itemUrl,
+} from './curriculum-shared.mjs';
 import { marked as mdEngine } from 'marked'; // 아래쪽 지역 변수 marked 와 이름이 겹쳐 별칭을 쓴다
 // 카드 본문은 마크다운이다 — 제목·표·목록·**강조**·`코드`·빈 줄 문단이 데이터에 들어간다.
 // 예전에는 escapeHtml 만 거쳐 <p> 하나에 통째로 들어가서 별표가 화면에 그대로 찍히고
@@ -119,11 +126,45 @@ const cards = [
 // 두 구획으로 가른다 (jay, 2026-08-27): 이더리움 프로토콜·코어 기술이 앞, 그 밖의 전부가
 // 뒤. 예전의 "Later" 묶음은 없앴고 그 항목들은 뒤 구획으로 합쳐졌다 — 지금 중요하지 않다는
 // 표시가 목록을 셋으로 가를 만큼의 값을 하지 못했다. 번호는 두 구획을 가로질러 이어진다.
-const protocolCards = cards.filter((c) => c.group === 'protocol');
-const appliedCards = cards.filter((c) => c.group !== 'protocol');
-const numbered = [...protocolCards, ...appliedCards].map((c, i) => ({ ...c, no: i + 1 }));
-const numberedMain = numbered.slice(0, protocolCards.length);
-const numberedLater = numbered.slice(protocolCards.length);
+// 카드 구획 (jay, 2026-08-27 에 Economics·Future 추가). 순서가 곧 번호 순서다 —
+// 기계 → 그 위에 지은 것 → 돈의 논리 → 아직 오지 않은 것.
+const CARD_GROUPS = [
+  {
+    id: 'protocol',
+    title: 'Protocol',
+    lead: 'Ethereum protocol and core technologies &mdash; consensus, EIPs, cryptography, and the mechanisms everything else is standing on.',
+  },
+  {
+    id: 'applied',
+    title: 'Applied',
+    lead: 'Everything built on top: services, APIs, chains, payments, and the market and regulatory reading that decides what any of it is allowed to be.',
+  },
+  {
+    id: 'economics',
+    title: 'Economics',
+    lead: 'The money logic underneath all of it &mdash; where a yield actually comes from, what a headline number is really counting, and the handful of macro facts that move every price on this list.',
+  },
+  {
+    id: 'future',
+    title: 'Future',
+    lead: 'Robotics, embodied AI, and the constraints that decide which of it arrives &mdash; the adjacent track, kept honest about what is a demo and what is a cost curve.',
+  },
+];
+const cardsInGroup = (id) =>
+  id === 'applied'
+    ? cards.filter((c) => !CARD_GROUPS.some((g) => g.id !== 'applied' && c.group === g.id))
+    : cards.filter((c) => c.group === id);
+const grouped = CARD_GROUPS.map((g) => ({ ...g, cards: cardsInGroup(g.id) })).filter(
+  (g) => g.cards.length
+);
+const numbered = grouped.flatMap((g) => g.cards).map((c, i) => ({ ...c, no: i + 1 }));
+{
+  let at = 0;
+  for (const g of grouped) {
+    g.numbered = numbered.slice(at, at + g.cards.length);
+    at += g.cards.length;
+  }
+}
 
 // DemoCard.tsx 와 같은 구분 — 오직 status 로만 정한다 (2026-08-12). "href 가 있으면 목업"
 // 이라는 추론은 지웠다: DVT 는 읽을 페이지가 있어도 계획이고, 게임·에이전트는 완료다.
@@ -162,84 +203,6 @@ function topicPagerHref(card) {
   return `pocs-${card.key}.html`;
 }
 
-fs.mkdirSync(TOPICS_DIR, { recursive: true });
-const written = new Set();
-for (const [idx, c] of numbered.entries()) {
-  if (c.docsHref) continue;
-  const fname = `pocs-${c.key}.html`;
-  written.add(fname);
-  const b = badge(c);
-  const prev = numbered[idx - 1];
-  const next = numbered[idx + 1];
-  const diagramNote = c.diagrams?.length
-    ? `      <p class="meta">${c.diagrams.length} diagram(s) on the live page.</p>\n`
-    : '';
-  const code = readCodeSnippet(c.key);
-  const codeHtml = code
-    ? `      <h2>Related code</h2>\n      <pre><code>${escapeHtml(code)}</code></pre>\n      <p class="code-link"><a href="../code/pocs/${c.key}.py">docs/code/pocs/${c.key}.py</a></p>\n`
-    : '';
-  const codeHtmlKo = code
-    ? `      <h2>관련 코드</h2>\n      <pre><code>${escapeHtml(code)}</code></pre>\n      <p class="code-link"><a href="../code/pocs/${c.key}.py">docs/code/pocs/${c.key}.py</a></p>\n`
-    : '';
-  const openLink = `<a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a>`;
-  // 이중언어 — 영어 먼저, 한국어 나중 (jay, 2026-08-13). 카드 데이터에 이미 있는 *Ko
-  // 필드를 그대로 쓴다 — 번역을 새로 짓지 않는다.
-  fs.writeFileSync(
-    path.join(TOPICS_DIR, fname),
-    renderTopicPage({
-      title: `${c.title} — PoCs`,
-      crumbHtml: `<a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ${escapeHtml(c.title)}`,
-      // 표제부를 본문에서 분리한다 (jay, 2026-08-26). 예전에는 h1·요약·howTo 가 본문
-      // 문단들과 같은 상자 안에 그냥 얹혀 있어서 글이 어디서 시작하는지 보이지 않았다.
-      // 번호·상태·제목·요약·언어 전환을 hero 한 곳에 모으고, 본문 두 덩어리(영/한)는
-      // 각자 상자를 갖는다 — 이중언어 페이지에서 위아래로 훑지 않고 건너뛸 수 있다.
-      bodyHtml: `  <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#${c.no}</span><span>PoC</span><span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></p>
-      <h1>${escapeHtml(c.title)}</h1>
-      <p class="lead">${mdInline(c.description)}</p>
-      <p class="meta">${mdInline(c.howTo)}</p>
-      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-    </header>
-    <article id="en">
-      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
-      <h2>Why</h2>
-      ${md(c.purpose)}
-      <h2>How it works</h2>
-      ${md(c.howItWorks)}
-${diagramNote}${codeHtml}      <p>${openLink}</p>
-    </article>
-    <article id="ko" lang="ko">
-      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>${escapeHtml(c.titleKo)}</h1>
-      <p class="lead">${mdInline(c.descriptionKo)}</p>
-      <p class="meta">${mdInline(c.howToKo)}</p>
-      <h2>왜</h2>
-      ${md(c.purposeKo)}
-      <h2>동작 방식</h2>
-      ${md(c.howItWorksKo)}
-${diagramNote}${codeHtmlKo}      <p>${openLink}</p>
-    </article>`,
-      pagerHtml: `${
-        prev ? `<a href="${escapeHtml(topicPagerHref(prev))}">&larr; ${prev.no}. ${escapeHtml(prev.title)}</a>` : '<span></span>'
-      }${
-        next ? `<a href="${escapeHtml(topicPagerHref(next))}">${next.no}. ${escapeHtml(next.title)} &rarr;</a>` : '<span></span>'
-      }`,
-    }),
-    'utf8'
-  );
-}
-// 이번에 쓴 파일만 남긴다 — 카드에 docsHref 를 나중에 붙이거나 순서가 바뀌면 예전 스텁이
-// "지워진 항목의 페이지"로 남는 걸 막는다 (Algorithms·Math 스텁 생성과 같은 이유).
-// 예외: 카드가 docsHref 로 이 디렉터리의 파일을 직접 가리키면 그건 손으로 쓴 정본이므로
-// 지우지 않는다 (jay, 2026-08-13 — DVT 노트처럼 생성 템플릿보다 긴 글이 필요한 경우).
-const claimed = new Set(
-  numbered
-    .filter((c) => c.docsHref && !/^https?:\/\//.test(c.docsHref) && path.dirname(c.docsHref) === 'topics')
-    .map((c) => path.basename(c.docsHref)),
-);
-for (const f of fs.readdirSync(TOPICS_DIR)) {
-  if (f.startsWith('pocs-') && !written.has(f) && !claimed.has(f)) fs.rmSync(path.join(TOPICS_DIR, f));
-}
 
 // ── 1) index.html 의 PoCs 섹션 ──────────────────────────────────────────────
 // 인덱스에는 상위 6장만 (jay, 2026-08-12) — 전체 목록은 pocs.html("View All PoCs")이 맡는다.
@@ -296,11 +259,13 @@ function navItems(list) {
   });
 }
 // 레일도 같은 두 묶음으로 나눈다 — 아래로 내린 것을 위에서 다시 만나면 내린 의미가 없다.
+// id 는 레일 바로가기가 이 그룹을 찾아 맨 위로 올릴 때 쓴다 (nav-<섹션 앵커>).
 const navGroups = [
-  { label: `Protocol (${numberedMain.length})`, items: navItems(numberedMain) },
-  ...(numberedLater.length
-    ? [{ label: `Applied (${numberedLater.length})`, items: navItems(numberedLater) }]
-    : []),
+  ...grouped.map((g) => ({
+    id: `nav-sec-${g.id}`,
+    label: `${g.title} (${g.numbered.length})`,
+    items: navItems(g.numbered),
+  })),
 ];
 
 // 원래 있던 lead(description) + Why(purpose)가 좋았다 (jay, 2026-08-13) — 코드·How it
@@ -391,26 +356,237 @@ function rowsFor(list) {
   .join('\n');
 }
 
-// 두 절로 나눠 그린다 (jay, 2026-08-14). Later 는 접지 않고 그냥 아래에 둔다 — 숨기면
-// 있다는 것 자체를 잊고, 접으면 클릭이 하나 는다. 소제목과 한 줄 설명이면 충분하다.
-const laterHtml = numberedLater.length
-  ? `
-    <article>
-      <h1>Applied</h1>
-      <p class="lead">Everything built on top: services, APIs, chains, payments, robotics and AI, and the market and regulatory reading that decides what any of it is allowed to be.</p>
+// ── 커리큘럼 섹션 ───────────────────────────────────────────────────────────
+// 항목 행은 커리큘럼 페이지와 같은 모양(번호·제목·배지 + summary/how/why + Detail)이다.
+// 번호는 커리큘럼 자신의 1..N 을 그대로 쓴다 — PoC 번호와 섞으면 둘 다 뜻을 잃는다.
+const curricula = CURRICULA.map((cfg) => {
+  const md = fs.readFileSync(path.join(REPO_ROOT, cfg.source), 'utf8');
+  const { groups } = parseCurriculum(md);
+  const items = groups.flatMap((g) => g.items);
+  return { cfg, groups, items, done: items.filter((i) => i.done).length };
+});
+
+function curriculumRows(cfg, items) {
+  return items
+    .map((i) => {
+      const href = escapeHtml(itemUrl(cfg, i));
+      const mark = i.done
+        ? ` <span class="badge topic-done" style="background:${DONE_COLOR}22; color:${DONE_COLOR};">DONE</span>`
+        : '';
+      const ex = EXPLAINERS[cfg.id]?.[String(i.no)];
+      const sub = ex?.concept ? curFirstSentences(ex.concept, 2) : subtitle(i.text);
+      const summaryHtml = sub ? `\n          <p class="topic-summary">${curInline(sub)}</p>` : '';
+      const how = ex?.concept ? sentenceRange(ex.concept, 2, 2) : '';
+      const howHtml = how ? `\n          <p class="topic-how"><strong>How it works</strong>${curInline(how)}</p>` : '';
+      const whyHtml = ex?.why ? `\n          <p class="topic-why"><strong>Why</strong>${curInline(ex.why)}</p>` : '';
+      return `        <li id="${cfg.id}-${i.no}">
+          <div class="topic-head"><span class="topic-no">${i.no}</span><span class="topic-title">${curInline(shortLabel(i.text))}</span>${mark}</div>${summaryHtml}${howHtml}${whyHtml}
+          <p class="topic-link"><a href="${href}">Detail &rarr;</a></p>
+        </li>`;
+    })
+    .join('\n');
+}
+
+const CURRICULUM_LEAD = {
+  algorithms:
+    'Advanced algorithms, compilers, concurrency, distributed systems and AI engineering &mdash; one topic a day, and the bar is knowing it exists well enough to reach for it.',
+  math: 'The mathematics underneath the rest of this catalogue &mdash; one topic a day, each one carried far enough to read a formula without flinching.',
+};
+
+// 전체 합계 한 줄(all / planned)은 지웠다 (jay, 2026-08-27: "this number is irrelevant") —
+// 네 섹션이 서로 다른 것을 세는데 하나로 합치면 아무것도 뜻하지 않는다. 대신 같은 형식을
+// 섹션마다 붙인다: 알약에는 압축해서(19/13), 섹션 머리에는 풀어서.
+const plannedIn = (list) => list.filter((c) => c.status === 'soon').length;
+const SECTIONS = [
+  ...grouped.map((g) => [`sec-${g.id}`, g.title, g.numbered.length, plannedIn(g.numbered)]),
+  ...curricula.map(({ cfg, items }) => [
+    `sec-${cfg.id}`,
+    cfg.sectionTitle,
+    items.length,
+    items.filter((i) => !i.done).length,
+  ]),
+];
+// planned 를 앞에, 그리고 파랗게 (jay, 2026-08-27) — 이 페이지에서 먼저 알고 싶은 것은
+// 전체 개수가 아니라 남은 일의 크기다. 전체는 그 뒤의 맥락이라 흐리게 둔다.
+const sectionMeta = Object.fromEntries(
+  SECTIONS.map(([id, , all, planned]) => [
+    id,
+    `<span class="count-planned">planned (${planned})</span> <span class="count-all">/ all (${all})</span>`,
+  ])
+);
+const railJump = SECTIONS.map(
+  ([id, label, all, planned]) =>
+    `<a href="#${id}" title="${label} &mdash; planned (${planned}) / all (${all})">${label}<b><span class="count-planned">${planned}</span><span class="count-all">/${all}</span></b></a>`
+).join('');
+
+const curriculumHtml = curricula
+  .map(({ cfg, groups, items, done }) => {
+    const inner = groups
+      .map(
+        (g) => `      <h2>${escapeHtml(g.label)}</h2>
       <ul class="topics">
-${rowsFor(numberedLater)}
+${curriculumRows(cfg, g.items)}
+      </ul>`
+      )
+      .join('\n');
+    return `
+    <article id="sec-${cfg.id}">
+      <h1>${escapeHtml(cfg.sectionTitle)}</h1>
+      <p class="lead">${CURRICULUM_LEAD[cfg.id] ?? ''}</p>
+      <p class="meta">${sectionMeta[`sec-${cfg.id}`]} &middot; <a href="${escapeHtml(cfg.viewAllHref)}">${escapeHtml(cfg.viewAllLabel)} &rarr;</a></p>
+${inner}
+    </article>`;
+  })
+  .join('\n');
+
+for (const { cfg, items } of curricula) {
+  navGroups.push({
+    id: `nav-sec-${cfg.id}`,
+    label: `${cfg.sectionTitle} (${items.length})`,
+    items: items.map((i) => ({
+      anchor: `${cfg.id}-${i.no}`,
+      text: `<span class="topic-no">${i.no}</span>${escapeHtml(shortLabel(i.text))}`,
+      color: i.done ? DONE_COLOR : '#64748b',
+      statusLabel: i.done ? 'DONE' : 'PLANNED',
+    })),
+  });
+}
+
+// 레일 상단의 섹션 바로가기. 레일은 늘 보이니 이것이 목차이자 돌아오는 길이다 —
+// 그래서 본문에 "맨 위로" 링크를 따로 두지 않는다 (jay, 2026-08-27).
+// 카드 구획들을 한 번에 그린다 (jay, 2026-08-27) — 구획이 넷이 되면서 손으로 적을 수 없다.
+const cardSectionsHtml = grouped
+  .map(
+    (g) => `    <article id="sec-${g.id}">
+      <h1>${g.title}</h1>
+      <p class="lead">${g.lead}</p>
+      <p class="meta">${sectionMeta[`sec-${g.id}`]}</p>
+      <ul class="topics">
+${rowsFor(g.numbered)}
       </ul>
     </article>`
-  : '';
+  )
+  .join('\n');
 
-const contentHtml = `    <article>
-      <h1>Protocol</h1>
-      <p class="lead">Ethereum protocol and core technologies &mdash; consensus, EIPs, cryptography, and the mechanisms everything else is standing on.</p>
-      <ul class="topics">
-${rowsFor(numberedMain)}
-      </ul>
-    </article>${laterHtml}`;
+const contentHtml = `${cardSectionsHtml}${curriculumHtml}`;
+
+// 상세 페이지는 구획 정보(grouped·SECTIONS)에 의존하므로 그 뒤에서 만든다
+// (jay, 2026-08-27 에 레일이 붙으면서 순서가 중요해졌다).
+fs.mkdirSync(TOPICS_DIR, { recursive: true });
+const written = new Set();
+for (const [idx, c] of numbered.entries()) {
+  if (c.docsHref) continue;
+  const fname = `pocs-${c.key}.html`;
+  written.add(fname);
+  const b = badge(c);
+  const prev = numbered[idx - 1];
+  const next = numbered[idx + 1];
+// 상세 페이지 레일 — 구획 알약은 목록 페이지의 앵커를 가리키고, 항목 목록은 같은 구획의
+// 형제들을 파일 링크로 잇는다. 지금 보고 있는 항목은 active 로 표시된다.
+const detailRailJump = SECTIONS.map(
+  ([id, label, all, planned]) =>
+    `<a href="../pocs.html#${id}" title="${label} &mdash; planned (${planned}) / all (${all})">${label}<b><span class="count-planned">${planned}</span><span class="count-all">/${all}</span></b></a>`
+).join('');
+
+function detailNavGroups(current) {
+  const g = grouped.find((x) => x.numbered.some((n) => n.key === current.key));
+  if (!g) return null;
+  return [
+    {
+      id: `nav-sec-${g.id}`,
+      label: `${g.title} (${g.numbered.length})`,
+      items: g.numbered.map((n) => {
+        const b = badge(n);
+        return {
+          anchor: n.key,
+          href: detailHref(n).replace(/^topics\//, ''),
+          current: n.key === current.key,
+          text: `<span class="topic-no">${n.no}</span>${escapeHtml(n.title)}`,
+          color: b.color,
+          statusLabel: b.label,
+        };
+      }),
+    },
+  ];
+}
+
+  const diagramNote = c.diagrams?.length
+    ? `      <p class="meta">${c.diagrams.length} diagram(s) on the live page.</p>\n`
+    : '';
+  const code = readCodeSnippet(c.key);
+  const codeHtml = code
+    ? `      <h2>Related code</h2>\n      <pre><code>${escapeHtml(code)}</code></pre>\n      <p class="code-link"><a href="../code/pocs/${c.key}.py">docs/code/pocs/${c.key}.py</a></p>\n`
+    : '';
+  const codeHtmlKo = code
+    ? `      <h2>관련 코드</h2>\n      <pre><code>${escapeHtml(code)}</code></pre>\n      <p class="code-link"><a href="../code/pocs/${c.key}.py">docs/code/pocs/${c.key}.py</a></p>\n`
+    : '';
+  const openLink = `<a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a>`;
+  // 이중언어 — 영어 먼저, 한국어 나중 (jay, 2026-08-13). 카드 데이터에 이미 있는 *Ko
+  // 필드를 그대로 쓴다 — 번역을 새로 짓지 않는다.
+  fs.writeFileSync(
+    path.join(TOPICS_DIR, fname),
+    renderTopicPage({
+      // 상세 페이지에도 같은 레일 (jay, 2026-08-27). 224개를 전부 실으면 페이지마다
+      // 수십 KB 라, 지금 보고 있는 구획의 형제 항목만 싣고 나머지 구획은 알약으로 잇는다.
+      railTitle: 'Rabbit',
+      railTitleHref: '../index.html',
+      railJump: detailRailJump,
+      filterPlaceholder: 'Filter section',
+      navGroups: detailNavGroups(c),
+      railFoot: `<a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a>`,
+      title: `${c.title} — PoCs`,
+      crumbHtml: `<a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ${escapeHtml(c.title)}`,
+      // 표제부를 본문에서 분리한다 (jay, 2026-08-26). 예전에는 h1·요약·howTo 가 본문
+      // 문단들과 같은 상자 안에 그냥 얹혀 있어서 글이 어디서 시작하는지 보이지 않았다.
+      // 번호·상태·제목·요약·언어 전환을 hero 한 곳에 모으고, 본문 두 덩어리(영/한)는
+      // 각자 상자를 갖는다 — 이중언어 페이지에서 위아래로 훑지 않고 건너뛸 수 있다.
+      bodyHtml: `  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#${c.no}</span><span>PoC</span><span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></p>
+      <h1>${escapeHtml(c.title)}</h1>
+      <p class="lead">${mdInline(c.description)}</p>
+      <p class="meta">${mdInline(c.howTo)}</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      ${md(c.purpose)}
+      <h2>How it works</h2>
+      ${md(c.howItWorks)}
+${diagramNote}${codeHtml}      <p>${openLink}</p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>${escapeHtml(c.titleKo)}</h1>
+      <p class="lead">${mdInline(c.descriptionKo)}</p>
+      <p class="meta">${mdInline(c.howToKo)}</p>
+      <h2>왜</h2>
+      ${md(c.purposeKo)}
+      <h2>동작 방식</h2>
+      ${md(c.howItWorksKo)}
+${diagramNote}${codeHtmlKo}      <p>${openLink}</p>
+    </article>`,
+      pagerHtml: `${
+        prev ? `<a href="${escapeHtml(topicPagerHref(prev))}">&larr; ${prev.no}. ${escapeHtml(prev.title)}</a>` : '<span></span>'
+      }${
+        next ? `<a href="${escapeHtml(topicPagerHref(next))}">${next.no}. ${escapeHtml(next.title)} &rarr;</a>` : '<span></span>'
+      }`,
+    }),
+    'utf8'
+  );
+}
+// 이번에 쓴 파일만 남긴다 — 카드에 docsHref 를 나중에 붙이거나 순서가 바뀌면 예전 스텁이
+// "지워진 항목의 페이지"로 남는 걸 막는다 (Algorithms·Math 스텁 생성과 같은 이유).
+// 예외: 카드가 docsHref 로 이 디렉터리의 파일을 직접 가리키면 그건 손으로 쓴 정본이므로
+// 지우지 않는다 (jay, 2026-08-13 — DVT 노트처럼 생성 템플릿보다 긴 글이 필요한 경우).
+const claimed = new Set(
+  numbered
+    .filter((c) => c.docsHref && !/^https?:\/\//.test(c.docsHref) && path.dirname(c.docsHref) === 'topics')
+    .map((c) => path.basename(c.docsHref)),
+);
+for (const f of fs.readdirSync(TOPICS_DIR)) {
+  if (f.startsWith('pocs-') && !written.has(f) && !claimed.has(f)) fs.rmSync(path.join(TOPICS_DIR, f));
+}
 
 fs.writeFileSync(
   OUT_HTML,
@@ -418,9 +594,9 @@ fs.writeFileSync(
     title: 'PoCs — All Contents',
     railTitle: 'Rabbit',
     railTitleHref: 'index.html',
-    railSub: `PoCs &mdash; all (${cards.length}) / planned (${cards.filter((c) => c.status === 'soon').length})`,
     filterPlaceholder: 'Filter PoCs',
     navGroups,
+    railJump,
     railFoot: `<a href="index.html">&larr; Workspace Index</a> &middot; <a href="${SITE}/poc">Live PoCs menu</a>`,
     srcLine:
       'Source: lib/poc-cards.ts, lib/algorithm-cards.ts (auto-generated by scripts/generate-pocs-html.mjs — edit the card data, not this file)',

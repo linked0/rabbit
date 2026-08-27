@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The risk-free rate is the floor under every yield — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-planned { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-protocol" title="Protocol &mdash; planned (13) / all (19)">Protocol<b><span class="count-planned">13</span><span class="count-all">/19</span></b></a><a href="../pocs.html#sec-applied" title="Applied &mdash; planned (43) / all (49)">Applied<b><span class="count-planned">43</span><span class="count-all">/49</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; planned (6) / all (6)">Economics<b><span class="count-planned">6</span><span class="count-all">/6</span></b></a><a href="../pocs.html#sec-future" title="Future &mdash; planned (5) / all (5)">Future<b><span class="count-planned">5</span><span class="count-all">/5</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; planned (97) / all (100)">Algorithms<b><span class="count-planned">97</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; planned (49) / all (52)">Math<b><span class="count-planned">49</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-economics" data-group>
+        <p class="nav-group-label">Economics (6)</p>
+        <ul>
+        <li><a class="nav-link" href="pocs-where-yield-comes-from.html" data-key="where-yield-comes-from"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">69</span>Every yield is somebody's cost — the three places it can come from</span></a></li>
+        <li><a class="nav-link" href="pocs-gross-over-net.html" data-key="gross-over-net"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">70</span>Gross over net — the recycling multiple</span></a></li>
+        <li><a class="nav-link active" href="pocs-risk-free-rate-is-the-floor.html" data-key="risk-free-rate-is-the-floor"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">71</span>The risk-free rate is the floor under every yield</span></a></li>
+        <li><a class="nav-link" href="pocs-m2-and-the-dollar.html" data-key="m2-and-the-dollar"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">72</span>M2, the dollar, and why crypto is a liquidity trade</span></a></li>
+        <li><a class="nav-link" href="pocs-lp-is-a-short-volatility-position.html" data-key="lp-is-a-short-volatility-position"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">73</span>Providing liquidity is selling volatility, and the loss is not impermanent</span></a></li>
+        <li><a class="nav-link" href="pocs-fees-over-security-budget.html" data-key="fees-over-security-budget"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">74</span>Does a chain pay for its own security?</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The risk-free rate is the floor under every yield</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#71</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>The risk-free rate is the floor under every yield</h1>
+      <p class="lead">A short-dated government bill pays something for taking almost no risk. Any yield that takes real risk has to beat it before it is interesting at all — which means the entire on-chain yield landscape is priced relative to a number set by a central bank, not by crypto.</p>
+      <p class="meta">Ten minutes and a spreadsheet with two columns: the current three-month government bill yield, and the yield on whatever on-chain position you are considering, stripped of emissions per <code>where-yield-comes-from</code>. The difference is the risk premium you are being paid. Then ask the only question that matters — is that premium enough for smart-contract risk, oracle risk, counterparty risk and exit risk combined? Repeat the exercise at a few points in the last three years and the crypto cycle starts looking like a function of one line.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>Every yield in existence is quoted against an implicit alternative, and the alternative is a government bill.</strong> If a short-dated bill pays 5% for something close to no risk, then a protocol paying 6% is offering <strong>one percentage point</strong> for smart-contract risk, oracle risk, custody risk and the risk that you cannot get out on the day you want to. Written that way it is obviously a bad trade; written as <em>6% APY</em> it is a product.</p>
+<p><strong>This single relationship explains more of the crypto cycle than most crypto-specific narratives do.</strong> When the risk-free rate is near zero, any positive yield looks extraordinary and capital floods toward risk because the alternative pays nothing. When it rises to 5%, that same capital has a safe place to sit and the on-chain yield has to work much harder for the same flow. <strong>Nothing about the protocols changed. The denominator did.</strong> <code>m2-and-the-dollar</code> is the other half of that mechanism.</p>
+<p><strong>And it reframes what a stablecoin issuer actually is.</strong> A fiat-backed issuer holds short-dated government paper and returns none of the interest to the holder. <strong>The issuer&#39;s business is the risk-free rate</strong>, which is why a high-rate environment is enormously profitable for dollar issuers and why the same product denominated in a low-rate currency is a much thinner business &amp;mdash; the point <code>two-currencies-one-ledger</code> reaches from the euro side and <code>what-needs-a-stablecoin</code> reaches from the won side.</p>
+<p><strong>The discipline is to always subtract before comparing.</strong> A yield is only interesting to the extent it exceeds the floor, and most published comparisons put a gross on-chain number next to nothing at all. <strong>Subtract the bill, subtract the emissions, and what is left is the actual offer</strong> &amp;mdash; usually small, occasionally excellent, and always smaller than advertised.</p>
+      <h2>How it works</h2>
+      <h3>The subtraction, done properly</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Advertised APY</td>
+<td><strong>12%</strong></td>
+</tr>
+<tr>
+<td>Less: emissions portion (<code>where-yield-comes-from</code>)</td>
+<td>&amp;minus;7% &amp;rarr; <strong>5% real</strong></td>
+</tr>
+<tr>
+<td>Less: short-dated bill yield</td>
+<td>&amp;minus;4% &amp;rarr; <strong>1% premium</strong></td>
+</tr>
+<tr>
+<td><strong>What that 1% is paying for</strong></td>
+<td><strong>Smart-contract + oracle + custody + exit risk, combined</strong></td>
+</tr>
+</tbody></table></div>
+<h3>What moves when the floor moves</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Risk-free rate</th>
+<th>Effect on on-chain yield demand</th>
+<th>Effect on stablecoin issuers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Near zero</strong></td>
+<td>Any positive yield attracts capital; risk appetite is cheap</td>
+<td><strong>Reserve income near zero &amp;mdash; issuers need another business</strong></td>
+</tr>
+<tr>
+<td><strong>High</strong></td>
+<td>Capital has a safe alternative; on-chain must beat it</td>
+<td><strong>Reserve income is the business, and it is very good</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Same protocols, different denominator.</strong> This is worth holding next to any story that explains a cycle purely in terms of adoption.</p>
+<h3>Why the issuer&#39;s business is this line</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Holder</th>
+<th>Issuer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Holds</td>
+<td>A token worth $1</td>
+<td><strong>Short-dated government paper</strong></td>
+</tr>
+<tr>
+<td>Earns</td>
+<td><strong>Nothing</strong></td>
+<td><strong>The bill yield</strong></td>
+</tr>
+<tr>
+<td>Bears</td>
+<td>Redemption risk</td>
+<td>Duration and operational risk</td>
+</tr>
+</tbody></table></div>
+<p>Which is why a euro- or won-denominated version is structurally thinner: <strong>the float story is only as good as the rate on the currency&#39;s own short paper.</strong></p>
+<h3>The honest caveats</h3>
+<ul>
+<li><em>Risk-free</em> means <strong>credit-risk-free, not risk-free</strong> &amp;mdash; duration and inflation still bite, which is what <code>m2-and-the-dollar</code> is about.</li>
+<li>The right comparison is the bill in <strong>the currency your liability is in</strong>, not always dollars.</li>
+<li>A premium that looks thin may still be correct if the risk really is small; <strong>the point is to price it, not to refuse it.</strong></li>
+</ul>
+      <p><a href="https://www.jaylabs.xyz/poc/risk-free-rate-is-the-floor">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>무위험 이자율이 모든 수익률의 바닥이다</h1>
+      <p class="lead">단기 국채는 <strong>거의 위험 없이</strong> 무언가를 지급합니다. <strong>진짜 위험을 지는 수익률은 그것을 넘어야 애초에 흥미로워집니다</strong> — 즉 <strong>온체인 수익률 지형 전체가 크립토가 아니라 중앙은행이 정한 숫자에 대해 상대적으로 값 매겨집니다.</strong></p>
+      <p class="meta"><strong>10분과 두 칸짜리 표</strong>: 현재 <strong>3개월 국채 수익률</strong>, 그리고 검토 중인 온체인 포지션의 수익률 — 단 <code>where-yield-comes-from</code> 에 따라 <strong>배출을 걷어낸 값</strong>으로. <strong>차이가 당신이 받는 위험 프리미엄</strong>입니다. 그다음 <strong>유일하게 중요한 질문</strong>: <strong>스마트컨트랙트 위험·오라클 위험·거래상대 위험·이탈 위험을 다 합친 것에 대해 그 프리미엄이 충분한가?</strong> 지난 3년의 몇 시점에서 같은 계산을 반복하면 <strong>크립토 사이클이 한 줄의 함수처럼 보이기 시작합니다.</strong></p>
+      <h2>왜</h2>
+      <p><strong>존재하는 모든 수익률은 암묵적 대안에 대고 표시되고, 그 대안은 국채입니다.</strong> 단기 국채가 <strong>거의 위험 없이 5%</strong> 를 준다면, <strong>6% 를 주는 프로토콜은 스마트컨트랙트 위험·오라클 위험·수탁 위험·원하는 날 못 빠져나올 위험에 대해 1%포인트를 제안하는 것</strong>입니다. <strong>그렇게 적으면 명백히 나쁜 거래</strong>이고, <strong><em>6% APY</em> 라고 적으면 상품<strong>이 됩니다.
+
+</strong>이 관계 하나가 대부분의 크립토 고유 서사보다 사이클을 더 많이 설명합니다.<strong> 무위험 이자율이 </strong>0 근처면<strong> 어떤 양(+)의 수익률도 대단해 보이고, </strong>대안이 아무것도 주지 않으니<strong> 자본이 위험 쪽으로 몰립니다. 그것이 </strong>5% 로 오르면<strong> 같은 자본에 </strong>안전하게 앉을 자리<strong>가 생기고, 온체인 수익률은 </strong>같은 유입을 얻기 위해 훨씬 더 열심히<strong> 일해야 합니다. </strong>프로토콜은 아무것도 바뀌지 않았습니다. 분모가 바뀐 것입니다.<strong> 그 메커니즘의 나머지 절반이 <code>m2-and-the-dollar</code> 입니다.
+
+</strong>그리고 스테이블코인 발행사가 실제로 무엇인지를 다시 규정합니다.<strong> 법정화폐 담보 발행사는 </strong>단기 국채를 들고 그 이자를 보유자에게 하나도 돌려주지 않습니다.<strong> </strong>발행사의 사업이 곧 무위험 이자율<strong>입니다. 그래서 </strong>고금리 환경이 달러 발행사에 막대하게 유리<strong>하고, </strong>저금리 통화로 표시된 같은 상품은 훨씬 얇은 사업<strong>입니다 — <code>two-currencies-one-ledger</code> 가 유로 쪽에서, <code>what-needs-a-stablecoin</code> 이 원화 쪽에서 도달하는 바로 그 지점입니다.
+
+</strong>규율은 비교하기 전에 언제나 빼는 것입니다.<strong> </strong>수익률은 바닥을 넘는 만큼만 흥미롭고<strong>, 대부분의 발표된 비교는 </strong>총액 온체인 숫자를 아무것도 아닌 것 옆에 놓습니다.<strong> </strong>국채를 빼고, 배출을 빼면 남는 것이 실제 제안<strong>입니다 — </strong>대개 작고, 가끔 훌륭하며, 언제나 광고보다 작습니다.</strong></p>
+      <h2>동작 방식</h2>
+      <h3>뺄셈, 제대로</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>단계</th>
+<th>예</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>광고된 APY</td>
+<td><strong>12%</strong></td>
+</tr>
+<tr>
+<td>배출분 차감(<code>where-yield-comes-from</code>)</td>
+<td>−7% → <strong>실질 5%</strong></td>
+</tr>
+<tr>
+<td>단기 국채 수익률 차감</td>
+<td>−4% → <strong>프리미엄 1%</strong></td>
+</tr>
+<tr>
+<td><strong>그 1% 가 값을 치르는 대상</strong></td>
+<td><strong>스마트컨트랙트 + 오라클 + 수탁 + 이탈 위험, 전부 합쳐서</strong></td>
+</tr>
+</tbody></table></div>
+<h3>바닥이 움직이면 무엇이 움직이나</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>무위험 이자율</th>
+<th>온체인 수익률 수요에 미치는 영향</th>
+<th>스테이블코인 발행사에 미치는 영향</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>0 근처</strong></td>
+<td>어떤 양의 수익률도 자본을 끌어옴. <strong>위험 선호가 싸다</strong></td>
+<td><strong>준비금 수익 0 근처 — 발행사는 다른 사업이 필요</strong></td>
+</tr>
+<tr>
+<td><strong>높음</strong></td>
+<td>자본에 <strong>안전한 대안</strong>이 있음. 온체인은 그것을 이겨야 함</td>
+<td><strong>준비금 수익이 곧 사업이고, 아주 좋다</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>같은 프로토콜, 다른 분모.</strong> <strong>사이클을 순전히 채택으로 설명하는 이야기 옆에</strong> 놓아 둘 값이 있습니다.</p>
+<h3>왜 발행사의 사업이 이 한 줄인가</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>보유자</th>
+<th>발행사</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>보유</td>
+<td><strong>$1 짜리 토큰</strong></td>
+<td><strong>단기 국채</strong></td>
+</tr>
+<tr>
+<td>수취</td>
+<td><strong>없음</strong></td>
+<td><strong>국채 수익률</strong></td>
+</tr>
+<tr>
+<td>부담</td>
+<td>상환 위험</td>
+<td>듀레이션·운영 위험</td>
+</tr>
+</tbody></table></div>
+<p>그래서 <strong>유로·원화 표시 판본은 구조적으로 얇습니다</strong> — <strong>플로트 서사는 그 통화 자체 단기물의 금리만큼만 좋습니다.</strong></p>
+<h3>정직한 단서</h3>
+<ul>
+<li><em>무위험</em> 은 <strong>신용위험이 없다는 뜻이지 위험이 없다는 뜻이 아닙니다</strong> — <strong>듀레이션과 인플레이션</strong>은 여전히 물어뜯고, 그게 <code>m2-and-the-dollar</code> 의 주제입니다.</li>
+<li>올바른 비교 대상은 <strong>당신의 부채가 표시된 통화의 국채</strong>이지 언제나 달러가 아닙니다.</li>
+<li><strong>얇아 보이는 프리미엄도 위험이 정말 작으면 옳을 수 있습니다.</strong> <strong>요점은 거부가 아니라 값을 매기는 것입니다.</strong></li>
+</ul>
+      <p><a href="https://www.jaylabs.xyz/poc/risk-free-rate-is-the-floor">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-gross-over-net.html">&larr; 70. Gross over net — the recycling multiple</a><a href="pocs-m2-and-the-dollar.html">72. M2, the dollar, and why crypto is a liquidity trade &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script><script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('.rail-jump a')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  let revealTimer;
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    const first = order.find((k) => seen.has(k));
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) io.observe(el);
+  }
+</script></script>
+</body>
+</html>

@@ -25,9 +25,10 @@ export function wrapTables(html) {
  * @param {string} o.title        <title> 텍스트
  * @param {string} o.railTitle    레일 상단 굵은 글씨 (링크)
  * @param {string} o.railTitleHref
- * @param {string} o.railSub      그 아래 한 줄
+ * @param {string} [o.railSub]    그 아래 한 줄 (없으면 생략)
+ * @param {string} [o.railJump]   railSub 아래 섹션 바로가기 링크들 (HTML)
  * @param {string} o.filterPlaceholder
- * @param {Array<{label:string, items:Array<{anchor:string,text:string,color:string,statusLabel:string,spy?:boolean}>}>} o.navGroups
+ * @param {Array<{label:string, id?:string, items:Array<{anchor:string,text:string,color:string,statusLabel:string,spy?:boolean}>}>} o.navGroups
  * @param {string} o.railFoot     레일 하단 HTML
  * @param {string} o.srcLine      본문 최상단 출처 한 줄 (평문)
  * @param {string} o.contentHtml  본문 HTML
@@ -76,6 +77,20 @@ const PAGE_CSS = `
   .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
   .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
   .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-planned { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
   .rail-search { padding:14px 16px 8px; }
   .rail-search input {
     width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
@@ -103,6 +118,11 @@ const PAGE_CSS = `
 
   /* ── 본문 ── */
   .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
   .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
   .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
   .group-heading:first-child { margin-top:0; }
@@ -299,7 +319,9 @@ const PAGE_CSS = `
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
-    .layout { flex-direction:column; }
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
     .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
@@ -316,59 +338,27 @@ const PAGE_CSS = `
   }
 `;
 
-export function renderRtdPage(o) {
-  const navGroups = o.navGroups
-    .map((g) => {
-      const items = g.items
-        .map((it) => {
-          // spy: false 인 항목은 스크롤 하이라이트 대상에서 뺀다 — 같은 앵커를 가리키는
-          // 바로가기(예: 하단 Done 묶음)가 본문 항목과 함께 켜지면 두 곳이 활성으로 보인다.
-          const key = it.spy === false ? '' : ` data-key="${escapeHtml(it.anchor)}"`;
-          return `        <li><a class="nav-link" href="#${escapeHtml(it.anchor)}"${key}><span class="nav-dot" style="background:${it.color};" title="${escapeHtml(it.statusLabel)}"></span><span class="nav-text">${it.text}</span></a></li>`;
-        })
-        .join('\n');
-      return `      <div class="nav-group" data-group>
-        <p class="nav-group-label">${escapeHtml(g.label)}</p>
-        <ul>
-${items}
-        </ul>
-      </div>`;
-    })
-    .join('\n');
-
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(o.title)}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>${PAGE_CSS}</style>
-</head>
-<body>
-<div class="layout">
-  <aside class="rail">
+// 레일과 그 스크립트를 목록 페이지와 상세 페이지가 함께 쓴다 (jay, 2026-08-27).
+// 상세 페이지에서 왼쪽 페인이 사라지면 224개짜리 목록에서 자기 위치를 잃는다.
+function railHtml(o, navGroupsHtml) {
+  return `  <aside class="rail">
     <div class="rail-head">
       <a class="rail-title" href="${escapeHtml(o.railTitleHref)}">${escapeHtml(o.railTitle)}</a>
-      <span class="rail-sub">${o.railSub}</span>
+      ${o.railSub ? `<span class="rail-sub">${o.railSub}</span>` : ''}
+      ${o.railJump ? `<div class="rail-jump">${o.railJump}</div>` : ''}
     </div>
     <div class="rail-search">
       <input id="filter" type="search" placeholder="${escapeHtml(o.filterPlaceholder)}" aria-label="${escapeHtml(o.filterPlaceholder)}" autocomplete="off">
     </div>
     <nav class="rail-nav" id="nav">
-${navGroups}
+${navGroupsHtml}
       <p class="no-results" id="no-results">No match.</p>
     </nav>
     <div class="rail-foot">${o.railFoot}</div>
-  </aside>
+  </aside>`;
+}
 
-  <main class="content">
-    <div class="src">${escapeHtml(o.srcLine)}</div>
-${o.contentHtml}
-  </main>
-</div>
-<script>
+const RAIL_SCRIPT = String.raw`<script>
   // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
   const input = document.getElementById('filter');
   const links = [...document.querySelectorAll('.nav-link')];
@@ -389,23 +379,107 @@ ${o.contentHtml}
     noResults.style.display = shown ? 'none' : 'block';
   });
 
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('.rail-jump a')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
   // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
   const spied = links.filter((a) => a.dataset.key);
   const order = spied.map((a) => a.dataset.key);
   const seen = new Set();
+  let revealTimer;
   const io = new IntersectionObserver((entries) => {
     for (const e of entries) {
       if (e.isIntersecting) seen.add(e.target.id);
       else seen.delete(e.target.id);
     }
     const first = order.find((k) => seen.has(k));
-    for (const a of spied) a.classList.toggle('active', a.dataset.key === first);
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
   }, { rootMargin: '-10% 0px -70% 0px' });
   for (const key of order) {
     const el = document.getElementById(key);
     if (el) io.observe(el);
   }
-</script>
+</script>`;
+
+function renderNavGroups(groups) {
+  return groups.map((g) => {
+      const items = g.items
+        .map((it) => {
+          // spy: false 인 항목은 스크롤 하이라이트 대상에서 뺀다 — 같은 앵커를 가리키는
+          // 바로가기(예: 하단 Done 묶음)가 본문 항목과 함께 켜지면 두 곳이 활성으로 보인다.
+          const key = it.spy === false ? '' : ` data-key="${escapeHtml(it.anchor)}"`;
+          // 상세 페이지의 레일은 같은 문서 안의 앵커가 아니라 다른 파일을 가리킨다 —
+          // href 가 주어지면 그것을 쓰고, 현재 보고 있는 항목은 active 로 표시한다
+          // (jay, 2026-08-27: "디테일 페이지에서도 왼쪽 페인을 없어지지 않도록").
+          const href = it.href ? escapeHtml(it.href) : `#${escapeHtml(it.anchor)}`;
+          const cur = it.current ? ' active' : '';
+          return `        <li><a class="nav-link${cur}" href="${href}"${key}><span class="nav-dot" style="background:${it.color};" title="${escapeHtml(it.statusLabel)}"></span><span class="nav-text">${it.text}</span></a></li>`;
+        })
+        .join('\n');
+      const gid = g.id ? ` id="${escapeHtml(g.id)}"` : '';
+      return `      <div class="nav-group"${gid} data-group>
+        <p class="nav-group-label">${escapeHtml(g.label)}</p>
+        <ul>
+${items}
+        </ul>
+      </div>`;
+    })
+    .join('\n');
+}
+
+export function renderRtdPage(o) {
+  const navGroups = renderNavGroups(o.navGroups);
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escapeHtml(o.title)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>${PAGE_CSS}</style>
+</head>
+<body>
+<div class="layout">
+${railHtml(o, navGroups)}
+  <main class="content">
+${o.contentHtml}
+    <p class="src">${o.srcLine}</p>
+  </main>
+</div>
+<script>${RAIL_SCRIPT}</script>
 </body>
 </html>
 `;
@@ -423,6 +497,27 @@ ${o.contentHtml}
  * @param {string} o.pagerHtml  하단 이전/다음 HTML
  */
 export function renderTopicPage(o) {
+  // 레일이 있으면 목록 페이지와 같은 레이아웃, 없으면 예전처럼 단독 페이지
+  // (jay, 2026-08-27) — 상세 페이지에서 왼쪽 페인이 사라지면 224개 목록에서 위치를 잃는다.
+  const navGroupsHtml = o.navGroups ? renderNavGroups(o.navGroups) : '';
+  const solo = `  <div class="solo">
+    <p class="crumb">${o.crumbHtml}</p>
+${o.bodyHtml}
+    <div class="pager">${o.pagerHtml}</div>
+  </div>`;
+  const body = o.navGroups
+    ? `<div class="layout">
+${railHtml(o, navGroupsHtml)}
+  <main class="content content-solo">
+${solo}
+  </main>
+</div>
+<script>${RAIL_SCRIPT}</script>`
+    : `<div class="solo">
+  <p class="crumb">${o.crumbHtml}</p>
+${o.bodyHtml}
+  <div class="pager">${o.pagerHtml}</div>
+</div>`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -434,11 +529,7 @@ export function renderTopicPage(o) {
 <style>${PAGE_CSS}</style>
 </head>
 <body>
-<div class="solo">
-  <p class="crumb">${o.crumbHtml}</p>
-${o.bodyHtml}
-  <div class="pager">${o.pagerHtml}</div>
-</div>
+${body}
 </body>
 </html>
 `;

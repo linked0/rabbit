@@ -50,6 +50,20 @@
   .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
   .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
   .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-planned { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
   .rail-search { padding:14px 16px 8px; }
   .rail-search input {
     width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
@@ -77,6 +91,11 @@
 
   /* ── 본문 ── */
   .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
   .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
   .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
   .group-heading:first-child { margin-top:0; }
@@ -273,7 +292,9 @@
 
   /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
   @media (max-width: 900px) {
-    .layout { flex-direction:column; }
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
     .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
     .rail-nav { max-height:320px; }
     .content { padding:24px 18px 70px; }
@@ -291,10 +312,36 @@
 </style>
 </head>
 <body>
-<div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Sub-2-bit LLMs, locally</p>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-protocol" title="Protocol &mdash; planned (13) / all (19)">Protocol<b><span class="count-planned">13</span><span class="count-all">/19</span></b></a><a href="../pocs.html#sec-applied" title="Applied &mdash; planned (43) / all (49)">Applied<b><span class="count-planned">43</span><span class="count-all">/49</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; planned (6) / all (6)">Economics<b><span class="count-planned">6</span><span class="count-all">/6</span></b></a><a href="../pocs.html#sec-future" title="Future &mdash; planned (5) / all (5)">Future<b><span class="count-planned">5</span><span class="count-all">/5</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; planned (97) / all (100)">Algorithms<b><span class="count-planned">97</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; planned (49) / all (52)">Math<b><span class="count-planned">49</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-future" data-group>
+        <p class="nav-group-label">Future (5)</p>
+        <ul>
+        <li><a class="nav-link" href="pocs-procedural-not-generated.html" data-key="procedural-not-generated"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">75</span>Procedural, not generated — when the model is a program</span></a></li>
+        <li><a class="nav-link active" href="pocs-sub-2bit-local-llm.html" data-key="sub-2bit-local-llm"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">76</span>Sub-2-bit LLMs, locally</span></a></li>
+        <li><a class="nav-link" href="pocs-robotics-entry-decision.html" data-key="robotics-entry-decision"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">77</span>Four ways into robotics, and what each one actually buys</span></a></li>
+        <li><a class="nav-link" href="pocs-opencv-robot-vision.html" data-key="opencv-robot-vision"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">78</span>Pixels to millimetres — the step before the arm moves</span></a></li>
+        <li><a class="nav-link" href="pocs-google-glass-stitch.html" data-key="google-glass-stitch"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">79</span>Google Glass form factor &amp; Stitch</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Sub-2-bit LLMs, locally</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#59</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <p class="topic-kicker"><span class="topic-no">#76</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
       <h1>Sub-2-bit LLMs, locally</h1>
       <p class="lead">A 2.4T model in 397GB — shrinking the codebook below IQ1_S, and what the last half-bit costs.</p>
       <p class="meta">Not yet scoped — start with the 27B model on a 16GB machine via llama.cpp, sweep the 1-bit dtypes, and reproduce the quality curve locally.</p>
@@ -319,7 +366,83 @@
       <p>압축 기법 자체는 헤드라인보다 훨씬 좁은 이야기입니다. llama.cpp의 IQ1_S는 가중치당 1.5625비트를 쓰는데, 그중 11비트가 2048개짜리 코드북을 가리키는 인덱스입니다. Unsloth 변형은 그 코드북을 줄이기만 합니다 — 1024개, 512개, 256개 — 그러면 인덱스가 10·9·8비트로 줄고 가중치가 1.4375·1.3125·1.1875 bpw가 됩니다(각각 TQ2_0·TQ1_0·Q1_0으로 배포되며, 이름은 Hugging Face 저장소에 아예 노출되도록 고른 것입니다). 중요한 주장은 이것들이 <strong>평범한 사후 양자화(PTQ)</strong>라는 점입니다 — QAT나 증류가 없고, 바로 그 점이 생산 비용을 낮추는 동시에 독립적으로 검증할 가치를 만듭니다. 계획은 27B 모델을 이 dtype들로 제가 가진 하드웨어에서 돌려 PPL/KLD/top-p 곡선을 인용하는 대신 직접 재현하고, 실용 규칙(RAM+VRAM ≈ 양자화 크기, 그 선을 넘으면 디스크 오프로딩이 20 tok/s라는 숫자를 조용히 전혀 다른 것으로 바꿔 놓는다)을 확인하는 것입니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/sub-2bit-local-llm">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-procedural-not-generated.html">&larr; 58. Procedural, not generated — when the model is a program</a><a href="pocs-robotics-entry-decision.html">60. Four ways into robotics, and what each one actually buys &rarr;</a></div>
+    <div class="pager"><a href="pocs-procedural-not-generated.html">&larr; 75. Procedural, not generated — when the model is a program</a><a href="pocs-robotics-entry-decision.html">77. Four ways into robotics, and what each one actually buys &rarr;</a></div>
+  </div>
+  </main>
 </div>
+<script><script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('.rail-jump a')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  let revealTimer;
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    const first = order.find((k) => seen.has(k));
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) io.observe(el);
+  }
+</script></script>
 </body>
 </html>

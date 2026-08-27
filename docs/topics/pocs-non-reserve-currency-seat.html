@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The seat is the point — a non-reserve currency at the standards table — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-planned { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-protocol" title="Protocol &mdash; planned (13) / all (19)">Protocol<b><span class="count-planned">13</span><span class="count-all">/19</span></b></a><a href="../pocs.html#sec-applied" title="Applied &mdash; planned (43) / all (49)">Applied<b><span class="count-planned">43</span><span class="count-all">/49</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; planned (6) / all (6)">Economics<b><span class="count-planned">6</span><span class="count-all">/6</span></b></a><a href="../pocs.html#sec-future" title="Future &mdash; planned (5) / all (5)">Future<b><span class="count-planned">5</span><span class="count-all">/5</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; planned (97) / all (100)">Algorithms<b><span class="count-planned">97</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; planned (49) / all (52)">Math<b><span class="count-planned">49</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-applied" data-group>
+        <p class="nav-group-label">Applied (49)</p>
+        <ul>
+        <li><a class="nav-link" href="pocs-aqua-shared-liquidity.html" data-key="aqua-shared-liquidity"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">20</span>Shared liquidity — quoted depth vs. the balance behind it</span></a></li>
+        <li><a class="nav-link" href="pocs-rwa-multichain.html" data-key="rwa-multichain"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">21</span>RWA across chains — the invariant nobody enforces</span></a></li>
+        <li><a class="nav-link" href="pocs-oz-relayer.html" data-key="oz-relayer"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">22</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
+        <li><a class="nav-link" href="pocs-event-contract-plumbing.html" data-key="event-contract-plumbing"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">23</span>The hiring signal is the spec — event-contract plumbing</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenized-money-banks.html" data-key="tokenized-money-banks"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">24</span>Tokenized Money for Banks</span></a></li>
+        <li><a class="nav-link" href="pocs-monad-last-general-purpose-l1.html" data-key="monad-last-general-purpose-l1"><span class="nav-dot" style="background:#0284c7;" title="DONE"></span><span class="nav-text"><span class="topic-no">25</span>Monad — the last general-purpose L1, and the number nobody adjusts for</span></a></li>
+        <li><a class="nav-link" href="pocs-what-needs-a-stablecoin.html" data-key="what-needs-a-stablecoin"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">26</span>Not what a stablecoin can do — what needs one</span></a></li>
+        <li><a class="nav-link" href="pocs-build-rent-or-own-the-rail.html" data-key="build-rent-or-own-the-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">27</span>Build the rail, rent it, or own it together — three answers in one month</span></a></li>
+        <li><a class="nav-link" href="pocs-stablecoin-redemption-desk.html" data-key="stablecoin-redemption-desk"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">28</span>The redemption desk — what actually makes a stablecoin's denominator</span></a></li>
+        <li><a class="nav-link" href="pocs-two-currencies-one-ledger.html" data-key="two-currencies-one-ledger"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">29</span>Two currencies on one ledger — the spread is the claim</span></a></li>
+        <li><a class="nav-link" href="pocs-arb-bots-are-the-peg.html" data-key="arb-bots-are-the-peg"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">30</span>Nobody runs the peg — the competing bots are the mechanism</span></a></li>
+        <li><a class="nav-link" href="pocs-the-harness-not-the-model.html" data-key="the-harness-not-the-model"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">31</span>The harness, not the model — governing agents instead of building them</span></a></li>
+        <li><a class="nav-link" href="pocs-mcp-three-sides.html" data-key="mcp-three-sides"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">32</span>MCP from three sides — build one, consume one, wrap an agent as one</span></a></li>
+        <li><a class="nav-link" href="pocs-agents-computer-use.html" data-key="agents-computer-use"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">33</span>Can an agent drive a computer yet — and if so, whose?</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenized-equity-claim-rail.html" data-key="tokenized-equity-claim-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">34</span>A claim, not a derivative — the three jobs a tokenized share creates</span></a></li>
+        <li><a class="nav-link" href="pocs-japan-t0-settlement.html" data-key="japan-t0-settlement"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">35</span>T+0 removes settlement risk, and removes netting with it</span></a></li>
+        <li><a class="nav-link" href="pocs-cross-border-rail-interop.html" data-key="cross-border-rail-interop"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">36</span>Linking payment systems is a routing problem</span></a></li>
+        <li><a class="nav-link active" href="pocs-non-reserve-currency-seat.html" data-key="non-reserve-currency-seat"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">37</span>The seat is the point — a non-reserve currency at the standards table</span></a></li>
+        <li><a class="nav-link" href="pocs-st-self-distribution.html" data-key="st-self-distribution"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">38</span>What tokenization actually removed</span></a></li>
+        <li><a class="nav-link" href="pocs-headless-exchange-engines.html" data-key="headless-exchange-engines"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">39</span>Headless arrives — the company that sells the engine, not the app</span></a></li>
+        <li><a class="nav-link" href="pocs-choosing-a-chain-is-a-lease.html" data-key="choosing-a-chain-is-a-lease"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">40</span>Choosing a chain is signing a lease</span></a></li>
+        <li><a class="nav-link" href="pocs-base-app-mini-app.html" data-key="base-app-mini-app"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">41</span>Base App — what a Mini App buys, and what it rents</span></a></li>
+        <li><a class="nav-link" href="pocs-layerzero-default-is-a-choice.html" data-key="layerzero-default-is-a-choice"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">42</span>LayerZero — the default verifier is a trust assumption nobody wrote down</span></a></li>
+        <li><a class="nav-link" href="pocs-third-party-blast-radius.html" data-key="third-party-blast-radius"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">43</span>Trusted third parties — the blast radius nobody maps</span></a></li>
+        <li><a class="nav-link" href="pocs-aml-compliance.html" data-key="aml-compliance"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">44</span>AML — where the cryptography stops</span></a></li>
+        <li><a class="nav-link" href="pocs-address-to-identity-join.html" data-key="address-to-identity-join"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">45</span>The chain gives you the graph and never the names</span></a></li>
+        <li><a class="nav-link" href="pocs-korea-digital-asset-act.html" data-key="korea-digital-asset-act"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">46</span>The bill count is not the disagreement count</span></a></li>
+        <li><a class="nav-link" href="pocs-jurisdiction-decides-the-category.html" data-key="jurisdiction-decides-the-category"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">47</span>Same product, three verdicts in eight days</span></a></li>
+        <li><a class="nav-link" href="pocs-jurisdiction-below-the-country.html" data-key="jurisdiction-below-the-country"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">48</span>Jurisdiction is not country-sized</span></a></li>
+        <li><a class="nav-link" href="pocs-cap-table-ceiling.html" data-key="cap-table-ceiling"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">49</span>The ceiling is per holder, the control is not</span></a></li>
+        <li><a class="nav-link" href="pocs-fisheries-receivable-rail.html" data-key="fisheries-receivable-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">50</span>The custody was never the hard part</span></a></li>
+        <li><a class="nav-link" href="pocs-dsrv-portal.html" data-key="dsrv-portal"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">51</span>Institutional custody study</span></a></li>
+        <li><a class="nav-link" href="pocs-decision-market-uncontrollability.html" data-key="decision-market-uncontrollability"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">52</span>The property that makes a market work is the one that makes it gambling</span></a></li>
+        <li><a class="nav-link" href="pocs-priced-by-the-wrong-thing.html" data-key="priced-by-the-wrong-thing"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">53</span>Priced by the wrong thing — a question, an instrument, and the gap between them</span></a></li>
+        <li><a class="nav-link" href="pocs-cre-cloud.html" data-key="cre-cloud"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">54</span>CRE × Cloud — four hybrid patterns</span></a></li>
+        <li><a class="nav-link" href="pocs-solana.html" data-key="solana"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">55</span>Solana</span></a></li>
+        <li><a class="nav-link" href="pocs-linera-microchains.html" data-key="linera-microchains"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">56</span>Linera microchains</span></a></li>
+        <li><a class="nav-link" href="pocs-thirdweb.html" data-key="thirdweb"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">57</span>Thirdweb — platform survey</span></a></li>
+        <li><a class="nav-link" href="pocs-plumbing-skills-buyback.html" data-key="plumbing-skills-buyback"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">58</span>Four capabilities, each buying back what the chain gave away</span></a></li>
+        <li><a class="nav-link" href="pocs-steal-the-structure.html" data-key="steal-the-structure"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">59</span>Two reading lists, and the same instruction — steal the structure, not the content</span></a></li>
+        <li><a class="nav-link" href="pocs-claude-in-slack.html" data-key="claude-in-slack"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">60</span>Claude in Slack — the workflow first, the presence second</span></a></li>
+        <li><a class="nav-link" href="pocs-circuit-breaker-saga.html" data-key="circuit-breaker-saga"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">61</span>Microservice patterns — Circuit Breaker &amp; Saga</span></a></li>
+        <li><a class="nav-link" href="pocs-web-stack-layers.html" data-key="web-stack-layers"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">62</span>Web stack layers</span></a></li>
+        <li><a class="nav-link" href="pocs-one-page-not-the-curriculum.html" data-key="one-page-not-the-curriculum"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">63</span>Pull the page you are stuck on, not the next one in order</span></a></li>
+        <li><a class="nav-link" href="pocs-publish-by-default-rule.html" data-key="publish-by-default-rule"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">64</span>The draft already exists — a selection rule, not a new channel</span></a></li>
+        <li><a class="nav-link" href="pocs-apple-container.html" data-key="apple-container"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">65</span>Apple container</span></a></li>
+        <li><a class="nav-link" href="pocs-geometric-series-dcf.html" data-key="geometric-series-dcf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">66</span>Geometric series → DCF valuation</span></a></li>
+        <li><a class="nav-link" href="pocs-amortized-potential-function.html" data-key="amortized-potential-function"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">67</span>Amortized analysis via potential functions</span></a></li>
+        <li><a class="nav-link" href="pocs-moralis-wallet-api.html" data-key="moralis-wallet-api"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">68</span>Moralis — wallet snapshot via API</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The seat is the point — a non-reserve currency at the standards table</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#37</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>The seat is the point — a non-reserve currency at the standards table</h1>
+      <p class="lead">Project Agorá is BIS-led, not Korean and not American, and both were founding participants. The fact worth keeping is narrower: Korea is one of only two non-reserve-currency jurisdictions among the seven, and the rules a unified ledger settles on will decide whether such a currency is a first-class leg or always routed through dollars.</p>
+      <p class="meta">Half a day of reading, no build, and one question to answer from the published material rather than from commentary: in any Agorá output, is there a specified path by which a non-reserve currency leg settles directly, or does every worked example route through a major currency? That single answer is what Korea&#39;s seat is for, and it is checkable. Sources: the BIS Innovation Hub&#39;s Agorá announcement of April 2024 and any subsequent reports; the seven participating central banks are the Bank of Korea, the Federal Reserve Bank of New York, the Bank of Japan, the Bank of England, the Banque de France for the Eurosystem, the Swiss National Bank and the Banco de México, alongside private financial firms convened through the Institute of International Finance. The project&#39;s status as of today is past what this card can assert — confirm the current phase and any published findings against BIS material directly.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>The correction is worth recording before the content, because the shape of the error is one this catalogue already has a rule for.</strong> <em>Agorá started in Korea</em> is a claim with no source, and it appears to be a confusion with Korea&#39;s separate domestic CBDC and tokenised-deposit work, which is real and substantial. <code>fork-date-provenance</code> sorts claims into confirmed, deferred, and circulating without a source. <strong>This one was in the third bucket and was being repeated as if it were in the first</strong> — and the tell was available without any expertise: a project with seven central banks in it has an owner, and the owner is named in the announcement.</p>
+<p><strong>What is actually true is less dramatic and more useful.</strong> The unified-ledger concept came from the BIS, the BIS Innovation Hub launched Agorá as an international project in April 2024, and seven central banks were in it from the start. <strong>Korea was not joining an American project and America was not joining a Korean one.</strong> Both were founding participants, which is a different and better fact than either misreading.</p>
+<p><strong>And inside that, one detail is load-bearing: Korea is one of only two non-reserve-currency jurisdictions in the group, alongside Mexico.</strong> Of the seven, the dollar, euro, yen, sterling and Swiss franc are all named reserve currencies in the IMF&#39;s own classification. The won and the peso are not. <strong>That makes Korea&#39;s seat structurally different from five of the other six</strong> — and the Bank of Korea&#39;s governor said as much from the outset, describing participation as a chance for a non-reserve-currency country to help set standards for cross-border payment and settlement.</p>
+<p><strong>Which is the part worth taking seriously, because standard-setting is exactly where a non-reserve currency&#39;s leverage lives.</strong> A unified ledger has to decide how a payment leg denominated in a currency nobody holds as reserves actually settles. There are only two shapes: <strong>the currency is a first-class leg on the ledger, or it is routed through a major currency and the non-reserve leg is an edge conversion.</strong> The first makes the won a settlement asset; the second makes it a local last mile. <strong>Nothing about the technology decides that — the rules do</strong>, and rules get written by whoever is in the room while they are being written. <code>cross-border-rail-interop</code> reached the same conclusion from a different direction: <strong>governance, not throughput, decides which rail wins.</strong></p>
+<p><strong>And the project deserves to be read as the institutional answer to the same problem stablecoins are the outside answer to.</strong> Both target the friction in cross-border payments; they differ in who is allowed to issue and who bears the settlement risk. <code>what-needs-a-stablecoin</code> asks <em>why this currency, in this transaction</em> and finds that corporate cross-border has the most friction and the weakest answer for a won-denominated token. <strong>Agorá is where that same question gets answered by central banks instead of by product design</strong> — and if it answers it the first way, part of the case for a won stablecoin in cross-border settlement gets absorbed rather than defeated.</p>
+<p><strong>The honest caution is the base rate.</strong> A seven-central-bank project with dozens of private participants produces reports on a horizon measured in years, not a rail. <code>build-rent-or-own-the-rail</code> records what consortium governance does over time, and nothing here is exempt. <strong>The useful posture is to read the outputs for the one design decision above and ignore the rest</strong>, which is a much smaller commitment than following the project.</p>
+      <h2>How it works</h2>
+      <h3>The claim, sorted</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Status</th>
+<th>What settles it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>Agorá started in Korea</em></td>
+<td><strong>No source</strong> — likely confused with Korea&#39;s separate domestic CBDC and tokenised-deposit work</td>
+<td>The announcement names its owner</td>
+</tr>
+<tr>
+<td><em>Korea joined an American project</em></td>
+<td><strong>False</strong></td>
+<td>Both were founding participants</td>
+</tr>
+<tr>
+<td><strong>The BIS proposed the unified ledger and the BIS Innovation Hub launched Agorá, April 2024</strong></td>
+<td><strong>Confirmed</strong></td>
+<td>BIS publications</td>
+</tr>
+<tr>
+<td><strong>Seven central banks from the start</strong></td>
+<td><strong>Confirmed</strong></td>
+<td>The participant list</td>
+</tr>
+<tr>
+<td><strong>Korea is one of two non-reserve-currency jurisdictions in it</strong></td>
+<td><strong>Confirmed, and checkable</strong></td>
+<td>The IMF&#39;s own reserve-currency classification</td>
+</tr>
+</tbody></table></div>
+<h3>The seven, and why the split matters</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Participant</th>
+<th>Currency</th>
+<th>Named reserve currency?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Federal Reserve Bank of New York</td>
+<td>USD</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Banque de France (Eurosystem)</td>
+<td>EUR</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Bank of Japan</td>
+<td>JPY</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Bank of England</td>
+<td>GBP</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Swiss National Bank</td>
+<td>CHF</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>Bank of Korea</strong></td>
+<td><strong>KRW</strong></td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td><strong>Banco de México</strong></td>
+<td><strong>MXN</strong></td>
+<td><strong>No</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Five of seven are writing rules for currencies that already settle everywhere. Two are writing rules for currencies that do not.</strong> That is not a complaint about the composition — it is the reason the two seats are worth more than the headcount suggests, and the reason the Bank of Korea framed participation as standard-setting rather than as membership.</p>
+<h3>The one design decision to read the outputs for</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>If a unified ledger settles a non-reserve leg...</th>
+<th>Then the won is</th>
+<th>And the consequence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Directly, as a first-class leg</strong></td>
+<td><strong>A settlement asset</strong></td>
+<td>Korean institutions hold and move won on the ledger; the FX conversion is a choice, not a requirement</td>
+</tr>
+<tr>
+<td><strong>By routing through a major currency</strong></td>
+<td><strong>A local last mile</strong></td>
+<td>Every cross-border won payment carries a dollar leg and its spread, exactly as today with extra plumbing</td>
+</tr>
+</tbody></table></div>
+<p><strong>Nothing technical decides this.</strong> It is a rules question, which is why being in the room while the rules are written is the whole of the opportunity — and why the useful thing to extract from any published output is which of those two rows the worked examples assume.</p>
+<h3>Two answers to one problem</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Agorá / unified ledger</strong></th>
+<th><strong>Stablecoins</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Who issues</td>
+<td>Central banks and regulated commercial banks</td>
+<td>Issuers under whatever regime applies</td>
+</tr>
+<tr>
+<td>What is tokenised</td>
+<td>Central bank money <strong>and</strong> commercial bank deposits, on one programmable platform</td>
+<td>A claim on a reserve pool</td>
+</tr>
+<tr>
+<td>Settlement risk sits with</td>
+<td>The existing banking hierarchy</td>
+<td>The issuer, and its redemption desk</td>
+</tr>
+<tr>
+<td>Speed of arrival</td>
+<td><strong>Years — it is a standards process</strong></td>
+<td>Already here, unevenly</td>
+</tr>
+<tr>
+<td>Where it is decided</td>
+<td><strong>In the room</strong></td>
+<td>In the market</td>
+</tr>
+</tbody></table></div>
+<p>Read alongside <code>what-needs-a-stablecoin</code>, which asks why a won-denominated token in a given transaction and finds corporate cross-border to be the weakest case, and <code>stablecoin-redemption-desk</code>, which is the same settlement-risk question asked of the private answer. <strong>If Agorá lands on a first-class non-reserve leg, part of the won-stablecoin case for cross-border settlement is absorbed rather than beaten.</strong></p>
+<h3>What this card does not claim</h3>
+<p>The project&#39;s <strong>current phase, findings and any published output after early 2026</strong> are outside what this card can assert, and should be confirmed against BIS material directly. <strong>The participant list and the April 2024 launch are the durable facts; everything about progress is not.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/non-reserve-currency-seat">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>자리가 요점이다 — 표준을 정하는 테이블에 앉은 비준비통화</h1>
+      <p class="lead">Project Agorá 는 <strong>BIS 주도</strong>이고 한국 것도 미국 것도 아니며, <strong>둘 다 창립 참여국</strong>입니다. 간직할 사실은 더 좁습니다 — <strong>7곳 중 비준비통화 관할이 단 둘뿐이고 한국이 그중 하나</strong>이며, <strong>통합원장이 정착시킬 규칙이 그런 통화가 일급 구간이 되는지 늘 달러를 경유하는지를 결정</strong>합니다.</p>
+      <p class="meta"><strong>반나절 읽기, 구현 없음.</strong> 그리고 <strong>논평이 아니라 발간물로</strong> 답할 질문 하나: <strong>Agorá 산출물 어디엔가 비준비통화 구간이 직접 정산되는 경로가 명시돼 있는가, 아니면 모든 예시가 주요 통화를 경유하는가?</strong> <strong>그 답 하나가 한국의 자리가 존재하는 이유</strong>이고, <strong>확인 가능</strong>합니다. 출처: BIS 혁신허브의 2024년 4월 Agorá 발표와 이후 보고서. 참여 중앙은행 일곱 곳은 <strong>한국은행, 뉴욕 연은, 일본은행, 영란은행, 유로시스템을 대표하는 프랑스은행, 스위스국립은행, 멕시코은행</strong>이며, <strong>국제금융협회(IIF)를 통해 소집된 민간 금융회사들</strong>이 함께합니다. <strong>오늘 시점의 진행 상황은 이 카드가 단언할 수 있는 범위 밖</strong>입니다 — <strong>현재 단계와 발표된 결과는 BIS 자료로 직접 확인</strong>하십시오.
+
+<em>(원문은 jay 가 붙여넣은 정정 메모, 2026-08-27.)</em></p>
+      <h2>왜</h2>
+      <p><strong>내용보다 정정을 먼저 기록할 값이 있습니다. 이 오류의 모양에 대해 이 카탈로그가 이미 규칙을 갖고 있기 때문입니다.</strong> <em>Agorá 는 한국에서 시작됐다</em> 는 <strong>출처가 없는 주장</strong>이고, <strong>한국의 별도 국내 CBDC·토큰화예금 작업과 혼동</strong>된 것으로 보입니다 — 그쪽은 실재하고 상당합니다. <code>fork-date-provenance</code> 는 주장을 <strong>확인됨·유예됨·출처 없이 도는 중</strong>으로 나눕니다. <strong>이건 세 번째 칸에 있는데 첫 번째 칸인 것처럼 반복되고 있었습니다</strong> — 그리고 <strong>전문성 없이도 알아챌 단서</strong>가 있었습니다: <strong>중앙은행 일곱 곳이 들어간 프로젝트에는 주인이 있고, 그 주인은 발표문에 이름이 적혀 있습니다.</strong></p>
+<p><strong>실제 사실은 덜 극적이고 더 쓸모 있습니다.</strong> <strong>통합원장 개념은 BIS 에서 나왔고</strong>, BIS 혁신허브가 <strong>2024년 4월</strong> Agorá 를 국제 프로젝트로 출범시켰으며, <strong>중앙은행 일곱 곳이 처음부터 함께</strong>했습니다. <strong>한국이 미국 프로젝트에 합류한 것도, 미국이 한국 프로젝트에 합류한 것도 아닙니다.</strong> <strong>둘 다 창립 참여국</strong>이고, 이건 어느 쪽 오독보다도 <strong>다르고 나은 사실</strong>입니다.</p>
+<p><strong>그리고 그 안에 하중을 받는 디테일 하나 — 한국은 이 그룹에서 멕시코와 함께 단 둘뿐인 비준비통화 관할입니다.</strong> 일곱 중 <strong>달러·유로·엔·파운드·스위스프랑</strong>은 전부 <strong>IMF 자신의 분류상 명시된 준비통화</strong>입니다. <strong>원화와 페소는 아닙니다.</strong> <strong>그래서 한국의 자리는 나머지 여섯 중 다섯과 구조적으로 다릅니다</strong> — 그리고 한국은행 총재도 처음부터 그렇게 말했습니다. <strong>비준비통화국이 국경 간 지급·결제 표준을 함께 정하는 기회</strong>라고.</p>
+<p><strong>바로 이 대목을 진지하게 볼 값이 있습니다. 표준 제정이야말로 비준비통화의 지렛대가 있는 자리</strong>이기 때문입니다. 통합원장은 <strong>아무도 준비자산으로 들고 있지 않은 통화로 표시된 결제 구간이 실제로 어떻게 정산되는지</strong>를 정해야 합니다. <strong>모양은 둘뿐입니다</strong> — <strong>그 통화가 원장 위의 일급 구간이 되거나, 주요 통화를 경유하고 비준비통화 구간은 가장자리의 환전이 되거나.</strong> 앞은 <strong>원화를 정산 자산</strong>으로 만들고, 뒤는 <strong>지역의 마지막 구간</strong>으로 만듭니다. <strong>기술은 그것을 정하지 않습니다 — 규칙이 정합니다.</strong> 그리고 <strong>규칙은 쓰이는 동안 그 방에 있는 사람이 씁니다.</strong> <code>cross-border-rail-interop</code> 가 다른 방향에서 같은 결론에 도착했습니다 — <strong>처리량이 아니라 지배구조가 어느 레일이 이길지 정한다.</strong></p>
+<p><strong>그리고 이 프로젝트는 스테이블코인이 바깥에서 내는 답에 대한 제도권의 답으로 읽어야 합니다.</strong> 둘 다 <strong>국경 간 결제의 마찰</strong>을 겨냥하고, 갈리는 것은 <strong>누가 발행할 수 있고 누가 정산 위험을 지는가</strong>입니다. <code>what-needs-a-stablecoin</code> 은 <em>이 거래에서 왜 이 통화인가</em> 를 묻고, <strong>기업 해외송금이 마찰은 가장 크고 원화 표시 토큰에 대한 답은 가장 약하다</strong>는 결론을 냅니다. <strong>Agorá 는 그 같은 질문에 제품 설계가 아니라 중앙은행이 답하는 자리</strong>이고, <strong>첫 번째 방식으로 답한다면 국경 간 정산에서의 원화 스테이블코인 논거 일부는 패배하는 게 아니라 흡수됩니다.</strong></p>
+<p><strong>정직한 경고는 기저율입니다.</strong> 중앙은행 일곱 곳과 수십 개 민간 참여사가 있는 프로젝트는 <strong>레일이 아니라 보고서</strong>를, <strong>연 단위 지평</strong>에서 냅니다. <code>build-rent-or-own-the-rail</code> 이 <strong>컨소시엄 지배구조가 시간이 지나며 무엇을 하는지</strong> 기록해 뒀고, <strong>여기라고 예외가 아닙니다.</strong> <strong>쓸모 있는 자세는 위의 설계 결정 하나만 보고 나머지는 무시하는 것</strong>이고, <strong>프로젝트를 따라다니는 것보다 훨씬 작은 약속</strong>입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>주장, 분류</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>주장</th>
+<th>지위</th>
+<th>무엇이 정산하나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>Agorá 는 한국에서 시작됐다</em></td>
+<td><strong>출처 없음</strong> — 한국의 <strong>별도 국내 CBDC·토큰화예금 작업</strong>과 혼동된 것으로 보임</td>
+<td>발표문에 <strong>주인의 이름</strong>이 적혀 있음</td>
+</tr>
+<tr>
+<td><em>한국이 미국 프로젝트에 합류했다</em></td>
+<td><strong>거짓</strong></td>
+<td><strong>둘 다 창립 참여국</strong></td>
+</tr>
+<tr>
+<td><strong>BIS 가 통합원장을 제안하고 BIS 혁신허브가 2024년 4월 Agorá 출범</strong></td>
+<td><strong>확인됨</strong></td>
+<td>BIS 발간물</td>
+</tr>
+<tr>
+<td><strong>처음부터 중앙은행 일곱 곳</strong></td>
+<td><strong>확인됨</strong></td>
+<td>참여 기관 목록</td>
+</tr>
+<tr>
+<td><strong>한국은 그중 비준비통화 관할 둘 중 하나</strong></td>
+<td><strong>확인됨, 그리고 확인 가능</strong></td>
+<td><strong>IMF 자신의 준비통화 분류</strong></td>
+</tr>
+</tbody></table></div>
+<h3>일곱 곳, 그리고 이 갈림이 중요한 이유</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>참여기관</th>
+<th>통화</th>
+<th>명시된 준비통화?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>뉴욕 연은</td>
+<td>USD</td>
+<td>예</td>
+</tr>
+<tr>
+<td>프랑스은행(유로시스템)</td>
+<td>EUR</td>
+<td>예</td>
+</tr>
+<tr>
+<td>일본은행</td>
+<td>JPY</td>
+<td>예</td>
+</tr>
+<tr>
+<td>영란은행</td>
+<td>GBP</td>
+<td>예</td>
+</tr>
+<tr>
+<td>스위스국립은행</td>
+<td>CHF</td>
+<td>예</td>
+</tr>
+<tr>
+<td><strong>한국은행</strong></td>
+<td><strong>KRW</strong></td>
+<td><strong>아니오</strong></td>
+</tr>
+<tr>
+<td><strong>멕시코은행</strong></td>
+<td><strong>MXN</strong></td>
+<td><strong>아니오</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>일곱 중 다섯은 이미 어디서나 정산되는 통화의 규칙을 씁니다. 둘은 그렇지 않은 통화의 규칙을 씁니다.</strong> <strong>구성에 대한 불평이 아닙니다</strong> — <strong>그 두 자리가 머릿수보다 값어치가 큰 이유</strong>이고, 한국은행이 참여를 <strong>가입이 아니라 표준 제정</strong>으로 규정한 이유입니다.</p>
+<h3>산출물에서 읽어 낼 단 하나의 설계 결정</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>통합원장이 비준비통화 구간을 정산하는 방식이…</th>
+<th>그러면 원화는</th>
+<th>결과</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>직접, 일급 구간으로</strong></td>
+<td><strong>정산 자산</strong></td>
+<td>국내 기관이 원장 위에서 원화를 보유·이동. <strong>환전은 요구가 아니라 선택</strong></td>
+</tr>
+<tr>
+<td><strong>주요 통화를 경유해서</strong></td>
+<td><strong>지역의 마지막 구간</strong></td>
+<td><strong>모든 국경 간 원화 결제가 달러 구간과 그 스프레드를 짊어짐</strong> — 오늘과 같고 배관만 늘어남</td>
+</tr>
+</tbody></table></div>
+<p><strong>기술은 이것을 정하지 않습니다.</strong> <strong>규칙의 문제</strong>이고, 그래서 <strong>규칙이 쓰이는 동안 방에 있는 것이 기회의 전부</strong>이며, <strong>발표된 산출물에서 뽑아낼 유용한 것은 예시들이 위 두 행 중 무엇을 전제하는가</strong>입니다.</p>
+<h3>하나의 문제, 두 개의 답</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Agorá / 통합원장</strong></th>
+<th><strong>스테이블코인</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>발행 주체</td>
+<td>중앙은행과 규제받는 상업은행</td>
+<td>적용되는 규제 아래의 발행사</td>
+</tr>
+<tr>
+<td>토큰화 대상</td>
+<td><strong>중앙은행 화폐 와 상업은행 예금</strong>을 하나의 프로그래머블 플랫폼에</td>
+<td><strong>준비금 풀에 대한 청구권</strong></td>
+</tr>
+<tr>
+<td>정산 위험의 주체</td>
+<td><strong>기존 은행 위계</strong></td>
+<td><strong>발행사와 그 상환 창구</strong></td>
+</tr>
+<tr>
+<td>도착 속도</td>
+<td><strong>연 단위 — 표준 절차</strong></td>
+<td><strong>이미 와 있음, 고르지 않게</strong></td>
+</tr>
+<tr>
+<td>어디서 결정되나</td>
+<td><strong>방 안에서</strong></td>
+<td><strong>시장에서</strong></td>
+</tr>
+</tbody></table></div>
+<p><em>이 거래에서 왜 원화인가</em> 를 묻고 <strong>기업 해외송금이 가장 약한 사례</strong>라는 결론을 낸 <code>what-needs-a-stablecoin</code>, 그리고 <strong>같은 정산 위험 질문을 민간 쪽 답에 던지는</strong> <code>stablecoin-redemption-desk</code> 와 함께 읽습니다. <strong>Agorá 가 일급 비준비통화 구간으로 착지하면, 국경 간 정산에서의 원화 스테이블코인 논거 일부는 격파되는 게 아니라 흡수됩니다.</strong></p>
+<h3>이 카드가 주장하지 않는 것</h3>
+<p>프로젝트의 <strong>현재 단계, 결과, 2026년 초 이후의 발표물</strong>은 <strong>이 카드가 단언할 수 있는 범위 밖</strong>이며 <strong>BIS 자료로 직접 확인</strong>해야 합니다. <strong>참여 기관 목록과 2024년 4월 출범은 오래가는 사실이고, 진행 상황에 관한 것은 그렇지 않습니다.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/non-reserve-currency-seat">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-cross-border-rail-interop.html">&larr; 36. Linking payment systems is a routing problem</a><a href="pocs-st-self-distribution.html">38. What tokenization actually removed &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script><script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('.rail-jump a')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  let revealTimer;
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    const first = order.find((k) => seen.has(k));
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) io.observe(el);
+  }
+</script></script>
+</body>
+</html>

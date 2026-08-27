@@ -17,7 +17,8 @@
     "agent:approve": "node scripts/agent-approve.mjs",
     "docs:sync-verex": "node scripts/sync-verex-docs.mjs",
     "docs:html": "node scripts/sync-verex-docs.mjs && node scripts/generate-docs-html.mjs",
-    "docs:curriculum": "node scripts/generate-curriculum-html.mjs",
+    "docs:pocs": "POCS_HTML=1 node scripts/generate-pocs-html.mjs",
+    "docs:curriculum": "node scripts/generate-curriculum-html.mjs && POCS_HTML=1 node scripts/generate-pocs-html.mjs",
     "docs:logs": "node scripts/generate-logs-html.mjs"
   },
   "dependencies": {

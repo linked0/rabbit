@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Providing liquidity is selling volatility, and the loss is not impermanent — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-planned { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-protocol" title="Protocol &mdash; planned (13) / all (19)">Protocol<b><span class="count-planned">13</span><span class="count-all">/19</span></b></a><a href="../pocs.html#sec-applied" title="Applied &mdash; planned (43) / all (49)">Applied<b><span class="count-planned">43</span><span class="count-all">/49</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; planned (6) / all (6)">Economics<b><span class="count-planned">6</span><span class="count-all">/6</span></b></a><a href="../pocs.html#sec-future" title="Future &mdash; planned (5) / all (5)">Future<b><span class="count-planned">5</span><span class="count-all">/5</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; planned (97) / all (100)">Algorithms<b><span class="count-planned">97</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; planned (49) / all (52)">Math<b><span class="count-planned">49</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-economics" data-group>
+        <p class="nav-group-label">Economics (6)</p>
+        <ul>
+        <li><a class="nav-link" href="pocs-where-yield-comes-from.html" data-key="where-yield-comes-from"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">69</span>Every yield is somebody's cost — the three places it can come from</span></a></li>
+        <li><a class="nav-link" href="pocs-gross-over-net.html" data-key="gross-over-net"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">70</span>Gross over net — the recycling multiple</span></a></li>
+        <li><a class="nav-link" href="pocs-risk-free-rate-is-the-floor.html" data-key="risk-free-rate-is-the-floor"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">71</span>The risk-free rate is the floor under every yield</span></a></li>
+        <li><a class="nav-link" href="pocs-m2-and-the-dollar.html" data-key="m2-and-the-dollar"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">72</span>M2, the dollar, and why crypto is a liquidity trade</span></a></li>
+        <li><a class="nav-link active" href="pocs-lp-is-a-short-volatility-position.html" data-key="lp-is-a-short-volatility-position"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">73</span>Providing liquidity is selling volatility, and the loss is not impermanent</span></a></li>
+        <li><a class="nav-link" href="pocs-fees-over-security-budget.html" data-key="fees-over-security-budget"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">74</span>Does a chain pay for its own security?</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Providing liquidity is selling volatility, and the loss is not impermanent</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#73</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Providing liquidity is selling volatility, and the loss is not impermanent</h1>
+      <p class="lead">An automated market maker pays you fees and takes the other side of every move. That is the payoff of a short option, and the standard name for the cost — impermanent loss — implies a reversal that is not owed to you.</p>
+      <p class="meta">An afternoon with a spreadsheet and one real pool, no capital at risk. Take a starting price and a set of ending prices, compute the constant-product position value at each, and subtract the value of simply having held the two assets. Plot the difference against price ratio — it is a smooth downward curve on both sides, which is the short-option shape. Then overlay the fees the pool actually earned over the same window. Where the two lines cross is the break-even volatility, and that number, not the APY, is what the position is really quoting.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>The name is the problem.</strong> <em>Impermanent loss</em> suggests something that goes away if you wait, and the mechanism offers no such promise. It is only impermanent if the price returns to where you entered &amp;mdash; <strong>an event nobody owes you</strong> and one that becomes less likely the longer you hold. <strong>The honest name is divergence loss</strong>, and renaming it changes how the position reads immediately.</p>
+<p><strong>What you are actually doing is selling an option, and the payoff shape says so.</strong> A constant-product pool automatically sells whichever asset is rising and buys whichever is falling. That is the position of someone who has sold a straddle: <strong>you collect a premium &amp;mdash; the fees &amp;mdash; and you lose whenever the price moves far in either direction.</strong> Gains are capped at the fees; losses grow with the square of the move for small moves and without bound for large ones. <strong>Once you see it as short volatility, every question becomes a familiar one.</strong></p>
+<p><strong>Which reframes the only question worth asking: not &quot;what is the APY&quot; but &quot;what volatility does this price imply, and is realised volatility below it?&quot;</strong> Fees are the premium; divergence loss is the cost of being wrong about how much the pair will move. <strong>A pool paying 30% on a pair that moves violently can be a losing position, and a pool paying 4% on a tightly correlated pair can be an excellent one.</strong> The APY alone cannot distinguish them, which is why it is the number most often quoted.</p>
+<p><strong>And it explains why stable-to-stable pools dominate by volume while paying almost nothing.</strong> If the two assets barely diverge, the short-volatility cost is near zero and even a tiny fee is profit. <strong>The market is not confused; it correctly prices the fee to the volatility.</strong> Anywhere the fee looks generous relative to the pair&#39;s behaviour, the difference is being paid in emissions, which sends you back to <code>where-yield-comes-from</code>.</p>
+<p><strong>The reason this belongs next to the prediction-market work is that a subsidised market maker is the same structure.</strong> An LMSR subsidy is a market maker&#39;s expected loss, deliberately funded to create liquidity that would not otherwise exist. <strong>Both are cases of paying a known cost to guarantee someone can always trade</strong> &amp;mdash; and in both, the mistake is to book the premium as revenue and the divergence as an accident.</p>
+      <h2>How it works</h2>
+      <h3>The payoff, in one table</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Price ratio at exit</th>
+<th>Pool value vs. simply holding</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1.00&amp;times;</strong> (unchanged)</td>
+<td><strong>0% &amp;mdash; the only break-even point</strong></td>
+</tr>
+<tr>
+<td>1.25&amp;times;</td>
+<td>&amp;minus;0.6%</td>
+</tr>
+<tr>
+<td>1.50&amp;times;</td>
+<td>&amp;minus;2.0%</td>
+</tr>
+<tr>
+<td>2&amp;times;</td>
+<td>&amp;minus;5.7%</td>
+</tr>
+<tr>
+<td>4&amp;times;</td>
+<td>&amp;minus;20.0%</td>
+</tr>
+<tr>
+<td>5&amp;times;</td>
+<td>&amp;minus;25.5%</td>
+</tr>
+</tbody></table></div>
+<p><strong>Symmetric in both directions</strong> &amp;mdash; a halving costs the same as a doubling. That symmetry is the signature of a short straddle, and it is why the position has no view: <strong>it loses on movement, not on direction.</strong></p>
+<h3>The two positions, side by side</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Holding both assets</strong></th>
+<th><strong>Providing liquidity</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Income</td>
+<td>None</td>
+<td><strong>Fees &amp;mdash; the premium</strong></td>
+</tr>
+<tr>
+<td>Upside</td>
+<td>Unbounded</td>
+<td><strong>Capped at the fees</strong></td>
+</tr>
+<tr>
+<td>Cost of movement</td>
+<td>None</td>
+<td><strong>Grows with the size of the move</strong></td>
+</tr>
+<tr>
+<td>Equivalent to</td>
+<td>Long the pair</td>
+<td><strong>Short a straddle, plus a fee stream</strong></td>
+</tr>
+<tr>
+<td>The real question</td>
+<td>Will it go up?</td>
+<td><strong>Will it move more than the fees pay for?</strong></td>
+</tr>
+</tbody></table></div>
+<h3>The break-even, which is the number to compute</h3>
+<p>Fees earned over a window, against divergence loss over the same window. <strong>Where they cross is the implied volatility the pool is quoting.</strong> Then compare it with realised volatility for that pair:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>If realised volatility is...</th>
+<th>Then</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Below</strong> the implied break-even</td>
+<td>The position earns &amp;mdash; you sold vol above its value</td>
+</tr>
+<tr>
+<td><strong>Above</strong> it</td>
+<td><strong>The position loses, however good the APY looked</strong></td>
+</tr>
+</tbody></table></div>
+<h3>Why the stable pools make sense</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Pair type</th>
+<th>Divergence</th>
+<th>Fee needed to break even</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Stable / stable</strong></td>
+<td>Near zero</td>
+<td><strong>Tiny &amp;mdash; and that is what they pay</strong></td>
+</tr>
+<tr>
+<td>Correlated majors</td>
+<td>Moderate</td>
+<td>Moderate</td>
+</tr>
+<tr>
+<td><strong>Volatile / anything</strong></td>
+<td>Large</td>
+<td><strong>Large &amp;mdash; usually topped up with emissions</strong></td>
+</tr>
+</tbody></table></div>
+<h3>Cautions worth keeping</h3>
+<ul>
+<li>The table above assumes a <strong>constant-product</strong> pool. Concentrated liquidity changes the magnitudes sharply &amp;mdash; <strong>it is more leveraged in both directions</strong>, not safer.</li>
+<li>Fees are <strong>path-dependent</strong>: they accrue with volume, which correlates with the very volatility that costs you. The two are not independent.</li>
+<li><strong>Divergence loss is a real loss</strong> the moment you withdraw. The word <em>impermanent</em> has cost people more than the mechanism has.</li>
+</ul>
+      <p><a href="https://www.jaylabs.xyz/poc/lp-is-a-short-volatility-position">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>유동성 공급은 변동성을 파는 것이고, 그 손실은 비영구적이지 않다</h1>
+      <p class="lead">자동화 마켓메이커는 <strong>수수료를 주고 모든 움직임의 반대편</strong>을 잡습니다. <strong>그것은 옵션을 판 쪽의 손익 구조</strong>이고, 그 비용의 통상 명칭인 <strong>비영구적 손실(impermanent loss)</strong> 은 <strong>아무도 당신에게 빚지지 않은 되돌림</strong>을 암시합니다.</p>
+      <p class="meta"><strong>반나절, 표 계산, 실제 풀 하나, 자본 위험 없음.</strong> 시작 가격과 여러 종료 가격을 놓고, 각 지점에서 <strong>일정곱(constant-product) 포지션 가치</strong>를 계산한 뒤 <strong>두 자산을 그냥 들고 있었을 때의 가치</strong>를 뺍니다. 차이를 <strong>가격비에 대해 그리면 양쪽으로 매끄럽게 내려가는 곡선</strong> — <strong>옵션을 판 쪽의 모양</strong>입니다. 그다음 같은 창에서 <strong>풀이 실제로 번 수수료</strong>를 겹쳐 그립니다. <strong>두 선이 만나는 곳이 손익분기 변동성</strong>이고, <strong>APY 가 아니라 그 숫자가 이 포지션이 실제로 호가하는 것</strong>입니다.</p>
+      <h2>왜</h2>
+      <p><strong>이름이 문제입니다.</strong> <em>비영구적 손실</em> 은 <strong>기다리면 사라지는 무언가</strong>를 암시하는데, <strong>메커니즘은 그런 약속을 하지 않습니다.</strong> <strong>진입한 자리로 가격이 돌아와야만</strong> 비영구적이고 — <strong>그건 아무도 당신에게 빚지지 않은 사건</strong>이며 <strong>오래 들고 있을수록 덜 일어납니다.</strong> <strong>정직한 이름은 괴리 손실(divergence loss)</strong> 이고, <strong>이름만 바꿔도 포지션이 즉시 다르게 읽힙니다.</strong></p>
+<p><strong>실제로 하고 있는 것은 옵션을 파는 것이고, 손익 모양이 그렇게 말합니다.</strong> 일정곱 풀은 <strong>오르는 자산을 자동으로 팔고 내리는 자산을 삽니다.</strong> <strong>스트래들을 판 사람의 포지션</strong>입니다 — <strong>프리미엄(수수료)을 받고, 가격이 어느 쪽으로든 크게 움직이면 잃습니다.</strong> <strong>이익은 수수료에서 잘리고</strong>, 손실은 작은 움직임에서는 <strong>제곱으로</strong>, 큰 움직임에서는 <strong>한도 없이</strong> 커집니다. <strong>숏 변동성으로 보는 순간 모든 질문이 익숙한 질문이 됩니다.</strong></p>
+<p><strong>그래서 물을 값이 있는 유일한 질문이 바뀝니다 — &quot;APY 가 얼마냐&quot;가 아니라 &quot;이 가격이 함축하는 변동성은 얼마이고, 실현 변동성은 그보다 낮은가&quot;</strong> 입니다. <strong>수수료는 프리미엄이고, 괴리 손실은 그 쌍이 얼마나 움직일지에 대해 틀린 값</strong>입니다. <strong>격렬하게 움직이는 쌍에서 30% 를 주는 풀이 손실 포지션일 수 있고, 촘촘히 상관된 쌍에서 4% 를 주는 풀이 훌륭할 수 있습니다.</strong> <strong>APY 하나로는 둘을 구분할 수 없고</strong>, 그래서 <strong>가장 자주 인용되는 숫자</strong>입니다.</p>
+<p><strong>그리고 스테이블-스테이블 풀이 거의 아무것도 주지 않으면서 거래량을 지배하는 이유를 설명합니다.</strong> 두 자산이 거의 벌어지지 않으면 <strong>숏 변동성 비용이 0 근처</strong>이고 <strong>아주 작은 수수료도 이익</strong>입니다. <strong>시장은 혼란스러운 게 아니라 수수료를 변동성에 맞게 정확히 값 매기고 있습니다.</strong> <strong>그 쌍의 행동에 비해 수수료가 후해 보이는 곳이면 차액은 배출로 지급되는 중</strong>이고, 그러면 <code>where-yield-comes-from</code> 으로 돌아갑니다.</p>
+<p><strong>이것이 예측시장 작업 옆에 있어야 하는 이유는, 보조금 받는 마켓메이커가 같은 구조이기 때문입니다.</strong> <strong>LMSR 보조금은 마켓메이커의 기대 손실</strong>이고, <strong>없었을 유동성을 만들려고 의도적으로 조달한 것</strong>입니다. <strong>둘 다 누군가 언제나 거래할 수 있게 보장하려고 알려진 비용을 치르는 사례</strong>이고 — <strong>둘 다에서 실수는 프리미엄을 매출로, 괴리를 사고로 장부에 적는 것</strong>입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>손익, 표 하나로</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>종료 시 가격비</th>
+<th>그냥 들고 있었을 때 대비 풀 가치</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1.00배</strong>(불변)</td>
+<td><strong>0% — 유일한 손익분기점</strong></td>
+</tr>
+<tr>
+<td>1.25배</td>
+<td>−0.6%</td>
+</tr>
+<tr>
+<td>1.50배</td>
+<td>−2.0%</td>
+</tr>
+<tr>
+<td>2배</td>
+<td>−5.7%</td>
+</tr>
+<tr>
+<td>4배</td>
+<td>−20.0%</td>
+</tr>
+<tr>
+<td>5배</td>
+<td>−25.5%</td>
+</tr>
+</tbody></table></div>
+<p><strong>양방향 대칭</strong> — <strong>반토막이 두 배와 같은 비용</strong>입니다. 그 대칭이 <strong>숏 스트래들의 서명</strong>이고, 이 포지션에 <strong>관점이 없는 이유</strong>입니다: <strong>방향이 아니라 움직임에서 잃습니다.</strong></p>
+<h3>두 포지션, 나란히</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>두 자산을 그냥 보유</strong></th>
+<th><strong>유동성 공급</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>소득</td>
+<td>없음</td>
+<td><strong>수수료 — 프리미엄</strong></td>
+</tr>
+<tr>
+<td>상방</td>
+<td><strong>무한</strong></td>
+<td><strong>수수료에서 잘림</strong></td>
+</tr>
+<tr>
+<td>움직임의 비용</td>
+<td>없음</td>
+<td><strong>움직임 크기에 따라 증가</strong></td>
+</tr>
+<tr>
+<td>등가물</td>
+<td>그 쌍에 롱</td>
+<td><strong>숏 스트래들 + 수수료 흐름</strong></td>
+</tr>
+<tr>
+<td>진짜 질문</td>
+<td>오를까?</td>
+<td><strong>수수료가 감당하는 것보다 많이 움직일까?</strong></td>
+</tr>
+</tbody></table></div>
+<h3>손익분기 — 계산할 숫자</h3>
+<p>한 창에서의 <strong>수수료 수취</strong> 대 같은 창의 <strong>괴리 손실</strong>. <strong>둘이 만나는 곳이 그 풀이 호가하는 함축 변동성</strong>입니다. 그다음 그 쌍의 <strong>실현 변동성</strong>과 비교합니다:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>실현 변동성이…</th>
+<th>그러면</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>손익분기보다 <strong>낮음</strong></td>
+<td><strong>번다</strong> — 변동성을 제값보다 비싸게 판 것</td>
+</tr>
+<tr>
+<td><strong>높음</strong></td>
+<td><strong>잃는다. APY 가 아무리 좋아 보였어도.</strong></td>
+</tr>
+</tbody></table></div>
+<h3>스테이블 풀이 말이 되는 이유</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>쌍의 종류</th>
+<th>괴리</th>
+<th>손익분기에 필요한 수수료</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>스테이블/스테이블</strong></td>
+<td>0 근처</td>
+<td><strong>아주 작음 — 그리고 실제로 그만큼 줌</strong></td>
+</tr>
+<tr>
+<td>상관된 대형 자산</td>
+<td>중간</td>
+<td>중간</td>
+</tr>
+<tr>
+<td><strong>변동성 자산/무엇이든</strong></td>
+<td>큼</td>
+<td><strong>큼 — 대개 배출로 채움</strong></td>
+</tr>
+</tbody></table></div>
+<h3>간직할 주의</h3>
+<ul>
+<li>위 표는 <strong>일정곱 풀</strong> 가정입니다. <strong>집중 유동성은 크기를 크게 바꿉니다</strong> — <strong>양방향으로 더 레버리지된 것</strong>이지 더 안전한 게 아닙니다.</li>
+<li>수수료는 <strong>경로 의존적</strong>입니다 — <strong>거래량과 함께 쌓이고</strong>, 거래량은 <strong>당신에게 비용을 물리는 바로 그 변동성과 상관</strong>됩니다. <strong>둘은 독립이 아닙니다.</strong></li>
+<li><strong>괴리 손실은 인출하는 순간 진짜 손실</strong>입니다. <strong><em>비영구적</em> 이라는 단어가 메커니즘보다 많은 사람에게 더 큰 값을 치르게 했습니다.</strong></li>
+</ul>
+      <p><a href="https://www.jaylabs.xyz/poc/lp-is-a-short-volatility-position">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-m2-and-the-dollar.html">&larr; 72. M2, the dollar, and why crypto is a liquidity trade</a><a href="pocs-fees-over-security-budget.html">74. Does a chain pay for its own security? &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script><script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('.rail-jump a')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  let revealTimer;
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    const first = order.find((k) => seen.has(k));
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) io.observe(el);
+  }
+</script></script>
+</body>
+</html>
