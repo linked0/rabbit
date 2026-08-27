@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -405,6 +417,9 @@
       <p class="lead">A progressive curriculum assumes ignorance arrives in order. It does not. The honest use of graded material for an experienced engineer is as a reference opened at the point of today&#39;s block — and this repository already holds 152 curriculum items that quietly assume otherwise.</p>
       <p class="meta">Ten minutes, and it produces the only evidence that matters: for the last two weeks, write down what actually blocked you and which item in the curriculum covers it. If the blocks cluster in one region, reorder the curriculum around that region. If they scatter across items far apart in the sequence, the sequence is not carrying its weight and the material should be indexed rather than walked. Today&#39;s candidate is the concrete case: BLS12-381 and signature aggregation, the premise underneath <code>irreversible-switch-design</code>.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# Pull the page you are stuck on, not the next one in order\n\nA progressive curriculum assumes ignorance arrives in order. It does not. The honest use of graded material for an experienced engineer is as a reference opened at the point of today's block — and this repository already holds 152 curriculum items that quietly assume otherwise.\n\nTen minutes, and it produces the only evidence that matters: for the last two weeks, write down what actually blocked you and which item in the curriculum covers it. If the blocks cluster in one region, reorder the curriculum around that region. If they scatter across items far apart in the sequence, the sequence is not carrying its weight and the material should be indexed rather than walked. Today's candidate is the concrete case: BLS12-381 and signature aggregation, the premise underneath `irreversible-switch-design`.\n\n## Why\n\n**A curriculum encodes an assumption that is false for anyone experienced: that ignorance arrives in order.** Day 1 to day 100 is a sensible shape when the reader knows nothing, because the ordering is doing real work — each item is a prerequisite for the next. For someone eight years in, the gaps are not a prefix of the sequence. They are scattered, load-bearing, and revealed by whatever was attempted this week. **The sequence stops being a scaffold and becomes a queue**, and a queue you are behind on is a source of guilt rather than of learning.\n\n**Which changes what the material is for, not whether it is worth having.** Read front-to-back, a 100-item track competes with the work; opened at the item that explains today's block, the same track is a reference with an unusually good table of contents. The difference is entirely in the access pattern, and it costs nothing to switch — no reorganisation, no deletion, just a different first move.\n\n**Today's example is exact.** `irreversible-switch-design` rests on a fact about BLS12-381 — that signatures aggregate, that n of them still occupy 96 bytes, that verification finishes in a pairing — and that fact is what makes the post-quantum migration hard. Anyone who reads that card and does not already hold the aggregation property is blocked on **one page**, not on a curriculum. Reading the page is thirty minutes. Reaching it in sequence is weeks, and by then the card is stale.\n\n**And there is a measurement, which is what keeps this from being a preference.** Log the blocks for two weeks and look at where they land in the sequence. **Clustered means the ordering is earning its place; scattered means it is not.** That is a real answer either way, and it is cheap.\n\n## How it works\n\n### Two access patterns for the same material\n\n| | Walk the sequence | Open at the block |\n|---|---|---|\n| **Assumes** | Ignorance arrives in order | Ignorance is revealed by work |\n| **Competes with** | The work | Nothing — it *is* the work |\n| **Failure mode** | Falling behind, then abandoning | Gaps that never get surfaced because nothing touched them |\n| **Fits** | Someone starting out | **Someone eight years in** |\n\n### The measurement, and it settles the argument\n\nFor two weeks, record two columns: **what blocked me**, and **which curriculum item covers it**. Then look at the distribution.\n\n- **Clustered** in one region — the ordering is doing real work; reorder around that region and keep walking.\n- **Scattered** across distant items — the sequence is not earning its place, and the material should be **indexed rather than walked**.\n\nThis repository has `algorithms` at 100 items and `math` at 52. That is 152 rows built on the walking assumption, and the log above is the cheapest way to find out whether the assumption holds for its one reader.\n\n### The honest counter-argument\n\n**Opening only at the block never surfaces what you do not know you are missing.** Walking a sequence catches unknown unknowns; jumping to the block never will, because nothing has yet failed in a way that names them. So the two patterns are not rivals — the block-driven read is the default, and the sequence is what you walk deliberately in a quiet week, precisely because it finds what the work has not asked for yet.\n\n### Today's page\n\n**BLS12-381 and signature aggregation.** Not because it is next, but because `irreversible-switch-design` assumes it and the assumption is doing all the work: aggregation is why the current scheme is hard to replace, and without it the post-quantum draft reads as a size problem rather than a structural one.\n"</script>
+    <script type="application/json" id="copy-ko">"# 순서상 다음 장이 아니라, 오늘 막힌 그 한 페이지를\n\n진도형 커리큘럼은 **모르는 것이 순서대로 온다**고 전제합니다. **그렇지 않습니다.** 경력 있는 엔지니어에게 등급별 자료의 정직한 사용법은 **오늘 막힌 지점에서 펼치는 레퍼런스**이고 — 이 저장소에는 이미 **그 반대를 조용히 전제하는 커리큘럼 항목 152개**가 있습니다.\n\n**10분**이면 되고, **유일하게 중요한 증거**가 나옵니다 — 지난 2주 동안 **실제로 막혔던 것**과 **커리큘럼의 어느 항목이 그것을 다루는지**를 적습니다. 막힌 지점이 **한 구역에 몰려 있으면** 커리큘럼을 그 구역 중심으로 재배열합니다. **순서상 멀리 떨어진 항목들에 흩어져 있으면** 그 순서는 제 몫을 못 하고 있는 것이고, 자료는 **따라 걷는 것이 아니라 색인되어야** 합니다. 오늘의 구체적 후보: **BLS12-381과 서명 집계** — `irreversible-switch-design` 아래에 깔린 전제입니다.\n\n## 왜\n\n**커리큘럼은 경력자에게는 거짓인 전제를 인코딩합니다 — 모르는 것이 순서대로 온다는 것.** 1일차에서 100일차는 **아무것도 모르는 독자에게는 합리적인 모양**입니다. 순서가 **실제 일을 하고 있기** 때문입니다 — 각 항목이 다음의 선수 조건이니까요. **8년차에게 결손은 순서의 앞부분이 아닙니다.** 흩어져 있고, 하중을 받고, **이번 주에 시도한 무언가에 의해 드러납니다.** **순서는 발판이기를 그만두고 대기열이 되고**, 밀린 대기열은 **배움이 아니라 죄책감의 원천**입니다.\n\n**그래서 바뀌는 것은 자료의 값어치가 아니라 용도입니다.** 앞에서부터 읽으면 100개짜리 트랙은 **일과 경쟁**합니다. **오늘 막힌 것을 설명하는 항목에서 펼치면**, 같은 트랙이 **유난히 좋은 목차를 가진 레퍼런스**가 됩니다. 차이는 **전적으로 접근 패턴**에 있고, 바꾸는 데 비용이 0입니다 — 재조직도, 삭제도 필요 없고 **첫 동작만 다르면** 됩니다.\n\n**오늘의 예가 정확합니다.** `irreversible-switch-design` 은 BLS12-381에 대한 사실 하나 위에 서 있습니다 — **서명이 집계되고, n개가 여전히 96바이트이며, 검증이 페어링으로 끝난다** — 그리고 **그 사실이 포스트퀀텀 마이그레이션을 어렵게 만드는 것**입니다. 그 카드를 읽는데 집계 성질을 아직 갖고 있지 않은 사람은 **커리큘럼이 아니라 한 페이지에 막혀 있습니다.** 그 페이지를 읽는 데 30분. **순서대로 거기 도달하는 데는 몇 주**이고, 그때쯤이면 **카드가 낡습니다.**\n\n**그리고 이것이 취향에 머물지 않게 하는 측정이 있습니다.** 2주간 막힌 지점을 기록하고 **순서상 어디에 떨어지는지** 봅니다. **뭉쳐 있으면 순서가 제값을 하는 것이고, 흩어져 있으면 아닙니다.** 어느 쪽이든 **진짜 답**이고, 값이 쌉니다.\n\n## 동작 방식\n\n### 같은 자료, 두 가지 접근 패턴\n\n| | 순서대로 걷기 | 막힌 곳에서 펼치기 |\n|---|---|---|\n| **전제** | 모르는 것이 순서대로 온다 | **모르는 것은 일이 드러낸다** |\n| **경쟁 상대** | **일** | 없음 — **그것이 곧 일** |\n| **실패 모드** | 밀리고, 결국 포기 | **아무것도 건드리지 않아 영영 드러나지 않는 결손** |\n| **맞는 사람** | 시작하는 사람 | **8년차** |\n\n### 측정, 그리고 그것이 논쟁을 끝냅니다\n\n2주간 두 칸을 기록합니다 — **무엇에 막혔나**, **커리큘럼의 어느 항목이 그것을 다루나.** 그다음 분포를 봅니다.\n\n- **한 구역에 뭉쳐 있으면** — 순서가 실제 일을 하고 있음. 그 구역 중심으로 재배열하고 계속 걷는다.\n- **멀리 떨어진 항목들에 흩어져 있으면** — 그 순서는 제값을 못 하고 있음. 자료는 **걷는 것이 아니라 색인**되어야 한다.\n\n이 저장소에는 `algorithms` 100개, `math` 52개가 있습니다. **걷기 전제 위에 세워진 152줄**이고, 위의 기록은 **그 전제가 단 한 명의 독자에게 성립하는지 알아보는 가장 싼 방법**입니다.\n\n### 정직한 반론\n\n**막힌 곳에서만 펼치면, 자기가 놓치고 있다는 사실조차 모르는 것은 영영 드러나지 않습니다.** 순서를 걷는 것은 **미지의 미지(unknown unknowns)** 를 잡아내고, 막힌 곳으로 뛰는 것은 그러지 못합니다 — **그것들을 이름 짓게 만들 실패가 아직 없었기** 때문입니다. 그러니 둘은 경쟁 관계가 아닙니다 — **막힘 기반 읽기가 기본값**이고, **순서는 한산한 주에 의도적으로 걷는 것**입니다. 바로 **일이 아직 요구하지 않은 것을 찾아내기** 때문에.\n\n### 오늘의 페이지\n\n**BLS12-381과 서명 집계.** 순서상 다음이라서가 아니라, `irreversible-switch-design` 이 그것을 전제하고 **그 전제가 모든 일을 하고 있기** 때문입니다 — **집계가 있기 때문에 현행 방식을 갈아치우기 어렵고**, 그것 없이 읽으면 포스트퀀텀 초안이 **구조 문제가 아니라 크기 문제**로 보입니다.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -638,6 +653,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -358,6 +370,9 @@
       <p class="lead">A post claims Kimi K3 built an app turning 2D schematics into fully procedural 3D models, with a code-generated tank swappable for anything else. The load-bearing word is procedural: the output is code that makes geometry, not a mesh. Whether the arrow really points 2D → 3D is testable in one shot.</p>
       <p class="meta">Not yet scoped — and the whole first step is one falsifiable test, not a build. Feed it a schematic it has never seen: a drawing of something that is not a vehicle, from a domain the demo never showed. If the arrow points 2D → 3D, a model comes out. If nothing usable comes out, the app is a parameterized generator with a blueprint view, which is a different and still interesting thing — just not the claimed one. Source: an X post by @RoundtableSpace, 2026-08-26, showing a 55-second video of a browser app with view buttons (ISO, 3/4, SIDE, FRONT, PLAN) and action buttons (RUN, DRIVE, FIRE, EXPLODE). No repository, paper or primary link accompanies it; treat every claim here as unverified.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# Procedural, not generated — when the model is a program\n\nA post claims Kimi K3 built an app turning 2D schematics into fully procedural 3D models, with a code-generated tank swappable for anything else. The load-bearing word is procedural: the output is code that makes geometry, not a mesh. Whether the arrow really points 2D → 3D is testable in one shot.\n\nNot yet scoped — and the whole first step is one falsifiable test, not a build. Feed it a schematic it has never seen: a drawing of something that is not a vehicle, from a domain the demo never showed. If the arrow points 2D → 3D, a model comes out. If nothing usable comes out, the app is a parameterized generator with a blueprint view, which is a different and still interesting thing — just not the claimed one. Source: an X post by @RoundtableSpace, 2026-08-26, showing a 55-second video of a browser app with view buttons (ISO, 3/4, SIDE, FRONT, PLAN) and action buttons (RUN, DRIVE, FIRE, EXPLODE). No repository, paper or primary link accompanies it; treat every claim here as unverified.\n\n## Why\n\n**The interesting word is procedural, and it is not a synonym for generated.** A generated model is a mesh: a bag of vertices that arrived somehow and can now only be edited by hand. A procedural model is **code that produces geometry when run**, so its subject is an argument, its proportions are variables, and changing it means changing a line rather than re-sculpting a surface. That is why the post can say the tank *can be swapped out for anything else* — if the tank is a function, the tank is a parameter.\n\n**This repository already made the same move, one domain over.** Nothing in `docs/topics/` is written by hand; every page is produced from `lib/poc-cards.ts` by a generator. The consequence showed up concretely this week: when two workspaces both regenerated those pages, the fifty resulting conflicts were not resolved by merging HTML — they were resolved by merging the *source* and re-running the generator, because **a conflict in a derived file is never fixed in the derived file.** An LLM that emits the generator instead of the artifact inherits exactly that property, and it is worth more than the visual: **code can be diffed, reviewed and parameterized; a mesh can only be looked at.**\n\n**And the claim has a direction problem worth catching.** *2D schematics into 3D models* says the drawing is the input. But the demo's own buttons — FRONT, PLAN, ISO — are the standard orthographic projections that CAD software produces **from** a 3D model, and the blueprint aesthetic is the cheapest of those views to render. So the arrow may point the other way: one parametric model, six camera angles, one of which looks like a schematic. That is not an accusation; it is the first thing to check, and it is checkable in a single attempt.\n\n## How it works\n\n### Three things that get called the same thing\n\n| | What the output is | Editing it means | Can it be reviewed? |\n|---|---|---|---|\n| **Generated mesh** | Vertices | Sculpting by hand | No — you can only look at it |\n| **Parameterized model** | Fixed code, exposed knobs | Turning a knob the author anticipated | Partly — the knobs, not the shape |\n| **Procedural, as claimed here** | **Code written per subject** | **Editing a line** | **Yes — it is a diff** |\n\nThe post claims the third. The demo is consistent with the second. **The difference is invisible in a video and obvious in one experiment.**\n\n### The experiment, in full\n\nOne attempt, one input: a schematic of something from a domain it has never rendered — not a vehicle, not military, ideally something with an irregular shape rather than boxes and cylinders. Then read the result against three outcomes:\n\n- **A model appears and is roughly right** — the claim holds, and the interesting question moves to how the code represents shape.\n- **A model appears but is a tank with different proportions** — it is a parameterized generator. Still useful, differently framed.\n- **Nothing usable appears** — the schematic was never the input; the blueprint was an output view all along.\n\n### Why it belongs in this catalogue at all\n\nNot for the tank. **For the shape of the output.** The recurring difficulty with model-produced artifacts is that they cannot be checked — a paragraph, an image, a mesh all arrive as finished surfaces with no seam to inspect. **A model that emits a program instead moves the artifact into a form that already has review tooling around it**: version control, diffs, tests, parameters with names. That is the same reason this repo keeps card data as the source of truth and treats every page under `docs/topics/` as disposable output, and it generalizes far past 3D.\n\n### Honesty about the source\n\nThis is a social post with no repository, no paper and no primary link, forty-two minutes old at capture, carrying 19 likes against 16,000 views — engagement that says *seen* rather than *verified*. Nothing here should be repeated as fact. The card exists because the **distinction** is worth holding, not because the demo is established.\n"</script>
+    <script type="application/json" id="copy-ko">"# 생성이 아니라 절차적 — 모델이 프로그램일 때\n\nKimi K3가 2D 도면을 **완전 절차적** 3D 모델로 바꾸는 앱을 만들었고, 코드로 생성된 전차를 무엇으로든 교체할 수 있다는 게시물입니다. 하중을 받는 단어는 **절차적**입니다 — 산출물이 메시가 아니라 **기하를 만드는 코드**입니다. 화살표가 정말 2D → 3D 를 가리키는지는 **한 번의 실험으로 갈립니다.**\n\n아직 범위 미정 — 첫 단계 전부가 만들기가 아니라 **반증 가능한 실험 하나**입니다. **한 번도 본 적 없는 도면**을 넣습니다 — 차량이 아닌 것, 데모가 보여준 적 없는 분야의 그림으로. 화살표가 2D → 3D 를 가리킨다면 모델이 나옵니다. 쓸 만한 것이 안 나오면, 그 앱은 **청사진 뷰가 달린 파라미터 생성기**입니다 — 그것도 다르고 여전히 흥미롭지만, **주장된 그것은 아닙니다.** 출처: @RoundtableSpace 의 2026-08-26 X 게시물. 뷰 버튼(ISO·3/4·SIDE·FRONT·PLAN)과 동작 버튼(RUN·DRIVE·FIRE·EXPLODE)이 있는 브라우저 앱의 55초 영상. **저장소도 논문도 1차 링크도 없습니다** — 여기의 모든 주장을 미검증으로 다룰 것.\n\n## 왜\n\n**흥미로운 단어는 \"절차적\"이고, 이것은 \"생성된\"의 동의어가 아닙니다.** 생성된 모델은 **메시**입니다 — 어떻게든 도착한 정점 덩어리이고, 이제는 손으로만 고칠 수 있습니다. 절차적 모델은 **실행하면 기하를 만들어내는 코드**입니다. 그래서 대상이 인자가 되고, 비율이 변수가 되며, 바꾼다는 것이 표면을 다시 깎는 게 아니라 **한 줄을 고치는 일**이 됩니다. 게시물이 *전차를 무엇으로든 교체할 수 있다* 고 말할 수 있는 이유가 그것입니다 — **전차가 함수라면, 전차는 파라미터입니다.**\n\n**이 저장소는 한 분야 건너에서 이미 같은 수를 뒀습니다.** `docs/topics/` 의 어떤 페이지도 손으로 쓰지 않습니다 — 전부 `lib/poc-cards.ts` 에서 생성기가 만듭니다. 그 결과가 이번 주에 구체적으로 드러났습니다: 두 작업 공간이 같은 페이지들을 재생성했을 때 생긴 **50개의 충돌은 HTML을 병합해서 푼 게 아니라, *소스*를 병합하고 생성기를 다시 돌려서** 풀렸습니다. **파생 파일의 충돌은 결코 파생 파일에서 고쳐지지 않기** 때문입니다. **산출물 대신 생성기를 내놓는 LLM은 정확히 그 성질을 물려받고**, 그것이 보기 좋은 화면보다 값이 큽니다 — **코드는 diff 하고 리뷰하고 파라미터화할 수 있지만, 메시는 쳐다볼 수만 있습니다.**\n\n**그리고 주장에는 잡아 둘 만한 방향 문제가 있습니다.** *2D 도면을 3D 모델로* 는 **그림이 입력**이라는 뜻입니다. 그런데 데모의 버튼들 — FRONT·PLAN·ISO — 은 CAD 소프트웨어가 **3D 모델로부터** 만들어내는 표준 정투영이고, 청사진 스타일은 그 뷰들 중 **렌더링이 가장 싼** 축입니다. 그러니 화살표가 반대일 수 있습니다 — **파라메트릭 모델 하나, 카메라 각도 여섯, 그중 하나가 도면처럼 보이는 것.** 고발이 아닙니다. **가장 먼저 확인할 것**이고, **한 번의 시도로 확인됩니다.**\n\n## 동작 방식\n\n### 같은 이름으로 불리는 서로 다른 셋\n\n| | 산출물이 무엇인가 | 고친다는 것은 | 리뷰 가능한가 |\n|---|---|---|---|\n| **생성된 메시** | 정점들 | 손으로 깎기 | **아니오** — 쳐다볼 수만 있음 |\n| **파라미터화된 모델** | 고정된 코드 + 노출된 손잡이 | 저자가 예상해 둔 손잡이 돌리기 | 부분적 — 형상이 아니라 손잡이만 |\n| **여기서 주장하는 절차적** | **대상마다 새로 쓰인 코드** | **한 줄 고치기** | **예 — 그것은 diff 다** |\n\n게시물은 세 번째를 주장합니다. **데모는 두 번째와도 모순되지 않습니다.** 그 차이는 **영상에서는 안 보이고 실험 한 번이면 드러납니다.**\n\n### 실험, 전체\n\n시도 한 번, 입력 하나 — **한 번도 렌더한 적 없는 분야**의 도면. 차량이 아니고, 군사가 아니며, 상자와 원기둥이 아닌 **불규칙한 형상**이면 더 좋습니다. 결과를 세 갈래에 대고 읽습니다:\n\n- **모델이 나오고 대체로 맞다** — 주장이 성립하고, 흥미로운 질문은 **코드가 형상을 어떻게 표현하는가**로 옮겨간다.\n- **모델이 나오는데 비율만 다른 전차다** — **파라미터 생성기**다. 여전히 쓸모 있지만 프레임이 다르다.\n- **쓸 만한 게 안 나온다** — **도면은 애초에 입력이 아니었고**, 청사진은 처음부터 **출력 뷰**였다.\n\n### 애초에 왜 이 카탈로그에 두는가\n\n전차 때문이 아닙니다. **산출물의 모양 때문입니다.** 모델이 만든 결과물의 반복되는 난점은 **검사할 수 없다**는 것입니다 — 문단이든 이미지든 메시든, **이음매 없는 완성된 표면**으로 도착합니다. **대신 프로그램을 내놓는 모델은 결과물을 이미 리뷰 도구가 갖춰진 형태로 옮깁니다** — 버전 관리, diff, 테스트, 이름 있는 파라미터. 이 저장소가 카드 데이터를 정본으로 두고 `docs/topics/` 전부를 **버려도 되는 출력**으로 다루는 것과 같은 이유이고, **3D를 훨씬 넘어 일반화됩니다.**\n\n### 출처에 대한 정직함\n\n저장소도 논문도 1차 링크도 없는 소셜 게시물이고, 캡처 시점 42분 경과, 조회 1.6만에 좋아요 19 — **\"봤다\"는 말이지 \"검증됐다\"는 말이 아닌** 반응입니다. **여기의 어떤 것도 사실로 옮겨 적으면 안 됩니다.** 이 카드가 존재하는 이유는 데모가 확립돼서가 아니라 **그 구분이 들고 있을 값어치가 있기** 때문입니다.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -590,6 +605,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -405,6 +417,9 @@
       <p class="lead">LayerZero&#39;s ATLAS is not an exchange. It is matching, clearing, settlement and risk sold as a backend so anyone can run their own venue — with Citadel Securities, DTCC, ARK Invest and ICE named as partners. The people it needs are not blockchain developers.</p>
       <p class="meta">Not yet scoped — and the first task is reading the partner list as a specification, which costs nothing. Each name supplies a different missing piece: a market maker supplies quotes, a clearing and settlement utility supplies post-trade, an exchange operator supplies market rules and surveillance, an asset manager supplies the demand side. Write what each one implies the engine does not do by itself, and the result is the gap list for anyone building the same thing without those partners. Source: LayerZero ATLAS — Aggregated Trading, Liquidity and Settlement — announced 2026-08-26, with those four named. To confirm against the primary announcement.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# Headless arrives — the company that sells the engine, not the app\n\nLayerZero's ATLAS is not an exchange. It is matching, clearing, settlement and risk sold as a backend so anyone can run their own venue — with Citadel Securities, DTCC, ARK Invest and ICE named as partners. The people it needs are not blockchain developers.\n\nNot yet scoped — and the first task is reading the partner list as a specification, which costs nothing. Each name supplies a different missing piece: a market maker supplies quotes, a clearing and settlement utility supplies post-trade, an exchange operator supplies market rules and surveillance, an asset manager supplies the demand side. Write what each one implies the engine does not do by itself, and the result is the gap list for anyone building the same thing without those partners. Source: LayerZero ATLAS — Aggregated Trading, Liquidity and Settlement — announced 2026-08-26, with those four named. To confirm against the primary announcement.\n\n## Why\n\n**The word that arrived is headless.** In web commerce it meant the same thing a decade ago: stop selling the storefront, sell the engine behind it and let others own the customer. Its arrival in crypto infrastructure marks a category, not a product — **the company that sells the engine has become a business other companies buy from**, and the visible venue stops being where the value is.\n\n**Which moves the hiring signal one notch from where `event-contract-plumbing` found it.** That card observed brokerages staffing event contracts with people who know clearing, settlement, order routing and regulatory reporting. This is the same competency, relocated: **not the firms building an exchange, but the firm renting one out.** The engine has to be correct for every tenant at once, which makes the plumbing harder rather than easier — a venue can carry an idiosyncratic clearing rule, an engine cannot.\n\n**The partner list is the part to read closely, because it is a specification with the marketing removed.** Citadel Securities is quotes. DTCC is post-trade — clearing and settlement, the exact column `event-contract-plumbing` marked *must build*. ICE is an exchange operator, meaning market rules and surveillance. ARK is the demand side. **Four names, four things the engine does not supply by itself**, and together they are a list of what anyone attempting the same build without them would have to produce.\n\n**And the strategic reading connects to the other convergence.** Selling an engine rather than an app is the same move an L2 makes when it stops offering cheap blockspace and starts offering somewhere to run your chain. Two different starting points, one destination: **selling the place rather than the tool.** `choosing-a-chain-is-a-lease` is the version of that argument aimed at the decision this project actually has to make.\n\n## How it works\n\n### The partner list, read as a gap list\n\n| Partner | What it supplies | What that says the engine lacks alone |\n|---|---|---|\n| **Citadel Securities** | Quotes, two-sided liquidity | An engine does not make markets; someone must |\n| **DTCC** | Clearing and settlement | The *must build* column, supplied rather than solved |\n| **ICE** | Exchange operation, market rules, surveillance | Rules and monitoring are institutional, not code alone |\n| **ARK Invest** | Demand, order flow | Venues fail from absent flow far more often than absent tech |\n\n**Read down the right column and you have the requirements document** for anyone building the same engine without those four — which is the same trick `event-contract-plumbing` used on job postings, applied to a partner announcement instead.\n\n### Why an engine is harder than a venue\n\nA single exchange can carry an idiosyncrasy: one margin rule, one settlement window, one dispute path, all tuned to its own book. **An engine has to be correct for tenants it has not met**, so every parameter that a venue could hardcode becomes configuration, and every configuration is a combination someone will eventually run. That is the same generalisation cost `irreversible-switch-design` describes in a contract — **the constant becomes a variable, and the validity that the constant used to guarantee moves somewhere else.**\n\n### What it means for anyone choosing where to build\n\n**The build-versus-rent question just acquired a real option on the rent side.** Before, running a venue meant building matching, clearing and settlement or not existing. If an engine sells those, the question becomes the terms — what the engine controls, what it charges, and what leaving costs. Those are lease terms, which is exactly the subject of `choosing-a-chain-is-a-lease`.\n"</script>
+    <script type="application/json" id="copy-ko">"# 헤드리스가 도착했다 — 앱이 아니라 엔진을 파는 회사\n\nLayerZero의 **ATLAS**는 거래소가 아닙니다. **매칭·청산·정산·리스크를 한 묶음의 백엔드로 팔아 누구나 자기 거래 장소를 돌리게** 합니다 — 협력사로 **Citadel Securities·DTCC·ARK Invest·ICE**가 이름을 올렸습니다. 필요한 사람은 **블록체인 개발자가 아닙니다.**\n\n아직 범위 미정 — 첫 작업은 **협력사 명단을 명세서로 읽는 것**이고 비용이 0입니다. 이름마다 **서로 다른 빠진 조각**을 공급합니다 — 마켓메이커는 호가를, 청산·정산 유틸리티는 사후처리를, 거래소 운영사는 시장 규칙과 감시를, 자산운용사는 수요 측을. 각각이 **엔진이 스스로 하지 못한다는 것을 함의하는 바**를 적으면, 그 결과가 **그 파트너들 없이 같은 것을 만들려는 사람의 결손 목록**입니다. 출처: 2026-08-26 공개된 LayerZero **ATLAS**(Aggregated Trading, Liquidity and Settlement), 위 네 곳 명시. 원문으로 확인할 것.\n\n## 왜\n\n**도착한 단어는 헤드리스입니다.** 웹 커머스에서 10년 전에 같은 뜻이었습니다 — **매장을 팔지 말고 그 뒤의 엔진을 팔고, 고객은 남이 갖게 하라.** 크립토 인프라에 이 단어가 도착했다는 것은 **상품이 아니라 카테고리**를 표시합니다 — **엔진을 파는 회사가 다른 회사들이 사가는 사업이 됐고**, 눈에 보이는 거래 장소는 **가치가 있는 자리이기를 그만둡니다.**\n\n**그래서 채용 신호가 `event-contract-plumbing` 이 찾은 자리에서 한 칸 옮겨갑니다.** 그 카드는 브로커리지가 이벤트 계약에 **청산·정산·주문 라우팅·규제 보고를 아는 사람**을 배치하는 것을 관찰했습니다. 같은 역량이 **자리를 옮긴 것**입니다 — **거래소를 만드는 회사들이 아니라, 거래소를 빌려주는 회사.** 엔진은 **모든 임차인에 대해 동시에 옳아야** 하므로 배관이 쉬워지는 게 아니라 **어려워집니다** — 거래소 하나는 특이한 청산 규칙을 안고 갈 수 있지만 **엔진은 그럴 수 없습니다.**\n\n**협력사 명단이 꼼꼼히 읽을 부분입니다. 마케팅이 제거된 명세서이기 때문입니다.** Citadel Securities는 **호가**. DTCC는 **사후처리** — 청산과 정산, `event-contract-plumbing` 이 *만들어야 함* 으로 표시한 바로 그 칸. ICE는 **거래소 운영사**, 즉 시장 규칙과 감시. ARK는 **수요 측**. **네 이름, 엔진이 스스로 공급하지 못하는 네 가지**이고, 합치면 **그들 없이 같은 것을 만들려는 사람이 직접 생산해야 할 목록**입니다.\n\n**그리고 전략적 독법은 또 하나의 수렴과 이어집니다.** 앱 대신 엔진을 파는 것은, L2가 **싼 블록스페이스를 제공하기를 그만두고 당신의 체인을 돌릴 곳을 제공하기 시작할 때** 두는 것과 같은 수입니다. **출발점은 둘, 도착점은 하나 — 도구가 아니라 장소를 파는 것.** 그 논지를 이 프로젝트가 실제로 내려야 할 결정에 겨눈 판본이 `choosing-a-chain-is-a-lease` 입니다.\n\n## 동작 방식\n\n### 협력사 명단을 결손 목록으로 읽기\n\n| 협력사 | 무엇을 공급하나 | 엔진이 홀로 못 한다는 뜻 |\n|---|---|---|\n| **Citadel Securities** | 호가, 양방향 유동성 | **엔진은 시장을 조성하지 않는다.** 누군가는 해야 함 |\n| **DTCC** | 청산·정산 | ***만들어야 함*** 칸을 **풀지 않고 공급받음** |\n| **ICE** | 거래소 운영, 시장 규칙, 감시 | 규칙과 감시는 **코드가 아니라 제도** |\n| **ARK Invest** | 수요, 주문 흐름 | 거래 장소는 기술 부재보다 **흐름 부재로** 훨씬 자주 실패 |\n\n**오른쪽 칸을 위에서 아래로 읽으면**, 그 넷 없이 같은 엔진을 만들려는 사람의 **요구사항 명세서**가 됩니다 — `event-contract-plumbing` 이 채용공고에 쓴 것과 **같은 수법을 협력사 발표에 적용**한 것입니다.\n\n### 왜 엔진이 거래소보다 어려운가\n\n거래소 하나는 **특이성을 안고 갈 수 있습니다** — 마진 규칙 하나, 정산 창 하나, 분쟁 경로 하나, 전부 자기 장부에 맞춰. **엔진은 만나본 적 없는 임차인에 대해서도 옳아야** 하므로, **거래소라면 하드코딩했을 모든 파라미터가 설정이 되고**, 모든 설정은 **언젠가 누군가 돌릴 조합**입니다. `irreversible-switch-design` 이 컨트랙트에서 서술하는 **일반화 비용과 같습니다** — **상수가 변수가 되고, 상수가 보장하던 유효성이 다른 데로 옮겨갑니다.**\n\n### 어디서 만들지 고르는 입장에서의 의미\n\n**만들 것인가 빌릴 것인가에서, 빌리는 쪽에 실질 옵션이 생겼습니다.** 예전에는 거래 장소를 돌린다는 것이 **매칭·청산·정산을 만들거나 존재하지 않거나**였습니다. 엔진이 그것을 판다면 질문은 **조건**으로 바뀝니다 — 엔진이 무엇을 통제하고, 얼마를 받고, **떠나는 데 얼마가 드는가.** 그건 **임대 조건**이고, 정확히 `choosing-a-chain-is-a-lease` 의 주제입니다.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -626,6 +641,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

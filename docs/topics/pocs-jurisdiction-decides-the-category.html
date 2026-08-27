@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -405,6 +417,9 @@
       <p class="lead">Between 8/18 and 8/25 one activity was criminal gambling in Korea, a brokerage product line in the US, and something a US company sells only outside the US. The axis is not the product — it is the jurisdiction, and no design document has a box for it.</p>
       <p class="meta">Not yet scoped — and the deliverable is one sentence, not a system. Translate the Korean regulator&#39;s stated grounds into design levers, decide where this project sits on each lever, and write the result as: what this product is, and is not, under Korean law. Sources to confirm against the primary documents: the 방심위 access block of 2026-08-18, the Gemini Titan / Apex Fintech exclusive of 2026-08-24, the non-US restriction on Coinbase&#39;s tokenized equities of 2026-08-25, and the announced Jackson Hole 2026 theme, Financial Innovation: Implications for Payments and Policy.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# Same product, three verdicts in eight days\n\nBetween 8/18 and 8/25 one activity was criminal gambling in Korea, a brokerage product line in the US, and something a US company sells only outside the US. The axis is not the product — it is the jurisdiction, and no design document has a box for it.\n\nNot yet scoped — and the deliverable is one sentence, not a system. Translate the Korean regulator's stated grounds into design levers, decide where this project sits on each lever, and write the result as: what this product is, and is not, under Korean law. Sources to confirm against the primary documents: the 방심위 access block of 2026-08-18, the Gemini Titan / Apex Fintech exclusive of 2026-08-24, the non-US restriction on Coinbase's tokenized equities of 2026-08-25, and the announced Jackson Hole 2026 theme, Financial Innovation: Implications for Payments and Policy.\n\n## Why\n\n**Three events, eight days, one axis.** Korea's communications standards commission classified Polymarket as criminal gambling and blocked access. Six days later a CFTC-designated venue became the exclusive regulated partner of a large US brokerage network. The day after that, a US company put Apple and Nvidia shares on a public chain — and sold them only to people outside the US. Put the three in one table and the product column barely changes while the verdict column changes completely.\n\n**What is missing is not legal research, it is a box in the design document.** Every architecture doc in this project has boxes for data model, settlement, oracle and failure modes. None has a box that says which jurisdiction this is legal in and what specifically makes it so. That absence is why the question keeps arriving as news rather than as a constraint — and a constraint that arrives as news arrives too late to design around.\n\n**The regulator did the hard half already.** The stated grounds — a winner-take-all payout, an event the user cannot control, direct retail access — are not vague policy language. They are three product properties, each of which a design can move. Nobody has published that translation, which makes it available work rather than a summary of someone else's.\n\n## How it works\n\n### The three events, side by side\n\n| Date | Event | Verdict on the activity | What actually differed |\n|---|---|---|---|\n| **2026-08-18** | Korea blocks access to Polymarket | Criminal gambling | Payout shape, event type, retail access — no licence available |\n| **2026-08-24** | Gemini Titan becomes Apex Fintech's exclusive venue | A brokerage product line | A CFTC designation, obtained in December 2025 |\n| **2026-08-25** | Coinbase lists tokenized equities on Base | Sellable, but not to US persons | The buyer's residence, nothing else |\n\n### The grounds, turned into levers\n\n| Stated ground | The design lever underneath it | What moving it costs |\n|---|---|---|\n| **Winner-take-all payout** | Payout curve — binary versus scalar or continuous settlement | A continuous payout is a different product, and possibly a less useful one |\n| **User cannot control the event** | Subject matter — exogenous events versus outcomes tied to the user's own action or skill | Narrows the market catalogue sharply |\n| **Direct retail access** | Access path — retail direct versus intermediated or institution-only | Changes the business model, not the code |\n\n**Reading the second table is the whole exercise.** Each lever is movable, none is free, and the combination decides which jurisdiction the product can stand in. A design that has not chosen a position on all three has, in effect, chosen the position that was blocked.\n\n### Why the December document needs two branches, not one\n\nThe legislative date is a date, not an outcome. Meanwhile the supervisory track proceeds regardless: implementing rules for the stablecoin statute are already being written, and the 2026 Jackson Hole symposium's announced theme puts roughly a hundred and twenty central bankers from seventy countries on payments and financial innovation for three days. **Rules arrive without legislation**, and **the intensity of lobbying is not the probability of passage.** So the document needs a legislation branch and a rulemaking-only branch — and the honest expectation is that the two differ more in timing than in substance.\n"</script>
+    <script type="application/json" id="copy-ko">"# 같은 상품, 8일 사이 세 개의 판정\n\n8/18부터 8/25 사이, **같은 행위**가 한국에서는 형법상 도박, 미국에서는 증권사 상품 라인, 그리고 미국 회사가 **미국 밖에서만** 파는 것이 됐습니다. 축은 상품이 아닙니다 — **법역**이고, 어떤 설계 문서에도 그 칸이 없습니다.\n\n아직 범위 미정 — 산출물은 시스템이 아니라 **문장 하나**입니다. 방심위가 밝힌 논거를 **설계 레버**로 옮기고, 이 프로젝트가 각 레버의 어디에 서 있는지 정한 뒤, 결과를 이렇게 씁니다 — **내 제품이 한국법상 무엇이고 무엇이 아닌가.** 원문으로 확인할 출처: 2026-08-18 방심위 접속 차단, 2026-08-24 Gemini Titan·Apex Fintech 독점, 2026-08-25 Coinbase 토큰화 주식의 미국 외 한정, 그리고 발표된 잭슨홀 2026 주제 — Financial Innovation: Implications for Payments and Policy.\n\n## 왜\n\n**세 사건, 8일, 하나의 축.** 방심위가 Polymarket을 형법상 도박으로 판정하고 접속을 차단했습니다. 6일 뒤 CFTC 지정 거래소가 대형 미국 브로커리지 네트워크의 **독점 규제 파트너**가 됐습니다. 그다음 날, 미국 회사가 애플·엔비디아 주식을 퍼블릭 체인에 올리면서 **미국 밖 사람에게만** 팔았습니다. 셋을 한 표에 놓으면 **상품 칸은 거의 그대로인데 판정 칸은 완전히 달라집니다.**\n\n**모자란 것은 법률 리서치가 아니라 설계 문서의 칸 하나입니다.** 이 프로젝트의 모든 아키텍처 문서에는 데이터 모델·정산·오라클·실패 모드 칸이 있습니다. **어느 법역에서 합법이며 무엇이 그것을 합법으로 만드는가**를 적는 칸은 없습니다. 그 부재 때문에 이 질문이 **제약이 아니라 뉴스로** 도착하고, **뉴스로 도착한 제약은 설계에 반영하기엔 이미 늦습니다.**\n\n**어려운 절반은 규제기관이 이미 했습니다.** 밝혀진 논거 — **승자독식 페이아웃, 이용자가 통제할 수 없는 사건, 리테일 직접 접근** — 은 모호한 정책 언어가 아닙니다. **세 개의 상품 속성**이고, 각각을 설계가 움직일 수 있습니다. 그 번역을 아직 아무도 공개하지 않았으니, 이건 남의 요약이 아니라 **비어 있는 작업**입니다.\n\n## 동작 방식\n\n### 세 사건을 나란히\n\n| 날짜 | 사건 | 그 행위에 대한 판정 | 실제로 달랐던 것 |\n|---|---|---|---|\n| **2026-08-18** | 한국, Polymarket 접속 차단 | **형법상 도박** | 페이아웃 형태·사건 종류·리테일 접근 — 받을 수 있는 라이선스가 없음 |\n| **2026-08-24** | Gemini Titan이 Apex Fintech 독점 거래소로 | **증권사 상품 라인** | 2025년 12월 취득한 **CFTC 지정** |\n| **2026-08-25** | Coinbase, Base에 토큰화 주식 상장 | **판매 가능, 단 미국인 제외** | **매수자의 거주지**, 그 외에는 없음 |\n\n### 논거를 레버로 옮기면\n\n| 밝혀진 논거 | 그 아래의 설계 레버 | 움직일 때의 대가 |\n|---|---|---|\n| **승자독식 페이아웃** | 페이아웃 곡선 — 이진이냐 스칼라·연속 정산이냐 | 연속 페이아웃은 **다른 상품**이고, 덜 쓸모 있을 수도 있음 |\n| **이용자가 통제할 수 없는 사건** | 대상 — 외생적 사건이냐, 이용자의 행위·역량에 묶인 결과냐 | 마켓 카탈로그가 **크게 좁아짐** |\n| **리테일 직접 접근** | 접근 경로 — 리테일 직접이냐, 중개 또는 기관 전용이냐 | 코드가 아니라 **사업 모델**이 바뀜 |\n\n**두 번째 표를 읽는 것이 이 작업의 전부입니다.** 레버는 전부 움직일 수 있고, 공짜인 것은 하나도 없으며, 조합이 **이 상품이 설 수 있는 법역**을 결정합니다. **세 레버 모두에 입장을 정하지 않은 설계는, 사실상 차단당한 그 입장을 고른 것입니다.**\n\n### 12월 문서에 왜 가지가 둘이어야 하는가\n\n입법 일정은 **날짜이지 결과가 아닙니다.** 그와 무관하게 감독 트랙은 진행됩니다 — 스테이블코인 법의 시행규칙은 이미 쓰이는 중이고, 발표된 2026 잭슨홀 심포지엄 주제는 **70개국 약 120명의 중앙은행가를 사흘간 결제와 금융혁신 위에** 올려놓습니다. **법안 없이도 규칙은 옵니다.** 그리고 **로비의 강도는 통과 확률이 아닙니다.** 그러니 문서에는 **입법 가지**와 **시행규칙만의 가지**가 둘 다 필요하고, 정직한 예상은 **둘의 차이가 내용보다 시점에 있다**는 것입니다.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -668,6 +683,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

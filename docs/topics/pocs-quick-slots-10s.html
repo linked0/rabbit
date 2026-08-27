@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -371,6 +383,9 @@
       <p class="lead">Cutting slot time from 12s to 10s changes no API, which is exactly what makes it dangerous. Every poll interval, confirmation rule, oracle heartbeat and deadline in an application encodes 12 seconds somewhere, and almost none of them say so.</p>
       <p class="meta">Not yet scoped — and the first step is a grep, not a design. Pull every time-valued constant out of the codebase (poll intervals, confirmation counts, signature deadlines, cache TTLs, cron periods) and mark each one: derived from slot time, coincidentally equal to a multiple of it, or genuinely independent. Only the middle bucket is a bug. Source: EIP-8198 Quick Slots, listed S-tier in the 2026-08-26 protocol roundup — confirm the proposal&#39;s actual status and target fork at eips.ethereum.org before building anything on it.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# Ten-second slots — the constant nobody wrote down\n\nCutting slot time from 12s to 10s changes no API, which is exactly what makes it dangerous. Every poll interval, confirmation rule, oracle heartbeat and deadline in an application encodes 12 seconds somewhere, and almost none of them say so.\n\nNot yet scoped — and the first step is a grep, not a design. Pull every time-valued constant out of the codebase (poll intervals, confirmation counts, signature deadlines, cache TTLs, cron periods) and mark each one: derived from slot time, coincidentally equal to a multiple of it, or genuinely independent. Only the middle bucket is a bug. Source: EIP-8198 Quick Slots, listed S-tier in the 2026-08-26 protocol roundup — confirm the proposal's actual status and target fork at eips.ethereum.org before building anything on it.\n\n## Why\n\n**A timing change is the worst kind of change, because it does not break a build — it shifts a distribution.** Nothing fails to compile, no test goes red on the day the fork lands, and the symptoms arrive later as flakiness: an update that occasionally arrives a beat late, a quote that occasionally misses its window, a confirmation rule that quietly guarantees less than it did last week.\n\n**The part that actually tightens is anything with a deadline signed into it.** A filler quoting against a fill deadline, an oracle heartbeat, a batch-auction window, a bundle aimed at the next slot — each loses about a sixth of its wall-clock budget while the code keeps the same number in it. That is the same seam `erc-7683-settlement-security` runs along and the same one `the-settlement-instant` depends on: a deadline is only meaningful in the unit of the thing it protects, and nobody checks which unit was used until it moves.\n\n**Why the card is cheap and keeps its value either way.** The output is an inventory of places where the application makes an unstated assumption about time. If EIP-8198 never ships, the inventory is still the list of latent assumptions — and this is a codebase that will eventually run against more than one chain, where slot time is not 12 seconds and never was.\n\n## How it works\n\n### Where twelve seconds hides\n\n| Constant | What a 10-second slot does to it | Failure shape |\n|---|---|---|\n| **Poll interval set to one block** | Each poll now spans 1.2 blocks | Occasional missed update, read as flaky UI rather than a bug |\n| **N-confirmation rule** | Same N, about 17% less wall clock | Weaker guarantee at byte-identical code |\n| **Deadline in seconds** | Same seconds, more blocks inside them | Nothing breaks — this is the safe bucket |\n| **Deadline in blocks** | About 17% less time to act | Fillers and oracles miss near the edge of the window |\n| **Oracle heartbeat / staleness bound** | Threshold now spans more blocks | Stale price accepted longer than intended |\n| **Cron or batch window sized in blocks** | Window shrinks in wall clock | Jobs overlap under load |\n\n### The rule the table produces\n\n**Express every deadline in the unit of the thing it protects.** A human or market deadline is wall-clock: a user has thirty seconds, a quote is good for two minutes. A chain-state deadline is blocks: this many confirmations, this many slots of challenge window. The defect is never the number — it is a deadline written in the *other* unit, and slot time changing does not create that defect, it only makes it visible.\n\n### Why it sits next to the other protocol cards\n\nThe roundup's three S-tier items change three different parts of the substrate under an application that does not change at all: **8198 changes time**, **8131 and 8279 change what resources cost** (`l1-data-pricing-dimensions`), and **8141 changes the shape of a transaction** (`erc-8141`). None of them require an application to be rewritten, and all three change what it is quietly assuming.\n"</script>
+    <script type="application/json" id="copy-ko">"# 10초 슬롯 — 아무도 적어두지 않은 상수\n\n슬롯 시간이 12초에서 10초로 줄어도 API는 하나도 바뀌지 않습니다 — 바로 그 점이 위험합니다. 앱의 폴링 주기·확정 규칙·오라클 하트비트·마감은 어딘가에서 12초를 전제하고 있는데, 그렇다고 적어 둔 자리는 거의 없습니다.\n\n아직 범위 미정 — 첫 단계는 설계가 아니라 grep 입니다. 코드베이스에서 시간 값을 가진 상수를 전부 뽑아(폴링 주기, 확정 블록 수, 서명 마감, 캐시 TTL, 크론 주기) 각각을 표시합니다 — 슬롯 시간에서 유도된 것, 우연히 그 배수와 같은 것, 정말로 무관한 것. **버그는 가운데 칸뿐입니다.** 출처: 2026-08-26 프로토콜 라운드업의 S티어 항목 EIP-8198 Quick Slots — 실제 상태와 목표 포크는 eips.ethereum.org 에서 먼저 확인할 것.\n\n## 왜\n\n**타이밍 변경은 가장 나쁜 종류의 변경입니다. 빌드를 깨지 않고 분포를 옮기기 때문입니다.** 컴파일이 실패하지 않고, 포크가 들어온 날 빨간 테스트도 없습니다. 증상은 나중에 **불안정성**으로 옵니다 — 가끔 한 박자 늦게 도착하는 갱신, 가끔 창을 놓치는 호가, 지난주보다 조용히 덜 보장하게 된 확정 규칙.\n\n**실제로 조여드는 것은 마감이 서명에 박혀 있는 모든 것입니다.** 체결 마감을 걸고 호가를 내는 필러, 오라클 하트비트, 배치 경매 창, 다음 슬롯을 겨냥한 번들 — 코드에 적힌 숫자는 그대로인데 실제 벽시계 예산이 6분의 1쯤 줄어듭니다. `erc-7683-settlement-security` 가 훑고 지나가는 이음매이자 `the-settlement-instant` 가 기대고 있는 그 이음매입니다: **마감은 자기가 보호하는 대상의 단위로 적혀야 의미가 있고, 어떤 단위로 적혔는지는 그 단위가 움직이기 전까지 아무도 확인하지 않습니다.**\n\n**왜 싸고, 어느 쪽으로 가든 값이 남는가.** 산출물은 **앱이 시간에 대해 말하지 않은 채 전제하고 있는 자리들의 목록**입니다. EIP-8198 이 끝내 들어오지 않아도 그 목록은 그대로 잠재 전제 목록이고 — 이 코드베이스는 언젠가 슬롯 시간이 12초가 아닌, 애초에 12초였던 적도 없는 체인 위에서도 돌 것이기 때문입니다.\n\n## 동작 방식\n\n### 12초가 숨어 있는 자리\n\n| 상수 | 10초 슬롯이 하는 일 | 고장 나는 모양 |\n|---|---|---|\n| **한 블록에 맞춘 폴링 주기** | 한 번 폴링이 1.2블록을 걸침 | 가끔 갱신을 놓침 — 버그가 아니라 UI 불안정으로 읽힘 |\n| **N확정 규칙** | N은 그대로, 벽시계로는 약 17% 감소 | 코드는 바이트 단위로 같은데 보장은 약해짐 |\n| **초 단위 마감** | 초는 그대로, 그 안의 블록만 늘어남 | 아무것도 안 깨짐 — 안전한 칸 |\n| **블록 단위 마감** | 행동할 시간이 약 17% 감소 | 필러·오라클이 창 가장자리에서 놓침 |\n| **오라클 하트비트 · 신선도 한계** | 같은 임계값이 더 많은 블록을 덮음 | 의도보다 오래 낡은 가격을 받아들임 |\n| **블록 수로 잡은 크론·배치 창** | 벽시계 기준 창이 줄어듦 | 부하 시 작업이 겹침 |\n\n### 표가 만들어내는 규칙\n\n**모든 마감은 자기가 보호하는 대상의 단위로 적는다.** 사람이나 시장의 마감은 벽시계입니다 — 사용자에게 30초, 호가는 2분간 유효. 체인 상태의 마감은 블록입니다 — 확정 몇 개, 챌린지 창 몇 슬롯. **결함은 숫자가 아니라 *다른* 단위로 적힌 마감이고, 슬롯 시간 변경은 그 결함을 만드는 게 아니라 보이게 할 뿐입니다.**\n\n### 왜 다른 프로토콜 카드 옆에 두는가\n\n라운드업의 S티어 세 항목은 **전혀 바뀌지 않은 애플리케이션 아래에서 기반의 서로 다른 세 부분을 바꿉니다.** **8198은 시간을**, **8131·8279는 자원의 가격을**(`l1-data-pricing-dimensions`), **8141은 트랜잭션의 모양을**(`erc-8141`) 바꿉니다. 셋 다 앱을 다시 쓰라고 요구하지 않고, 셋 다 **앱이 조용히 전제하던 것**을 바꿉니다.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -610,6 +625,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

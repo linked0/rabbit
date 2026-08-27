@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -359,6 +371,9 @@
       <p class="lead">When a protocol pays incentives on both deposits and borrows, the same capital loops. Total deposits inflate, outside money does not — and net TVL turns out to equal external capital exactly. The ratio between the headline and the net is a number you can compute today.</p>
       <p class="meta">Pick any lending market running a deposit-and-borrow incentive programme and take two figures it already publishes: total deposits and total borrows. Net is the difference. Gross divided by net is the recycling multiple. It needs no waiting, no modelling and no market-beta correction, and it applies to a live programme today. Then check whether the protocol&#39;s own reporting calls the gross number TVL.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# Gross over net — the recycling multiple\n\nWhen a protocol pays incentives on both deposits and borrows, the same capital loops. Total deposits inflate, outside money does not — and net TVL turns out to equal external capital exactly. The ratio between the headline and the net is a number you can compute today.\n\nPick any lending market running a deposit-and-borrow incentive programme and take two figures it already publishes: total deposits and total borrows. Net is the difference. Gross divided by net is the recycling multiple. It needs no waiting, no modelling and no market-beta correction, and it applies to a live programme today. Then check whether the protocol's own reporting calls the gross number TVL.\n\n## Why\n\n**The identity is short enough to hold in your head, which is what makes it useful.** Outside money X, collateral ratio c. Deposit X, borrow cX against it, redeposit, repeat. Total deposits converge to **X/(1&minus;c)** and total borrows to **cX/(1&minus;c)**. Subtract: **net TVL = X.** *Net TVL is exactly the external capital.* Everything above it is the same money wearing more coats.\n\n**The consequence that matters is that gross divided by net is a leverage multiple, and it is published without being labelled.** A market showing deposits of $164.5M against borrows of $122.5M has $42M actually in it and a multiple of 3.9&times;. Nothing is hidden &mdash; both numbers are on the page &mdash; but only the larger one gets quoted, and it gets quoted under a word, *TVL*, that most readers hear as *money present*.\n\n**A second consequence explains a pattern that otherwise looks strange: fee revenue moves superlinearly with the multiple.** Fees accrue on total borrows, which scale as c/(1&minus;c) &mdash; so a modest fall in the collateral ratio collapses both together. When borrows fall 87% and fees fall 80% in the same window, that is not two facts. **It is one fact, and it says the fees were a leverage gauge rather than a demand gauge.**\n\n**And the general form is worth stating plainly, because it is not confined to lending: everyone reports gross and calls it net.** A chain reports TVL that is partly looped. An exchange reports volume that is partly wash or partly the same collateral re-pledged overnight. A payments network reports throughput that counts both legs of a round trip. **The discipline is a single division, and the reason nobody performs it is that the larger number is the one being sold.**\n\n**The honest limits belong here too.** The identity is exact only for **single-asset recursion**; cross-asset loops double-count and need a per-asset decomposition. And a high multiple is not fraud &mdash; leverage is a legitimate product, and a lending market exists precisely to provide it. **The claim is narrower and harder to argue with: the multiple should be published, and it never is.**\n\n## How it works\n\n### The identity\n\n| Quantity | Formula | Meaning |\n|---|---|---|\n| Total deposits | **D = X / (1 &minus; c)** | The headline |\n| Total borrows | **B = cX / (1 &minus; c)** | What the incentive pays on |\n| **Net TVL** | **D &minus; B = X** | **The external capital, exactly** |\n| **Recycling multiple** | **D / (D &minus; B)** | The number nobody publishes |\n\n### Worked example\n\n| Reported | Value |\n|---|---|\n| Total deposits | $164.5M |\n| Total borrows | $122.5M |\n| **Net** | **$42M** |\n| Implied collateral ratio | **c &asymp; 0.745** |\n| **Recycling multiple** | **3.9&times;** |\n\n**$42M wearing four coats.** Note the tell that comes free: when borrows exceed deposits in a headline, the smaller figure is already a net number and the reporting has mixed units.\n\n### Why fees move superlinearly\n\nFees accrue on **B**, and B/X = c/(1&minus;c):\n\n| c | Multiple D/X | Fee base B/X |\n|---|---|---|\n| 0.50 | 2.0&times; | 1.0 |\n| 0.70 | 3.3&times; | 2.3 |\n| **0.745** | **3.9&times;** | **2.9** |\n| 0.80 | 5.0&times; | 4.0 |\n\n**A small move in c swings the fee base hard in both directions** &mdash; which is why an incentive programme ending can take fees down 80% without a single user leaving.\n\n### The general form\n\n| Domain | Gross number reported | What net would be |\n|---|---|---|\n| Lending | TVL | Deposits &minus; borrows |\n| Chains | TVL | Same, summed across markets |\n| Exchanges | Volume | Net of wash and of re-pledged collateral |\n| Repo | Daily turnover | **The same collateral re-counted every night** |\n| Payments | Throughput | One leg, not both |\n\n**Everyone reports gross and calls it net.** The division is the whole method.\n\n### Limits, stated up front\n\n- Exact only for **single-asset recursion**. Cross-asset loops need decomposition or they double-count.\n- **A high multiple is not fraud.** Leverage is the product. The objection is to the label, not the leverage.\n- The multiple is a **snapshot**; it moves with c, which moves with price.\n"</script>
+    <script type="application/json" id="copy-ko">"# 총액 ÷ 순액 — 재활용 배수\n\n프로토콜이 **예치와 차입 양쪽에** 인센티브를 주면 **같은 자본이 루프를 돕니다.** 총 예치는 부풀고 외부 자금은 그대로이며 — **순 TVL 은 외부 자본과 정확히 같아집니다.** **헤드라인과 순액의 비율은 오늘 계산할 수 있는 숫자**입니다.\n\n**예치·차입 양쪽에 인센티브를 주는 대출 시장** 아무거나 골라, **이미 발표된 두 숫자**를 가져옵니다 — **총 예치**와 **총 차입.** **순액은 그 차이**입니다. **총액 ÷ 순액이 재활용 배수**입니다. **기다릴 필요도, 모델링도, 시장 베타 보정도 필요 없고**, **살아 있는 프로그램에 오늘 적용**됩니다. 그다음 **그 프로토콜 자신의 발표가 총액을 TVL 이라 부르는지** 확인합니다.\n\n## 왜\n\n**항등식이 머릿속에 담길 만큼 짧고, 그래서 쓸모 있습니다.** 외부 자금 X, 담보비율 c. X 를 예치하고 cX 를 빌려 다시 예치하고 반복. 총 예치는 **X/(1−c)**, 총 차입은 **cX/(1−c)** 로 수렴합니다. 빼면 **순 TVL = X.** *순 TVL 은 외부 자본과 정확히 같습니다.* **그 위의 전부는 같은 돈이 외투를 더 껴입은 것**입니다.\n\n**중요한 결과는 총액 ÷ 순액이 레버리지 배수이고, 이름표 없이 발표된다는 것입니다.** 예치 $164.5M 대 차입 $122.5M 인 시장에는 **실제로 $42M 이 있고 배수는 3.9배**입니다. **아무것도 숨겨지지 않았습니다** — 두 숫자 다 페이지에 있습니다 — 다만 **큰 쪽만 인용되고**, 그것도 대부분의 독자가 *실재하는 돈* 으로 듣는 **TVL** 이라는 단어 아래 인용됩니다.\n\n**두 번째 결과가, 그러지 않으면 이상해 보이는 패턴을 설명합니다 — 수수료 매출이 배수에 대해 초선형으로 움직입니다.** 수수료는 **총 차입**에 붙고 총 차입은 **c/(1−c)** 로 커지므로, **담보비율이 조금만 내려도 둘이 함께 무너집니다.** 차입이 −87%, 수수료가 −80% 로 같은 창에서 움직였다면 **그건 사실 두 개가 아닙니다.** **하나의 사실이고, 그 수수료가 수요 계기판이 아니라 레버리지 계기판이었다고 말합니다.**\n\n**그리고 일반형은 분명히 적을 값이 있습니다. 대출에 국한되지 않기 때문입니다 — 모두가 총액을 발표하면서 그것을 순액이라 부릅니다.** 체인은 **일부가 루프인 TVL** 을 발표합니다. 거래소는 **일부가 워시이거나 밤새 같은 담보를 다시 잡은** 거래량을 발표합니다. 결제망은 **왕복의 양쪽 구간을 다 센** 처리량을 발표합니다. **규율은 나눗셈 한 번이고, 아무도 하지 않는 이유는 큰 숫자가 팔리고 있는 그 숫자이기 때문**입니다.\n\n**정직한 한계도 여기 둡니다.** 항등식은 **단일 자산 재귀에서만 정확**합니다. **교차 자산 루프는 이중계상**되어 자산별 분해가 필요합니다. 그리고 **높은 배수가 사기는 아닙니다** — 레버리지는 정당한 상품이고, 대출 시장은 정확히 그것을 제공하려고 존재합니다. **주장은 더 좁고 반박하기 어렵습니다: 배수는 발표되어야 하는데, 한 번도 발표되지 않습니다.**\n\n## 동작 방식\n\n### 항등식\n\n| 양 | 식 | 뜻 |\n|---|---|---|\n| 총 예치 | **D = X / (1 − c)** | 헤드라인 |\n| 총 차입 | **B = cX / (1 − c)** | **인센티브가 붙는 대상** |\n| **순 TVL** | **D − B = X** | **외부 자본, 정확히** |\n| **재활용 배수** | **D / (D − B)** | **아무도 발표하지 않는 숫자** |\n\n### 계산 예\n\n| 발표된 것 | 값 |\n|---|---|\n| 총 예치 | $164.5M |\n| 총 차입 | $122.5M |\n| **순액** | **$42M** |\n| 함축된 담보비율 | **c ≈ 0.745** |\n| **재활용 배수** | **3.9배** |\n\n**$42M 이 외투를 네 겹 껴입은 것.** 공짜로 따라오는 단서 하나: **헤드라인에서 차입이 예치를 넘으면, 작은 쪽은 이미 순액**이고 **발표가 단위를 섞은 것**입니다.\n\n### 왜 수수료가 초선형인가\n\n수수료는 **B** 에 붙고, B/X = c/(1−c):\n\n| c | 배수 D/X | 수수료 기반 B/X |\n|---|---|---|\n| 0.50 | 2.0배 | 1.0 |\n| 0.70 | 3.3배 | 2.3 |\n| **0.745** | **3.9배** | **2.9** |\n| 0.80 | 5.0배 | 4.0 |\n\n**c 가 조금만 움직여도 수수료 기반이 양방향으로 크게 흔들립니다** — 그래서 **인센티브 프로그램 종료만으로 사용자가 한 명도 안 떠나도 수수료가 80% 빠질 수 있습니다.**\n\n### 일반형\n\n| 영역 | 발표되는 총액 | 순액이라면 |\n|---|---|---|\n| 대출 | TVL | 예치 − 차입 |\n| 체인 | TVL | 같은 것을 시장별로 합산 |\n| 거래소 | 거래량 | **워시와 재담보를 뺀 것** |\n| 레포 | 일일 회전 | **같은 담보를 매일 밤 다시 센 것** |\n| 결제 | 처리량 | **왕복이 아니라 한 구간** |\n\n**모두가 총액을 발표하면서 그것을 순액이라 부릅니다.** **나눗셈이 방법의 전부입니다.**\n\n### 한계, 미리 적기\n\n- **단일 자산 재귀에서만 정확.** 교차 자산 루프는 분해하지 않으면 **이중계상**.\n- **높은 배수가 사기는 아님.** **레버리지가 곧 상품**입니다. 반대하는 것은 **레버리지가 아니라 이름표**입니다.\n- 배수는 **스냅샷**입니다. **c 에 따라 움직이고, c 는 가격에 따라 움직입니다.**\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -780,6 +795,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

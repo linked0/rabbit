@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -359,6 +371,9 @@
       <p class="lead">A short-dated government bill pays something for taking almost no risk. Any yield that takes real risk has to beat it before it is interesting at all — which means the entire on-chain yield landscape is priced relative to a number set by a central bank, not by crypto.</p>
       <p class="meta">Ten minutes and a spreadsheet with two columns: the current three-month government bill yield, and the yield on whatever on-chain position you are considering, stripped of emissions per <code>where-yield-comes-from</code>. The difference is the risk premium you are being paid. Then ask the only question that matters — is that premium enough for smart-contract risk, oracle risk, counterparty risk and exit risk combined? Repeat the exercise at a few points in the last three years and the crypto cycle starts looking like a function of one line.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# The risk-free rate is the floor under every yield\n\nA short-dated government bill pays something for taking almost no risk. Any yield that takes real risk has to beat it before it is interesting at all — which means the entire on-chain yield landscape is priced relative to a number set by a central bank, not by crypto.\n\nTen minutes and a spreadsheet with two columns: the current three-month government bill yield, and the yield on whatever on-chain position you are considering, stripped of emissions per `where-yield-comes-from`. The difference is the risk premium you are being paid. Then ask the only question that matters — is that premium enough for smart-contract risk, oracle risk, counterparty risk and exit risk combined? Repeat the exercise at a few points in the last three years and the crypto cycle starts looking like a function of one line.\n\n## Why\n\n**Every yield in existence is quoted against an implicit alternative, and the alternative is a government bill.** If a short-dated bill pays 5% for something close to no risk, then a protocol paying 6% is offering **one percentage point** for smart-contract risk, oracle risk, custody risk and the risk that you cannot get out on the day you want to. Written that way it is obviously a bad trade; written as *6% APY* it is a product.\n\n**This single relationship explains more of the crypto cycle than most crypto-specific narratives do.** When the risk-free rate is near zero, any positive yield looks extraordinary and capital floods toward risk because the alternative pays nothing. When it rises to 5%, that same capital has a safe place to sit and the on-chain yield has to work much harder for the same flow. **Nothing about the protocols changed. The denominator did.** `m2-and-the-dollar` is the other half of that mechanism.\n\n**And it reframes what a stablecoin issuer actually is.** A fiat-backed issuer holds short-dated government paper and returns none of the interest to the holder. **The issuer's business is the risk-free rate**, which is why a high-rate environment is enormously profitable for dollar issuers and why the same product denominated in a low-rate currency is a much thinner business &mdash; the point `two-currencies-one-ledger` reaches from the euro side and `what-needs-a-stablecoin` reaches from the won side.\n\n**The discipline is to always subtract before comparing.** A yield is only interesting to the extent it exceeds the floor, and most published comparisons put a gross on-chain number next to nothing at all. **Subtract the bill, subtract the emissions, and what is left is the actual offer** &mdash; usually small, occasionally excellent, and always smaller than advertised.\n\n## How it works\n\n### The subtraction, done properly\n\n| Step | Example |\n|---|---|\n| Advertised APY | **12%** |\n| Less: emissions portion (`where-yield-comes-from`) | &minus;7% &rarr; **5% real** |\n| Less: short-dated bill yield | &minus;4% &rarr; **1% premium** |\n| **What that 1% is paying for** | **Smart-contract + oracle + custody + exit risk, combined** |\n\n### What moves when the floor moves\n\n| Risk-free rate | Effect on on-chain yield demand | Effect on stablecoin issuers |\n|---|---|---|\n| **Near zero** | Any positive yield attracts capital; risk appetite is cheap | **Reserve income near zero &mdash; issuers need another business** |\n| **High** | Capital has a safe alternative; on-chain must beat it | **Reserve income is the business, and it is very good** |\n\n**Same protocols, different denominator.** This is worth holding next to any story that explains a cycle purely in terms of adoption.\n\n### Why the issuer's business is this line\n\n| | Holder | Issuer |\n|---|---|---|\n| Holds | A token worth $1 | **Short-dated government paper** |\n| Earns | **Nothing** | **The bill yield** |\n| Bears | Redemption risk | Duration and operational risk |\n\nWhich is why a euro- or won-denominated version is structurally thinner: **the float story is only as good as the rate on the currency's own short paper.**\n\n### The honest caveats\n\n- *Risk-free* means **credit-risk-free, not risk-free** &mdash; duration and inflation still bite, which is what `m2-and-the-dollar` is about.\n- The right comparison is the bill in **the currency your liability is in**, not always dollars.\n- A premium that looks thin may still be correct if the risk really is small; **the point is to price it, not to refuse it.**\n"</script>
+    <script type="application/json" id="copy-ko">"# 무위험 이자율이 모든 수익률의 바닥이다\n\n단기 국채는 **거의 위험 없이** 무언가를 지급합니다. **진짜 위험을 지는 수익률은 그것을 넘어야 애초에 흥미로워집니다** — 즉 **온체인 수익률 지형 전체가 크립토가 아니라 중앙은행이 정한 숫자에 대해 상대적으로 값 매겨집니다.**\n\n**10분과 두 칸짜리 표**: 현재 **3개월 국채 수익률**, 그리고 검토 중인 온체인 포지션의 수익률 — 단 `where-yield-comes-from` 에 따라 **배출을 걷어낸 값**으로. **차이가 당신이 받는 위험 프리미엄**입니다. 그다음 **유일하게 중요한 질문**: **스마트컨트랙트 위험·오라클 위험·거래상대 위험·이탈 위험을 다 합친 것에 대해 그 프리미엄이 충분한가?** 지난 3년의 몇 시점에서 같은 계산을 반복하면 **크립토 사이클이 한 줄의 함수처럼 보이기 시작합니다.**\n\n## 왜\n\n**존재하는 모든 수익률은 암묵적 대안에 대고 표시되고, 그 대안은 국채입니다.** 단기 국채가 **거의 위험 없이 5%** 를 준다면, **6% 를 주는 프로토콜은 스마트컨트랙트 위험·오라클 위험·수탁 위험·원하는 날 못 빠져나올 위험에 대해 1%포인트를 제안하는 것**입니다. **그렇게 적으면 명백히 나쁜 거래**이고, ***6% APY* 라고 적으면 상품**이 됩니다.\n\n**이 관계 하나가 대부분의 크립토 고유 서사보다 사이클을 더 많이 설명합니다.** 무위험 이자율이 **0 근처면** 어떤 양(+)의 수익률도 대단해 보이고, **대안이 아무것도 주지 않으니** 자본이 위험 쪽으로 몰립니다. 그것이 **5% 로 오르면** 같은 자본에 **안전하게 앉을 자리**가 생기고, 온체인 수익률은 **같은 유입을 얻기 위해 훨씬 더 열심히** 일해야 합니다. **프로토콜은 아무것도 바뀌지 않았습니다. 분모가 바뀐 것입니다.** 그 메커니즘의 나머지 절반이 `m2-and-the-dollar` 입니다.\n\n**그리고 스테이블코인 발행사가 실제로 무엇인지를 다시 규정합니다.** 법정화폐 담보 발행사는 **단기 국채를 들고 그 이자를 보유자에게 하나도 돌려주지 않습니다.** **발행사의 사업이 곧 무위험 이자율**입니다. 그래서 **고금리 환경이 달러 발행사에 막대하게 유리**하고, **저금리 통화로 표시된 같은 상품은 훨씬 얇은 사업**입니다 — `two-currencies-one-ledger` 가 유로 쪽에서, `what-needs-a-stablecoin` 이 원화 쪽에서 도달하는 바로 그 지점입니다.\n\n**규율은 비교하기 전에 언제나 빼는 것입니다.** **수익률은 바닥을 넘는 만큼만 흥미롭고**, 대부분의 발표된 비교는 **총액 온체인 숫자를 아무것도 아닌 것 옆에 놓습니다.** **국채를 빼고, 배출을 빼면 남는 것이 실제 제안**입니다 — **대개 작고, 가끔 훌륭하며, 언제나 광고보다 작습니다.**\n\n## 동작 방식\n\n### 뺄셈, 제대로\n\n| 단계 | 예 |\n|---|---|\n| 광고된 APY | **12%** |\n| 배출분 차감(`where-yield-comes-from`) | −7% → **실질 5%** |\n| 단기 국채 수익률 차감 | −4% → **프리미엄 1%** |\n| **그 1% 가 값을 치르는 대상** | **스마트컨트랙트 + 오라클 + 수탁 + 이탈 위험, 전부 합쳐서** |\n\n### 바닥이 움직이면 무엇이 움직이나\n\n| 무위험 이자율 | 온체인 수익률 수요에 미치는 영향 | 스테이블코인 발행사에 미치는 영향 |\n|---|---|---|\n| **0 근처** | 어떤 양의 수익률도 자본을 끌어옴. **위험 선호가 싸다** | **준비금 수익 0 근처 — 발행사는 다른 사업이 필요** |\n| **높음** | 자본에 **안전한 대안**이 있음. 온체인은 그것을 이겨야 함 | **준비금 수익이 곧 사업이고, 아주 좋다** |\n\n**같은 프로토콜, 다른 분모.** **사이클을 순전히 채택으로 설명하는 이야기 옆에** 놓아 둘 값이 있습니다.\n\n### 왜 발행사의 사업이 이 한 줄인가\n\n| | 보유자 | 발행사 |\n|---|---|---|\n| 보유 | **$1 짜리 토큰** | **단기 국채** |\n| 수취 | **없음** | **국채 수익률** |\n| 부담 | 상환 위험 | 듀레이션·운영 위험 |\n\n그래서 **유로·원화 표시 판본은 구조적으로 얇습니다** — **플로트 서사는 그 통화 자체 단기물의 금리만큼만 좋습니다.**\n\n### 정직한 단서\n\n- *무위험* 은 **신용위험이 없다는 뜻이지 위험이 없다는 뜻이 아닙니다** — **듀레이션과 인플레이션**은 여전히 물어뜯고, 그게 `m2-and-the-dollar` 의 주제입니다.\n- 올바른 비교 대상은 **당신의 부채가 표시된 통화의 국채**이지 언제나 달러가 아닙니다.\n- **얇아 보이는 프리미엄도 위험이 정말 작으면 옳을 수 있습니다.** **요점은 거부가 아니라 값을 매기는 것입니다.**\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -669,6 +684,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

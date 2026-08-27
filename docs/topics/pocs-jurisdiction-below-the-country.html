@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -405,6 +417,9 @@
       <p class="lead">A fourth US state blocked Kalshi, so the same product is now legal and illegal inside one country. The axis has not changed — jurisdiction decides the category — but the unit has: the design document needs a row per ruling, not per country, and an eligibility policy keyed the same way.</p>
       <p class="meta">Not yet scoped — but unlike most cards here the deliverable is a thing stakeholders can hold. Build one table whose key is (jurisdiction, ruling, date, ground cited, product property implicated), fill it with the four events below, and make it the input to an eligibility policy rather than a memo. Legal owns the rows, product owns the property column, engineering reads it at runtime. Sources to confirm individually: Korea&#39;s access block of Polymarket 2026-08-18; Gemini Titan becoming Apex Fintech&#39;s exclusive venue 2026-08-24; Coinbase restricting tokenised equities to non-US users 2026-08-25; Washington becoming the fourth US state to block Kalshi 2026-08-26.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# Jurisdiction is not country-sized\n\nA fourth US state blocked Kalshi, so the same product is now legal and illegal inside one country. The axis has not changed — jurisdiction decides the category — but the unit has: the design document needs a row per ruling, not per country, and an eligibility policy keyed the same way.\n\nNot yet scoped — but unlike most cards here the deliverable is a thing stakeholders can hold. Build one table whose key is (jurisdiction, ruling, date, ground cited, product property implicated), fill it with the four events below, and make it the input to an eligibility policy rather than a memo. Legal owns the rows, product owns the property column, engineering reads it at runtime. Sources to confirm individually: Korea's access block of Polymarket 2026-08-18; Gemini Titan becoming Apex Fintech's exclusive venue 2026-08-24; Coinbase restricting tokenised equities to non-US users 2026-08-25; Washington becoming the fourth US state to block Kalshi 2026-08-26.\n\n## Why\n\n**The axis held and the unit broke.** `jurisdiction-decides-the-category` put three events on one line and found that the product barely changed while the verdict changed completely. A fourth event keeps that finding and destroys the convenient part of it: **a US state blocked a CFTC-designated venue.** So *the US* is not a jurisdiction for this purpose. It is a set of them, and they disagree.\n\n**That is not a legal curiosity, it is a schema error waiting in every design document.** A jurisdiction box that reads *Korea / US* encodes an assumption that a country has one answer. Once a state can rule against a federally designated venue, the same field has to hold *Washington*, *four states and counting*, and eventually *this county, this regulator, this ruling*. A field that cannot represent the disagreement will be resolved by someone guessing, at runtime, in production.\n\n**And the fix is small if it is made before the field exists.** Not a country code — **a triple**: which authority ruled, what it ruled, and which property of the product the ruling attached to. That last column is what makes it usable rather than decorative, because it is the join to the design levers `jurisdiction-decides-the-category` already worked out: payout shape, event controllability, access path. A ruling that cites winner-take-all payouts constrains a different part of the product than one that cites direct retail access, and a table that records only *blocked / allowed* has thrown that away.\n\n**What each stakeholder gets from the same table** is the reason to build it as a table rather than a memo. Legal maintains rows and cites sources. Product reads the property column and sees which levers are under pressure and where. Engineering reads it at runtime for eligibility, and every restriction in production can name the ruling that justifies it — which is also the answer when someone asks why a user was refused.\n\n## How it works\n\n### Four events, one axis, a finer unit\n\n| Date | Authority | Ruling | Ground cited | Product property implicated |\n|---|---|---|---|---|\n| **08-18** | Korea, 방심위 | Access blocked | Winner-take-all payout; uncontrollable event; direct retail access | Payout shape, subject matter, access path |\n| **08-24** | US, CFTC designation | Permitted, exclusive brokerage partner | Federal designation held since 2025-12 | Licence status |\n| **08-25** | US federal / issuer choice | Sold to non-US users only | Not stated publicly | Buyer residence |\n| **08-26** | **Washington State** | **Blocked — fourth US state** | State-level gaming law | **Same product, same federal licence** |\n\n**The fourth row is the one that changes the schema.** Rows two and four describe the same country and the same product with opposite verdicts, which a country-keyed field cannot represent at all.\n\n### The artifact stakeholders can actually use\n\n| Layer | What it holds | Who owns it |\n|---|---|---|\n| **Ruling table** | (jurisdiction, ruling, date, ground, property, source link) | Legal — rows and citations |\n| **Lever map** | Ground → design lever, from `jurisdiction-decides-the-category` | Product — what is under pressure |\n| **Eligibility policy** | Data, not code: which rulings restrict which capability | Engineering — read at runtime |\n| **Decision log** | Every production restriction names the ruling behind it | Everyone — and it is the answer to *why was I refused* |\n\n**The point of the shape is that no one has to re-derive the reasoning.** A new ruling is a row, not a redesign, and the December document's jurisdiction box becomes a view over the table rather than a paragraph that goes stale the next time a state acts.\n\n### The design consequence worth stating plainly\n\n**Country-level geofencing is already insufficient**, and it will keep degrading in one direction only — finer. Any eligibility check that hardcodes a country list has the same defect as a contract that hardcodes a signature length in `irreversible-switch-design`: it holds an opinion about something it does not control. **The fix is the same fix — make it data, and let the judgement live where the rulings are recorded.**\n"</script>
+    <script type="application/json" id="copy-ko">"# 법역은 국가 크기가 아니다\n\n**네 번째 주**가 Kalshi를 차단하면서, **같은 상품이 한 나라 안에서 합법이자 불법**이 됐습니다. 축은 그대로입니다 — **법역이 카테고리를 정한다** — 그런데 **단위가 바뀌었습니다.** 설계 문서에는 **국가별이 아니라 판정별로 줄**이 필요하고, 적격성 정책도 **같은 키**를 써야 합니다.\n\n아직 범위 미정 — 다만 여기 대부분의 카드와 달리 **산출물이 이해관계자가 손에 쥘 수 있는 물건**입니다. 키가 **(관할, 판정, 날짜, 인용된 근거, 걸린 제품 속성)** 인 표 하나를 만들고, 아래 네 사건으로 채운 뒤, **메모가 아니라 적격성 정책의 입력**으로 씁니다. **줄은 법무가, 속성 칸은 제품이, 런타임 조회는 엔지니어링이** 맡습니다. 개별 확인이 필요한 출처: 2026-08-18 한국의 Polymarket 접속 차단, 2026-08-24 Gemini Titan의 Apex Fintech 독점, 2026-08-25 Coinbase 토큰화 주식의 미국 외 한정, 2026-08-26 워싱턴주의 Kalshi 차단(네 번째 주).\n\n## 왜\n\n**축은 버텼고 단위가 깨졌습니다.** `jurisdiction-decides-the-category` 는 세 사건을 한 줄에 놓고 **상품은 거의 그대로인데 판정이 완전히 달라지는 것**을 찾았습니다. 네 번째 사건은 그 발견을 유지하면서 **편리했던 부분을 부숩니다** — **한 주(州)가 CFTC 지정 거래소를 차단했습니다.** 그러니 **이 목적에서 *미국* 은 법역이 아닙니다.** **법역들의 집합**이고, **서로 의견이 다릅니다.**\n\n**이건 법률적 흥밋거리가 아니라 모든 설계 문서 안에서 대기 중인 스키마 오류입니다.** *한국 / 미국* 이라고 적힌 법역 칸은 **한 나라에 답이 하나**라는 전제를 인코딩합니다. 주가 연방 지정 거래소에 반하는 판정을 내릴 수 있게 되는 순간, 같은 필드가 *워싱턴*, *네 개 주, 계속 증가*, 그리고 언젠가는 *이 카운티, 이 규제기관, 이 판정* 을 담아야 합니다. **불일치를 표현하지 못하는 필드는 결국 누군가가 런타임에, 프로덕션에서, 추측으로 채우게 됩니다.**\n\n**그리고 필드가 생기기 전에 고치면 비용이 작습니다.** 국가 코드가 아니라 — **삼중항**입니다: **어느 기관이 판정했는가, 무엇을 판정했는가, 그 판정이 제품의 어느 속성에 붙었는가.** 마지막 칸이 이것을 **장식이 아니라 쓸모 있게** 만듭니다. `jurisdiction-decides-the-category` 가 이미 정리한 **설계 레버**로 이어지는 조인이기 때문입니다 — 페이아웃 형태, 사건 통제 가능성, 접근 경로. **승자독식 페이아웃을 근거로 든 판정과 리테일 직접 접근을 근거로 든 판정은 제품의 다른 부분을 제약**하고, *차단/허용* 만 기록한 표는 **그것을 버린 것**입니다.\n\n**같은 표에서 이해관계자마다 무엇을 얻는가** — 이것이 메모가 아니라 표로 만들 이유입니다. **법무**는 줄을 유지하고 출처를 답니다. **제품**은 속성 칸을 읽고 **어느 레버가 어디서 압력을 받는지** 봅니다. **엔지니어링**은 런타임에 적격성 판정으로 읽고, **프로덕션의 모든 제한이 자기를 정당화하는 판정을 이름 댈 수 있게** 됩니다 — 그건 *왜 이 사용자가 거절됐는가* 에 대한 답이기도 합니다.\n\n## 동작 방식\n\n### 네 사건, 하나의 축, 더 잘게 쪼개진 단위\n\n| 날짜 | 기관 | 판정 | 인용된 근거 | 걸린 제품 속성 |\n|---|---|---|---|---|\n| **08-18** | 한국 방심위 | 접속 차단 | 승자독식 페이아웃, 통제 불가 사건, 리테일 직접 접근 | 페이아웃 형태, 대상, 접근 경로 |\n| **08-24** | 미국 CFTC 지정 | 허용, 브로커리지 독점 파트너 | 2025-12 취득한 연방 지정 | 라이선스 지위 |\n| **08-25** | 미국 연방 / 발행사 선택 | 미국 외 사용자에게만 판매 | 공개적으로 미기재 | 매수자 거주지 |\n| **08-26** | **워싱턴주** | **차단 — 네 번째 주** | 주 단위 게이밍법 | **같은 상품, 같은 연방 라이선스** |\n\n**스키마를 바꾸는 것은 네 번째 줄입니다.** 두 번째와 네 번째 줄이 **같은 나라, 같은 상품에 정반대 판정**을 서술하고, **국가로 키를 잡은 필드는 이것을 아예 표현할 수 없습니다.**\n\n### 이해관계자가 실제로 쓸 수 있는 산출물\n\n| 층 | 담는 것 | 주인 |\n|---|---|---|\n| **판정 표** | (관할, 판정, 날짜, 근거, 속성, 출처 링크) | **법무** — 줄과 인용 |\n| **레버 지도** | 근거 → 설계 레버(`jurisdiction-decides-the-category`) | **제품** — 무엇이 압력을 받는가 |\n| **적격성 정책** | **코드가 아니라 데이터** — 어느 판정이 어느 기능을 제한하는가 | **엔지니어링** — 런타임 조회 |\n| **결정 로그** | 프로덕션의 모든 제한이 **근거 판정을 이름 댐** | 전원 — *나는 왜 거절됐나* 에 대한 답 |\n\n**이 모양의 요점은 아무도 논리를 다시 도출하지 않아도 된다는 것입니다.** 새 판정은 **재설계가 아니라 한 줄**이고, 12월 문서의 법역 칸은 **주가 움직일 때마다 낡는 문단이 아니라 표에 대한 뷰**가 됩니다.\n\n### 분명히 적어 둘 설계상의 귀결\n\n**국가 단위 지오펜싱은 이미 불충분하고**, 앞으로도 **한 방향으로만 — 더 잘게 — 나빠집니다.** 국가 목록을 하드코딩한 적격성 검사는 `irreversible-switch-design` 에서 서명 길이를 하드코딩한 컨트랙트와 **같은 결함**을 갖습니다 — **자기가 통제하지 않는 것에 대해 의견을 갖고 있는 것.** **해법도 같습니다 — 데이터로 만들고, 판단은 판정이 기록되는 곳에 살게 하라.**\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -705,6 +720,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

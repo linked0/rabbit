@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -405,6 +417,9 @@
       <p class="lead">Revolut is launching a euro stablecoin on Ethereum, and the argument made for it is that dollars and euros can now coexist and trade against each other with shared liquidity. That last part is not a thesis — it is an on-chain EUR/USD spread, measurable today against interbank.</p>
       <p class="meta">Not yet scoped — and the measurement is a day&#39;s work with public data. For the largest euro and dollar stablecoin pools, record quoted depth at several sizes and the spread to cross between them, then put that next to the interbank EUR/USD spread at the same moment and the same notional. Repeat across a week to catch weekends and thin hours, when an on-chain venue is open and the FX market is not. The output is one ratio: how many times wider the on-chain crossing cost is. Source: an Ethereum-aligned commentary on Revolut&#39;s euro stablecoin launch, 2026-08-27, citing Revolut&#39;s roughly 80 million customers. Advocacy rather than reporting — the launch and the customer count are the checkable parts.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# Two currencies on one ledger — the spread is the claim\n\nRevolut is launching a euro stablecoin on Ethereum, and the argument made for it is that dollars and euros can now coexist and trade against each other with shared liquidity. That last part is not a thesis — it is an on-chain EUR/USD spread, measurable today against interbank.\n\nNot yet scoped — and the measurement is a day's work with public data. For the largest euro and dollar stablecoin pools, record quoted depth at several sizes and the spread to cross between them, then put that next to the interbank EUR/USD spread at the same moment and the same notional. Repeat across a week to catch weekends and thin hours, when an on-chain venue is open and the FX market is not. The output is one ratio: how many times wider the on-chain crossing cost is. Source: an Ethereum-aligned commentary on Revolut's euro stablecoin launch, 2026-08-27, citing Revolut's roughly 80 million customers. Advocacy rather than reporting — the launch and the customer count are the checkable parts.\n\n## Why\n\n**The post makes three claims, and only one of them can be checked this week.** That is not a criticism — it is an advocacy piece and reads as one. But separating the three is the whole value of reading it carefully, because the checkable one happens to be the load-bearing one.\n\n**First claim: eighty million customers.** Revolut having 80 million customers is not 80 million customers onboarded to Ethereum; it is **an option on distribution, not distribution**. The number that would settle it is the fraction who ever hold or move the token, and nobody publishes that for any consumer stablecoin integration. Until someone does, a user count is the size of the funnel's mouth. This catalogue has the same shape recorded in `st-self-distribution`, where the real figure was never the raise but the customers already inside the issuer's app.\n\n**Second claim: that a euro stablecoin validates neutral infrastructure.** The more interesting question is why a euro stablecoin at all, because **it is a different business from a dollar one.** Dollar issuers earn on the reserve — short-dated Treasuries at whatever the front end pays. Euro reserves do not throw off the same yield, so *issue it and earn the float* is a thinner story in euros than in dollars, and something else has to justify the product: FX corridors, an EU-regulated e-money token that a euro-denominated customer base can actually be paid in, or simply that a bank-shaped company must denominate in its customers' currency. Which of those it is decides what the product becomes, and it is not stated. `tokenized-money-banks` is where the balance-sheet version of this question already lives.\n\n**Third claim, and the one worth working on: that dollars and euros now trade against each other with shared liquidity.** That is a spread. If crossing EUR to USD on-chain costs several times what it costs interbank, the two assets **coexist on one ledger without meaningfully trading**, and composability has produced adjacency rather than a market. If the gap is small — or if it inverts at weekends, when the on-chain venue is open and the FX market is closed — that is a genuine and specific advantage, and it is the first concrete thing anyone could point at to support the settlement-layer argument.\n\n**Which is the honest reading.** The excitement may well be warranted. But *the entire financial world naturally wants to meet here* is a claim that will be settled by spreads and depth, not by launches, and the spread is already observable.\n\n## How it works\n\n### Three claims, sorted\n\n| Claim | Status | What would settle it |\n|---|---|---|\n| **80 million customers onboarded** | **Category error** — Revolut's user count, not Ethereum's | Fraction who ever hold or move the token |\n| **A euro stablecoin validates neutral infrastructure** | **Unfalsifiable as stated** | Why euro: FX corridors, EU e-money regime, or customer denomination — pick one |\n| **Dollars and euros trade against each other with shared liquidity** | **Measurable today** | **On-chain EUR/USD spread and depth, against interbank** |\n\n### The measurement, in full\n\n| Input | Where it comes from |\n|---|---|\n| Quoted depth at several sizes, euro and dollar stablecoin pools | Public on-chain state |\n| Cost to cross between them at each size | Simulated swap against the same state |\n| Interbank EUR/USD spread at the same moment, same notional | Standard FX reference |\n| The same, sampled through a weekend | The interesting window — one venue open, one closed |\n\n**Output: how many times wider the on-chain crossing cost is.** A single ratio, produced from public data, that either supports the shared-liquidity claim or shows it to be adjacency. And the weekend sample is where an honest advantage would show up first, since that is the one period a 24/7 ledger offers something interbank cannot.\n\n### Why the euro question is not a detail\n\n| Motive for a euro stablecoin | What it implies about the product |\n|---|---|\n| **Reserve income** | Weak in euros — the yield that funds dollar issuers is not there |\n| **FX corridor economics** | The product is a payments rail, and the spread above is its P&L |\n| **Regulatory fit** — an EU e-money token | The reserve and redemption rules are set externally, not chosen |\n| **Customer denomination** | The product exists because the customers are paid in euros, and no float story is needed |\n\nThe post does not say which, and the four lead to different products. Read with `tokenized-money-banks`, which prices the same choice from the issuer's balance sheet, and `jurisdiction-decides-the-category`, since an EU-regulated issuer is a regulatory position before it is a technical one.\n\n### The part that is genuinely new\n\nStrip the advocacy and one fact remains worth watching: **two major fiat currencies as bearer instruments on the same ledger, with no bank in the middle of the crossing.** Whether that produces a market or two adjacent assets is exactly the sort of thing this catalogue exists to measure rather than assert — and unlike most claims here, this one does not need permission, a partner, or a licence to check.\n"</script>
+    <script type="application/json" id="copy-ko">"# 한 원장 위의 두 통화 — 스프레드가 곧 그 주장이다\n\nRevolut이 이더리움에 유로 스테이블코인을 출시하고, 그에 붙은 논지는 **달러와 유로가 이제 공존하며 서로 거래되고 유동성을 공유한다**는 것입니다. 마지막 대목은 명제가 아닙니다 — **온체인 EUR/USD 스프레드**이고, **오늘 인터뱅크에 대고 잴 수 있습니다.**\n\n아직 범위 미정 — 측정은 **공개 데이터로 하루**면 됩니다. 가장 큰 유로·달러 스테이블코인 풀에 대해 **여러 규모에서의 호가 깊이**와 **둘을 오가는 스프레드**를 기록하고, **같은 시각·같은 명목금액의 인터뱅크 EUR/USD 스프레드** 옆에 놓습니다. 주말과 한산한 시간대를 잡기 위해 일주일간 반복합니다 — **온체인 거래소는 열려 있고 FX 시장은 닫혀 있는** 구간입니다. 산출물은 비율 하나: **온체인 교차 비용이 몇 배 더 넓은가.** 출처: Revolut 유로 스테이블코인 출시에 대한 이더리움 진영 논평, 2026-08-27, Revolut 고객 약 8천만 명 언급. **보도가 아니라 옹호**이며, 확인 가능한 부분은 **출시 사실과 고객 수**입니다.\n\n## 왜\n\n**이 글은 세 가지를 주장하고, 그중 하나만 이번 주에 확인할 수 있습니다.** 비판이 아닙니다 — 옹호성 글이고 그렇게 읽힙니다. 다만 **셋을 갈라 놓는 것**이 이 글을 꼼꼼히 읽는 값의 전부입니다. **확인 가능한 하나가 하필 하중을 받는 하나**이기 때문입니다.\n\n**첫째, 8천만 고객.** Revolut에 고객이 8천만 명 있다는 것은 **이더리움에 온보딩된 고객이 8천만 명**이라는 뜻이 아닙니다. **유통이 아니라 유통에 대한 옵션**입니다. 이걸 정산할 숫자는 **그 토큰을 실제로 보유하거나 움직이는 비율**이고, 어떤 소비자 스테이블코인 통합에 대해서도 아무도 발표하지 않습니다. 그때까지 사용자 수는 **깔때기 입구의 크기**일 뿐입니다. 이 카탈로그에는 같은 모양이 `st-self-distribution` 에 기록돼 있습니다 — 진짜 숫자는 조달액이 아니라 **이미 발행사 앱 안에 있는 고객 수**였습니다.\n\n**둘째, 유로 스테이블코인이 중립 인프라를 입증한다는 것.** 더 흥미로운 질문은 **왜 하필 유로인가**입니다. **달러와는 다른 사업**이기 때문입니다. 달러 발행사는 준비금에서 법니다 — 단기 국채가 주는 만큼. 유로 준비금은 같은 수익을 내지 않으므로 *발행하고 플로트를 먹는다* 는 이야기가 **유로에서는 훨씬 얇고**, 다른 것이 상품을 정당화해야 합니다 — FX 코리도, 유로 표시 고객에게 **실제로 지급할 수 있는** EU 규제 전자화폐 토큰, 또는 그냥 **은행 모양의 회사는 고객의 통화로 표시해야 한다**는 것. 셋 중 무엇이냐가 **상품이 무엇이 되는지를 결정**하는데, 적혀 있지 않습니다. 이 질문의 대차대조표 판본은 `tokenized-money-banks` 에 이미 있습니다.\n\n**셋째, 그리고 작업할 값이 있는 것: 달러와 유로가 이제 유동성을 공유하며 서로 거래된다는 주장.** 그건 **스프레드**입니다. 온체인에서 EUR을 USD로 넘기는 비용이 인터뱅크의 **몇 배**라면, 두 자산은 **한 원장 위에 공존할 뿐 의미 있게 거래되지 않고**, 컴포저빌리티가 만든 것은 시장이 아니라 **인접성**입니다. 격차가 작다면 — 또는 **주말에 역전된다면**(온체인 거래소는 열려 있고 FX 시장은 닫혀 있는 구간) — 그건 진짜이고 구체적인 우위이며, **정산 계층 논지를 뒷받침하기 위해 누구든 가리킬 수 있는 첫 번째 구체물**입니다.\n\n**정직한 독법은 이것입니다.** 흥분이 정당할 수도 있습니다. 다만 *전 세계 금융이 자연스럽게 여기서 만나고 싶어 한다* 는 주장은 **출시가 아니라 스프레드와 깊이로 정산될 주장**이고, **스프레드는 이미 관측 가능합니다.**\n\n## 동작 방식\n\n### 주장 셋, 분류\n\n| 주장 | 지위 | 무엇이 이를 정산하는가 |\n|---|---|---|\n| **8천만 고객 온보딩** | **범주 오류** — 이더리움이 아니라 Revolut의 사용자 수 | 그 토큰을 실제로 보유·이동하는 **비율** |\n| **유로 스테이블코인이 중립 인프라를 입증한다** | **적힌 형태로는 반증 불가** | 왜 유로인가 — FX 코리도, EU 전자화폐 규제, 고객 통화 표시 중 **하나를 고를 것** |\n| **달러와 유로가 유동성을 공유하며 서로 거래된다** | **오늘 측정 가능** | **온체인 EUR/USD 스프레드와 깊이, 인터뱅크 대비** |\n\n### 측정, 전체\n\n| 입력 | 출처 |\n|---|---|\n| 여러 규모에서의 호가 깊이, 유로·달러 스테이블코인 풀 | 공개 온체인 상태 |\n| 각 규모에서 둘을 오가는 비용 | 같은 상태에 대한 시뮬레이션 스왑 |\n| 같은 시각·같은 명목금액의 인터뱅크 EUR/USD 스프레드 | 표준 FX 레퍼런스 |\n| 위 전부를 **주말 구간**으로 샘플링 | 흥미로운 창 — **한쪽은 열려 있고 한쪽은 닫혀 있음** |\n\n**산출물: 온체인 교차 비용이 몇 배 더 넓은가.** 공개 데이터로 만드는 **비율 하나**이고, 공유 유동성 주장을 뒷받침하거나 **그것이 인접성일 뿐임을 보여줍니다.** 그리고 **정직한 우위가 가장 먼저 드러날 자리가 주말 샘플**입니다 — 24/7 원장이 인터뱅크가 못 주는 것을 주는 유일한 구간이니까요.\n\n### 왜 유로 질문이 지엽적이지 않은가\n\n| 유로 스테이블코인의 동기 | 그것이 상품에 대해 함의하는 것 |\n|---|---|\n| **준비금 수익** | 유로에서는 약함 — 달러 발행사를 먹여 살리는 그 수익이 없음 |\n| **FX 코리도 경제학** | 상품은 **결제 레일**이고, 위의 스프레드가 곧 손익 |\n| **규제 적합** — EU 전자화폐 토큰 | 준비금·상환 규칙이 **선택이 아니라 외부에서 정해짐** |\n| **고객 통화 표시** | 고객이 유로로 지급받으니 존재하는 상품. **플로트 서사가 필요 없음** |\n\n글은 어느 쪽인지 말하지 않고, **넷은 서로 다른 상품으로 이어집니다.** 같은 선택을 발행사 대차대조표에서 값 매기는 `tokenized-money-banks`, 그리고 EU 규제 발행사는 기술적 입장이기 전에 **규제상의 입장**이므로 `jurisdiction-decides-the-category` 와 함께 읽습니다.\n\n### 정말로 새로운 부분\n\n옹호를 걷어내면 지켜볼 값이 있는 사실 하나가 남습니다 — **두 주요 법정통화가 같은 원장 위의 무기명 상품이고, 교차 구간 한가운데에 은행이 없다.** 그것이 **시장을 만드는지 인접한 두 자산을 만드는지**는 이 카탈로그가 주장이 아니라 측정으로 다루려고 존재하는 바로 그런 것이고 — 여기 대부분의 주장과 달리 **확인하는 데 허가도, 파트너도, 라이선스도 필요 없습니다.**\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -716,6 +731,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

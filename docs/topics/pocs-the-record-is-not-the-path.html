@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -371,6 +383,9 @@
       <p class="lead">ERC-7812 proposes one on-chain registry where any protocol can store and prove identity statements by ZK without publishing the data. Docbank makes the opposite bet with the same premise: the catalogue stays on your machine, and a stable node ID rather than a file path is the identity.</p>
       <p class="meta">Read-only for the standard — no wallet needed. Start with ERC-7812&#39;s Rationale section on why a singleton, then the reference implementation: eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry. For the vault, install and run it: <code>docbank add ~/Documents --dest /archive</code> → <code>docbank tree /archive</code> → <code>docbank web</code>. Alpha software, so keep independent copies of anything irreplaceable. github.com/kenn-io/docbank</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# The record is not the path — a registry and a vault for the same problem\n\nERC-7812 proposes one on-chain registry where any protocol can store and prove identity statements by ZK without publishing the data. Docbank makes the opposite bet with the same premise: the catalogue stays on your machine, and a stable node ID rather than a file path is the identity.\n\nRead-only for the standard — no wallet needed. Start with ERC-7812's Rationale section on why a singleton, then the reference implementation: eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry. For the vault, install and run it: `docbank add ~/Documents --dest /archive` → `docbank tree /archive` → `docbank web`. Alpha software, so keep independent copies of anything irreplaceable. github.com/kenn-io/docbank\n\n## Why\n\n**Two projects, opposite architectures, and the same premise underneath: an account or a file path is a poor long-term identity.**\n\n**ERC-7812 is the standardisation attempt.** Provable identity is fragmented — Privado ID, EAS, Rarimo each carry their own registry — and the proposal is to collapse that into **one singleton on-chain registry** where any protocol can store and prove statements by zero-knowledge proof **without publishing the underlying data.** Vitalik is a co-author. **The Rationale section on why a singleton is the part to read**, because the argument for one shared registry over many is the whole design decision and everything else follows from it. This card sits between `dsrv-portal`, which asks who vouches for a credential, and `erc-8141`, which asks what the protocol absorbs — **the middle question is where the statement lives.**\n\n**Docbank is the clearest example of the opposite bet, and it is worth running rather than reading about.** Agents that file, retrieve and revise documents need **a system of record, not a sync folder** — and a file path makes a poor identity once things get moved and renamed. Docbank's answer: the catalogue stays on your machine, **a document keeps its identity through moves**, every version is named by a **verifiable SHA-256 digest**, and stale automation hits an **explicit revision conflict instead of silently overwriting.** That last property is the one that matters for agent-facing archives, because a silent overwrite by an agent working from stale state is exactly the failure that has no signal at run time.\n\n**Holding them in one card makes the shared conclusion visible.** Both refuse to let the **location** be the identity — one replaces it with a registry entry provable by ZK, the other with a node ID and a content digest. **The difference is where the authoritative record lives and who can be made to answer for it**, and that is the same question `priced-by-the-wrong-thing` reaches from tokenised equity and `build-rent-or-own-the-rail` reaches from bank ledgers. **The ledger is always the easy half.**\n\n## How it works\n\n### Same premise, opposite architectures\n\n| | **ERC-7812** | **Docbank** |\n|---|---|---|\n| **What it refuses** | One registry per identity protocol | **A file path as identity** |\n| **Identity is** | A registry entry, provable by ZK | **A stable node ID** surviving moves and renames |\n| **Version identity** | The statement, unpublished | **Immutable, SHA-256-addressed** |\n| **Where the record lives** | **On-chain, singleton** | **Your machine** |\n| **Who can vouch** | Any protocol writing to it | You — the daemon owns the vault |\n| **Failure it designs against** | Fragmentation across registries | **Silent overwrite by stale automation** |\n\n### What to read in the standard\n\n**The Rationale, and specifically why a singleton.** The argument that one shared registry beats many is the design decision; storage layout, proof format and interface all follow from it. The reference implementation (`rarimo/evidence-registry`) is where to check whether the argument survives contact with code.\n\n### What Docbank does that a sync folder does not\n\n| Property | How |\n|---|---|\n| **One authenticated daemon owns a vault** | CLI, web app, TUI, scripts and external agents all speak the same **loopback-authenticated HTTP/OpenAPI contract** |\n| **In-process option** | Go programs embed an independently rooted vault via `go.kenn.io/docbank`, skipping the daemon |\n| **Stale writes conflict, not overwrite** | Writes carry **revision preconditions** |\n| **Deletion is staged deliberately** | Trash → permanent delete → GC → pack reclamation are **separate decisions**, with revision-bound restore in between |\n| **Blobs without ceding the catalogue** | Loose or packed, optionally in fenced filesystem or S3-compatible stores — **Docbank verifies but does not encrypt them** |\n| **Recovery is provable rather than assumed** | Incremental snapshot repositories **verified end-to-end before a restore is published**; restore is topology-independent |\n| **Supply-chain check** | Installers **refuse any archive whose digest does not match the release SHA256SUMS** |\n\nApache-2.0, Go 1.26+ with CGO and Node 24+ to build from source. Sibling project to msgvault, which does the same for messages.\n\n### The shared conclusion\n\n**Neither lets the location be the identity, and both make the record verifiable by something other than trust in a provider.** The registry does it by publishing a proof and withholding the data; the vault does it by publishing nothing and keeping a digest. **Which one is right depends entirely on who has to be convinced** — a counterparty who was never in the room, or you in five years.\n"</script>
+    <script type="application/json" id="copy-ko">"# 기록은 경로가 아니다 — 같은 문제의 레지스트리와 금고\n\nERC-7812 은 **어떤 프로토콜이든 데이터를 공개하지 않고 ZK 로 신원 진술을 저장·증명할 수 있는 온체인 레지스트리 하나**를 제안합니다. Docbank 는 **같은 전제에서 정반대 베팅**을 합니다 — **카탈로그는 내 기계에 남고, 파일 경로가 아니라 안정적인 노드 ID 가 정체성**입니다.\n\n**표준 쪽은 읽기 전용** — 지갑 불필요. **왜 싱글턴인가**를 다루는 ERC-7812 의 Rationale 부터, 그다음 레퍼런스 구현: eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry. **금고 쪽은 설치해서 돌립니다**: `docbank add ~/Documents --dest /archive` → `docbank tree /archive` → `docbank web`. **알파 소프트웨어이므로 대체 불가한 것은 독립 사본을 유지하세요.** github.com/kenn-io/docbank\n\n## 왜\n\n**프로젝트 둘, 정반대 아키텍처, 그리고 밑에 깔린 같은 전제: 계정이나 파일 경로는 장기 정체성으로 형편없다.**\n\n**ERC-7812 은 표준화 시도입니다.** 증명 가능한 신원은 파편화돼 있습니다 — Privado ID·EAS·Rarimo 가 **각자 자기 레지스트리**를 갖고 있습니다 — 그리고 제안은 그것을 **온체인 싱글턴 레지스트리 하나**로 접자는 것입니다. 거기서 어떤 프로토콜이든 **원본 데이터를 공개하지 않고 영지식 증명으로** 진술을 저장하고 증명합니다. **Vitalik 이 공동 저자**입니다. **읽을 부분은 왜 싱글턴인가를 다루는 Rationale** 입니다 — **여럿 대신 하나의 공유 레지스트리를 택하는 논거가 설계 결정 전부**이고 나머지는 거기서 따라 나옵니다. 이 카드는 **누가 자격증명을 보증하나**를 묻는 `dsrv-portal` 과 **프로토콜이 무엇을 흡수하나**를 묻는 `erc-8141` 사이에 앉습니다 — **가운데 질문이 그 진술이 어디 사는가**입니다.\n\n**Docbank 은 정반대 베팅의 가장 선명한 사례이고, 읽기보다 돌려 볼 값이 있습니다.** 문서를 정리·검색·개정하는 에이전트에게 필요한 것은 **동기화 폴더가 아니라 기록 시스템**이고 — **파일 경로는 옮기고 이름을 바꾸는 순간 형편없는 정체성**이 됩니다. Docbank 의 답: **카탈로그는 내 기계에 남고**, **문서는 이동을 관통해 정체성을 유지**하며, 모든 버전은 **검증 가능한 SHA-256 다이제스트**로 이름 붙고, **낡은 자동화는 조용히 덮어쓰는 대신 명시적 리비전 충돌에 부딪힙니다.** **마지막 성질이 에이전트용 아카이브에서 중요한 것**입니다 — **낡은 상태로 일하는 에이전트의 조용한 덮어쓰기가, 실행 시점에 신호가 없는 바로 그 실패**이기 때문입니다.\n\n**한 카드에 두면 공통 결론이 보입니다.** **둘 다 위치가 정체성이 되는 것을 거부합니다** — 하나는 **ZK 로 증명 가능한 레지스트리 항목**으로, 다른 하나는 **노드 ID 와 콘텐츠 다이제스트**로 대체합니다. **차이는 권위 있는 기록이 어디 살고 누구에게 책임을 물을 수 있는가**이고, `priced-by-the-wrong-thing` 이 토큰화 주식에서, `build-rent-or-own-the-rail` 이 은행 원장에서 도달하는 **같은 질문**입니다. **원장은 언제나 쉬운 절반입니다.**\n\n## 동작 방식\n\n### 같은 전제, 정반대 아키텍처\n\n| | **ERC-7812** | **Docbank** |\n|---|---|---|\n| **거부하는 것** | 신원 프로토콜마다 하나씩의 레지스트리 | **정체성으로서의 파일 경로** |\n| **정체성은** | **ZK 로 증명 가능한** 레지스트리 항목 | **이동·개명을 관통해 살아남는 안정적 노드 ID** |\n| **버전 정체성** | 진술, 미공개 | **불변, SHA-256 주소 지정** |\n| **기록이 사는 곳** | **온체인, 싱글턴** | **내 기계** |\n| **누가 보증하나** | 거기 쓰는 어떤 프로토콜이든 | 나 — **데몬이 금고를 소유** |\n| **설계로 막는 실패** | 레지스트리 간 파편화 | **낡은 자동화의 조용한 덮어쓰기** |\n\n### 표준에서 읽을 것\n\n**Rationale, 그중에서도 왜 싱글턴인가.** **여럿보다 하나의 공유 레지스트리가 낫다는 논거가 설계 결정**이고, 저장 레이아웃·증명 형식·인터페이스가 전부 거기서 따라 나옵니다. 레퍼런스 구현(`rarimo/evidence-registry`)이 **그 논거가 코드와 부딪혀도 살아남는지 확인할 자리**입니다.\n\n### Docbank 이 동기화 폴더와 다르게 하는 것\n\n| 성질 | 방식 |\n|---|---|\n| **인증된 데몬 하나가 금고를 소유** | CLI·웹앱·TUI·스크립트·외부 에이전트가 전부 **루프백 인증 HTTP/OpenAPI 계약** 하나로 말함 |\n| **인프로세스 옵션** | Go 프로그램은 `go.kenn.io/docbank` 로 **독립 루트 금고를 임베드**, 데몬 생략 |\n| **낡은 쓰기는 덮어쓰지 않고 충돌** | 쓰기가 **리비전 사전조건**을 실어 나름 |\n| **삭제가 의도적으로 단계화** | 휴지통 → 영구 삭제 → GC → 팩 회수가 **각각 별개 결정**, 사이사이 **리비전 결속 복원** |\n| **카탈로그를 넘기지 않는 블롭 보관** | 낱개 또는 팩, 선택적으로 울타리 친 파일시스템·S3 호환 저장소 — **Docbank 은 검증하되 암호화하지 않음** |\n| **복구가 가정이 아니라 증명** | 증분 스냅샷 저장소를 **복원 발행 전에 끝에서 끝까지 검증**, 복원은 **토폴로지 독립** |\n| **공급망 점검** | 설치기가 **릴리스 SHA256SUMS 와 다이제스트가 다른 아카이브를 거부** |\n\nApache-2.0, 소스 빌드에는 Go 1.26+ (CGO) 와 Node 24+. **메시지에 대해 같은 일을 하는 자매 프로젝트 msgvault** 가 있습니다.\n\n### 공통 결론\n\n**둘 다 위치가 정체성이 되게 두지 않고, 둘 다 공급자에 대한 신뢰가 아닌 것으로 기록을 검증 가능하게 만듭니다.** 레지스트리는 **증명을 공개하고 데이터를 보류**해서, 금고는 **아무것도 공개하지 않고 다이제스트를 쥐고** 있어서. **어느 쪽이 맞는지는 전적으로 누구를 설득해야 하는가에 달렸습니다** — **그 자리에 없었던 거래상대냐, 5년 뒤의 나 자신이냐.**\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -686,6 +701,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

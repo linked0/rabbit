@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -371,6 +383,9 @@
       <p class="lead">The 8/20 core-devs call produced a Sepolia slot of 2026-09-28 14:44:48 UTC, confirmed by six client teams without dissent — and the same minutes record the decision as deferred to the next call. There is still no mainnet date, yet mainnet numbers are already circulating.</p>
       <p class="meta">Not yet scoped — and step one is fifteen minutes with a primary source, not a build. Open the 2026-08-20 ACD minutes and locate the sentence deferring the decision to the next call; seeing the qualifier in the original is the whole exercise. Then, optionally, put three dates on one timeline: the 9/28 Sepolia slot, the 8/27 Hegotá PFI cutoff, and the 9/10 client-team preference-list deadline. Sources: the ACD minutes themselves first, and secondary coverage of the final devnet and its 200M gas target only afterwards.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# A fork date nobody decided — reading the claim, not the number\n\nThe 8/20 core-devs call produced a Sepolia slot of 2026-09-28 14:44:48 UTC, confirmed by six client teams without dissent — and the same minutes record the decision as deferred to the next call. There is still no mainnet date, yet mainnet numbers are already circulating.\n\nNot yet scoped — and step one is fifteen minutes with a primary source, not a build. Open the 2026-08-20 ACD minutes and locate the sentence deferring the decision to the next call; seeing the qualifier in the original is the whole exercise. Then, optionally, put three dates on one timeline: the 9/28 Sepolia slot, the 8/27 Hegotá PFI cutoff, and the 9/10 client-team preference-list deadline. Sources: the ACD minutes themselves first, and secondary coverage of the final devnet and its 200M gas target only afterwards.\n\n## Why\n\n**The only verifiable fact in this news is the six-team confirmation.** Everything downstream of it — the mainnet timing, the throughput multiple — is conditional, and unusually, the minutes say so themselves. A date being *attached* and a date being *decided* are different states, and this is the rare case where the primary source records the difference explicitly. That is what makes the item worth a card: not the schedule, but a clean specimen of how a qualifier gets lost.\n\n**The loss has a predictable shape.** A testnet slot is precise to the second, which makes it feel authoritative; the deferral clause is a sentence of prose, which does not. Precision travels and qualification does not, so a Sepolia timestamp becomes a mainnet expectation two hops downstream, and the mainnet figures now circulating do not reconcile with one another — which is the tell.\n\n**The substance underneath is real and touches this project directly.** ePBS (EIP-7732) proposes moving block building inside the protocol, and this catalogue already has a card standing on the *outside* version of that market: `pbs` submits bundles as a searcher and watches mev-boost relay auctions. If 7732 lands, that card's subject stops being an out-of-protocol arrangement and becomes part of consensus. BAL (EIP-7928) opens parallel execution, and the two together are what the roughly threefold L1 throughput claim rests on. Read next to `quick-slots-10s` and `l1-data-pricing-dimensions`, which change the same substrate along the other two axes.\n\n## How it works\n\n### The status column that reporting leaves out\n\n| Claim | Status in the primary source | How it travels |\n|---|---|---|\n| **Sepolia fork at 2026-09-28 14:44:48 UTC** | Proposed on the call, **confirmed by six client teams without dissent** | Verbatim — precision survives intact |\n| **That schedule is settled** | **Explicitly deferred to the next call** | Dropped in the first retelling |\n| **Mainnet date** | **Does not exist** | Invented downstream; circulating versions disagree |\n| **About 3x L1 throughput** | Conditional on ePBS and BAL both shipping | Repeated as a property of the fork |\n| **200M gas target** | A **final devnet** target | Repeated as a mainnet number |\n\n### The rule this produces\n\n**Record the status, not the number.** Every date in a protocol timeline belongs in one of three states — *confirmed by named parties*, *deferred*, or *circulating without a primary source* — and a timeline that only carries numbers has thrown away the one column that decides whether to plan against it. The 9/28 Sepolia slot, the 8/27 Hegotá PFI cutoff and the 9/10 preference-list deadline are three different states of certainty sitting on one line.\n\n### Why it is worth doing for a project, not just for reading\n\nAny roadmap that says *after the next fork* is inheriting the weakest of these states without labelling it. Writing the status column once costs an afternoon and permanently changes what a dependency on an upstream schedule means — and the 200M gas figure is the specific one to watch, because a devnet target repeated as a mainnet number is exactly the shape of the error the table above is built to catch.\n"</script>
+    <script type="application/json" id="copy-ko">"# 아무도 정하지 않은 포크 날짜 — 숫자가 아니라 주장의 지위를 읽기\n\n8/20 코어 개발자 콜에서 Sepolia 포크 **2026-09-28 14:44:48 UTC**가 나왔고 **6개 클라이언트 팀이 이견 없이** 확인했습니다 — 그리고 **같은 회의록이 그 결정을 다음 콜로 연기했다고 적어 뒀습니다.** 메인넷 날짜는 아직 없는데, 메인넷 숫자는 이미 돌고 있습니다.\n\n아직 범위 미정 — 첫 단계는 만들기가 아니라 **1차 사료 15분**입니다. 2026-08-20 ACD 회의록을 열어 **결정을 다음 콜로 미룬다는 문장의 위치만** 확인합니다 — 원문에서 그 단서를 직접 보는 것이 이 작업의 전부입니다. 그다음(선택) 세 날짜를 한 타임라인에 올립니다 — 9/28 Sepolia, 8/27 Hegotá PFI 확정, 9/10 클라이언트 팀 선호목록 마감. 출처: 회의록이 먼저, 최종 데브넷·200M 가스 목표에 대한 2차 보도는 그다음.\n\n## 왜\n\n**이 뉴스에서 검증 가능한 사실은 6개 팀의 확인 하나뿐입니다.** 그 아래의 모든 것 — 메인넷 시점, 처리량 배수 — 은 조건부이고, 드물게도 **회의록이 그렇다고 직접 적어 놨습니다.** 날짜가 **붙었다**는 것과 **정해졌다**는 것은 다른 상태이며, 1차 사료가 그 차이를 명시한 보기 드문 경우입니다. 카드가 될 값어치는 일정이 아니라 **단서가 떨어져 나가는 과정의 깨끗한 표본**이라는 데 있습니다.\n\n**떨어져 나가는 방식에는 정해진 모양이 있습니다.** 테스트넷 슬롯은 초 단위로 정확해서 권위 있어 보이고, 연기 조항은 산문 한 문장이라 그렇지 않습니다. **정밀함은 이동하고 단서는 이동하지 않습니다.** 그래서 Sepolia 타임스탬프가 두 다리 건너 메인넷 기대치가 되고, 지금 도는 메인넷 숫자들은 **서로 맞지 않습니다** — 그게 증거입니다.\n\n**아래에 깔린 내용물은 실재하고, 이 프로젝트와 직접 닿습니다.** ePBS(**EIP-7732**)는 블록 빌딩을 프로토콜 안으로 옮기자는 제안이고, 이 카탈로그에는 그 시장의 **바깥** 판본 위에 선 카드가 이미 있습니다 — `pbs` 는 서처로 번들을 제출하고 mev-boost 릴레이 경매를 관찰합니다. 7732가 들어오면 **그 카드의 대상은 프로토콜 밖 합의가 아니라 합의의 일부가 됩니다.** BAL(**EIP-7928**)은 병렬 실행을 열고, 둘을 합친 것이 L1 처리량 약 3배 주장이 딛고 선 자리입니다. 같은 기반을 나머지 두 축에서 바꾸는 `quick-slots-10s`·`l1-data-pricing-dimensions` 와 함께 읽습니다.\n\n## 동작 방식\n\n### 보도가 빼먹는 상태 칸\n\n| 주장 | 1차 사료에서의 지위 | 어떻게 이동하는가 |\n|---|---|---|\n| **Sepolia 포크 2026-09-28 14:44:48 UTC** | 콜에서 제시, **6개 클라이언트 팀이 이견 없이 확인** | 그대로 — 정밀함은 온전히 살아남음 |\n| **그 일정이 확정됐다** | **다음 콜로 연기한다고 명시** | 첫 번째 재전달에서 탈락 |\n| **메인넷 날짜** | **존재하지 않음** | 하류에서 만들어짐. 도는 판본들이 서로 불일치 |\n| **L1 처리량 약 3배** | ePBS·BAL **둘 다 들어와야** 성립하는 조건부 | 포크의 속성인 것처럼 반복됨 |\n| **가스 목표 200M** | **최종 데브넷**의 목표 | 메인넷 숫자처럼 반복됨 |\n\n### 여기서 나오는 규칙\n\n**숫자가 아니라 지위를 기록한다.** 프로토콜 타임라인의 모든 날짜는 셋 중 하나입니다 — **명시된 주체가 확인함**, **연기됨**, **1차 출처 없이 유통 중**. 숫자만 담은 타임라인은 **계획을 걸어도 되는지를 결정하는 유일한 칸**을 버린 것입니다. 9/28 Sepolia, 8/27 Hegotá PFI 확정, 9/10 선호목록 마감은 **확실성의 상태가 서로 다른 셋**이 한 줄에 앉아 있는 경우입니다.\n\n### 왜 읽기용이 아니라 프로젝트용인가\n\n*다음 포크 이후* 라고 적힌 로드맵은 **이 상태들 중 가장 약한 것을 라벨 없이 상속**한 것입니다. 상태 칸을 한 번 적는 데 반나절이 들고, 상류 일정에 대한 의존이 무엇을 뜻하는지가 영구히 바뀝니다. 그리고 **특히 지켜볼 것은 200M 가스 수치**입니다 — 데브넷 목표가 메인넷 숫자로 반복되는 것이 위 표가 잡으려는 오류의 바로 그 모양이기 때문입니다.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -598,6 +613,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

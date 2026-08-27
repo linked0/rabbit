@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -405,6 +417,9 @@
       <p class="lead">OSWorld jumped from 42% to 85% in a year and buyers stopped comparing models. What they buy instead is verification, escalation and error handling — and at the other end of the same question, a script tag now lets natural language drive one specific page without any of that.</p>
       <p class="meta">Reading notes for the market half — no demo, no wallet needed. For the build half, a script tag: github.com/alibaba/page-agent, one <code>&amp;lt;script&amp;gt;</code> or npm install, pointed at a page you already own, and note how far it gets before the DOM stops being enough. Source: <a href="https://www.a16z.news/p/can-agents-use-a-computer-yet-weve">https://www.a16z.news/p/can-agents-use-a-computer-yet-weve</a></p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# Can an agent drive a computer yet — and if so, whose?\n\nOSWorld jumped from 42% to 85% in a year and buyers stopped comparing models. What they buy instead is verification, escalation and error handling — and at the other end of the same question, a script tag now lets natural language drive one specific page without any of that.\n\nReading notes for the market half — no demo, no wallet needed. For the build half, a script tag: github.com/alibaba/page-agent, one `\u003cscript>` or npm install, pointed at a page you already own, and note how far it gets before the DOM stops being enough. Source: https://www.a16z.news/p/can-agents-use-a-computer-yet-weve\n\n## Why\n\n**Tracking where computer-use agents actually stand in production, not in demos.** The a16z piece is built on interviews with real operators — a CPG data platform running 15-20M portal interactions a month, a systems integrator running 27 live workflows — not just benchmark numbers. **A useful checkpoint for judging whether an \"agent operates a browser or UI\" idea is worth building now versus still a research toy.**\n\n**The headline number is real and the argument is that it stopped mattering.** OSWorld-Verified, a real-desktop benchmark, went from **42% a year ago to 85% today**, above the roughly **72% human baseline.** But once models cleared a *good enough* bar, buyers stopped comparing models and **started buying infrastructure** — verification, escalation, error handling. **The model is no longer the product.**\n\n**And the other end of the same question is a much smaller, much cheaper answer that this catalogue kept as a separate card for no good reason.** Alibaba's `page-agent` is an in-page GUI agent: one script tag or npm install, and natural language operates that page's UI. **No screenshots, no browser extension, no headless browser** — it reads a text-based DOM, connects to any LLM you bring, has a beta MCP server, and is built on browser-use. **The general capability question and the specific embedding decision are the same question at two scales**, and holding them together is what makes either useful: the a16z piece says the bottleneck is now operations, and `page-agent` is the case where **almost all of the operations disappear because the agent only ever touches one page you control.**\n\n**The failure mode that matters most is the one neither half advertises.** It is not the UI click failing — **it is silent failure with no verifiable signal at run time.** An insurance claim that \"succeeded\" on screen and stalls two days later on a phone call nobody logged. That is why verification, not accuracy, is what buyers pay for, and it is the same shape as `the-harness-not-the-model`: **the interesting engineering is around the model, not in it.**\n\n## How it works\n\n### Where the benchmark went, and why it stopped mattering\n\n| | A year ago | Today |\n|---|---|---|\n| **OSWorld-Verified** | 42% | **85%** |\n| Human baseline | ~72% | ~72% |\n| What buyers compared | **Models** | **Infrastructure** |\n\nOnce models cleared the bar, the purchase became verification, escalation and error handling. A common pattern: **an agent runs a workflow once, caches it as deterministic code, and is only re-invoked when something breaks** — so cost falls over a workflow's lifetime rather than staying flat.\n\n### The cost comparison that decides whether to build\n\n| Option | Rate | Against agent inference |\n|---|---|---|\n| **Agent inference** | **~$6-8/hr** ($3-15 range) | — |\n| Offshore BPO | ~$10/hr | **Roughly break-even today** |\n| Fully-loaded US labour | $30-45/hr | **70-80% margin** |\n\n### Two scales of the same capability\n\n| | **General computer use** | **In-page agent** (`page-agent`) |\n|---|---|---|\n| Surface | Any application | **One page you own** |\n| Input | Screenshots, accessibility trees | **Text-based DOM** |\n| Needs | Extension or headless browser | **A script tag** |\n| Operations burden | **Verification, escalation, error handling** | **Almost none — the surface is yours** |\n| Fails at | Silent failures downstream | Anything the DOM does not express |\n| Model | Whatever the vendor ships | **BYO, any LLM; beta MCP server** |\n\n**The right way to read the pair:** the general case is where the operations layer is the product, and the embedded case is the one where you can skip most of it — **because you control the surface, so a failure is visible in your own application rather than two days later on somebody else's phone call.** A landing-page or SaaS copilot, or smart form-filling, is the natural first use.\n\n### The failure mode to design against\n\n**Not the click that fails — the one that appears to succeed.** No verifiable signal exists at run time, so the workflow reports done and the real state diverges silently. Verification is not a feature bolted on afterwards; **it is the reason the infrastructure layer exists**, and it is why the honest first question for any browser-agent idea is *how would I know this went wrong* rather than *can the model do it.*\n"</script>
+    <script type="application/json" id="copy-ko">"# 에이전트는 이제 컴퓨터를 쓸 수 있나 — 그렇다면, 누구의 컴퓨터를?\n\nOSWorld 가 1년 만에 42% 에서 85% 로 뛰었고 **구매자는 모델 비교를 그만뒀습니다.** 대신 사는 것은 **검증·에스컬레이션·오류 처리**이고 — 같은 질문의 반대쪽 끝에서는, **스크립트 한 줄**이 그 전부 없이 **특정 페이지 하나**를 자연어로 조작하게 합니다.\n\n**시장 절반은 정독 노트** — 데모 없음, 지갑 불필요. **구축 절반은 스크립트 한 줄**: github.com/alibaba/page-agent, `\u003cscript>` 하나 또는 npm 설치, **이미 갖고 있는 페이지**에 붙여 보고 **DOM 만으로 부족해지는 지점이 어디인지** 적습니다. 출처: https://www.a16z.news/p/can-agents-use-a-computer-yet-weve\n\n## 왜\n\n**컴퓨터 사용 에이전트가 데모가 아니라 프로덕션에서 실제로 어디까지 와 있는지 추적합니다.** a16z 글은 **실제 운영자 인터뷰** 위에 세워져 있습니다 — 월 1,500~2,100만 건의 포털 상호작용을 처리하는 CPG 데이터 플랫폼, **27개 라이브 워크플로**를 돌리는 시스템 통합사 — 벤치마크 숫자만이 아니라. **\"에이전트가 브라우저/UI를 조작한다\"는 아이디어가 지금 만들 만한지, 아직 리서치 토이인지 판단할 때 쓸 체크포인트입니다.**\n\n**헤드라인 숫자는 진짜이고, 논지는 그것이 더 이상 중요하지 않게 됐다는 것입니다.** 실제 데스크톱 벤치마크 OSWorld-Verified 가 **1년 전 42% 에서 오늘 85%** 로, 인간 기준선 약 **72%** 를 넘었습니다. 그런데 모델이 *충분히 좋은* 문턱을 넘자 구매자들은 모델 비교를 멈추고 **인프라를 사기 시작했습니다** — 검증, 에스컬레이션, 오류 처리. **모델은 더 이상 제품이 아닙니다.**\n\n**그리고 같은 질문의 반대쪽 끝에, 훨씬 작고 훨씬 싼 답이 있습니다.** 이 카탈로그가 별 이유 없이 따로 두고 있던 것입니다. Alibaba `page-agent` 는 **페이지 안에 심는 GUI 에이전트**입니다 — 스크립트 한 줄 또는 npm 설치로 **자연어가 그 페이지의 UI를 조작**합니다. **스크린샷도, 브라우저 확장도, 헤드리스 브라우저도 없이** — **텍스트 기반 DOM** 을 읽고, 원하는 LLM 을 붙이고(BYO), **MCP 서버 베타**가 있으며, browser-use 기반입니다. **일반 역량 질문과 구체적 임베딩 결정은 두 축척의 같은 질문**이고, 둘을 함께 두는 것이 어느 쪽이든 쓸모 있게 만듭니다 — a16z 는 **병목이 이제 운영**이라고 말하고, `page-agent` 는 **에이전트가 내가 통제하는 페이지 하나만 건드리기 때문에 그 운영의 거의 전부가 사라지는** 사례입니다.\n\n**가장 중요한 실패 유형은 어느 쪽도 광고하지 않는 것입니다.** UI 클릭 실패가 아니라 — **실행 시점에 검증할 신호가 없는 조용한 실패**입니다. 화면상 \"접수 완료\"된 보험 청구가 **이틀 뒤 아무도 기록하지 않은 전화 한 통** 때문에 멈추는 것. **정확도가 아니라 검증에 구매자가 돈을 내는 이유**이고, `the-harness-not-the-model` 과 같은 모양입니다 — **흥미로운 엔지니어링은 모델 안이 아니라 모델 둘레에 있습니다.**\n\n## 동작 방식\n\n### 벤치마크는 어디로 갔고, 왜 중요하지 않게 됐나\n\n| | 1년 전 | 오늘 |\n|---|---|---|\n| **OSWorld-Verified** | 42% | **85%** |\n| 인간 기준선 | 약 72% | 약 72% |\n| 구매자가 비교한 것 | **모델** | **인프라** |\n\n모델이 문턱을 넘자, 구매 대상이 **검증·에스컬레이션·오류 처리**가 됐습니다. 흔한 패턴 하나: **에이전트가 워크플로를 한 번 실행한 뒤 결정론적 코드로 캐싱해 두고, 뭔가 깨질 때만 다시 호출**됩니다 — 비용이 평평하게 유지되는 게 아니라 **워크플로 수명 동안 떨어집니다.**\n\n### 만들지 말지를 정하는 비용 비교\n\n| 선택지 | 단가 | 에이전트 추론 대비 |\n|---|---|---|\n| **에이전트 추론** | **시간당 약 $6-8**($3-15 범위) | — |\n| 역외 BPO | 약 $10/hr | **오늘 기준 거의 손익분기** |\n| 완전 부담 미국 인건비 | $30-45/hr | **70-80% 마진** |\n\n### 같은 역량의 두 축척\n\n| | **범용 컴퓨터 사용** | **인페이지 에이전트**(`page-agent`) |\n|---|---|---|\n| 표면 | 아무 애플리케이션 | **내가 소유한 페이지 하나** |\n| 입력 | 스크린샷, 접근성 트리 | **텍스트 기반 DOM** |\n| 필요한 것 | 확장 또는 헤드리스 브라우저 | **스크립트 한 줄** |\n| 운영 부담 | **검증·에스컬레이션·오류 처리** | **거의 없음 — 표면이 내 것** |\n| 실패하는 지점 | **하류의 조용한 실패** | DOM 이 표현하지 못하는 것 |\n| 모델 | 벤더가 주는 것 | **BYO, 아무 LLM. MCP 서버 베타** |\n\n**둘을 읽는 올바른 방법**: 범용 사례는 **운영 계층이 곧 제품**인 자리이고, 임베디드 사례는 **그 대부분을 건너뛸 수 있는** 자리입니다 — **표면을 내가 통제하므로, 실패가 이틀 뒤 남의 전화가 아니라 내 애플리케이션 안에서 보이기** 때문입니다. **랜딩/SaaS 코파일럿, 스마트 폼 채우기**가 자연스러운 첫 용도입니다.\n\n### 설계로 막아야 할 실패 유형\n\n**실패하는 클릭이 아니라, 성공한 것처럼 보이는 클릭.** 실행 시점에 **검증 가능한 신호가 없어서**, 워크플로는 완료를 보고하고 **실제 상태는 조용히 갈라집니다.** 검증은 나중에 덧붙이는 기능이 아니라 **인프라 계층이 존재하는 이유 그 자체**이고, 그래서 어떤 브라우저 에이전트 아이디어든 **정직한 첫 질문은 *모델이 할 수 있나* 가 아니라 *잘못됐다는 걸 내가 어떻게 알지* 입니다.**\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -744,6 +759,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

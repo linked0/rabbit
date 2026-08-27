@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -405,6 +417,9 @@
       <p class="lead">Circle&#39;s read of Korea leads with a real number — the won accounts for roughly 30% of global crypto spot trading — beside the note that institutional participation is only now opening after years of restrictions on corporate activity. Both are true, and they are the same fact seen from two ends. The spot share is high partly because everything adjacent was closed, which makes the headline figure a readout of the constraint whose removal is being announced.</p>
       <p class="meta">Not a build — one falsifiable prediction and the three series that settle it. If the spot share is an artifact of restriction, then as corporate accounts and institutional venues open, the won&#39;s share of global spot should <strong>fall</strong> even while total Korean activity rises, because the same capital finally has somewhere else to sit. Record monthly for a year: the won-denominated share of global spot volume, Korean institutional and derivatives volume, and the kimchi premium — the last being a capital-mobility readout in its own right, since a persistent premium means money cannot move freely enough to arbitrage it away. If the share holds while the other two rise, the restriction reading was wrong and Korea really is that large. Everything factual here comes from a Circle post promoting a Circle Current piece by Ben Morris, seen 2026-08-27: the ~30% figure, the characterisation of corporate-activity restrictions, and the three trends. It is vendor content about a market the vendor sells into — confirm the number and the current account rules against primary sources before repeating either.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# Thirty percent of spot is a restriction, not a market size\n\nCircle's read of Korea leads with a real number — the won accounts for roughly 30% of global crypto spot trading — beside the note that institutional participation is only now opening after years of restrictions on corporate activity. Both are true, and they are the same fact seen from two ends. The spot share is high partly because everything adjacent was closed, which makes the headline figure a readout of the constraint whose removal is being announced.\n\nNot a build — one falsifiable prediction and the three series that settle it. If the spot share is an artifact of restriction, then as corporate accounts and institutional venues open, the won's share of global spot should **fall** even while total Korean activity rises, because the same capital finally has somewhere else to sit. Record monthly for a year: the won-denominated share of global spot volume, Korean institutional and derivatives volume, and the kimchi premium — the last being a capital-mobility readout in its own right, since a persistent premium means money cannot move freely enough to arbitrage it away. If the share holds while the other two rise, the restriction reading was wrong and Korea really is that large. Everything factual here comes from a Circle post promoting a Circle Current piece by Ben Morris, seen 2026-08-27: the ~30% figure, the characterisation of corporate-activity restrictions, and the three trends. It is vendor content about a market the vendor sells into — confirm the number and the current account rules against primary sources before repeating either.\n\n## Why\n\n**The number is real and it measures the wrong quantity.** Share of *spot volume* is turnover, not capital: it counts how often money changes hands, not how much money is there. A market that is retail-heavy, high-frequency by temperament, and structurally denied the adjacent venues — no corporate accounts, restricted local derivatives — concentrates all of its activity into the one channel that remains open, and then that channel posts a startling share. This is `priced-by-the-wrong-thing` with a national label on it: a genuine figure answering a question nobody asked. The quantities that would actually measure market weight are assets held, net inflows, and institutional balances — none of which appear in the headline.\n\n**Two of the three trends in the post cannot both be strengthening.** *Interoperability across assets, currencies and settlement rails is becoming table stakes* and *strategic partnerships are becoming a competitive advantage* are opposite claims. **A partnership is worth something precisely to the degree the rail is closed.** If interoperability genuinely became table stakes, the advantage from any particular partnership decays toward zero — that is what table stakes means. Read together, they say the rail is not open yet and the partnership window is the current phase, which is `build-rent-or-own-the-rail` stated from the vendor's side of the table. Knowing which of the two you are being sold is the whole value of noticing.\n\n**What is genuinely new is narrower than the headline and more useful.** The change is the **corporate account**, not the retail market. Years of restriction on corporate digital asset activity meant the market had no institutional leg at all: no company treasury, no local market makers running a domestic balance sheet, no corporate settlement. That is a structural absence, and filling it is a different event from volume growth. The honest way to watch it is not the share figure — it is whether a Korean company can hold and settle in a stablecoin as a matter of ordinary operations, which is the question in `what-needs-a-stablecoin` and the spread mechanics in `two-currencies-one-ledger`.\n\n## How it works\n\n### What the headline measures, and what it does not\n\n| Quantity | Counts | Misses |\n| --- | --- | --- |\n| **Share of global spot volume** | how often money turns over | how much money is there |\n| Assets held | stock of capital | — |\n| Net inflows | direction of capital | — |\n| Institutional balances | the leg that was missing | — |\n\nOnly the first appears in the post, and it is the only one a restricted market can inflate.\n\n### The prediction, stated so it can be wrong\n\n- **If** the 30% is an artifact of closed adjacent venues,\n- **then** opening corporate accounts and institutional venues should **lower** the won's share of global spot while raising total Korean activity.\n- **If instead** the share holds while institutional volume rises, the restriction reading was wrong and the market is genuinely that large.\n- **The kimchi premium is the control**: a persistent premium is direct evidence that capital cannot move freely enough to arbitrage it away.\n\n### The two claims in tension\n\n| Claim | True when | Implies about the other |\n| --- | --- | --- |\n| Interoperability is **table stakes** | rails are open and equivalent | partnership advantage → 0 |\n| Partnerships are a **competitive advantage** | rails are closed or unequal | interoperability is not yet table stakes |\n\nBoth are presented as trends. At most one can be the current state.\n\n### What to watch instead of the share\n\n1. Can a Korean **company** hold digital assets in the ordinary course — not as an exception?\n2. Do local market makers run a **domestic balance sheet**, or route through offshore entities?\n3. Is any of this **settled** in a stablecoin, or only traded against one?\n4. Does the **kimchi premium** compress? That is the capital-mobility answer, and it is public.\n"</script>
+    <script type="application/json" id="copy-ko">"# 현물의 30%는 시장 규모가 아니라 제약의 흔적이다\n\nCircle 의 한국 해석은 **진짜 숫자**로 시작합니다 — **원화가 글로벌 크립토 현물 거래의 약 30%.** 그 옆에 **기업 디지털자산 활동에 대한 수년간의 제약이 이제야 풀리며 기관 참여가 막 열리고 있다**는 문장이 붙습니다. **둘 다 사실이고, 사실은 같은 사실의 양 끝입니다.** 현물 비중이 높은 것은 **옆의 모든 것이 닫혀 있었기 때문**이고, 그렇다면 그 헤드라인 숫자는 **지금 해제를 알리고 있는 바로 그 제약을 읽는 계기판**입니다.\n\n**만드는 일이 아니라 반증 가능한 예측 하나와 그것을 판가름할 세 계열**입니다. 현물 비중이 제약의 산물이라면, **기업 계좌와 기관 거래장이 열릴수록 원화의 글로벌 현물 비중은 내려가야 합니다** — 한국의 총 활동은 늘어나는 와중에도. **같은 자본이 드디어 앉을 다른 자리를 얻기 때문**입니다. 1년간 매월 기록합니다 — **원화 표시 글로벌 현물 비중**, **한국 기관·파생 거래량**, 그리고 **김치 프리미엄**(그 자체가 자본 이동성 계기판입니다 — 프리미엄이 지속된다는 것은 **차익거래로 지울 만큼 돈이 자유롭게 못 움직인다**는 뜻이니까요). **비중이 유지되면서 나머지 둘이 오른다면 제약 해석이 틀린 것**이고 한국은 정말 그만큼 큰 시장입니다. 여기의 사실은 전부 **2026-08-27 에 본 Circle 게시물**(Circle Current, Ben Morris 글 홍보) 기준입니다 — 약 30% 수치, 기업 활동 제약에 대한 서술, 세 가지 추세. **자기가 파는 시장에 대한 벤더 콘텐츠**이므로, 숫자와 현행 계좌 규정을 **원문으로 확인한 뒤** 인용하십시오.\n\n## 왜\n\n**숫자는 진짜이고, 틀린 양을 잽니다.** **현물 거래량 비중은 회전율이지 자본이 아닙니다** — **돈이 얼마나 자주 손바뀜하는지**를 셀 뿐 **돈이 얼마나 있는지**를 세지 않습니다. 개인 비중이 높고, 기질적으로 회전이 빠르며, **옆의 거래장이 구조적으로 막힌**(기업 계좌 불가, 국내 파생 제한) 시장은 **남아 있는 유일한 통로로 활동 전부를 몰아넣고**, 그러면 그 통로가 **놀라운 비중**을 찍습니다. 이것은 **`priced-by-the-wrong-thing` 에 국가 이름표를 붙인 것**입니다 — **아무도 묻지 않은 질문에 답하는 진짜 숫자.** 시장의 무게를 실제로 잴 양은 **보유 자산, 순유입, 기관 잔고**이고 **헤드라인에는 하나도 없습니다.**\n\n**게시물의 세 추세 중 둘은 동시에 강해질 수 없습니다.** *자산·통화·정산 레일 간 상호운용성이 기본 요건(table stakes)이 되고 있다* 와 *전략적 파트너십이 경쟁 우위가 되고 있다* 는 **서로 반대 주장**입니다. **파트너십은 레일이 닫혀 있는 만큼만 값이 나갑니다.** 상호운용성이 정말로 기본 요건이 되면 **특정 파트너십의 우위는 0으로 수렴합니다** — 그게 기본 요건이라는 말의 뜻입니다. 둘을 함께 읽으면 **레일은 아직 열리지 않았고 지금은 파트너십 국면**이라는 말이 되고, 이는 **`build-rent-or-own-the-rail`** 을 **테이블의 벤더 쪽에서** 말한 것입니다. **둘 중 무엇을 팔고 있는지 아는 것**이 알아채는 일의 값어치 전부입니다.\n\n**진짜 새로운 것은 헤드라인보다 좁고 더 쓸모 있습니다.** 바뀌는 것은 **기업 계좌**이지 개인 시장이 아닙니다. 기업 디지털자산 활동에 대한 수년간의 제약은 이 시장에 **기관의 다리가 아예 없었다**는 뜻입니다 — **법인 자금운용도, 국내 대차대조표로 도는 마켓메이커도, 기업 정산도 없음.** 이것은 **구조적 부재**이고, 그것이 채워지는 사건은 **거래량 성장과 다른 사건**입니다. 정직하게 지켜보는 방법은 비중 숫자가 아니라 — **한국 기업이 일상 업무로서 스테이블코인으로 보유하고 정산할 수 있게 되는가**이고, 그건 **`what-needs-a-stablecoin`** 의 질문이자 **`two-currencies-one-ledger`** 의 스프레드 역학입니다.\n\n## 동작 방식\n\n### 헤드라인이 재는 것과 재지 않는 것\n\n| 양 | 세는 것 | 놓치는 것 |\n| --- | --- | --- |\n| **글로벌 현물 거래량 비중** | 돈이 얼마나 자주 도는가 | **돈이 얼마나 있는가** |\n| 보유 자산 | 자본의 스톡 | — |\n| 순유입 | 자본의 방향 | — |\n| 기관 잔고 | **없던 바로 그 다리** | — |\n\n**게시물에는 첫 줄만 나옵니다.** 그리고 **제약된 시장이 부풀릴 수 있는 유일한 값**이 그것입니다.\n\n### 틀릴 수 있게 적은 예측\n\n- **만약** 30% 가 **옆 거래장이 닫혀 있던 산물**이라면,\n- **그렇다면** 기업 계좌·기관 거래장이 열릴 때 **원화의 글로벌 현물 비중은 내려가야** 합니다 — 한국의 총 활동은 오르는 와중에.\n- **반대로** 기관 거래량이 오르는데도 **비중이 유지된다면**, 제약 해석이 틀렸고 시장이 진짜 그만큼 큰 것입니다.\n- **김치 프리미엄이 대조군입니다** — 프리미엄이 지속된다는 건 **차익거래로 지울 만큼 자본이 자유롭게 못 움직인다**는 직접 증거입니다.\n\n### 서로 부딪치는 두 주장\n\n| 주장 | 참이 되는 조건 | 다른 쪽에 대해 함의하는 것 |\n| --- | --- | --- |\n| 상호운용성이 **기본 요건** | 레일이 열려 있고 동등함 | 파트너십 우위 → 0 |\n| 파트너십이 **경쟁 우위** | 레일이 닫혔거나 불균등함 | 상호운용성은 아직 기본 요건 아님 |\n\n**둘 다 추세로 제시됩니다. 현재 상태일 수 있는 것은 많아야 하나입니다.**\n\n### 비중 대신 볼 것\n\n1. 한국 **법인**이 **예외가 아니라 통상 업무로** 디지털자산을 보유할 수 있는가?\n2. 국내 마켓메이커가 **국내 대차대조표**로 도는가, 아니면 역외 법인을 경유하는가?\n3. 이 중 무엇이 스테이블코인으로 **정산**되는가 — 아니면 스테이블코인을 **상대로 거래만** 되는가?\n4. **김치 프리미엄이 축소되는가?** 그것이 자본 이동성에 대한 답이고, **공개된 숫자**입니다.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -686,6 +701,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>

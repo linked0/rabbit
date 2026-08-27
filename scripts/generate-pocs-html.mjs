@@ -539,6 +539,20 @@ function detailNavGroups(current) {
   // 본문 끝의 "Open on jaylabs.xyz"는 대부분의 카드에서 아직 없는 페이지를 가리켰다
   // (jay, 2026-08-28). 레일 바닥과 같은 이동 링크로 바꾸고, 라이브 라우트(href)가 실제로
   // 있는 카드에만 원래 링크를 뒤에 붙인다 — 쓸모 있는 경우는 남기고 죽은 링크만 없앤다.
+  // 복사 버튼이 넘길 원본 마크다운 (jay, 2026-08-28). 렌더된 DOM 이 아니라 카드 데이터를
+  // 그대로 쓴다 — 표·코드블록·굵게가 붙여넣은 쪽에서 그대로 살아 있어야 하기 때문이다.
+  // 순서는 화면과 같다: 제목 → 요약 → howTo → Why → How it works.
+  const copyDoc = (t, d, h, why, how, L) =>
+    `# ${t}\n\n${d}\n\n${h}\n\n## ${L.why}\n\n${why}\n\n## ${L.how}\n\n${how}\n`;
+  const jsonBlock = (id, text) =>
+    `<script type="application/json" id="${id}">${JSON.stringify(text).replace(/</g, '\\u003c')}</script>`;
+  const copyEn = copyDoc(c.title, c.description, c.howTo, c.purpose, c.howItWorks, { why: 'Why', how: 'How it works' });
+  const copyKo = copyDoc(c.titleKo, c.descriptionKo, c.howToKo, c.purposeKo, c.howItWorksKo, { why: '왜', how: '동작 방식' });
+  const copyRow =
+    `<p class="copy-row">` +
+    `<button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button>` +
+    `<button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button>` +
+    `</p>\n    ${jsonBlock('copy-en', copyEn)}\n    ${jsonBlock('copy-ko', copyKo)}`;
   const liveLink = c.href ? ` &middot; <a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a>` : '';
   const openLink = `<a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a>${liveLink}`;
   const openLinkKo = `<a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a>${liveLink}`;
@@ -567,6 +581,7 @@ function detailNavGroups(current) {
       <p class="lead">${mdInline(c.description)}</p>
       <p class="meta">${mdInline(c.howTo)}</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      ${copyRow}
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>

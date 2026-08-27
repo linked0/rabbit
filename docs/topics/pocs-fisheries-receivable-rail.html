@@ -221,6 +221,18 @@
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
 
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+
   .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
   .solo article > :first-child { margin-top:0; }
   .solo article h1 {
@@ -405,6 +417,9 @@
       <p class="lead">A fisheries bank just bought 14.95% of a digital-asset custodian. Design the one service only those two could ship — then find the number that decides whether it should exist.</p>
       <p class="meta">Not yet scoped — the first task is not code. Ask one question: today&#39;s gap between auction hammer and settlement, and what a fisher pays to close it. Sources: 연합뉴스 2026-08-20 (수협은행 · 인피닛블록 지분 14.95%, 공동 2대 주주), 은행법 제37조 (15% 한도) — to verify.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+    <script type="application/json" id="copy-en">"# The custody was never the hard part\n\nA fisheries bank just bought 14.95% of a digital-asset custodian. Design the one service only those two could ship — then find the number that decides whether it should exist.\n\nNot yet scoped — the first task is not code. Ask one question: today's gap between auction hammer and settlement, and what a fisher pays to close it. Sources: 연합뉴스 2026-08-20 (수협은행 · 인피닛블록 지분 14.95%, 공동 2대 주주), 은행법 제37조 (15% 한도) — to verify.\n\n## Why\n\nOn 2026-08-20 Sh Suhyup Bank took a **14.95%** stake in 인피닛블록, a licensed Korean VASP whose business is digital-asset custody, becoming joint second-largest shareholder alongside a partnership agreement. The company's stack is described as extending to internal controls, security and **stablecoin issuance management**.\n\n**The number worth noticing is 14.95%.** Under the Banking Act a bank may not hold more than 15% of the voting shares of a company that is not its subsidiary; crossing that line makes the target a subsidiary and pulls in approval and consolidation. So 14.95% looks deliberate — influence bought while staying outside consolidation. *(That reading fits the number and should be verified against the statute before the card leans on it.)* The consequence is operational rather than legal: **the bank cannot direct the custodian.** Anything they ship has to work as a partnership between two independently-governed firms, and that constrains the design more than any technology choice does.\n\n**Updated 2026-08-24 — the single-bank reading above was too small.** The company's own announcement of the closed Pre-A round names **Sh Suhyup Bank, iM Bank and HFR (KOSDAQ 230240)** as strategic investors, and states that Korean **banks now hold roughly 30%**, or close to **40%** counting the existing shareholder SK Securities. So this was never one bank at 14.95%; it is at least two banks each sitting just under the same ceiling. That does not weaken the reading — it sharpens it, and it moves the interesting question off this card. See `cap-table-ceiling`.\n\n**Custody is not the differentiator.** Korea has several licensed custodians. A bank buying into one buys a licence and a balance sheet, not an edge — every other bank can buy the same thing. The edge, if it exists, is the part nobody else has: **the fish.** Suhyup is the one bank whose franchise sits on a physical supply chain — 위판장 auction houses, fishers, seafood distribution, vessels and fishing rights as collateral. So the interesting question is not \"what can a bank do with custody\" but **\"what can only these two build?\"**\n\n## How it works\n\n### The imaginary service: catch-to-cash\n\nAt a 위판장 auction a lot sells and the fisher holds a claim on proceeds that settle later. Tokenise that claim at the moment the hammer falls, custody it, and advance against it. **The fisher is paid at the hammer instead of at settlement.**\n\n| Layer | Who | What it actually is |\n|---|---|---|\n| **The fact** | The auction house | \"Lot, species, weight, grade, hammer price, buyer\" — signed at close |\n| **The instrument** | 인피닛블록 | A custodied claim on the settlement proceeds |\n| **The money** | 수협은행 | An advance against the claim; settlement extinguishes it |\n\n### Why only these two could ship it\n\nNot because of the chain. Because **Suhyup is the counterparty at both ends** — it banks the auction house, the fisher, and frequently the buyer. That closes the loop that kills most receivables-tokenisation pilots, where the party who must honour the claim is a stranger to the party who issued it. Here they are inside the same institution, which is a structural advantage no amount of protocol design substitutes for.\n\n### The gap, and it is the same gap three other cards found\n\nThe token is the easy half. The instrument is worth exactly what the auction attestation is worth — **true, and timely.** That is the box `rwa-multichain` left open (who signs the fact, and who is liable when the fact is wrong) and the question `the-settlement-instant` asks about a settlement price nobody verified. A signed catch record is a verifiable credential in every respect, and the hard part is never the signature. It is **correction and revocation**:\n\n| Real-world event | What must happen to the token |\n|---|---|\n| Buyer rejects the lot on arrival | The claim must shrink or die **after** issuance |\n| Grade revised on re-inspection | The amount changes, the identity does not |\n| The auction house's own system is down | No attestation exists, so nothing can be issued |\n| The fisher already borrowed against the same catch elsewhere | **Double pledge** — needs a registry, not a chain |\n\n**The last row decides the product.** A chain proves the claim exists; it cannot prove the claim was not already pledged somewhere off-chain. Whatever registry answers that is the real dependency, and it is institutional.\n\n### The measurable question, and it comes first\n\nBefore any code: **how long is the gap between hammer and settlement today, and what does a fisher currently pay to close it?**\n\n- If settlement is already T+1 and the fisher's alternative costs near zero, the service has no room to exist.\n- If the gap is a week and the alternative is an advance at a real discount, the design has a number to beat.\n\nThat is one figure, obtainable by asking rather than building, and it should come before anything else on this card.\n\n### Stablecoin — noted and parked\n\nThe article flags stablecoin issuance management as part of the custodian's stack, and Korea's framework is still moving. The honest ordering is worth stating: **a settlement token only matters after the attestation problem is solved.** Issuing a won-denominated token to settle claims nobody can verify moves the unverified claim faster; it does not make it true.\n"</script>
+    <script type="application/json" id="copy-ko">"# 수탁은 애초에 어려운 쪽이 아니었다\n\n수산 전문 은행이 디지털자산 수탁사 지분 14.95%를 샀습니다. 그 둘만 만들 수 있는 서비스를 설계하고, 그것이 존재할 값어치가 있는지 가르는 숫자를 찾습니다.\n\n아직 범위 미정 — 첫 작업은 코드가 아닙니다. 질문 하나부터: 오늘 낙찰과 정산 사이 간격, 그리고 어업인이 그것을 메우는 데 내는 값. 출처: 연합뉴스 2026-08-20(수협은행·인피닛블록 지분 14.95%, 공동 2대 주주), 은행법 제37조 15% 한도 — 확인 필요.\n\n## 왜\n\n2026-08-20 Sh수협은행이 국내 디지털자산 수탁사 **인피닛블록**의 지분 **14.95%**를 확보해 공동 2대 주주가 되고 전략적 파트너십을 체결했습니다. 인피닛블록은 수탁업을 영위하는 가상자산사업자(VASP)이고, 기사에 따르면 내부통제·보안·**스테이블코인 발행관리**까지 확장 가능한 인프라를 갖고 있습니다.\n\n**눈여겨볼 숫자는 14.95%입니다.** 은행법상 은행은 자회사가 아닌 다른 회사의 의결권 있는 지분을 15% 넘게 보유할 수 없고, 그 선을 넘으면 자회사가 되어 승인과 연결이 따라옵니다. 그러니 14.95%는 **연결 밖에 머물면서 영향력만 산** 의도적인 숫자로 읽힙니다. *(숫자에 들어맞는 해석이지만, 카드가 이 위에 논지를 세우기 전에 조문으로 확인할 것.)* 결과는 법률이 아니라 **운영**의 문제입니다 — **은행이 수탁사를 지시할 수 없습니다.** 두 회사가 각자 지배구조를 가진 채 파트너십으로 굴러가야 하고, 이 제약이 어떤 기술 선택보다 서비스 모양을 크게 좌우합니다.\n\n**2026-08-24 갱신 — 위의 \"은행 한 곳\" 독해는 너무 작았습니다.** 회사가 직접 알린 Pre-A 라운드 마무리 공지는 전략적 투자자로 **Sh수협은행·iM뱅크·HFR(KOSDAQ 230240)**을 들고, 국내 **은행이 보유한 지분이 약 30%**, 기존 주주 SK증권까지 더하면 **40%에 육박**한다고 밝히고 있습니다. 애초에 은행 한 곳의 14.95%가 아니라, **같은 한도 바로 아래에 각자 앉은 은행이 최소 둘**이었습니다. 이건 위 독해를 약화시키는 게 아니라 **날카롭게 만들고**, 흥미로운 질문을 이 카드 밖으로 옮깁니다. `cap-table-ceiling` 카드를 보세요.\n\n**수탁은 차별점이 아닙니다.** 국내에 라이선스 수탁사는 여럿입니다. 은행이 한 곳에 들어간다고 사는 것은 라이선스와 재무제표이지 우위가 아닙니다 — 다른 은행도 똑같이 살 수 있으니까요. 우위가 있다면 **아무도 갖지 못한 쪽**, 즉 **수산물**입니다. 수협은 물리적 공급망 위에 프랜차이즈가 얹힌 유일한 은행입니다 — 위판장, 어업인, 수산물 유통, 어선·어업권 담보. 그래서 흥미로운 질문은 \"은행이 수탁으로 무엇을 할 수 있나\"가 아니라 **\"이 둘만 만들 수 있는 것은 무엇인가\"**입니다.\n\n## 동작 방식\n\n### 상상해 본 서비스: 위판대금 즉시지급(catch-to-cash)\n\n위판장에서 물량이 낙찰되면 어업인은 나중에 정산될 대금에 대한 청구권을 갖습니다. **낙찰 순간** 그 청구권을 토큰화해 수탁하고, 그것을 담보로 선지급합니다. **어업인은 정산일이 아니라 낙찰 시점에 돈을 받습니다.**\n\n| 층 | 주체 | 실제로 무엇인가 |\n|---|---|---|\n| **사실** | 위판장 | \"물량·어종·중량·등급·낙찰가·매수인\" — 마감 시점에 서명 |\n| **증서** | 인피닛블록 | 정산대금 청구권을 수탁한 것 |\n| **돈** | 수협은행 | 청구권에 대한 선지급, 정산으로 소멸 |\n\n### 왜 이 둘만 만들 수 있나\n\n체인 때문이 아닙니다. **수협이 양쪽 끝의 거래상대**이기 때문입니다 — 위판장도, 어업인도, 흔히 매수인도 수협 거래처입니다. 이것이 대부분의 매출채권 토큰화 파일럿을 죽이는 고리를 닫아줍니다: 보통은 **청구권을 이행할 쪽과 발행한 쪽이 남남**인데, 여기서는 같은 기관 안에 있습니다. 프로토콜 설계로는 대체할 수 없는 구조적 우위입니다.\n\n### 빈칸 — 그리고 다른 카드 셋이 찾아낸 그 빈칸과 같습니다\n\n토큰은 쉬운 쪽입니다. 증서의 값어치는 위판 증명이 **참이고 제때인가**에 정확히 달려 있습니다. 그것이 `rwa-multichain` 카드가 열어둔 칸(누가 사실에 서명하며, 사실이 틀렸을 때 누가 책임지는가)이고, `the-settlement-instant` 카드가 아무도 검증하지 않은 정산 가격에 대해 묻는 질문입니다. 서명된 위판 기록은 모든 면에서 검증가능 자격증명이고, 어려운 부분은 서명이 아니라 **정정과 폐기**입니다:\n\n| 현실에서 벌어지는 일 | 토큰에 무슨 일이 벌어져야 하나 |\n|---|---|\n| 매수인이 도착 후 물량을 거부 | 발행 **이후에** 청구권이 줄거나 소멸해야 함 |\n| 재검사로 등급이 조정됨 | 금액은 바뀌고 동일성은 유지 |\n| 위판장 자체 시스템이 멈춤 | 증명이 없으므로 아무것도 발행 불가 |\n| 어업인이 같은 어획물로 다른 곳에서 이미 대출 | **이중담보** — 체인이 아니라 등록부가 필요 |\n\n**마지막 행이 제품의 성패를 가릅니다.** 체인은 청구권이 존재한다는 것을 증명할 뿐, 그 청구권이 오프체인 어딘가에 이미 담보로 잡히지 않았음을 증명하지 못합니다. 그것에 답하는 등록부가 진짜 의존성이고, 그건 기술이 아니라 제도입니다.\n\n### 측정할 질문, 그리고 이게 먼저입니다\n\n코드보다 먼저: **오늘 낙찰과 정산 사이 간격은 얼마이고, 어업인은 그 간격을 메우는 데 지금 얼마를 내는가?**\n\n- 정산이 이미 T+1이고 어업인의 대안 비용이 0에 가깝다면, 이 서비스는 존재할 자리가 없습니다.\n- 간격이 일주일이고 대안이 실질 할인율이 붙은 선지급이라면, 설계에 **이겨야 할 숫자**가 생깁니다.\n\n만들지 않고 물어서 얻을 수 있는 숫자 하나이고, 이 카드의 무엇보다 앞에 와야 합니다.\n\n### 스테이블코인 — 기록해 두고 미룸\n\n기사는 수탁사의 스택에 스테이블코인 발행관리가 포함된다고 밝히고 있고, 국내 제도는 아직 움직이는 중입니다. 정직한 순서를 적어두는 편이 낫습니다 — **정산 토큰은 증명 문제가 풀린 다음에야 의미가 있습니다.** 아무도 검증할 수 없는 청구권을 원화 토큰으로 정산하면 검증되지 않은 청구권이 더 빨리 움직일 뿐, 참이 되지는 않습니다.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
@@ -684,6 +699,40 @@
       io.observe(el);
     }
   }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
 </script>
 </body>
 </html>
