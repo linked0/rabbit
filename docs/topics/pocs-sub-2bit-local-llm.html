@@ -305,7 +305,7 @@
       <p>압축 기법 자체는 헤드라인보다 훨씬 좁은 이야기입니다. llama.cpp의 IQ1_S는 가중치당 1.5625비트를 쓰는데, 그중 11비트가 2048개짜리 코드북을 가리키는 인덱스입니다. Unsloth 변형은 그 코드북을 줄이기만 합니다 — 1024개, 512개, 256개 — 그러면 인덱스가 10·9·8비트로 줄고 가중치가 1.4375·1.3125·1.1875 bpw가 됩니다(각각 TQ2_0·TQ1_0·Q1_0으로 배포되며, 이름은 Hugging Face 저장소에 아예 노출되도록 고른 것입니다). 중요한 주장은 이것들이 <strong>평범한 사후 양자화(PTQ)</strong>라는 점입니다 — QAT나 증류가 없고, 바로 그 점이 생산 비용을 낮추는 동시에 독립적으로 검증할 가치를 만듭니다. 계획은 27B 모델을 이 dtype들로 제가 가진 하드웨어에서 돌려 PPL/KLD/top-p 곡선을 인용하는 대신 직접 재현하고, 실용 규칙(RAM+VRAM ≈ 양자화 크기, 그 선을 넘으면 디스크 오프로딩이 20 tok/s라는 숫자를 조용히 전혀 다른 것으로 바꿔 놓는다)을 확인하는 것입니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/sub-2bit-local-llm">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-procedural-not-generated.html">&larr; 57. Procedural, not generated — when the model is a program</a><a href="pocs-steal-the-structure.html">59. Two reading lists, and the same instruction — steal the structure, not the content &rarr;</a></div>
+  <div class="pager"><a href="pocs-procedural-not-generated.html">&larr; 57. Procedural, not generated — when the model is a program</a><a href="pocs-robotics-entry-decision.html">59. Four ways into robotics, and what each one actually buys &rarr;</a></div>
 </div>
 </body>
 </html>
