@@ -49,6 +49,17 @@
   }
   .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
   .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 제목과 배지를 한 줄에 — .rail-title 이 block 이라 그냥 두면 배지가 아래로 떨어진다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-left:8px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
   .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
   /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
      본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */

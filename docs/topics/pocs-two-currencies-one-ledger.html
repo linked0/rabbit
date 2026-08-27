@@ -49,6 +49,17 @@
   }
   .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
   .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 제목과 배지를 한 줄에 — .rail-title 이 block 이라 그냥 두면 배지가 아래로 떨어진다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-left:8px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
   .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
   /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
      본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
@@ -578,7 +589,7 @@
   </div>
   </main>
 </div>
-<script><script>
+<script>
   // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
   const input = document.getElementById('filter');
   const links = [...document.querySelectorAll('.nav-link')];
@@ -630,13 +641,36 @@
   const spied = links.filter((a) => a.dataset.key);
   const order = spied.map((a) => a.dataset.key);
   const seen = new Set();
+  const observed = new Map();
   let revealTimer;
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (e.isIntersecting) seen.add(e.target.id);
-      else seen.delete(e.target.id);
+  // 밴드에 걸친 항목 중 "문서 순서로 첫 번째"를 고르면 언제나 한 칸 앞이 켜진다
+  // (jay, 2026-08-27: "the left pane should sync with right pane in the item's position").
+  // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
+  // 고르면 방금 도착한 항목이 켜진다.
+  function syncActive() {
+    // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
+    // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
+    // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
+    const line = window.innerHeight * 0.1;
+    let first = null;
+    let started = -Infinity;
+    let upcoming = Infinity;
+    let firstUpcoming = null;
+    for (const k of seen) {
+      const el = observed.get(k);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top <= line) {
+        if (top > started) {
+          started = top;
+          first = k;
+        }
+      } else if (top < upcoming) {
+        upcoming = top;
+        firstUpcoming = k;
+      }
     }
-    const first = order.find((k) => seen.has(k));
+    if (first === null) first = firstUpcoming;
     let activeEl = null;
     for (const a of spied) {
       const on = a.dataset.key === first;
@@ -646,11 +680,38 @@
     // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
     clearTimeout(revealTimer);
     revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }
+
+  // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
+  // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
+  let ticking = false;
+  addEventListener(
+    'scroll',
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncActive();
+      });
+    },
+    { passive: true }
+  );
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    syncActive();
   }, { rootMargin: '-10% 0px -70% 0px' });
   for (const key of order) {
     const el = document.getElementById(key);
-    if (el) io.observe(el);
+    if (el) {
+      observed.set(key, el);
+      io.observe(el);
+    }
   }
-</script></script>
+</script>
 </body>
 </html>
