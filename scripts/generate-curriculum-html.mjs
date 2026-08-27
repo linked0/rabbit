@@ -24,7 +24,6 @@ function readCodeSnippet(id, no) {
     return null;
   }
 }
-const INDEX_CARD_LIMIT = 6; // 색인은 6장 — 전체는 "View All" 이 맡는다 (jay, 2026-08-12)
 
 // 파서·헬퍼·EXPLAINERS 는 curriculum-shared.mjs 로 옮겼다 (jay, 2026-08-27) — PoCs
 // 페이지도 같은 항목을 섹션으로 그리게 되면서 두 생성기가 같은 코드를 필요로 한다.
