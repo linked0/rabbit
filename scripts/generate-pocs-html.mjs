@@ -307,10 +307,66 @@ const navGroups = [
 // works만 상세로 옮기고, "무엇을·왜 중요한지"는 목록에 그대로 남긴다. Algorithms·Math
 // 목록도 같은 두 줄(요약+Why) 포맷을 쓴다. "내용이 너무 단순하다"는 후속 피드백에 맞춰
 // Why 는 한 문장이 아니라 n 문장(기본 2개)까지 가져온다.
+// 요약 줄이 통째로 깨졌던 이유 (jay, 2026-08-27: "summary part is so complex and hard
+// to read"). 옛 firstSentences 는 마침표로만 잘랐는데, 최근 카드들의 howItWorks 는
+// `### 제목` + 마크다운 표로 시작한다. 표 안에는 마침표가 없어서 첫 마침표까지의 한 덩어리에
+// 표 전체가 딸려 들어왔고, mdInline 은 표를 렌더하지 못하므로 파이프와 ### 이 글자 그대로
+// 새어 나왔다. 그래서 두 단계로 나눈다 — 먼저 산문만 남기고(표·제목·코드·목록 제거),
+// 그다음 문장을 센다. 잘린 자리에서 **가 홀수로 남으면 그것도 닫아 준다.
+const proseOnly = (s) =>
+  (s ?? '')
+    .replace(/```[\s\S]*?```/g, ' ')   // 코드 펜스 통째로
+    .split('\n')
+    .filter((line) => {
+      const t = line.trim();
+      if (!t) return false;
+      if (t.startsWith('#')) return false;        // ### 소제목
+      if (t.startsWith('|')) return false;        // 표 본문과 구분선
+      if (t.startsWith('>')) return false;        // 인용
+      if (/^[-*+]\s/.test(t)) return false;       // 불릿
+      if (/^\d+\.\s/.test(t)) return false;      // 번호 목록
+      if (/^([-*_]\s*){3,}$/.test(t)) return false; // 수평선
+      return true;
+    })
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+// 마크다운 강조가 반쪽만 남으면 ** 가 글자로 보인다. 홀수면 마지막 하나를 지운다.
+const balanceMarks = (s) => {
+  let out = s;
+  for (const mark of ['**', '`']) {
+    const n = out.split(mark).length - 1;
+    if (n % 2 === 1) {
+      const i = out.lastIndexOf(mark);
+      out = out.slice(0, i) + out.slice(i + mark.length);
+    }
+  }
+  return out.replace(/\s+([,.;:])/g, '$1').trim();
+};
+
+// 표로 시작하는 카드는 첫 산문이 문서 한복판이라 "Status as reported: ..." 처럼 중간부터
+// 시작하는 것처럼 읽힌다. 그런 카드에서는 표가 곧 본문이므로, 소제목들을 이어 붙인 쪽이
+// 정직하고 더 쓸모 있다 — 상세 페이지에 무엇이 있는지 그대로 알려 준다.
+const headingTrail = (s, n = 3) => {
+  const lines = (s ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
+  if (!lines.length || !lines[0].startsWith('#')) return '';
+  const heads = lines
+    .filter((l) => /^#{2,}\s/.test(l))
+    .map((l) => l.replace(/^#+\s*/, '').replace(/\*\*/g, '').trim())
+    .filter(Boolean);
+  return heads.length >= 2 ? heads.slice(0, n).join(' · ') : '';
+};
+
 const firstSentences = (s, n = 2) => {
-  const parts = (s ?? '').match(/[^.]*\.(\s|$)/g);
-  if (!parts) return s ?? '';
-  return parts.slice(0, n).join('').trim();
+  const trail = headingTrail(s);
+  if (trail) return trail;
+  const prose = proseOnly(s);
+  // 문장 끝이 `... metadata.**` 처럼 마침표 뒤에 닫는 마크다운 기호가 오면, 마침표+공백만
+  // 찾는 정규식은 그 경계를 놓치고 굵게 처리가 다음 문장까지 흘러넘친다. 닫는 기호를
+  // 문장 끝의 일부로 인정한다.
+  const parts = prose.match(/[^.]*\.(?:\*\*|\*|`|\)|"|'|\u2019|\u201d)*(?:\s|$)/g);
+  return balanceMarks(parts ? parts.slice(0, n).join('').trim() : prose);
 };
 
 function rowsFor(list) {
@@ -323,9 +379,9 @@ function rowsFor(list) {
     // "add why and how it works to the list page, not move — just copy it"). 상세
     // 페이지는 전체 문단을 그대로 유지한다.
     const how = firstSentences(c.howItWorks, 2);
-    const howHtml = how ? `\n          <p class="topic-how"><strong>How it works:</strong> ${mdInline(how)}</p>` : '';
+    const howHtml = how ? `\n          <p class="topic-how"><strong>How it works</strong>${mdInline(how)}</p>` : '';
     const why = firstSentences(c.purpose, 2);
-    const whyHtml = why ? `\n          <p class="topic-why"><strong>Why:</strong> ${mdInline(why)}</p>` : '';
+    const whyHtml = why ? `\n          <p class="topic-why"><strong>Why</strong>${mdInline(why)}</p>` : '';
     return `        <li id="${c.key}">
           <div class="topic-head"><span class="topic-no">${c.no}</span><span class="topic-title">${escapeHtml(c.title)}</span>${mark}</div>
           <p class="topic-summary">${mdInline(c.description)}</p>${howHtml}${whyHtml}

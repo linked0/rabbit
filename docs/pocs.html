@@ -124,10 +124,24 @@
   /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
   .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
   .topic-brief li { margin:2px 0; }
-  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
-  .topic-how strong { color:var(--text); }
-  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
-  .topic-why strong { color:var(--text); font-style:normal; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
   .topic-link { margin:6px 0 0; font-size:0.88rem; }
 
   /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
@@ -382,186 +396,134 @@
         <li id="governance-capture-cost">
           <div class="topic-head"><span class="topic-no">1</span><span class="topic-title">Governance capture — when the exploit is a market order</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">$8.5M left Term&#39;s vaults without a line of code breaking. The number nobody publishes for a token-governed vault is what decisive voting power costs against what it controls.</p>
-          <p class="topic-how"><strong>How it works:</strong> Mechanics as reported: the attacker cornered a majority of a sparsely held governance token, then passed malicious proposals to seize the strategy vaults, holding 100% of voting power in four of five USDC strategy vaults and roughly 91% in the Ethereum Meta Vault at execution time. The vault contracts then executed the malicious calls as legitimate, because they were.</p>
-          <p class="topic-why"><strong>Why:</strong> The distinction is the whole story. Term has two very different products under one brand: the core fixed-rate repo markets use per-loan collateral lockers to isolate borrower and lender exposure, and that design held and was untouched.</p>
+          <p class="topic-how"><strong>How it works</strong>Mechanics as reported: the attacker cornered a majority of a sparsely held governance token, then passed malicious proposals to seize the strategy vaults, holding 100% of voting power in four of five USDC strategy vaults and roughly 91% in the Ethereum Meta Vault at execution time. The vault contracts then executed the malicious calls as legitimate, because they were.</p>
+          <p class="topic-why"><strong>Why</strong>The distinction is the whole story. Term has two very different products under one brand: the core fixed-rate repo markets use per-loan collateral lockers to isolate borrower and lender exposure, and that design held and was untouched.</p>
           <p class="topic-link"><a href="topics/pocs-governance-capture-cost.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/governance-capture-cost">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="agentic-intent-veto">
           <div class="topic-head"><span class="topic-no">2</span><span class="topic-title">The budget is the wrong invariant</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">A spend cap constrains the amount, not the purchase. An agent that spends $50 of its $100 on the wrong thing passed every check — and on-chain there is no chargeback behind it.</p>
-          <p class="topic-how"><strong>How it works:</strong> Two mechanisms, and the second is the one that will draw fire. First: sign the intent, not the limit.</p>
-          <p class="topic-why"><strong>Why:</strong> Autonomous payments are almost always secured with a spend cap, and the cap is the wrong invariant. An agent given $100 that spends $50 on the wrong item has violated nothing — the session key worked, the limit held, the signature verified.</p>
+          <p class="topic-how"><strong>How it works</strong>Two mechanisms, and the second is the one that will draw fire. First: sign the intent, not the limit.</p>
+          <p class="topic-why"><strong>Why</strong>Autonomous payments are almost always secured with a spend cap, and the cap is the wrong invariant. An agent given $100 that spends $50 on the wrong item has violated nothing — the session key worked, the limit held, the signature verified.</p>
           <p class="topic-link"><a href="topics/pocs-agentic-intent-veto.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/agentic-intent-veto">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="dvt">
           <div class="topic-head"><span class="topic-no">3</span><span class="topic-title">DVT in the protocol</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">Reading notes on absorbing distributed validators into the protocol — m-of-n without splitting keys, plus what it makes buildable.</p>
-          <p class="topic-how"><strong>How it works:</strong> Today&#39;s DVT (Obol, SSV) splits one validator key with Shamir sharing or threshold BLS and runs an off-chain consensus round to reassemble a signature each time; the protocol still sees a single validator, and all distribution lives in middleware. The proposal never splits the key: each participant registers their own (n ≤ 16), the protocol groups them m-of-n, and BLS aggregation plus a participation bitfield — the same grammar as today&#39;s attestation aggregation — decides whether enough took part.</p>
-          <p class="topic-why"><strong>Why:</strong> Reading a live protocol-design discussion closely enough to separate three things people usually blur: what the proposal actually changes, what it leaves unresolved, and which parts of the idea can be built one layer up without waiting for it. It is also a second instance of a pattern this site already documents elsewhere — middleware doing a job well until the protocol absorbs it, which is exactly what ERC-4337 bundlers face from native account abstraction.</p>
+          <p class="topic-how"><strong>How it works</strong>Today&#39;s DVT (Obol, SSV) splits one validator key with Shamir sharing or threshold BLS and runs an off-chain consensus round to reassemble a signature each time; the protocol still sees a single validator, and all distribution lives in middleware. The proposal never splits the key: each participant registers their own (n ≤ 16), the protocol groups them m-of-n, and BLS aggregation plus a participation bitfield — the same grammar as today&#39;s attestation aggregation — decides whether enough took part.</p>
+          <p class="topic-why"><strong>Why</strong>Reading a live protocol-design discussion closely enough to separate three things people usually blur: what the proposal actually changes, what it leaves unresolved, and which parts of the idea can be built one layer up without waiting for it. It is also a second instance of a pattern this site already documents elsewhere — middleware doing a job well until the protocol absorbs it, which is exactly what ERC-4337 bundlers face from native account abstraction.</p>
           <p class="topic-link"><a href="topics/pocs-dvt.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/dvt">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="l1-zkevm-optional-proofs">
           <div class="topic-head"><span class="topic-no">4</span><span class="topic-title">L1 zkEVM — the word doing the work is &quot;optional&quot;</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">EIP-8025 lets a validator verify a block by checking a proof instead of re-executing it. The number nobody publishes is how many still re-execute once it is cheaper not to.</p>
-          <p class="topic-how"><strong>How it works:</strong> Mechanism first, as documented: a validator may verify a block by checking a succinct proof of the state transition rather than re-executing its transactions, with the mainnet state transition function exposed to the execution layer through an EXECUTE precompile in the EIP-8079 draft, and Native Rollups built on the same primitive. Proving is made feasible by the two Glamsterdam pieces above rather than by any change in EIP-8025 itself.</p>
-          <p class="topic-why"><strong>Why:</strong> Two forks make one machine, and it is worth stating the dependency plainly because the roadmap coverage rarely does. Glamsterdam sets out two chairs: ePBS (EIP-7732) supplies time, because splitting the slot seats the builder as prover and opens an interval between header commitment and payload reveal; BAL (EIP-7928) supplies partition, because a block that declares the state it will touch is a block whose proving work can be sliced across many provers.</p>
+          <p class="topic-how"><strong>How it works</strong>Mechanism first, as documented: a validator may verify a block by checking a succinct proof of the state transition rather than re-executing its transactions, with the mainnet state transition function exposed to the execution layer through an EXECUTE precompile in the EIP-8079 draft, and Native Rollups built on the same primitive. Proving is made feasible by the two Glamsterdam pieces above rather than by any change in EIP-8025 itself.</p>
+          <p class="topic-why"><strong>Why</strong>Two forks make one machine, and it is worth stating the dependency plainly because the roadmap coverage rarely does. Glamsterdam sets out two chairs: ePBS (EIP-7732) supplies time, because splitting the slot seats the builder as prover and opens an interval between header commitment and payload reveal; BAL (EIP-7928) supplies partition, because a block that declares the state it will touch is a block whose proving work can be sliced across many provers.</p>
           <p class="topic-link"><a href="topics/pocs-l1-zkevm-optional-proofs.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/l1-zkevm-optional-proofs">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="erc-7683-settlement-security">
           <div class="topic-head"><span class="topic-no">5</span><span class="topic-title">ERC-7683 settlement security — the layer left deliberately unstandardized</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">ERC-7683 standardizes order envelopes, not settlement proofs. The three settlement models (optimistic, light-client, committee bridge) decide who actually bears the bridge risk and why filler loan spreads diverge.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### How the money actually moves — t=0, t=1, t=2
-
-Intents changed what the user specifies, not what has to happen. The old way named a route — bridge here, swap there — and the user carried the failure of every step.</p>
-          <p class="topic-why"><strong>Why:</strong> Intents did not eliminate bridge risk — they moved it from users to fillers. A user signs on the origin chain, escrows input tokens, and the filler advances their own funds on the destination chain immediately.</p>
+          <p class="topic-how"><strong>How it works</strong>How the money actually moves — t=0, t=1, t=2 · What the standard fixes, and what it leaves blank · Why the blank is not laziness</p>
+          <p class="topic-why"><strong>Why</strong>Intents did not eliminate bridge risk — they moved it from users to fillers. A user signs on the origin chain, escrows input tokens, and the filler advances their own funds on the destination chain immediately.</p>
           <p class="topic-link"><a href="topics/pocs-erc-7683-settlement-security.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/erc-7683-settlement-security">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="stake-concentration">
           <div class="topic-head"><span class="topic-no">6</span><span class="topic-title">Stake concentration risk</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">How much stake sits behind one router, one ASN, one data centre — and how close that is to halting finality.</p>
-          <p class="topic-how"><strong>How it works:</strong> Planned as a measurement, not an essay: pull the active validator set and its stake weights from public RPC, resolve each advertised gossip/TPU endpoint to an IP, map those to ASN and hosting provider with a public IP-intelligence dataset, then aggregate stake by ASN, by provider, and by geographic region. The headline figure is the stake-weighted Herfindahl index plus the single largest correlated bucket, both plotted against the 33% halt line.</p>
-          <p class="topic-why"><strong>Why:</strong> In 2026 a routing error on Solana took roughly 29% of stake offline at once and the network came within a few percentage points of losing finality. Nothing was hacked and no key was stolen — the consensus math worked exactly as designed.</p>
+          <p class="topic-how"><strong>How it works</strong>Planned as a measurement, not an essay: pull the active validator set and its stake weights from public RPC, resolve each advertised gossip/TPU endpoint to an IP, map those to ASN and hosting provider with a public IP-intelligence dataset, then aggregate stake by ASN, by provider, and by geographic region. The headline figure is the stake-weighted Herfindahl index plus the single largest correlated bucket, both plotted against the 33% halt line.</p>
+          <p class="topic-why"><strong>Why</strong>In 2026 a routing error on Solana took roughly 29% of stake offline at once and the network came within a few percentage points of losing finality. Nothing was hacked and no key was stolen — the consensus math worked exactly as designed.</p>
           <p class="topic-link"><a href="topics/pocs-stake-concentration.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/stake-concentration">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="irreversible-switch-design">
           <div class="topic-head"><span class="topic-no">7</span><span class="topic-title">The migration works by making the contract dumber</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A draft EIP replaces the deposit contract&#39;s hardcoded BLS12-381 dimensions with variable-length credentials, and adds a BLS retirement mode that a system call flips once and never back. The technique is not teaching the contract a new scheme — it is removing the opinion it held about the old one.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### Two mechanisms, and what each one actually buys
-
-| Mechanism | What it changes | What it buys | What it costs |
-|---|---|---|---|
-| <strong>Variable-length credentials</strong> (up to 8,192 bytes, from fixed 48 / 96) | The contract stops encoding one scheme&#39;s dimensions | Any future scheme fits without touching the contract | Validity has to be judged somewhere else, and that somewhere becomes load-bearing |
-| <strong>BLS retirement mode</strong> (system call, one way) | New deposits under the old scheme become impossible | <strong>A guarantee rather than a setting</strong> — nobody can restore it | Every test moves in front of the flip; there is no after |
-
-### Three modes, and the draft&#39;s actual status
-
-| Mode | What it permits | Reversible? |
-|---|---|---|
-| <code>disabled</code> | No deposits | — |
-| <code>BLS enabled</code> | BLS onboarding, as today | — |
-| <strong><code>BLS retired</code></strong> | <strong>No call can re-enable BLS onboarding</strong> | <strong>No</strong> |
-
-Status as reported: <strong>draft, awaiting editor review</strong>, with contract address and activation timing <strong>undecided</strong>. And 8,192 bytes reads generous until you price hash-based signatures — for a SPHINCS+-class scheme it is <strong>headroom, not abundance</strong>.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> Today the deposit contract knows what a validator credential is: 48 bytes of public key, 96 bytes of signature metadata. Those constants are the contract holding an </strong>opinion about a cryptographic scheme it does not own**, and every future scheme is blocked by it.</p>
+          <p class="topic-how"><strong>How it works</strong>Two mechanisms, and what each one actually buys · Three modes, and the draft&#39;s actual status · The pattern worth stealing</p>
+          <p class="topic-why"><strong>Why</strong><strong>The instructive move is the one that looks like a downgrade.</strong> Today the deposit contract knows what a validator credential is: 48 bytes of public key, 96 bytes of signature metadata.</p>
           <p class="topic-link"><a href="topics/pocs-irreversible-switch-design.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/irreversible-switch-design">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="merkle-vs-verkle">
           <div class="topic-head"><span class="topic-no">8</span><span class="topic-title">Merkle vs Verkle</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Why proof size, not hashing speed, is what decides whether stateless clients are possible.</p>
-          <p class="topic-how"><strong>How it works:</strong> Reading note, not a demo: how a Merkle proof&#39;s size grows with tree width (you must supply every sibling at every level), why vector commitments collapse that to a constant-size proof regardless of width, and what Ethereum&#39;s Verge roadmap intends to buy with the swap — stateless clients that validate without holding the state. Also what it costs: heavier cryptography, and a migration of the entire state trie.</p>
-          <p class="topic-why"><strong>Why:</strong> The state-bloat problem this catalogue keeps running into from the application side, looked at from the protocol side. Every card here that writes a storage slot — an enforcer&#39;s spent counter, a token balance — adds to state that every node keeps live forever.</p>
+          <p class="topic-how"><strong>How it works</strong>Reading note, not a demo: how a Merkle proof&#39;s size grows with tree width (you must supply every sibling at every level), why vector commitments collapse that to a constant-size proof regardless of width, and what Ethereum&#39;s Verge roadmap intends to buy with the swap — stateless clients that validate without holding the state. Also what it costs: heavier cryptography, and a migration of the entire state trie.</p>
+          <p class="topic-why"><strong>Why</strong>The state-bloat problem this catalogue keeps running into from the application side, looked at from the protocol side. Every card here that writes a storage slot — an enforcer&#39;s spent counter, a token balance — adds to state that every node keeps live forever.</p>
           <p class="topic-link"><a href="topics/pocs-merkle-vs-verkle.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/merkle-vs-verkle">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="quick-slots-10s">
           <div class="topic-head"><span class="topic-no">9</span><span class="topic-title">Ten-second slots — the constant nobody wrote down</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Cutting slot time from 12s to 10s changes no API, which is exactly what makes it dangerous. Every poll interval, confirmation rule, oracle heartbeat and deadline in an application encodes 12 seconds somewhere, and almost none of them say so.</p>
-          <p class="topic-how"><strong>How it works:</strong> ** A human or market deadline is wall-clock: a user has thirty seconds, a quote is good for two minutes. A chain-state deadline is blocks: this many confirmations, this many slots of challenge window.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> Nothing fails to compile, no test goes red on the day the fork lands, and the symptoms arrive later as flakiness: an update that occasionally arrives a beat late, a quote that occasionally misses its window, a confirmation rule that quietly guarantees less than it did last week.
-</strong> A filler quoting against a fill deadline, an oracle heartbeat, a batch-auction window, a bundle aimed at the next slot — each loses about a sixth of its wall-clock budget while the code keeps the same number in it.</p>
+          <p class="topic-how"><strong>How it works</strong>Where twelve seconds hides · The rule the table produces · Why it sits next to the other protocol cards</p>
+          <p class="topic-why"><strong>Why</strong><strong>A timing change is the worst kind of change, because it does not break a build — it shifts a distribution.</strong> Nothing fails to compile, no test goes red on the day the fork lands, and the symptoms arrive later as flakiness: an update that occasionally arrives a beat late, a quote that occasionally misses its window, a confirmation rule that quietly guarantees less than it did last week.</p>
           <p class="topic-link"><a href="topics/pocs-quick-slots-10s.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/quick-slots-10s">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="l1-data-pricing-dimensions">
           <div class="topic-head"><span class="topic-no">10</span><span class="topic-title">When gas stops being one number — data pricing and bandwidth accounting</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">EIP-8131 and EIP-8279 point at charging separately for the resources a transaction actually consumes. A settlement app that posts a lot of bytes and computes very little has been cross-subsidized by the single gas number — and repricing decides which design stays cheap.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### One number, five resources
-
-| Resource | Metered today | What separate metering would change | Exposure here |
-|---|---|---|---|
-| <strong>Execution</strong> — opcodes | gas | Little; this is what gas was designed for | <strong>Thin</strong> — settlement logic is small |
-| <strong>Calldata bytes</strong> | gas, at a fixed price per byte | Its own price, moving with demand | <strong>Heavy</strong> — orders and evidence are bytes |
-| <strong>Blob data</strong> | Its own market since EIP-4844 | Nothing — this is the precedent, not the change | Already true |
-| <strong>State growth</strong> | gas, and badly | The hardest to price honestly; the cost is permanent, the fee is one-off | <strong>Registries, position maps</strong> |
-| <strong>Bandwidth / propagation</strong> | not metered at all | A dimension that does not exist yet | <strong>Large-payload transactions</strong> |
-
-### The measurement, and why it is small
-
-One month of transactions, one split per transaction: bytes versus execution. ** If it is, then every design choice that trades computation for calldata (posting evidence rather than recomputing it, storing an order rather than deriving it) is a bet on the current price of bytes staying where it is.</p>
-          <p class="topic-why"><strong>Why:</strong> ** One gas number covers computation, state growth and bandwidth at once, so somebody is overpaying and somebody is underpaying — and the underpayer is, by construction, the usage pattern the network would most like to discourage. Metering each resource separately is not a fee tweak; it is the network finally charging for what it actually spends.</p>
+          <p class="topic-how"><strong>How it works</strong>One number, five resources · The measurement, and why it is small · The state-growth footnote worth keeping</p>
+          <p class="topic-why"><strong>Why</strong><strong>A single price for several resources always cross-subsidizes, and the subsidy runs toward whatever is hardest for the network to scale.</strong> One gas number covers computation, state growth and bandwidth at once, so somebody is overpaying and somebody is underpaying — and the underpayer is, by construction, the usage pattern the network would most like to discourage.</p>
           <p class="topic-link"><a href="topics/pocs-l1-data-pricing-dimensions.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/l1-data-pricing-dimensions">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="encrypted-mempool">
           <div class="topic-head"><span class="topic-no">11</span><span class="topic-title">What encryption does not hide</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Two competing encrypted-mempool EIPs leave the sender, the gas, and the size in plaintext. Measure how much of the sandwich survives on metadata alone.</p>
-          <p class="topic-how"><strong>How it works:</strong> Three measurements, cheapest first. One, the residual-MEV replay.</p>
-          <p class="topic-why"><strong>Why:</strong> The briefing reads as if the question is still open — developers will meet, encryption is being considered, no scheme is ready. Two of those are true and one is not.</p>
+          <p class="topic-how"><strong>How it works</strong>Three measurements, cheapest first. One, the residual-MEV replay.</p>
+          <p class="topic-why"><strong>Why</strong>The briefing reads as if the question is still open — developers will meet, encryption is being considered, no scheme is ready. Two of those are true and one is not.</p>
           <p class="topic-link"><a href="topics/pocs-encrypted-mempool.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/encrypted-mempool">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="storage-collision-admin-takeover">
           <div class="topic-head"><span class="topic-no">12</span><span class="topic-title">The code was right and the layout was wrong</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">An attacker took Enjin&#39;s admin rights through a storage slot collision — adapters and the contract managing them used the same storage for different meanings — and drained about $162,000. Every function was individually correct. The defect lived in the space between modules.</p>
-          <p class="topic-how"><strong>How it works:</strong> <strong> Detection came from an outside security firm, and no statement had been issued at the time of reporting — which is itself the answer for this system.
-</strong> Enumerate every module that executes in the host&#39;s storage context, compute each layout, and assert that no two assign different meanings to the same slot.</p>
-          <p class="topic-why"><strong>Why:</strong> ** No function reverted, no assertion failed, no key leaked, and no line of code was individually wrong. Two modules wrote to the same storage slot meaning two different things, and one of those meanings happened to be <em>who is the administrator</em>.</p>
+          <p class="topic-how"><strong>How it works</strong>Why a single-file review cannot find it · The two checks, in order of cost · The generalisation worth keeping</p>
+          <p class="topic-why"><strong>Why</strong><strong>Nothing broke.</strong> No function reverted, no assertion failed, no key leaked, and no line of code was individually wrong.</p>
           <p class="topic-link"><a href="topics/pocs-storage-collision-admin-takeover.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/storage-collision-admin-takeover">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="the-settlement-instant">
           <div class="topic-head"><span class="topic-no">13</span><span class="topic-title">A price at a moment — the instant, the window, and who can move it</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Polymarket&#39;s five-second trick and Balance Coin&#39;s oracle attack are the same defect: one price, one instant, no band, no delay. The push-versus-pull oracle split exists because of exactly that problem, and the fix is a parameter with a number attached rather than a principle.</p>
-          <p class="topic-how"><strong>How it works:</strong> g. g.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong>
-
-</strong>Neither was a cryptographic failure and neither required a bug in the contract&#39;s arithmetic. <strong> The distinction between Chainlink Data Feeds and Data Streams is the boundary between </strong>push<strong> and </strong>pull**.</p>
+          <p class="topic-how"><strong>How it works</strong>Push versus pull, and why the split exists · The three knobs, and the curve that decides them · The three concrete advantages of pull</p>
+          <p class="topic-why"><strong>Why</strong><strong>Two 2026 incidents look unrelated and are not.</strong> 2M<strong> out of settlement windows they classified as likely manipulated — with </strong>93% of the losses in those windows, market makers excluded, landing on retail.</p>
           <p class="topic-link"><a href="topics/pocs-the-settlement-instant.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/the-settlement-instant">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="what-encryption-does-not-hide">
           <div class="topic-head"><span class="topic-no">14</span><span class="topic-title">Hiding the amount is the easy half</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Confidential settlement encrypts the invoice value and publishes who paid whom and when. That second half is offered as the harmless one, and for a supply chain it may be the half worth hiding — while the opposite tool, computing over data that never becomes readable, solves the problem a blockchain structurally cannot.</p>
-          <p class="topic-how"><strong>How it works:</strong> <strong> Saying so is more useful than scoring points against any one design.
-
-### The trust model, which is the second half of the guarantee
-
-| Capability | Held by | What it means |
-|---|---|---|
-| </strong>Seal access grants<strong> | Regulators, tax authorities, arbiters | Scoped, </strong>time-limited, revocable<strong> — the right shape for compliance |
-| </strong>Account freeze, network pause<strong> | Network operators | Sensible operationally |
-| </strong>Threshold shares<strong> | Whoever holds them | </strong>The confidentiality is conditional on them<strong> |
-
-</strong>A privacy guarantee an operator can revoke is a policy, not a cryptographic property** — the same question <code>third-party-blast-radius</code> asks of any threshold scheme, and the same one that decides whether <code>build-rent-or-own-the-rail</code>&#39;s consortium ledger can keep a bank&#39;s counterparties from its competitors.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> Sui states it without hedging in its own announcement: the chain shows </strong>who paid whom and when**, and the amount appears as ▦▦▦. That is offered as the harmless half.</p>
+          <p class="topic-how"><strong>How it works</strong>Two opposite tools, and the question each answers · The attack, and it runs entirely on synthetic data · The trilemma, stated as one</p>
+          <p class="topic-why"><strong>Why</strong><strong>Institutional privacy converged on one shape in 2026</strong> — Tessera on Sui, XRPL&#39;s confidential transfers, Circle&#39;s Arc Privacy, Canton, Midnight — and the shape is: <strong>encrypt the value, publish the graph.</strong> Sui states it without hedging in its own announcement: the chain shows <strong>who paid whom and when</strong>, and the amount appears as ▦▦▦.</p>
           <p class="topic-link"><a href="topics/pocs-what-encryption-does-not-hide.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/what-encryption-does-not-hide">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="dkg-resharing">
           <div class="topic-head"><span class="topic-no">15</span><span class="topic-title">The ceremony ends, the committee doesn't</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Distributed key generation is written up as a one-time event. Every real deployment is a committee whose membership changes — and the second ceremony, resharing, is the one nobody budgets for.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### What a DKG actually produces
-
-| Output | Who holds it | Note |
-|---|---|---|
-| <strong>The private key</strong> | <strong>Nobody, ever</strong> | Exists only implicitly, as the interpolation of shares |
-| The public key | Everyone; published | This is what other systems bind to |
-| Share <em>i</em> | Participant <em>i</em> | Useless alone below the threshold |
-| <strong>The transcript</strong> | Should be public | The evidence that the key was generated as claimed |
-
-The last row deserves the hardest look. A threshold claim is only as good as the ability of an outsider to check that the ceremony really ran with the claimed participants and the claimed threshold.</p>
-          <p class="topic-why"><strong>Why:</strong> Distributed key generation is the protocol by which <strong>n</strong> parties jointly produce one keypair such that the private key is never assembled anywhere, and any <strong>t</strong> of them can sign or decrypt with it. It is the primitive underneath four things this catalogue already has cards for: DVT validator keys (<code>dvt</code>), the keyper committees in threshold-encrypted mempools (<code>encrypted-mempool</code>), MPC custody (the custodian in <code>fisheries-receivable-rail</code>), and randomness beacons.</p>
+          <p class="topic-how"><strong>How it works</strong>What a DKG actually produces · The three membership events · The measurement, and it is small</p>
+          <p class="topic-why"><strong>Why</strong>Distributed key generation is the protocol by which <strong>n</strong> parties jointly produce one keypair such that the private key is never assembled anywhere, and any <strong>t</strong> of them can sign or decrypt with it. It is the primitive underneath four things this catalogue already has cards for: DVT validator keys (<code>dvt</code>), the keyper committees in threshold-encrypted mempools (<code>encrypted-mempool</code>), MPC custody (the custodian in <code>fisheries-receivable-rail</code>), and randomness beacons.</p>
           <p class="topic-link"><a href="topics/pocs-dkg-resharing.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/dkg-resharing">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="erc-8141">
           <div class="topic-head"><span class="topic-no">16</span><span class="topic-title">ERC-8141</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Native account-abstraction explainer — Ethereum&#39;s protocol-level Frame Transactions.</p>
-          <p class="topic-how"><strong>How it works:</strong> Not a working demo by necessity: EIP-8141 defines a new transaction type where a single transaction carries a sequence of frames (a VERIFY frame for signature/fee authorization, then one or more EXECUTE frames) instead of one implicit call — but no client or RPC can send this transaction type yet, since it requires execution-layer support the network doesn&#39;t have. As of writing it&#39;s only &quot;considered for inclusion&quot; in a future fork, so this stays a diagram/explainer page rather than a live demo.</p>
-          <p class="topic-why"><strong>Why:</strong> A protocol-native preview of what this project&#39;s application-layer AA demos (session keys, atomic batching) do today with smart contracts and delegation — EIP-8141 proposes moving those same properties into Ethereum&#39;s base transaction format itself.</p>
+          <p class="topic-how"><strong>How it works</strong>Not a working demo by necessity: EIP-8141 defines a new transaction type where a single transaction carries a sequence of frames (a VERIFY frame for signature/fee authorization, then one or more EXECUTE frames) instead of one implicit call — but no client or RPC can send this transaction type yet, since it requires execution-layer support the network doesn&#39;t have. As of writing it&#39;s only &quot;considered for inclusion&quot; in a future fork, so this stays a diagram/explainer page rather than a live demo.</p>
+          <p class="topic-why"><strong>Why</strong>A protocol-native preview of what this project&#39;s application-layer AA demos (session keys, atomic batching) do today with smart contracts and delegation — EIP-8141 proposes moving those same properties into Ethereum&#39;s base transaction format itself.</p>
           <p class="topic-link"><a href="topics/pocs-erc-8141.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/erc-8141">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="the-record-is-not-the-path">
           <div class="topic-head"><span class="topic-no">17</span><span class="topic-title">The record is not the path — a registry and a vault for the same problem</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">ERC-7812 proposes one on-chain registry where any protocol can store and prove identity statements by ZK without publishing the data. Docbank makes the opposite bet with the same premise: the catalogue stays on your machine, and a stable node ID rather than a file path is the identity.</p>
-          <p class="topic-how"><strong>How it works:</strong> ** The argument that one shared registry beats many is the design decision; storage layout, proof format and interface all follow from it. The reference implementation (<code>rarimo/evidence-registry</code>) is where to check whether the argument survives contact with code.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> Vitalik is a co-author. </strong>The Rationale section on why a singleton is the part to read**, because the argument for one shared registry over many is the whole design decision and everything else follows from it.</p>
+          <p class="topic-how"><strong>How it works</strong>Same premise, opposite architectures · What to read in the standard · What Docbank does that a sync folder does not</p>
+          <p class="topic-why"><strong>Why</strong><strong>Two projects, opposite architectures, and the same premise underneath: an account or a file path is a poor long-term identity.</strong> <strong>ERC-7812 is the standardisation attempt.</strong></p>
           <p class="topic-link"><a href="topics/pocs-the-record-is-not-the-path.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/the-record-is-not-the-path">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="fork-date-provenance">
           <div class="topic-head"><span class="topic-no">18</span><span class="topic-title">A fork date nobody decided — reading the claim, not the number</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">The 8/20 core-devs call produced a Sepolia slot of 2026-09-28 14:44:48 UTC, confirmed by six client teams without dissent — and the same minutes record the decision as deferred to the next call. There is still no mainnet date, yet mainnet numbers are already circulating.</p>
-          <p class="topic-how"><strong>How it works:</strong> ** Every date in a protocol timeline belongs in one of three states — <em>confirmed by named parties</em>, <em>deferred</em>, or <em>circulating without a primary source</em> — and a timeline that only carries numbers has thrown away the one column that decides whether to plan against it. The 9/28 Sepolia slot, the 8/27 Hegotá PFI cutoff and the 9/10 preference-list deadline are three different states of certainty sitting on one line.</p>
-          <p class="topic-why"><strong>Why:</strong> ** Everything downstream of it — the mainnet timing, the throughput multiple — is conditional, and unusually, the minutes say so themselves. A date being <em>attached</em> and a date being <em>decided</em> are different states, and this is the rare case where the primary source records the difference explicitly.</p>
+          <p class="topic-how"><strong>How it works</strong>The status column that reporting leaves out · The rule this produces · Why it is worth doing for a project, not just for reading</p>
+          <p class="topic-why"><strong>Why</strong><strong>The only verifiable fact in this news is the six-team confirmation.</strong> Everything downstream of it — the mainnet timing, the throughput multiple — is conditional, and unusually, the minutes say so themselves.</p>
           <p class="topic-link"><a href="topics/pocs-fork-date-provenance.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/fork-date-provenance">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="simplicity-ctf">
           <div class="topic-head"><span class="topic-no">19</span><span class="topic-title">Simplicity CTF</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Blockstream&#39;s first Simplicity CTF — unlock 0.01 LBTC (~$600) locked in a contract for the reward; hands-on practice with Simplicity, the new smart-contract language for Bitcoin/Liquid.</p>
-          <p class="topic-how"><strong>How it works:</strong> 01 LBTC (~$600) locked in a contract.</p>
-          <p class="topic-why"><strong>Why:</strong> A hands-on way to actually learn Simplicity rather than just read about it.</p>
+          <p class="topic-how"><strong>How it works</strong>01 LBTC (~$600) locked in a contract.</p>
+          <p class="topic-why"><strong>Why</strong>A hands-on way to actually learn Simplicity rather than just read about it.</p>
           <p class="topic-link"><a href="topics/pocs-simplicity-ctf.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/simplicity-ctf">Open on jaylabs.xyz &rarr;</a></p>
         </li>
       </ul>
@@ -573,581 +535,365 @@ The last row deserves the hardest look. A threshold claim is only as good as the
         <li id="aqua-shared-liquidity">
           <div class="topic-head"><span class="topic-no">20</span><span class="topic-title">Shared liquidity — quoted depth vs. the balance behind it</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">1inch Aqua leaves LP tokens in the wallet and lets one balance quote across many positions. The number nobody publishes is how much of that quoted depth is actually fillable.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### Mechanism, as documented
-
-The LP grants a <strong>revocable allowance</strong> rather than depositing. Several positions are configured against that one allowance, and when a matching order arrives the SwapVM engine pulls tokens straight from the wallet and pushes back proceeds plus fees in a single atomic transaction.</p>
-          <p class="topic-why"><strong>Why:</strong> The pitch is self-custody — tokens never leave the wallet, no deposit, no debt — and all of that is true. The part worth a card is what the design trades away to get it.</p>
+          <p class="topic-how"><strong>How it works</strong>Mechanism, as documented · The gap the public documentation leaves · The measurement</p>
+          <p class="topic-why"><strong>Why</strong>The pitch is self-custody — tokens never leave the wallet, no deposit, no debt — and all of that is true. The part worth a card is what the design trades away to get it.</p>
           <p class="topic-link"><a href="topics/pocs-aqua-shared-liquidity.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/aqua-shared-liquidity">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="rwa-multichain">
           <div class="topic-head"><span class="topic-no">21</span><span class="topic-title">RWA across chains — the invariant nobody enforces</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">Reading a practitioner&#39;s multichain RWA architecture and finding the one box it leaves empty: who stops the tokens on five chains from summing past the asset behind them.</p>
-          <p class="topic-how"><strong>How it works:</strong> The proposed stack, as written: a Private Operational Registry (Canton named as candidate infrastructure) holds the sensitive originals and the authoritative current state — custody balances, NAV, investor eligibility, total issuance, redemption and suspension status. Responsible institutions issue only the necessary facts as verifiable credentials rather than exposing the registry.</p>
-          <p class="topic-why"><strong>Why:</strong> Almost every question this catalogue asks shows up in one place here. The post&#39;s thesis is that RWA&#39;s bottleneck is not minting tokens but carrying one off-chain fact to many chains, so the thing to standardise first is the fact-transport interface, not the token contract — which is the same enforce-on-chain-remember-off-chain split the CRE × Cloud card arrives at from the other direction.</p>
+          <p class="topic-how"><strong>How it works</strong>The proposed stack, as written: a Private Operational Registry (Canton named as candidate infrastructure) holds the sensitive originals and the authoritative current state — custody balances, NAV, investor eligibility, total issuance, redemption and suspension status. Responsible institutions issue only the necessary facts as verifiable credentials rather than exposing the registry.</p>
+          <p class="topic-why"><strong>Why</strong>Almost every question this catalogue asks shows up in one place here. The post&#39;s thesis is that RWA&#39;s bottleneck is not minting tokens but carrying one off-chain fact to many chains, so the thing to standardise first is the fact-transport interface, not the token contract — which is the same enforce-on-chain-remember-off-chain split the CRE × Cloud card arrives at from the other direction.</p>
           <p class="topic-link"><a href="topics/pocs-rwa-multichain.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/rwa-multichain">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="oz-relayer">
           <div class="topic-head"><span class="topic-no">22</span><span class="topic-title">OpenZeppelin Relayer &amp; Monitor</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">The managed service shut down; the tools were opened. Self-hosted transaction plumbing and on-chain alerting.</p>
-          <p class="topic-how"><strong>How it works:</strong> Relayer keeps the plumbing: it accepts a transaction over a REST API, signs it, and owns nonce sequencing, gas pricing, and retry — EVM multi-chain plus Solana and Stellar, with keys in HashiCorp Vault or AWS KMS rather than an env var. Monitor watches the other direction: declarative JSON rules over events, function calls, and transaction patterns, firing Slack or webhook alerts.</p>
-          <p class="topic-why"><strong>Why:</strong> Two questions this catalogue has not asked yet. First, the operational one: every agent demo here hand-rolls the dullest and most failure-prone part of on-chain work — nonce management, gas strategy, retries — and OpenZeppelin Relayer is that exact layer, extracted and hardened.</p>
+          <p class="topic-how"><strong>How it works</strong>Relayer keeps the plumbing: it accepts a transaction over a REST API, signs it, and owns nonce sequencing, gas pricing, and retry — EVM multi-chain plus Solana and Stellar, with keys in HashiCorp Vault or AWS KMS rather than an env var. Monitor watches the other direction: declarative JSON rules over events, function calls, and transaction patterns, firing Slack or webhook alerts.</p>
+          <p class="topic-why"><strong>Why</strong>Two questions this catalogue has not asked yet. First, the operational one: every agent demo here hand-rolls the dullest and most failure-prone part of on-chain work — nonce management, gas strategy, retries — and OpenZeppelin Relayer is that exact layer, extracted and hardened.</p>
           <p class="topic-link"><a href="topics/pocs-oz-relayer.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="event-contract-plumbing">
           <div class="topic-head"><span class="topic-no">23</span><span class="topic-title">The hiring signal is the spec — event-contract plumbing</span> <span class="badge" style="background:#0284c722; color:#0284c7;">DONE</span></div>
           <p class="topic-summary">Brokerages wiring crypto event contracts into their apps are hiring backends who know clearing, settlement, order routing and regulatory reporting — not prediction-market specialists. Those job posts are a free requirements document for the same plumbing built on contracts instead of a licence.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### The measurement: one table, no code
-
-Collect event-contract job descriptions from designated venues and brokerages, extract required competencies verbatim, and sort each into three buckets.
-
-| Requirement in the regulated stack | On-chain equivalent | Bucket |
-|---|---|---|
-| <strong>Settlement / DvP</strong> — delivery versus payment, T+1 | Atomic on-chain settlement; no delivery-versus-payment gap exists | <strong>Free</strong> |
-| <strong>Audit trail</strong> — CAT-style consolidated reporting | The chain <em>is</em> the audit trail, publicly and by construction | <strong>Free</strong> |
-| <strong>Custody segregation</strong> — client assets ring-fenced | Self-custody; no commingling to prevent | <strong>Free</strong> |
-| <strong>Clearing</strong> — novation, netting, margin, default waterfall | No CCP.</p>
-          <p class="topic-why"><strong>Why:</strong> A single line in a hiring feed is worth a card. With Gemini&#39;s Titan becoming Apex Fintech&#39;s exclusive regulated venue, wiring crypto event contracts into brokerage apps stopped being a thesis and became a staffed project — and the people being hired are not prediction-market specialists.</p>
+          <p class="topic-how"><strong>How it works</strong>The measurement: one table, no code · What the buckets actually tell you · Why this is worth doing before it is needed</p>
+          <p class="topic-why"><strong>Why</strong>A single line in a hiring feed is worth a card. With Gemini&#39;s Titan becoming Apex Fintech&#39;s exclusive regulated venue, wiring crypto event contracts into brokerage apps stopped being a thesis and became a staffed project — and the people being hired are not prediction-market specialists.</p>
           <p class="topic-link"><a href="topics/pocs-event-contract-plumbing.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/event-contract-plumbing">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="tokenized-money-banks">
           <div class="topic-head"><span class="topic-no">24</span><span class="topic-title">Tokenized Money for Banks</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Tempo Research&#39;s primer on the three product families banks can use to put a settlement asset onchain — tokenized deposits, first-party stablecoins, and third-party stablecoins — and the Basel LCR/NSFR cost each one hard-codes.</p>
-          <p class="topic-how"><strong>How it works:</strong> Three families, each a different trade on the balance sheet. (1) Tokenized deposits — the claim stays a deposit, just wrapped in a token; cheapest Basel treatment (25% LCR runoff, 50% NSFR ASF for the permissioned variant) but narrow reach — JPMD on Base is the live example.</p>
-          <p class="topic-why"><strong>Why:</strong> A structured way to read every &quot;bank issues a stablecoin&quot; headline: the report separates three genuinely different balance-sheet moves that get talked about as one thing, and shows why a bank ends up needing all three rather than picking a winner. Useful background for anything touching bank-adjacent stablecoin rails or institutional settlement design.</p>
+          <p class="topic-how"><strong>How it works</strong>Three families, each a different trade on the balance sheet. (1) Tokenized deposits — the claim stays a deposit, just wrapped in a token; cheapest Basel treatment (25% LCR runoff, 50% NSFR ASF for the permissioned variant) but narrow reach — JPMD on Base is the live example.</p>
+          <p class="topic-why"><strong>Why</strong>A structured way to read every &quot;bank issues a stablecoin&quot; headline: the report separates three genuinely different balance-sheet moves that get talked about as one thing, and shows why a bank ends up needing all three rather than picking a winner. Useful background for anything touching bank-adjacent stablecoin rails or institutional settlement design.</p>
           <p class="topic-link"><a href="topics/pocs-tokenized-money-banks.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/tokenized-money-banks">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="what-needs-a-stablecoin">
           <div class="topic-head"><span class="topic-no">25</span><span class="topic-title">Not what a stablecoin can do — what needs one</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Start from &quot;where could we use a won stablecoin?&quot; and you will find somewhere. Start from &quot;which transactions are painful enough today?&quot; and the list gets much shorter — and in Korea the incumbent to beat is not slow settlement, it is an instant free transfer.</p>
-          <p class="topic-how"><strong>How it works:</strong> <strong> The method does not apply |
-| </strong>Repo, collateral, securities settlement<strong> | High, and genuinely won-denominated | </strong>Strong<strong> | Market-structure change, and the instrument is likely a </strong>deposit token** |
-
-### The trap underneath the trap
-
-The source warns against importing dollar-stablecoin <em>use cases</em>. The sharper version is that importing the <em>method</em> fails too, because the incumbent differs:
-
-| | United States | Korea |
-|---|---|---|
-| Domestic retail baseline | ACH — slow, batched, priced | <strong>Real-time transfer, effectively free</strong> |
-| So a stablecoin must beat | A weak incumbent | <strong>A strong one</strong> |
-| Which means | Retail payment cases score well | <strong>Retail payment cases mostly fail the screen</strong> |
-
-This is why retail payments and tourist payments keep appearing on Korean lists and keep going nowhere: they are scored against the wrong baseline.</p>
-          <p class="topic-why"><strong>Why:</strong> ** Ask &quot;where can we use a won stablecoin?&quot; and the answers arrive immediately — retail payments, remittance, games, tourist payments, local currency vouchers — because that question cannot fail. Any transaction can be routed through a token.</p>
+          <p class="topic-how"><strong>How it works</strong>The screen, with the disqualifier made explicit · The four candidates, scored on the source&#39;s own test · The trap underneath the trap</p>
+          <p class="topic-why"><strong>Why</strong><strong>The ordering flip is right and it is the whole point.</strong> Ask &quot;where can we use a won stablecoin?&quot; and the answers arrive immediately — retail payments, remittance, games, tourist payments, local currency vouchers — because that question cannot fail.</p>
           <p class="topic-link"><a href="topics/pocs-what-needs-a-stablecoin.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/what-needs-a-stablecoin">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="build-rent-or-own-the-rail">
           <div class="topic-head"><span class="topic-no">26</span><span class="topic-title">Build the rail, rent it, or own it together — three answers in one month</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Thirty-nine US state bankers associations launched a network the industry would own. Days later a Korean group signed to verify issuance on Visa&#39;s platform. Visa is what the last bank-owned consortium became — and whichever answer you pick, a reversible card message still has to meet an irreversible settlement.</p>
-          <p class="topic-how"><strong>How it works:</strong> <strong> Filling in the two-date table below is what turns that sentence from a slogan into an estimate.
-
-### The two-date table, and why it is the whole card
-
-| Network | Launched industry-owned | Ownership ended or diluted | Years |
-|---|---|---|---|
-| Card associations (Visa, Mastercard) | | | |
-| Shared ATM networks | | | |
-| Bankers&#39; banks | | | |
-| ACH operators | | | |
-
-</strong>An afternoon of reading produces a number nobody publishes:** how long industry ownership has historically lasted once the rail succeeded.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> Thirty-nine US state bankers associations launched a network the industry would own, precisely so member banks would not depend on somebody else&#39;s rail. Shinhan signed to verify issuance, remittance and redemption </strong>on Visa&#39;s platform**.</p>
+          <p class="topic-how"><strong>How it works</strong>Three answers, one question · The two-date table, and why it is the whole card · What the alliance says it will carry</p>
+          <p class="topic-why"><strong>Why</strong><strong>Two banking systems answered the same question in one week and picked opposite sides.</strong> Thirty-nine US state bankers associations launched a network the industry would own, precisely so member banks would not depend on somebody else&#39;s rail.</p>
           <p class="topic-link"><a href="topics/pocs-build-rent-or-own-the-rail.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/build-rent-or-own-the-rail">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="stablecoin-redemption-desk">
           <div class="topic-head"><span class="topic-no">27</span><span class="topic-title">The redemption desk — what actually makes a stablecoin's denominator</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Ripple Mint turns issuance and redemption into an institutional workflow. The claim worth testing: circulation is won at the redemption desk, not on the chain.</p>
-          <p class="topic-how"><strong>How it works:</strong> The comparison set is one issuer&#39;s institutional path against at least one other, on four axes rather than on marketing copy: who is eligible and what onboarding costs, how long redemption takes and under what conditions it can be suspended, what the audit trail looks like end to end, and what happens when the same unit exists on more than one chain. 6B, which makes bridging part of the redemption story rather than a side feature: a unit redeemed has to be a unit burned on whichever chain it was actually sitting on.</p>
-          <p class="topic-why"><strong>Why:</strong> This catalogue keeps arriving at the same conclusion from different directions — the contest is not TPS but the denominator and its circulation — and stablecoins are where that can be stated most precisely. What builds a stablecoin&#39;s denominator is not its chain or its peg mechanism but whether an institution can get out at par, on a schedule, with a record its auditor will accept.</p>
+          <p class="topic-how"><strong>How it works</strong>The comparison set is one issuer&#39;s institutional path against at least one other, on four axes rather than on marketing copy: who is eligible and what onboarding costs, how long redemption takes and under what conditions it can be suspended, what the audit trail looks like end to end, and what happens when the same unit exists on more than one chain. 6B, which makes bridging part of the redemption story rather than a side feature: a unit redeemed has to be a unit burned on whichever chain it was actually sitting on.</p>
+          <p class="topic-why"><strong>Why</strong>This catalogue keeps arriving at the same conclusion from different directions — the contest is not TPS but the denominator and its circulation — and stablecoins are where that can be stated most precisely. What builds a stablecoin&#39;s denominator is not its chain or its peg mechanism but whether an institution can get out at par, on a schedule, with a record its auditor will accept.</p>
           <p class="topic-link"><a href="topics/pocs-stablecoin-redemption-desk.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/stablecoin-redemption-desk">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="two-currencies-one-ledger">
           <div class="topic-head"><span class="topic-no">28</span><span class="topic-title">Two currencies on one ledger — the spread is the claim</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Revolut is launching a euro stablecoin on Ethereum, and the argument made for it is that dollars and euros can now coexist and trade against each other with shared liquidity. That last part is not a thesis — it is an on-chain EUR/USD spread, measurable today against interbank.</p>
-          <p class="topic-how"><strong>How it works:</strong> ** A single ratio, produced from public data, that either supports the shared-liquidity claim or shows it to be adjacency. And the weekend sample is where an honest advantage would show up first, since that is the one period a 24/7 ledger offers something interbank cannot.</p>
-          <p class="topic-why"><strong>Why:</strong> ** That is not a criticism — it is an advocacy piece and reads as one. But separating the three is the whole value of reading it carefully, because the checkable one happens to be the load-bearing one.</p>
+          <p class="topic-how"><strong>How it works</strong>Three claims, sorted · The measurement, in full · Why the euro question is not a detail</p>
+          <p class="topic-why"><strong>Why</strong><strong>The post makes three claims, and only one of them can be checked this week.</strong> That is not a criticism — it is an advocacy piece and reads as one.</p>
           <p class="topic-link"><a href="topics/pocs-two-currencies-one-ledger.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/two-currencies-one-ledger">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="arb-bots-are-the-peg">
           <div class="topic-head"><span class="topic-no">29</span><span class="topic-title">Nobody runs the peg — the competing bots are the mechanism</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A perpetual future tracks spot with no expiry date forcing it to. What holds the two together is funding payments making the gap painful, and dozens of arbitrage bots racing each other to close it — which means the basis you observe is a readout of the cheapest arbitrageur&#39;s cost floor.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### The loop, in eight steps
-
-| # | Step | The part that is not obvious |
-|---|---|---|
-| 1–2 | Observe spot and perp, compute <strong>basis = (perp − spot) / spot</strong> | Sign matters: positive basis pays <strong>shorts</strong>, negative pays longs |
-| 3 | Estimate funding income | <strong>This, not the basis, is the payoff</strong> |
-| 4 | Price fees, slippage, cost of capital | Slippage is a function of <strong>your</strong> size, not the venue&#39;s |
-| 5 | Enter only if reward &gt; cost + risk premium | The premium is what pays for step 7 going wrong |
-| 6 | <strong>Buy spot, sell perp — near-simultaneously</strong> | The gap between the two fills is unhedged, and it is where execution risk lives |
-| 7 | Monitor basis <strong>and margin on both venues</strong> | The margin half is the one that actually kills positions |
-| 8 | Unwind both legs together on convergence | &quot;Convergence&quot; is not guaranteed — <strong>there is no expiry to force it</strong> |
-
-### The worked example, and the unit error in it
-
-Spot $100, perp $102 → <strong>basis +2%</strong>. 75%**.</p>
-          <p class="topic-why"><strong>Why:</strong> ** A perpetual future has no central price-correcting process. The protocol emits one incentive — funding — and dozens of independently-owned bots, each trying to take money off the others, collectively produce the tracking behaviour.</p>
+          <p class="topic-how"><strong>How it works</strong>The loop, in eight steps · The worked example, and the unit error in it · Delta-neutral is not risk-neutral</p>
+          <p class="topic-why"><strong>Why</strong><strong>The closing observation in the source is the best part, and it deserves to be the headline.</strong> A perpetual future has no central price-correcting process.</p>
           <p class="topic-link"><a href="topics/pocs-arb-bots-are-the-peg.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/arb-bots-are-the-peg">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="the-harness-not-the-model">
           <div class="topic-head"><span class="topic-no">30</span><span class="topic-title">The harness, not the model — governing agents instead of building them</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Once a standard stops being contested, an operations layer grows on top of it. Every card here about agents is about making one work; this one is about what happens when one misbehaves — and one company is already running that architecture against real capital, with the wrapper published as open source.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### The infrastructure layer
-
-| Piece | What it does | Where it fits |
-|---|---|---|
-| <strong>LiteLLM</strong> | Rust-core gateway putting <strong>100+ LLM APIs</strong> behind one interface, with cost tracking and load balancing | Makes a model swap a config change rather than a code change |
-| <strong>TrueFoundry</strong> | Split into an <strong>MCP gateway</strong> governing every tool connection and an <strong>agent gateway</strong> carrying per-agent identity and spend limits | The governance half; published at roughly <strong>3-4ms added latency, 350+ RPS on 1 vCPU</strong> |
-| <strong>katanemo/plano</strong> | AI-native proxy and data plane with smart LLM routing | The routing half |
-| <strong>vLLM</strong> | High-throughput serving on <strong>PagedAttention</strong> | The default once serving moves in-house |
-| <strong>Context compression</strong> | Separating into its own infrastructure layer | Emerging, because agents have hit real token-cost ceilings |
-
-### Four things to check in <code>senpi-skills</code>, in the order that makes each cheap
-
-1. <strong> Senpi states that margin, notional and leverage limits </strong>reject any signal that would breach them**, and that position size scales off live account margin and the signal&#39;s own score rather than a fixed lot.</p>
-          <p class="topic-why"><strong>Why:</strong> ** While the protocol was contested, the interesting work was the protocol. 9 million monthly npm downloads, ahead of every other tracked AI package — the interesting work moved one layer up, to whatever sits between an agent and the tools it calls.</p>
+          <p class="topic-how"><strong>How it works</strong>The infrastructure layer · Four things to check in <code>senpi-skills</code>, in the order that makes each cheap · The measurement, and it is one week long</p>
+          <p class="topic-why"><strong>Why</strong><strong>A standard winning is not the end of a story, it is the start of a different one.</strong> While the protocol was contested, the interesting work was the protocol.</p>
           <p class="topic-link"><a href="topics/pocs-the-harness-not-the-model.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/the-harness-not-the-model">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="mcp-three-sides">
           <div class="topic-head"><span class="topic-no">31</span><span class="topic-title">MCP from three sides — build one, consume one, wrap an agent as one</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">The 2026-07-28 revision drops the session handshake, so an MCP server becomes an ordinary stateless HTTP service — deployable to serverless and edge, and authorized like any enterprise API. That protocol change is underneath the other two positions, which is why it should be done first.</p>
-          <p class="topic-how"><strong>How it works:</strong> 0 / OIDC — Entra, Okta<strong> |
-| Deployment | A process you keep running | </strong>A function you deploy<strong> |
-| Tasks | — | </strong>Breaking change<strong>: <code>tasks/get</code>, <code>tasks/update</code>, <code>tasks/cancel</code> |
-| Roots, Sampling, Logging | Current | </strong>Deprecated, 12-month minimum removal window<strong> |
-
-### Three things worth verifying by doing rather than reading
-
-1. </strong> That is the whole claim of the stateless core, and it either holds on a real cold start or it does not.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> Until this revision an MCP server was a </strong>stateful conversation<strong>: an initialize/initialized handshake, an <code>Mcp-Session-Id</code> header, and a server that had to remember which client it was talking to. The 2026-07-28 revision removes both — every request is </strong>self-contained<strong>, with protocol version, client identity and capabilities travelling in <code>_meta</code>, Streamable HTTP requests routed by <code>Mcp-Method</code> and <code>Mcp-Name</code> headers, and list and resource-read results </strong>cacheable**.</p>
+          <p class="topic-how"><strong>How it works</strong>Three seats, one protocol · What actually changed on 2026-07-28 · Three things worth verifying by doing rather than reading</p>
+          <p class="topic-why"><strong>Why</strong><strong>The reason to build one now rather than a year ago is that the shape of the answer changed.</strong> Until this revision an MCP server was a <strong>stateful conversation</strong>: an initialize/initialized handshake, an <code>Mcp-Session-Id</code> header, and a server that had to remember which client it was talking to.</p>
           <p class="topic-link"><a href="topics/pocs-mcp-three-sides.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/mcp-three-sides">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="agents-computer-use">
           <div class="topic-head"><span class="topic-no">32</span><span class="topic-title">Can an agent drive a computer yet — and if so, whose?</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">OSWorld jumped from 42% to 85% in a year and buyers stopped comparing models. What they buy instead is verification, escalation and error handling — and at the other end of the same question, a script tag now lets natural language drive one specific page without any of that.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### Where the benchmark went, and why it stopped mattering
-
-| | A year ago | Today |
-|---|---|---|
-| <strong>OSWorld-Verified</strong> | 42% | <strong>85%</strong> |
-| Human baseline | ~72% | ~72% |
-| What buyers compared | <strong>Models</strong> | <strong>Infrastructure</strong> |
-
-Once models cleared the bar, the purchase became verification, escalation and error handling. A common pattern: <strong>an agent runs a workflow once, caches it as deterministic code, and is only re-invoked when something breaks</strong> — so cost falls over a workflow&#39;s lifetime rather than staying flat.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> The a16z piece is built on interviews with real operators — a CPG data platform running 15-20M portal interactions a month, a systems integrator running 27 live workflows — not just benchmark numbers. </strong> But once models cleared a <em>good enough</em> bar, buyers stopped comparing models and <strong>started buying infrastructure</strong> — verification, escalation, error handling.</p>
+          <p class="topic-how"><strong>How it works</strong>Where the benchmark went, and why it stopped mattering · The cost comparison that decides whether to build · Two scales of the same capability</p>
+          <p class="topic-why"><strong>Why</strong><strong>Tracking where computer-use agents actually stand in production, not in demos.</strong> The a16z piece is built on interviews with real operators — a CPG data platform running 15-20M portal interactions a month, a systems integrator running 27 live workflows — not just benchmark numbers.</p>
           <p class="topic-link"><a href="topics/pocs-agents-computer-use.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/agents-computer-use">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="tokenized-equity-claim-rail">
           <div class="topic-head"><span class="topic-no">33</span><span class="topic-title">A claim, not a derivative — the three jobs a tokenized share creates</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Coinbase listed tokenized Nvidia, Meta, Apple and Alphabet shares on Base for non-US users. Each token is a direct claim on real stock held by Alpaca as a regulated broker-custodian, priced by Chainlink — and the token is the easy part. Reconciliation, corporate actions and market-data licensing are the jobs.</p>
-          <p class="topic-how"><strong>How it works:</strong> ** The only real question a design has to answer is what happens in the gap: does the chain hold the claim in a pending state until the custodian confirms, or does it mint on trust and repair afterwards? The first is honest and slow, the second is fast and creates an exposure nobody prices. That choice is the whole architecture, and it is made before any contract is written.</p>
-          <p class="topic-why"><strong>Why:</strong> ** A derivative tracks a price: it needs a counterparty, a margin model and a liquidation path, and the underlying never has to exist anywhere. A claim needs a share to actually exist, in a specific account, in a specific number, at every moment.</p>
+          <p class="topic-how"><strong>How it works</strong>What the token does, and what still happens somewhere else · Reconciliation is the product · The jurisdiction footnote</p>
+          <p class="topic-why"><strong>Why</strong><strong>The load-bearing word is claim.</strong> A derivative tracks a price: it needs a counterparty, a margin model and a liquidation path, and the underlying never has to exist anywhere.</p>
           <p class="topic-link"><a href="topics/pocs-tokenized-equity-claim-rail.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/tokenized-equity-claim-rail">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="japan-t0-settlement">
           <div class="topic-head"><span class="topic-no">34</span><span class="topic-title">T+0 removes settlement risk, and removes netting with it</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Japan&#39;s FSA, Ministry of Finance and the BOJ have opened a study body on 24-hour instant settlement for JGBs and equities. The headline is T+0; the load-bearing part is the BOJ current account on the ledger, because gross settlement needs the intraday liquidity that netting used to save.</p>
-          <p class="topic-how"><strong>How it works:</strong> ** That single multiple says what T+0 costs in liquidity, and it decides whether the design needs intraday credit, a liquidity-saving mechanism bolted back on, or nothing at all. * <code>cross-border-rail-interop</code> measures the same quantity from the other direction, as the prefunded balances a corridor needs when payment-versus-payment is absent.</p>
-          <p class="topic-why"><strong>Why:</strong> ** T+2 buys something: the interval is where multilateral netting happens, and netting is what turns thousands of trades into a handful of obligations that actually move. Collapse the interval and the netting goes with it — every trade settles gross, and the cash and securities that netting used to cancel out now have to be present, in full, at the moment of the trade.</p>
+          <p class="topic-how"><strong>How it works</strong>Two legs, and only one of them is the easy one · The number the announcement does not carry · Reading the schedule with the provenance rule</p>
+          <p class="topic-why"><strong>Why</strong><strong>Settlement delay is not a defect that nobody got around to fixing.</strong> T+2 buys something: the interval is where multilateral netting happens, and netting is what turns thousands of trades into a handful of obligations that actually move.</p>
           <p class="topic-link"><a href="topics/pocs-japan-t0-settlement.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/japan-t0-settlement">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="cross-border-rail-interop">
           <div class="topic-head"><span class="topic-no">35</span><span class="topic-title">Linking payment systems is a routing problem</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Most of what &quot;link national payment systems and CBDCs&quot; requires is addressing, FX quoting and settlement coordination — and a shared ledger only earns its place on one of them.</p>
-          <p class="topic-how"><strong>How it works:</strong> The comparison has a built-in baseline, which is what makes it measurable rather than speculative. Nexus is the no-ledger arm: a multilateral hub so each domestic instant-payment system makes one connection instead of N-squared bilateral ones, with a prototype that connected the test systems of the Eurosystem, Malaysia and Singapore and let payments be addressed by mobile number, now extending across ASEAN.</p>
-          <p class="topic-why"><strong>Why:</strong> The news is real and the conclusion attached to it usually is not, which is why this belongs in the catalogue rather than in a bookmark. India&#39;s central bank governor has said BRICS is weighing links between national fast-payment systems and CBDCs — UPI and CIPS are the systems named — and the reporting is explicit that this is early-stage, with technical, regulatory and governance hurdles outstanding.</p>
+          <p class="topic-how"><strong>How it works</strong>The comparison has a built-in baseline, which is what makes it measurable rather than speculative. Nexus is the no-ledger arm: a multilateral hub so each domestic instant-payment system makes one connection instead of N-squared bilateral ones, with a prototype that connected the test systems of the Eurosystem, Malaysia and Singapore and let payments be addressed by mobile number, now extending across ASEAN.</p>
+          <p class="topic-why"><strong>Why</strong>The news is real and the conclusion attached to it usually is not, which is why this belongs in the catalogue rather than in a bookmark. India&#39;s central bank governor has said BRICS is weighing links between national fast-payment systems and CBDCs — UPI and CIPS are the systems named — and the reporting is explicit that this is early-stage, with technical, regulatory and governance hurdles outstanding.</p>
           <p class="topic-link"><a href="topics/pocs-cross-border-rail-interop.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/cross-border-rail-interop">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="st-self-distribution">
           <div class="topic-head"><span class="topic-no">36</span><span class="topic-title">What tokenization actually removed</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Toyota Finance sold a ¥1B bond through its own payments app with no securities firm distributing it. The intermediary did not disappear — the account-opening step did.</p>
-          <p class="topic-how"><strong>How it works:</strong> Three things to work out, and the first is just bookkeeping. Write the participant list for this deal and for an ordinary retail bond side by side, and mark what each party is paid for: underwriter, distributor, transfer agent, bond administrator, custodian, financial advisor.</p>
-          <p class="topic-why"><strong>Why:</strong> The headline is disintermediation — Toyota Finance recruits investors itself, no securities firm distributing, subscribe from the TOYOTA Wallet app with no brokerage account. The interesting part is what that sentence quietly does not say.</p>
+          <p class="topic-how"><strong>How it works</strong>Three things to work out, and the first is just bookkeeping. Write the participant list for this deal and for an ordinary retail bond side by side, and mark what each party is paid for: underwriter, distributor, transfer agent, bond administrator, custodian, financial advisor.</p>
+          <p class="topic-why"><strong>Why</strong>The headline is disintermediation — Toyota Finance recruits investors itself, no securities firm distributing, subscribe from the TOYOTA Wallet app with no brokerage account. The interesting part is what that sentence quietly does not say.</p>
           <p class="topic-link"><a href="topics/pocs-st-self-distribution.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/st-self-distribution">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="headless-exchange-engines">
           <div class="topic-head"><span class="topic-no">37</span><span class="topic-title">Headless arrives — the company that sells the engine, not the app</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">LayerZero&#39;s ATLAS is not an exchange. It is matching, clearing, settlement and risk sold as a backend so anyone can run their own venue — with Citadel Securities, DTCC, ARK Invest and ICE named as partners. The people it needs are not blockchain developers.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### The partner list, read as a gap list
-
-| Partner | What it supplies | What that says the engine lacks alone |
-|---|---|---|
-| <strong>Citadel Securities</strong> | Quotes, two-sided liquidity | An engine does not make markets; someone must |
-| <strong>DTCC</strong> | Clearing and settlement | The <em>must build</em> column, supplied rather than solved |
-| <strong>ICE</strong> | Exchange operation, market rules, surveillance | Rules and monitoring are institutional, not code alone |
-| <strong>ARK Invest</strong> | Demand, order flow | Venues fail from absent flow far more often than absent tech |
-
-<strong>Read down the right column and you have the requirements document</strong> for anyone building the same engine without those four — which is the same trick <code>event-contract-plumbing</code> used on job postings, applied to a partner announcement instead.
-
-### Why an engine is harder than a venue
-
-A single exchange can carry an idiosyncrasy: one margin rule, one settlement window, one dispute path, all tuned to its own book.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> In web commerce it meant the same thing a decade ago: stop selling the storefront, sell the engine behind it and let others own the customer. Its arrival in crypto infrastructure marks a category, not a product — </strong>the company that sells the engine has become a business other companies buy from**, and the visible venue stops being where the value is.</p>
+          <p class="topic-how"><strong>How it works</strong>The partner list, read as a gap list · Why an engine is harder than a venue · What it means for anyone choosing where to build</p>
+          <p class="topic-why"><strong>Why</strong><strong>The word that arrived is headless.</strong> In web commerce it meant the same thing a decade ago: stop selling the storefront, sell the engine behind it and let others own the customer.</p>
           <p class="topic-link"><a href="topics/pocs-headless-exchange-engines.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/headless-exchange-engines">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="choosing-a-chain-is-a-lease">
           <div class="topic-head"><span class="topic-no">38</span><span class="topic-title">Choosing a chain is signing a lease</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">An L2&#39;s pitch moved from cheap blockspace to run your chain here, which is a revenue model moving from transaction fees to rent on settlement space. That makes chain selection a commercial negotiation, and the terms — sequencer control, fee sharing, exit cost — are the product&#39;s margin.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### The lease term sheet
-
-| Term | The question | Why it is margin, not architecture |
-|---|---|---|
-| <strong>Sequencer control</strong> | Who orders transactions, and can they censor or reorder? | Ordering rights are MEV rights; whoever holds them holds a claim on your flow |
-| <strong>Fee split</strong> | What share goes to the host, and who can change it? | A split that the host can revise unilaterally is not a price, it is an option |
-| <strong>Exit cost</strong> | Engineering weeks, plus liquidity that will not follow, plus integrations to re-agree | The only term that grows the longer you stay |
-| <strong>Host failure</strong> | What happens to open positions if the host stops operating? | For a settlement product this is not a business risk, it is a correctness question |
-
-### Two pitches, one destination
-
-| | Was selling | Now selling | Earns from |
-|---|---|---|---|
-| <strong>L2 / Offchain Labs</strong> | Cheap blockspace on Ethereum | Somewhere to run your own chain | <strong>Rent on settlement space</strong> |
-| <strong>Interop / LayerZero ATLAS</strong> | Messaging between chains | An engine to run your own venue | <strong>The venues built on it</strong> |
-
-<strong>Both moved from selling a tool to selling a place</strong>, which usually means the tool stopped being scarce. ** Everything else is quoted openly because it helps the host compete; exit cost is the one term that only matters after you have committed.</p>
-          <p class="topic-why"><strong>Why:</strong> ** <em>Use Ethereum cheaply</em> sells transactions and earns per transaction. <em>Run your chain here</em> sells space and earns rent.</p>
+          <p class="topic-how"><strong>How it works</strong>The lease term sheet · Two pitches, one destination · The row to price first</p>
+          <p class="topic-why"><strong>Why</strong><strong>A self-description changed, and self-descriptions are where revenue models announce themselves early.</strong> <em>Use Ethereum cheaply</em> sells transactions and earns per transaction.</p>
           <p class="topic-link"><a href="topics/pocs-choosing-a-chain-is-a-lease.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/choosing-a-chain-is-a-lease">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="monad-last-general-purpose-l1">
           <div class="topic-head"><span class="topic-no">39</span><span class="topic-title">Monad — the last general-purpose L1, and the number nobody adjusts for</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Monad bet a record $412M on one thesis: a chain fast enough to hold everything. Nine months of mainnet data now exists, but nearly every headline number overlaps a live incentive program, and nobody publishes the incentive-adjusted figure.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### The three numbers this card wants
-
-| | Question | Why it is not published today |
-|---|---|---|
-| <strong>1. Incentive-adjusted demand</strong> | For each venue, volume <strong>during</strong> an incentive program vs.</p>
-          <p class="topic-why"><strong>Why:</strong> ** The report sets Monad&#39;s success conditions as: prove a composability premium only integration can create, keep successful apps from leaving, and create demand that runs without incentives. The second is the one with a verdict already in.</p>
+          <p class="topic-how"><strong>How it works</strong>The three numbers this card wants · Why measurement 1 is the cheapest and most damaging · Where the premium is actually appearing</p>
+          <p class="topic-why"><strong>Why</strong><strong>Three conditions, and the second one already failed once.</strong> The report sets Monad&#39;s success conditions as: prove a composability premium only integration can create, keep successful apps from leaving, and create demand that runs without incentives.</p>
           <p class="topic-link"><a href="topics/pocs-monad-last-general-purpose-l1.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/monad-last-general-purpose-l1">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="layerzero-default-is-a-choice">
           <div class="topic-head"><span class="topic-no">40</span><span class="topic-title">LayerZero — the default verifier is a trust assumption nobody wrote down</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">LayerZero moves arbitrary messages between chains and lets the application pick its own verifier set. That is the real feature and the real trap: skip the choice and you have still made one, and nothing in your codebase records who you are now trusting.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### The first contact, and the three lines that matter
-
-Endpoint address, destination EID, and options encoding — everything else is ordinary Solidity.
-decode(payload, (string));
-    }
-}
-<code>  </code>bash
-npx hardhat lz:oapp:config:get     # read the defaults — this is the trust assumption
-npx hardhat lz:oapp:send --dst-eid 40161 --text &quot;hello&quot;
-```
-
-### The two traps, and why both are silent
-
-| Trap | What it looks like | Why nothing catches it |
-|---|---|---|
-| <strong>Under-provisioned destination gas</strong> | Send succeeds, destination execution fails | The failure is on another chain; the call site returns fine |
-| <strong>Untouched DVN configuration</strong> | Everything works | <strong>Nothing in the repo names the verifier</strong>, so review has nothing to object to |
-
-<strong>Both are the same class</strong>: a decision made by omission, recorded nowhere.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> LayerZero is a message layer: an application inherits <code>OApp</code> and sends an arbitrary payload from its contract on one chain to its contract on another, with <code>OFT</code> and <code>ONFT</code> as the token-shaped wrappers over that. The design choice underneath is that </strong>verification is modular** — a Decentralized Verifier Network set that the application selects and composes, rather than a security assumption fixed by the protocol.</p>
+          <p class="topic-how"><strong>How it works</strong>The first contact, and the three lines that matter · The two traps, and why both are silent · Cost, and where it varies</p>
+          <p class="topic-why"><strong>Why</strong><strong>The product is not a bridge, and reading it as one hides the interesting part.</strong> LayerZero is a message layer: an application inherits <code>OApp</code> and sends an arbitrary payload from its contract on one chain to its contract on another, with <code>OFT</code> and <code>ONFT</code> as the token-shaped wrappers over that.</p>
           <p class="topic-link"><a href="topics/pocs-layerzero-default-is-a-choice.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/layerzero-default-is-a-choice">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="third-party-blast-radius">
           <div class="topic-head"><span class="topic-no">41</span><span class="topic-title">Trusted third parties — the blast radius nobody maps</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Four 2026 incidents with one root: a vendor you authorized. And the control everyone reaches for first — SRI and CSP — would have stopped none of them.</p>
-          <p class="topic-how"><strong>How it works:</strong> The build is an inventory and a containment test, in that order. Inventory: for one real frontend, list every third-party script and every vendor holding customer PII, and go one layer down where it is discoverable — ShipMonk&#39;s exposure arrived through Metabase, and a list that stops at direct vendors would have missed it.</p>
-          <p class="topic-why"><strong>Why:</strong> Four incidents in four months, and the interesting thing is not that they happened but that they share a root the usual threat model draws outside the boundary. 94M left at least 11 wallets, the stolen pUSD was bridged from Polygon to Ethereum and consolidated into roughly 1,893 ETH, and every affected user was reimbursed — the vendor has still not been named publicly.</p>
+          <p class="topic-how"><strong>How it works</strong>The build is an inventory and a containment test, in that order. Inventory: for one real frontend, list every third-party script and every vendor holding customer PII, and go one layer down where it is discoverable — ShipMonk&#39;s exposure arrived through Metabase, and a list that stops at direct vendors would have missed it.</p>
+          <p class="topic-why"><strong>Why</strong>Four incidents in four months, and the interesting thing is not that they happened but that they share a root the usual threat model draws outside the boundary. 94M left at least 11 wallets, the stolen pUSD was bridged from Polygon to Ethereum and consolidated into roughly 1,893 ETH, and every affected user was reimbursed — the vendor has still not been named publicly.</p>
           <p class="topic-link"><a href="topics/pocs-third-party-blast-radius.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/third-party-blast-radius">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="aml-compliance">
           <div class="topic-head"><span class="topic-no">42</span><span class="topic-title">AML — where the cryptography stops</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Travel Rule, KYC reuse, sanctions screening — the layer this catalogue keeps hitting and calling &#39;not a technical problem&#39;, studied on its own terms.</p>
-          <p class="topic-how"><strong>How it works:</strong> Planned as a reading study with a map as its output, not an essay. The Korean layer first, since that is the one that would actually bind: 특금법 registration for a VASP, the 실명확인 입출금계정 requirement that gates everything else, 트래블룰 above the threshold, and the domestic solutions that carry it (CODE, VerifyVASP) — which are, structurally, the same institution-to-institution fact transport the RWA card is about, solved by consortium rather than by protocol.</p>
-          <p class="topic-why"><strong>Why:</strong> This card exists because of a sentence written on another one. The institutional custody study card promised a separation — which parts are engineering (MPC, approval state machines, AA policies) and which parts are a licence you either have or do not — and then set the licence half aside.</p>
+          <p class="topic-how"><strong>How it works</strong>Planned as a reading study with a map as its output, not an essay. The Korean layer first, since that is the one that would actually bind: 특금법 registration for a VASP, the 실명확인 입출금계정 requirement that gates everything else, 트래블룰 above the threshold, and the domestic solutions that carry it (CODE, VerifyVASP) — which are, structurally, the same institution-to-institution fact transport the RWA card is about, solved by consortium rather than by protocol.</p>
+          <p class="topic-why"><strong>Why</strong>This card exists because of a sentence written on another one. The institutional custody study card promised a separation — which parts are engineering (MPC, approval state machines, AA policies) and which parts are a licence you either have or do not — and then set the licence half aside.</p>
           <p class="topic-link"><a href="topics/pocs-aml-compliance.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/aml-compliance">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="address-to-identity-join">
           <div class="topic-head"><span class="topic-no">43</span><span class="topic-title">The chain gives you the graph and never the names</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Chainalysis ran a multi-agency operation that turned existing crypto intelligence into 14,300 investigative leads and 7,700 identified accounts. The intelligence already existed; what the operation supplied was the join between an on-chain address and an off-chain identity, which only intermediaries hold.</p>
-          <p class="topic-how"><strong>How it works:</strong> ** That is not concealment: the outcomes genuinely have not happened yet, and Chainalysis says it will share them as they arrive. It does mean the honest reading of the announcement today is <em>a pipeline was built and filled</em>, not <em>a result was achieved</em> — and the follow-up worth diarising is whether the bottom row ever gets a number.</p>
-          <p class="topic-why"><strong>Why:</strong> ** It was not run to detect anything — the crypto intelligence already existed, and the operation&#39;s job was to convert it into leads investigators could act on. That sentence locates the bottleneck precisely, and it is not where most people assume.</p>
+          <p class="topic-how"><strong>How it works</strong>The funnel, and where it stops · Why the participant list is the artifact · The question this catalogue can actually work on</p>
+          <p class="topic-why"><strong>Why</strong><strong>The stated purpose of the operation is the finding.</strong> It was not run to detect anything — the crypto intelligence already existed, and the operation&#39;s job was to convert it into leads investigators could act on.</p>
           <p class="topic-link"><a href="topics/pocs-address-to-identity-join.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/address-to-identity-join">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="korea-digital-asset-act">
           <div class="topic-head"><span class="topic-no">44</span><span class="topic-title">The bill count is not the disagreement count</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Ten-plus digital asset bills sit in the National Assembly and the reporting counts them. Nobody publishes the number that matters: how many operative clauses actually conflict, and how many days of public comment the chosen legislative route removes.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### Two numbers, neither published
-
-| Reported as | Actually unmeasured |
-|---|---|
-| &quot;Ten-plus bills pending&quot; | How many operative clauses genuinely conflict |
-| &quot;Targeting September&quot; | How many days of mandatory public comment the chosen route removes |
-| &quot;Shareholder cap virtually settled&quot; | Settled at what percentage — the number is the whole rule |
-
-### The stablecoin clause rhymes with <code>cap-table-ceiling</code>
-
-That card&#39;s finding was that two banks each sat just under a statutory ceiling, and <strong>no process ever looked at the sum</strong> — concentration assembled out of individually-compliant pieces.
-
-A 51%-bank-led issuance rule inverts it.</p>
-          <p class="topic-why"><strong>Why:</strong> Korea&#39;s second-stage digital asset legislation has been reported the same way for over a year: a count. ** Introduced 2025-06-10 by Rep.</p>
+          <p class="topic-how"><strong>How it works</strong>Two numbers, neither published · The stablecoin clause rhymes with <code>cap-table-ceiling</code> · The route is the disclosure</p>
+          <p class="topic-why"><strong>Why</strong>Korea&#39;s second-stage digital asset legislation has been reported the same way for over a year: a count. <strong>Ten-plus bills pending.</strong></p>
           <p class="topic-link"><a href="topics/pocs-korea-digital-asset-act.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/korea-digital-asset-act">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="jurisdiction-decides-the-category">
           <div class="topic-head"><span class="topic-no">45</span><span class="topic-title">Same product, three verdicts in eight days</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Between 8/18 and 8/25 one activity was criminal gambling in Korea, a brokerage product line in the US, and something a US company sells only outside the US. The axis is not the product — it is the jurisdiction, and no design document has a box for it.</p>
-          <p class="topic-how"><strong>How it works:</strong> ** Each lever is movable, none is free, and the combination decides which jurisdiction the product can stand in. A design that has not chosen a position on all three has, in effect, chosen the position that was blocked.</p>
-          <p class="topic-why"><strong>Why:</strong> ** Korea&#39;s communications standards commission classified Polymarket as criminal gambling and blocked access. Six days later a CFTC-designated venue became the exclusive regulated partner of a large US brokerage network.</p>
+          <p class="topic-how"><strong>How it works</strong>The three events, side by side · The grounds, turned into levers · Why the December document needs two branches, not one</p>
+          <p class="topic-why"><strong>Why</strong><strong>Three events, eight days, one axis.</strong> Korea&#39;s communications standards commission classified Polymarket as criminal gambling and blocked access.</p>
           <p class="topic-link"><a href="topics/pocs-jurisdiction-decides-the-category.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/jurisdiction-decides-the-category">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="jurisdiction-below-the-country">
           <div class="topic-head"><span class="topic-no">46</span><span class="topic-title">Jurisdiction is not country-sized</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A fourth US state blocked Kalshi, so the same product is now legal and illegal inside one country. The axis has not changed — jurisdiction decides the category — but the unit has: the design document needs a row per ruling, not per country, and an eligibility policy keyed the same way.</p>
-          <p class="topic-how"><strong>How it works:</strong> <strong> Rows two and four describe the same country and the same product with opposite verdicts, which a country-keyed field cannot represent at all.
-</strong> A new ruling is a row, not a redesign, and the December document&#39;s jurisdiction box becomes a view over the table rather than a paragraph that goes stale the next time a state acts.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> <code>jurisdiction-decides-the-category</code> put three events on one line and found that the product barely changed while the verdict changed completely. </strong> So <em>the US</em> is not a jurisdiction for this purpose.</p>
+          <p class="topic-how"><strong>How it works</strong>Four events, one axis, a finer unit · The artifact stakeholders can actually use · The design consequence worth stating plainly</p>
+          <p class="topic-why"><strong>Why</strong><strong>The axis held and the unit broke.</strong> <code>jurisdiction-decides-the-category</code> put three events on one line and found that the product barely changed while the verdict changed completely.</p>
           <p class="topic-link"><a href="topics/pocs-jurisdiction-below-the-country.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/jurisdiction-below-the-country">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="cap-table-ceiling">
           <div class="topic-head"><span class="topic-no">47</span><span class="topic-title">The ceiling is per holder, the control is not</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Two banks each took a stake just under the statutory ceiling. Together with a securities firm the financial sector holds close to 40% — an aggregate that no single approval ever had to look at.</p>
-          <p class="topic-how"><strong>How it works:</strong> 95% | Below the subsidiary threshold — no approval triggered | Nobody, by design |
-| A second bank at ~15% | Same, reviewed separately if at all | Nobody, by design |
-| <strong>Banks at ~30% combined</strong> | <strong>Nothing</strong> | <strong>No process looks at the sum</strong> |
-| ~40% with a securities firm | Nothing | — |
-
-The ceiling does its job perfectly at the level it operates on. ** Each holder is measured against the line alone, so a correlated group can assemble a controlling position out of individually-compliant pieces without any single filing ever being wrong.</p>
-          <p class="topic-why"><strong>Why:</strong> A digital-asset custodian announced the close of its Pre-A round on 2026-08-24. The strategic investors named are <strong>Sh Suhyup Bank</strong>, <strong>iM Bank</strong> and <strong>HFR</strong> (KOSDAQ 230240), and the company states the position plainly: Korean <strong>banks now hold about 30%</strong>, and <strong>close to 40%</strong> counting SK Securities, an existing shareholder.</p>
+          <p class="topic-how"><strong>How it works</strong>The gap: approval is per holder, control is aggregate · Why this is not an accusation · What is actually at stake</p>
+          <p class="topic-why"><strong>Why</strong>A digital-asset custodian announced the close of its Pre-A round on 2026-08-24. The strategic investors named are <strong>Sh Suhyup Bank</strong>, <strong>iM Bank</strong> and <strong>HFR</strong> (KOSDAQ 230240), and the company states the position plainly: Korean <strong>banks now hold about 30%</strong>, and <strong>close to 40%</strong> counting SK Securities, an existing shareholder.</p>
           <p class="topic-link"><a href="topics/pocs-cap-table-ceiling.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/cap-table-ceiling">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="fisheries-receivable-rail">
           <div class="topic-head"><span class="topic-no">48</span><span class="topic-title">The custody was never the hard part</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A fisheries bank just bought 14.95% of a digital-asset custodian. Design the one service only those two could ship — then find the number that decides whether it should exist.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### The imaginary service: catch-to-cash
-
-At a 위판장 auction a lot sells and the fisher holds a claim on proceeds that settle later. Tokenise that claim at the moment the hammer falls, custody it, and advance against it.</p>
-          <p class="topic-why"><strong>Why:</strong> 95%<strong> stake in 인피닛블록, a licensed Korean VASP whose business is digital-asset custody, becoming joint second-largest shareholder alongside a partnership agreement. The company&#39;s stack is described as extending to internal controls, security and </strong>stablecoin issuance management**.</p>
+          <p class="topic-how"><strong>How it works</strong>The imaginary service: catch-to-cash · Why only these two could ship it · The gap, and it is the same gap three other cards found</p>
+          <p class="topic-why"><strong>Why</strong>95%<strong> stake in 인피닛블록, a licensed Korean VASP whose business is digital-asset custody, becoming joint second-largest shareholder alongside a partnership agreement. The company&#39;s stack is described as extending to internal controls, security and </strong>stablecoin issuance management.</p>
           <p class="topic-link"><a href="topics/pocs-fisheries-receivable-rail.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/fisheries-receivable-rail">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="dsrv-portal">
           <div class="topic-head"><span class="topic-no">49</span><span class="topic-title">Institutional custody study</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">MPC · approval flows · AA · AML — and which parts are buildable without a VASP licence.</p>
-          <p class="topic-how"><strong>How it works:</strong> Reading study, not a deployment: MPC signing (threshold schemes vs. the key-splitting DVT already studied elsewhere here), approval workflows as state machines, where account abstraction&#39;s policy layer overlaps custody policy, and AML/travel-rule obligations.</p>
-          <p class="topic-why"><strong>Why:</strong> Everything else in this catalogue is a single wallet acting for itself. Institutional custody is the opposite shape: keys split across an MPC quorum, transactions gated by an approval workflow, and a compliance surface that is legal rather than technical.</p>
+          <p class="topic-how"><strong>How it works</strong>Reading study, not a deployment: MPC signing (threshold schemes vs. the key-splitting DVT already studied elsewhere here), approval workflows as state machines, where account abstraction&#39;s policy layer overlaps custody policy, and AML/travel-rule obligations.</p>
+          <p class="topic-why"><strong>Why</strong>Everything else in this catalogue is a single wallet acting for itself. Institutional custody is the opposite shape: keys split across an MPC quorum, transactions gated by an approval workflow, and a compliance surface that is legal rather than technical.</p>
           <p class="topic-link"><a href="topics/pocs-dsrv-portal.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/dsrv-portal">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="decision-market-uncontrollability">
           <div class="topic-head"><span class="topic-no">50</span><span class="topic-title">The property that makes a market work is the one that makes it gambling</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Umia routes corporate decisions through markets and enforces them with a Cayman entity. The same essay argues a prediction market only works if participants cannot change the outcome — which is the exact property Korea&#39;s regulator cited when it called prediction markets gambling. Decision markets cross that line on purpose.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### The same property, read by two authorities
-
-| | Criterion | Verdict when the user <strong>cannot</strong> influence the outcome |
-|---|---|---|
-| <strong>Market designer</strong> (this essay) | Participants must predict, not create | <strong>Sound</strong> — the price means something |
-| <strong>Korean regulator</strong> (방심위) | An event the user cannot control | <strong>Gambling</strong> — cited as grounds for the block |
-| <strong>A decision market</strong> | The price executes the decision | Deliberately on the wrong side of both, and honest about it |
-
-### What Umia does about it, and what each defence costs
-
-| Defence | What it stops | What it costs |
-|---|---|---|
-| <strong>TWAP settlement</strong> | A push in the last blocks before close | Responsiveness — the market reacts slower to real news |
-| <strong>No-Op market</strong> | Comparing a proposal to nothing | A second market to seed and keep liquid |
-| <strong>Execution threshold</strong> | Acting on noise | Genuine improvements below the margin never happen |
-| <strong>Cayman SPC / BORG</strong> | A team ignoring the outcome | A shared legal wrapper, and a curated rather than permissionless track |
-
-Read the first row against <code>the-settlement-instant</code>: that card settles at an instant, which is exactly what TWAP is defending against here. <strong>The two designs sit at opposite ends of the same trade-off</strong>, and seeing the cost written down on both sides is worth more than either design alone.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> The essay&#39;s own earlier critique of prediction markets is that a market only discovers an outcome if participants </strong>cannot change<strong> it — once they can, the market stops predicting and starts manufacturing. Korea&#39;s communications standards commission cited </strong>an event the user cannot control** among its grounds for treating prediction markets as criminal gambling (<code>jurisdiction-decides-the-category</code>).</p>
+          <p class="topic-how"><strong>How it works</strong>The same property, read by two authorities · What Umia does about it, and what each defence costs · The number, and why it transfers</p>
+          <p class="topic-why"><strong>Why</strong><strong>Put two documents side by side and they draw the same line for opposite reasons.</strong> The essay&#39;s own earlier critique of prediction markets is that a market only discovers an outcome if participants <strong>cannot change</strong> it — once they can, the market stops predicting and starts manufacturing.</p>
           <p class="topic-link"><a href="topics/pocs-decision-market-uncontrollability.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/decision-market-uncontrollability">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="priced-by-the-wrong-thing">
           <div class="topic-head"><span class="topic-no">51</span><span class="topic-title">Priced by the wrong thing — a question, an instrument, and the gap between them</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Bitcoin rose about 22% in a week on a possibility the Treasury never committed to. A tokenised-equity desk&#39;s highest-volume instrument tracks a company that does not trade. Two clean questions, two instruments that answer something else — and in both cases the missing fact is what it settles against.</p>
-          <p class="topic-how"><strong>How it works:</strong> <strong> Dealers wanted to sell ten times what the Treasury bought. That ratio is the closest thing to a fact about appetite versus deployment in the whole story, and it points </strong>opposite** to the rally.</p>
-          <p class="topic-why"><strong>Why:</strong> ** <em>Does the Treasury deploy the General Account before a given date</em> is about as clean a binary as exists: one decision-maker, a published daily balance, an unambiguous resolution source. It is precisely the shape a prediction market settles well.</p>
+          <p class="topic-how"><strong>How it works</strong>Case one — three states, one price · Case two — the one instrument that is not like the others · The growth claims, marked</p>
+          <p class="topic-why"><strong>Why</strong><strong>Two stories, one finding: a well-formed question routed through an instrument that answers a different question.</strong> <strong>The first is the rally, and the rally is not the interesting part — the routing is.</strong></p>
           <p class="topic-link"><a href="topics/pocs-priced-by-the-wrong-thing.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/priced-by-the-wrong-thing">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="cre-cloud">
           <div class="topic-head"><span class="topic-no">52</span><span class="topic-title">CRE × Cloud — four hybrid patterns</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Cloud holds the private truth, CRE is the verified bridge, the chain settles.</p>
-          <p class="topic-how"><strong>How it works:</strong> Reading note: four patterns sharing one shape — a private system of record, a verified bridge that attests to it without publishing it, and on-chain settlement conditioned on that attestation. The load-bearing question in each is what the bridge&#39;s attestation is actually worth, since the chain cannot check the private data itself.</p>
-          <p class="topic-why"><strong>Why:</strong> Most of this catalogue assumes the interesting data is already on-chain. Real institutional workloads are the opposite: the authoritative record is in a private system that cannot be published, and the chain is only the settlement venue.</p>
+          <p class="topic-how"><strong>How it works</strong>Reading note: four patterns sharing one shape — a private system of record, a verified bridge that attests to it without publishing it, and on-chain settlement conditioned on that attestation. The load-bearing question in each is what the bridge&#39;s attestation is actually worth, since the chain cannot check the private data itself.</p>
+          <p class="topic-why"><strong>Why</strong>Most of this catalogue assumes the interesting data is already on-chain. Real institutional workloads are the opposite: the authoritative record is in a private system that cannot be published, and the chain is only the settlement venue.</p>
           <p class="topic-link"><a href="topics/pocs-cre-cloud.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/cre-cloud">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="solana">
           <div class="topic-head"><span class="topic-no">53</span><span class="topic-title">Solana</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">EVM-vs-Solana study + a sample Anchor program on devnet.</p>
-          <p class="topic-how"><strong>How it works:</strong> Planned: an Anchor (Rust) program deployed to Solana devnet — starting with a PDA-based counter, then a small SPL-token escrow to exercise Solana&#39;s account model (all state passed in explicitly, rather than living in contract storage) and cross-program invocations. The page would connect via Phantom/wallet-adapter and call the program through its Anchor-generated TypeScript client.</p>
-          <p class="topic-why"><strong>Why:</strong> A deliberate non-EVM data point: every other on-chain demo here is Ethereum-family (Hyperliquid, Sepolia AA, PBS); Solana is the largest ecosystem with a genuinely different execution model, worth understanding rather than assuming EVM concepts transfer.</p>
+          <p class="topic-how"><strong>How it works</strong>Planned: an Anchor (Rust) program deployed to Solana devnet — starting with a PDA-based counter, then a small SPL-token escrow to exercise Solana&#39;s account model (all state passed in explicitly, rather than living in contract storage) and cross-program invocations. The page would connect via Phantom/wallet-adapter and call the program through its Anchor-generated TypeScript client.</p>
+          <p class="topic-why"><strong>Why</strong>A deliberate non-EVM data point: every other on-chain demo here is Ethereum-family (Hyperliquid, Sepolia AA, PBS); Solana is the largest ecosystem with a genuinely different execution model, worth understanding rather than assuming EVM concepts transfer.</p>
           <p class="topic-link"><a href="topics/pocs-solana.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/solana">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="linera-microchains">
           <div class="topic-head"><span class="topic-no">54</span><span class="topic-title">Linera microchains</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">One chain per user — removing blockspace contention instead of pricing it.</p>
-          <p class="topic-how"><strong>How it works:</strong> Reading note: the microchain model where each user owns a chain they alone extend, validators run all of them, and cross-chain messages replace shared-state contention. The interesting question the note tracks is not throughput but composability — what happens to an application whose whole point is that many users touch the same state, like an order book.</p>
-          <p class="topic-why"><strong>Why:</strong> Almost every scaling design here takes contention as a given and competes for the block: PBS auctions it, gas prices it, a relayer sequences around it. Linera&#39;s premise is that contention is a choice — give each user their own chain and there is nothing to contend for.</p>
+          <p class="topic-how"><strong>How it works</strong>Reading note: the microchain model where each user owns a chain they alone extend, validators run all of them, and cross-chain messages replace shared-state contention. The interesting question the note tracks is not throughput but composability — what happens to an application whose whole point is that many users touch the same state, like an order book.</p>
+          <p class="topic-why"><strong>Why</strong>Almost every scaling design here takes contention as a given and competes for the block: PBS auctions it, gas prices it, a relayer sequences around it. Linera&#39;s premise is that contention is a choice — give each user their own chain and there is nothing to contend for.</p>
           <p class="topic-link"><a href="topics/pocs-linera-microchains.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/linera-microchains">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="thirdweb">
           <div class="topic-head"><span class="topic-no">55</span><span class="topic-title">Thirdweb — platform survey</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Contracts, wallets/AA, backend tx, Unity SDK — breadth bought with best-in-class parts.</p>
-          <p class="topic-how"><strong>How it works:</strong> Reading note across four surfaces (contract deploys, Connect wallets and account abstraction, Engine for backend-signed transactions, the Unity SDK), each rated against doing it directly. The touchpoints that matter here are named: the AA pillars already shipped, backend transactions for the AP2 path, and the Unity track the game card would need.</p>
-          <p class="topic-why"><strong>Why:</strong> Not a neutral survey — this project already depends on it. The AA card&#39;s sponsored-gas and atomic-batch pillars run on thirdweb&#39;s 4337 stack, and the D1 gas decision on the agent PoC turns on exactly the tradeoff this note names: thirdweb gives you a paymaster, but only for a 4337 account, which is a different account type from the 7702/7710 one the mandate story is built on.</p>
+          <p class="topic-how"><strong>How it works</strong>Reading note across four surfaces (contract deploys, Connect wallets and account abstraction, Engine for backend-signed transactions, the Unity SDK), each rated against doing it directly. The touchpoints that matter here are named: the AA pillars already shipped, backend transactions for the AP2 path, and the Unity track the game card would need.</p>
+          <p class="topic-why"><strong>Why</strong>Not a neutral survey — this project already depends on it. The AA card&#39;s sponsored-gas and atomic-batch pillars run on thirdweb&#39;s 4337 stack, and the D1 gas decision on the agent PoC turns on exactly the tradeoff this note names: thirdweb gives you a paymaster, but only for a 4337 account, which is a different account type from the 7702/7710 one the mandate story is built on.</p>
           <p class="topic-link"><a href="topics/pocs-thirdweb.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/thirdweb">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="plumbing-skills-buyback">
           <div class="topic-head"><span class="topic-no">56</span><span class="topic-title">Four capabilities, each buying back what the chain gave away</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">The must-build column of the plumbing table turns into four engineering capabilities: netting, hybrid matching with a verifiable audit trail, intent routing, and oracle failure with surveillance. Each one re-acquires, at a cost, a property the on-chain design discarded for free.</p>
-          <p class="topic-how"><strong>How it works:</strong> <strong> It has to be re-bought cryptographically, and amendments and cancellations are the hard part, not fills | </strong>Share of the order lifecycle provable to an outsider<strong> — submissions, amendments, cancellations, fills |
-| </strong>Intent routing<strong> — Dutch and batch auctions, private order flow, solver networks with slashable commitments | No best-execution obligation to satisfy | </strong>The obligation returns as MEV<strong>, paid to whoever sequences. </strong> That is not an argument against building any of it — a venue that refuses all four is slow, capital-hungry, unauditable and blind.</p>
-          <p class="topic-why"><strong>Why:</strong> ** Clearing, matching, routing and resolution each name a property the on-chain design already has for free — and each is the price of keeping that property once the system has to be fast, capital-efficient, or connected to the world. That symmetry is the finding, and it is what stops the list from being a syllabus.</p>
+          <p class="topic-how"><strong>How it works</strong>The four rows, and the number each one is measured by · Why the symmetry matters more than the list · The order to learn them in, and why</p>
+          <p class="topic-why"><strong>Why</strong><strong>The four capabilities look unrelated and are the same move four times.</strong> Clearing, matching, routing and resolution each name a property the on-chain design already has for free — and each is the price of keeping that property once the system has to be fast, capital-efficient, or connected to the world.</p>
           <p class="topic-link"><a href="topics/pocs-plumbing-skills-buyback.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/plumbing-skills-buyback">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="procedural-not-generated">
           <div class="topic-head"><span class="topic-no">57</span><span class="topic-title">Procedural, not generated — when the model is a program</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A post claims Kimi K3 built an app turning 2D schematics into fully procedural 3D models, with a code-generated tank swappable for anything else. The load-bearing word is procedural: the output is code that makes geometry, not a mesh. Whether the arrow really points 2D → 3D is testable in one shot.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### Three things that get called the same thing
-
-| | What the output is | Editing it means | Can it be reviewed? |
-|---|---|---|---|
-| <strong>Generated mesh</strong> | Vertices | Sculpting by hand | No — you can only look at it |
-| <strong>Parameterized model</strong> | Fixed code, exposed knobs | Turning a knob the author anticipated | Partly — the knobs, not the shape |
-| <strong>Procedural, as claimed here</strong> | <strong>Code written per subject</strong> | <strong>Editing a line</strong> | <strong>Yes — it is a diff</strong> |
-
-The post claims the third. The demo is consistent with the second.</p>
-          <p class="topic-why"><strong>Why:</strong> <strong> A generated model is a mesh: a bag of vertices that arrived somehow and can now only be edited by hand. A procedural model is </strong>code that produces geometry when run**, so its subject is an argument, its proportions are variables, and changing it means changing a line rather than re-sculpting a surface.</p>
+          <p class="topic-how"><strong>How it works</strong>Three things that get called the same thing · The experiment, in full · Why it belongs in this catalogue at all</p>
+          <p class="topic-why"><strong>Why</strong><strong>The interesting word is procedural, and it is not a synonym for generated.</strong> A generated model is a mesh: a bag of vertices that arrived somehow and can now only be edited by hand.</p>
           <p class="topic-link"><a href="topics/pocs-procedural-not-generated.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/procedural-not-generated">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="sub-2bit-local-llm">
           <div class="topic-head"><span class="topic-no">58</span><span class="topic-title">Sub-2-bit LLMs, locally</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A 2.4T model in 397GB — shrinking the codebook below IQ1_S, and what the last half-bit costs.</p>
-          <p class="topic-how"><strong>How it works:</strong> The compression trick is narrower than the headline suggests. 5625 bits per weight, of which 11 are index bits into a 2048-entry codebook.</p>
-          <p class="topic-why"><strong>Why:</strong> 8 makes the gap unusually visible. The 27B model on a 16GB machine is the ordinary claim.</p>
+          <p class="topic-how"><strong>How it works</strong>The compression trick is narrower than the headline suggests. 5625 bits per weight, of which 11 are index bits into a 2048-entry codebook.</p>
+          <p class="topic-why"><strong>Why</strong>8 makes the gap unusually visible. The 27B model on a 16GB machine is the ordinary claim.</p>
           <p class="topic-link"><a href="topics/pocs-sub-2bit-local-llm.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/sub-2bit-local-llm">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="robotics-entry-decision">
           <div class="topic-head"><span class="topic-no">59</span><span class="topic-title">Four ways into robotics, and what each one actually buys</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">The entry cost stopped being a robot, and then it stopped being an ecosystem too. What is left is a choice between buying compute, buying a body, buying a pipeline, or buying a training loop — and the honest way to pick is to name what you are trying to learn before looking at any price.</p>
-          <p class="topic-how"><strong>How it works:</strong> <strong> They are not two prices for one thing — one is a body without compute, the other is compute without a body. Reachy Mini needs a host machine for heavy inference; the Jetson&#39;s </strong>8GB shared memory cannot run GR00T natively**.</p>
-          <p class="topic-why"><strong>Why:</strong> ** Then a $100 arm and an open imitation-learning library removed that. The next answer was an ecosystem — adopt the stack, take the workflow — and an open training loop that installs in one line removed that too.</p>
+          <p class="topic-how"><strong>How it works</strong>The four entries, and the question each one answers · Pipeline versus loop · Why MJX is fast, and why the lesson generalises</p>
+          <p class="topic-why"><strong>Why</strong><strong>Two years ago the answer to &quot;how do I get into robotics&quot; was a robot, and it cost more than a car.</strong> Then a $100 arm and an open imitation-learning library removed that.</p>
           <p class="topic-link"><a href="topics/pocs-robotics-entry-decision.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/robotics-entry-decision">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="opencv-robot-vision">
           <div class="topic-head"><span class="topic-no">60</span><span class="topic-title">Pixels to millimetres — the step before the arm moves</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Camera calibration, ArUco pose and hand-eye alignment on a built-in webcam and a sheet of A4. The output is not a demo but two error numbers.</p>
-          <p class="topic-how"><strong>How it works:</strong> Four steps, and only the last two are optional. calibrateCamera` yield the matrix K (fx, fy, cx, cy) and the distortion coefficients, and reprojection RMS is the first of the two numbers this card exists to produce — under one pixel is the pass mark.</p>
-          <p class="topic-why"><strong>Why:</strong> The LeRobot card is about moving the arm; this is the step in front of it, and skipping it is why a cheap arm grabs at empty air. A policy trained on demonstrations learns actions in the robot&#39;s own coordinate frame, but everything the camera reports is in pixels, and nothing in the imitation-learning loop converts between them for you.</p>
+          <p class="topic-how"><strong>How it works</strong>Four steps, and only the last two are optional. calibrateCamera yield the matrix K (fx, fy, cx, cy) and the distortion coefficients, and reprojection RMS is the first of the two numbers this card exists to produce — under one pixel is the pass mark.</p>
+          <p class="topic-why"><strong>Why</strong>The LeRobot card is about moving the arm; this is the step in front of it, and skipping it is why a cheap arm grabs at empty air. A policy trained on demonstrations learns actions in the robot&#39;s own coordinate frame, but everything the camera reports is in pixels, and nothing in the imitation-learning loop converts between them for you.</p>
           <p class="topic-link"><a href="topics/pocs-opencv-robot-vision.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/opencv-robot-vision">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="steal-the-structure">
           <div class="topic-head"><span class="topic-no">61</span><span class="topic-title">Two reading lists, and the same instruction — steal the structure, not the content</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Ninety-odd distilled agent skills from Google, and a free three-hour course that runs the whole arc from agent design to revenue. Neither is worth reading for what it says. Both are worth thirty minutes for how they are shaped.</p>
-          <p class="topic-how"><strong>How it works:</strong> md` — <strong>format comparison, not content</strong> | <strong>The end-to-end arc in one piece</strong> |
-| <strong>Take</strong> | Trigger design, how much context a skill assumes, <strong>where it stops</strong> | The design intro and <strong>loops versus graphs</strong> |
-| <strong>Skip</strong> | The other ~87 | Everything the two chapters already covered |
-| <strong>Budget</strong> | <strong>30 minutes</strong> | <strong>30 minutes</strong> |
-
-### The one thing worth writing down afterwards
-
-<strong>How does each decide when to fire?</strong> A skill&#39;s trigger is the only part that cannot be borrowed carelessly — it encodes an assumption about what the reader is doing at the moment the skill becomes relevant. ** The first is easier to write and harder to reason about; the second is the opposite.</p>
-          <p class="topic-why"><strong>Why:</strong> md ecosystem packages them — <strong>is not the content. </strong> A skill is a small design artefact with a hard constraint (it must be worth loading), and reading someone else&#39;s is the cheapest way to see the constraint solved differently.</p>
+          <p class="topic-how"><strong>How it works</strong>What to take from each, and what to skip · The one thing worth writing down afterwards · Why loops versus graphs is the chapter to keep</p>
+          <p class="topic-why"><strong>Why</strong><strong>Both of these entered the queue for the same reason, and it is not the reason a reading list usually gets added.</strong> md ecosystem packages them — is not the content.</p>
           <p class="topic-link"><a href="topics/pocs-steal-the-structure.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/steal-the-structure">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="claude-in-slack">
           <div class="topic-head"><span class="topic-no">62</span><span class="topic-title">Claude in Slack — the workflow first, the presence second</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Wire Slack, Claude and Notion together through MCP connectors so a thread gets summarized and logged. The tagged-bot version of the same idea is the packaged form of that workflow, which is why it stays parked until the workflow is worth having.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### Two forms of one idea
-
-| | <strong>The workflow</strong> | <strong>The tagged presence</strong> |
-|---|---|---|
-| What it is | Slack thread → Claude summary → Notion record | The same, invoked by mentioning a bot |
-| Built from | Claude&#39;s existing Slack and Notion MCP connectors | The workflow, plus a hosted listener |
-| New surface area | <strong>None</strong> | <strong>Availability, error visibility, wrong-channel handling</strong> |
-| Cost when idle | Zero | <strong>Non-zero — it has to be running</strong> |
-| Status | The thing to build first | <strong>Parked, and correctly so</strong> |
-
-### The test that decides whether the second one is ever needed
-
-Run the manual version for a couple of weeks. ** If it is missed, the miss itself specifies what the bot must guarantee — and that specification is worth more than any amount of design done in advance.</p>
-          <p class="topic-why"><strong>Why:</strong> ** The tagged-bot idea recorded that it <em>feeds into</em> the integration workflow rather than standing alone, which is the definition of a merge. <strong>Both were parked in August 2026 as not currently important</strong>, so combining them costs nothing and removes a duplicate from the list.</p>
+          <p class="topic-how"><strong>How it works</strong>Two forms of one idea · The test that decides whether the second one is ever needed · Why it stays parked</p>
+          <p class="topic-why"><strong>Why</strong><strong>These were two cards and one of them said so.</strong> The tagged-bot idea recorded that it <em>feeds into</em> the integration workflow rather than standing alone, which is the definition of a merge.</p>
           <p class="topic-link"><a href="topics/pocs-claude-in-slack.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/claude-in-slack">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="circuit-breaker-saga">
           <div class="topic-head"><span class="topic-no">63</span><span class="topic-title">Microservice patterns — Circuit Breaker &amp; Saga</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Circuit Breaker (fail fast on inter-service calls, probe recovery half-open) and Saga (distributed transactions as local-transaction chains plus compensations) — verex&#39;s settlement pipeline is a Saga; its RPC/indexer calls want a breaker.</p>
-          <p class="topic-how"><strong>How it works:</strong> Circuit Breaker (inter-service calls): trip the circuit and fail fast once failures cross a threshold, then probe recovery half-open after a cooldown. Saga (data consistency): resolve a distributed transaction as a chain of local transactions plus compensating transactions — eventual consistency without 2PC.</p>
-          <p class="topic-why"><strong>Why:</strong> Verex&#39;s settlement pipeline (oracle lookup → settlement → payout) is literally a Saga, and its RPC/indexer calls want a circuit breaker as a baseline.</p>
+          <p class="topic-how"><strong>How it works</strong>Circuit Breaker (inter-service calls): trip the circuit and fail fast once failures cross a threshold, then probe recovery half-open after a cooldown. Saga (data consistency): resolve a distributed transaction as a chain of local transactions plus compensating transactions — eventual consistency without 2PC.</p>
+          <p class="topic-why"><strong>Why</strong>Verex&#39;s settlement pipeline (oracle lookup → settlement → payout) is literally a Saga, and its RPC/indexer calls want a circuit breaker as a baseline.</p>
           <p class="topic-link"><a href="topics/pocs-circuit-breaker-saga.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/circuit-breaker-saga">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="web-stack-layers">
           <div class="topic-head"><span class="topic-no">64</span><span class="topic-title">Web stack layers</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A five-layer map of the stack, with this project overlaid on it.</p>
-          <p class="topic-how"><strong>How it works:</strong> A static five-layer diagram with the project&#39;s routes and demos placed on it. No code.</p>
-          <p class="topic-why"><strong>Why:</strong> An orientation map rather than a study: which layer each piece of this project actually lives at, and where the gaps are. Useful mostly for noticing that several cards which sound like different problems turn out to sit at the same layer — and that one or two layers have nothing on them at all.</p>
+          <p class="topic-how"><strong>How it works</strong>A static five-layer diagram with the project&#39;s routes and demos placed on it. No code.</p>
+          <p class="topic-why"><strong>Why</strong>An orientation map rather than a study: which layer each piece of this project actually lives at, and where the gaps are. Useful mostly for noticing that several cards which sound like different problems turn out to sit at the same layer — and that one or two layers have nothing on them at all.</p>
           <p class="topic-link"><a href="topics/pocs-web-stack-layers.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/web-stack-layers">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="one-page-not-the-curriculum">
           <div class="topic-head"><span class="topic-no">65</span><span class="topic-title">Pull the page you are stuck on, not the next one in order</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A progressive curriculum assumes ignorance arrives in order. It does not. The honest use of graded material for an experienced engineer is as a reference opened at the point of today&#39;s block — and this repository already holds 152 curriculum items that quietly assume otherwise.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### Two access patterns for the same material
-
-| | Walk the sequence | Open at the block |
-|---|---|---|
-| <strong>Assumes</strong> | Ignorance arrives in order | Ignorance is revealed by work |
-| <strong>Competes with</strong> | The work | Nothing — it <em>is</em> the work |
-| <strong>Failure mode</strong> | Falling behind, then abandoning | Gaps that never get surfaced because nothing touched them |
-| <strong>Fits</strong> | Someone starting out | <strong>Someone eight years in</strong> |
-
-### The measurement, and it settles the argument
-
-For two weeks, record two columns: <strong>what blocked me</strong>, and <strong>which curriculum item covers it</strong>. Then look at the distribution.</p>
-          <p class="topic-why"><strong>Why:</strong> ** Day 1 to day 100 is a sensible shape when the reader knows nothing, because the ordering is doing real work — each item is a prerequisite for the next. For someone eight years in, the gaps are not a prefix of the sequence.</p>
+          <p class="topic-how"><strong>How it works</strong>Two access patterns for the same material · The measurement, and it settles the argument · The honest counter-argument</p>
+          <p class="topic-why"><strong>Why</strong><strong>A curriculum encodes an assumption that is false for anyone experienced: that ignorance arrives in order.</strong> Day 1 to day 100 is a sensible shape when the reader knows nothing, because the ordering is doing real work — each item is a prerequisite for the next.</p>
           <p class="topic-link"><a href="topics/pocs-one-page-not-the-curriculum.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/one-page-not-the-curriculum">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="publish-by-default-rule">
           <div class="topic-head"><span class="topic-no">66</span><span class="topic-title">The draft already exists — a selection rule, not a new channel</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">The daily report already produces publishable prose every morning and rabbit&#39;s docs hub is already a public channel. What is missing is one rule that decides, per section, publish or keep — and the scarce half is not the English original, it is the Korean reconstruction.</p>
-          <p class="topic-how"><strong>How it works:</strong> ### The rule, as a table of defaults
-
-| Section of the daily report | Default | Why |
-|---|---|---|
-| <strong>Deep dive on a protocol or EIP</strong> | <strong>Publish</strong> | No private material in it; this is the reconstruction, and it is the scarce half |
-| <strong>Market or concept explainer</strong> | <strong>Publish</strong> | Same — it is teaching, and teaching is the artifact |
-| <strong>Reading of a company&#39;s product or hiring move</strong> | <strong>Publish, with sources named</strong> | Opinion, but sourced opinion; naming the source is what makes it publishable |
-| <strong>Anything naming a counterparty, a deal, or a number from an employer</strong> | <strong>Private</strong> | Not mine to publish, regardless of how interesting it is |
-| <strong>Personal plan, schedule, self-assessment</strong> | <strong>Private</strong> | The audience for this is one person |
-| <strong>Figures from a paid or non-public source</strong> | <strong>Redact or cite</strong> | The same licence question as market data in <code>tokenized-equity-claim-rail</code> |
-
-### Why a default beats a habit
-
-A per-item decision costs attention every morning and is paid in avoidance; a default costs one paragraph, once. ** The only maintenance it needs is a new row when a genuinely new kind of section appears, which is rare.</p>
-          <p class="topic-why"><strong>Why:</strong> ** Carrying an English argument across into Korean produces a worse copy of something already abundant. Attaching it to what a Korean reader already knows — bank settlement, securities depositories, the local regulatory structure — produces a different piece with different emphasis, from the same source.</p>
+          <p class="topic-how"><strong>How it works</strong>The rule, as a table of defaults · Why a default beats a habit · The measurement, if one is wanted</p>
+          <p class="topic-why"><strong>Why</strong><strong>The method is reconstruction, not translation, and that is the whole differentiator.</strong> Carrying an English argument across into Korean produces a worse copy of something already abundant.</p>
           <p class="topic-link"><a href="topics/pocs-publish-by-default-rule.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/publish-by-default-rule">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="apple-container">
           <div class="topic-head"><span class="topic-no">67</span><span class="topic-title">Apple container</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Apple&#39;s official open-source tool for running Linux containers as lightweight VMs on Apple Silicon — a Docker Desktop alternative candidate.</p>
-          <p class="topic-how"><strong>How it works:</strong> Apple&#39;s official open source — runs Linux containers as lightweight VMs on Apple Silicon Macs. 0, requires macOS 26.</p>
-          <p class="topic-why"><strong>Why:</strong> A Docker Desktop alternative candidate for local infra across two PCs and midnight automated jobs.</p>
+          <p class="topic-how"><strong>How it works</strong>Apple&#39;s official open source — runs Linux containers as lightweight VMs on Apple Silicon Macs. 0, requires macOS 26.</p>
+          <p class="topic-why"><strong>Why</strong>A Docker Desktop alternative candidate for local infra across two PCs and midnight automated jobs.</p>
           <p class="topic-link"><a href="topics/pocs-apple-container.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/apple-container">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="google-glass-stitch">
           <div class="topic-head"><span class="topic-no">68</span><span class="topic-title">Google Glass form factor &amp; Stitch</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">A note that Google Glass will likely land as a &quot;use only when needed&quot; form factor, plus trying out Stitch.</p>
-          <p class="topic-how"><strong>How it works:</strong> Google Glass is expected to land as a &quot;use only when needed&quot; form factor rather than always-on wear; separately, try out Stitch.</p>
-          <p class="topic-why"><strong>Why:</strong> A quick idea to revisit, not yet expanded.</p>
+          <p class="topic-how"><strong>How it works</strong>Google Glass is expected to land as a &quot;use only when needed&quot; form factor rather than always-on wear; separately, try out Stitch.</p>
+          <p class="topic-why"><strong>Why</strong>A quick idea to revisit, not yet expanded.</p>
           <p class="topic-link"><a href="topics/pocs-google-glass-stitch.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/google-glass-stitch">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="geometric-series-dcf">
           <div class="topic-head"><span class="topic-no">69</span><span class="topic-title">Geometric series → DCF valuation</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Sum of a geometric series, applied to perpetuity/Gordon-formula valuation.</p>
-          <p class="topic-how"><strong>How it works:</strong> Planned: a small derivation-to-code page showing the geometric series sum formula S = a / (1 − r) for |r| &lt; 1, then substituting cash-flow growth into it to derive the Gordon Growth perpetuity formula, with an interactive calculator comparing the closed-form result against a brute-force sum of many discounted future cash flows — to visually confirm the two converge. Not yet built.</p>
-          <p class="topic-why"><strong>Why:</strong> Connects a pure-math result (the closed-form sum of a geometric series) to something used directly in finance — the Gordon Growth Model for valuing a perpetuity, which underpins terminal-value calculations in discounted cash flow (DCF) analysis.</p>
+          <p class="topic-how"><strong>How it works</strong>Planned: a small derivation-to-code page showing the geometric series sum formula S = a / (1 − r) for |r| &lt; 1, then substituting cash-flow growth into it to derive the Gordon Growth perpetuity formula, with an interactive calculator comparing the closed-form result against a brute-force sum of many discounted future cash flows — to visually confirm the two converge. Not yet built.</p>
+          <p class="topic-why"><strong>Why</strong>Connects a pure-math result (the closed-form sum of a geometric series) to something used directly in finance — the Gordon Growth Model for valuing a perpetuity, which underpins terminal-value calculations in discounted cash flow (DCF) analysis.</p>
           <p class="topic-link"><a href="topics/pocs-geometric-series-dcf.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/geometric-series-dcf">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="amortized-potential-function">
           <div class="topic-head"><span class="topic-no">70</span><span class="topic-title">Amortized analysis via potential functions</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Proving O(1) amortized cost for dynamic-array doubling with a potential function.</p>
-          <p class="topic-how"><strong>How it works:</strong> Planned: an interactive dynamic array (a growable vector) where each push is logged with its real cost, alongside a running potential function Φ that tracks &quot;banked&quot; cost from cheap operations — demonstrating that amortized cost = real cost + ΔΦ stays bounded even across a resize. Not yet built.</p>
-          <p class="topic-why"><strong>Why:</strong> A core algorithms-interview topic: proving that an operation with occasional expensive worst cases (like a dynamic array&#39;s resize-and-copy) is still O(1) on average over a sequence of operations, using the potential-function accounting method rather than a hand-wavy argument.</p>
+          <p class="topic-how"><strong>How it works</strong>Planned: an interactive dynamic array (a growable vector) where each push is logged with its real cost, alongside a running potential function Φ that tracks &quot;banked&quot; cost from cheap operations — demonstrating that amortized cost = real cost + ΔΦ stays bounded even across a resize. Not yet built.</p>
+          <p class="topic-why"><strong>Why</strong>A core algorithms-interview topic: proving that an operation with occasional expensive worst cases (like a dynamic array&#39;s resize-and-copy) is still O(1) on average over a sequence of operations, using the potential-function accounting method rather than a hand-wavy argument.</p>
           <p class="topic-link"><a href="topics/pocs-amortized-potential-function.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/amortized-potential-function">Open on jaylabs.xyz &rarr;</a></p>
         </li>
         <li id="moralis-wallet-api">
           <div class="topic-head"><span class="topic-no">71</span><span class="topic-title">Moralis — wallet snapshot via API</span> <span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></div>
           <p class="topic-summary">Querying balance/net-worth for an address with Moralis&#39;s Wallet API.</p>
-          <p class="topic-how"><strong>How it works:</strong> Planned: a small server route calling Moralis&#39;s Wallet API (net-worth and token-balance endpoints) with a server-held API key, rendering a simple portfolio snapshot for any address a visitor enters — read-only, no wallet connection needed. Not yet built.</p>
-          <p class="topic-why"><strong>Why:</strong> A quick evaluation of a common build-vs-buy tradeoff in crypto tooling — instead of indexing chain data yourself (event logs, balance changes) to answer &quot;what does this wallet hold,&quot; a hosted indexing API like Moralis answers it in one call.</p>
+          <p class="topic-how"><strong>How it works</strong>Planned: a small server route calling Moralis&#39;s Wallet API (net-worth and token-balance endpoints) with a server-held API key, rendering a simple portfolio snapshot for any address a visitor enters — read-only, no wallet connection needed. Not yet built.</p>
+          <p class="topic-why"><strong>Why</strong>A quick evaluation of a common build-vs-buy tradeoff in crypto tooling — instead of indexing chain data yourself (event logs, balance changes) to answer &quot;what does this wallet hold,&quot; a hosted indexing API like Moralis answers it in one call.</p>
           <p class="topic-link"><a href="topics/pocs-moralis-wallet-api.html">Detail &rarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/moralis-wallet-api">Open on jaylabs.xyz &rarr;</a></p>
         </li>
       </ul>
