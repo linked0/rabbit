@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Linking payment systems is a routing problem — PoCs</title>
+<title>The token is not the product — composability is, and volume is its scoreboard — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -352,9 +352,9 @@
         <li><a class="nav-link" href="pocs-mcp-three-sides.html" data-key="mcp-three-sides"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">32</span>MCP from three sides — build one, consume one, wrap an agent as one</span></a></li>
         <li><a class="nav-link" href="pocs-agents-computer-use.html" data-key="agents-computer-use"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">33</span>Can an agent drive a computer yet — and if so, whose?</span></a></li>
         <li><a class="nav-link" href="pocs-tokenized-equity-claim-rail.html" data-key="tokenized-equity-claim-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">34</span>A claim, not a derivative — the three jobs a tokenized share creates</span></a></li>
-        <li><a class="nav-link" href="pocs-tokenized-equity-scoreboard.html" data-key="tokenized-equity-scoreboard"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">35</span>The token is not the product — composability is, and volume is its scoreboard</span></a></li>
+        <li><a class="nav-link active" href="pocs-tokenized-equity-scoreboard.html" data-key="tokenized-equity-scoreboard"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">35</span>The token is not the product — composability is, and volume is its scoreboard</span></a></li>
         <li><a class="nav-link" href="pocs-japan-t0-settlement.html" data-key="japan-t0-settlement"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">36</span>T+0 removes settlement risk, and removes netting with it</span></a></li>
-        <li><a class="nav-link active" href="pocs-cross-border-rail-interop.html" data-key="cross-border-rail-interop"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">37</span>Linking payment systems is a routing problem</span></a></li>
+        <li><a class="nav-link" href="pocs-cross-border-rail-interop.html" data-key="cross-border-rail-interop"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">37</span>Linking payment systems is a routing problem</span></a></li>
         <li><a class="nav-link" href="pocs-non-reserve-currency-seat.html" data-key="non-reserve-currency-seat"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">38</span>The seat is the point — a non-reserve currency at the standards table</span></a></li>
         <li><a class="nav-link" href="pocs-st-self-distribution.html" data-key="st-self-distribution"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">39</span>What tokenization actually removed</span></a></li>
         <li><a class="nav-link" href="pocs-headless-exchange-engines.html" data-key="headless-exchange-engines"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">40</span>Headless arrives — the company that sells the engine, not the app</span></a></li>
@@ -395,34 +395,172 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Linking payment systems is a routing problem</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The token is not the product — composability is, and volume is its scoreboard</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#37</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>Linking payment systems is a routing problem</h1>
-      <p class="lead">Most of what &quot;link national payment systems and CBDCs&quot; requires is addressing, FX quoting and settlement coordination — and a shared ledger only earns its place on one of them.</p>
-      <p class="meta">Not yet scoped — start by splitting &quot;linking&quot; into its four jobs and marking which one a shared ledger actually improves, using BIS Project Nexus as the no-ledger baseline. Source: RBI governor&#39;s remarks on BRICS weighing payment-system and CBDC links (2026-08, early stage); BIS Nexus and mBridge published material.</p>
+      <p class="topic-kicker"><span class="topic-no">#35</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>The token is not the product — composability is, and volume is its scoreboard</h1>
+      <p class="lead">Coinbase Tokenized Stocks went live on Base — Nvidia, Meta, Apple and Alphabet first, thousands promised. Coinbase is third into a ~$3B market Ondo already leads with ~$1B. The bet is not that its token is better. It is that a token which survives being used as collateral is worth more than a token that merely arrived first — and that claim is settled by a different number than the one the leaderboard currently shows.</p>
+      <p class="meta">Not scoped as a build — scoped as a measurement, because the claim in the title is falsifiable and cheap to test. Pick one ticker carried by all three issuers. For four weeks, record two numbers a week: assets outstanding per issuer, and on-chain transfer plus borrow volume on Base venues. Then answer one question with the data rather than with a narrative — did the tokens move, or did they sit? A token that sits is a wrapper with a custodian attached; a token that moves through a lending market is the thing this card is actually about. Everything factual here comes from a Bankless piece dated 2026-08-24 (William M. Peaster) — the ~$3B market size, Ondo&#39;s ~$1B, Kraken&#39;s xStocks and Binance&#39;s bStocks behind it, Alpaca as broker-custodian, dividends handled at the token level under B20, and restrictions applied at the app layer rather than chain-wide. Confirm each against primary sources before quoting any of it.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
-      <p>The news is real and the conclusion attached to it usually is not, which is why this belongs in the catalogue rather than in a bookmark. India&#39;s central bank governor has said BRICS is weighing links between national fast-payment systems and CBDCs — UPI and CIPS are the systems named — and the reporting is explicit that this is early-stage, with technical, regulatory and governance hurdles outstanding. What the reporting does not contain is any public chain. Every &quot;and this is where chain X becomes extremely relevant&quot; post supplies that step itself, and the gap between the sourced claim and the appended one is the same gap the rwa-multichain card was written to record. So the question worth building around is not whether a particular ledger wins a mandate, but the prior one: when you connect N national payment systems, what actually has to be shared? Break the work into addressing and routing, FX price discovery, liquidity and prefunding, and final settlement, and most of it is a messaging and standards problem that BIS Project Nexus already solves with a hub-and-spoke model and no ledger at all. The one leg where a shared ledger has a genuine argument is settlement atomicity: across time zones neither bank wants to pay first, and that Herstatt exposure is what correspondent banking handles worst.</p>
+      <p><strong>Two scoreboards are being used for one market, and picking one decides who is winning.</strong> Ondo leads on assets outstanding — roughly a third of a ~$3B market. Coinbase&#39;s own framing points at volume instead. These are not two views of the same thing: assets outstanding rewards whoever gathers the most parked capital, volume rewards whoever gets that capital used. An issuer can lead the first while losing the second entirely, and the catalogue already has a card for exactly this failure — <code>priced-by-the-wrong-thing</code>, where a real number measured the wrong question. This is that card applied to a live race, before anybody has agreed which number counts.</p>
+<p><strong>The specific technical claim underneath is worth isolating, because it is the only part that is not marketing.</strong> Under B20 dividends are handled at the token level, so a share held as DeFi collateral does not break when the underlying pays out — and restrictions on US users are applied at the app layer rather than baked into the chain. Both are composability arguments, not asset-quality arguments. Every issuer&#39;s token is a 1:1 claim on a custodied share; nobody wins on the asset. The difference is whether the asset can leave the app it was minted in and survive a corporate action while it is gone. <code>tokenized-equity-claim-rail</code> covers the operational work that claim creates; this card covers what that work is <em>for</em>.</p>
+<p><strong>The honest risk is that this is the eighty-million-customers argument again.</strong> In <code>two-currencies-one-ledger</code>, a large user base was correctly read as an <em>option</em> on distribution rather than distribution itself. &quot;Slow, then overwhelming force&quot; is a good story and not yet evidence. The way to tell the difference is not to argue about it — it is to watch whether the major Base lending venues actually list these tokens and whether anyone borrows against them, which is the measurement in <code>howTo</code>. If they do not, the composability claim was a brochure.</p>
       <h2>How it works</h2>
-      <p>The comparison has a built-in baseline, which is what makes it measurable rather than speculative. Nexus is the no-ledger arm: a multilateral hub so each domestic instant-payment system makes one connection instead of N-squared bilateral ones, with a prototype that connected the test systems of the Eurosystem, Malaysia and Singapore and let payments be addressed by mobile number, now extending across ASEAN. That is the bar. mBridge is the ledger arm: a chain built by central banks for central banks for multi-currency CBDC settlement, at minimum-viable-product stage as of 2024 — and the question to put to it is not whether it works but what it bought over the hub. The measurable core is the prefunding number. Correspondent banking&#39;s real cost is not the fee, it is nostro and vostro balances parked in every corridor to cover settlement risk, and that capital is idle by construction. Model one corridor with and without atomic payment-versus-payment, and the difference in required prefunded liquidity, derived from corridor volume, settlement lag and FX volatility, is a figure that decides the argument rather than restating it. Only after that is there a fair way to assess a specific chain. XRPL&#39;s relevant features for this are the native DEX with auto-bridging and escrow, which target the FX and PvP leg rather than the messaging leg — so the honest comparison is that leg against a Nexus-style hub plus existing RTGS, and it is not the comparison the promotional posts make. One constraint belongs in the card so the measurement does not mislead: adoption here is decided by governance rather than throughput. Who operates the hub, whose currency bridges, what happens under sanctions, and whether a member can be excluded are the questions that have historically settled which rail wins, and a card that measured only latency and cost would be measuring the wrong thing. Reads alongside tokenized-money-banks, which asks the balance-sheet half of the same subject.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/cross-border-rail-interop">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>Three positions, three different bets</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Issuer</th>
+<th>What the token is</th>
+<th>Where it is meant to live</th>
+<th>Leads on</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Ondo</strong></td>
+<td>tokenized equities, largest book (~$1B of ~$3B)</td>
+<td>its own distribution and partners</td>
+<td><strong>assets outstanding</strong></td>
+</tr>
+<tr>
+<td><strong>Kraken xStocks · Binance bStocks</strong></td>
+<td>exchange-issued equity tokens</td>
+<td>primarily the issuing exchange</td>
+<td>exchange-native flow</td>
+</tr>
+<tr>
+<td><strong>Coinbase on Base (B20)</strong></td>
+<td>1:1 claim on shares at Alpaca, broker-custodian</td>
+<td><strong>Base DeFi</strong> — collateral, lending, AMMs</td>
+<td>not yet anything</td>
+</tr>
+</tbody></table></div>
+<p>The third row is the only one whose stated goal is for the token to <em>leave</em>. That is the whole distinction this card turns on.</p>
+<h3>What B20 changes, stated narrowly</h3>
+<ul>
+<li><strong>Dividends are handled at the token level.</strong> A corporate action does not require the holder to be reachable, which is what lets the token sit in a lending pool through a payout instead of breaking.</li>
+<li><strong>No chain-level KYC.</strong> US-user restrictions are applied by the app, not the chain — so the same chain can host both a restricted equity front end and permissionless DeFi.</li>
+<li><strong>Both are composability features.</strong> Neither makes the underlying share better. They make the token survive leaving home.</li>
+</ul>
+<h3>The two scoreboards</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Assets outstanding</th>
+<th>Volume · borrow</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Rewards</td>
+<td>gathering parked capital</td>
+<td>getting capital used</td>
+</tr>
+<tr>
+<td>Currently leads</td>
+<td><strong>Ondo</strong></td>
+<td><strong>nobody clearly</strong></td>
+</tr>
+<tr>
+<td>Blind to</td>
+<td>whether anything ever moves</td>
+<td>whether the book is small</td>
+</tr>
+<tr>
+<td>Wins if the thesis is</td>
+<td>tokenization as a wrapper</td>
+<td>tokenization as collateral</td>
+</tr>
+</tbody></table></div>
+<h3>What would actually settle it</h3>
+<p>One question, checkable without access to anybody&#39;s internal numbers: <strong>do the major Base lending and AMM venues list these tokens, and does open borrow against them grow?</strong> If yes, the composability bet is paying and volume is the right scoreboard. If the tokens are held and never moved, then being third into the market with a better wrapper is simply being third.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/tokenized-equity-scoreboard">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>결제 시스템을 잇는 것은 라우팅 문제다</h1>
-      <p class="lead">&quot;국가 결제 시스템과 CBDC를 잇는다&quot;에 실제로 필요한 일은 대부분 주소 지정·FX 호가·정산 조율이고, 공유 원장이 값을 하는 자리는 그중 하나뿐입니다.</p>
-      <p class="meta">아직 범위 미정 — &quot;잇는다&quot;를 네 가지 일로 쪼개고 공유 원장이 실제로 개선하는 것이 어느 쪽인지 표시하는 것부터. 무원장 기준선은 BIS Project Nexus. 출처: BRICS가 결제 시스템·CBDC 연결을 검토 중이라는 RBI 총재 발언(2026-08, 초기 단계), BIS Nexus·mBridge 공개 자료.</p>
+      <h1>상품은 토큰이 아니다 — 조립 가능성이고, 그 점수판은 거래량이다</h1>
+      <p class="lead">Coinbase 토큰화 주식이 Base 에서 출시됐습니다 — 엔비디아·메타·애플·알파벳이 먼저, 이후 &quot;수천 종목&quot; 예고. <strong>약 30억 달러 시장에 세 번째로 들어가는 자리</strong>이고, 선두 Ondo 가 이미 약 10억 달러를 쥐고 있습니다. 걸고 있는 것은 <strong>토큰이 더 낫다</strong>가 아닙니다. <strong>담보로 쓰여도 깨지지 않는 토큰이 먼저 도착한 토큰보다 값이 나간다</strong>는 쪽이고, 그 주장은 <strong>지금 순위표가 보여주는 숫자와 다른 숫자</strong>로 판가름 납니다.</p>
+      <p class="meta"><strong>만드는 일이 아니라 재는 일로 범위를 잡습니다</strong> — 제목의 주장은 반증 가능하고 확인 비용이 쌉니다. <strong>세 발행자가 모두 취급하는 종목 하나</strong>를 고릅니다. <strong>4주 동안 주 2회, 두 숫자</strong>를 적습니다 — 발행자별 잔액, 그리고 Base 위에서의 전송·차입 거래량. 그다음 <strong>서사가 아니라 데이터로</strong> 한 질문에 답합니다 — <strong>토큰이 움직였는가, 앉아 있었는가.</strong> 앉아 있는 토큰은 <strong>커스터디언이 붙은 래퍼</strong>이고, 대출시장을 통과하며 움직이는 토큰이 이 카드가 말하는 그것입니다. 여기의 사실은 전부 <strong>Bankless 2026-08-24 기사</strong>(William M. Peaster) 기준입니다 — 약 30억 달러 시장, Ondo 약 10억, 그 뒤 Kraken xStocks·Binance bStocks, 브로커·커스터디언 Alpaca, <strong>B20 에서 배당을 토큰 레벨에서 처리</strong>, <strong>제한을 체인 전체가 아니라 앱 레이어에서 적용</strong>. 인용 전에 원문으로 각각 확인하십시오.</p>
       <h2>왜</h2>
-      <p>뉴스는 진짜이고 거기 붙은 결론은 대개 아닌데, 그래서 이건 북마크가 아니라 카탈로그에 들어갑니다. 인도 중앙은행 총재가 <strong>BRICS가 국가 즉시결제 시스템과 CBDC의 연결을 검토 중</strong>이라고 말했고 — 거명된 시스템은 UPI와 CIPS입니다 — 보도는 이것이 <strong>초기 단계</strong>이며 기술·규제·거버넌스 장애물이 남아 있다고 분명히 적습니다. <strong>보도에 없는 것은 어떤 공개 체인도 언급되지 않는다는 점</strong>입니다. &quot;그래서 여기서 X 체인이 극도로 중요해진다&quot;는 글들은 그 단계를 <strong>스스로 채워 넣은 것</strong>이고, 출처가 있는 주장과 덧붙여진 주장 사이의 그 간극이 바로 <code>rwa-multichain</code> 카드를 쓰게 만든 그 간극입니다. 그래서 만들 가치가 있는 질문은 어느 원장이 채택되느냐가 아니라 그 앞의 질문입니다: <strong>N개의 국가 결제 시스템을 연결할 때 실제로 공유되어야 하는 것은 무엇인가?</strong> 일을 <strong>주소 지정·라우팅</strong>, <strong>FX 가격 발견</strong>, <strong>유동성·선충전</strong>, <strong>최종 정산</strong> 넷으로 쪼개 보면 대부분은 메시징과 표준의 문제이고, <strong>BIS Project Nexus가 원장 없이 허브앤스포크로 이미 풀고 있는 것</strong>입니다. 공유 원장이 진짜 논거를 갖는 유일한 다리는 <strong>정산 원자성</strong>입니다 — 시차를 사이에 두고 어느 은행도 먼저 내고 싶어 하지 않으며, 그 헤르슈타트 익스포저가 코레스 뱅킹이 가장 못 다루는 부분입니다.</p>
+      <p><strong>한 시장에 점수판이 둘이고, 어느 쪽을 고르느냐가 승자를 정합니다.</strong> Ondo 는 <strong>잔액</strong>에서 앞섭니다 — 약 30억 달러 시장의 3분의 1가량. Coinbase 쪽의 프레이밍은 대신 <strong>거래량</strong>을 가리킵니다. 둘은 같은 것의 두 시각이 아닙니다 — <strong>잔액은 세워 둔 자본을 가장 많이 모은 쪽에 점수를 주고, 거래량은 그 자본을 쓰이게 만든 쪽에 점수를 줍니다.</strong> 앞의 것에서 이기면서 뒤의 것에서 완패할 수 있고, 이 목록에는 그 실패를 다룬 카드가 이미 있습니다 — <strong><code>priced-by-the-wrong-thing</code></strong>, 진짜 숫자가 틀린 질문을 재고 있던 경우입니다. 이 카드는 <strong>아직 아무도 어느 숫자가 맞는지 합의하지 않은 진행 중인 경주</strong>에 그것을 적용한 것입니다.</p>
+<p><strong>밑에 깔린 기술적 주장 하나는 따로 떼어 볼 값이 있습니다 — 마케팅이 아닌 유일한 부분이기 때문입니다.</strong> B20 에서는 <strong>배당이 토큰 레벨에서 처리</strong>되어, DeFi 담보로 잡혀 있는 주식이 <strong>기초자산이 배당을 내는 순간에도 깨지지 않습니다.</strong> 그리고 미국 사용자 제한이 <strong>체인에 박히지 않고 앱 레이어에서</strong> 걸립니다. 둘 다 <strong>자산 품질이 아니라 조립 가능성(composability)</strong> 에 대한 주장입니다. 발행자마다 토큰은 다 커스터디된 주식에 대한 1:1 청구권이고 — <strong>자산으로는 아무도 못 이깁니다.</strong> 차이는 <strong>그 자산이 발행된 앱을 떠날 수 있는지, 그리고 떠나 있는 동안 기업행위를 견디는지</strong>입니다. <strong><code>tokenized-equity-claim-rail</code></strong> 이 그 청구권이 만드는 운영 업무를 다룬다면, 이 카드는 <strong>그 업무가 무엇을 위한 것인지</strong>를 다룹니다.</p>
+<p><strong>정직한 위험은, 이것이 8천만 고객 논증의 재판이라는 점입니다.</strong> <strong><code>two-currencies-one-ledger</code></strong> 에서 거대한 사용자 기반은 <strong>유통 그 자체가 아니라 유통에 대한 옵션</strong>으로 읽는 것이 옳았습니다. &quot;천천히, 그러나 압도적으로&quot;는 좋은 이야기이고 아직 증거가 아닙니다. 구분하는 방법은 <strong>논쟁이 아니라</strong> — <strong>Base 의 주요 대출 시장이 실제로 이 토큰들을 상장하는지, 그리고 누군가 그것을 담보로 빌리는지</strong>를 보는 것이고, 그게 <code>howTo</code> 의 측정입니다. 그러지 않는다면 <strong>조립 가능성 주장은 브로슈어였던 것</strong>입니다.</p>
       <h2>동작 방식</h2>
-      <p>비교에 <strong>기준선이 이미 존재</strong>한다는 점이 이 작업을 추측이 아니라 측정으로 만듭니다. <strong>Nexus가 무원장 쪽</strong>입니다 — 각 국내 즉시결제 시스템이 N제곱의 양자 연결 대신 <strong>한 번만 연결</strong>하면 되는 다자 허브이고, 시제품이 유로시스템·말레이시아·싱가포르의 테스트 시스템을 연결해 <strong>휴대폰 번호로 주소 지정</strong>해 송금하는 것을 보였으며 지금 ASEAN 전역으로 확장 중입니다. <strong>이게 넘어야 할 선</strong>입니다. <strong>mBridge가 원장 쪽</strong>입니다 — 중앙은행이 중앙은행을 위해 만든 다중통화 CBDC 정산용 체인으로 2024년 기준 MVP 단계이고, 여기 던질 질문은 작동하느냐가 아니라 <strong>허브 대비 무엇을 더 샀느냐</strong>입니다. 측정의 핵심은 <strong>선충전 금액</strong>입니다. 코레스 뱅킹의 진짜 비용은 수수료가 아니라 정산 위험을 덮으려고 <strong>모든 코리도에 세워 두는 노스트로·보스트로 잔고</strong>이고, 그 자본은 구조적으로 놀고 있습니다. 코리도 하나를 <strong>원자적 PvP가 있을 때와 없을 때</strong>로 모델링하고, 코리도 거래량·정산 지연·FX 변동성에서 도출한 <strong>필요 선충전 유동성의 차이</strong>를 구하면, 논쟁을 되풀이하는 대신 <strong>결정하는 숫자</strong>가 나옵니다. 특정 체인을 공정하게 평가할 수 있는 것은 그다음입니다. XRPL이 여기서 갖는 관련 기능은 <strong>네이티브 DEX의 자동 브리징과 에스크로</strong>로, 메시징 다리가 아니라 <strong>FX·PvP 다리</strong>를 겨냥합니다 — 그러니 정직한 비교는 <strong>그 다리 대 Nexus식 허브 + 기존 RTGS</strong>이고, 홍보성 글들이 하는 비교는 이것이 아닙니다. 측정이 오도되지 않도록 제약 하나를 카드에 넣어 둡니다: <strong>여기서 채택을 결정하는 것은 처리량이 아니라 거버넌스</strong>입니다. 허브를 누가 운영하는가, 누구의 통화가 브리지가 되는가, 제재 상황에서는 어떻게 되는가, 회원을 배제할 수 있는가 — 역사적으로 어느 레일이 이기는지를 결정해 온 것은 이 질문들이고, 지연시간과 비용만 재는 카드는 <strong>틀린 것을 재는 것</strong>입니다. 같은 주제의 대차대조표 절반을 다루는 <code>tokenized-money-banks</code>와 함께 읽습니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/cross-border-rail-interop">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>세 자리, 세 개의 다른 베팅</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>발행자</th>
+<th>토큰의 정체</th>
+<th>살기로 한 곳</th>
+<th>앞서는 지표</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Ondo</strong></td>
+<td>토큰화 주식, 최대 잔액 (약 30억 중 10억)</td>
+<td>자체 유통·파트너</td>
+<td><strong>잔액</strong></td>
+</tr>
+<tr>
+<td><strong>Kraken xStocks · Binance bStocks</strong></td>
+<td>거래소 발행 주식 토큰</td>
+<td>주로 발행 거래소 안</td>
+<td>거래소 내부 흐름</td>
+</tr>
+<tr>
+<td><strong>Coinbase on Base (B20)</strong></td>
+<td>Alpaca 보관 주식에 대한 1:1 청구권</td>
+<td><strong>Base DeFi</strong> — 담보·대출·AMM</td>
+<td>아직 없음</td>
+</tr>
+</tbody></table></div>
+<p><strong>세 번째 줄만이 토큰이 밖으로 나가는 것을 목표로 내세웁니다.</strong> 이 카드가 딛고 선 구분이 그것입니다.</p>
+<h3>B20 이 바꾸는 것, 좁게만</h3>
+<ul>
+<li><strong>배당을 토큰 레벨에서 처리합니다.</strong> 기업행위에 <strong>보유자를 찾아갈 필요가 없어지고</strong>, 그래서 토큰이 배당 시점을 <strong>대출 풀 안에 앉은 채로 통과</strong>할 수 있습니다.</li>
+<li><strong>체인 레벨 KYC 가 없습니다.</strong> 미국 사용자 제한은 <strong>체인이 아니라 앱</strong>이 겁니다 — 같은 체인이 규제된 주식 프런트엔드와 무허가 DeFi 를 함께 태울 수 있습니다.</li>
+<li><strong>둘 다 조립 가능성 기능입니다.</strong> 기초 주식이 더 좋아지지는 않습니다. <strong>토큰이 집을 떠나고도 살아남게</strong> 할 뿐입니다.</li>
+</ul>
+<h3>두 개의 점수판</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>잔액</th>
+<th>거래량 · 차입</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>점수를 주는 대상</td>
+<td>세워 둔 자본을 모으는 것</td>
+<td>자본을 쓰이게 만드는 것</td>
+</tr>
+<tr>
+<td>현재 선두</td>
+<td><strong>Ondo</strong></td>
+<td><strong>뚜렷한 선두 없음</strong></td>
+</tr>
+<tr>
+<td>못 보는 것</td>
+<td>아무것도 안 움직여도 모름</td>
+<td>잔액이 작아도 모름</td>
+</tr>
+<tr>
+<td>이기는 전제</td>
+<td>토큰화 = 래퍼</td>
+<td>토큰화 = 담보</td>
+</tr>
+</tbody></table></div>
+<h3>무엇이 실제로 판가름을 낼까</h3>
+<p>남의 내부 숫자 없이도 확인 가능한 질문 하나: <strong>Base 의 주요 대출·AMM 시장이 이 토큰들을 상장하는가, 그리고 그것을 담보로 한 미상환 차입이 늘어나는가?</strong> 그렇다면 조립 가능성 베팅이 값을 하고 있고 <strong>거래량이 옳은 점수판</strong>입니다. 토큰이 보유만 되고 움직이지 않는다면, <strong>더 나은 래퍼로 세 번째에 들어간 것은 그냥 세 번째</strong>일 뿐입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/tokenized-equity-scoreboard">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-japan-t0-settlement.html">&larr; 36. T+0 removes settlement risk, and removes netting with it</a><a href="pocs-non-reserve-currency-seat.html">38. The seat is the point — a non-reserve currency at the standards table &rarr;</a></div>
+    <div class="pager"><a href="pocs-tokenized-equity-claim-rail.html">&larr; 34. A claim, not a derivative — the three jobs a tokenized share creates</a><a href="pocs-japan-t0-settlement.html">36. T+0 removes settlement risk, and removes netting with it &rarr;</a></div>
   </div>
   </main>
 </div>
