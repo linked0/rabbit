@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP from three sides — build one, consume one, wrap an agent as one — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; MCP from three sides — build one, consume one, wrap an agent as one</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#47</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>MCP from three sides — build one, consume one, wrap an agent as one</h1>
+      <p class="lead">The 2026-07-28 revision drops the session handshake, so an MCP server becomes an ordinary stateless HTTP service — deployable to serverless and edge, and authorized like any enterprise API. That protocol change is underneath the other two positions, which is why it should be done first.</p>
+      <p class="meta">Build one narrow tool server against 2026-07-28 from the start rather than porting a 2025-11-25 one, deploy it to Cloud Run, and connect it to Claude. Then the client side: hold a Zapier MCP connection in a server-side route (URL plus auth token, never exposed to the browser) and forward tool calls through the Anthropic API&#39;s native MCP connector or a generic client via @modelcontextprotocol/sdk — scoped to an explicit allowlist of safe actions rather than handing an agent unrestricted access to real accounts. The framework question is a 30-minute skim afterwards: whether an existing subagent can be wrapped in Google ADK and served over MCP. Spec: blog.modelcontextprotocol.io, release candidate 2026-07-28.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>The reason to build one now rather than a year ago is that the shape of the answer changed.</strong> Until this revision an MCP server was a <strong>stateful conversation</strong>: an initialize/initialized handshake, an <code>Mcp-Session-Id</code> header, and a server that had to remember which client it was talking to. The 2026-07-28 revision removes both — every request is <strong>self-contained</strong>, with protocol version, client identity and capabilities travelling in <code>_meta</code>, Streamable HTTP requests routed by <code>Mcp-Method</code> and <code>Mcp-Name</code> headers, and list and resource-read results <strong>cacheable</strong>.</p>
+<p><strong>What that changes practically is deployment.</strong> A stateless request/response service runs on serverless or edge without sticky sessions, which is the difference between <em>an MCP server is a process I keep running</em> and <strong>an MCP server is a function I deploy.</strong></p>
+<p><strong>The second change carries more weight for real work.</strong> Authorization now aligns with deployed <strong>OAuth 2.0 and OIDC</strong> practice, so pointing a server at an enterprise identity provider like Entra or Okta stops being a workaround. <strong>That is the half that decides whether an MCP server may ever touch company data</strong>, and it is why building against the new spec is not the same exercise as building against the old one. The adoption figure is context rather than argument: SDK downloads passed <strong>400 million a month</strong>, roughly 4× this year.</p>
+<p><strong>The three positions are the same protocol from different seats, and the ordering is the useful part.</strong> Building a server is the <strong>protocol</strong> question. Consuming Zapier&#39;s — 8,000+ app integrations exposed as tools — is the <strong>client</strong> question, and it is where the security decision lives rather than the interesting engineering. Serving an agent as an MCP server, which Google&#39;s ADK Python 2.5 release added alongside sandboxed code execution on Cloud Run and a fresh ADK Go, is the <strong>framework</strong> question. <strong>Doing the protocol one first turns the other two into wrapper exercises instead of two unknowns at once.</strong></p>
+<p><strong>One caution before building:</strong> Roots, Sampling and Logging are <strong>deprecated</strong> with documented replacements and a minimum twelve-month removal window, and <strong>Tasks is an explicit breaking change</strong> — poll-based <code>tasks/get</code>, <code>tasks/update</code>, cooperative <code>tasks/cancel</code>. Porting an old server means learning the old model twice.</p>
+      <h2>How it works</h2>
+      <h3>Three seats, one protocol</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Seat</th>
+<th>The question</th>
+<th>What it decides</th>
+<th>Do it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Build a server</strong></td>
+<td>Protocol — what does a request carry now that there is no session?</td>
+<td>Whether the thing can be deployed and authorized at all</td>
+<td><strong>First</strong></td>
+</tr>
+<tr>
+<td><strong>Consume a server</strong> (Zapier)</td>
+<td>Client — how do I hold a connection and constrain what it may do?</td>
+<td><strong>Blast radius</strong>, not architecture</td>
+<td>Second</td>
+</tr>
+<tr>
+<td><strong>Serve an agent as a server</strong> (ADK)</td>
+<td>Framework — can an existing subagent be wrapped?</td>
+<td>Reuse</td>
+<td><strong>A 30-minute skim, last</strong></td>
+</tr>
+</tbody></table></div>
+<h3>What actually changed on 2026-07-28</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Before</th>
+<th><strong>After</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Session</td>
+<td>initialize/initialized handshake, <code>Mcp-Session-Id</code></td>
+<td><strong>None — every request self-contained</strong></td>
+</tr>
+<tr>
+<td>Identity and capabilities</td>
+<td>Negotiated once</td>
+<td><strong>Carried in <code>_meta</code> per request</strong></td>
+</tr>
+<tr>
+<td>Routing</td>
+<td>Session-scoped</td>
+<td><strong><code>Mcp-Method</code> / <code>Mcp-Name</code> headers</strong></td>
+</tr>
+<tr>
+<td>list / resource-read</td>
+<td>Per-session</td>
+<td><strong>Cacheable</strong></td>
+</tr>
+<tr>
+<td>Authorization</td>
+<td>Ad hoc</td>
+<td><strong>OAuth 2.0 / OIDC — Entra, Okta</strong></td>
+</tr>
+<tr>
+<td>Deployment</td>
+<td>A process you keep running</td>
+<td><strong>A function you deploy</strong></td>
+</tr>
+<tr>
+<td>Tasks</td>
+<td>—</td>
+<td><strong>Breaking change</strong>: <code>tasks/get</code>, <code>tasks/update</code>, <code>tasks/cancel</code></td>
+</tr>
+<tr>
+<td>Roots, Sampling, Logging</td>
+<td>Current</td>
+<td><strong>Deprecated, 12-month minimum removal window</strong></td>
+</tr>
+</tbody></table></div>
+<h3>Three things worth verifying by doing rather than reading</h3>
+<ol>
+<li><strong>That a cold-started serverless instance can serve a request with no prior state at all.</strong> That is the whole claim of the stateless core, and it either holds on a real cold start or it does not.</li>
+<li><strong>What <code>_meta</code> must actually carry</strong> for a client to work without the handshake — the part a spec summary never makes concrete enough to implement from.</li>
+<li><strong>Whether cacheability of list and resource-read survives a real deployment</strong>, since that is where the stateless design either pays for its extra per-request payload or does not.</li>
+</ol>
+<p><strong>The authorization half deserves the most time</strong>: put the server behind an OAuth/OIDC provider and walk the token path end to end, because <em>the approval path for company data is standardised now</em> is a claim that is <strong>either true in an hour or false all week.</strong></p>
+<h3>The client side, where the decision is a security decision</h3>
+<p>A server-side route holds the Zapier MCP connection — <strong>URL and auth token never reaching the browser</strong> — and either forwards tool calls through the Anthropic API&#39;s native MCP connector or acts as a generic client via <code>@modelcontextprotocol/sdk</code>, listing available tools and executing whichever the model selects. <strong>Scope it to an explicit allowlist</strong> (e.g. <em>send email to self</em>) rather than handing an agent unrestricted access to real accounts. <strong>That allowlist is the entire engineering decision</strong>; everything else is plumbing, and <code>the-harness-not-the-model</code> is where the general version of it lives.</p>
+<h3>The framework side, in one paragraph</h3>
+<p>Google&#39;s Agent Development Kit release adds <strong>sandboxed code execution isolation on Cloud Run</strong>, the ability to <strong>serve an agent as an MCP server</strong>, and an improved Live API; ADK Go shipped alongside. The 30-minute question is whether an existing subagent can be wrapped in ADK and called from Claude over MCP. <strong>Once the protocol question is answered that is a wrapper exercise</strong>, which is exactly why it is last.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/mcp-three-sides">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>MCP 를 세 방향에서 — 만들고, 쓰고, 에이전트를 그것으로 감싸기</h1>
+      <p class="lead">2026-07-28 개정판이 <strong>세션 핸드셰이크를 없앴습니다.</strong> MCP 서버가 <strong>평범한 무상태 HTTP 서비스</strong>가 되어 서버리스·엣지에 배포되고, <strong>여느 엔터프라이즈 API처럼 인가</strong>됩니다. 그 프로토콜 변화가 <strong>나머지 두 위치 밑에 깔려 있고</strong>, 그래서 <strong>이것부터</strong> 해야 합니다.</p>
+      <p class="meta"><strong>2025-11-25 서버를 포팅하지 말고 처음부터 2026-07-28 위에</strong> 좁은 툴 서버 하나를 만들어 Cloud Run 에 배포하고 Claude 에 연결합니다. 그다음 <strong>클라이언트 쪽</strong>: Zapier MCP 연결(URL + 인증 토큰, <strong>브라우저에 절대 노출 금지</strong>)을 서버 라우트가 들고, Anthropic API 의 네이티브 MCP 커넥터나 <code>@modelcontextprotocol/sdk</code> 범용 클라이언트로 툴 호출을 전달합니다 — <strong>에이전트에게 실제 계정 무제한 접근을 주는 대신 안전한 액션만 명시적 허용 목록으로.</strong> <strong>프레임워크 질문은 그 뒤 30분 훑기</strong>입니다 — 기존 서브에이전트를 <strong>Google ADK 로 감싸 MCP 로 서빙</strong>할 수 있는가. 스펙: blog.modelcontextprotocol.io, 릴리스 후보 2026-07-28.</p>
+      <h2>왜</h2>
+      <p><strong>1년 전이 아니라 지금 만들 이유는 답의 모양이 바뀌었기 때문입니다.</strong> 이번 개정 전까지 MCP 서버는 <strong>상태 있는 대화</strong>였습니다 — initialize/initialized 핸드셰이크, <code>Mcp-Session-Id</code> 헤더, 그리고 <strong>어느 클라이언트와 말하는 중인지 기억해야 하는 서버.</strong> 2026-07-28 개정판이 둘 다 없앱니다 — <strong>모든 요청이 자기완결적</strong>이고, 프로토콜 버전·클라이언트 신원·능력이 <code>_meta</code> 로 실려 가며, Streamable HTTP 요청은 <code>Mcp-Method</code>·<code>Mcp-Name</code> 헤더로 라우팅되고, list 와 resource-read 결과는 <strong>캐시 가능</strong>합니다.</p>
+<p><strong>실무적으로 바뀌는 것은 배포입니다.</strong> 무상태 요청/응답 서비스는 <strong>스티키 세션 없이 서버리스나 엣지에서</strong> 돕니다. <em>MCP 서버는 내가 계속 띄워 두는 프로세스</em> 와 <strong>MCP 서버는 내가 배포하는 함수</strong> 의 차이입니다.</p>
+<p><strong>두 번째 변화가 실제 업무에는 더 무겁습니다.</strong> 인가가 배포된 <strong>OAuth 2.0·OIDC</strong> 관행과 정렬되어, Entra 나 Okta 같은 <strong>엔터프라이즈 아이덴티티 공급자</strong>에 서버를 붙이는 것이 <strong>우회책이기를 그만둡니다.</strong> <strong>MCP 서버가 회사 데이터에 닿아도 되는지를 결정하는 절반</strong>이고, 그래서 <strong>새 스펙 위에서 만드는 것이 옛 스펙 위에서 만드는 것과 같은 연습이 아닙니다.</strong> 채택 수치는 논거가 아니라 맥락입니다 — SDK 다운로드가 <strong>월 4억 건</strong>을 넘었고, 올해 약 4배입니다.</p>
+<p><strong>세 위치는 같은 프로토콜을 다른 자리에서 본 것이고, 쓸모 있는 부분은 순서입니다.</strong> 서버를 만드는 것은 <strong>프로토콜</strong> 질문입니다. Zapier 의 것을 쓰는 것 — <strong>8,000개 이상 앱 연동을 툴로 노출</strong> — 은 <strong>클라이언트</strong> 질문이고, 흥미로운 엔지니어링보다 <strong>보안 결정이 사는 자리</strong>입니다. 에이전트를 MCP 서버로 서빙하는 것은 — Google ADK Python 2.5 릴리스가 <strong>Cloud Run 샌드박스 코드 실행 격리</strong>·<strong>ADK Go 신규 릴리스</strong>와 함께 추가한 것 — <strong>프레임워크</strong> 질문입니다. <strong>프로토콜 질문을 먼저 풀면 나머지 둘이 두 개의 미지수가 아니라 래퍼 작업이 됩니다.</strong></p>
+<p><strong>만들기 전 주의 하나:</strong> Roots·Sampling·Logging 은 <strong>대체재가 문서화된 채 폐기 예정</strong>이고 <strong>최소 12개월 제거 유예</strong>가 있으며, <strong>Tasks 는 명시적 파괴적 변경</strong>입니다 — 폴링 기반 <code>tasks/get</code>, <code>tasks/update</code>, 협조적 <code>tasks/cancel</code>. <strong>옛 서버를 포팅하면 옛 모델을 두 번 배우게 됩니다.</strong></p>
+      <h2>동작 방식</h2>
+      <h3>세 자리, 하나의 프로토콜</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>자리</th>
+<th>질문</th>
+<th>무엇을 결정하나</th>
+<th>순서</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>서버를 만든다</strong></td>
+<td>프로토콜 — 세션이 없는데 요청은 무엇을 나르나?</td>
+<td><strong>애초에 배포·인가가 되는지</strong></td>
+<td><strong>첫째</strong></td>
+</tr>
+<tr>
+<td><strong>서버를 쓴다</strong>(Zapier)</td>
+<td>클라이언트 — 연결을 어떻게 들고, 무엇까지 허용하나?</td>
+<td>아키텍처가 아니라 <strong>폭발 반경</strong></td>
+<td>둘째</td>
+</tr>
+<tr>
+<td><strong>에이전트를 서버로 서빙</strong>(ADK)</td>
+<td>프레임워크 — 기존 서브에이전트를 감쌀 수 있나?</td>
+<td>재사용</td>
+<td><strong>30분 훑기, 마지막</strong></td>
+</tr>
+</tbody></table></div>
+<h3>2026-07-28 에 실제로 바뀐 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>이전</th>
+<th><strong>이후</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>세션</td>
+<td>initialize/initialized 핸드셰이크, <code>Mcp-Session-Id</code></td>
+<td><strong>없음 — 모든 요청이 자기완결</strong></td>
+</tr>
+<tr>
+<td>신원·능력</td>
+<td>한 번 협상</td>
+<td><strong>요청마다 <code>_meta</code> 로 운반</strong></td>
+</tr>
+<tr>
+<td>라우팅</td>
+<td>세션 범위</td>
+<td><strong><code>Mcp-Method</code> / <code>Mcp-Name</code> 헤더</strong></td>
+</tr>
+<tr>
+<td>list / resource-read</td>
+<td>세션별</td>
+<td><strong>캐시 가능</strong></td>
+</tr>
+<tr>
+<td>인가</td>
+<td>임기응변</td>
+<td><strong>OAuth 2.0 / OIDC — Entra, Okta</strong></td>
+</tr>
+<tr>
+<td>배포</td>
+<td>계속 띄워 두는 프로세스</td>
+<td><strong>배포하는 함수</strong></td>
+</tr>
+<tr>
+<td>Tasks</td>
+<td>—</td>
+<td><strong>파괴적 변경</strong>: <code>tasks/get</code>, <code>tasks/update</code>, <code>tasks/cancel</code></td>
+</tr>
+<tr>
+<td>Roots·Sampling·Logging</td>
+<td>현행</td>
+<td><strong>폐기 예정, 최소 12개월 유예</strong></td>
+</tr>
+</tbody></table></div>
+<h3>읽기보다 해서 확인할 값이 있는 셋</h3>
+<ol>
+<li><strong>콜드 스타트된 서버리스 인스턴스가 사전 상태 0으로 요청을 처리하는가.</strong> 무상태 코어의 주장 전부이고, <strong>실제 콜드 스타트에서 성립하거나 아니거나</strong> 둘 중 하나입니다.</li>
+<li><strong>핸드셰이크 없이 클라이언트가 동작하려면 <code>_meta</code> 가 실제로 무엇을 날라야 하는가</strong> — 스펙 요약으로는 <strong>구현할 만큼 구체적이 되지 않는</strong> 부분입니다.</li>
+<li><strong>list·resource-read 의 캐시 가능성이 실제 배포에서 살아남는가.</strong> 무상태 설계가 <strong>요청당 늘어난 페이로드 값을 하는지 못 하는지</strong>가 거기서 갈립니다.</li>
+</ol>
+<p><strong>인가 절반에 시간을 가장 많이 줄 값이 있습니다</strong> — 서버를 OAuth/OIDC 공급자 뒤에 두고 <strong>토큰 경로를 끝까지 걸어 봅니다.</strong> <em>회사 데이터에 대한 승인 경로가 이제 표준화됐다</em> 는 주장은 <strong>한 시간 안에 참이거나, 일주일 내내 거짓</strong>입니다.</p>
+<h3>클라이언트 쪽, 결정이 보안 결정인 자리</h3>
+<p>서버 라우트가 Zapier MCP 연결을 듭니다 — <strong>URL 과 인증 토큰은 브라우저에 절대 도달하지 않고</strong> — 그리고 Anthropic API 네이티브 MCP 커넥터로 툴 호출을 전달하거나 <code>@modelcontextprotocol/sdk</code> 로 범용 클라이언트가 되어, 사용 가능한 툴을 나열하고 모델이 고른 것을 실행합니다. <strong>명시적 허용 목록으로 범위를 좁힙니다</strong>(예: <em>내게 이메일 보내기</em>) — 에이전트에게 실제 계정 무제한 접근을 주는 대신. <strong>그 허용 목록이 엔지니어링 결정 전부</strong>이고, 나머지는 배관입니다. 그 일반형은 <code>the-harness-not-the-model</code> 에 있습니다.</p>
+<h3>프레임워크 쪽, 한 문단</h3>
+<p>Google Agent Development Kit 릴리스는 <strong>Cloud Run 샌드박스 코드 실행 격리</strong>, <strong>에이전트를 MCP 서버로 서빙</strong>, <strong>Live API 개선</strong>을 추가했고 ADK Go 도 함께 나왔습니다. 30분 질문은 <strong>기존 서브에이전트를 ADK 로 감싸 Claude 에서 MCP 로 부를 수 있는가</strong>입니다. <strong>프로토콜 질문에 답한 뒤라면 이건 래퍼 작업</strong>이고, 정확히 그래서 마지막입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/mcp-three-sides">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-stablecoin-redemption-desk.html">&larr; 46. The redemption desk — what actually makes a stablecoin's denominator</a><a href="pocs-fisheries-receivable-rail.html">48. The custody was never the hard part &rarr;</a></div>
+</div>
+</body>
+</html>

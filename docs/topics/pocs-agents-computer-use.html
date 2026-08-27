@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Can Agents Use a Computer Yet? — PoCs</title>
+<title>Can an agent drive a computer yet — and if so, whose? — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -278,34 +278,226 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Can Agents Use a Computer Yet?</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Can an agent drive a computer yet — and if so, whose?</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#54</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>Can Agents Use a Computer Yet?</h1>
-      <p class="lead">a16z&#39;s 2026 update on computer-use agents in production — OSWorld benchmark jump from 42% to 85% in a year, and what buyers actually pay for once the model stops being the bottleneck.</p>
-      <p class="meta">Reading notes — no demo, no wallet needed.</p>
+      <p class="topic-kicker"><span class="topic-no">#60</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Can an agent drive a computer yet — and if so, whose?</h1>
+      <p class="lead">OSWorld jumped from 42% to 85% in a year and buyers stopped comparing models. What they buy instead is verification, escalation and error handling — and at the other end of the same question, a script tag now lets natural language drive one specific page without any of that.</p>
+      <p class="meta">Reading notes for the market half — no demo, no wallet needed. For the build half, a script tag: github.com/alibaba/page-agent, one <code>&amp;lt;script&amp;gt;</code> or npm install, pointed at a page you already own, and note how far it gets before the DOM stops being enough. Source: <a href="https://www.a16z.news/p/can-agents-use-a-computer-yet-weve">https://www.a16z.news/p/can-agents-use-a-computer-yet-weve</a></p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
-      <p>Tracking where computer-use agents actually stand in production, not in demos — the piece is built on interviews with real operators (a CPG data platform running 15-20M portal interactions/month, a systems integrator running 27 live workflows), not just benchmark numbers. A useful checkpoint for judging whether an &quot;agent operates a browser/UI&quot; idea is worth building now versus still a research toy.</p>
+      <p><strong>Tracking where computer-use agents actually stand in production, not in demos.</strong> The a16z piece is built on interviews with real operators — a CPG data platform running 15-20M portal interactions a month, a systems integrator running 27 live workflows — not just benchmark numbers. <strong>A useful checkpoint for judging whether an &quot;agent operates a browser or UI&quot; idea is worth building now versus still a research toy.</strong></p>
+<p><strong>The headline number is real and the argument is that it stopped mattering.</strong> OSWorld-Verified, a real-desktop benchmark, went from <strong>42% a year ago to 85% today</strong>, above the roughly <strong>72% human baseline.</strong> But once models cleared a <em>good enough</em> bar, buyers stopped comparing models and <strong>started buying infrastructure</strong> — verification, escalation, error handling. <strong>The model is no longer the product.</strong></p>
+<p><strong>And the other end of the same question is a much smaller, much cheaper answer that this catalogue kept as a separate card for no good reason.</strong> Alibaba&#39;s <code>page-agent</code> is an in-page GUI agent: one script tag or npm install, and natural language operates that page&#39;s UI. <strong>No screenshots, no browser extension, no headless browser</strong> — it reads a text-based DOM, connects to any LLM you bring, has a beta MCP server, and is built on browser-use. <strong>The general capability question and the specific embedding decision are the same question at two scales</strong>, and holding them together is what makes either useful: the a16z piece says the bottleneck is now operations, and <code>page-agent</code> is the case where <strong>almost all of the operations disappear because the agent only ever touches one page you control.</strong></p>
+<p><strong>The failure mode that matters most is the one neither half advertises.</strong> It is not the UI click failing — <strong>it is silent failure with no verifiable signal at run time.</strong> An insurance claim that &quot;succeeded&quot; on screen and stalls two days later on a phone call nobody logged. That is why verification, not accuracy, is what buyers pay for, and it is the same shape as <code>the-harness-not-the-model</code>: <strong>the interesting engineering is around the model, not in it.</strong></p>
       <h2>How it works</h2>
-      <p>OSWorld-Verified (a real-desktop benchmark) jumped from 42% a year ago to 85% today (Claude Opus 4.6-class models), above the ~72% human baseline — but the piece&#39;s real argument is that the benchmark stopped mattering: once models cleared a &quot;good enough&quot; bar, buyers stopped comparing models and started buying infrastructure — verification, escalation, error handling, and a common pattern where an agent runs a workflow once, caches it as deterministic code, and is only re-invoked when something breaks (cost falls over a workflow&#39;s lifetime). Cost comparison: agent inference runs ~$6-8/hr ($3-15 range) versus ~$10/hr offshore BPO versus $30-45/hr fully-loaded US labor — roughly break-even against BPO today, 70-80% margin against US labor. The failure mode that matters most isn&#39;t the UI click failing, it&#39;s silent failures with no verifiable signal at run time (e.g. an insurance claim that &quot;succeeded&quot; on screen but stalls two days later on a phone call nobody logged). Source: <a href="https://www.a16z.news/p/can-agents-use-a-computer-yet-weve">https://www.a16z.news/p/can-agents-use-a-computer-yet-weve</a></p>
+      <h3>Where the benchmark went, and why it stopped mattering</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>A year ago</th>
+<th>Today</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>OSWorld-Verified</strong></td>
+<td>42%</td>
+<td><strong>85%</strong></td>
+</tr>
+<tr>
+<td>Human baseline</td>
+<td>~72%</td>
+<td>~72%</td>
+</tr>
+<tr>
+<td>What buyers compared</td>
+<td><strong>Models</strong></td>
+<td><strong>Infrastructure</strong></td>
+</tr>
+</tbody></table></div>
+<p>Once models cleared the bar, the purchase became verification, escalation and error handling. A common pattern: <strong>an agent runs a workflow once, caches it as deterministic code, and is only re-invoked when something breaks</strong> — so cost falls over a workflow&#39;s lifetime rather than staying flat.</p>
+<h3>The cost comparison that decides whether to build</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Rate</th>
+<th>Against agent inference</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Agent inference</strong></td>
+<td><strong>~$6-8/hr</strong> ($3-15 range)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Offshore BPO</td>
+<td>~$10/hr</td>
+<td><strong>Roughly break-even today</strong></td>
+</tr>
+<tr>
+<td>Fully-loaded US labour</td>
+<td>$30-45/hr</td>
+<td><strong>70-80% margin</strong></td>
+</tr>
+</tbody></table></div>
+<h3>Two scales of the same capability</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>General computer use</strong></th>
+<th><strong>In-page agent</strong> (<code>page-agent</code>)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Surface</td>
+<td>Any application</td>
+<td><strong>One page you own</strong></td>
+</tr>
+<tr>
+<td>Input</td>
+<td>Screenshots, accessibility trees</td>
+<td><strong>Text-based DOM</strong></td>
+</tr>
+<tr>
+<td>Needs</td>
+<td>Extension or headless browser</td>
+<td><strong>A script tag</strong></td>
+</tr>
+<tr>
+<td>Operations burden</td>
+<td><strong>Verification, escalation, error handling</strong></td>
+<td><strong>Almost none — the surface is yours</strong></td>
+</tr>
+<tr>
+<td>Fails at</td>
+<td>Silent failures downstream</td>
+<td>Anything the DOM does not express</td>
+</tr>
+<tr>
+<td>Model</td>
+<td>Whatever the vendor ships</td>
+<td><strong>BYO, any LLM; beta MCP server</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>The right way to read the pair:</strong> the general case is where the operations layer is the product, and the embedded case is the one where you can skip most of it — <strong>because you control the surface, so a failure is visible in your own application rather than two days later on somebody else&#39;s phone call.</strong> A landing-page or SaaS copilot, or smart form-filling, is the natural first use.</p>
+<h3>The failure mode to design against</h3>
+<p><strong>Not the click that fails — the one that appears to succeed.</strong> No verifiable signal exists at run time, so the workflow reports done and the real state diverges silently. Verification is not a feature bolted on afterwards; <strong>it is the reason the infrastructure layer exists</strong>, and it is why the honest first question for any browser-agent idea is <em>how would I know this went wrong</em> rather than <em>can the model do it.</em></p>
       <p><a href="https://www.jaylabs.xyz/poc/agents-computer-use">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>에이전트는 이제 컴퓨터를 쓸 수 있나</h1>
-      <p class="lead">컴퓨터 사용 에이전트가 프로덕션에 들어간 2026년 a16z 업데이트 — OSWorld 벤치마크가 1년 만에 42%에서 85%로 뛴 것과, 모델이 병목이 아니게 된 뒤 구매자가 실제로 돈을 내는 지점.</p>
-      <p class="meta">정독 노트 — 데모 없음, 지갑 불필요.</p>
+      <h1>에이전트는 이제 컴퓨터를 쓸 수 있나 — 그렇다면, 누구의 컴퓨터를?</h1>
+      <p class="lead">OSWorld 가 1년 만에 42% 에서 85% 로 뛰었고 <strong>구매자는 모델 비교를 그만뒀습니다.</strong> 대신 사는 것은 <strong>검증·에스컬레이션·오류 처리</strong>이고 — 같은 질문의 반대쪽 끝에서는, <strong>스크립트 한 줄</strong>이 그 전부 없이 <strong>특정 페이지 하나</strong>를 자연어로 조작하게 합니다.</p>
+      <p class="meta"><strong>시장 절반은 정독 노트</strong> — 데모 없음, 지갑 불필요. <strong>구축 절반은 스크립트 한 줄</strong>: github.com/alibaba/page-agent, <code>&amp;lt;script&amp;gt;</code> 하나 또는 npm 설치, <strong>이미 갖고 있는 페이지</strong>에 붙여 보고 <strong>DOM 만으로 부족해지는 지점이 어디인지</strong> 적습니다. 출처: <a href="https://www.a16z.news/p/can-agents-use-a-computer-yet-weve">https://www.a16z.news/p/can-agents-use-a-computer-yet-weve</a></p>
       <h2>왜</h2>
-      <p>컴퓨터 사용 에이전트가 데모가 아니라 프로덕션에서 실제로 어디까지 와 있는지 추적하는 글 — 벤치마크 숫자뿐 아니라 실제 운영자 인터뷰(월 1500~2100만 건의 포털 상호작용을 처리하는 CPG 데이터 플랫폼, 27개 라이브 워크플로를 돌리는 시스템 통합사)를 근거로 삼는다. &quot;에이전트가 브라우저/UI를 조작한다&quot;는 아이디어가 지금 만들 만한 것인지, 아직 리서치 토이인지 판단할 때 쓸 만한 체크포인트.</p>
+      <p><strong>컴퓨터 사용 에이전트가 데모가 아니라 프로덕션에서 실제로 어디까지 와 있는지 추적합니다.</strong> a16z 글은 <strong>실제 운영자 인터뷰</strong> 위에 세워져 있습니다 — 월 1,500~2,100만 건의 포털 상호작용을 처리하는 CPG 데이터 플랫폼, <strong>27개 라이브 워크플로</strong>를 돌리는 시스템 통합사 — 벤치마크 숫자만이 아니라. <strong>&quot;에이전트가 브라우저/UI를 조작한다&quot;는 아이디어가 지금 만들 만한지, 아직 리서치 토이인지 판단할 때 쓸 체크포인트입니다.</strong></p>
+<p><strong>헤드라인 숫자는 진짜이고, 논지는 그것이 더 이상 중요하지 않게 됐다는 것입니다.</strong> 실제 데스크톱 벤치마크 OSWorld-Verified 가 <strong>1년 전 42% 에서 오늘 85%</strong> 로, 인간 기준선 약 <strong>72%</strong> 를 넘었습니다. 그런데 모델이 <em>충분히 좋은</em> 문턱을 넘자 구매자들은 모델 비교를 멈추고 <strong>인프라를 사기 시작했습니다</strong> — 검증, 에스컬레이션, 오류 처리. <strong>모델은 더 이상 제품이 아닙니다.</strong></p>
+<p><strong>그리고 같은 질문의 반대쪽 끝에, 훨씬 작고 훨씬 싼 답이 있습니다.</strong> 이 카탈로그가 별 이유 없이 따로 두고 있던 것입니다. Alibaba <code>page-agent</code> 는 <strong>페이지 안에 심는 GUI 에이전트</strong>입니다 — 스크립트 한 줄 또는 npm 설치로 <strong>자연어가 그 페이지의 UI를 조작</strong>합니다. <strong>스크린샷도, 브라우저 확장도, 헤드리스 브라우저도 없이</strong> — <strong>텍스트 기반 DOM</strong> 을 읽고, 원하는 LLM 을 붙이고(BYO), <strong>MCP 서버 베타</strong>가 있으며, browser-use 기반입니다. <strong>일반 역량 질문과 구체적 임베딩 결정은 두 축척의 같은 질문</strong>이고, 둘을 함께 두는 것이 어느 쪽이든 쓸모 있게 만듭니다 — a16z 는 <strong>병목이 이제 운영</strong>이라고 말하고, <code>page-agent</code> 는 <strong>에이전트가 내가 통제하는 페이지 하나만 건드리기 때문에 그 운영의 거의 전부가 사라지는</strong> 사례입니다.</p>
+<p><strong>가장 중요한 실패 유형은 어느 쪽도 광고하지 않는 것입니다.</strong> UI 클릭 실패가 아니라 — <strong>실행 시점에 검증할 신호가 없는 조용한 실패</strong>입니다. 화면상 &quot;접수 완료&quot;된 보험 청구가 <strong>이틀 뒤 아무도 기록하지 않은 전화 한 통</strong> 때문에 멈추는 것. <strong>정확도가 아니라 검증에 구매자가 돈을 내는 이유</strong>이고, <code>the-harness-not-the-model</code> 과 같은 모양입니다 — <strong>흥미로운 엔지니어링은 모델 안이 아니라 모델 둘레에 있습니다.</strong></p>
       <h2>동작 방식</h2>
-      <p>OSWorld-Verified(실제 데스크톱 환경 벤치마크)가 1년 전 42%에서 오늘 85%(Claude Opus 4.6급 모델)로 뛰어 인간 기준선 약 72%를 넘어섰다 — 하지만 글의 진짜 주장은 벤치마크가 더 이상 중요하지 않게 됐다는 것이다: 모델이 &quot;충분히 좋은&quot; 문턱을 넘자, 구매자들은 모델 비교를 멈추고 인프라를 사기 시작했다 — 검증, 에스컬레이션, 오류 처리, 그리고 에이전트가 워크플로를 한 번 실행한 뒤 결정론적 코드로 캐싱해두고 뭔가 깨질 때만 다시 호출되는 흔한 패턴(워크플로 수명 동안 비용이 떨어진다). 비용 비교: 에이전트 추론은 시간당 약 $6-8($3-15 범위) vs 역외 BPO 약 $10/hr vs 완전 부담 기준 미국 인건비 $30-45/hr — 오늘 기준 BPO와 거의 손익분기, 미국 인건비 대비 70-80% 마진. 가장 중요한 실패 유형은 UI 클릭 실패가 아니라, 실행 시점엔 검증할 신호가 없는 조용한 실패다(예: 화면상 &quot;접수 완료&quot;된 보험 청구가 이틀 뒤 아무도 기록하지 않은 전화 한 통 때문에 멈춰버리는 경우). 출처: <a href="https://www.a16z.news/p/can-agents-use-a-computer-yet-weve">https://www.a16z.news/p/can-agents-use-a-computer-yet-weve</a></p>
+      <h3>벤치마크는 어디로 갔고, 왜 중요하지 않게 됐나</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>1년 전</th>
+<th>오늘</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>OSWorld-Verified</strong></td>
+<td>42%</td>
+<td><strong>85%</strong></td>
+</tr>
+<tr>
+<td>인간 기준선</td>
+<td>약 72%</td>
+<td>약 72%</td>
+</tr>
+<tr>
+<td>구매자가 비교한 것</td>
+<td><strong>모델</strong></td>
+<td><strong>인프라</strong></td>
+</tr>
+</tbody></table></div>
+<p>모델이 문턱을 넘자, 구매 대상이 <strong>검증·에스컬레이션·오류 처리</strong>가 됐습니다. 흔한 패턴 하나: <strong>에이전트가 워크플로를 한 번 실행한 뒤 결정론적 코드로 캐싱해 두고, 뭔가 깨질 때만 다시 호출</strong>됩니다 — 비용이 평평하게 유지되는 게 아니라 <strong>워크플로 수명 동안 떨어집니다.</strong></p>
+<h3>만들지 말지를 정하는 비용 비교</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>선택지</th>
+<th>단가</th>
+<th>에이전트 추론 대비</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>에이전트 추론</strong></td>
+<td><strong>시간당 약 $6-8</strong>($3-15 범위)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>역외 BPO</td>
+<td>약 $10/hr</td>
+<td><strong>오늘 기준 거의 손익분기</strong></td>
+</tr>
+<tr>
+<td>완전 부담 미국 인건비</td>
+<td>$30-45/hr</td>
+<td><strong>70-80% 마진</strong></td>
+</tr>
+</tbody></table></div>
+<h3>같은 역량의 두 축척</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>범용 컴퓨터 사용</strong></th>
+<th><strong>인페이지 에이전트</strong>(<code>page-agent</code>)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>표면</td>
+<td>아무 애플리케이션</td>
+<td><strong>내가 소유한 페이지 하나</strong></td>
+</tr>
+<tr>
+<td>입력</td>
+<td>스크린샷, 접근성 트리</td>
+<td><strong>텍스트 기반 DOM</strong></td>
+</tr>
+<tr>
+<td>필요한 것</td>
+<td>확장 또는 헤드리스 브라우저</td>
+<td><strong>스크립트 한 줄</strong></td>
+</tr>
+<tr>
+<td>운영 부담</td>
+<td><strong>검증·에스컬레이션·오류 처리</strong></td>
+<td><strong>거의 없음 — 표면이 내 것</strong></td>
+</tr>
+<tr>
+<td>실패하는 지점</td>
+<td><strong>하류의 조용한 실패</strong></td>
+<td>DOM 이 표현하지 못하는 것</td>
+</tr>
+<tr>
+<td>모델</td>
+<td>벤더가 주는 것</td>
+<td><strong>BYO, 아무 LLM. MCP 서버 베타</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>둘을 읽는 올바른 방법</strong>: 범용 사례는 <strong>운영 계층이 곧 제품</strong>인 자리이고, 임베디드 사례는 <strong>그 대부분을 건너뛸 수 있는</strong> 자리입니다 — <strong>표면을 내가 통제하므로, 실패가 이틀 뒤 남의 전화가 아니라 내 애플리케이션 안에서 보이기</strong> 때문입니다. <strong>랜딩/SaaS 코파일럿, 스마트 폼 채우기</strong>가 자연스러운 첫 용도입니다.</p>
+<h3>설계로 막아야 할 실패 유형</h3>
+<p><strong>실패하는 클릭이 아니라, 성공한 것처럼 보이는 클릭.</strong> 실행 시점에 <strong>검증 가능한 신호가 없어서</strong>, 워크플로는 완료를 보고하고 <strong>실제 상태는 조용히 갈라집니다.</strong> 검증은 나중에 덧붙이는 기능이 아니라 <strong>인프라 계층이 존재하는 이유 그 자체</strong>이고, 그래서 어떤 브라우저 에이전트 아이디어든 <strong>정직한 첫 질문은 <em>모델이 할 수 있나</em> 가 아니라 <em>잘못됐다는 걸 내가 어떻게 알지</em> 입니다.</strong></p>
       <p><a href="https://www.jaylabs.xyz/poc/agents-computer-use">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-zapier-mcp.html">&larr; 53. Zapier MCP</a><a href="pocs-st-self-distribution.html">55. What tokenization actually removed &rarr;</a></div>
+  <div class="pager"><a href="pocs-solana.html">&larr; 59. Solana</a><a href="pocs-st-self-distribution.html">61. What tokenization actually removed &rarr;</a></div>
 </div>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PET clean room (FHE) — PoCs</title>
+<title>Two reading lists, and the same instruction — steal the structure, not the content — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -278,138 +278,114 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; PET clean room (FHE)</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Two reading lists, and the same instruction — steal the structure, not the content</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#40</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>PET clean room (FHE)</h1>
-      <p class="lead">Homomorphic encryption for data that cannot leave its owner — a hands-on study.</p>
-      <p class="meta">Not yet scoped — start with one FHE operation end to end, then decide if a page is worth it.</p>
+      <p class="topic-kicker"><span class="topic-no">#64</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Two reading lists, and the same instruction — steal the structure, not the content</h1>
+      <p class="lead">Ninety-odd distilled agent skills from Google, and a free three-hour course that runs the whole arc from agent design to revenue. Neither is worth reading for what it says. Both are worth thirty minutes for how they are shaped.</p>
+      <p class="meta">Two thirty-minute skims, not two courses. For the skills repository: pick 2-3 well-written skills and steal their structure — how a trigger is described, how much context a skill assumes, where it stops. For the course: watch the design intro (00:00) and the loops-versus-graphs chapter (2:24) and skip the rest unless something in those two chapters is genuinely new. (Notion queue, added 2026-08-07 and 2026-08-08.)</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
-      <p>The one problem in this catalogue that cryptography solves and a blockchain does not. On-chain work makes data public and verifiable; a clean room needs the opposite — compute over data that never becomes readable, so two parties can learn a joint result without either seeing the other&#39;s input. Worth understanding as a distinct tool rather than assuming encryption-at-rest covers it.</p>
+      <p><strong>Both of these entered the queue for the same reason, and it is not the reason a reading list usually gets added.</strong> This report itself runs on a <code>SKILL.md</code>, so the value of Google&#39;s ~90 distilled-knowledge skills — product, architecture, best practices, packaged the same way Claude&#39;s SKILL.md ecosystem packages them — <strong>is not the content. It is comparing how Google structures skill format and trigger design against Claude&#39;s approach.</strong> A skill is a small design artefact with a hard constraint (it must be worth loading), and reading someone else&#39;s is the cheapest way to see the constraint solved differently.</p>
+<p><strong>The course is the same instruction at a different scale.</strong> A free ex-Google-engineer course spanning agent design, human handoff, RAG and vector DBs, Cloud deployment, WhatsApp monetization, conversation-to-lead conversion, and loops versus graphs. <strong>The value is the end-to-end arc</strong> — Agents → RAG → Deployment → Leads → Revenue in one continuous piece — sitting at the intersection of the LLM track and the <em>sell agent services</em> business category. <strong>Most material covers one of those stages well; almost none shows the whole shape.</strong></p>
+<p><strong>And the honest note is that neither deserves more than thirty minutes</strong>, which is why they belong in one card rather than two. <code>one-page-not-the-curriculum</code> argues that graded material is a reference to open at today&#39;s block rather than a sequence to walk — <strong>and a reading list is exactly the thing that quietly assumes otherwise.</strong> Two entries, two half-hours, one instruction: <strong>take the shape and leave the rest.</strong></p>
       <h2>How it works</h2>
-      <p>Planned as a hands-on rather than a survey: take one FHE library, run a single aggregate (a sum or a count over encrypted inputs) end to end, and measure what it actually costs in latency and ciphertext size — the two numbers that decide whether any of this is usable. The reference case is a hospital/registry data collaboration, where the legal constraint is that raw records cannot leave the owner at all.</p>
-      <h2>Related code</h2>
-      <pre><code>&quot;&quot;&quot;PET clean room (FHE) PoC -- toy additive homomorphic-style scheme.
-ILLUSTRATIVE ONLY, not real FHE/crypto: shows the *idea* of computing on data that
-never becomes readable, using modular addition as a stand-in for a homomorphic scheme.
-&quot;&quot;&quot;
-
-import random
-
-MODULUS = 2**16  # toy field; real FHE uses lattice-based schemes, not plain mod-add
-
-
-def keygen() -&gt; int:
-    &quot;&quot;&quot;A random additive mask stands in for a real FHE secret key.&quot;&quot;&quot;
-    return random.randrange(MODULUS)
-
-
-def encrypt(value: int, key: int) -&gt; int:
-    return (value + key) % MODULUS
-
-
-def decrypt(ciphertext: int, key: int) -&gt; int:
-    return (ciphertext - key) % MODULUS
-
-
-def homomorphic_add(ct_a: int, ct_b: int, key_a: int, key_b: int) -&gt; int:
-    &quot;&quot;&quot;Adding two ciphertexts under DIFFERENT keys needs the combined key to decrypt --
-    the clean room only ever sees ciphertexts and the combined sum, never the inputs.&quot;&quot;&quot;
-    return (ct_a + ct_b) % MODULUS
-
-
-if __name__ == &quot;__main__&quot;:
-    # Two hospitals each hold a private count they will never reveal to each other.
-    hospital_a_count = 143
-    hospital_b_count = 289
-
-    key_a, key_b = keygen(), keygen()
-    ct_a = encrypt(hospital_a_count, key_a)
-    ct_b = encrypt(hospital_b_count, key_b)
-
-    print(f&quot;hospital A's true count: {hospital_a_count} -&gt; ciphertext sent to clean room: {ct_a}&quot;)
-    print(f&quot;hospital B's true count: {hospital_b_count} -&gt; ciphertext sent to clean room: {ct_b}&quot;)
-
-    # The clean room only ever handles ciphertexts.
-    combined_key = (key_a + key_b) % MODULUS
-    ct_sum = homomorphic_add(ct_a, ct_b, key_a, key_b)
-    print(f&quot;\nclean room computes on ciphertexts only, never sees raw counts: sum(ct) = {ct_sum}&quot;)
-
-    joint_result = decrypt(ct_sum, combined_key)
-    print(f&quot;joint result decrypted with the combined key: {joint_result}&quot;)
-    print(f&quot;matches true total ({hospital_a_count + hospital_b_count}): {joint_result == hospital_a_count + hospital_b_count}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/pet-clean-room.py">docs/code/pocs/pet-clean-room.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/pet-clean-room">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>What to take from each, and what to skip</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Google Skills Repository</strong> (~90 skills)</th>
+<th><strong>Free 3-hour agent course</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>What it is</strong></td>
+<td>Distilled knowledge packaged as agent skills — product, architecture, best practice</td>
+<td>Agent design → human handoff → RAG/vector DBs → Cloud deployment → WhatsApp monetization → leads → loops vs graphs</td>
+</tr>
+<tr>
+<td><strong>Why it is here</strong></td>
+<td>This report runs on a <code>SKILL.md</code> — <strong>format comparison, not content</strong></td>
+<td><strong>The end-to-end arc in one piece</strong></td>
+</tr>
+<tr>
+<td><strong>Take</strong></td>
+<td>Trigger design, how much context a skill assumes, <strong>where it stops</strong></td>
+<td>The design intro and <strong>loops versus graphs</strong></td>
+</tr>
+<tr>
+<td><strong>Skip</strong></td>
+<td>The other ~87</td>
+<td>Everything the two chapters already covered</td>
+</tr>
+<tr>
+<td><strong>Budget</strong></td>
+<td><strong>30 minutes</strong></td>
+<td><strong>30 minutes</strong></td>
+</tr>
+</tbody></table></div>
+<h3>The one thing worth writing down afterwards</h3>
+<p><strong>How does each decide when to fire?</strong> A skill&#39;s trigger is the only part that cannot be borrowed carelessly — it encodes an assumption about what the reader is doing at the moment the skill becomes relevant. Google&#39;s answer and Claude&#39;s answer to that question are the comparison, and <strong>one paragraph noting where they differ is the entire deliverable of this card.</strong></p>
+<h3>Why loops versus graphs is the chapter to keep</h3>
+<p>It is the one structural decision in agent design that survives changing every other choice: <strong>a loop re-enters the same step until a condition holds; a graph moves through named states with explicit edges.</strong> The first is easier to write and harder to reason about; the second is the opposite. Everything about observability, retry behaviour and cost ceilings follows from it, which is why <code>the-harness-not-the-model</code> cares about it and a monetization chapter does not.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/steal-the-structure">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>PET 클린룸 (동형암호)</h1>
-      <p class="lead">소유자를 떠날 수 없는 데이터를 위한 동형암호 — 손으로 해보는 스터디.</p>
-      <p class="meta">아직 범위 미정 — FHE 연산 하나를 끝까지 해본 뒤에 페이지를 만들지 정합니다.</p>
+      <h1>읽을거리 둘, 그리고 같은 지시 — 내용이 아니라 구조를 훔쳐 올 것</h1>
+      <p class="lead">Google 의 <strong>증류된 에이전트 스킬 90여 개</strong>, 그리고 <strong>에이전트 설계에서 수익화까지 전체 호를 도는 3시간 무료 코스.</strong> <strong>어느 쪽도 내용 때문에 읽을 값은 없습니다. 둘 다 형태 때문에 30분씩 값이 있습니다.</strong></p>
+      <p class="meta"><strong>코스 둘이 아니라 30분 훑기 둘.</strong> 스킬 저장소: <strong>잘 쓴 스킬 2~3개를 골라 구조만 훔쳐 옵니다</strong> — 트리거를 어떻게 서술하는지, 스킬이 컨텍스트를 얼마나 전제하는지, <strong>어디서 멈추는지.</strong> 코스: <strong>설계 인트로(00:00)</strong> 와 <strong>루프 대 그래프(2:24)</strong> 만 보고, <strong>그 두 장에서 진짜로 새로운 게 나오지 않는 한 나머지는 건너뜁니다.</strong> (Notion 지시, 2026-08-07 · 08-08 추가.)</p>
       <h2>왜</h2>
-      <p>이 카탈로그에서 유일하게 <strong>암호학이 풀고 블록체인은 못 푸는</strong> 문제입니다. 온체인 작업은 데이터를 공개·검증 가능하게 만들지만, 클린룸에 필요한 건 정반대입니다 — 끝내 읽히지 않는 데이터 위에서 계산해서, 두 주체가 서로의 입력을 보지 않고도 공동 결과만 알아내는 것. 저장 시 암호화로 덮인다고 가정하지 말고 별개의 도구로 이해할 가치가 있습니다.</p>
+      <p><strong>둘은 같은 이유로 큐에 들어왔고, 그것은 읽을거리가 보통 추가되는 이유가 아닙니다.</strong> 이 리포트 자체가 <code>SKILL.md</code> 로 굴러갑니다. 그래서 Google 의 <strong>증류된 지식 스킬 약 90개</strong> — 제품·아키텍처·베스트 프랙티스를, Claude 의 SKILL.md 생태계와 같은 방식으로 포장한 것 — 의 값어치는 <strong>내용이 아닙니다. Google 이 스킬 포맷과 트리거 설계를 Claude 와 어떻게 다르게 구조화했는지 비교하는 것</strong>입니다. 스킬은 <strong>엄격한 제약(불러올 값어치가 있어야 한다)을 가진 작은 설계 산출물</strong>이고, <strong>남의 것을 읽는 것이 그 제약이 다르게 풀린 모습을 보는 가장 싼 방법</strong>입니다.</p>
+<p><strong>코스는 축척만 다른 같은 지시입니다.</strong> 전 구글 엔지니어의 무료 코스로 <strong>에이전트 설계 → 휴먼 핸드오프 → RAG·벡터DB → Google Cloud 배포 → WhatsApp 수익화 → 대화-리드 전환 → 루프 대 그래프 → 멀티툴 에이전트 그래프.</strong> <strong>값어치는 엔드투엔드 호</strong>입니다 — Agents → RAG → Deployment → Leads → Revenue 를 <strong>끊기지 않은 한 편</strong>으로 — LLM 트랙과 <em>에이전트 서비스 판매</em> 비즈니스 카테고리의 교차점에 있습니다. <strong>대부분의 자료는 그중 한 단계를 잘 다루고, 전체 모양을 보여주는 것은 거의 없습니다.</strong></p>
+<p><strong>그리고 정직한 메모는, 어느 쪽도 30분 이상을 받을 자격이 없다는 것</strong>이고, 그래서 카드 둘이 아니라 하나입니다. <code>one-page-not-the-curriculum</code> 은 <strong>등급별 자료가 걸어야 할 순서가 아니라 오늘 막힌 지점에서 펼칠 레퍼런스</strong>라고 주장하고 — <strong>읽을거리 목록이야말로 조용히 그 반대를 전제하는 것</strong>입니다. <strong>항목 둘, 30분 둘, 지시 하나: 형태를 가져가고 나머지는 두고 온다.</strong></p>
       <h2>동작 방식</h2>
-      <p>서베이가 아니라 실습으로 계획했습니다: FHE 라이브러리 하나를 골라 암호문 입력에 대한 집계 하나(합계나 카운트)를 끝까지 돌려보고, 지연과 암호문 크기를 실제로 측정합니다 — 이 기술이 쓸 만한지를 정하는 건 결국 이 두 숫자입니다. 참조 사례는 원본 레코드가 소유자를 아예 떠날 수 없다는 법적 제약이 걸린 병원·레지스트리 데이터 협업입니다.</p>
-      <h2>관련 코드</h2>
-      <pre><code>&quot;&quot;&quot;PET clean room (FHE) PoC -- toy additive homomorphic-style scheme.
-ILLUSTRATIVE ONLY, not real FHE/crypto: shows the *idea* of computing on data that
-never becomes readable, using modular addition as a stand-in for a homomorphic scheme.
-&quot;&quot;&quot;
-
-import random
-
-MODULUS = 2**16  # toy field; real FHE uses lattice-based schemes, not plain mod-add
-
-
-def keygen() -&gt; int:
-    &quot;&quot;&quot;A random additive mask stands in for a real FHE secret key.&quot;&quot;&quot;
-    return random.randrange(MODULUS)
-
-
-def encrypt(value: int, key: int) -&gt; int:
-    return (value + key) % MODULUS
-
-
-def decrypt(ciphertext: int, key: int) -&gt; int:
-    return (ciphertext - key) % MODULUS
-
-
-def homomorphic_add(ct_a: int, ct_b: int, key_a: int, key_b: int) -&gt; int:
-    &quot;&quot;&quot;Adding two ciphertexts under DIFFERENT keys needs the combined key to decrypt --
-    the clean room only ever sees ciphertexts and the combined sum, never the inputs.&quot;&quot;&quot;
-    return (ct_a + ct_b) % MODULUS
-
-
-if __name__ == &quot;__main__&quot;:
-    # Two hospitals each hold a private count they will never reveal to each other.
-    hospital_a_count = 143
-    hospital_b_count = 289
-
-    key_a, key_b = keygen(), keygen()
-    ct_a = encrypt(hospital_a_count, key_a)
-    ct_b = encrypt(hospital_b_count, key_b)
-
-    print(f&quot;hospital A's true count: {hospital_a_count} -&gt; ciphertext sent to clean room: {ct_a}&quot;)
-    print(f&quot;hospital B's true count: {hospital_b_count} -&gt; ciphertext sent to clean room: {ct_b}&quot;)
-
-    # The clean room only ever handles ciphertexts.
-    combined_key = (key_a + key_b) % MODULUS
-    ct_sum = homomorphic_add(ct_a, ct_b, key_a, key_b)
-    print(f&quot;\nclean room computes on ciphertexts only, never sees raw counts: sum(ct) = {ct_sum}&quot;)
-
-    joint_result = decrypt(ct_sum, combined_key)
-    print(f&quot;joint result decrypted with the combined key: {joint_result}&quot;)
-    print(f&quot;matches true total ({hospital_a_count + hospital_b_count}): {joint_result == hospital_a_count + hospital_b_count}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/pet-clean-room.py">docs/code/pocs/pet-clean-room.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/pet-clean-room">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>각각에서 가져올 것과 건너뛸 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Google Skills Repository</strong>(약 90개)</th>
+<th><strong>3시간 무료 에이전트 코스</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>정체</strong></td>
+<td>증류된 지식을 에이전트 스킬로 포장 — 제품·아키텍처·베스트 프랙티스</td>
+<td>에이전트 설계 → 휴먼 핸드오프 → RAG·벡터DB → Cloud 배포 → WhatsApp 수익화 → 리드 → 루프 대 그래프</td>
+</tr>
+<tr>
+<td><strong>여기 있는 이유</strong></td>
+<td>이 리포트가 <code>SKILL.md</code> 로 굴러감 — <strong>내용이 아니라 포맷 비교</strong></td>
+<td><strong>엔드투엔드 호를 한 편으로</strong></td>
+</tr>
+<tr>
+<td><strong>가져올 것</strong></td>
+<td>트리거 설계, 스킬이 전제하는 컨텍스트 양, <strong>어디서 멈추는지</strong></td>
+<td>설계 인트로와 <strong>루프 대 그래프</strong></td>
+</tr>
+<tr>
+<td><strong>건너뛸 것</strong></td>
+<td>나머지 약 87개</td>
+<td>그 두 장이 이미 다룬 전부</td>
+</tr>
+<tr>
+<td><strong>예산</strong></td>
+<td><strong>30분</strong></td>
+<td><strong>30분</strong></td>
+</tr>
+</tbody></table></div>
+<h3>끝나고 적어 둘 단 하나</h3>
+<p><strong>각각은 언제 발동할지를 어떻게 정하는가?</strong> <strong>스킬의 트리거는 함부로 빌려올 수 없는 유일한 부분</strong>입니다 — <strong>그 스킬이 유의미해지는 순간 독자가 무엇을 하고 있는지에 대한 전제</strong>를 인코딩하기 때문입니다. 그 질문에 대한 Google 의 답과 Claude 의 답이 곧 비교이고, <strong>둘이 어디서 갈리는지 한 문단이 이 카드의 산출물 전부</strong>입니다.</p>
+<h3>왜 루프 대 그래프가 남길 장인가</h3>
+<p><strong>다른 모든 선택을 바꿔도 살아남는 유일한 구조적 결정</strong>이기 때문입니다 — <strong>루프는 조건이 성립할 때까지 같은 단계로 다시 들어가고, 그래프는 명시적 간선을 따라 이름 붙은 상태들을 지나갑니다.</strong> 앞은 쓰기 쉽고 추론하기 어렵고, 뒤는 반대입니다. <strong>관측 가능성·재시도 동작·비용 상한이 전부 여기서 따라 나옵니다.</strong> <code>the-harness-not-the-model</code> 이 이것을 신경 쓰고 수익화 장이 신경 쓰지 않는 이유입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/steal-the-structure">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-erc-8141.html">&larr; 39. ERC-8141</a><a href="pocs-confidential-settlement-metadata.html">41. Hiding the amount is the easy half &rarr;</a></div>
+  <div class="pager"><a href="pocs-tokenized-money-banks.html">&larr; 63. Tokenized Money for Banks</a><a href="pocs-circuit-breaker-saga.html">65. Microservice patterns — Circuit Breaker &amp; Saga &rarr;</a></div>
 </div>
 </body>
 </html>

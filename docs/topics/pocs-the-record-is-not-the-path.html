@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KB hybrid payment flow — PoCs</title>
+<title>The record is not the path — a registry and a vault for the same problem — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -278,136 +278,202 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; KB hybrid payment flow</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The record is not the path — a registry and a vault for the same problem</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#49</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>KB hybrid payment flow</h1>
-      <p class="lead">A card rail (ISO 8583) meeting on-chain settlement — where the two systems actually touch.</p>
-      <p class="meta">Reference — docs/features/kb-hybrid-payment-flow.md. No dev item.</p>
+      <p class="topic-kicker"><span class="topic-no">#15</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>The record is not the path — a registry and a vault for the same problem</h1>
+      <p class="lead">ERC-7812 proposes one on-chain registry where any protocol can store and prove identity statements by ZK without publishing the data. Docbank makes the opposite bet with the same premise: the catalogue stays on your machine, and a stable node ID rather than a file path is the identity.</p>
+      <p class="meta">Read-only for the standard — no wallet needed. Start with ERC-7812&#39;s Rationale section on why a singleton, then the reference implementation: eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry. For the vault, install and run it: <code>docbank add ~/Documents --dest /archive</code> → <code>docbank tree /archive</code> → <code>docbank web</code>. Alpha software, so keep independent copies of anything irreplaceable. github.com/kenn-io/docbank</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
-      <p>The AP2 and Toss cards settle an agent&#39;s purchase through a payment rail, but treat the rail as a black box. This flow map opens it: an ISO 8583 authorization is decades-old, message-based, and reversible, while on-chain settlement is final and irreversible. Mapping where they meet is mapping where the reversibility mismatch has to be absorbed by somebody — and that somebody is a business decision, not a technical one.</p>
+      <p><strong>Two projects, opposite architectures, and the same premise underneath: an account or a file path is a poor long-term identity.</strong></p>
+<p><strong>ERC-7812 is the standardisation attempt.</strong> Provable identity is fragmented — Privado ID, EAS, Rarimo each carry their own registry — and the proposal is to collapse that into <strong>one singleton on-chain registry</strong> where any protocol can store and prove statements by zero-knowledge proof <strong>without publishing the underlying data.</strong> Vitalik is a co-author. <strong>The Rationale section on why a singleton is the part to read</strong>, because the argument for one shared registry over many is the whole design decision and everything else follows from it. This card sits between <code>dsrv-portal</code>, which asks who vouches for a credential, and <code>erc-8141</code>, which asks what the protocol absorbs — <strong>the middle question is where the statement lives.</strong></p>
+<p><strong>Docbank is the clearest example of the opposite bet, and it is worth running rather than reading about.</strong> Agents that file, retrieve and revise documents need <strong>a system of record, not a sync folder</strong> — and a file path makes a poor identity once things get moved and renamed. Docbank&#39;s answer: the catalogue stays on your machine, <strong>a document keeps its identity through moves</strong>, every version is named by a <strong>verifiable SHA-256 digest</strong>, and stale automation hits an <strong>explicit revision conflict instead of silently overwriting.</strong> That last property is the one that matters for agent-facing archives, because a silent overwrite by an agent working from stale state is exactly the failure that has no signal at run time.</p>
+<p><strong>Holding them in one card makes the shared conclusion visible.</strong> Both refuse to let the <strong>location</strong> be the identity — one replaces it with a registry entry provable by ZK, the other with a node ID and a content digest. <strong>The difference is where the authoritative record lives and who can be made to answer for it</strong>, and that is the same question <code>priced-by-the-wrong-thing</code> reaches from tokenised equity and <code>build-rent-or-own-the-rail</code> reaches from bank ledgers. <strong>The ledger is always the easy half.</strong></p>
       <h2>How it works</h2>
-      <p>A flow map only: the card-rail leg (authorization, capture, settlement, chargeback windows) against an Avalanche-subnet settlement leg, with the touch points marked. Explicitly no development item attached.</p>
-      <h2>Related code</h2>
-      <pre><code># KB hybrid payment flow — where a card rail (ISO 8583) meets on-chain settlement.
-# Illustrates the core tension: ISO 8583 auth is reversible (chargebacks), on-chain
-# settlement is final. Routing decides who has to absorb that reversibility mismatch.
-
-from dataclasses import dataclass
-
-
-@dataclass
-class PaymentLeg:
-    rail: str
-    reversible: bool
-    settlement_window: str
-
-
-CARD_RAIL = PaymentLeg(rail=&quot;ISO 8583 (card network)&quot;, reversible=True, settlement_window=&quot;T+1 to T+2, chargeback window ~120 days&quot;)
-ONCHAIN_RAIL = PaymentLeg(rail=&quot;Avalanche subnet settlement&quot;, reversible=False, settlement_window=&quot;final on confirmation&quot;)
-
-# Below this threshold, the reversibility of the card rail is an acceptable business
-# risk; above it, finality of on-chain settlement is preferred to avoid chargeback
-# exposure on a large-value transfer. This threshold is the &quot;touch point&quot; the card
-# describes — a business decision about who absorbs the mismatch, not a technical one.
-CHARGEBACK_RISK_THRESHOLD_USD = 1000.0
-
-
-def route_payment(amount_usd: float) -&gt; PaymentLeg:
-    &quot;&quot;&quot;Decide which settlement leg carries this payment.&quot;&quot;&quot;
-    if amount_usd &lt; CHARGEBACK_RISK_THRESHOLD_USD:
-        return CARD_RAIL
-    return ONCHAIN_RAIL
-
-
-def describe(amount_usd: float) -&gt; str:
-    leg = route_payment(amount_usd)
-    absorbs = &quot;merchant accepts chargeback risk&quot; if leg.reversible else &quot;buyer accepts irreversibility&quot;
-    return (
-        f&quot;${amount_usd:&gt;8,.2f} -&gt; {leg.rail:&lt;28} &quot;
-        f&quot;(reversible={leg.reversible!s:&lt;5}, window={leg.settlement_window}) | {absorbs}&quot;
-    )
-
-
-if __name__ == &quot;__main__&quot;:
-    print(&quot;KB hybrid payment routing — card rail vs on-chain settlement\n&quot;)
-    for amount in (25.00, 450.00, 999.99, 1000.00, 15000.00):
-        print(describe(amount))
-
-    print(f&quot;\nRouting threshold: ${CHARGEBACK_RISK_THRESHOLD_USD:,.2f}&quot;)
-    print(&quot;Below it: card rail's reversibility is the safer default.&quot;)
-    print(&quot;At/above it: on-chain finality avoids chargeback exposure on large sums.&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/kb-hybrid-payment.py">docs/code/pocs/kb-hybrid-payment.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/kb-hybrid-payment">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>Same premise, opposite architectures</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>ERC-7812</strong></th>
+<th><strong>Docbank</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>What it refuses</strong></td>
+<td>One registry per identity protocol</td>
+<td><strong>A file path as identity</strong></td>
+</tr>
+<tr>
+<td><strong>Identity is</strong></td>
+<td>A registry entry, provable by ZK</td>
+<td><strong>A stable node ID</strong> surviving moves and renames</td>
+</tr>
+<tr>
+<td><strong>Version identity</strong></td>
+<td>The statement, unpublished</td>
+<td><strong>Immutable, SHA-256-addressed</strong></td>
+</tr>
+<tr>
+<td><strong>Where the record lives</strong></td>
+<td><strong>On-chain, singleton</strong></td>
+<td><strong>Your machine</strong></td>
+</tr>
+<tr>
+<td><strong>Who can vouch</strong></td>
+<td>Any protocol writing to it</td>
+<td>You — the daemon owns the vault</td>
+</tr>
+<tr>
+<td><strong>Failure it designs against</strong></td>
+<td>Fragmentation across registries</td>
+<td><strong>Silent overwrite by stale automation</strong></td>
+</tr>
+</tbody></table></div>
+<h3>What to read in the standard</h3>
+<p><strong>The Rationale, and specifically why a singleton.</strong> The argument that one shared registry beats many is the design decision; storage layout, proof format and interface all follow from it. The reference implementation (<code>rarimo/evidence-registry</code>) is where to check whether the argument survives contact with code.</p>
+<h3>What Docbank does that a sync folder does not</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Property</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>One authenticated daemon owns a vault</strong></td>
+<td>CLI, web app, TUI, scripts and external agents all speak the same <strong>loopback-authenticated HTTP/OpenAPI contract</strong></td>
+</tr>
+<tr>
+<td><strong>In-process option</strong></td>
+<td>Go programs embed an independently rooted vault via <code>go.kenn.io/docbank</code>, skipping the daemon</td>
+</tr>
+<tr>
+<td><strong>Stale writes conflict, not overwrite</strong></td>
+<td>Writes carry <strong>revision preconditions</strong></td>
+</tr>
+<tr>
+<td><strong>Deletion is staged deliberately</strong></td>
+<td>Trash → permanent delete → GC → pack reclamation are <strong>separate decisions</strong>, with revision-bound restore in between</td>
+</tr>
+<tr>
+<td><strong>Blobs without ceding the catalogue</strong></td>
+<td>Loose or packed, optionally in fenced filesystem or S3-compatible stores — <strong>Docbank verifies but does not encrypt them</strong></td>
+</tr>
+<tr>
+<td><strong>Recovery is provable rather than assumed</strong></td>
+<td>Incremental snapshot repositories <strong>verified end-to-end before a restore is published</strong>; restore is topology-independent</td>
+</tr>
+<tr>
+<td><strong>Supply-chain check</strong></td>
+<td>Installers <strong>refuse any archive whose digest does not match the release SHA256SUMS</strong></td>
+</tr>
+</tbody></table></div>
+<p>Apache-2.0, Go 1.26+ with CGO and Node 24+ to build from source. Sibling project to msgvault, which does the same for messages.</p>
+<h3>The shared conclusion</h3>
+<p><strong>Neither lets the location be the identity, and both make the record verifiable by something other than trust in a provider.</strong> The registry does it by publishing a proof and withholding the data; the vault does it by publishing nothing and keeping a digest. <strong>Which one is right depends entirely on who has to be convinced</strong> — a counterparty who was never in the room, or you in five years.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/the-record-is-not-the-path">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>KB 하이브리드 결제 플로우</h1>
-      <p class="lead">카드 레일(ISO 8583)과 온체인 정산이 만나는 지점 — 두 시스템이 실제로 닿는 곳.</p>
-      <p class="meta">참조 — docs/features/kb-hybrid-payment-flow.md. 개발 항목 없음.</p>
+      <h1>기록은 경로가 아니다 — 같은 문제의 레지스트리와 금고</h1>
+      <p class="lead">ERC-7812 은 <strong>어떤 프로토콜이든 데이터를 공개하지 않고 ZK 로 신원 진술을 저장·증명할 수 있는 온체인 레지스트리 하나</strong>를 제안합니다. Docbank 는 <strong>같은 전제에서 정반대 베팅</strong>을 합니다 — <strong>카탈로그는 내 기계에 남고, 파일 경로가 아니라 안정적인 노드 ID 가 정체성</strong>입니다.</p>
+      <p class="meta"><strong>표준 쪽은 읽기 전용</strong> — 지갑 불필요. <strong>왜 싱글턴인가</strong>를 다루는 ERC-7812 의 Rationale 부터, 그다음 레퍼런스 구현: eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry. <strong>금고 쪽은 설치해서 돌립니다</strong>: <code>docbank add ~/Documents --dest /archive</code> → <code>docbank tree /archive</code> → <code>docbank web</code>. <strong>알파 소프트웨어이므로 대체 불가한 것은 독립 사본을 유지하세요.</strong> github.com/kenn-io/docbank</p>
       <h2>왜</h2>
-      <p>AP2와 Toss 카드는 에이전트의 구매를 결제 레일로 정산하지만, 레일 자체는 블랙박스로 둡니다. 이 플로우 맵이 그것을 엽니다: ISO 8583 승인은 수십 년 된 메시지 기반 규격이고 <strong>되돌릴 수 있는</strong> 반면, 온체인 정산은 최종적이고 <strong>되돌릴 수 없습니다.</strong> 둘이 만나는 지점을 그린다는 건 곧 그 되돌림 가능성의 불일치를 <strong>누가 떠안는가</strong>를 그리는 것이고, 그 누구는 기술이 아니라 사업의 결정입니다.</p>
+      <p><strong>프로젝트 둘, 정반대 아키텍처, 그리고 밑에 깔린 같은 전제: 계정이나 파일 경로는 장기 정체성으로 형편없다.</strong></p>
+<p><strong>ERC-7812 은 표준화 시도입니다.</strong> 증명 가능한 신원은 파편화돼 있습니다 — Privado ID·EAS·Rarimo 가 <strong>각자 자기 레지스트리</strong>를 갖고 있습니다 — 그리고 제안은 그것을 <strong>온체인 싱글턴 레지스트리 하나</strong>로 접자는 것입니다. 거기서 어떤 프로토콜이든 <strong>원본 데이터를 공개하지 않고 영지식 증명으로</strong> 진술을 저장하고 증명합니다. <strong>Vitalik 이 공동 저자</strong>입니다. <strong>읽을 부분은 왜 싱글턴인가를 다루는 Rationale</strong> 입니다 — <strong>여럿 대신 하나의 공유 레지스트리를 택하는 논거가 설계 결정 전부</strong>이고 나머지는 거기서 따라 나옵니다. 이 카드는 <strong>누가 자격증명을 보증하나</strong>를 묻는 <code>dsrv-portal</code> 과 <strong>프로토콜이 무엇을 흡수하나</strong>를 묻는 <code>erc-8141</code> 사이에 앉습니다 — <strong>가운데 질문이 그 진술이 어디 사는가</strong>입니다.</p>
+<p><strong>Docbank 은 정반대 베팅의 가장 선명한 사례이고, 읽기보다 돌려 볼 값이 있습니다.</strong> 문서를 정리·검색·개정하는 에이전트에게 필요한 것은 <strong>동기화 폴더가 아니라 기록 시스템</strong>이고 — <strong>파일 경로는 옮기고 이름을 바꾸는 순간 형편없는 정체성</strong>이 됩니다. Docbank 의 답: <strong>카탈로그는 내 기계에 남고</strong>, <strong>문서는 이동을 관통해 정체성을 유지</strong>하며, 모든 버전은 <strong>검증 가능한 SHA-256 다이제스트</strong>로 이름 붙고, <strong>낡은 자동화는 조용히 덮어쓰는 대신 명시적 리비전 충돌에 부딪힙니다.</strong> <strong>마지막 성질이 에이전트용 아카이브에서 중요한 것</strong>입니다 — <strong>낡은 상태로 일하는 에이전트의 조용한 덮어쓰기가, 실행 시점에 신호가 없는 바로 그 실패</strong>이기 때문입니다.</p>
+<p><strong>한 카드에 두면 공통 결론이 보입니다.</strong> <strong>둘 다 위치가 정체성이 되는 것을 거부합니다</strong> — 하나는 <strong>ZK 로 증명 가능한 레지스트리 항목</strong>으로, 다른 하나는 <strong>노드 ID 와 콘텐츠 다이제스트</strong>로 대체합니다. <strong>차이는 권위 있는 기록이 어디 살고 누구에게 책임을 물을 수 있는가</strong>이고, <code>priced-by-the-wrong-thing</code> 이 토큰화 주식에서, <code>build-rent-or-own-the-rail</code> 이 은행 원장에서 도달하는 <strong>같은 질문</strong>입니다. <strong>원장은 언제나 쉬운 절반입니다.</strong></p>
       <h2>동작 방식</h2>
-      <p>플로우 맵만 있습니다: 카드 레일 구간(승인·매입·정산·차지백 기간)과 Avalanche 서브넷 정산 구간을 나란히 두고 닿는 지점을 표시합니다. 개발 항목은 명시적으로 붙어 있지 않습니다.</p>
-      <h2>관련 코드</h2>
-      <pre><code># KB hybrid payment flow — where a card rail (ISO 8583) meets on-chain settlement.
-# Illustrates the core tension: ISO 8583 auth is reversible (chargebacks), on-chain
-# settlement is final. Routing decides who has to absorb that reversibility mismatch.
-
-from dataclasses import dataclass
-
-
-@dataclass
-class PaymentLeg:
-    rail: str
-    reversible: bool
-    settlement_window: str
-
-
-CARD_RAIL = PaymentLeg(rail=&quot;ISO 8583 (card network)&quot;, reversible=True, settlement_window=&quot;T+1 to T+2, chargeback window ~120 days&quot;)
-ONCHAIN_RAIL = PaymentLeg(rail=&quot;Avalanche subnet settlement&quot;, reversible=False, settlement_window=&quot;final on confirmation&quot;)
-
-# Below this threshold, the reversibility of the card rail is an acceptable business
-# risk; above it, finality of on-chain settlement is preferred to avoid chargeback
-# exposure on a large-value transfer. This threshold is the &quot;touch point&quot; the card
-# describes — a business decision about who absorbs the mismatch, not a technical one.
-CHARGEBACK_RISK_THRESHOLD_USD = 1000.0
-
-
-def route_payment(amount_usd: float) -&gt; PaymentLeg:
-    &quot;&quot;&quot;Decide which settlement leg carries this payment.&quot;&quot;&quot;
-    if amount_usd &lt; CHARGEBACK_RISK_THRESHOLD_USD:
-        return CARD_RAIL
-    return ONCHAIN_RAIL
-
-
-def describe(amount_usd: float) -&gt; str:
-    leg = route_payment(amount_usd)
-    absorbs = &quot;merchant accepts chargeback risk&quot; if leg.reversible else &quot;buyer accepts irreversibility&quot;
-    return (
-        f&quot;${amount_usd:&gt;8,.2f} -&gt; {leg.rail:&lt;28} &quot;
-        f&quot;(reversible={leg.reversible!s:&lt;5}, window={leg.settlement_window}) | {absorbs}&quot;
-    )
-
-
-if __name__ == &quot;__main__&quot;:
-    print(&quot;KB hybrid payment routing — card rail vs on-chain settlement\n&quot;)
-    for amount in (25.00, 450.00, 999.99, 1000.00, 15000.00):
-        print(describe(amount))
-
-    print(f&quot;\nRouting threshold: ${CHARGEBACK_RISK_THRESHOLD_USD:,.2f}&quot;)
-    print(&quot;Below it: card rail's reversibility is the safer default.&quot;)
-    print(&quot;At/above it: on-chain finality avoids chargeback exposure on large sums.&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/kb-hybrid-payment.py">docs/code/pocs/kb-hybrid-payment.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/kb-hybrid-payment">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>같은 전제, 정반대 아키텍처</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>ERC-7812</strong></th>
+<th><strong>Docbank</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>거부하는 것</strong></td>
+<td>신원 프로토콜마다 하나씩의 레지스트리</td>
+<td><strong>정체성으로서의 파일 경로</strong></td>
+</tr>
+<tr>
+<td><strong>정체성은</strong></td>
+<td><strong>ZK 로 증명 가능한</strong> 레지스트리 항목</td>
+<td><strong>이동·개명을 관통해 살아남는 안정적 노드 ID</strong></td>
+</tr>
+<tr>
+<td><strong>버전 정체성</strong></td>
+<td>진술, 미공개</td>
+<td><strong>불변, SHA-256 주소 지정</strong></td>
+</tr>
+<tr>
+<td><strong>기록이 사는 곳</strong></td>
+<td><strong>온체인, 싱글턴</strong></td>
+<td><strong>내 기계</strong></td>
+</tr>
+<tr>
+<td><strong>누가 보증하나</strong></td>
+<td>거기 쓰는 어떤 프로토콜이든</td>
+<td>나 — <strong>데몬이 금고를 소유</strong></td>
+</tr>
+<tr>
+<td><strong>설계로 막는 실패</strong></td>
+<td>레지스트리 간 파편화</td>
+<td><strong>낡은 자동화의 조용한 덮어쓰기</strong></td>
+</tr>
+</tbody></table></div>
+<h3>표준에서 읽을 것</h3>
+<p><strong>Rationale, 그중에서도 왜 싱글턴인가.</strong> <strong>여럿보다 하나의 공유 레지스트리가 낫다는 논거가 설계 결정</strong>이고, 저장 레이아웃·증명 형식·인터페이스가 전부 거기서 따라 나옵니다. 레퍼런스 구현(<code>rarimo/evidence-registry</code>)이 <strong>그 논거가 코드와 부딪혀도 살아남는지 확인할 자리</strong>입니다.</p>
+<h3>Docbank 이 동기화 폴더와 다르게 하는 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>성질</th>
+<th>방식</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>인증된 데몬 하나가 금고를 소유</strong></td>
+<td>CLI·웹앱·TUI·스크립트·외부 에이전트가 전부 <strong>루프백 인증 HTTP/OpenAPI 계약</strong> 하나로 말함</td>
+</tr>
+<tr>
+<td><strong>인프로세스 옵션</strong></td>
+<td>Go 프로그램은 <code>go.kenn.io/docbank</code> 로 <strong>독립 루트 금고를 임베드</strong>, 데몬 생략</td>
+</tr>
+<tr>
+<td><strong>낡은 쓰기는 덮어쓰지 않고 충돌</strong></td>
+<td>쓰기가 <strong>리비전 사전조건</strong>을 실어 나름</td>
+</tr>
+<tr>
+<td><strong>삭제가 의도적으로 단계화</strong></td>
+<td>휴지통 → 영구 삭제 → GC → 팩 회수가 <strong>각각 별개 결정</strong>, 사이사이 <strong>리비전 결속 복원</strong></td>
+</tr>
+<tr>
+<td><strong>카탈로그를 넘기지 않는 블롭 보관</strong></td>
+<td>낱개 또는 팩, 선택적으로 울타리 친 파일시스템·S3 호환 저장소 — <strong>Docbank 은 검증하되 암호화하지 않음</strong></td>
+</tr>
+<tr>
+<td><strong>복구가 가정이 아니라 증명</strong></td>
+<td>증분 스냅샷 저장소를 <strong>복원 발행 전에 끝에서 끝까지 검증</strong>, 복원은 <strong>토폴로지 독립</strong></td>
+</tr>
+<tr>
+<td><strong>공급망 점검</strong></td>
+<td>설치기가 <strong>릴리스 SHA256SUMS 와 다이제스트가 다른 아카이브를 거부</strong></td>
+</tr>
+</tbody></table></div>
+<p>Apache-2.0, 소스 빌드에는 Go 1.26+ (CGO) 와 Node 24+. <strong>메시지에 대해 같은 일을 하는 자매 프로젝트 msgvault</strong> 가 있습니다.</p>
+<h3>공통 결론</h3>
+<p><strong>둘 다 위치가 정체성이 되게 두지 않고, 둘 다 공급자에 대한 신뢰가 아닌 것으로 기록을 검증 가능하게 만듭니다.</strong> 레지스트리는 <strong>증명을 공개하고 데이터를 보류</strong>해서, 금고는 <strong>아무것도 공개하지 않고 다이제스트를 쥐고</strong> 있어서. <strong>어느 쪽이 맞는지는 전적으로 누구를 설득해야 하는가에 달렸습니다</strong> — <strong>그 자리에 없었던 거래상대냐, 5년 뒤의 나 자신이냐.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/the-record-is-not-the-path">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-web-stack-layers.html">&larr; 48. Web stack layers</a><a href="pocs-cre-cloud.html">50. CRE × Cloud — four hybrid patterns &rarr;</a></div>
+  <div class="pager"><a href="pocs-dkg-resharing.html">&larr; 14. The ceremony ends, the committee doesn't</a><a href="pocs-erc-8141.html">16. ERC-8141 &rarr;</a></div>
 </div>
 </body>
 </html>

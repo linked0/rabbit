@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What encryption does not hide — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; What encryption does not hide</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#17</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>What encryption does not hide</h1>
+      <p class="lead">Confidential settlement encrypts the invoice value and publishes who paid whom and when. That second half is offered as the harmless one, and for a supply chain it may be the half worth hiding — while the opposite tool, computing over data that never becomes readable, solves the problem a blockchain structurally cannot.</p>
+      <p class="meta">Two experiments, both runnable without a counterparty. First, the leak: synthesise a B2B payment graph with realistic structure — supplier tiers, net-30 cadence, seasonal variance, occasional onboarding and churn, a few relationships that quietly slip late — then publish only sender, receiver and timestamp, with no amounts at all, not even ranges. Then attack it and report what share of the commercially sensitive inferences is recoverable, at what accuracy, with zero value data. Second, the tool: take one FHE library, run a single aggregate — a sum or a count over encrypted inputs — end to end, and measure latency and ciphertext size, the two numbers that decide whether any of it is usable. Sources: Mysten Labs&#39; Tessera announcement, 2026-08-10, and Sui&#39;s Confidential Transfers (public testing since 2026-06).</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>Institutional privacy converged on one shape in 2026</strong> — Tessera on Sui, XRPL&#39;s confidential transfers, Circle&#39;s Arc Privacy, Canton, Midnight — and the shape is: <strong>encrypt the value, publish the graph.</strong> Sui states it without hedging in its own announcement: the chain shows <strong>who paid whom and when</strong>, and the amount appears as ▦▦▦. That is offered as the harmless half. <strong>This card asks whether it is.</strong></p>
+<p><strong>In B2B settlement the commercially sensitive facts are often structural rather than numeric.</strong> Who your suppliers are, which relationships are contractual and which are one-off, when a contract started or stopped, whether you have begun paying late. <strong>A competitor does not need your invoice value to see that you onboarded a supplier last month and dropped another one.</strong> And the asymmetry is worse than it looks — an amount that leaks is one number, while <strong>a published graph edge cannot be un-published</strong>, and the graph compounds as every later payment adds to it.</p>
+<p><strong>The point is not that the cryptography is weak.</strong> Twisted ElGamal over Ristretto255 with zero-knowledge proofs does exactly what it claims. <strong>The point is that the thing left in the clear was chosen for a technical reason, not a privacy one</strong> — the chain must still name the accounts whose ciphertexts it updates.</p>
+<p><strong>Which makes it a real trilemma rather than a gotcha, and worth stating as one.</strong> Hiding the graph too means a shielded-pool design, which breaks exactly the <strong>auditability institutions are buying.</strong> Canton is the comparison arm precisely because it resolves it differently, keeping the graph off the public ledger <strong>at the cost of being a permissioned network.</strong> There is no free corner here.</p>
+<p><strong>The other half of the card is the tool that answers a different question entirely, and it is the one problem in this catalogue that cryptography solves and a blockchain does not.</strong> On-chain work makes data <strong>public and verifiable</strong>; a clean room needs the opposite — <strong>compute over data that never becomes readable</strong>, so two parties learn a joint result without either seeing the other&#39;s input. The reference case is a hospital or registry collaboration where the legal constraint is that <strong>raw records cannot leave the owner at all.</strong> Worth understanding as a distinct tool rather than assuming encryption-at-rest covers it, and worth doing hands-on rather than surveying, because <strong>the two numbers that decide its usability are latency and ciphertext size</strong> and neither is knowable from a paper.</p>
+<p><strong>And the trust model deserves the same scepticism as the cryptography.</strong> Seal grants <strong>scoped, time-limited, revocable</strong> access to regulators, tax authorities and dispute arbiters, which is the right shape for compliance; network operators can onboard, freeze accounts, or pause the network. Both are sensible. <strong>Both also mean the confidentiality is conditional on whoever holds the threshold shares</strong> — worth recording next to <code>third-party-blast-radius</code>, because <strong>a privacy guarantee an operator can revoke is a policy, not a cryptographic property.</strong></p>
+      <h2>How it works</h2>
+      <h3>Two opposite tools, and the question each answers</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Confidential settlement</strong> (Tessera, XRPL, Arc)</th>
+<th><strong>FHE clean room</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>What is hidden</strong></td>
+<td><strong>The value</strong></td>
+<td><strong>The inputs, permanently</strong></td>
+</tr>
+<tr>
+<td><strong>What is published</strong></td>
+<td><strong>Sender, receiver, timestamp</strong></td>
+<td>A joint result only</td>
+</tr>
+<tr>
+<td><strong>Answers</strong></td>
+<td>Can a public ledger carry commercial payments?</td>
+<td>Can two parties compute without either seeing the other&#39;s data?</td>
+</tr>
+<tr>
+<td><strong>The constraint it respects</strong></td>
+<td>Auditability</td>
+<td><strong>Raw records cannot leave the owner at all</strong></td>
+</tr>
+<tr>
+<td><strong>The number that decides it</strong></td>
+<td>What the graph still leaks</td>
+<td><strong>Latency and ciphertext size</strong></td>
+</tr>
+</tbody></table></div>
+<h3>The attack, and it runs entirely on synthetic data</h3>
+<p>Build a B2B payment graph with realistic structure, publish <strong>only sender, receiver, timestamp</strong> — no amounts, not even ranges — then recover what you can:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Inference</th>
+<th>The signal it comes from</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Contractual versus one-off relationships</strong></td>
+<td>Interval regularity</td>
+</tr>
+<tr>
+<td><strong>Contract initiation and termination</strong></td>
+<td>Edge start and stop dates</td>
+</tr>
+<tr>
+<td><strong>Counterparty importance ranking</strong></td>
+<td>Frequency</td>
+</tr>
+<tr>
+<td><strong>Financial distress</strong></td>
+<td><strong>Cadence slippage — arrives before any public filing</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>The output is a number rather than an opinion:</strong> what share of those inferences is recoverable, at what accuracy, with <strong>zero value data.</strong></p>
+<h3>The trilemma, stated as one</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Design</th>
+<th>Graph hidden?</th>
+<th>Value hidden?</th>
+<th>Auditable?</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Public chain, plaintext</strong></td>
+<td>No</td>
+<td>No</td>
+<td>Yes</td>
+<td>No confidentiality</td>
+</tr>
+<tr>
+<td><strong>Confidential transfers</strong> (Tessera et al.)</td>
+<td><strong>No</strong></td>
+<td>Yes</td>
+<td>Yes</td>
+<td><strong>The graph compounds forever</strong></td>
+</tr>
+<tr>
+<td><strong>Shielded pool</strong></td>
+<td>Yes</td>
+<td>Yes</td>
+<td><strong>No</strong></td>
+<td>Breaks what institutions are buying</td>
+</tr>
+<tr>
+<td><strong>Canton</strong></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td><strong>Permissioned network</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>There is no free corner.</strong> Saying so is more useful than scoring points against any one design.</p>
+<h3>The trust model, which is the second half of the guarantee</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Held by</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Seal access grants</strong></td>
+<td>Regulators, tax authorities, arbiters</td>
+<td>Scoped, <strong>time-limited, revocable</strong> — the right shape for compliance</td>
+</tr>
+<tr>
+<td><strong>Account freeze, network pause</strong></td>
+<td>Network operators</td>
+<td>Sensible operationally</td>
+</tr>
+<tr>
+<td><strong>Threshold shares</strong></td>
+<td>Whoever holds them</td>
+<td><strong>The confidentiality is conditional on them</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>A privacy guarantee an operator can revoke is a policy, not a cryptographic property</strong> — the same question <code>third-party-blast-radius</code> asks of any threshold scheme, and the same one that decides whether <code>build-rent-or-own-the-rail</code>&#39;s consortium ledger can keep a bank&#39;s counterparties from its competitors.</p>
+<h3>The FHE half, done as a measurement rather than a survey</h3>
+<p>One library, <strong>one aggregate — a sum or a count over encrypted inputs — end to end</strong>, and record two numbers: latency and ciphertext size. Those decide whether a clean room is a product or a paper. The reference case stays a hospital or registry collaboration, because that is where the legal constraint is absolute rather than commercial: <strong>the raw records cannot leave, at any price.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/what-encryption-does-not-hide">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>암호화가 가리지 못하는 것</h1>
+      <p class="lead">기밀 정산은 <strong>송장 금액을 암호화하고 누가 누구에게 언제 냈는지는 공개</strong>합니다. 그 후반부가 <strong>무해한 절반</strong>으로 제시되는데, 공급망에서는 <strong>가려야 할 쪽이 그쪽일 수 있습니다</strong> — 반대편 도구, 즉 <strong>끝내 읽히지 않는 데이터 위에서 계산하기</strong>는 <strong>블록체인이 구조적으로 풀 수 없는 문제</strong>를 풉니다.</p>
+      <p class="meta"><strong>실험 둘, 둘 다 거래상대 없이 돌릴 수 있습니다.</strong> 첫째, <strong>유출</strong>: 현실적인 구조를 가진 B2B 결제 그래프를 합성합니다 — 공급사 계층, net-30 주기, 계절 변동, 간헐적 온보딩과 이탈, 조용히 지급이 늦어지는 관계 몇 개 — 그다음 <strong>보내는 쪽·받는 쪽·타임스탬프만</strong> 공개합니다. <strong>금액은 아예 없이, 구간조차 없이.</strong> 그리고 공격합니다. <strong>금액 데이터 0으로 상업적으로 민감한 추론의 몇 퍼센트가, 어느 정확도로 복원되는지</strong>를 보고합니다. 둘째, <strong>도구</strong>: FHE 라이브러리 하나로 <strong>암호화된 입력 위의 집계 하나</strong>(합 또는 개수)를 끝까지 돌리고, <strong>지연과 암호문 크기</strong>를 잽니다 — <strong>이게 쓸 만한지를 결정하는 두 숫자</strong>입니다. 출처: Mysten Labs 의 Tessera 발표(2026-08-10), Sui Confidential Transfers(2026-06부터 공개 테스트).</p>
+      <h2>왜</h2>
+      <p><strong>2026년 기관용 프라이버시는 하나의 모양으로 수렴했습니다</strong> — Sui 의 Tessera, XRPL 기밀 전송, Circle Arc Privacy, Canton, Midnight — 그 모양은 <strong>값은 암호화하고 그래프는 공개</strong>입니다. Sui 는 자사 발표에서 <strong>에두르지 않고</strong> 말합니다: 체인은 <strong>누가 누구에게 언제 냈는지</strong>를 보여주고, 금액은 ▦▦▦ 로 나온다고. <strong>무해한 절반으로 제시된 것</strong>입니다. <strong>이 카드는 그것이 정말 무해한가를 묻습니다.</strong></p>
+<p><strong>B2B 정산에서 상업적으로 민감한 사실은 흔히 숫자가 아니라 구조입니다.</strong> 공급사가 누구인지, 어느 관계가 계약이고 어느 것이 일회성인지, 계약이 언제 시작되고 끝났는지, <strong>지급이 늦어지기 시작했는지.</strong> <strong>경쟁사는 당신이 지난달 공급사를 새로 들이고 다른 하나를 끊었다는 것을 보는 데 송장 금액이 필요 없습니다.</strong> 그리고 비대칭이 보이는 것보다 나쁩니다 — <strong>새어 나간 금액은 숫자 하나</strong>이지만, <strong>공개된 그래프 간선은 되돌려 감출 수 없고</strong>, 그래프는 <strong>이후의 모든 결제가 더해지며 누적</strong>됩니다.</p>
+<p><strong>암호학이 약하다는 말이 아닙니다.</strong> Ristretto255 위의 Twisted ElGamal 과 영지식 증명은 <strong>주장하는 바를 정확히</strong> 합니다. <strong>요점은 평문으로 남겨진 것이 프라이버시가 아니라 기술적 이유로 선택됐다는 것</strong>입니다 — <strong>체인은 자기가 암호문을 갱신하는 계정들을 여전히 지목해야</strong> 하니까요.</p>
+<p><strong>그래서 이것은 트집이 아니라 진짜 트릴레마이고, 그렇게 적어 두는 편이 낫습니다.</strong> 그래프까지 가리려면 <strong>차폐 풀(shielded pool)</strong> 설계가 되고, 그건 <strong>기관이 사려는 감사가능성</strong>을 정확히 깨뜨립니다. <strong>Canton 이 비교군인 이유가 정확히 그것</strong>입니다 — 그래프를 공개 원장 밖에 두되 <strong>퍼미션드 네트워크라는 대가</strong>를 치릅니다. <strong>공짜인 모서리는 없습니다.</strong></p>
+<p><strong>카드의 다른 절반은 완전히 다른 질문에 답하는 도구이고, 이 카탈로그에서 암호학이 풀고 블록체인은 못 푸는 유일한 문제입니다.</strong> 온체인 작업은 데이터를 <strong>공개적이고 검증 가능하게</strong> 만듭니다. 클린룸은 그 반대가 필요합니다 — <strong>끝내 읽을 수 있게 되지 않는 데이터 위에서 계산</strong>해서, <strong>두 당사자가 서로의 입력을 보지 않고 공동 결과만 알게</strong> 하는 것. 기준 사례는 병원·등록기관 데이터 협업이고, <strong>법적 제약은 원본 기록이 소유자를 아예 떠날 수 없다</strong>는 것입니다. <strong>저장 시 암호화가 이걸 커버한다고 가정하지 말고 별개 도구로 이해할 값</strong>이 있고, <strong>서베이가 아니라 직접 해볼 값</strong>이 있습니다. <strong>쓸 만한지를 결정하는 두 숫자가 지연과 암호문 크기</strong>인데, <strong>논문으로는 둘 다 알 수 없기</strong> 때문입니다.</p>
+<p><strong>그리고 신뢰 모델은 암호학과 같은 정도의 회의를 받을 자격이 있습니다.</strong> Seal 은 규제기관·과세당국·분쟁 중재자에게 <strong>범위가 정해지고, 기한이 있고, 취소 가능한</strong> 접근을 부여합니다 — <strong>컴플라이언스에 맞는 모양</strong>입니다. 네트워크 운영자는 계정을 온보딩하고, 동결하고, 네트워크를 멈출 수 있습니다. <strong>둘 다 합리적입니다.</strong> <strong>그리고 둘 다, 기밀성이 임계값 조각을 쥔 자에게 조건부라는 뜻</strong>입니다 — <code>third-party-blast-radius</code> 옆에 적어 둘 값이 있습니다. <strong>운영자가 취소할 수 있는 프라이버시 보장은 암호학적 성질이 아니라 정책</strong>이기 때문입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>정반대의 두 도구, 각각이 답하는 질문</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>기밀 정산</strong>(Tessera, XRPL, Arc)</th>
+<th><strong>FHE 클린룸</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>가려지는 것</strong></td>
+<td><strong>금액</strong></td>
+<td><strong>입력, 영구히</strong></td>
+</tr>
+<tr>
+<td><strong>공개되는 것</strong></td>
+<td><strong>보내는 쪽·받는 쪽·타임스탬프</strong></td>
+<td>공동 결과만</td>
+</tr>
+<tr>
+<td><strong>답하는 질문</strong></td>
+<td>공개 원장이 상업 결제를 나를 수 있나?</td>
+<td>두 당사자가 서로의 데이터를 안 보고 계산할 수 있나?</td>
+</tr>
+<tr>
+<td><strong>존중하는 제약</strong></td>
+<td>감사가능성</td>
+<td><strong>원본 기록이 소유자를 아예 떠날 수 없음</strong></td>
+</tr>
+<tr>
+<td><strong>결정하는 숫자</strong></td>
+<td><strong>그래프가 여전히 흘리는 것</strong></td>
+<td><strong>지연과 암호문 크기</strong></td>
+</tr>
+</tbody></table></div>
+<h3>공격, 그리고 전부 합성 데이터로 돌아감</h3>
+<p>현실적 구조의 B2B 결제 그래프를 만들고 <strong>보내는 쪽·받는 쪽·타임스탬프만</strong> 공개합니다 — <strong>금액 없이, 구간조차 없이</strong> — 그다음 복원할 수 있는 것을 복원합니다:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>추론</th>
+<th>어느 신호에서 오나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>계약 관계 대 일회성</strong></td>
+<td><strong>간격의 규칙성</strong></td>
+</tr>
+<tr>
+<td><strong>계약 개시와 종료</strong></td>
+<td>간선의 시작·중단 날짜</td>
+</tr>
+<tr>
+<td><strong>거래상대 중요도 순위</strong></td>
+<td>빈도</td>
+</tr>
+<tr>
+<td><strong>재무적 곤경</strong></td>
+<td><strong>주기 지연 — 어떤 공시보다 먼저 도착</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>산출물은 의견이 아니라 숫자입니다</strong> — <strong>금액 데이터 0으로</strong> 그 추론들의 <strong>몇 퍼센트가, 어느 정확도로</strong> 복원되는가.</p>
+<h3>트릴레마, 트릴레마로 적기</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>설계</th>
+<th>그래프 가려짐?</th>
+<th>금액 가려짐?</th>
+<th>감사 가능?</th>
+<th>대가</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>공개 체인, 평문</strong></td>
+<td>아니오</td>
+<td>아니오</td>
+<td>예</td>
+<td>기밀성 없음</td>
+</tr>
+<tr>
+<td><strong>기밀 전송</strong>(Tessera 등)</td>
+<td><strong>아니오</strong></td>
+<td>예</td>
+<td>예</td>
+<td><strong>그래프가 영원히 누적</strong></td>
+</tr>
+<tr>
+<td><strong>차폐 풀</strong></td>
+<td>예</td>
+<td>예</td>
+<td><strong>아니오</strong></td>
+<td><strong>기관이 사려는 것을 깨뜨림</strong></td>
+</tr>
+<tr>
+<td><strong>Canton</strong></td>
+<td>예</td>
+<td>예</td>
+<td>예</td>
+<td><strong>퍼미션드 네트워크</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>공짜인 모서리는 없습니다.</strong> 그렇게 말하는 것이 <strong>어느 한 설계에 점수를 따는 것보다 쓸모</strong> 있습니다.</p>
+<h3>신뢰 모델, 보장의 나머지 절반</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>권한</th>
+<th>쥔 쪽</th>
+<th>뜻</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Seal 접근 부여</strong></td>
+<td>규제기관·과세당국·중재자</td>
+<td>범위 한정, <strong>기한 있음, 취소 가능</strong> — 컴플라이언스에 맞는 모양</td>
+</tr>
+<tr>
+<td><strong>계정 동결, 네트워크 일시정지</strong></td>
+<td>네트워크 운영자</td>
+<td>운영상 합리적</td>
+</tr>
+<tr>
+<td><strong>임계값 조각</strong></td>
+<td>그것을 쥔 누구든</td>
+<td><strong>기밀성이 그들에게 조건부</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>운영자가 취소할 수 있는 프라이버시 보장은 암호학적 성질이 아니라 정책</strong>입니다 — <code>third-party-blast-radius</code> 가 모든 임계값 방식에 던지는 같은 질문이고, <code>build-rent-or-own-the-rail</code> 의 컨소시엄 원장이 <strong>한 은행의 거래상대를 경쟁사로부터 지킬 수 있는지</strong>를 정하는 같은 질문입니다.</p>
+<h3>FHE 절반, 서베이가 아니라 측정으로</h3>
+<p><strong>라이브러리 하나, 집계 하나</strong>(암호화된 입력 위의 합 또는 개수)<strong>를 끝까지</strong>, 그리고 숫자 둘을 기록합니다 — <strong>지연과 암호문 크기.</strong> 이 둘이 <strong>클린룸이 제품인지 논문인지</strong>를 정합니다. 기준 사례는 병원·등록기관 협업으로 둡니다. <strong>법적 제약이 상업적이 아니라 절대적인 자리</strong>이기 때문입니다 — <strong>원본 기록은, 어떤 값을 치르든, 떠날 수 없습니다.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/what-encryption-does-not-hide">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-erc-8141.html">&larr; 16. ERC-8141</a><a href="pocs-merkle-vs-verkle.html">18. Merkle vs Verkle &rarr;</a></div>
+</div>
+</body>
+</html>

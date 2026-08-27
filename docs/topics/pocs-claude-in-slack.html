@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ERC-7812 — one registry for provable identity — PoCs</title>
+<title>Claude in Slack — the workflow first, the presence second — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -278,34 +278,116 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ERC-7812 — one registry for provable identity</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Claude in Slack — the workflow first, the presence second</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#38</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>ERC-7812 — one registry for provable identity</h1>
-      <p class="lead">A singleton on-chain registry where any protocol can store and prove identity statements by ZK, without publishing the data — Vitalik is a co-author.</p>
-      <p class="meta">Read-only study — no wallet needed. Start with the Rationale section on why a singleton, then read the reference implementation. eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry</p>
+      <p class="topic-kicker"><span class="topic-no">#66</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Claude in Slack — the workflow first, the presence second</h1>
+      <p class="lead">Wire Slack, Claude and Notion together through MCP connectors so a thread gets summarized and logged. The tagged-bot version of the same idea is the packaged form of that workflow, which is why it stays parked until the workflow is worth having.</p>
+      <p class="meta">Not yet scoped, and deliberately parked. When it resumes, the order is fixed: build the workflow by hand first — a Slack conversation summarized by Claude and written to Notion through the existing connectors — and only consider a tagged presence once the manual version has run often enough to be missed.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
-      <p>The identity cards in this catalogue keep arriving at the same wall from different sides, and this proposal is aimed squarely at it. Studying iden3 shows that each identity protocol anchors its own state root in its own contract, so a credential proven to one verifier means nothing to another that watches a different contract — the fragmentation is structural, not a matter of adoption. This ERC&#39;s answer is a single permissionless registry that every protocol writes into, which makes the trust surface one immutable contract instead of one per issuer stack. The part worth thinking hardest about is the cross-chain claim: because the whole registry commits to a single Sparse Merkle Tree, moving its state to another chain means moving one bytes32 root rather than replicating a protocol. That is the same problem the multichain RWA card leaves unsolved for supply, solved here for identity by refusing to fragment in the first place — which is also Canton&#39;s move, arrived at independently.</p>
+      <p><strong>These were two cards and one of them said so.</strong> The tagged-bot idea recorded that it <em>feeds into</em> the integration workflow rather than standing alone, which is the definition of a merge. <strong>Both were parked in August 2026 as not currently important</strong>, so combining them costs nothing and removes a duplicate from the list.</p>
+<p><strong>What survives is the ordering, and it is the only part worth keeping.</strong> The workflow — a Slack thread that Claude summarizes and logs to Notion, chained through Claude&#39;s Slack and Notion MCP connectors — is a thing you can build today with no new surface area. <strong>A tagged presence in Slack is the same workflow with an invocation shortcut and an availability promise attached</strong>, and the promise is the expensive half: something that answers when tagged has to be running, has to handle being tagged in the wrong place, and has to fail visibly rather than silently.</p>
+<p><strong>So the honest sequence is workflow first, presence second, and the second may never be needed.</strong> If the manual version runs a handful of times and nobody misses it when it stops, that is the answer. <code>agents-computer-use</code> makes the same point at a larger scale — <strong>once the model is good enough, what you are buying is operations</strong>, and a bot that must always be reachable is an operations commitment dressed as a convenience.</p>
       <h2>How it works</h2>
-      <p>The registry is an EvidenceRegistry singleton, deployed deterministically to the same address on mainnet and Sepolia, sitting in front of an EvidenceDB that holds a Sparse Merkle Tree with Poseidon hashing — Poseidon because the tree has to be cheap to verify inside a circuit, the same reason iden3 picked Baby Jubjub over secp256k1. Protocols write statements as leaves; nobody writes the underlying data, only its commitment, so what lands on chain is a hash and what travels to a verifier is a proof. Sparse rather than plain matters for the same reason it did in iden3: only a sparse tree gives non-inclusion proofs, which is what revocation actually requires. The specification is deliberately abstract, and the authors say so — it is a base layer, with more specific ERCs expected on top for on-chain passports, social graphs, POAPs. Reference implementation lives at rarimo/evidence-registry, and Rarimo&#39;s own passport and biometric registries are built on it. Status: merged as a draft in February 2025, moved to Review in June 2025, contracts already deployed. Three questions to bring to the read. First, the singleton&#39;s honest cost — a shared immutable registry means a bug or a bad standard is shared too, and there is no upgrade path by design. Second, the trust question this catalogue keeps returning to does not go away: the registry proves a statement was recorded, never that it is true, so the issuer allowlist problem simply moves up a level. Third, whether a single global tree stays cheap to prove against once many protocols write to it.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/erc-7812">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>Two forms of one idea</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>The workflow</strong></th>
+<th><strong>The tagged presence</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>What it is</td>
+<td>Slack thread → Claude summary → Notion record</td>
+<td>The same, invoked by mentioning a bot</td>
+</tr>
+<tr>
+<td>Built from</td>
+<td>Claude&#39;s existing Slack and Notion MCP connectors</td>
+<td>The workflow, plus a hosted listener</td>
+</tr>
+<tr>
+<td>New surface area</td>
+<td><strong>None</strong></td>
+<td><strong>Availability, error visibility, wrong-channel handling</strong></td>
+</tr>
+<tr>
+<td>Cost when idle</td>
+<td>Zero</td>
+<td><strong>Non-zero — it has to be running</strong></td>
+</tr>
+<tr>
+<td>Status</td>
+<td>The thing to build first</td>
+<td><strong>Parked, and correctly so</strong></td>
+</tr>
+</tbody></table></div>
+<h3>The test that decides whether the second one is ever needed</h3>
+<p>Run the manual version for a couple of weeks. <strong>If nobody misses it when it stops, the tagged version is a solution to a problem that did not exist.</strong> If it is missed, the miss itself specifies what the bot must guarantee — and that specification is worth more than any amount of design done in advance.</p>
+<h3>Why it stays parked</h3>
+<p>Both halves were marked <em>not currently important</em> in August 2026 and nothing has changed that. <strong>The entry stays on the list because the ordering is the finding</strong>, not because the work is queued.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/claude-in-slack">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>ERC-7812 — 증명 가능한 신원의 단일 레지스트리</h1>
-      <p class="lead">어떤 프로토콜이든 신원 관련 주장을 저장하고 ZK로 증명하되 데이터는 공개하지 않는 단일 온체인 레지스트리 — 비탈릭이 공저자다.</p>
-      <p class="meta">읽기 전용 스터디 — 지갑 불필요. 왜 싱글턴인지를 다룬 Rationale 절부터, 그다음 레퍼런스 구현. eips.ethereum.org/EIPS/eip-7812 · github.com/rarimo/evidence-registry</p>
+      <h1>Slack 속 Claude — 워크플로가 먼저, 상주는 나중</h1>
+      <p class="lead">MCP 커넥터로 <strong>Slack · Claude · Notion</strong> 을 이어, 스레드가 <strong>정리돼 Notion 에 기록</strong>되게 합니다. <strong>봇을 태그하는 판본은 그 워크플로의 포장된 형태</strong>이고, 그래서 <strong>워크플로가 값어치를 갖기 전까지는 보류</strong>입니다.</p>
+      <p class="meta"><strong>아직 범위 미정이고, 의도적으로 보류 중입니다.</strong> 재개할 때 <strong>순서는 정해져 있습니다</strong> — <strong>먼저 워크플로를 손으로</strong> 만듭니다(Slack 대화를 Claude 가 정리해 기존 커넥터로 Notion 에 기록). <strong>상주형 태그 봇은 수동 버전이 아쉬워질 만큼 자주 돌아간 뒤에야</strong> 고려합니다.</p>
       <h2>왜</h2>
-      <p>이 카탈로그의 신원 카드들이 각기 다른 방향에서 같은 벽에 도달하는데, 이 제안은 그 벽을 정면으로 겨냥합니다. iden3를 뜯어보면 <strong>신원 프로토콜마다 자기 상태 루트를 자기 컨트랙트에 앵커링</strong>하므로, 한 검증자에게 증명한 크리덴셜이 다른 컨트랙트를 보는 검증자에게는 아무 의미가 없습니다 — <strong>파편화가 채택의 문제가 아니라 구조의 문제</strong>라는 뜻입니다. 이 ERC의 답은 <strong>모든 프로토콜이 함께 쓰는 하나의 퍼미션리스 레지스트리</strong>이고, 그러면 신뢰 표면이 발급자 스택마다 하나씩이 아니라 <strong>불변 컨트랙트 하나</strong>가 됩니다. 가장 곱씹을 부분은 크로스체인 주장입니다 — 레지스트리 전체가 <strong>하나의 Sparse Merkle Tree에 커밋</strong>되므로, 다른 체인으로 상태를 옮기는 일이 프로토콜을 복제하는 게 아니라 <strong>bytes32 루트 하나를 보내는 일</strong>이 됩니다. 멀티체인 RWA 카드가 공급량에 대해 풀지 못한 채 남긴 그 문제를, 신원에 대해서는 <strong>애초에 파편화하지 않는 방식</strong>으로 푼 셈이고 — 그건 Canton이 독립적으로 도달한 수와 같습니다.</p>
+      <p><strong>이건 카드 둘이었고, 그중 하나가 스스로 그렇게 적고 있었습니다.</strong> 태그 봇 아이디어는 <strong>독립적으로 서지 않고 통합 워크플로로 <em>연결된다</em><strong> 고 기록돼 있었는데, 그게 곧 병합의 정의입니다. </strong>둘 다 2026년 8월에 &quot;지금은 중요하지 않음&quot;으로 보류<strong>됐으므로, 합치는 데 잃는 것이 없고 </strong>목록에서 중복 하나가 사라집니다.<strong>
+
+</strong>남는 것은 순서이고, 그것만이 간직할 값이 있습니다.<strong> 워크플로 — Slack 스레드를 Claude 가 정리해 Notion 에 기록, Claude 의 Slack·Notion MCP 커넥터로 연결 — 는 </strong>새 표면적 없이 오늘 만들 수 있는 것<strong>입니다. </strong>Slack 상주 태그 봇은 같은 워크플로에 호출 단축키와 가용성 약속을 붙인 것<strong>이고, </strong>비싼 절반은 약속<strong>입니다 — 태그하면 답하는 것은 </strong>떠 있어야 하고<strong>, </strong>엉뚱한 자리에서 태그되는 것을 처리해야 하고<strong>, </strong>조용히가 아니라 눈에 띄게 실패해야<strong> 합니다.
+
+</strong>그래서 정직한 순서는 워크플로 먼저, 상주는 나중이고, 나중은 영영 필요 없을 수도 있습니다.<strong> 수동 버전을 몇 번 돌렸는데 </strong>멈춰도 아무도 아쉬워하지 않으면 그게 답<strong>입니다. <code>agents-computer-use</code> 가 더 큰 축척에서 같은 말을 합니다 — </strong>모델이 충분히 좋아지고 나면 사는 것은 운영<strong>이고, </strong>항상 닿을 수 있어야 하는 봇은 편의로 분장한 운영 약속</strong>입니다.</p>
       <h2>동작 방식</h2>
-      <p>레지스트리는 <strong>EvidenceRegistry 싱글턴</strong>으로, 결정론적 배포를 통해 메인넷과 Sepolia에 <strong>같은 주소</strong>로 올라가 있습니다. 그 뒤에 <strong>EvidenceDB</strong>가 있고, <strong>Poseidon 해시를 쓰는 Sparse Merkle Tree</strong>를 보관합니다 — Poseidon인 이유는 트리가 <strong>회로 안에서 싸게 검증돼야</strong> 하기 때문이고, iden3가 secp256k1 대신 Baby Jubjub을 고른 것과 같은 이유입니다. 프로토콜들은 주장을 <strong>잎(leaf)으로 기록</strong>하되 원본 데이터는 아무도 쓰지 않고 <strong>커밋먼트만</strong> 올립니다 — 체인에 남는 건 해시이고, 검증자에게 가는 건 증명입니다. 일반 머클이 아니라 <strong>Sparse</strong>인 이유도 iden3에서와 같습니다: <strong>비포함 증명</strong>이 가능해야 폐기(revocation)가 성립하니까요. 명세는 <strong>의도적으로 추상적</strong>이며 저자들도 그렇게 밝힙니다 — 온체인 여권·소셜 그래프·POAP 같은 구체적 용도는 그 위에 별도 ERC로 올라올 것을 상정한 <strong>기반 계층</strong>입니다. 레퍼런스 구현은 <code>rarimo/evidence-registry</code>이고, Rarimo 자신의 여권·생체 레지스트리가 그 위에 올라가 있습니다. 상태: <strong>2025-02 draft 병합, 2025-06 Review 단계, 컨트랙트는 이미 배포됨</strong>. 읽을 때 들고 갈 질문 셋. <strong>① 싱글턴의 정직한 대가</strong> — 공유 불변 레지스트리는 버그나 잘못된 표준도 함께 공유한다는 뜻이고, 설계상 업그레이드 경로가 없습니다. <strong>② 이 카탈로그가 반복해서 돌아오는 신뢰 문제는 사라지지 않습니다</strong> — 레지스트리는 <em>주장이 기록됐다</em>는 것만 증명하지 <em>그것이 참이라</em>는 것은 절대 증명하지 않으므로, 발급자 허용목록 문제가 한 층 위로 옮겨갈 뿐입니다. <strong>③ 여러 프로토콜이 함께 쓰기 시작해도 단일 전역 트리에 대한 증명이 계속 쌀 것인가.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/erc-7812">Open on jaylabs.xyz &rarr;</a></p>
+      <h3>한 아이디어의 두 형태</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th><strong>워크플로</strong></th>
+<th><strong>상주 태그 봇</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>정체</td>
+<td>Slack 스레드 → Claude 정리 → Notion 기록</td>
+<td>같은 것을, <strong>봇을 멘션해서</strong> 호출</td>
+</tr>
+<tr>
+<td>무엇으로 만드나</td>
+<td>Claude 의 기존 Slack·Notion MCP 커넥터</td>
+<td>워크플로 + <strong>호스팅된 리스너</strong></td>
+</tr>
+<tr>
+<td>새 표면적</td>
+<td><strong>없음</strong></td>
+<td><strong>가용성, 오류 가시성, 엉뚱한 채널 처리</strong></td>
+</tr>
+<tr>
+<td>유휴 시 비용</td>
+<td>0</td>
+<td><strong>0이 아님 — 떠 있어야 함</strong></td>
+</tr>
+<tr>
+<td>상태</td>
+<td><strong>먼저 만들 것</strong></td>
+<td><strong>보류, 그리고 그게 맞음</strong></td>
+</tr>
+</tbody></table></div>
+<h3>둘째가 필요한지를 정하는 시험</h3>
+<p><strong>수동 버전을 2주쯤 돌립니다.</strong> <strong>멈췄을 때 아무도 아쉬워하지 않으면, 태그 봇은 존재하지 않던 문제의 해법</strong>입니다. 아쉬워한다면, <strong>그 아쉬움 자체가 봇이 무엇을 보장해야 하는지를 규정</strong>하고 — <strong>그 규정이 미리 한 어떤 설계보다 값어치가 큽니다.</strong></p>
+<h3>왜 계속 보류인가</h3>
+<p>둘 다 2026년 8월에 <em>지금은 중요하지 않음</em> 으로 표시됐고 <strong>바뀐 것이 없습니다.</strong> <strong>이 항목이 목록에 남는 이유는 작업이 대기열에 있어서가 아니라 그 순서가 곧 발견이기 때문</strong>입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/claude-in-slack">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-dsrv-portal.html">&larr; 37. Institutional custody study</a><a href="pocs-erc-8141.html">39. ERC-8141 &rarr;</a></div>
+  <div class="pager"><a href="pocs-circuit-breaker-saga.html">&larr; 65. Microservice patterns — Circuit Breaker &amp; Saga</a><a href="pocs-apple-container.html">67. Apple container &rarr;</a></div>
 </div>
 </body>
 </html>

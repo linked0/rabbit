@@ -280,7 +280,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The custody was never the hard part</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#33</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <p class="topic-kicker"><span class="topic-no">#48</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
       <h1>The custody was never the hard part</h1>
       <p class="lead">A fisheries bank just bought 14.95% of a digital-asset custodian. Design the one service only those two could ship — then find the number that decides whether it should exist.</p>
       <p class="meta">Not yet scoped — the first task is not code. Ask one question: today&#39;s gap between auction hammer and settlement, and what a fisher pays to close it. Sources: 연합뉴스 2026-08-20 (수협은행 · 인피닛블록 지분 14.95%, 공동 2대 주주), 은행법 제37조 (15% 한도) — to verify.</p>
@@ -323,7 +323,7 @@
 <h3>Why only these two could ship it</h3>
 <p>Not because of the chain. Because <strong>Suhyup is the counterparty at both ends</strong> — it banks the auction house, the fisher, and frequently the buyer. That closes the loop that kills most receivables-tokenisation pilots, where the party who must honour the claim is a stranger to the party who issued it. Here they are inside the same institution, which is a structural advantage no amount of protocol design substitutes for.</p>
 <h3>The gap, and it is the same gap three other cards found</h3>
-<p>The token is the easy half. The instrument is worth exactly what the auction attestation is worth — <strong>true, and timely.</strong> That is the box <code>rwa-multichain</code> left open (who signs the fact, and who is liable when the fact is wrong) and the question <code>price-at-a-moment</code> asks about a settlement price nobody verified. A signed catch record is a verifiable credential in every respect, and the hard part is never the signature. It is <strong>correction and revocation</strong>:</p>
+<p>The token is the easy half. The instrument is worth exactly what the auction attestation is worth — <strong>true, and timely.</strong> That is the box <code>rwa-multichain</code> left open (who signs the fact, and who is liable when the fact is wrong) and the question <code>the-settlement-instant</code> asks about a settlement price nobody verified. A signed catch record is a verifiable credential in every respect, and the hard part is never the signature. It is <strong>correction and revocation</strong>:</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -400,7 +400,7 @@
 <h3>왜 이 둘만 만들 수 있나</h3>
 <p>체인 때문이 아닙니다. <strong>수협이 양쪽 끝의 거래상대</strong>이기 때문입니다 — 위판장도, 어업인도, 흔히 매수인도 수협 거래처입니다. 이것이 대부분의 매출채권 토큰화 파일럿을 죽이는 고리를 닫아줍니다: 보통은 <strong>청구권을 이행할 쪽과 발행한 쪽이 남남</strong>인데, 여기서는 같은 기관 안에 있습니다. 프로토콜 설계로는 대체할 수 없는 구조적 우위입니다.</p>
 <h3>빈칸 — 그리고 다른 카드 셋이 찾아낸 그 빈칸과 같습니다</h3>
-<p>토큰은 쉬운 쪽입니다. 증서의 값어치는 위판 증명이 <strong>참이고 제때인가</strong>에 정확히 달려 있습니다. 그것이 <code>rwa-multichain</code> 카드가 열어둔 칸(누가 사실에 서명하며, 사실이 틀렸을 때 누가 책임지는가)이고, <code>price-at-a-moment</code> 카드가 아무도 검증하지 않은 정산 가격에 대해 묻는 질문입니다. 서명된 위판 기록은 모든 면에서 검증가능 자격증명이고, 어려운 부분은 서명이 아니라 <strong>정정과 폐기</strong>입니다:</p>
+<p>토큰은 쉬운 쪽입니다. 증서의 값어치는 위판 증명이 <strong>참이고 제때인가</strong>에 정확히 달려 있습니다. 그것이 <code>rwa-multichain</code> 카드가 열어둔 칸(누가 사실에 서명하며, 사실이 틀렸을 때 누가 책임지는가)이고, <code>the-settlement-instant</code> 카드가 아무도 검증하지 않은 정산 가격에 대해 묻는 질문입니다. 서명된 위판 기록은 모든 면에서 검증가능 자격증명이고, 어려운 부분은 서명이 아니라 <strong>정정과 폐기</strong>입니다:</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -437,7 +437,7 @@
 <p>기사는 수탁사의 스택에 스테이블코인 발행관리가 포함된다고 밝히고 있고, 국내 제도는 아직 움직이는 중입니다. 정직한 순서를 적어두는 편이 낫습니다 — <strong>정산 토큰은 증명 문제가 풀린 다음에야 의미가 있습니다.</strong> 아무도 검증할 수 없는 청구권을 원화 토큰으로 정산하면 검증되지 않은 청구권이 더 빨리 움직일 뿐, 참이 되지는 않습니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/fisheries-receivable-rail">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-mcp-stateless-server.html">&larr; 32. Building an MCP server on the stateless spec</a><a href="pocs-cap-table-ceiling.html">34. The ceiling is per holder, the control is not &rarr;</a></div>
+  <div class="pager"><a href="pocs-mcp-three-sides.html">&larr; 47. MCP from three sides — build one, consume one, wrap an agent as one</a><a href="pocs-cap-table-ceiling.html">49. The ceiling is per holder, the control is not &rarr;</a></div>
 </div>
 </body>
 </html>

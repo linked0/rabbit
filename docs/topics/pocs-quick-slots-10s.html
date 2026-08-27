@@ -280,7 +280,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Ten-second slots — the constant nobody wrote down</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#12</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <p class="topic-kicker"><span class="topic-no">#7</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
       <h1>Ten-second slots — the constant nobody wrote down</h1>
       <p class="lead">Cutting slot time from 12s to 10s changes no API, which is exactly what makes it dangerous. Every poll interval, confirmation rule, oracle heartbeat and deadline in an application encodes 12 seconds somewhere, and almost none of them say so.</p>
       <p class="meta">Not yet scoped — and the first step is a grep, not a design. Pull every time-valued constant out of the codebase (poll intervals, confirmation counts, signature deadlines, cache TTLs, cron periods) and mark each one: derived from slot time, coincidentally equal to a multiple of it, or genuinely independent. Only the middle bucket is a bug. Source: EIP-8198 Quick Slots, listed S-tier in the 2026-08-26 protocol roundup — confirm the proposal&#39;s actual status and target fork at eips.ethereum.org before building anything on it.</p>
@@ -290,7 +290,7 @@
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
       <p><strong>A timing change is the worst kind of change, because it does not break a build — it shifts a distribution.</strong> Nothing fails to compile, no test goes red on the day the fork lands, and the symptoms arrive later as flakiness: an update that occasionally arrives a beat late, a quote that occasionally misses its window, a confirmation rule that quietly guarantees less than it did last week.</p>
-<p><strong>The part that actually tightens is anything with a deadline signed into it.</strong> A filler quoting against a fill deadline, an oracle heartbeat, a batch-auction window, a bundle aimed at the next slot — each loses about a sixth of its wall-clock budget while the code keeps the same number in it. That is the same seam <code>erc-7683-settlement-security</code> runs along and the same one <code>price-at-a-moment</code> depends on: a deadline is only meaningful in the unit of the thing it protects, and nobody checks which unit was used until it moves.</p>
+<p><strong>The part that actually tightens is anything with a deadline signed into it.</strong> A filler quoting against a fill deadline, an oracle heartbeat, a batch-auction window, a bundle aimed at the next slot — each loses about a sixth of its wall-clock budget while the code keeps the same number in it. That is the same seam <code>erc-7683-settlement-security</code> runs along and the same one <code>the-settlement-instant</code> depends on: a deadline is only meaningful in the unit of the thing it protects, and nobody checks which unit was used until it moves.</p>
 <p><strong>Why the card is cheap and keeps its value either way.</strong> The output is an inventory of places where the application makes an unstated assumption about time. If EIP-8198 never ships, the inventory is still the list of latent assumptions — and this is a codebase that will eventually run against more than one chain, where slot time is not 12 seconds and never was.</p>
       <h2>How it works</h2>
       <h3>Where twelve seconds hides</h3>
@@ -346,7 +346,7 @@
       <p class="meta">아직 범위 미정 — 첫 단계는 설계가 아니라 grep 입니다. 코드베이스에서 시간 값을 가진 상수를 전부 뽑아(폴링 주기, 확정 블록 수, 서명 마감, 캐시 TTL, 크론 주기) 각각을 표시합니다 — 슬롯 시간에서 유도된 것, 우연히 그 배수와 같은 것, 정말로 무관한 것. <strong>버그는 가운데 칸뿐입니다.</strong> 출처: 2026-08-26 프로토콜 라운드업의 S티어 항목 EIP-8198 Quick Slots — 실제 상태와 목표 포크는 eips.ethereum.org 에서 먼저 확인할 것.</p>
       <h2>왜</h2>
       <p><strong>타이밍 변경은 가장 나쁜 종류의 변경입니다. 빌드를 깨지 않고 분포를 옮기기 때문입니다.</strong> 컴파일이 실패하지 않고, 포크가 들어온 날 빨간 테스트도 없습니다. 증상은 나중에 <strong>불안정성</strong>으로 옵니다 — 가끔 한 박자 늦게 도착하는 갱신, 가끔 창을 놓치는 호가, 지난주보다 조용히 덜 보장하게 된 확정 규칙.</p>
-<p><strong>실제로 조여드는 것은 마감이 서명에 박혀 있는 모든 것입니다.</strong> 체결 마감을 걸고 호가를 내는 필러, 오라클 하트비트, 배치 경매 창, 다음 슬롯을 겨냥한 번들 — 코드에 적힌 숫자는 그대로인데 실제 벽시계 예산이 6분의 1쯤 줄어듭니다. <code>erc-7683-settlement-security</code> 가 훑고 지나가는 이음매이자 <code>price-at-a-moment</code> 가 기대고 있는 그 이음매입니다: <strong>마감은 자기가 보호하는 대상의 단위로 적혀야 의미가 있고, 어떤 단위로 적혔는지는 그 단위가 움직이기 전까지 아무도 확인하지 않습니다.</strong></p>
+<p><strong>실제로 조여드는 것은 마감이 서명에 박혀 있는 모든 것입니다.</strong> 체결 마감을 걸고 호가를 내는 필러, 오라클 하트비트, 배치 경매 창, 다음 슬롯을 겨냥한 번들 — 코드에 적힌 숫자는 그대로인데 실제 벽시계 예산이 6분의 1쯤 줄어듭니다. <code>erc-7683-settlement-security</code> 가 훑고 지나가는 이음매이자 <code>the-settlement-instant</code> 가 기대고 있는 그 이음매입니다: <strong>마감은 자기가 보호하는 대상의 단위로 적혀야 의미가 있고, 어떤 단위로 적혔는지는 그 단위가 움직이기 전까지 아무도 확인하지 않습니다.</strong></p>
 <p><strong>왜 싸고, 어느 쪽으로 가든 값이 남는가.</strong> 산출물은 <strong>앱이 시간에 대해 말하지 않은 채 전제하고 있는 자리들의 목록</strong>입니다. EIP-8198 이 끝내 들어오지 않아도 그 목록은 그대로 잠재 전제 목록이고 — 이 코드베이스는 언젠가 슬롯 시간이 12초가 아닌, 애초에 12초였던 적도 없는 체인 위에서도 돌 것이기 때문입니다.</p>
       <h2>동작 방식</h2>
       <h3>12초가 숨어 있는 자리</h3>
@@ -397,7 +397,7 @@
 라운드업의 S티어 세 항목은 </strong>전혀 바뀌지 않은 애플리케이션 아래에서 기반의 서로 다른 세 부분을 바꿉니다.<strong> </strong>8198은 시간을<strong>, </strong>8131·8279는 자원의 가격을<strong>(<code>l1-data-pricing-dimensions</code>), </strong>8141은 트랜잭션의 모양을<strong>(<code>erc-8141</code>) 바꿉니다. 셋 다 앱을 다시 쓰라고 요구하지 않고, 셋 다 </strong>앱이 조용히 전제하던 것</strong>을 바꿉니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/quick-slots-10s">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-monad-last-general-purpose-l1.html">&larr; 11. Monad — the last general-purpose L1, and the number nobody adjusts for</a><a href="pocs-l1-data-pricing-dimensions.html">13. When gas stops being one number — data pricing and bandwidth accounting &rarr;</a></div>
+  <div class="pager"><a href="pocs-stake-concentration.html">&larr; 6. Stake concentration risk</a><a href="pocs-l1-data-pricing-dimensions.html">8. When gas stops being one number — data pricing and bandwidth accounting &rarr;</a></div>
 </div>
 </body>
 </html>

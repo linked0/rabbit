@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nobody runs the peg — the competing bots are the mechanism — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  .topic-how { margin:4px 0 0; color:var(--text2); font-size:0.9rem; }
+  .topic-how strong { color:var(--text); }
+  .topic-why { margin:4px 0 0; color:var(--text2); font-size:0.9rem; font-style:italic; }
+  .topic-why strong { color:var(--text); font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Nobody runs the peg — the competing bots are the mechanism</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#44</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Nobody runs the peg — the competing bots are the mechanism</h1>
+      <p class="lead">A perpetual future tracks spot with no expiry date forcing it to. What holds the two together is funding payments making the gap painful, and dozens of arbitrage bots racing each other to close it — which means the basis you observe is a readout of the cheapest arbitrageur&#39;s cost floor.</p>
+      <p class="meta">A week of data collection, no capital at risk. For one liquid asset, record spot, perp mark and the funding rate at every funding interval. Compute the basis series and look at its distribution rather than its mean: the width of the band it lives inside is an estimate of what the cheapest participant pays to close it, since anything wider would already have been traded away. Then price your own round trip — fees, slippage at your size, cost of capital, margin buffer — and put the two numbers side by side. If your cost sits inside the observed band there is room; if it sits outside, the honest conclusion is that you are reading the market, not competing in it. Source: a practitioner explanation of basis and funding arbitrage, 2026-08-27, with a worked example at 2% basis against roughly 0.75% total cost.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>The closing observation in the source is the best part, and it deserves to be the headline.</strong> A perpetual future has no central price-correcting process. The protocol emits one incentive — funding — and dozens of independently-owned bots, each trying to take money off the others, collectively produce the tracking behaviour. <strong>The mechanism is not a component of the system; it is the population of participants competing.</strong> That is a genuinely elegant piece of market design and it is worth naming precisely, because the same shape recurs everywhere in this catalogue: liquidations, oracle updates, MEV, bridge relaying — all of them are jobs nobody is assigned and everybody races for.</p>
+<p><strong>But the worked example has a unit error worth fixing, and fixing it exposes where the risk actually lives.</strong> The comparison offered is 2% basis against 0.75% total cost, and in shape that is exactly right — enter only when expected reward clears cost plus a risk premium. The problem is that <strong>the 2% is never paid to you.</strong> A dated future converges because delivery forces it: hold to expiry and the gap is realised, so basis <em>is</em> the payoff. <strong>A perpetual has no expiry</strong>, so there is no moment at which the gap must close and nothing that hands it over. What is actually paid is <strong>funding, per interval, for as long as you hold.</strong></p>
+<p><strong>Which means the honest inequality contains a term the example hides.</strong> Not <em>basis &gt; cost</em>, but <strong>expected funding per interval × number of intervals held &gt; total cost.</strong> And the holding period is unknown at entry. A basis of 2% is a <em>signal</em> that funding is currently rich, not a receipt for 2%. If it compresses in one interval you collect one interval&#39;s funding and pay the full round trip; if it persists for a week you collect a week of it. <strong>The trade is therefore a bet on persistence, not on convergence</strong>, and that reframing changes what should be modelled — the source&#39;s more advanced list (funding forecasts, volatility, execution probability) is exactly the machinery for estimating the holding period, which is why professional systems have it and the simple version does not.</p>
+<p><strong>The asymmetric-liquidation problem the source raises is the sharpest practical point, and it is worth stating harder: delta-neutral is not risk-neutral.</strong> The position has no directional exposure to price. It has enormous exposure to <strong>where margin sits.</strong> Spot long on one venue and perp short on another means two independent margin engines, and a fast move makes one leg profitable and the other liquidatable — the profit is unrealised on venue A while venue B closes you at the worst moment. Nothing about the hedge is wrong; <strong>the hedge is only a hedge if both legs survive to be unwound together</strong>, and survival is a funding-and-collateral logistics problem, not a pricing one. That is why the professional answer is continuous margin monitoring and capital movement rather than a cleverer entry rule.</p>
+<p><strong>And the third thing follows from the first: the observed basis is not disagreement about price.</strong> If the band were wider than the cheapest arbitrageur&#39;s total cost, that arbitrageur would already have traded it away. So <strong>the width of the band the basis lives inside is a readout of the cost structure of the cheapest participant</strong> — venue fees, their size, their cost of capital, their required premium. Read that way, a persistent spread stops being noise and becomes information about who is present, which is a measurement anyone can take from public data without holding a position.</p>
+      <h2>How it works</h2>
+      <h3>The loop, in eight steps</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Step</th>
+<th>The part that is not obvious</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1–2</td>
+<td>Observe spot and perp, compute <strong>basis = (perp − spot) / spot</strong></td>
+<td>Sign matters: positive basis pays <strong>shorts</strong>, negative pays longs</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Estimate funding income</td>
+<td><strong>This, not the basis, is the payoff</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Price fees, slippage, cost of capital</td>
+<td>Slippage is a function of <strong>your</strong> size, not the venue&#39;s</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Enter only if reward &gt; cost + risk premium</td>
+<td>The premium is what pays for step 7 going wrong</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Buy spot, sell perp — near-simultaneously</strong></td>
+<td>The gap between the two fills is unhedged, and it is where execution risk lives</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Monitor basis <strong>and margin on both venues</strong></td>
+<td>The margin half is the one that actually kills positions</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Unwind both legs together on convergence</td>
+<td>&quot;Convergence&quot; is not guaranteed — <strong>there is no expiry to force it</strong></td>
+</tr>
+</tbody></table></div>
+<h3>The worked example, and the unit error in it</h3>
+<p>Spot $100, perp $102 → <strong>basis +2%</strong>. Costs: round trip 0.15%, slippage 0.10%, cost of capital 0.2%, risk premium 0.3% → <strong>0.75%</strong>.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>As stated</th>
+<th>Corrected</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Test</td>
+<td>2% &gt; 0.75% → <strong>enter</strong></td>
+<td><strong>Expected funding × intervals held</strong> &gt; 0.75%</td>
+</tr>
+<tr>
+<td>Why the difference</td>
+<td>Assumes the 2% is collected</td>
+<td><strong>Nothing pays you the 2%</strong> — a perp never expires</td>
+</tr>
+<tr>
+<td>What the 2% actually is</td>
+<td>The payoff</td>
+<td><strong>A signal that funding is currently rich</strong></td>
+</tr>
+<tr>
+<td>Hidden variable</td>
+<td>—</td>
+<td><strong>Holding period</strong>, unknown at entry</td>
+</tr>
+<tr>
+<td>So the trade is a bet on</td>
+<td>Convergence</td>
+<td><strong>Persistence</strong></td>
+</tr>
+</tbody></table></div>
+<p>And at basis 0.3%: <strong>0.3% &lt; 0.75% → do nothing.</strong> That second case is the important one — <strong>an algorithm that never declines is not an algorithm</strong>, and the width of the no-trade band is the whole product.</p>
+<h3>Delta-neutral is not risk-neutral</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Exposure</th>
+<th>Present?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Direction of price</td>
+<td><strong>No</strong> — that is the point of the hedge</td>
+</tr>
+<tr>
+<td>Funding rate flipping sign</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>Margin fragmentation across venues</strong></td>
+<td><strong>Yes, and it is the one that liquidates you</strong></td>
+</tr>
+<tr>
+<td>Execution gap between the two fills</td>
+<td>Yes, briefly and completely</td>
+</tr>
+<tr>
+<td>Venue solvency / withdrawal halt</td>
+<td>Yes — see <code>third-party-blast-radius</code></td>
+</tr>
+</tbody></table></div>
+<p>A sharp move makes one leg deeply profitable and the other liquidatable <strong>at the same instant</strong>, and profit on venue A cannot post margin on venue B. This is why the professional system spends its complexity budget on collateral logistics rather than on entry signals, and it is the same fragmentation <code>aqua-shared-liquidity</code> claims to solve — a claim this card gives a way to test.</p>
+<h3>Why this is a market-design result, not a trading one</h3>
+<p><strong>No participant is assigned the job of tracking spot.</strong> The protocol pays funding; bots compete for it; their orders move both prices toward each other. The peg is an emergent property of adversarial participants, which makes it robust in a way a designated market maker is not — <strong>and fragile in a different way</strong>: it holds only while the funding payment is large enough to cover somebody&#39;s costs. In a thin market with high venue fees, the cheapest arbitrageur&#39;s floor is high, the no-trade band is wide, <strong>and the perp is allowed to drift exactly that far.</strong></p>
+<p>Read alongside <code>two-currencies-one-ledger</code>, which makes the same move on a different asset — a claim about shared liquidity resolved into an observable spread — and <code>the-settlement-instant</code>, since every step above depends on a spot price somebody chose how to compute.</p>
+<h3>Why it belongs in this catalogue</h3>
+<p>A prediction market has the same structure with the arithmetic simplified: <strong>YES + NO should cost $1</strong>, and when it does not, the same population of bots is what pulls it back. The band around $1 is the same readout — the cheapest participant&#39;s cost floor — and it is measurable on any live venue today. Whatever settlement design this repository ends up with, <strong>the no-trade band is the number that says how accurate its prices can possibly be.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/arb-bots-are-the-peg">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>페그를 돌리는 주체는 없다 — 경쟁하는 봇들이 곧 메커니즘이다</h1>
+      <p class="lead">영구선물에는 <strong>수렴을 강제하는 만기일이 없습니다.</strong> 둘을 붙들어 두는 것은 <strong>간격을 아프게 만드는 펀딩 지급</strong>과, 그 간격을 먼저 닫으려 경쟁하는 <strong>수십 개의 차익거래 봇</strong>입니다 — 그래서 <strong>관측되는 베이시스는 가장 싼 차익거래자의 비용 하한을 읽는 계기판</strong>입니다.</p>
+      <p class="meta"><strong>일주일 데이터 수집, 자본 위험 없음.</strong> 유동성 있는 자산 하나에 대해 <strong>매 펀딩 주기마다</strong> 현물가·퍼프 마크가격·펀딩비율을 기록합니다. 베이시스 시계열을 만들고 <strong>평균이 아니라 분포</strong>를 봅니다 — <strong>그것이 머무는 밴드의 폭이 곧 가장 싼 참가자가 그 간격을 닫는 데 치르는 비용의 추정치</strong>입니다. 그보다 넓었다면 <strong>이미 거래되어 사라졌을</strong> 테니까요. 그다음 <strong>자신의 왕복 비용</strong>을 매깁니다 — 수수료, 자기 사이즈에서의 슬리피지, 자금조달비용, 증거금 버퍼 — 그리고 두 숫자를 나란히 놓습니다. <strong>내 비용이 관측 밴드 안이면 여지가 있고, 밖이면</strong> 정직한 결론은 <strong>시장에서 경쟁하는 게 아니라 시장을 읽고 있는 것</strong>입니다. 출처: 베이시스·펀딩 차익거래에 대한 실무자 설명, 2026-08-27. 베이시스 2% 대 총비용 약 0.75% 의 계산 예시 포함.</p>
+      <h2>왜</h2>
+      <p><strong>원문의 마지막 관찰이 가장 좋은 부분이고, 제목이 될 자격이 있습니다.</strong> 영구선물에는 <strong>가격을 교정하는 중앙 프로세스가 없습니다.</strong> 프로토콜은 인센티브 하나 — <strong>펀딩</strong> — 만 내보내고, 서로에게서 돈을 뜯으려는 <strong>독립적으로 소유된 봇 수십 개</strong>가 <strong>집합적으로</strong> 추종 행동을 만들어 냅니다. <strong>메커니즘은 시스템의 부품이 아니라, 경쟁하는 참가자 집단 자체</strong>입니다. 진짜로 우아한 시장 설계이고 정확히 이름 붙일 값이 있습니다 — <strong>같은 모양이 이 카탈로그 도처에 되풀이</strong>되기 때문입니다: 청산, 오라클 갱신, MEV, 브릿지 릴레이 — <strong>전부 아무에게도 배정되지 않았고 모두가 달려드는 일</strong>입니다.</p>
+<p><strong>다만 계산 예시에 고칠 값이 있는 단위 오류가 있고, 고치면 위험이 실제로 어디 사는지가 드러납니다.</strong> 제시된 비교는 <strong>베이시스 2% 대 총비용 0.75%</strong> 이고, <strong>모양은 정확히 맞습니다</strong> — 기대 보상이 비용에 위험 프리미엄까지 얹은 값을 넘을 때만 진입. 문제는 <strong>그 2%가 당신에게 지급되지 않는다</strong>는 것입니다. <strong>만기가 있는 선물은 인도(delivery)가 수렴을 강제</strong>하므로 만기까지 들고 있으면 간격이 실현되고, 그래서 베이시스가 <strong>곧 손익</strong>입니다. <strong>영구선물에는 만기가 없습니다.</strong> 간격이 반드시 닫혀야 하는 순간도, 그것을 건네주는 것도 없습니다. <strong>실제로 지급되는 것은 보유하는 동안 주기마다 들어오는 펀딩뿐</strong>입니다.</p>
+<p><strong>그래서 정직한 부등식에는 예시가 숨긴 항이 하나 더 있습니다.</strong> <em>베이시스 &gt; 비용</em> 이 아니라 <strong>주기당 기대 펀딩 × 보유 주기 수 &gt; 총비용</strong> 입니다. 그리고 <strong>보유 기간은 진입 시점에 미지</strong>입니다. 베이시스 2%는 <strong>지금 펀딩이 두텁다는 신호</strong>이지 <strong>2%짜리 영수증이 아닙니다.</strong> 한 주기 만에 압축되면 한 주기치 펀딩을 받고 왕복 비용은 전액 냅니다. 일주일 지속되면 일주일치를 받습니다. <strong>그러므로 이 거래는 수렴에 거는 베팅이 아니라 지속성에 거는 베팅</strong>이고, 이 재프레이밍이 <strong>무엇을 모델링해야 하는지를 바꿉니다</strong> — 원문의 고급 목록(펀딩 예상치, 변동성, 체결 확률)은 정확히 <strong>보유 기간을 추정하는 기계장치</strong>이고, 그래서 전문 시스템에는 있고 단순 버전에는 없는 것입니다.</p>
+<p><strong>원문이 짚은 비대칭 청산 문제가 실무적으로 가장 날카롭고, 더 세게 말할 값이 있습니다 — 델타 중립은 위험 중립이 아닙니다.</strong> 이 포지션은 <strong>가격 방향 노출이 없습니다.</strong> 대신 <strong>증거금이 어디 앉아 있는가에 대한 노출이 막대</strong>합니다. 현물 롱이 한 거래소, 퍼프 숏이 다른 거래소면 <strong>독립된 증거금 엔진 둘</strong>이고, 급변동은 한 다리를 이익으로, 다른 다리를 <strong>청산 가능</strong> 상태로 만듭니다 — <strong>A에서는 이익이 미실현인 채 B가 최악의 순간에 당신을 닫습니다.</strong> 헤지가 틀린 게 아닙니다. <strong>헤지는 두 다리가 함께 풀릴 때까지 살아남아야만 헤지</strong>이고, <strong>생존은 가격 문제가 아니라 자금·담보 물류 문제</strong>입니다. 전문가의 답이 더 영리한 진입 규칙이 아니라 <strong>지속적인 증거금 감시와 자금 이동</strong>인 이유가 그것입니다.</p>
+<p><strong>그리고 세 번째는 첫 번째에서 따라 나옵니다 — 관측되는 베이시스는 가격에 대한 이견이 아닙니다.</strong> 밴드가 <strong>가장 싼 차익거래자의 총비용보다 넓었다면 그자가 이미 거래해서 없앴을</strong> 것입니다. 그러므로 <strong>베이시스가 머무는 밴드의 폭은 가장 싼 참가자의 비용 구조를 읽는 계기판</strong>입니다 — 거래소 수수료, 그자의 사이즈, 자금조달비용, 요구 프리미엄. 그렇게 읽으면 <strong>지속되는 스프레드는 잡음이기를 그만두고 누가 거기 있는가에 대한 정보</strong>가 되고, <strong>포지션 없이 공개 데이터만으로 누구나 잴 수 있는 측정</strong>이 됩니다.</p>
+      <h2>동작 방식</h2>
+      <h3>루프, 여덟 단계</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>단계</th>
+<th>자명하지 않은 부분</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1–2</td>
+<td>현물·퍼프 관찰, <strong>베이시스 = (퍼프 − 현물) / 현물</strong></td>
+<td><strong>부호가 중요</strong>: 양의 베이시스는 <strong>숏에게</strong> 지급, 음이면 롱에게</td>
+</tr>
+<tr>
+<td>3</td>
+<td>펀딩 수익 추정</td>
+<td><strong>베이시스가 아니라 이것이 손익</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td>수수료·슬리피지·자금조달비용 산정</td>
+<td>슬리피지는 거래소가 아니라 <strong>당신 사이즈</strong>의 함수</td>
+</tr>
+<tr>
+<td>5</td>
+<td>보상 &gt; 비용 + 위험 프리미엄일 때만 진입</td>
+<td><strong>프리미엄은 7단계가 틀어질 때를 위한 값</strong></td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>현물 매수 + 퍼프 매도, 거의 동시</strong></td>
+<td><strong>두 체결 사이의 간극은 무헤지</strong>이고, 체결 위험이 사는 자리</td>
+</tr>
+<tr>
+<td>7</td>
+<td>베이시스 <strong>그리고 양 거래소의 증거금</strong> 감시</td>
+<td><strong>실제로 포지션을 죽이는 쪽은 증거금 절반</strong></td>
+</tr>
+<tr>
+<td>8</td>
+<td>수렴하면 두 다리 동시 청산</td>
+<td><strong>&quot;수렴&quot;은 보장되지 않음 — 강제할 만기가 없음</strong></td>
+</tr>
+</tbody></table></div>
+<h3>계산 예시, 그리고 그 안의 단위 오류</h3>
+<p>현물 $100, 퍼프 $102 → <strong>베이시스 +2%</strong>. 비용: 왕복 0.15%, 슬리피지 0.10%, 자금조달 0.2%, 위험 프리미엄 0.3% → <strong>0.75%</strong>.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>적힌 대로</th>
+<th>교정</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>판정</td>
+<td>2% &gt; 0.75% → <strong>진입</strong></td>
+<td><strong>기대 펀딩 × 보유 주기 수</strong> &gt; 0.75%</td>
+</tr>
+<tr>
+<td>차이의 이유</td>
+<td>2%를 회수한다고 전제</td>
+<td><strong>2%를 지급하는 주체가 없음</strong> — 퍼프는 만기가 없음</td>
+</tr>
+<tr>
+<td>2%의 정체</td>
+<td>손익</td>
+<td><strong>지금 펀딩이 두텁다는 신호</strong></td>
+</tr>
+<tr>
+<td>숨은 변수</td>
+<td>—</td>
+<td><strong>보유 기간</strong>, 진입 시점에 미지</td>
+</tr>
+<tr>
+<td>그래서 이 거래가 거는 것</td>
+<td>수렴</td>
+<td><strong>지속성</strong></td>
+</tr>
+</tbody></table></div>
+<p>그리고 베이시스 0.3%일 때: <strong>0.3% &lt; 0.75% → 아무것도 하지 않음.</strong> <strong>이 두 번째 사례가 중요한 쪽</strong>입니다 — <strong>한 번도 거절하지 않는 알고리즘은 알고리즘이 아니고</strong>, <strong>거래하지 않는 밴드의 폭이 곧 제품 전부</strong>입니다.</p>
+<h3>델타 중립은 위험 중립이 아니다</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>노출</th>
+<th>있나?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>가격 방향</td>
+<td><strong>없음</strong> — 헤지의 목적이 그것</td>
+</tr>
+<tr>
+<td>펀딩 부호가 뒤집힘</td>
+<td>있음</td>
+</tr>
+<tr>
+<td><strong>거래소 간 증거금 분절</strong></td>
+<td><strong>있음, 그리고 이것이 당신을 청산시킴</strong></td>
+</tr>
+<tr>
+<td>두 체결 사이의 간극</td>
+<td>있음 — 짧고 완전하게</td>
+</tr>
+<tr>
+<td>거래소 지급불능·출금 중단</td>
+<td>있음 — <code>third-party-blast-radius</code> 참조</td>
+</tr>
+</tbody></table></div>
+<p>급변동은 <strong>같은 순간에</strong> 한 다리를 깊은 이익으로, 다른 다리를 청산 가능으로 만들고, <strong>A의 이익은 B에 증거금을 넣어줄 수 없습니다.</strong> 전문 시스템이 복잡도 예산을 진입 신호가 아니라 <strong>담보 물류</strong>에 쓰는 이유이고, <code>aqua-shared-liquidity</code> 가 해결하겠다고 주장하는 <strong>바로 그 분절</strong>입니다 — 이 카드는 그 주장을 <strong>시험할 방법</strong>을 줍니다.</p>
+<h3>왜 이것이 트레이딩 결과가 아니라 시장 설계 결과인가</h3>
+<p><strong>현물을 추종하는 일을 배정받은 참가자가 없습니다.</strong> 프로토콜은 펀딩을 지급하고, 봇들이 그것을 두고 경쟁하고, <strong>그 주문들이 양쪽 가격을 서로에게 끌어당깁니다.</strong> 페그는 <strong>적대적 참가자들로부터 창발한 성질</strong>이고, 그래서 지정 마켓메이커에게는 없는 방식으로 <strong>견고</strong>합니다 — <strong>그리고 다른 방식으로 취약</strong>합니다. <strong>펀딩 지급이 누군가의 비용을 덮을 만큼 클 때만 유지</strong>되기 때문입니다. 거래소 수수료가 높은 얕은 시장에서는 <strong>가장 싼 차익거래자의 하한이 높고, 거래하지 않는 밴드가 넓고, 퍼프는 정확히 그만큼 벗어나도 됩니다.</strong></p>
+<p><strong>다른 자산에 같은 동작을 하는</strong> <code>two-currencies-one-ledger</code> — 공유 유동성 주장을 <strong>관측 가능한 스프레드로 환원</strong> — 그리고 위 모든 단계가 <strong>누군가 계산 방식을 정한 현물 가격</strong>에 의존하므로 <code>the-settlement-instant</code> 와 함께 읽습니다.</p>
+<h3>왜 이 카탈로그에 속하는가</h3>
+<p><strong>예측시장은 산수만 단순해진 같은 구조</strong>입니다 — <strong>YES + NO 는 $1이어야 하고</strong>, 그렇지 않을 때 되돌리는 것은 <strong>같은 봇 집단</strong>입니다. $1 주변의 밴드는 <strong>똑같은 계기판</strong>이고 — 가장 싼 참가자의 비용 하한 — <strong>오늘 어느 라이브 거래소에서든 잴 수 있습니다.</strong> 이 저장소가 어떤 정산 설계로 가든, <strong>거래하지 않는 밴드의 폭이 곧 그 가격이 도달할 수 있는 정확도의 상한</strong>입니다.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/arb-bots-are-the-peg">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-what-needs-a-stablecoin.html">&larr; 43. Not what a stablecoin can do — what needs one</a><a href="pocs-third-party-blast-radius.html">45. Trusted third parties — the blast radius nobody maps &rarr;</a></div>
+</div>
+</body>
+</html>
