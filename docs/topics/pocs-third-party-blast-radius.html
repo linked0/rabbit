@@ -280,7 +280,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Trusted third parties — the blast radius nobody maps</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#45</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <p class="topic-kicker"><span class="topic-no">#42</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
       <h1>Trusted third parties — the blast radius nobody maps</h1>
       <p class="lead">Four 2026 incidents with one root: a vendor you authorized. And the control everyone reaches for first — SRI and CSP — would have stopped none of them.</p>
       <p class="meta">Not yet scoped — start with an inventory of one real frontend: every third-party script, every vendor holding customer PII, and each vendor&#39;s own vendors where discoverable. Sources: Polymarket incidents 2026-05-22 and 2026-06-25; Trezor/ShipMonk disclosure 2026-08-13; Bits of Gold disclosure 2026-08-16.</p>
@@ -305,7 +305,7 @@
       <p>만들 것은 <strong>인벤토리와 봉쇄 테스트</strong>이고 순서가 그대로입니다. <strong>인벤토리</strong>: 실제 프론트엔드 하나를 대상으로 모든 서드파티 스크립트와 고객 개인정보를 쥔 모든 협력사를 적고, 알아낼 수 있는 한 <strong>한 겹 더 내려갑니다</strong> — ShipMonk의 노출은 Metabase를 통해 왔고, 직접 협력사에서 멈춘 목록은 그것을 놓쳤을 것입니다. <strong>출처가 아니라 권한</strong>: 각 항목에 대해 &quot;오늘 적대적으로 돌아서면 무엇을 할 수 있는가&quot;를 적고, 스크립트는 검사를 구체화합니다 — <strong>지갑 서명 경로에 닿을 수 있는가?</strong> <strong>봉쇄</strong>: SRI·CSP는 출처 집합만 줄이므로, 프로토타이핑할 가치가 있는 것은 <strong>격리</strong>입니다 — 서명 표면을 서드파티 JS가 주소 지정할 수 없는 오리진으로 옮기고, &quot;우리 페이지가 서명을 요청할 수 있다&quot;는 것 자체를 사이트의 기본 성질이 아니라 <strong>범위를 정해야 할 권한</strong>으로 다루는 것. 그다음 같은 질문을 안쪽으로 돌립니다: 6년간 유효했던 개인키의 폭발 반경은 <strong>연 단위</strong>로 측정되므로, 키 교체 연한은 별도 운영 체크리스트가 아니라 협력사 목록 옆 같은 인벤토리에 들어가야 합니다. 소비자 쪽 따름정리 하나가 여기 붙습니다 — 이 카탈로그에 하드웨어 월렛 카드가 아직 없어서입니다: 기기는 브랜드가 아니라 <strong>감사 이력·서명 방식·엔트로피 소스</strong>로 고르고, 이제 <strong>물류 위탁·공급망 관리</strong>를 그 목록에 더합니다. 7월의 Coldcard 결함이 같은 교훈의 &quot;기기 안&quot; 판본입니다 — 2021년의 빌드 설정 오류가 시드 생성을 STM32 하드웨어 RNG 대신 소프트웨어 PRNG로 흘려보내 Mk2/Mk3에 유효 엔트로피 약 40비트만 남겼고, 누군가 알아챈 뒤 5,200개 넘는 주소에서 최소 1,719 BTC(약 1억 1,100만 달러)가 쓸려 나갔습니다. ShipMonk는 같은 교훈의 <strong>&quot;기기를 배송한 사람&quot;</strong> 판본이고, 유출된 목록이 겉보기보다 나쁜 이유는 <strong>키가 하나도 건드려지지 않았다는 바로 그 점</strong> 때문입니다: 배송지가 붙은 하드웨어 월렛 보유자 명부는 표적 피싱과 이 바닥이 렌치 공격이라 부르는 물리적 강압의 완벽한 원재료인데, 기기를 중심으로 그린 어떤 위협 모델에도 등장하지 않습니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/third-party-blast-radius">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-arb-bots-are-the-peg.html">&larr; 44. Nobody runs the peg — the competing bots are the mechanism</a><a href="pocs-stablecoin-redemption-desk.html">46. The redemption desk — what actually makes a stablecoin's denominator &rarr;</a></div>
+  <div class="pager"><a href="pocs-dsrv-portal.html">&larr; 41. Institutional custody study</a><a href="pocs-aml-compliance.html">43. AML — where the cryptography stops &rarr;</a></div>
 </div>
 </body>
 </html>

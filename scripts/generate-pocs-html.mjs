@@ -362,7 +362,7 @@ fs.writeFileSync(
     title: 'PoCs — All Contents',
     railTitle: 'Rabbit',
     railTitleHref: 'index.html',
-    railSub: `PoCs &mdash; all contents (${cards.length})`,
+    railSub: `PoCs &mdash; all (${cards.length}) / planned (${cards.filter((c) => c.status === 'soon').length})`,
     filterPlaceholder: 'Filter PoCs',
     navGroups,
     railFoot: `<a href="index.html">&larr; Workspace Index</a> &middot; <a href="${SITE}/poc">Live PoCs menu</a>`,

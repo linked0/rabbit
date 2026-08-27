@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What encryption does not hide — PoCs</title>
+<title>Hiding the amount is the easy half — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -278,10 +278,10 @@
 </head>
 <body>
 <div class="solo">
-  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; What encryption does not hide</p>
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Hiding the amount is the easy half</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#17</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>What encryption does not hide</h1>
+      <p class="topic-kicker"><span class="topic-no">#16</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Hiding the amount is the easy half</h1>
       <p class="lead">Confidential settlement encrypts the invoice value and publishes who paid whom and when. That second half is offered as the harmless one, and for a supply chain it may be the half worth hiding — while the opposite tool, computing over data that never becomes readable, solves the problem a blockchain structurally cannot.</p>
       <p class="meta">Two experiments, both runnable without a counterparty. First, the leak: synthesise a B2B payment graph with realistic structure — supplier tiers, net-30 cadence, seasonal variance, occasional onboarding and churn, a few relationships that quietly slip late — then publish only sender, receiver and timestamp, with no amounts at all, not even ranges. Then attack it and report what share of the commercially sensitive inferences is recoverable, at what accuracy, with zero value data. Second, the tool: take one FHE library, run a single aggregate — a sum or a count over encrypted inputs — end to end, and measure latency and ciphertext size, the two numbers that decide whether any of it is usable. Sources: Mysten Labs&#39; Tessera announcement, 2026-08-10, and Sui&#39;s Confidential Transfers (public testing since 2026-06).</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
@@ -431,7 +431,7 @@
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>암호화가 가리지 못하는 것</h1>
+      <h1>금액을 가리는 것은 쉬운 절반이다</h1>
       <p class="lead">기밀 정산은 <strong>송장 금액을 암호화하고 누가 누구에게 언제 냈는지는 공개</strong>합니다. 그 후반부가 <strong>무해한 절반</strong>으로 제시되는데, 공급망에서는 <strong>가려야 할 쪽이 그쪽일 수 있습니다</strong> — 반대편 도구, 즉 <strong>끝내 읽히지 않는 데이터 위에서 계산하기</strong>는 <strong>블록체인이 구조적으로 풀 수 없는 문제</strong>를 풉니다.</p>
       <p class="meta"><strong>실험 둘, 둘 다 거래상대 없이 돌릴 수 있습니다.</strong> 첫째, <strong>유출</strong>: 현실적인 구조를 가진 B2B 결제 그래프를 합성합니다 — 공급사 계층, net-30 주기, 계절 변동, 간헐적 온보딩과 이탈, 조용히 지급이 늦어지는 관계 몇 개 — 그다음 <strong>보내는 쪽·받는 쪽·타임스탬프만</strong> 공개합니다. <strong>금액은 아예 없이, 구간조차 없이.</strong> 그리고 공격합니다. <strong>금액 데이터 0으로 상업적으로 민감한 추론의 몇 퍼센트가, 어느 정확도로 복원되는지</strong>를 보고합니다. 둘째, <strong>도구</strong>: FHE 라이브러리 하나로 <strong>암호화된 입력 위의 집계 하나</strong>(합 또는 개수)를 끝까지 돌리고, <strong>지연과 암호문 크기</strong>를 잽니다 — <strong>이게 쓸 만한지를 결정하는 두 숫자</strong>입니다. 출처: Mysten Labs 의 Tessera 발표(2026-08-10), Sui Confidential Transfers(2026-06부터 공개 테스트).</p>
       <h2>왜</h2>
@@ -575,7 +575,7 @@
 <p><strong>라이브러리 하나, 집계 하나</strong>(암호화된 입력 위의 합 또는 개수)<strong>를 끝까지</strong>, 그리고 숫자 둘을 기록합니다 — <strong>지연과 암호문 크기.</strong> 이 둘이 <strong>클린룸이 제품인지 논문인지</strong>를 정합니다. 기준 사례는 병원·등록기관 협업으로 둡니다. <strong>법적 제약이 상업적이 아니라 절대적인 자리</strong>이기 때문입니다 — <strong>원본 기록은, 어떤 값을 치르든, 떠날 수 없습니다.</strong></p>
       <p><a href="https://www.jaylabs.xyz/poc/what-encryption-does-not-hide">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-erc-8141.html">&larr; 16. ERC-8141</a><a href="pocs-merkle-vs-verkle.html">18. Merkle vs Verkle &rarr;</a></div>
+  <div class="pager"><a href="pocs-the-record-is-not-the-path.html">&larr; 15. The record is not the path — a registry and a vault for the same problem</a><a href="pocs-merkle-vs-verkle.html">17. Merkle vs Verkle &rarr;</a></div>
 </div>
 </body>
 </html>

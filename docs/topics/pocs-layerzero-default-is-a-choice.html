@@ -280,7 +280,7 @@
 <div class="solo">
   <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; LayerZero — the default verifier is a trust assumption nobody wrote down</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#42</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <p class="topic-kicker"><span class="topic-no">#46</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
       <h1>LayerZero — the default verifier is a trust assumption nobody wrote down</h1>
       <p class="lead">LayerZero moves arbitrary messages between chains and lets the application pick its own verifier set. That is the real feature and the real trap: skip the choice and you have still made one, and nothing in your codebase records who you are now trusting.</p>
       <p class="meta">Thirty minutes, two testnets. Deploy one OApp and send a single message round trip; then run <code>lz:oapp:config:get</code> and write one line answering the only question that matters — who am I trusting right now. Paste that output into the README, because it is the trust assumption and it lives in configuration rather than code. Optional third step: take the four-way split ATLAS publishes (matching, clearing, settlement, risk) into the settlement design notes. Sources: layerzero.network and docs.layerzero.network; ATLAS announced 2026-08-26, running on the Zero L1 shipped in February, published at p50 sub-millisecond and p99 2.641ms under vendor stress testing, part of fees routed to ZRO buyback and burn, launch stated for this autumn, with Citadel Securities, DTCC, ARK Invest and ICE named. Vendor figures and an unreleased product — confirm before relying on any of it.</p>
@@ -475,7 +475,7 @@ npx hardhat lz:oapp:send --dst-eid 40161 --text &amp;quot;hello&amp;quot;
 <p><strong>메시지 레이어는 쓰되 브릿지는 최소화한다.</strong> 담보가 여러 체인에 있는 마켓에서 흔한 첫 설계는 담보 토큰을 옴니체인화하는 것이고 — 지킬 원칙은 <strong>정산 확정이 정확히 한 체인에서만 일어나고</strong>, 나머지는 <strong>표시와 입금 경로로 제한</strong>하는 것입니다. <strong>메시지 레이어는 닿을 수 있는 범위를 넓히지, 진실이 사는 곳을 넓히지 않습니다.</strong> 그리고 ATLAS 의 모듈 경계 — <strong>리스크를 정산에서 분리</strong> — 는 그 제품과 무관하게 베낄 값이 있습니다. <code>plumbing-skills-buyback</code> 이 <strong>대부분의 시스템이 끝내 하지 않는다</strong>고 지적한 바로 그 분리이기 때문입니다.</p>
       <p><a href="https://www.jaylabs.xyz/poc/layerzero-default-is-a-choice">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-  <div class="pager"><a href="pocs-one-page-not-the-curriculum.html">&larr; 41. Pull the page you are stuck on, not the next one in order</a><a href="pocs-what-needs-a-stablecoin.html">43. Not what a stablecoin can do — what needs one &rarr;</a></div>
+  <div class="pager"><a href="pocs-choosing-a-chain-is-a-lease.html">&larr; 45. Choosing a chain is signing a lease</a><a href="pocs-headless-exchange-engines.html">47. Headless arrives — the company that sells the engine, not the app &rarr;</a></div>
 </div>
 </body>
 </html>
