@@ -211,6 +211,13 @@
             <div class="section">
                 <h2 class="section-title">Current Projects</h2>
                 <div class="grid">
+                    <!-- 한 프로젝트가 한 행 = Feature Designs · Current Plan · Logs (jay, 2026-08-28).
+                         이전에는 9장이었고 3열 중 하나가 "Latest Task: Jul 02" · "Latest Log:
+                         2026-08-24" 처럼 손으로 적은 날짜를 달고 있었다. 그 날짜는 갱신되지
+                         않으면 그대로 낡고, 실제로 낡은 채로 남아 있었다 — 이 섹션에서 세 번째
+                         반복되는 실패다("All Logs — 63 entries"도 같은 이유로 숫자를 뺐다).
+                         지름길 자체는 아래 "View All …" 링크가 이미 맡고 있으므로, 카드는
+                         갱신이 필요 없는 색인 셋만 남긴다. -->
                     <a href="html/docs/features/README.html" class="card" style="border-left: 4px solid #0ea5e9;">
                         <span class="card-title">Rabbit &mdash; Feature Designs <span class="badge badge-html">HTML</span></span>
                         <span class="card-path">docs/features/README.md</span>
@@ -219,10 +226,14 @@
                         <span class="card-title">Rabbit &mdash; Current Plan <span class="badge badge-html">HTML</span></span>
                         <span class="card-path">docs/tasks/current-plan.md</span>
                     </a>
-                    <a href="html/docs/tasks/jul-02-rabbit-design.html" class="card">
-                        <span class="card-title">Rabbit &mdash; Latest Task: Jul 02 Task <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">docs/tasks/jul-02-rabbit-design.md</span>
+                    <a href="logs.html" class="card" style="border-left: 4px solid #d97706;">
+                        <span class="card-title">Rabbit &mdash; Logs <span class="badge badge-html">HTML</span></span>
+                        <span class="card-path">docs/history/*.md</span>
                     </a>
+                    <!-- Verex 카드는 rabbit 안의 미러가 아니라 verex 의 GitHub Pages 를 직접 건다
+                         (jay, 2026-08-21). 미러는 2026-08-01 스냅샷에서 멈춰 낡은 내용을 보여준
+                         전력이 있고, 링크로 바꾸면 그 실패 모드 자체가 사라진다.
+                         Pages 는 verex 의 main:/docs 를 서빙하므로 main 에 푸시된 것만 보인다. -->
                     <a href="https://linked0.github.io/verex/features/" target="_blank" rel="noopener noreferrer" class="card" style="border-left: 4px solid #0ea5e9;">
                         <span class="card-title">Verex &mdash; Feature Designs <span class="badge badge-html">GH PAGES</span></span>
                         <span class="card-path">linked0.github.io/verex/features/</span>
@@ -231,31 +242,9 @@
                         <span class="card-title">Verex &mdash; Current Plan <span class="badge badge-html">GH PAGES</span></span>
                         <span class="card-path">linked0.github.io/verex/tasks/current-plan.html</span>
                     </a>
-                    <a href="https://linked0.github.io/verex/tasks/jun-19-verex-design.html" target="_blank" rel="noopener noreferrer" class="card">
-                        <span class="card-title">Verex &mdash; Latest Task: Design &amp; Task Breakdown <span class="badge badge-html">GH PAGES</span></span>
-                        <span class="card-path">linked0.github.io/verex/tasks/jun-19-verex-design.html</span>
-                    </a>
-                    <!-- Verex 카드는 rabbit 안의 미러가 아니라 verex 의 GitHub Pages 를 직접 건다
-                         (jay, 2026-08-21). 미러는 2026-08-01 스냅샷에서 멈춰 낡은 내용을 보여준
-                         전력이 있고, 링크로 바꾸면 그 실패 모드 자체가 사라진다.
-                         Pages 는 verex 의 main:/docs 를 서빙하므로 main 에 푸시된 것만 보인다. -->
-                    <!-- 3행 = Logs (jay, 2026-08-14). 1행 Rabbit · 2행 Verex 는 건드리지 않는다.
-                         카드 순서: Rabbit — Logs · Verex — Logs · Rabbit — Latest Log (jay, 2026-08-21).
-                         앞의 둘이 두 저장소의 로그 색인 쌍이고, 마지막은 오늘로 가는 지름길이다.
-                         "All Logs — N entries" 였던 첫 카드를 "Rabbit — Logs" 로 바꿨다 —
-                         옆 카드가 "Verex — Logs" 인데 이쪽만 스코프가 안 보였고, 손으로 관리하던
-                         N 이 이미 한 번 낡은 채(63) 방치된 적이 있어 숫자는 제목에서 뺐다. -->
-                    <a href="logs.html" class="card" style="border-left: 4px solid #d97706;">
-                        <span class="card-title">Rabbit &mdash; Logs <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">docs/history/*.md</span>
-                    </a>
                     <a href="https://linked0.github.io/verex/history/" target="_blank" rel="noopener noreferrer" class="card" style="border-left: 4px solid #d97706;">
                         <span class="card-title">Verex &mdash; Logs <span class="badge badge-html">GH PAGES</span></span>
                         <span class="card-path">linked0.github.io/verex/history/</span>
-                    </a>
-                    <a href="html/docs/history/2026-08-24-rabbit-history.html" class="card" style="border-left: 4px solid #d97706;">
-                        <span class="card-title">Rabbit &mdash; Latest Log: 2026-08-24 <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">docs/history/2026-08-24-rabbit-history.md</span>
                     </a>
                 </div>
                 <div style="text-align: right; margin-top: 12px;">
