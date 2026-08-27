@@ -424,7 +424,7 @@
 <p>One month of transactions, one split per transaction: bytes versus execution. That produces a single ratio, and the ratio answers the only question that matters before the proposals settle — <strong>is this project a data-heavy user or not.</strong> If it is, then every design choice that trades computation for calldata (posting evidence rather than recomputing it, storing an order rather than deriving it) is a bet on the current price of bytes staying where it is.</p>
 <h3>The state-growth footnote worth keeping</h3>
 <p>Of the five rows, state growth is the one with no honest price anywhere today: <strong>the cost is borne forever by every future node, and the fee is charged once.</strong> Any card in this catalogue that proposes an on-chain registry — <code>the-record-is-not-the-path</code>, position maps, resolution records — is quietly on the wrong side of that mismatch, and a repricing that fixes it would be aimed at exactly those designs.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/l1-data-pricing-dimensions">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -481,7 +481,7 @@
 <p>한 달치 트랜잭션, 건당 한 번의 분해 — 바이트 대 실행. 여기서 <strong>비율 하나</strong>가 나오고, 그 비율이 제안이 확정되기 전에 답할 수 있는 유일한 질문에 답합니다 — <strong>이 프로젝트는 데이터 과다 사용자인가 아닌가.</strong> 그렇다면 연산 대신 콜데이터를 쓰는 모든 선택(다시 계산하는 대신 근거를 올리기, 유도하는 대신 주문을 저장하기)은 <strong>바이트의 현재 가격이 그대로 있으리라는 베팅</strong>입니다.</p>
 <h3>남겨 둘 상태 증가 각주</h3>
 <p>다섯 줄 중 <strong>상태 증가는 오늘 어디에도 정직한 가격이 없는 항목</strong>입니다. <strong>비용은 미래의 모든 노드가 영원히 지고, 수수료는 한 번만 받습니다.</strong> 이 카탈로그에서 온체인 레지스트리를 제안하는 카드는 전부 — <code>the-record-is-not-the-path</code>, 포지션 맵, 정산 기록 — 조용히 그 불일치의 <strong>잘못된 쪽</strong>에 서 있고, 그 불일치를 고치는 재가격은 정확히 그런 설계를 겨냥하게 됩니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/l1-data-pricing-dimensions">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-quick-slots-10s.html">&larr; 9. Ten-second slots — the constant nobody wrote down</a><a href="pocs-encrypted-mempool.html">11. What encryption does not hide &rarr;</a></div>
   </div>
@@ -528,7 +528,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

@@ -637,7 +637,7 @@
 <li>If there is, that penalty is the design&#39;s real defence and everything else is decoration.</li>
 </ul>
 <p>The public documentation does not say. <strong>This should come before the anvil experiment above, not after it</strong> — the single question tells you whether the design works faster than any fill-rate curve does.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/aqua-shared-liquidity">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -873,7 +873,7 @@
 <li>있다면 <strong>그 페널티가 이 설계의 진짜 방어선</strong>이고 나머지는 장식입니다.</li>
 </ul>
 <p>공개 문서에는 이 부분이 없습니다. <strong>이것은 위의 anvil 실험보다 먼저 와야 합니다</strong> — 이 질문 하나가 어떤 체결률 곡선보다 설계의 성패를 빨리 알려줍니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/aqua-shared-liquidity">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-simplicity-ctf.html">&larr; 19. Simplicity CTF</a><a href="../topics/pocs-rwa-multichain.html">21. RWA across chains — the invariant nobody enforces &rarr;</a></div>
   </div>
@@ -920,7 +920,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

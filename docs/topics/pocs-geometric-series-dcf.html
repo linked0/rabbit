@@ -412,7 +412,7 @@
       <p>Connects a pure-math result (the closed-form sum of a geometric series) to something used directly in finance — the Gordon Growth Model for valuing a perpetuity, which underpins terminal-value calculations in discounted cash flow (DCF) analysis.</p>
       <h2>How it works</h2>
       <p>Planned: a small derivation-to-code page showing the geometric series sum formula S = a / (1 − r) for |r| &lt; 1, then substituting cash-flow growth into it to derive the Gordon Growth perpetuity formula, with an interactive calculator comparing the closed-form result against a brute-force sum of many discounted future cash flows — to visually confirm the two converge. Not yet built.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/geometric-series-dcf">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -423,7 +423,7 @@
       <p>순수 수학 결과(등비급수 합의 닫힌 형태 공식)를 실제 금융에서 바로 쓰이는 것과 연결합니다 — 영구채 가치를 구하는 고든 성장 모형은 DCF(현금흐름할인법) 분석의 잔존가치(terminal value) 계산의 기반입니다.</p>
       <h2>동작 방식</h2>
       <p>계획: |r| &lt; 1일 때 등비급수 합 공식 S = a / (1 − r)을 보여주는 작은 유도 페이지를 만들고, 여기에 현금흐름 성장률을 대입해 고든 성장 영구채 공식을 유도합니다. 닫힌 형태 공식의 결과와, 수십 년치 할인된 미래 현금흐름을 직접 합산한 결과를 비교하는 인터랙티브 계산기로 두 값이 실제로 수렴함을 시각적으로 확인시킵니다. 아직 미구현.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/geometric-series-dcf">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-apple-container.html">&larr; 69. Apple container</a><a href="pocs-amortized-potential-function.html">71. Amortized analysis via potential functions &rarr;</a></div>
   </div>
@@ -470,7 +470,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

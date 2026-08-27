@@ -474,7 +474,7 @@
 <p><strong>Capital required to hold a TWAP above threshold T for window W against arbitrage, at pool depth D.</strong> Compute it at today&#39;s depth and at the depth where it exceeds the value of the decision. That single curve answers whether a given decision is genuinely market-governed or merely priced, and it applies unchanged to any resolution mechanism that reads a price — including the settlement path in this project. <strong>Manipulation cost is not a property of the mechanism; it is a property of the mechanism at a given liquidity</strong>, and mechanisms are usually described without one.</p>
 <h3>What the August auction actually tests</h3>
 <p>Umia is selling $UMIA through its own platform, so the auction is the product&#39;s first public run rather than a fundraise: whether seven days of CCA price discovery behaves as described, whether liquidity exists immediately afterwards, and whether the promised high initial float materializes instead of the low-float pattern it criticizes. <strong>A capital-formation model that cannot form its own capital has answered the question early</strong>, which is a rare case of a project being genuinely falsifiable on day one.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/decision-market-uncontrollability">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -547,7 +547,7 @@
 <p><strong>풀 깊이 D에서, 차익거래를 상대로 창 W 동안 TWAP를 임계 T 위에 붙들어 두는 데 필요한 자본.</strong> 오늘의 깊이에서 한 번, 그 비용이 <strong>사려는 결정의 가치를 넘는</strong> 깊이에서 한 번 계산합니다. 그 곡선 하나가 <strong>어떤 결정이 진짜로 시장에 의해 통치되는지 아니면 그냥 값이 매겨질 뿐인지</strong>에 답하고, <strong>가격을 읽는 모든 정산 메커니즘에 그대로 적용됩니다</strong> — 이 프로젝트의 정산 경로를 포함해서. <strong>조작 비용은 메커니즘의 속성이 아니라 특정 유동성에서의 메커니즘의 속성</strong>인데, 메커니즘은 보통 그 유동성 없이 서술됩니다.</p>
 <h3>8월 경매가 실제로 시험하는 것</h3>
 <p>Umia는 자기 플랫폼으로 $UMIA를 팝니다. 그러니 이 경매는 자금 조달이 아니라 <strong>제품의 첫 공개 실행</strong>입니다 — 7일간의 CCA 가격 발견이 설명대로 도는지, 직후에 유동성이 실재하는지, 그리고 스스로 비판한 저유통·고FDV 대신 약속한 <strong>높은 초기 유통량이 실제로 나오는지</strong>. <strong>자기 자본을 형성하지 못하는 자본형성 모델은 질문에 일찍 답한 것</strong>이고, 프로젝트가 <strong>첫날부터 반증 가능한</strong> 드문 경우입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/decision-market-uncontrollability">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-dsrv-portal.html">&larr; 55. Institutional custody study</a><a href="pocs-priced-by-the-wrong-thing.html">57. Priced by the wrong thing — a question, an instrument, and the gap between them &rarr;</a></div>
   </div>
@@ -594,7 +594,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

@@ -497,7 +497,7 @@ npx hardhat lz:oapp:send --dst-eid 40161 --text &amp;quot;hello&amp;quot;
 </tbody></table></div>
 <h3>What to take for a settlement design</h3>
 <p><strong>Use the message layer, minimise the bridge.</strong> For a market whose collateral sits on several chains, the common first design is to make the collateral token omnichain — and the principle worth keeping is that <strong>settlement finality happens on exactly one chain</strong>, with everything else restricted to display and deposit paths. A message layer widens what you can reach; it does not widen where truth lives. And ATLAS&#39;s module boundary — <strong>risk separated from settlement</strong> — is worth copying independently of the product, because it is the split <code>plumbing-skills-buyback</code> argues most systems never make.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/layerzero-default-is-a-choice">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -593,7 +593,7 @@ npx hardhat lz:oapp:send --dst-eid 40161 --text &amp;quot;hello&amp;quot;
 </tbody></table></div>
 <h3>정산 설계로 가져갈 것</h3>
 <p><strong>메시지 레이어는 쓰되 브릿지는 최소화한다.</strong> 담보가 여러 체인에 있는 마켓에서 흔한 첫 설계는 담보 토큰을 옴니체인화하는 것이고 — 지킬 원칙은 <strong>정산 확정이 정확히 한 체인에서만 일어나고</strong>, 나머지는 <strong>표시와 입금 경로로 제한</strong>하는 것입니다. <strong>메시지 레이어는 닿을 수 있는 범위를 넓히지, 진실이 사는 곳을 넓히지 않습니다.</strong> 그리고 ATLAS 의 모듈 경계 — <strong>리스크를 정산에서 분리</strong> — 는 그 제품과 무관하게 베낄 값이 있습니다. <code>plumbing-skills-buyback</code> 이 <strong>대부분의 시스템이 끝내 하지 않는다</strong>고 지적한 바로 그 분리이기 때문입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/layerzero-default-is-a-choice">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-base-app-mini-app.html">&larr; 43. Base App — what a Mini App buys, and what it rents</a><a href="pocs-the-bridge-is-inside-the-token.html">45. The bridge is not beside the token any more — it is inside it &rarr;</a></div>
   </div>
@@ -640,7 +640,7 @@ npx hardhat lz:oapp:send --dst-eid 40161 --text &amp;quot;hello&amp;quot;
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

@@ -532,7 +532,7 @@
 <p>Read alongside <code>two-currencies-one-ledger</code>, which makes the same move on a different asset — a claim about shared liquidity resolved into an observable spread — and <code>the-settlement-instant</code>, since every step above depends on a spot price somebody chose how to compute.</p>
 <h3>Why it belongs in this catalogue</h3>
 <p>A prediction market has the same structure with the arithmetic simplified: <strong>YES + NO should cost $1</strong>, and when it does not, the same population of bots is what pulls it back. The band around $1 is the same readout — the cheapest participant&#39;s cost floor — and it is measurable on any live venue today. Whatever settlement design this repository ends up with, <strong>the no-trade band is the number that says how accurate its prices can possibly be.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/arb-bots-are-the-peg">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -663,7 +663,7 @@
 <p><strong>다른 자산에 같은 동작을 하는</strong> <code>two-currencies-one-ledger</code> — 공유 유동성 주장을 <strong>관측 가능한 스프레드로 환원</strong> — 그리고 위 모든 단계가 <strong>누군가 계산 방식을 정한 현물 가격</strong>에 의존하므로 <code>the-settlement-instant</code> 와 함께 읽습니다.</p>
 <h3>왜 이 카탈로그에 속하는가</h3>
 <p><strong>예측시장은 산수만 단순해진 같은 구조</strong>입니다 — <strong>YES + NO 는 $1이어야 하고</strong>, 그렇지 않을 때 되돌리는 것은 <strong>같은 봇 집단</strong>입니다. $1 주변의 밴드는 <strong>똑같은 계기판</strong>이고 — 가장 싼 참가자의 비용 하한 — <strong>오늘 어느 라이브 거래소에서든 잴 수 있습니다.</strong> 이 저장소가 어떤 정산 설계로 가든, <strong>거래하지 않는 밴드의 폭이 곧 그 가격이 도달할 수 있는 정확도의 상한</strong>입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/arb-bots-are-the-peg">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-two-currencies-one-ledger.html">&larr; 30. Two currencies on one ledger — the spread is the claim</a><a href="pocs-the-harness-not-the-model.html">32. The harness, not the model — governing agents instead of building them &rarr;</a></div>
   </div>
@@ -710,7 +710,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

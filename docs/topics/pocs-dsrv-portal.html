@@ -459,7 +459,7 @@ if __name__ == &quot;__main__&quot;:
         print(&quot;  execute?&quot;, quorum.execute(tx))
 </code></pre>
       <p class="code-link"><a href="../code/pocs/dsrv-portal.py">docs/code/pocs/dsrv-portal.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/dsrv-portal">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -517,7 +517,7 @@ if __name__ == &quot;__main__&quot;:
         print(&quot;  execute?&quot;, quorum.execute(tx))
 </code></pre>
       <p class="code-link"><a href="../code/pocs/dsrv-portal.py">docs/code/pocs/dsrv-portal.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/dsrv-portal">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-fisheries-receivable-rail.html">&larr; 54. The custody was never the hard part</a><a href="pocs-decision-market-uncontrollability.html">56. The property that makes a market work is the one that makes it gambling &rarr;</a></div>
   </div>
@@ -564,7 +564,7 @@ if __name__ == &quot;__main__&quot;:
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

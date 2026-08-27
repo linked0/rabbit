@@ -418,7 +418,7 @@
 <p><strong>Record the status, not the number.</strong> Every date in a protocol timeline belongs in one of three states — <em>confirmed by named parties</em>, <em>deferred</em>, or <em>circulating without a primary source</em> — and a timeline that only carries numbers has thrown away the one column that decides whether to plan against it. The 9/28 Sepolia slot, the 8/27 Hegotá PFI cutoff and the 9/10 preference-list deadline are three different states of certainty sitting on one line.</p>
 <h3>Why it is worth doing for a project, not just for reading</h3>
 <p>Any roadmap that says <em>after the next fork</em> is inheriting the weakest of these states without labelling it. Writing the status column once costs an afternoon and permanently changes what a dependency on an upstream schedule means — and the 200M gas figure is the specific one to watch, because a devnet target repeated as a mainnet number is exactly the shape of the error the table above is built to catch.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/fork-date-provenance">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -469,7 +469,7 @@
 <p><strong>숫자가 아니라 지위를 기록한다.</strong> 프로토콜 타임라인의 모든 날짜는 셋 중 하나입니다 — <strong>명시된 주체가 확인함</strong>, <strong>연기됨</strong>, <strong>1차 출처 없이 유통 중</strong>. 숫자만 담은 타임라인은 <strong>계획을 걸어도 되는지를 결정하는 유일한 칸</strong>을 버린 것입니다. 9/28 Sepolia, 8/27 Hegotá PFI 확정, 9/10 선호목록 마감은 <strong>확실성의 상태가 서로 다른 셋</strong>이 한 줄에 앉아 있는 경우입니다.</p>
 <h3>왜 읽기용이 아니라 프로젝트용인가</h3>
 <p><em>다음 포크 이후</em> 라고 적힌 로드맵은 <strong>이 상태들 중 가장 약한 것을 라벨 없이 상속</strong>한 것입니다. 상태 칸을 한 번 적는 데 반나절이 들고, 상류 일정에 대한 의존이 무엇을 뜻하는지가 영구히 바뀝니다. 그리고 <strong>특히 지켜볼 것은 200M 가스 수치</strong>입니다 — 데브넷 목표가 메인넷 숫자로 반복되는 것이 위 표가 잡으려는 오류의 바로 그 모양이기 때문입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/fork-date-provenance">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-the-record-is-not-the-path.html">&larr; 17. The record is not the path — a registry and a vault for the same problem</a><a href="pocs-simplicity-ctf.html">19. Simplicity CTF &rarr;</a></div>
   </div>
@@ -516,7 +516,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

@@ -455,7 +455,7 @@
 <p><strong>Opening only at the block never surfaces what you do not know you are missing.</strong> Walking a sequence catches unknown unknowns; jumping to the block never will, because nothing has yet failed in a way that names them. So the two patterns are not rivals — the block-driven read is the default, and the sequence is what you walk deliberately in a quiet week, precisely because it finds what the work has not asked for yet.</p>
 <h3>Today&#39;s page</h3>
 <p><strong>BLS12-381 and signature aggregation.</strong> Not because it is next, but because <code>irreversible-switch-design</code> assumes it and the assumption is doing all the work: aggregation is why the current scheme is hard to replace, and without it the post-quantum draft reads as a size problem rather than a structural one.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/one-page-not-the-curriculum">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -509,7 +509,7 @@
 <p><strong>막힌 곳에서만 펼치면, 자기가 놓치고 있다는 사실조차 모르는 것은 영영 드러나지 않습니다.</strong> 순서를 걷는 것은 <strong>미지의 미지(unknown unknowns)</strong> 를 잡아내고, 막힌 곳으로 뛰는 것은 그러지 못합니다 — <strong>그것들을 이름 짓게 만들 실패가 아직 없었기</strong> 때문입니다. 그러니 둘은 경쟁 관계가 아닙니다 — <strong>막힘 기반 읽기가 기본값</strong>이고, <strong>순서는 한산한 주에 의도적으로 걷는 것</strong>입니다. 바로 <strong>일이 아직 요구하지 않은 것을 찾아내기</strong> 때문에.</p>
 <h3>오늘의 페이지</h3>
 <p><strong>BLS12-381과 서명 집계.</strong> 순서상 다음이라서가 아니라, <code>irreversible-switch-design</code> 이 그것을 전제하고 <strong>그 전제가 모든 일을 하고 있기</strong> 때문입니다 — <strong>집계가 있기 때문에 현행 방식을 갈아치우기 어렵고</strong>, 그것 없이 읽으면 포스트퀀텀 초안이 <strong>구조 문제가 아니라 크기 문제</strong>로 보입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/one-page-not-the-curriculum">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-web-stack-layers.html">&larr; 66. Web stack layers</a><a href="pocs-publish-by-default-rule.html">68. The draft already exists — a selection rule, not a new channel &rarr;</a></div>
   </div>
@@ -556,7 +556,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

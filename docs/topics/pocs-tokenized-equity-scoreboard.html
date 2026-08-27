@@ -481,7 +481,7 @@
 </tbody></table></div>
 <h3>What would actually settle it</h3>
 <p>One question, checkable without access to anybody&#39;s internal numbers: <strong>do the major Base lending and AMM venues list these tokens, and does open borrow against them grow?</strong> If yes, the composability bet is paying and volume is the right scoreboard. If the tokens are held and never moved, then being third into the market with a better wrapper is simply being third.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/tokenized-equity-scoreboard">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -561,7 +561,7 @@
 </tbody></table></div>
 <h3>무엇이 실제로 판가름을 낼까</h3>
 <p>남의 내부 숫자 없이도 확인 가능한 질문 하나: <strong>Base 의 주요 대출·AMM 시장이 이 토큰들을 상장하는가, 그리고 그것을 담보로 한 미상환 차입이 늘어나는가?</strong> 그렇다면 조립 가능성 베팅이 값을 하고 있고 <strong>거래량이 옳은 점수판</strong>입니다. 토큰이 보유만 되고 움직이지 않는다면, <strong>더 나은 래퍼로 세 번째에 들어간 것은 그냥 세 번째</strong>일 뿐입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/tokenized-equity-scoreboard">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-tokenized-equity-claim-rail.html">&larr; 35. A claim, not a derivative — the three jobs a tokenized share creates</a><a href="pocs-japan-t0-settlement.html">37. T+0 removes settlement risk, and removes netting with it &rarr;</a></div>
   </div>
@@ -608,7 +608,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

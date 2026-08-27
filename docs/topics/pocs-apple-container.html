@@ -456,7 +456,7 @@ for ref in [&quot;nginx:1.27&quot;, &quot;alpine&quot;]:
     print(f&quot;  exit_code={result['exit_code']} stdout={result['stdout']!r}\n&quot;)
 </code></pre>
       <p class="code-link"><a href="../code/pocs/apple-container.py">docs/code/pocs/apple-container.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/apple-container">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -511,7 +511,7 @@ for ref in [&quot;nginx:1.27&quot;, &quot;alpine&quot;]:
     print(f&quot;  exit_code={result['exit_code']} stdout={result['stdout']!r}\n&quot;)
 </code></pre>
       <p class="code-link"><a href="../code/pocs/apple-container.py">docs/code/pocs/apple-container.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/apple-container">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-publish-by-default-rule.html">&larr; 68. The draft already exists — a selection rule, not a new channel</a><a href="pocs-geometric-series-dcf.html">70. Geometric series → DCF valuation &rarr;</a></div>
   </div>
@@ -558,7 +558,7 @@ for ref in [&quot;nginx:1.27&quot;, &quot;alpine&quot;]:
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

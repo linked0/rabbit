@@ -488,7 +488,7 @@
 </ul>
 <h3>The test this is a better version of</h3>
 <p>An export receivable is boring, audited, legally declared, and owed by a counterparty with no interest in crypto. <strong>If a stablecoin can carry that, it has stopped being a trading instrument</strong> — which is a stronger signal about a market than any share-of-volume figure.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/float-not-the-paperwork">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -575,7 +575,7 @@
 </ul>
 <h3>이것이 더 나은 버전인 시험</h3>
 <p><strong>수출채권은 지루하고, 감사받고, 법적으로 신고되며, 크립토에 관심 없는 상대방이 지는 채무입니다.</strong> <strong>스테이블코인이 그것을 실어 나를 수 있다면 그것은 더 이상 거래 상품이 아닙니다</strong> — 어떤 거래량 비중 숫자보다 시장에 대해 강한 신호입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/float-not-the-paperwork">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-what-needs-a-stablecoin.html">&larr; 26. Not what a stablecoin can do — what needs one</a><a href="pocs-build-rent-or-own-the-rail.html">28. Build the rail, rent it, or own it together — three answers in one month &rarr;</a></div>
   </div>
@@ -622,7 +622,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

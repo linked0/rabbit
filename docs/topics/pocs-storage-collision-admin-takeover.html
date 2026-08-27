@@ -417,7 +417,7 @@
 <p><strong>A shared mutable address space is the oldest source of composition bugs there is</strong>, and a chain does not make it new — it makes it expensive and public. Any design that lets code run in someone else&#39;s storage context inherits it: proxies, delegatecall modules, plugin systems, diamond facets, hook architectures. The safety question is never <em>is this module correct</em> but <strong>does this module agree with every other module about what memory means</strong> — and that question has no owner unless someone is assigned to it.</p>
 <h3>Reading the price honestly</h3>
 <p>$162,000 taken and a 6.39% move in ENJ. The token move is the part not to over-read: a six percent day is inside normal range for a small-cap, so it is a coincident fact rather than a measurement of the damage. The number that matters is the one nobody publishes — <strong>how many adapters shared that space, and how many of the remaining ones were checked afterwards.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/storage-collision-admin-takeover">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -467,7 +467,7 @@
 <p><strong>공유된 가변 주소 공간은 조합 버그의 가장 오래된 원천</strong>이고, 체인이 그걸 새롭게 만들지 않습니다 — <strong>비싸고 공개적으로</strong> 만들 뿐입니다. 남의 스토리지 문맥에서 코드가 돌게 하는 모든 설계가 이걸 물려받습니다 — 프록시, delegatecall 모듈, 플러그인 시스템, 다이아몬드 패싯, 훅 아키텍처. 안전성 질문은 결코 <em>이 모듈이 올바른가</em> 가 아니라 <em><strong>이 모듈이 메모리의 의미에 대해 다른 모든 모듈과 합의하는가</strong></em> 이고, <strong>누군가를 지정해 두지 않으면 그 질문에는 주인이 없습니다.</strong></p>
 <h3>피해액을 정직하게 읽기</h3>
 <p>16만 2천 달러 탈취, ENJ 6.39% 하락. <strong>토큰 움직임은 과대 해석하지 말아야 할 부분</strong>입니다 — 소형주에 6%는 정상 범위 안이므로 <strong>피해의 측정치가 아니라 동시에 일어난 사실</strong>입니다. 중요한 숫자는 아무도 발표하지 않는 쪽입니다 — <strong>그 공간을 공유한 어댑터가 몇 개였고, 남은 것 중 몇 개를 사후에 점검했는가.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/storage-collision-admin-takeover">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-encrypted-mempool.html">&larr; 11. What encryption does not hide</a><a href="pocs-the-settlement-instant.html">13. A price at a moment — the instant, the window, and who can move it &rarr;</a></div>
   </div>
@@ -514,7 +514,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

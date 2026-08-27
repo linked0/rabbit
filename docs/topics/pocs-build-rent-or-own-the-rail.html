@@ -607,7 +607,7 @@
 <p>A flow map of where the card leg meets an on-chain settlement leg, with the touch points marked, is the concrete artefact here — no development item attached, and useful under any of the three answers above.</p>
 <h3>The confidentiality problem the consortium answer creates</h3>
 <p>On a shared ledger among thousands of institutions, keeping existing bank regulation and security standards bites in one place: <strong>a bank&#39;s balances and counterparties must not be visible to its competitors</strong>, and a naive shared chain publishes exactly that. So the real engineering question is not throughput — <strong>it is which parties see which fields</strong>, which is the subject <code>what-encryption-does-not-hide</code> circles. Any answer here will be an answer to that, whether or not the announcement frames it that way. Read alongside <code>cross-border-rail-interop</code>, where the same lesson appears in a different costume: <strong>governance, not throughput, decides which rail wins.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/build-rent-or-own-the-rail">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -813,7 +813,7 @@
 <p>카드 구간이 온체인 정산 구간과 만나는 지점을 <strong>접점 표시와 함께 그린 흐름도</strong>가 여기서의 구체 산출물입니다 — <strong>개발 항목은 붙지 않고</strong>, 위 세 답 어느 쪽에서든 쓸모가 있습니다.</p>
 <h3>컨소시엄이라는 답이 만들어 내는 기밀성 문제</h3>
 <p>수천 개 기관이 공유하는 원장에서 기존 은행 규제·보안 기준을 유지한다는 제약은 <strong>한 지점에서 물어뜯습니다</strong> — <strong>한 은행의 잔액과 거래상대가 경쟁 은행에 보이면 안 되는데</strong>, 순진한 공유 체인은 정확히 그것을 공개합니다. 그래서 진짜 엔지니어링 질문은 처리량이 아니라 <strong>어느 당사자가 어느 필드를 보는가</strong>이고, <code>what-encryption-does-not-hide</code> 가 도는 주제입니다. <strong>여기서 나올 어떤 답이든 그 질문에 대한 답</strong>이 될 것입니다. 발표가 그렇게 프레이밍하든 아니든. <strong>같은 교훈이 다른 옷을 입고 나오는</strong> <code>cross-border-rail-interop</code> 와 함께 읽습니다 — <strong>처리량이 아니라 지배구조가 어느 레일이 이길지 정합니다.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/build-rent-or-own-the-rail">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-float-not-the-paperwork.html">&larr; 27. The stablecoin replaces the float, not the paperwork</a><a href="pocs-stablecoin-redemption-desk.html">29. The redemption desk — what actually makes a stablecoin's denominator &rarr;</a></div>
   </div>
@@ -860,7 +860,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

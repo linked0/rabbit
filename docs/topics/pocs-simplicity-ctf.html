@@ -431,7 +431,7 @@ for label, witness in [
     print(f&quot;{label}: witness={witness} -&gt; unlocked={unlocked}&quot;)
 </code></pre>
       <p class="code-link"><a href="../code/pocs/simplicity-ctf.py">docs/code/pocs/simplicity-ctf.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/simplicity-ctf">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -495,7 +495,7 @@ for label, witness in [
     print(f&quot;{label}: witness={witness} -&gt; unlocked={unlocked}&quot;)
 </code></pre>
       <p class="code-link"><a href="../code/pocs/simplicity-ctf.py">docs/code/pocs/simplicity-ctf.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/simplicity-ctf">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-fork-date-provenance.html">&larr; 18. A fork date nobody decided — reading the claim, not the number</a><a href="pocs-aqua-shared-liquidity.html">20. Shared liquidity — quoted depth vs. the balance behind it &rarr;</a></div>
   </div>
@@ -542,7 +542,7 @@ for label, witness in [
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

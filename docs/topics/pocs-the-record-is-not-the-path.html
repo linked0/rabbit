@@ -462,7 +462,7 @@
 <p>Apache-2.0, Go 1.26+ with CGO and Node 24+ to build from source. Sibling project to msgvault, which does the same for messages.</p>
 <h3>The shared conclusion</h3>
 <p><strong>Neither lets the location be the identity, and both make the record verifiable by something other than trust in a provider.</strong> The registry does it by publishing a proof and withholding the data; the vault does it by publishing nothing and keeping a digest. <strong>Which one is right depends entirely on who has to be convinced</strong> — a counterparty who was never in the room, or you in five years.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/the-record-is-not-the-path">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -557,7 +557,7 @@
 <p>Apache-2.0, 소스 빌드에는 Go 1.26+ (CGO) 와 Node 24+. <strong>메시지에 대해 같은 일을 하는 자매 프로젝트 msgvault</strong> 가 있습니다.</p>
 <h3>공통 결론</h3>
 <p><strong>둘 다 위치가 정체성이 되게 두지 않고, 둘 다 공급자에 대한 신뢰가 아닌 것으로 기록을 검증 가능하게 만듭니다.</strong> 레지스트리는 <strong>증명을 공개하고 데이터를 보류</strong>해서, 금고는 <strong>아무것도 공개하지 않고 다이제스트를 쥐고</strong> 있어서. <strong>어느 쪽이 맞는지는 전적으로 누구를 설득해야 하는가에 달렸습니다</strong> — <strong>그 자리에 없었던 거래상대냐, 5년 뒤의 나 자신이냐.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/the-record-is-not-the-path">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-erc-8141.html">&larr; 16. ERC-8141</a><a href="pocs-fork-date-provenance.html">18. A fork date nobody decided — reading the claim, not the number &rarr;</a></div>
   </div>
@@ -604,7 +604,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

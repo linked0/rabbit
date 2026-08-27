@@ -423,7 +423,7 @@
 <p><strong>Express every deadline in the unit of the thing it protects.</strong> A human or market deadline is wall-clock: a user has thirty seconds, a quote is good for two minutes. A chain-state deadline is blocks: this many confirmations, this many slots of challenge window. The defect is never the number — it is a deadline written in the <em>other</em> unit, and slot time changing does not create that defect, it only makes it visible.</p>
 <h3>Why it sits next to the other protocol cards</h3>
 <p>The roundup&#39;s three S-tier items change three different parts of the substrate under an application that does not change at all: <strong>8198 changes time</strong>, <strong>8131 and 8279 change what resources cost</strong> (<code>l1-data-pricing-dimensions</code>), and <strong>8141 changes the shape of a transaction</strong> (<code>erc-8141</code>). None of them require an application to be rewritten, and all three change what it is quietly assuming.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/quick-slots-10s">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -481,7 +481,7 @@
 ### 왜 다른 프로토콜 카드 옆에 두는가
 
 라운드업의 S티어 세 항목은 </strong>전혀 바뀌지 않은 애플리케이션 아래에서 기반의 서로 다른 세 부분을 바꿉니다.<strong> </strong>8198은 시간을<strong>, </strong>8131·8279는 자원의 가격을<strong>(<code>l1-data-pricing-dimensions</code>), </strong>8141은 트랜잭션의 모양을<strong>(<code>erc-8141</code>) 바꿉니다. 셋 다 앱을 다시 쓰라고 요구하지 않고, 셋 다 </strong>앱이 조용히 전제하던 것</strong>을 바꿉니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/quick-slots-10s">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-merkle-vs-verkle.html">&larr; 8. Merkle vs Verkle</a><a href="pocs-l1-data-pricing-dimensions.html">10. When gas stops being one number — data pricing and bandwidth accounting &rarr;</a></div>
   </div>
@@ -528,7 +528,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

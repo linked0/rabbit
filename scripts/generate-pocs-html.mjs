@@ -334,12 +334,16 @@ const firstSentences = (s, n = 2) => {
   return balanceMarks(parts ? parts.slice(0, n).join('').trim() : prose);
 };
 
-function rowsFor(list) {
+// 목록이 길어져서 (85장 + 커리큘럼 152개) 항목을 다 읽고 나면 돌아갈 곳이 없었다
+// (jay, 2026-08-28). "Open on jaylabs.xyz"를 페이지 내 이동 두 개로 바꾼다 — 라이브
+// 카드의 실제 링크는 상세 페이지에 그대로 남아 있다. `#top`은 그런 id가 없어도
+// 문서 맨 위로 가는 것이 HTML 명세에 정의된 동작이라 셸을 건드릴 필요가 없다.
+function rowsFor(list, sectionAnchor) {
   return list
   .map((c) => {
     const b = badge(c);
     const mark = ` <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span>`;
-    const links = `<a href="${detailHref(c)}">Detail &rarr;</a> &middot; <a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a>`;
+    const links = `<a href="${detailHref(c)}">Detail &rarr;</a> &middot; <a href="#top">Top &uarr;</a> &middot; <a href="#${sectionAnchor}">Section top &uarr;</a>`;
     // How it works — 상세 페이지의 howItWorks 필드를 그대로 복사한다 (jay, 2026-08-13:
     // "add why and how it works to the list page, not move — just copy it"). 상세
     // 페이지는 전체 문단을 그대로 유지한다.
@@ -381,7 +385,7 @@ function curriculumRows(cfg, items) {
       const whyHtml = ex?.why ? `\n          <p class="topic-why"><strong>Why</strong>${curInline(ex.why)}</p>` : '';
       return `        <li id="${cfg.id}-${i.no}">
           <div class="topic-head"><span class="topic-no">${i.no}</span><span class="topic-title">${curInline(shortLabel(i.text))}</span>${mark}</div>${summaryHtml}${howHtml}${whyHtml}
-          <p class="topic-link"><a href="${href}">Detail &rarr;</a></p>
+          <p class="topic-link"><a href="${href}">Detail &rarr;</a> &middot; <a href="#top">Top &uarr;</a> &middot; <a href="#sec-${cfg.id}">Section top &uarr;</a></p>
         </li>`;
     })
     .join('\n');
@@ -469,7 +473,7 @@ const cardSectionsHtml = grouped
       <p class="lead">${g.lead}</p>
       <p class="meta">${sectionMeta[`sec-${g.id}`]}</p>
       <ul class="topics">
-${rowsFor(g.numbered)}
+${rowsFor(g.numbered, `sec-${g.id}`)}
       </ul>
     </article>`
   )
@@ -527,7 +531,12 @@ function detailNavGroups(current) {
   const codeHtmlKo = code
     ? `      <h2>관련 코드</h2>\n      <pre><code>${escapeHtml(code)}</code></pre>\n      <p class="code-link"><a href="../code/pocs/${c.key}.py">docs/code/pocs/${c.key}.py</a></p>\n`
     : '';
-  const openLink = `<a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a>`;
+  // 본문 끝의 "Open on jaylabs.xyz"는 대부분의 카드에서 아직 없는 페이지를 가리켰다
+  // (jay, 2026-08-28). 레일 바닥과 같은 이동 링크로 바꾸고, 라이브 라우트(href)가 실제로
+  // 있는 카드에만 원래 링크를 뒤에 붙인다 — 쓸모 있는 경우는 남기고 죽은 링크만 없앤다.
+  const liveLink = c.href ? ` &middot; <a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a>` : '';
+  const openLink = `<a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a>${liveLink}`;
+  const openLinkKo = `<a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a>${liveLink}`;
   // 이중언어 — 영어 먼저, 한국어 나중 (jay, 2026-08-13). 카드 데이터에 이미 있는 *Ko
   // 필드를 그대로 쓴다 — 번역을 새로 짓지 않는다.
   fs.writeFileSync(
@@ -571,7 +580,7 @@ ${diagramNote}${codeHtml}      <p>${openLink}</p>
       ${md(c.purposeKo)}
       <h2>동작 방식</h2>
       ${md(c.howItWorksKo)}
-${diagramNote}${codeHtmlKo}      <p>${openLink}</p>
+${diagramNote}${codeHtmlKo}      <p>${openLinkKo}</p>
     </article>`,
       pagerHtml: `${
         prev ? `<a href="${escapeHtml(topicPagerHref(prev))}">&larr; ${prev.no}. ${escapeHtml(prev.title)}</a>` : '<span></span>'

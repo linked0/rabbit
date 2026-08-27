@@ -452,7 +452,7 @@
 <p><strong>How does each decide when to fire?</strong> A skill&#39;s trigger is the only part that cannot be borrowed carelessly — it encodes an assumption about what the reader is doing at the moment the skill becomes relevant. Google&#39;s answer and Claude&#39;s answer to that question are the comparison, and <strong>one paragraph noting where they differ is the entire deliverable of this card.</strong></p>
 <h3>Why loops versus graphs is the chapter to keep</h3>
 <p>It is the one structural decision in agent design that survives changing every other choice: <strong>a loop re-enters the same step until a condition holds; a graph moves through named states with explicit edges.</strong> The first is easier to write and harder to reason about; the second is the opposite. Everything about observability, retry behaviour and cost ceilings follows from it, which is why <code>the-harness-not-the-model</code> cares about it and a monetization chapter does not.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/steal-the-structure">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -503,7 +503,7 @@
 <p><strong>각각은 언제 발동할지를 어떻게 정하는가?</strong> <strong>스킬의 트리거는 함부로 빌려올 수 없는 유일한 부분</strong>입니다 — <strong>그 스킬이 유의미해지는 순간 독자가 무엇을 하고 있는지에 대한 전제</strong>를 인코딩하기 때문입니다. 그 질문에 대한 Google 의 답과 Claude 의 답이 곧 비교이고, <strong>둘이 어디서 갈리는지 한 문단이 이 카드의 산출물 전부</strong>입니다.</p>
 <h3>왜 루프 대 그래프가 남길 장인가</h3>
 <p><strong>다른 모든 선택을 바꿔도 살아남는 유일한 구조적 결정</strong>이기 때문입니다 — <strong>루프는 조건이 성립할 때까지 같은 단계로 다시 들어가고, 그래프는 명시적 간선을 따라 이름 붙은 상태들을 지나갑니다.</strong> 앞은 쓰기 쉽고 추론하기 어렵고, 뒤는 반대입니다. <strong>관측 가능성·재시도 동작·비용 상한이 전부 여기서 따라 나옵니다.</strong> <code>the-harness-not-the-model</code> 이 이것을 신경 쓰고 수익화 장이 신경 쓰지 않는 이유입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/steal-the-structure">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-plumbing-skills-buyback.html">&larr; 62. Four capabilities, each buying back what the chain gave away</a><a href="pocs-claude-in-slack.html">64. Claude in Slack — the workflow first, the presence second &rarr;</a></div>
   </div>
@@ -550,7 +550,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

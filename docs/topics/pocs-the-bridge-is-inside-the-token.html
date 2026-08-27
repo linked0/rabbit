@@ -478,7 +478,7 @@
 <p>Only the second is benign, and only the first is the one people plan for.</p>
 <h3>The number the design rests on</h3>
 <p><strong>Σ(supply across all chains) ≤ BTC in custody.</strong> Ask three things about it: who publishes it, how often relative to how fast minting can happen, and whether anyone other than the issuer can halt minting when it fails. If the attestation is slower than the mint, the audit describes a photograph.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/the-bridge-is-inside-the-token">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -555,7 +555,7 @@
 <p><strong>둘째만 양성이고, 사람들이 대비하는 것은 첫째뿐입니다.</strong></p>
 <h3>설계가 딛고 선 숫자</h3>
 <p><strong>Σ(모든 체인의 발행량) ≤ 커스터디의 BTC.</strong> 세 가지를 물으십시오 — <strong>누가 공표하는가</strong>, <strong>발행 가능 속도 대비 얼마나 자주인가</strong>, <strong>어긋날 때 발행자 아닌 누군가가 발행을 멈출 수 있는가.</strong> <strong>증명이 발행보다 느리면 그 감사는 사진을 설명하는 것입니다.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/the-bridge-is-inside-the-token">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-layerzero-default-is-a-choice.html">&larr; 44. LayerZero — the default verifier is a trust assumption nobody wrote down</a><a href="pocs-third-party-blast-radius.html">46. Trusted third parties — the blast radius nobody maps &rarr;</a></div>
   </div>
@@ -602,7 +602,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

@@ -431,7 +431,7 @@
 <li>The desk is batch-size-one, latency-bound, fixed-memory — a different problem, not a smaller one.</li>
 <li>The post closes by soliciting investment, so every figure above is promotional until re-derived from published specifications.</li>
 </ul>
-      <p><a href="https://www.jaylabs.xyz/poc/bandwidth-not-capacity">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -508,7 +508,7 @@
 <li>책상은 <strong>배치 크기 1, 지연에 묶이고, 메모리가 고정</strong> — <strong>더 작은 문제가 아니라 다른 문제</strong>입니다.</li>
 <li>글은 <strong>투자 권유로 끝납니다.</strong> 위의 모든 수치는 <strong>공개 사양에서 다시 유도하기 전까지 홍보물</strong>입니다.</li>
 </ul>
-      <p><a href="https://www.jaylabs.xyz/poc/bandwidth-not-capacity">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-sub-2bit-local-llm.html">&larr; 81. Sub-2-bit LLMs, locally</a><a href="pocs-robotics-entry-decision.html">83. Four ways into robotics, and what each one actually buys &rarr;</a></div>
   </div>
@@ -555,7 +555,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

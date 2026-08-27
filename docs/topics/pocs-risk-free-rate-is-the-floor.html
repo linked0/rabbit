@@ -446,7 +446,7 @@
 <li>The right comparison is the bill in <strong>the currency your liability is in</strong>, not always dollars.</li>
 <li>A premium that looks thin may still be correct if the risk really is small; <strong>the point is to price it, not to refuse it.</strong></li>
 </ul>
-      <p><a href="https://www.jaylabs.xyz/poc/risk-free-rate-is-the-floor">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -540,7 +540,7 @@
 <li>올바른 비교 대상은 <strong>당신의 부채가 표시된 통화의 국채</strong>이지 언제나 달러가 아닙니다.</li>
 <li><strong>얇아 보이는 프리미엄도 위험이 정말 작으면 옳을 수 있습니다.</strong> <strong>요점은 거부가 아니라 값을 매기는 것입니다.</strong></li>
 </ul>
-      <p><a href="https://www.jaylabs.xyz/poc/risk-free-rate-is-the-floor">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-gross-over-net.html">&larr; 74. Gross over net — the recycling multiple</a><a href="pocs-m2-and-the-dollar.html">76. M2, the dollar, and why crypto is a liquidity trade &rarr;</a></div>
   </div>
@@ -587,7 +587,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

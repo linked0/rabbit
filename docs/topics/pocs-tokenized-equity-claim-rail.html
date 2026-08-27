@@ -457,7 +457,7 @@
 <p>Every row above is a place where the two ledgers can disagree, and <strong>the token holder cannot see the disagreement.</strong> The only real question a design has to answer is what happens in the gap: does the chain hold the claim in a pending state until the custodian confirms, or does it mint on trust and repair afterwards? The first is honest and slow, the second is fast and creates an exposure nobody prices. That choice is the whole architecture, and it is made before any contract is written.</p>
 <h3>The jurisdiction footnote</h3>
 <p>The listing is for <strong>non-US users</strong>, which is the same shape as every other constraint in this week&#39;s reading: <strong>the product did not change, the jurisdiction decided the category.</strong> Whether Korea sits inside that non-US perimeter is not stated anywhere public, and that ambiguity is itself the finding — see <code>jurisdiction-decides-the-category</code>.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/tokenized-equity-claim-rail">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -513,7 +513,7 @@
 <p>위의 모든 줄이 <strong>두 원장이 어긋날 수 있는 자리</strong>이고, <strong>토큰 보유자는 그 어긋남을 볼 수 없습니다.</strong> 설계가 답해야 하는 진짜 질문은 하나입니다 — <strong>그 틈에서 무엇을 하는가.</strong> 커스터디언 확인 전까지 청구권을 보류 상태로 두는가, 아니면 믿고 발행한 뒤 나중에 고치는가. 앞은 정직하고 느리며, 뒤는 빠르고 <strong>아무도 가격을 매기지 않는 익스포저</strong>를 만듭니다. 그 선택이 아키텍처 전부이고, <strong>컨트랙트를 한 줄 쓰기 전에</strong> 결정됩니다.</p>
 <h3>법역 각주</h3>
 <p>이 상장은 <strong>미국 외 사용자</strong> 대상이고, 이번 주 읽은 다른 모든 제약과 같은 모양입니다 — <strong>상품은 그대로인데 법역이 카테고리를 정했습니다.</strong> 한국이 그 미국 외 경계 <strong>안</strong>에 있는지는 어디에도 공개돼 있지 않고, <strong>그 모호함 자체가 발견</strong>입니다. <code>jurisdiction-decides-the-category</code> 참조.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/tokenized-equity-claim-rail">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-agents-computer-use.html">&larr; 34. Can an agent drive a computer yet — and if so, whose?</a><a href="pocs-tokenized-equity-scoreboard.html">36. The token is not the product — composability is, and volume is its scoreboard &rarr;</a></div>
   </div>
@@ -560,7 +560,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

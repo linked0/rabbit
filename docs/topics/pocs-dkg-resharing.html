@@ -491,7 +491,7 @@
 <li><strong>Which DKG is actually deployed</strong> — Pedersen with a complaint round (biasable, and one malicious participant can force a restart), GJKR, FROST for Schnorr thresholds, or a BLS variant. The choice determines abort behaviour, and abort behaviour is the operational property.</li>
 <li><strong>Has any live deployment actually reshared in production</strong>, as opposed to documenting that it could? <strong>That single data point is worth more than any amount of spec reading</strong>, and it is the first thing to go looking for.</li>
 </ul>
-      <p><a href="https://www.jaylabs.xyz/poc/dkg-resharing">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -595,7 +595,7 @@
 - </strong>의식 트랜스크립트를 공개하는 곳이 있는가?<strong> 없다면 임계치는 검증 가능한 사실이 아니라 </strong>주장<strong>이고, 하위의 모든 카드는 확인할 수 없는 주장을 믿고 있는 셈입니다.
 - </strong>실제로 배포된 DKG가 어느 것인가<strong> — 이의제기 라운드가 있는 Pedersen(편향 가능하고, 악의적 참여자 하나가 재시작을 강제할 수 있음), GJKR, Schnorr 임계 서명용 FROST, 혹은 BLS 변형. 선택이 </strong>중단(abort) 동작<strong>을 결정하고, 중단 동작이 곧 운영 성질입니다.
 - </strong>운영 중에 실제로 리셰어링을 해 본 배포가 있는가<strong> — &quot;할 수 있다&quot;고 문서에 적은 것 말고. </strong>그 데이터 한 점이 어떤 스펙 독해보다 값어치가 큽니다</em>*, 그리고 가장 먼저 찾아볼 것입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/dkg-resharing">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-what-encryption-does-not-hide.html">&larr; 14. Hiding the amount is the easy half</a><a href="pocs-erc-8141.html">16. ERC-8141 &rarr;</a></div>
   </div>
@@ -642,7 +642,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

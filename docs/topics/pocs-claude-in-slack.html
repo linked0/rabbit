@@ -452,7 +452,7 @@
 <p>Run the manual version for a couple of weeks. <strong>If nobody misses it when it stops, the tagged version is a solution to a problem that did not exist.</strong> If it is missed, the miss itself specifies what the bot must guarantee — and that specification is worth more than any amount of design done in advance.</p>
 <h3>Why it stays parked</h3>
 <p>Both halves were marked <em>not currently important</em> in August 2026 and nothing has changed that. <strong>The entry stays on the list because the ordering is the finding</strong>, not because the work is queued.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/claude-in-slack">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -505,7 +505,7 @@
 <p><strong>수동 버전을 2주쯤 돌립니다.</strong> <strong>멈췄을 때 아무도 아쉬워하지 않으면, 태그 봇은 존재하지 않던 문제의 해법</strong>입니다. 아쉬워한다면, <strong>그 아쉬움 자체가 봇이 무엇을 보장해야 하는지를 규정</strong>하고 — <strong>그 규정이 미리 한 어떤 설계보다 값어치가 큽니다.</strong></p>
 <h3>왜 계속 보류인가</h3>
 <p>둘 다 2026년 8월에 <em>지금은 중요하지 않음</em> 으로 표시됐고 <strong>바뀐 것이 없습니다.</strong> <strong>이 항목이 목록에 남는 이유는 작업이 대기열에 있어서가 아니라 그 순서가 곧 발견이기 때문</strong>입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/claude-in-slack">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-steal-the-structure.html">&larr; 63. Two reading lists, and the same instruction — steal the structure, not the content</a><a href="pocs-circuit-breaker-saga.html">65. Microservice patterns — Circuit Breaker &amp; Saga &rarr;</a></div>
   </div>
@@ -552,7 +552,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

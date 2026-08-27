@@ -407,7 +407,7 @@
 <p>Not for the tank. <strong>For the shape of the output.</strong> The recurring difficulty with model-produced artifacts is that they cannot be checked — a paragraph, an image, a mesh all arrive as finished surfaces with no seam to inspect. <strong>A model that emits a program instead moves the artifact into a form that already has review tooling around it</strong>: version control, diffs, tests, parameters with names. That is the same reason this repo keeps card data as the source of truth and treats every page under <code>docs/topics/</code> as disposable output, and it generalizes far past 3D.</p>
 <h3>Honesty about the source</h3>
 <p>This is a social post with no repository, no paper and no primary link, forty-two minutes old at capture, carrying 19 likes against 16,000 views — engagement that says <em>seen</em> rather than <em>verified</em>. Nothing here should be repeated as fact. The card exists because the <strong>distinction</strong> is worth holding, not because the demo is established.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/procedural-not-generated">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -461,7 +461,7 @@
 <p>전차 때문이 아닙니다. <strong>산출물의 모양 때문입니다.</strong> 모델이 만든 결과물의 반복되는 난점은 <strong>검사할 수 없다</strong>는 것입니다 — 문단이든 이미지든 메시든, <strong>이음매 없는 완성된 표면</strong>으로 도착합니다. <strong>대신 프로그램을 내놓는 모델은 결과물을 이미 리뷰 도구가 갖춰진 형태로 옮깁니다</strong> — 버전 관리, diff, 테스트, 이름 있는 파라미터. 이 저장소가 카드 데이터를 정본으로 두고 <code>docs/topics/</code> 전부를 <strong>버려도 되는 출력</strong>으로 다루는 것과 같은 이유이고, <strong>3D를 훨씬 넘어 일반화됩니다.</strong></p>
 <h3>출처에 대한 정직함</h3>
 <p>저장소도 논문도 1차 링크도 없는 소셜 게시물이고, 캡처 시점 42분 경과, 조회 1.6만에 좋아요 19 — <strong>&quot;봤다&quot;는 말이지 &quot;검증됐다&quot;는 말이 아닌</strong> 반응입니다. <strong>여기의 어떤 것도 사실로 옮겨 적으면 안 됩니다.</strong> 이 카드가 존재하는 이유는 데모가 확립돼서가 아니라 <strong>그 구분이 들고 있을 값어치가 있기</strong> 때문입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/procedural-not-generated">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-fees-over-security-budget.html">&larr; 79. Does a chain pay for its own security?</a><a href="pocs-sub-2bit-local-llm.html">81. Sub-2-bit LLMs, locally &rarr;</a></div>
   </div>
@@ -508,7 +508,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

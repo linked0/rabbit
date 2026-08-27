@@ -456,7 +456,7 @@
 <p>Not the order above. <strong>Start with resolution</strong>, because a market that cannot settle correctly makes every other capability irrelevant, and because it is the row with the least public prior art. <strong>Then netting</strong>, which decides the capital structure everything else runs on. <strong>Then matching</strong>, which is a performance decision that can be deferred until volume exists. <strong>Routing last</strong>, because MEV is a cost that only appears at size — and by then the first three have determined how much of it there is to extract.</p>
 <h3>The honest limit of a card like this</h3>
 <p>Four capabilities is a career, not a sprint, and a list of things to learn is the least reliable artifact in this catalogue — it survives contact with reality only if each row is reduced to a number that can be produced for a real system. That is why the fourth column exists, and why a row without one should be dropped rather than admired.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/plumbing-skills-buyback">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -511,7 +511,7 @@
 <p>위의 순서가 아닙니다. <strong>판정부터.</strong> 정산이 틀리는 시장에서는 나머지 역량이 전부 무의미하고, <strong>공개된 선행 사례가 가장 적은 줄</strong>이기 때문입니다. <strong>그다음 네팅</strong> — 나머지 전부가 올라탈 자본 구조를 결정합니다. <strong>그다음 매칭</strong> — 거래량이 생기기 전까지 미룰 수 있는 <strong>성능 결정</strong>입니다. <strong>라우팅이 마지막</strong> — MEV는 규모가 있어야 나타나는 비용이고, 그때쯤이면 앞의 셋이 <strong>뽑아갈 양이 얼마인지를 이미 정해 놓았기</strong> 때문입니다.</p>
 <h3>이런 카드의 정직한 한계</h3>
 <p>네 역량은 스프린트가 아니라 <strong>커리어</strong>이고, <strong>배울 것 목록은 이 카탈로그에서 가장 신뢰도가 낮은 산출물</strong>입니다. 각 줄이 실제 시스템에 대해 산출할 수 있는 숫자로 환원될 때만 현실과의 접촉에서 살아남습니다. 네 번째 칸이 존재하는 이유이자, <strong>숫자가 없는 줄은 감탄하지 말고 버려야 하는 이유</strong>입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/plumbing-skills-buyback">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-thirdweb.html">&larr; 61. Thirdweb — platform survey</a><a href="pocs-steal-the-structure.html">63. Two reading lists, and the same instruction — steal the structure, not the content &rarr;</a></div>
   </div>
@@ -558,7 +558,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

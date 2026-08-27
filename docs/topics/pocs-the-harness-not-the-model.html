@@ -489,7 +489,7 @@
 <p>A Zapier event ad seen 2026-08-28 opens with one line worth keeping: <strong>&quot;Business teams are shipping AI faster than IT can review it.&quot;</strong> It is marketing, and it is also the demand for this layer stated plainly from the buyer&#39;s side. Two things follow from it.</p>
 <p><strong>The gap is structural rather than a discipline problem.</strong> Review capacity is a fixed number of people. Adoption is a <em>rate</em>, and a business team can raise that rate without asking anyone, because the tools are SaaS and the budget is a corporate card. <strong>A rate outruns a fixed capacity by default</strong> — which is why &quot;slow the teams down&quot; is not an available answer, and why an ad can safely promise not to.</p>
 <p><strong>Therefore the control cannot be a review.</strong> If approval cannot keep pace with adoption, the thing that governs has to be a runtime property rather than a checkpoint: a gateway every agent passes through whether or not anybody reviewed it, with the spend cap, the credential scope and the audit trail enforced <em>there</em>. That is this card&#39;s conclusion reached from the governance side instead of the operations side, and it sharpens into one rule — <strong>a checkpoint that scales with people loses to a rate; a chokepoint that scales with traffic does not.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/the-harness-not-the-model">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -577,7 +577,7 @@
 <p>2026-08-28 에 본 Zapier 행사 광고는 <strong>챙겨 둘 만한 한 줄</strong>로 시작합니다 — <strong>&quot;현업 팀이 IT 가 검토할 수 있는 속도보다 빠르게 AI 를 내보내고 있다.&quot;</strong> 마케팅이고, <strong>동시에 이 계층에 대한 수요를 구매자 쪽에서 그대로 진술한 문장</strong>입니다. 두 가지가 따라옵니다.</p>
 <p><strong>간극은 기강 문제가 아니라 구조입니다.</strong> <strong>검토 역량은 고정된 사람 수</strong>입니다. <strong>도입은 속도(rate)</strong> 이고, 현업 팀은 <strong>누구에게 묻지 않고도 그 속도를 올릴 수 있습니다</strong> — 도구는 SaaS 이고 예산은 법인카드니까요. <strong>속도는 고정 역량을 기본값으로 앞지릅니다.</strong> 그래서 <strong>&quot;팀을 늦춰라&quot;는 선택지가 아니고</strong>, 광고가 <strong>늦추지 않겠다고 안전하게 약속할 수 있는</strong> 이유입니다.</p>
 <p><strong>따라서 통제는 검토일 수 없습니다.</strong> 승인이 도입 속도를 따라잡지 못한다면, 다스리는 것은 <strong>관문(checkpoint)이 아니라 런타임 속성</strong>이어야 합니다 — <strong>누가 검토했든 안 했든 모든 에이전트가 지나가는 게이트웨이</strong>, 그리고 <strong>지출 한도·자격증명 범위·감사 기록이 거기서 강제</strong>되는 것. 이는 이 카드의 결론을 <strong>운영이 아니라 거버넌스 쪽에서</strong> 도달한 것이고, 한 문장으로 벼려집니다 — <strong>사람 수에 비례하는 관문은 속도에 집니다. 트래픽에 비례하는 병목은 지지 않습니다.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/the-harness-not-the-model">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-arb-bots-are-the-peg.html">&larr; 31. Nobody runs the peg — the competing bots are the mechanism</a><a href="pocs-mcp-three-sides.html">33. MCP from three sides — build one, consume one, wrap an agent as one &rarr;</a></div>
   </div>
@@ -624,7 +624,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

@@ -412,7 +412,7 @@
       <p>A core algorithms-interview topic: proving that an operation with occasional expensive worst cases (like a dynamic array&#39;s resize-and-copy) is still O(1) on average over a sequence of operations, using the potential-function accounting method rather than a hand-wavy argument.</p>
       <h2>How it works</h2>
       <p>Planned: an interactive dynamic array (a growable vector) where each push is logged with its real cost, alongside a running potential function Φ that tracks &quot;banked&quot; cost from cheap operations — demonstrating that amortized cost = real cost + ΔΦ stays bounded even across a resize. Not yet built.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/amortized-potential-function">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -423,7 +423,7 @@
       <p>알고리즘 면접의 핵심 주제 중 하나입니다: 동적 배열의 resize-and-copy처럼 가끔 비싼 최악의 경우가 있는 연산이라도, 일련의 연산 전체로 보면 평균 O(1)임을 대충 넘어가는 논증이 아니라 포텐셜 함수 회계 기법으로 엄밀하게 증명합니다.</p>
       <h2>동작 방식</h2>
       <p>계획: 각 push 연산의 실제 비용을 기록하는 인터랙티브 동적 배열(확장 가능한 벡터)을 만들고, 저렴한 연산에서 &quot;적립된&quot; 비용을 추적하는 포텐셜 함수 Φ를 함께 보여줍니다 — 분할상환 비용(= 실제 비용 + ΔΦ)이 resize가 일어나는 순간에도 항상 일정 범위 안에 머무름을 증명합니다. 아직 미구현.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/amortized-potential-function">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-geometric-series-dcf.html">&larr; 70. Geometric series → DCF valuation</a><a href="pocs-moralis-wallet-api.html">72. Moralis — wallet snapshot via API &rarr;</a></div>
   </div>
@@ -470,7 +470,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

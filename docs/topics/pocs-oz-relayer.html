@@ -470,7 +470,7 @@ if __name__ == &quot;__main__&quot;:
         print(f&quot;  nonce {nonce}: {tx_id}&quot;)
 </code></pre>
       <p class="code-link"><a href="../code/pocs/oz-relayer.py">docs/code/pocs/oz-relayer.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -539,7 +539,7 @@ if __name__ == &quot;__main__&quot;:
         print(f&quot;  nonce {nonce}: {tx_id}&quot;)
 </code></pre>
       <p class="code-link"><a href="../code/pocs/oz-relayer.py">docs/code/pocs/oz-relayer.py</a></p>
-      <p><a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/oz-relayer">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <div class="pager"><a href="../topics/pocs-rwa-multichain.html">&larr; 21. RWA across chains — the invariant nobody enforces</a><a href="pocs-event-contract-plumbing.html">23. The hiring signal is the spec — event-contract plumbing &rarr;</a></div>
   </div>
@@ -586,7 +586,7 @@ if __name__ == &quot;__main__&quot;:
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

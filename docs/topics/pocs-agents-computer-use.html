@@ -508,7 +508,7 @@
 <p><strong>The right way to read the pair:</strong> the general case is where the operations layer is the product, and the embedded case is the one where you can skip most of it — <strong>because you control the surface, so a failure is visible in your own application rather than two days later on somebody else&#39;s phone call.</strong> A landing-page or SaaS copilot, or smart form-filling, is the natural first use.</p>
 <h3>The failure mode to design against</h3>
 <p><strong>Not the click that fails — the one that appears to succeed.</strong> No verifiable signal exists at run time, so the workflow reports done and the real state diverges silently. Verification is not a feature bolted on afterwards; <strong>it is the reason the infrastructure layer exists</strong>, and it is why the honest first question for any browser-agent idea is <em>how would I know this went wrong</em> rather than <em>can the model do it.</em></p>
-      <p><a href="https://www.jaylabs.xyz/poc/agents-computer-use">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/agents-computer-use">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -615,7 +615,7 @@
 <p><strong>둘을 읽는 올바른 방법</strong>: 범용 사례는 <strong>운영 계층이 곧 제품</strong>인 자리이고, 임베디드 사례는 <strong>그 대부분을 건너뛸 수 있는</strong> 자리입니다 — <strong>표면을 내가 통제하므로, 실패가 이틀 뒤 남의 전화가 아니라 내 애플리케이션 안에서 보이기</strong> 때문입니다. <strong>랜딩/SaaS 코파일럿, 스마트 폼 채우기</strong>가 자연스러운 첫 용도입니다.</p>
 <h3>설계로 막아야 할 실패 유형</h3>
 <p><strong>실패하는 클릭이 아니라, 성공한 것처럼 보이는 클릭.</strong> 실행 시점에 <strong>검증 가능한 신호가 없어서</strong>, 워크플로는 완료를 보고하고 <strong>실제 상태는 조용히 갈라집니다.</strong> 검증은 나중에 덧붙이는 기능이 아니라 <strong>인프라 계층이 존재하는 이유 그 자체</strong>이고, 그래서 어떤 브라우저 에이전트 아이디어든 <strong>정직한 첫 질문은 <em>모델이 할 수 있나</em> 가 아니라 <em>잘못됐다는 걸 내가 어떻게 알지</em> 입니다.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/agents-computer-use">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a> &middot; <a href="https://www.jaylabs.xyz/poc/agents-computer-use">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-mcp-three-sides.html">&larr; 33. MCP from three sides — build one, consume one, wrap an agent as one</a><a href="pocs-tokenized-equity-claim-rail.html">35. A claim, not a derivative — the three jobs a tokenized share creates &rarr;</a></div>
   </div>
@@ -662,7 +662,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

@@ -489,7 +489,7 @@
 <p><strong>How much of the join survives without pooling?</strong> The operation&#39;s shape — bring every holder of a fragment into one room — is the version available today. The version worth studying is whether the same answer can be reached by parties who never exchange raw records: private set intersection over address lists, or a clean-room query returning <em>matched / not matched</em> against a verified-account set without revealing the account. <code>what-encryption-does-not-hide</code> is where the technique lives; this is a concrete problem to point it at, with a public funnel to measure any proposal against.</p>
 <h3>Reading it soberly</h3>
 <p>The subject is the most serious one this catalogue touches, and the discipline is unchanged: report only the published numbers, mark the step that has none, and do not treat leads as outcomes. The Korean note in the announcement — that these cases keep arising domestically and that blockchain intelligence will be offered to support investigations — is a statement of intent, and belongs in the same column as everything else that has not happened yet.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/address-to-identity-join">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -577,7 +577,7 @@
 <p><strong>조인의 얼마만큼이 데이터를 모으지 않고도 성립하는가?</strong> 조각을 가진 모두를 한 방에 모으는 것이 <strong>오늘 가능한 판본</strong>입니다. 연구할 값이 있는 판본은, <strong>원본 기록을 결코 주고받지 않는 당사자들</strong>이 같은 답에 도달할 수 있는가입니다 — 주소 목록에 대한 프라이빗 셋 인터섹션, 또는 검증된 계정 집합에 대해 <strong>계정을 드러내지 않고</strong> <em>일치/불일치</em> 만 돌려주는 클린룸 질의. <code>what-encryption-does-not-hide</code> 이 그 기법이 사는 곳이고, 이건 <strong>거기에 겨눌 구체적 문제</strong>이며, 어떤 제안이든 대볼 <strong>공개된 깔때기</strong>가 있습니다.</p>
 <h3>담담하게 읽기</h3>
 <p>이 카탈로그가 다루는 주제 중 가장 무겁고, 규율은 그대로입니다 — <strong>발표된 숫자만 보고</strong>, <strong>숫자가 없는 단계를 표시하고</strong>, <strong>단서를 성과로 취급하지 않는다.</strong> 발표문의 한국 관련 언급(국내에서도 관련 사건이 계속 발생하며 블록체인 인텔리전스로 수사를 지원하겠다)은 <strong>의향의 진술</strong>이고, 아직 일어나지 않은 나머지와 같은 칸에 속합니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/address-to-identity-join">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-aml-compliance.html">&larr; 47. AML — where the cryptography stops</a><a href="pocs-korea-digital-asset-act.html">49. The bill count is not the disagreement count &rarr;</a></div>
   </div>
@@ -624,7 +624,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

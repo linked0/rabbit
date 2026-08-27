@@ -449,7 +449,7 @@
 <p>A single exchange can carry an idiosyncrasy: one margin rule, one settlement window, one dispute path, all tuned to its own book. <strong>An engine has to be correct for tenants it has not met</strong>, so every parameter that a venue could hardcode becomes configuration, and every configuration is a combination someone will eventually run. That is the same generalisation cost <code>irreversible-switch-design</code> describes in a contract — <strong>the constant becomes a variable, and the validity that the constant used to guarantee moves somewhere else.</strong></p>
 <h3>What it means for anyone choosing where to build</h3>
 <p><strong>The build-versus-rent question just acquired a real option on the rent side.</strong> Before, running a venue meant building matching, clearing and settlement or not existing. If an engine sells those, the question becomes the terms — what the engine controls, what it charges, and what leaving costs. Those are lease terms, which is exactly the subject of <code>choosing-a-chain-is-a-lease</code>.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/headless-exchange-engines">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -497,7 +497,7 @@
 <p>거래소 하나는 <strong>특이성을 안고 갈 수 있습니다</strong> — 마진 규칙 하나, 정산 창 하나, 분쟁 경로 하나, 전부 자기 장부에 맞춰. <strong>엔진은 만나본 적 없는 임차인에 대해서도 옳아야</strong> 하므로, <strong>거래소라면 하드코딩했을 모든 파라미터가 설정이 되고</strong>, 모든 설정은 <strong>언젠가 누군가 돌릴 조합</strong>입니다. <code>irreversible-switch-design</code> 이 컨트랙트에서 서술하는 <strong>일반화 비용과 같습니다</strong> — <strong>상수가 변수가 되고, 상수가 보장하던 유효성이 다른 데로 옮겨갑니다.</strong></p>
 <h3>어디서 만들지 고르는 입장에서의 의미</h3>
 <p><strong>만들 것인가 빌릴 것인가에서, 빌리는 쪽에 실질 옵션이 생겼습니다.</strong> 예전에는 거래 장소를 돌린다는 것이 <strong>매칭·청산·정산을 만들거나 존재하지 않거나</strong>였습니다. 엔진이 그것을 판다면 질문은 <strong>조건</strong>으로 바뀝니다 — 엔진이 무엇을 통제하고, 얼마를 받고, <strong>떠나는 데 얼마가 드는가.</strong> 그건 <strong>임대 조건</strong>이고, 정확히 <code>choosing-a-chain-is-a-lease</code> 의 주제입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/headless-exchange-engines">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-st-self-distribution.html">&larr; 40. What tokenization actually removed</a><a href="pocs-choosing-a-chain-is-a-lease.html">42. Choosing a chain is signing a lease &rarr;</a></div>
   </div>
@@ -544,7 +544,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

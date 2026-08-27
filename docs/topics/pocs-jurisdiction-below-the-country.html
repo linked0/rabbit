@@ -488,7 +488,7 @@
 <p><strong>The point of the shape is that no one has to re-derive the reasoning.</strong> A new ruling is a row, not a redesign, and the December document&#39;s jurisdiction box becomes a view over the table rather than a paragraph that goes stale the next time a state acts.</p>
 <h3>The design consequence worth stating plainly</h3>
 <p><strong>Country-level geofencing is already insufficient</strong>, and it will keep degrading in one direction only — finer. Any eligibility check that hardcodes a country list has the same defect as a contract that hardcodes a signature length in <code>irreversible-switch-design</code>: it holds an opinion about something it does not control. <strong>The fix is the same fix — make it data, and let the judgement live where the rulings are recorded.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/jurisdiction-below-the-country">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -576,7 +576,7 @@
 <p><strong>이 모양의 요점은 아무도 논리를 다시 도출하지 않아도 된다는 것입니다.</strong> 새 판정은 <strong>재설계가 아니라 한 줄</strong>이고, 12월 문서의 법역 칸은 <strong>주가 움직일 때마다 낡는 문단이 아니라 표에 대한 뷰</strong>가 됩니다.</p>
 <h3>분명히 적어 둘 설계상의 귀결</h3>
 <p><strong>국가 단위 지오펜싱은 이미 불충분하고</strong>, 앞으로도 <strong>한 방향으로만 — 더 잘게 — 나빠집니다.</strong> 국가 목록을 하드코딩한 적격성 검사는 <code>irreversible-switch-design</code> 에서 서명 길이를 하드코딩한 컨트랙트와 <strong>같은 결함</strong>을 갖습니다 — <strong>자기가 통제하지 않는 것에 대해 의견을 갖고 있는 것.</strong> <strong>해법도 같습니다 — 데이터로 만들고, 판단은 판정이 기록되는 곳에 살게 하라.</strong></p>
-      <p><a href="https://www.jaylabs.xyz/poc/jurisdiction-below-the-country">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-jurisdiction-decides-the-category.html">&larr; 51. Same product, three verdicts in eight days</a><a href="pocs-cap-table-ceiling.html">53. The ceiling is per holder, the control is not &rarr;</a></div>
   </div>
@@ -623,7 +623,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

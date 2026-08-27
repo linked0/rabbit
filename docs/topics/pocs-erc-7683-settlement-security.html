@@ -512,7 +512,7 @@ blank:   what releases the escrow     &amp;lt;- t=2
 <p>The mitigation transfers too. The decisive step in the Term attack was registering an attacker-controlled contract as a strategy, possible only because a general <code>call(target, calldata)</code> was reachable through governance. Narrowing a settlement path to a pre-registered whitelist of functions and addresses binds the blast radius in code, whichever trust model the settlement layer uses — and unlike a timelock, a whitelist works with nobody watching the queue.</p>
 <p>So the cheapest first measurement is not the challenge-window number but a single yes/no: <strong>does our settlement path expose a general call?</strong> If it does, the security of that path is not a property of the code but the market price of whoever holds the permission.</p>
       <p class="meta">1 diagram(s) on the live page.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/erc-7683-settlement-security">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -657,7 +657,7 @@ blank:   what releases the escrow     &amp;lt;- t=2
 <p><strong>완화책도 그대로 옮겨옵니다.</strong> Term 공격의 결정적 단계는 공격자 컨트랙트를 전략으로 등록한 것이고, 그게 가능했던 이유는 거버넌스를 통해 <strong>범용 <code>call(target, calldata)</code>에 도달할 수 있었기</strong> 때문입니다. 정산 경로를 <strong>사전 등록된 함수·주소 화이트리스트로 좁히면</strong> 정산 층의 신뢰 모델이 무엇이든 <strong>피해 반경이 코드로 묶입니다.</strong> 그리고 타임락과 달리 화이트리스트는 <strong>큐를 지켜보는 사람이 없어도 작동합니다.</strong></p>
 <p>그래서 가장 싼 첫 측정은 챌린지 기간 숫자가 아니라 예/아니오 한 줄입니다 — <strong>우리 정산 경로에 범용 call이 노출돼 있는가.</strong> 있다면 그 경로의 보안은 코드의 속성이 아니라 <strong>그 권한을 쥔 주체의 시장 가격</strong>입니다.</p>
       <p class="meta">1 diagram(s) on the live page.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/erc-7683-settlement-security">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-l1-zkevm-optional-proofs.html">&larr; 4. L1 zkEVM — the word doing the work is &quot;optional&quot;</a><a href="pocs-stake-concentration.html">6. Stake concentration risk &rarr;</a></div>
   </div>
@@ -704,7 +704,7 @@ blank:   what releases the escrow     &amp;lt;- t=2
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

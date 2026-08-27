@@ -470,7 +470,7 @@
 <p><strong>Both moved from selling a tool to selling a place</strong>, which usually means the tool stopped being scarce. For a tenant the practical consequence is identical either way: <strong>the thing being negotiated is no longer performance, it is control.</strong></p>
 <h3>The row to price first</h3>
 <p><strong>Exit.</strong> Everything else is quoted openly because it helps the host compete; exit cost is the one term that only matters after you have committed. Estimate it honestly and it changes the ranking more often than fees do: a host that is 30% cheaper per transaction and locks liquidity behind a bridge nobody else supports is not cheaper. <code>cross-border-rail-interop</code> reached the same conclusion about payment corridors — <strong>governance, not throughput, decides which rail wins</strong> — and a lease is governance written as a contract.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/choosing-a-chain-is-a-lease">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -539,7 +539,7 @@
 <p><strong>둘 다 도구를 파는 데서 장소를 파는 데로 옮겨갔고</strong>, 대개 그건 <strong>도구가 희소하기를 그만뒀다</strong>는 뜻입니다. 임차인 입장에서의 실질 결과는 어느 쪽이든 같습니다 — <strong>협상 대상이 더 이상 성능이 아니라 통제권</strong>입니다.</p>
 <h3>가장 먼저 값 매길 줄</h3>
 <p><strong>이탈.</strong> 나머지는 호스트의 경쟁에 도움이 되니 <strong>공개적으로 견적</strong>됩니다. <strong>이탈 비용만이 이미 묶인 뒤에야 중요해지는 조건</strong>입니다. 정직하게 추정하면 <strong>수수료보다 더 자주 순위를 바꿉니다</strong> — 건당 30% 싸면서 <strong>아무도 지원하지 않는 브리지 뒤에 유동성을 가두는 호스트는 싼 게 아닙니다.</strong> <code>cross-border-rail-interop</code> 이 결제 코리도에 대해 같은 결론에 도달했습니다 — <strong>어느 레일이 이기는지는 처리량이 아니라 거버넌스가 정한다</strong> — 그리고 <strong>임대차는 계약으로 쓰인 거버넌스</strong>입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/choosing-a-chain-is-a-lease">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-headless-exchange-engines.html">&larr; 41. Headless arrives — the company that sells the engine, not the app</a><a href="pocs-base-app-mini-app.html">43. Base App — what a Mini App buys, and what it rents &rarr;</a></div>
   </div>
@@ -586,7 +586,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

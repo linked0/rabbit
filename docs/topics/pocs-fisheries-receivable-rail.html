@@ -478,7 +478,7 @@
 <p>That is one figure, obtainable by asking rather than building, and it should come before anything else on this card.</p>
 <h3>Stablecoin — noted and parked</h3>
 <p>The article flags stablecoin issuance management as part of the custodian&#39;s stack, and Korea&#39;s framework is still moving. The honest ordering is worth stating: <strong>a settlement token only matters after the attestation problem is solved.</strong> Issuing a won-denominated token to settle claims nobody can verify moves the unverified claim faster; it does not make it true.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/fisheries-receivable-rail">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -555,7 +555,7 @@
 <p>만들지 않고 물어서 얻을 수 있는 숫자 하나이고, 이 카드의 무엇보다 앞에 와야 합니다.</p>
 <h3>스테이블코인 — 기록해 두고 미룸</h3>
 <p>기사는 수탁사의 스택에 스테이블코인 발행관리가 포함된다고 밝히고 있고, 국내 제도는 아직 움직이는 중입니다. 정직한 순서를 적어두는 편이 낫습니다 — <strong>정산 토큰은 증명 문제가 풀린 다음에야 의미가 있습니다.</strong> 아무도 검증할 수 없는 청구권을 원화 토큰으로 정산하면 검증되지 않은 청구권이 더 빨리 움직일 뿐, 참이 되지는 않습니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/fisheries-receivable-rail">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-cap-table-ceiling.html">&larr; 53. The ceiling is per holder, the control is not</a><a href="pocs-dsrv-portal.html">55. Institutional custody study &rarr;</a></div>
   </div>
@@ -602,7 +602,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');

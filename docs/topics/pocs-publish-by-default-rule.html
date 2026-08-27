@@ -457,7 +457,7 @@
 <p>A per-item decision costs attention every morning and is paid in avoidance; a default costs one paragraph, once. The table above is not a policy document — <strong>it is a way to stop re-deciding.</strong> The only maintenance it needs is a new row when a genuinely new kind of section appears, which is rare.</p>
 <h3>The measurement, if one is wanted</h3>
 <p>One number, taken once a month: <strong>what share of the report&#39;s sections went out.</strong> Not how many readers, not how many links — the share published, because that is the only number the rule is trying to move. If it sits near zero after the rule exists, the rule is not the problem and the honest conclusion is that the route was never the chosen one.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/publish-by-default-rule">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -513,7 +513,7 @@
 <p>건별 결정은 매일 아침 주의력을 쓰고 <strong>회피로 납부</strong>됩니다. 기본값은 <strong>문단 하나를, 한 번</strong> 씁니다. 위의 표는 정책 문서가 아닙니다 — <strong>다시 결정하지 않기 위한 장치</strong>입니다. 유지보수는 정말로 새로운 종류의 꼭지가 생겼을 때 줄 하나를 더하는 것뿐이고, 그런 일은 드뭅니다.</p>
 <h3>굳이 재겠다면, 숫자 하나</h3>
 <p>한 달에 한 번, <strong>리포트 꼭지 중 몇 퍼센트가 나갔는가.</strong> 독자 수도 링크 수도 아닙니다 — <strong>공개 비율</strong>입니다. 규칙이 움직이려는 유일한 숫자가 그것이기 때문입니다. 규칙을 만든 뒤에도 0 근처라면 <strong>문제는 규칙이 아니고</strong>, 정직한 결론은 <strong>그 노선이 애초에 선택된 적 없었다</strong>는 것입니다.</p>
-      <p><a href="https://www.jaylabs.xyz/poc/publish-by-default-rule">Open on jaylabs.xyz &rarr;</a></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-one-page-not-the-curriculum.html">&larr; 67. Pull the page you are stuck on, not the next one in order</a><a href="pocs-apple-container.html">69. Apple container &rarr;</a></div>
   </div>
@@ -560,7 +560,7 @@
     railNav.scrollTop += r.top - c.top - c.height / 3;
   }
 
-  for (const a of document.querySelectorAll('.rail-jump a')) {
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
     a.addEventListener('click', () => {
       const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
       if (g) revealInRail(g, 'top');
