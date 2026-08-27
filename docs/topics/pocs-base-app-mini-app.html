@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Base App — what a Mini App buys, and what it rents — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="solo">
+  <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Base App — what a Mini App buys, and what it rents</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#39</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Base App — what a Mini App buys, and what it rents</h1>
+      <p class="lead">The thing worth wanting from Base App is not the audience. It is that every user arrives with a passkey smart account already created and already funded — which deletes the two steps that kill most of a crypto product&#39;s funnel. The cost is that discovery belongs to somebody else.</p>
+      <p class="meta">An afternoon, and the first task is a manifest rather than a rewrite. A Mini App is an ordinary web app running inside the client with a wallet already present, so an existing Next.js app is most of the work already done: serve the manifest the client looks for, call the SDK&#39;s ready() so the splash screen clears, and open it in the client&#39;s own preview tool before publishing anything. Then measure the only number that decides whether it was worth it — of the people who see a share, how many open it, and of those, how many transact. Everything specific below (the manifest path, SDK and framework names, whether swap or trade intents are exposed to Mini Apps, and whether there is a review or allowlist step) is from a mid-2026 understanding and moves fast: confirm against Base&#39;s current Mini App and MiniKit documentation and the Base App release notes before building.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <h2>Why</h2>
+      <p><strong>&quot;The ecosystem is hot&quot; is not a distribution channel, and treating it as one is the mistake this card exists to prevent.</strong> A feed is a ranking algorithm, and a ranking algorithm is somebody&#39;s product decision that can change on a Tuesday. Every card in this catalogue that starts from a growth number ends in the same place — <code>priced-by-the-wrong-thing</code> on an exchange&#39;s own volume figures, <code>two-currencies-one-ledger</code> on eighty million customers who are an option on distribution rather than distribution. <strong>The honest question is not how big the ecosystem is. It is what specifically becomes possible that was not possible before.</strong></p>
+<p><strong>And there is a real answer, which is why the card is worth writing.</strong> It is not reach. <strong>It is that the two steps where crypto products lose most of their funnel — create a wallet, fund it — have already happened before the user arrives.</strong> A Base App user has a passkey-based smart account that exists, works without a seed phrase, and has a balance. Shipping a Mini App is not buying an audience; <strong>it is deleting an onboarding sequence.</strong> That is measurable against your own numbers today: take your web funnel&#39;s connect → funded → first-transaction rates and compare them with the same three inside the client. If the gap is small, the platform is not doing much for you. If it is large, <strong>the gap is the entire business case</strong> and it has nothing to do with how hot anything is.</p>
+<p><strong>What it costs is a lease, and this catalogue already has the argument in another costume.</strong> <code>choosing-a-chain-is-a-lease</code> works out that picking an L2 is signing a lease — sequencer control, fee split, exit cost. <strong>A client is the same lease one layer up.</strong> Discovery is algorithmic and not yours. The review path, if there is one, is not yours. The shape of what you are permitted to build is set by a party whose interests will diverge from yours the moment your product matters. So the question to answer before building, not after, is the same one that card asks: <strong>if the Mini App becomes the main way people reach you, what does leaving cost?</strong> A link out to your own domain is a weaker product and a stronger position; a Mini App is the reverse. <strong>That is a real trade with no free corner, and it should be made deliberately.</strong></p>
+<p><strong>For a prediction market the fit is unusually good and unusually dangerous, and both halves come from the same property: the share is the market.</strong> A post that opens a market inline collapses the distance between reading a claim and pricing it — which is precisely the failure <code>priced-by-the-wrong-thing</code> documents, a well-formed question expressed through the wrong instrument <strong>because no better one was reachable at the moment it was asked.</strong> A feed makes the better instrument reachable exactly then. That is the strongest argument for shipping this that this catalogue can make.</p>
+<p><strong>The dangerous half is jurisdictional and it is not hypothetical.</strong> <code>jurisdiction-below-the-country</code> records four US states acting against event contracts, and <code>jurisdiction-decides-the-category</code> records the same product getting three verdicts in eight days. <strong>A Mini App inside a mainstream consumer client inherits that client&#39;s regulatory posture</strong>, which means shipping there is not neutral — <strong>it is choosing to operate under the strictest jurisdiction your host operates in</strong>, and doing so without a negotiation. For anything that could be read as an event contract, the eligibility and geofencing design has to exist before the manifest does, not after the first complaint.</p>
+      <h2>How it works</h2>
+      <h3>Three ways to use it, in increasing order of commitment</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>What it is</th>
+<th>What it buys</th>
+<th>What it rents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A link out</strong></td>
+<td>A post pointing at your own domain</td>
+<td>Nothing you did not have</td>
+<td><strong>Nothing</strong> — you keep the whole relationship</td>
+</tr>
+<tr>
+<td><strong>A Mini App</strong></td>
+<td>Your web app running inside the client, wallet present</td>
+<td><strong>The funded account, and inline opening from a post</strong></td>
+<td><strong>Discovery, review, and the shape of what you may build</strong></td>
+</tr>
+<tr>
+<td><strong>Payments / trade intents</strong></td>
+<td>Handing an action to the host&#39;s rails</td>
+<td>Fewer screens, the host&#39;s UX</td>
+<td>A dependency on the host&#39;s product roadmap</td>
+</tr>
+</tbody></table></div>
+<p><strong>A link out is a weaker product and a stronger position. A Mini App is the reverse.</strong> Most of the decision is choosing which of those two you actually want, and it is worth writing down before any code.</p>
+<h3>What is actually being deleted</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Funnel step</th>
+<th>Ordinary web app</th>
+<th><strong>Inside Base App</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Install a wallet</td>
+<td>A drop-off cliff</td>
+<td><strong>Already done</strong></td>
+</tr>
+<tr>
+<td>Back up a seed phrase</td>
+<td>Another cliff</td>
+<td><strong>No seed phrase — passkey account</strong></td>
+</tr>
+<tr>
+<td>Fund the account</td>
+<td><strong>The biggest cliff</strong></td>
+<td><strong>Already funded</strong></td>
+</tr>
+<tr>
+<td>Connect</td>
+<td>A modal, a signature</td>
+<td>Present on arrival</td>
+</tr>
+<tr>
+<td><strong>First transaction</strong></td>
+<td>What you were hoping for</td>
+<td><strong>The first thing that can happen</strong></td>
+</tr>
+</tbody></table></div>
+<h3>The measurement, and it decides the whole thing</h3>
+<p>Three ratios, taken twice — once on your own site, once inside the client:</p>
+<ol>
+<li><strong>Impression → open.</strong> Of the people who see a share, how many open it.</li>
+<li><strong>Open → funded and ready.</strong> The step that should be near 1.0 inside the client and is nowhere near it on the web.</li>
+<li><strong>Ready → first transaction.</strong></li>
+</ol>
+<p><strong>The product of the three is the answer.</strong> If it barely moves, the platform is a marketing channel with extra steps and a link out is the better trade. If it moves by a multiple, <strong>that multiple is the business case</strong>, and it is a number nobody else can publish for you.</p>
+<h3>The lease terms to read before signing</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Why it decides things</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>How is discovery ranked?</strong></td>
+<td>If it is algorithmic, your reach is a product decision you do not control</td>
+</tr>
+<tr>
+<td><strong>Is there review or an allowlist?</strong></td>
+<td>Determines whether you can ship on your own schedule</td>
+</tr>
+<tr>
+<td><strong>What can a Mini App not do?</strong></td>
+<td>The boundary, not the feature list, is what you design against</td>
+</tr>
+<tr>
+<td><strong>What is the exit?</strong></td>
+<td><strong>If the Mini App becomes the main path to you, what does leaving cost?</strong></td>
+</tr>
+<tr>
+<td><strong>Whose jurisdiction applies?</strong></td>
+<td>You inherit the host&#39;s, and for event contracts that is the strictest one it operates in</td>
+</tr>
+</tbody></table></div>
+<h3>What to verify before building — this is genuinely fast-moving</h3>
+<p>The specifics below are a mid-2026 understanding and should be treated as <strong>claims to check, not facts</strong>: the manifest path and filename the client looks for; the current names of the SDK and React framework and whether they have been folded together; whether <code>ready()</code> is still how the splash is cleared; whether swap or trade intents are exposed to Mini Apps at all or only to first-party surfaces; whether a review or allowlist step exists; and whether there is any revenue share or fee. <strong>Confirm every one against Base&#39;s current documentation before writing code</strong> — and note in passing that a card whose facts expire this quickly is itself an argument for the link-out option, since a link to your own domain has no version to keep up with.</p>
+      <p><a href="https://www.jaylabs.xyz/poc/base-app-mini-app">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <h1>Base App — 미니앱이 사는 것과 빌리는 것</h1>
+      <p class="lead">Base App 에서 탐낼 것은 <strong>관객이 아닙니다.</strong> <strong>모든 사용자가 이미 만들어지고 이미 충전된 패스키 스마트 계정을 들고 도착한다</strong>는 것 — <strong>대부분의 크립토 제품 퍼널을 죽이는 두 단계를 지워 줍니다.</strong> 대가는 <strong>발견(discovery)이 남의 것</strong>이라는 점입니다.</p>
+      <p class="meta"><strong>반나절, 그리고 첫 작업은 재작성이 아니라 매니페스트</strong>입니다. 미니앱은 <strong>지갑이 이미 있는 클라이언트 안에서 도는 평범한 웹 앱</strong>이라, 기존 Next.js 앱이면 <strong>작업 대부분이 이미 끝나 있습니다</strong> — 클라이언트가 찾는 <strong>매니페스트를 서빙</strong>하고, <strong>SDK 의 ready() 를 불러</strong> 스플래시를 걷고, 공개 전에 <strong>클라이언트 자체 미리보기 도구</strong>로 열어 봅니다. 그다음 <strong>값어치가 있었는지를 결정하는 유일한 숫자</strong>를 잽니다 — <strong>공유를 본 사람 중 몇 명이 열고, 그중 몇 명이 거래하는가.</strong> 아래의 모든 구체 사항(매니페스트 경로, SDK·프레임워크 이름, 미니앱에 스왑·거래 인텐트가 열려 있는지, 심사나 허용목록 단계가 있는지)은 <strong>2026년 중반 기준 이해</strong>이고 <strong>빠르게 바뀝니다.</strong> 만들기 전에 <strong>Base 의 현행 Mini App·MiniKit 문서와 Base App 릴리스 노트로 확인</strong>하십시오.</p>
+      <h2>왜</h2>
+      <p><strong>&quot;생태계가 뜨겁다&quot;는 유통 채널이 아니고, 그것을 채널로 착각하는 것이 이 카드가 막으려는 실수입니다.</strong> 피드는 <strong>랭킹 알고리즘</strong>이고, 랭킹 알고리즘은 <strong>화요일에 바뀔 수 있는 남의 제품 결정</strong>입니다. 이 카탈로그에서 성장 숫자로 시작한 카드는 전부 같은 자리에서 끝납니다 — <code>priced-by-the-wrong-thing</code> 은 거래소 자체 거래량 수치에서, <code>two-currencies-one-ledger</code> 는 <strong>유통이 아니라 유통에 대한 옵션</strong>인 8천만 고객에서. <strong>정직한 질문은 생태계가 얼마나 큰가가 아닙니다. 전에는 불가능했던 무엇이 구체적으로 가능해지는가입니다.</strong></p>
+<p><strong>그리고 진짜 답이 있습니다. 그래서 이 카드가 쓸 값이 있습니다.</strong> <strong>도달 범위가 아닙니다.</strong> <strong>크립토 제품이 퍼널의 대부분을 잃는 두 단계 — 지갑 만들기, 충전하기 — 가 사용자가 도착하기 전에 이미 끝나 있다</strong>는 것입니다. Base App 사용자는 <strong>시드 구문 없이 동작하고 잔액이 있는 패스키 기반 스마트 계정</strong>을 이미 갖고 있습니다. 미니앱을 내는 것은 <strong>관객을 사는 것이 아니라 온보딩 절차를 지우는 것</strong>입니다. <strong>오늘 자기 숫자로 잴 수 있습니다</strong> — 웹 퍼널의 <strong>연결 → 충전 → 첫 거래</strong> 비율을 클라이언트 안의 같은 셋과 비교합니다. <strong>격차가 작으면 플랫폼이 해 주는 게 별로 없는 것이고, 크면 그 격차가 사업 근거 전부</strong>이며 <strong>무엇이 얼마나 뜨거운가와는 아무 상관이 없습니다.</strong></p>
+<p><strong>치르는 값은 임차료이고, 이 카탈로그에는 그 논증이 다른 옷을 입고 이미 있습니다.</strong> <code>choosing-a-chain-is-a-lease</code> 는 <strong>L2 를 고르는 것이 임대차 계약에 서명하는 것</strong>이라고 정리합니다 — 시퀀서 통제, 수수료 배분, 이탈 비용. <strong>클라이언트는 한 층 위의 같은 임대차</strong>입니다. <strong>발견은 알고리즘의 것이지 내 것이 아닙니다.</strong> 심사 경로가 있다면 그것도 내 것이 아닙니다. <strong>만들어도 되는 것의 모양을, 내 제품이 중요해지는 순간 이해가 갈라질 상대가 정합니다.</strong> 그래서 <strong>만든 뒤가 아니라 만들기 전에</strong> 답할 질문은 그 카드의 질문과 같습니다 — <strong>미니앱이 사람들이 나에게 닿는 주된 경로가 되면, 떠나는 값은 얼마인가?</strong> <strong>내 도메인으로 나가는 링크는 더 약한 제품이고 더 강한 포지션</strong>이며, <strong>미니앱은 그 반대</strong>입니다. <strong>공짜 모서리가 없는 진짜 거래이고, 의도적으로 해야 합니다.</strong></p>
+<p><strong>예측시장에는 궁합이 유난히 좋고 유난히 위험한데, 두 절반이 같은 성질에서 나옵니다 — 공유가 곧 시장이라는 것.</strong> 마켓을 <strong>인라인으로 여는 게시물</strong>은 <strong>주장을 읽는 것과 값을 매기는 것 사이의 거리를 붕괴</strong>시킵니다 — <code>priced-by-the-wrong-thing</code> 이 기록한 <strong>바로 그 실패</strong>입니다. 잘 정의된 질문이 엉뚱한 도구로 표현되는 이유가 <strong>질문된 그 순간에 더 나은 도구가 닿을 수 없었기</strong> 때문이었으니까요. <strong>피드는 더 나은 도구를 정확히 그때 닿게 만듭니다.</strong> 이 카탈로그가 낼 수 있는 <strong>가장 강한 출시 논거</strong>입니다.</p>
+<p><strong>위험한 절반은 관할의 문제이고 가정이 아닙니다.</strong> <code>jurisdiction-below-the-country</code> 는 <strong>미국 4개 주가 이벤트 계약에 조치한 것</strong>을, <code>jurisdiction-decides-the-category</code> 는 <strong>같은 제품이 8일 만에 세 가지 판정</strong>을 받은 것을 기록합니다. <strong>주류 소비자 클라이언트 안의 미니앱은 그 클라이언트의 규제 자세를 물려받습니다.</strong> 거기 낸다는 것은 <strong>중립적이지 않습니다</strong> — <strong>호스트가 영업하는 가장 엄격한 관할 아래에서 운영하기를 선택하는 것</strong>이고, <strong>협상 없이</strong> 그렇게 하는 것입니다. 이벤트 계약으로 읽힐 수 있는 무엇이든, <strong>자격 판정과 지오펜싱 설계가 매니페스트보다 먼저</strong> 있어야 합니다 — 첫 민원 뒤가 아니라.</p>
+      <h2>동작 방식</h2>
+      <h3>쓰는 방법 셋, 약속의 크기 순</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>표면</th>
+<th>정체</th>
+<th>사는 것</th>
+<th>빌리는 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>바깥으로 나가는 링크</strong></td>
+<td>내 도메인을 가리키는 게시물</td>
+<td><strong>원래 없던 것은 없음</strong></td>
+<td><strong>없음</strong> — 관계 전부를 내가 가짐</td>
+</tr>
+<tr>
+<td><strong>미니앱</strong></td>
+<td>지갑이 있는 클라이언트 안에서 도는 내 웹 앱</td>
+<td><strong>충전된 계정, 그리고 게시물에서 인라인으로 열림</strong></td>
+<td><strong>발견·심사·만들어도 되는 것의 모양</strong></td>
+</tr>
+<tr>
+<td><strong>결제·거래 인텐트</strong></td>
+<td>동작을 호스트 레일에 넘김</td>
+<td>화면 수 감소, 호스트의 UX</td>
+<td><strong>호스트 제품 로드맵에 대한 의존</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>링크는 더 약한 제품이고 더 강한 포지션. 미니앱은 그 반대.</strong> 결정의 대부분은 <strong>그 둘 중 무엇을 원하는지 고르는 것</strong>이고, <strong>코드보다 먼저 적어 둘 값</strong>이 있습니다.</p>
+<h3>실제로 지워지는 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>퍼널 단계</th>
+<th>평범한 웹 앱</th>
+<th><strong>Base App 안</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>지갑 설치</td>
+<td><strong>이탈 절벽</strong></td>
+<td><strong>이미 끝남</strong></td>
+</tr>
+<tr>
+<td>시드 구문 백업</td>
+<td>또 하나의 절벽</td>
+<td><strong>시드 구문 없음 — 패스키 계정</strong></td>
+</tr>
+<tr>
+<td>계정 충전</td>
+<td><strong>가장 큰 절벽</strong></td>
+<td><strong>이미 충전됨</strong></td>
+</tr>
+<tr>
+<td>연결</td>
+<td>모달, 서명</td>
+<td>도착 시점에 이미 있음</td>
+</tr>
+<tr>
+<td><strong>첫 거래</strong></td>
+<td>바라던 것</td>
+<td><strong>가장 먼저 일어날 수 있는 것</strong></td>
+</tr>
+</tbody></table></div>
+<h3>측정, 그리고 이것이 전부를 결정한다</h3>
+<p><strong>비율 셋을 두 번</strong> 잽니다 — <strong>내 사이트에서 한 번, 클라이언트 안에서 한 번:</strong></p>
+<ol>
+<li><strong>노출 → 열람.</strong> 공유를 본 사람 중 몇 명이 여는가.</li>
+<li><strong>열람 → 충전·준비 완료.</strong> <strong>클라이언트 안에서는 1.0 에 가까워야 하고, 웹에서는 근처도 못 가는</strong> 단계.</li>
+<li><strong>준비 → 첫 거래.</strong></li>
+</ol>
+<p><strong>셋의 곱이 답입니다.</strong> 거의 안 움직이면 <strong>플랫폼은 단계만 늘어난 마케팅 채널</strong>이고 <strong>링크가 더 나은 거래</strong>입니다. 배수로 움직이면 <strong>그 배수가 곧 사업 근거</strong>이고, <strong>남이 대신 발표해 줄 수 없는 숫자</strong>입니다.</p>
+<h3>서명 전에 읽을 임대차 조건</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>질문</th>
+<th>왜 결정적인가</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>발견은 어떻게 랭킹되나?</strong></td>
+<td>알고리즘이면, <strong>내 도달 범위는 내가 통제 못 하는 제품 결정</strong></td>
+</tr>
+<tr>
+<td><strong>심사나 허용목록이 있나?</strong></td>
+<td><strong>내 일정으로 출시할 수 있는지</strong>를 정함</td>
+</tr>
+<tr>
+<td><strong>미니앱이 못 하는 것은?</strong></td>
+<td><strong>기능 목록이 아니라 경계</strong>가 설계 대상</td>
+</tr>
+<tr>
+<td><strong>출구는?</strong></td>
+<td><strong>미니앱이 나에게 닿는 주 경로가 되면, 떠나는 값은?</strong></td>
+</tr>
+<tr>
+<td><strong>누구의 관할인가?</strong></td>
+<td><strong>호스트의 것을 물려받고</strong>, 이벤트 계약이라면 <strong>호스트가 영업하는 가장 엄격한 관할</strong></td>
+</tr>
+</tbody></table></div>
+<h3>만들기 전에 확인할 것 — 정말로 빠르게 바뀌는 영역</h3>
+<p>아래 구체 사항은 <strong>2026년 중반 기준 이해</strong>이며 <strong>사실이 아니라 확인 대상 주장</strong>으로 다뤄야 합니다: 클라이언트가 찾는 <strong>매니페스트 경로와 파일명</strong>, <strong>SDK 와 React 프레임워크의 현재 이름</strong> 및 통합 여부, <strong><code>ready()</code> 로 스플래시를 걷는 방식이 유효한지</strong>, <strong>스왑·거래 인텐트가 미니앱에 열려 있는지 아니면 1자 표면에만 있는지</strong>, <strong>심사·허용목록 단계 존재 여부</strong>, <strong>수익 배분이나 수수료 유무.</strong> <strong>코드를 쓰기 전에 Base 현행 문서로 전부 확인하십시오</strong> — 그리고 <strong>사실이 이렇게 빨리 상하는 카드 자체가 링크 옵션에 대한 논거</strong>라는 점을 지나가며 적어 둡니다. <strong>내 도메인으로 가는 링크에는 따라잡을 버전이 없습니다.</strong></p>
+      <p><a href="https://www.jaylabs.xyz/poc/base-app-mini-app">Open on jaylabs.xyz &rarr;</a></p>
+    </article>
+  <div class="pager"><a href="pocs-choosing-a-chain-is-a-lease.html">&larr; 38. Choosing a chain is signing a lease</a><a href="pocs-monad-last-general-purpose-l1.html">40. Monad — the last general-purpose L1, and the number nobody adjusts for &rarr;</a></div>
+</div>
+</body>
+</html>
