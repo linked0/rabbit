@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The risk-free rate is the floor under every yield — PoCs</title>
+<title>Capacity loads the model; bandwidth serves it — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -334,16 +334,15 @@
       <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
     </div>
     <nav class="rail-nav" id="nav">
-      <div class="nav-group" id="nav-sec-economics" data-group>
-        <p class="nav-group-label">Economics (7)</p>
+      <div class="nav-group" id="nav-sec-future" data-group>
+        <p class="nav-group-label">Future (6)</p>
         <ul>
-        <li><a class="nav-link" href="pocs-where-yield-comes-from.html" data-key="where-yield-comes-from"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">73</span>Every yield is somebody's cost — the three places it can come from</span></a></li>
-        <li><a class="nav-link" href="pocs-gross-over-net.html" data-key="gross-over-net"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">74</span>Gross over net — the recycling multiple</span></a></li>
-        <li><a class="nav-link active" href="pocs-risk-free-rate-is-the-floor.html" data-key="risk-free-rate-is-the-floor"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">75</span>The risk-free rate is the floor under every yield</span></a></li>
-        <li><a class="nav-link" href="pocs-m2-and-the-dollar.html" data-key="m2-and-the-dollar"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">76</span>M2, the dollar, and why crypto is a liquidity trade</span></a></li>
-        <li><a class="nav-link" href="pocs-lp-is-a-short-volatility-position.html" data-key="lp-is-a-short-volatility-position"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">77</span>Providing liquidity is selling volatility, and the loss is not impermanent</span></a></li>
-        <li><a class="nav-link" href="pocs-indicators-add-a-decision.html" data-key="indicators-add-a-decision"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">78</span>An indicator adds no information — it adds a decision</span></a></li>
-        <li><a class="nav-link" href="pocs-fees-over-security-budget.html" data-key="fees-over-security-budget"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">79</span>Does a chain pay for its own security?</span></a></li>
+        <li><a class="nav-link" href="pocs-procedural-not-generated.html" data-key="procedural-not-generated"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">80</span>Procedural, not generated — when the model is a program</span></a></li>
+        <li><a class="nav-link" href="pocs-sub-2bit-local-llm.html" data-key="sub-2bit-local-llm"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">81</span>Sub-2-bit LLMs, locally</span></a></li>
+        <li><a class="nav-link active" href="pocs-bandwidth-not-capacity.html" data-key="bandwidth-not-capacity"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">82</span>Capacity loads the model; bandwidth serves it</span></a></li>
+        <li><a class="nav-link" href="pocs-robotics-entry-decision.html" data-key="robotics-entry-decision"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">83</span>Four ways into robotics, and what each one actually buys</span></a></li>
+        <li><a class="nav-link" href="pocs-opencv-robot-vision.html" data-key="opencv-robot-vision"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">84</span>Pixels to millimetres — the step before the arm moves</span></a></li>
+        <li><a class="nav-link" href="pocs-google-glass-stitch.html" data-key="google-glass-stitch"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">85</span>Google Glass form factor &amp; Stitch</span></a></li>
         </ul>
       </div>
       <p class="no-results" id="no-results">No match.</p>
@@ -352,197 +351,166 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The risk-free rate is the floor under every yield</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Capacity loads the model; bandwidth serves it</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#75</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>The risk-free rate is the floor under every yield</h1>
-      <p class="lead">A short-dated government bill pays something for taking almost no risk. Any yield that takes real risk has to beat it before it is interesting at all — which means the entire on-chain yield landscape is priced relative to a number set by a central bank, not by crypto.</p>
-      <p class="meta">Ten minutes and a spreadsheet with two columns: the current three-month government bill yield, and the yield on whatever on-chain position you are considering, stripped of emissions per <code>where-yield-comes-from</code>. The difference is the risk premium you are being paid. Then ask the only question that matters — is that premium enough for smart-contract risk, oracle risk, counterparty risk and exit risk combined? Repeat the exercise at a few points in the last three years and the crypto cycle starts looking like a function of one line.</p>
+      <p class="topic-kicker"><span class="topic-no">#82</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Capacity loads the model; bandwidth serves it</h1>
+      <p class="lead">A pitch for local inference on Apple silicon leads with 512GB of unified memory and 200B-parameter models. Capacity decides what you can load. Memory bandwidth decides how fast it answers, and autoregressive decoding reads the weights once per token — so the ceiling is bandwidth divided by the bytes a model actually touches. Run that division and the post&#39;s two headline promises, huge models and always-on agents, turn out to pull against each other on the same machine.</p>
+      <p class="meta">Not a build — one division and one measurement, both cheap enough to do before buying anything. First the ceiling: tokens per second is bounded by memory bandwidth divided by the bytes read per token, and the bytes read is roughly the quantised size of the parameters that are actually active. Do it for three cases — a 30B dense model at 4-bit, a 200B dense model at 4-bit, and a mixture-of-experts model of similar total size where only a fraction activates — and notice that only the third stays interactive. Then measure instead of trusting the division: run one prompt on the machine you actually have, record tokens per second, then record it again with the context filled, because attention cost grows with context and an agent&#39;s context is never short. Finally price it with a denominator: cost per token is hardware divided by the tokens it generates over its life, which makes utilisation the whole argument rather than a detail. Hardware figures here come from a GenAI Works post seen 2026-08-28 — an $899 M6 Mac mini said to be 13.5× the M1 on LLM processing, an M5 Ultra Mac Studio with up to 512GB unified memory and 1.2 TB/s — and the same post closes by soliciting investment. Re-derive every number from published specifications before relying on any of it.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <h2>Why</h2>
-      <p><strong>Every yield in existence is quoted against an implicit alternative, and the alternative is a government bill.</strong> If a short-dated bill pays 5% for something close to no risk, then a protocol paying 6% is offering <strong>one percentage point</strong> for smart-contract risk, oracle risk, custody risk and the risk that you cannot get out on the day you want to. Written that way it is obviously a bad trade; written as <em>6% APY</em> it is a product.</p>
-<p><strong>This single relationship explains more of the crypto cycle than most crypto-specific narratives do.</strong> When the risk-free rate is near zero, any positive yield looks extraordinary and capital floods toward risk because the alternative pays nothing. When it rises to 5%, that same capital has a safe place to sit and the on-chain yield has to work much harder for the same flow. <strong>Nothing about the protocols changed. The denominator did.</strong> <code>m2-and-the-dollar</code> is the other half of that mechanism.</p>
-<p><strong>And it reframes what a stablecoin issuer actually is.</strong> A fiat-backed issuer holds short-dated government paper and returns none of the interest to the holder. <strong>The issuer&#39;s business is the risk-free rate</strong>, which is why a high-rate environment is enormously profitable for dollar issuers and why the same product denominated in a low-rate currency is a much thinner business &amp;mdash; the point <code>two-currencies-one-ledger</code> reaches from the euro side and <code>what-needs-a-stablecoin</code> reaches from the won side.</p>
-<p><strong>The discipline is to always subtract before comparing.</strong> A yield is only interesting to the extent it exceeds the floor, and most published comparisons put a gross on-chain number next to nothing at all. <strong>Subtract the bill, subtract the emissions, and what is left is the actual offer</strong> &amp;mdash; usually small, occasionally excellent, and always smaller than advertised.</p>
+      <p><strong>The arithmetic is the whole card, and it is arithmetic anyone can redo.</strong> Autoregressive decoding is memory-bound rather than compute-bound: to produce one token the machine reads the active weights out of memory, so the rate is bounded above by bandwidth divided by those bytes. At 1.2 TB/s, a 200B dense model quantised to four bits is roughly 100GB per token read, which is on the order of a dozen tokens per second as a theoretical ceiling and less in practice. That is perfectly good for a job that runs while you sleep and genuinely unpleasant for an agent, because an agent emits many tokens per step and its latency compounds across steps. <strong>So the two promises in the post — models this large, and always-on assistants — describe two different machines&#39; worth of work on one machine.</strong> The resolution is architectural: in a mixture-of-experts model total parameters set the capacity requirement while active parameters set the speed, which is why <em>which</em> 200B model matters far more than the number. And <code>sub-2bit-local-llm</code> is the other lever on the same fraction — fewer bits per weight is fewer bytes per token, so quantisation buys throughput exactly as directly as it buys room.</p>
+<p><strong>The economics claim is stated without its denominator.</strong> &quot;Cloud: pay for every token. Local: buy the hardware once and run agents all day&quot; is true only at high utilisation, because cost per token is hardware divided by the tokens actually generated over the machine&#39;s life. A desk that is idle nineteen hours a day has a terrible number no matter how cheap the box was. <strong>Which reframes the real question: it is not local versus cloud, it is whether you have a workload that generates tokens continuously.</strong> Agents are the first workload that does — they produce tokens without a human waiting for each one, which is precisely why they are the case that makes local inference pencil out and why the post is right to name them, even if it skips the reasoning. Privacy is the second reason and it is stronger, because it does not depend on utilisation at all: files, prompts and agent context never leaving the machine is a constraint some work simply has, and a constraint is not an optimisation you can be argued out of.</p>
+<p><strong>And the provenance belongs on the card, not in a footnote.</strong> The post ends with &quot;Our round is open. Invest from $1,000 with up to 22% bonus shares before August 31.&quot; Every figure in it is offered by a party raising money on the strength of those figures — which does not make them false, but does make them promotional, and this catalogue&#39;s standing rule is to re-derive rather than repeat. Notice too what the post concedes and then walks past: <strong>Apple is not replacing NVIDIA in the data centre.</strong> The claim is about the desk. That is a genuinely different fight with different constraints — batch size one, latency instead of throughput, a fixed memory budget instead of an elastic one — and the honest version of the argument is that the desk was never the fight NVIDIA was optimising for.</p>
       <h2>How it works</h2>
-      <h3>The subtraction, done properly</h3>
+      <h3>The division that sets the ceiling</h3>
+<p>Tokens per second ≲ memory bandwidth ÷ bytes read per token. At <strong>1.2 TB/s</strong>, with weights at 4-bit:</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Step</th>
-<th>Example</th>
+<th>Model</th>
+<th>Active bytes per token</th>
+<th>Theoretical ceiling</th>
+<th>Verdict</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>Advertised APY</td>
-<td><strong>12%</strong></td>
+<td>30B dense</td>
+<td>~15 GB</td>
+<td>~80 tok/s</td>
+<td>comfortably interactive</td>
 </tr>
 <tr>
-<td>Less: emissions portion (<code>where-yield-comes-from</code>)</td>
-<td>&amp;minus;7% &amp;rarr; <strong>5% real</strong></td>
+<td><strong>200B dense</strong></td>
+<td><strong>~100 GB</strong></td>
+<td><strong>~12 tok/s</strong></td>
+<td>batch work only</td>
 </tr>
 <tr>
-<td>Less: short-dated bill yield</td>
-<td>&amp;minus;4% &amp;rarr; <strong>1% premium</strong></td>
-</tr>
-<tr>
-<td><strong>What that 1% is paying for</strong></td>
-<td><strong>Smart-contract + oracle + custody + exit risk, combined</strong></td>
+<td>200B total MoE, ~20B active</td>
+<td>~10 GB</td>
+<td>~120 tok/s</td>
+<td>interactive — <strong>architecture, not size</strong></td>
 </tr>
 </tbody></table></div>
-<h3>What moves when the floor moves</h3>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>Risk-free rate</th>
-<th>Effect on on-chain yield demand</th>
-<th>Effect on stablecoin issuers</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>Near zero</strong></td>
-<td>Any positive yield attracts capital; risk appetite is cheap</td>
-<td><strong>Reserve income near zero &amp;mdash; issuers need another business</strong></td>
-</tr>
-<tr>
-<td><strong>High</strong></td>
-<td>Capital has a safe alternative; on-chain must beat it</td>
-<td><strong>Reserve income is the business, and it is very good</strong></td>
-</tr>
-</tbody></table></div>
-<p><strong>Same protocols, different denominator.</strong> This is worth holding next to any story that explains a cycle purely in terms of adoption.</p>
-<h3>Why the issuer&#39;s business is this line</h3>
+<p>These are ceilings, not measurements; real throughput lands well below them, and falls further as context grows.</p>
+<h3>Capacity and bandwidth fail differently</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
 <th></th>
-<th>Holder</th>
-<th>Issuer</th>
+<th>Decides</th>
+<th>How it fails</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>Holds</td>
-<td>A token worth $1</td>
-<td><strong>Short-dated government paper</strong></td>
+<td><strong>Unified memory size</strong></td>
+<td>what fits at all</td>
+<td><strong>hard</strong> — it does not load</td>
 </tr>
 <tr>
-<td>Earns</td>
-<td><strong>Nothing</strong></td>
-<td><strong>The bill yield</strong></td>
-</tr>
-<tr>
-<td>Bears</td>
-<td>Redemption risk</td>
-<td>Duration and operational risk</td>
+<td><strong>Memory bandwidth</strong></td>
+<td>how fast it answers</td>
+<td><strong>soft</strong> — it loads, and you wait</td>
 </tr>
 </tbody></table></div>
-<p>Which is why a euro- or won-denominated version is structurally thinner: <strong>the float story is only as good as the rate on the currency&#39;s own short paper.</strong></p>
-<h3>The honest caveats</h3>
+<p>Spec sheets lead with the first because its failure is legible. The second is the one you live with.</p>
+<h3>Cost per token has a denominator</h3>
+<p><strong>hardware ÷ tokens generated over its life.</strong> Three regimes:</p>
 <ul>
-<li><em>Risk-free</em> means <strong>credit-risk-free, not risk-free</strong> &amp;mdash; duration and inflation still bite, which is what <code>m2-and-the-dollar</code> is about.</li>
-<li>The right comparison is the bill in <strong>the currency your liability is in</strong>, not always dollars.</li>
-<li>A premium that looks thin may still be correct if the risk really is small; <strong>the point is to price it, not to refuse it.</strong></li>
+<li><strong>Idle desk</strong> — a few thousand tokens a day: cloud wins on cost by a wide margin.</li>
+<li><strong>Agents looping</strong> — tokens produced without a human waiting: the denominator gets large and local wins.</li>
+<li><strong>Privacy-constrained work</strong> — the comparison does not apply, because one side is not permitted. A constraint is not an optimisation.</li>
 </ul>
-      <p><a href="https://www.jaylabs.xyz/poc/risk-free-rate-is-the-floor">Open on jaylabs.xyz &rarr;</a></p>
+<h3>What the post concedes, and what it is really claiming</h3>
+<ul>
+<li>Conceded: <strong>not the data centre.</strong> The claim is the desk.</li>
+<li>The desk is batch-size-one, latency-bound, fixed-memory — a different problem, not a smaller one.</li>
+<li>The post closes by soliciting investment, so every figure above is promotional until re-derived from published specifications.</li>
+</ul>
+      <p><a href="https://www.jaylabs.xyz/poc/bandwidth-not-capacity">Open on jaylabs.xyz &rarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
-      <h1>무위험 이자율이 모든 수익률의 바닥이다</h1>
-      <p class="lead">단기 국채는 <strong>거의 위험 없이</strong> 무언가를 지급합니다. <strong>진짜 위험을 지는 수익률은 그것을 넘어야 애초에 흥미로워집니다</strong> — 즉 <strong>온체인 수익률 지형 전체가 크립토가 아니라 중앙은행이 정한 숫자에 대해 상대적으로 값 매겨집니다.</strong></p>
-      <p class="meta"><strong>10분과 두 칸짜리 표</strong>: 현재 <strong>3개월 국채 수익률</strong>, 그리고 검토 중인 온체인 포지션의 수익률 — 단 <code>where-yield-comes-from</code> 에 따라 <strong>배출을 걷어낸 값</strong>으로. <strong>차이가 당신이 받는 위험 프리미엄</strong>입니다. 그다음 <strong>유일하게 중요한 질문</strong>: <strong>스마트컨트랙트 위험·오라클 위험·거래상대 위험·이탈 위험을 다 합친 것에 대해 그 프리미엄이 충분한가?</strong> 지난 3년의 몇 시점에서 같은 계산을 반복하면 <strong>크립토 사이클이 한 줄의 함수처럼 보이기 시작합니다.</strong></p>
+      <h1>용량은 모델을 올리고, 대역폭이 모델을 서빙한다</h1>
+      <p class="lead">애플 실리콘 로컬 추론을 권하는 글은 <strong>512GB 통합 메모리</strong>와 <strong>200B 파라미터 모델</strong>로 시작합니다. <strong>용량은 무엇을 올릴 수 있는지를 정합니다.</strong> <strong>얼마나 빨리 답하는지를 정하는 것은 메모리 대역폭</strong>이고, 자기회귀 디코딩은 <strong>토큰 하나마다 가중치를 한 번 읽습니다</strong> — 그래서 <strong>상한은 대역폭 ÷ 토큰당 실제로 만지는 바이트</strong>입니다. 그 나눗셈을 해 보면, 글이 나란히 내건 두 약속 — <strong>거대 모델</strong>과 <strong>상시 에이전트</strong> — 이 <strong>같은 기계 위에서 서로 반대로 당긴다</strong>는 것이 드러납니다.</p>
+      <p class="meta"><strong>만드는 일이 아니라 나눗셈 하나와 측정 하나</strong>이고, 둘 다 <strong>무엇을 사기 전에</strong> 할 만큼 쌉니다. 먼저 <strong>상한</strong> — <strong>초당 토큰은 메모리 대역폭 ÷ 토큰당 읽는 바이트</strong>로 묶이고, 그 바이트는 대략 <strong>실제로 활성화되는 파라미터의 양자화 크기</strong>입니다. 세 경우에 대해 해 봅니다 — <strong>30B 밀집 모델 4비트</strong>, <strong>200B 밀집 모델 4비트</strong>, 그리고 <strong>총 크기는 비슷하되 일부만 활성화되는 MoE</strong> — 그러면 <strong>셋째만 인터랙티브하게 남는다</strong>는 것이 보입니다. 그다음 <strong>나눗셈을 믿지 말고 측정</strong>합니다 — <strong>실제로 가진 기계</strong>에서 프롬프트 하나를 돌려 초당 토큰을 적고, <strong>컨텍스트를 채운 뒤 다시</strong> 적습니다. <strong>어텐션 비용은 컨텍스트에 따라 자라고, 에이전트의 컨텍스트는 결코 짧지 않기 때문</strong>입니다. 마지막으로 <strong>분모를 붙여</strong> 값을 매깁니다 — <strong>토큰당 비용 = 하드웨어 ÷ 수명 동안 실제로 생성한 토큰.</strong> 그러면 <strong>가동률이 세부가 아니라 논증 전체</strong>가 됩니다. 하드웨어 수치는 <strong>2026-08-28 에 본 GenAI Works 게시물</strong> 기준입니다 — <strong>899달러 M6 Mac mini(LLM 처리 M1 대비 13.5배 주장)</strong>, <strong>최대 512GB 통합 메모리·1.2 TB/s 의 M5 Ultra Mac Studio</strong> — 그리고 <strong>같은 글이 투자 권유로 끝납니다.</strong> 어느 숫자든 <strong>공개 사양에서 다시 유도한 뒤</strong> 쓰십시오.</p>
       <h2>왜</h2>
-      <p><strong>존재하는 모든 수익률은 암묵적 대안에 대고 표시되고, 그 대안은 국채입니다.</strong> 단기 국채가 <strong>거의 위험 없이 5%</strong> 를 준다면, <strong>6% 를 주는 프로토콜은 스마트컨트랙트 위험·오라클 위험·수탁 위험·원하는 날 못 빠져나올 위험에 대해 1%포인트를 제안하는 것</strong>입니다. <strong>그렇게 적으면 명백히 나쁜 거래</strong>이고, <strong><em>6% APY</em> 라고 적으면 상품<strong>이 됩니다.
-
-</strong>이 관계 하나가 대부분의 크립토 고유 서사보다 사이클을 더 많이 설명합니다.<strong> 무위험 이자율이 </strong>0 근처면<strong> 어떤 양(+)의 수익률도 대단해 보이고, </strong>대안이 아무것도 주지 않으니<strong> 자본이 위험 쪽으로 몰립니다. 그것이 </strong>5% 로 오르면<strong> 같은 자본에 </strong>안전하게 앉을 자리<strong>가 생기고, 온체인 수익률은 </strong>같은 유입을 얻기 위해 훨씬 더 열심히<strong> 일해야 합니다. </strong>프로토콜은 아무것도 바뀌지 않았습니다. 분모가 바뀐 것입니다.<strong> 그 메커니즘의 나머지 절반이 <code>m2-and-the-dollar</code> 입니다.
-
-</strong>그리고 스테이블코인 발행사가 실제로 무엇인지를 다시 규정합니다.<strong> 법정화폐 담보 발행사는 </strong>단기 국채를 들고 그 이자를 보유자에게 하나도 돌려주지 않습니다.<strong> </strong>발행사의 사업이 곧 무위험 이자율<strong>입니다. 그래서 </strong>고금리 환경이 달러 발행사에 막대하게 유리<strong>하고, </strong>저금리 통화로 표시된 같은 상품은 훨씬 얇은 사업<strong>입니다 — <code>two-currencies-one-ledger</code> 가 유로 쪽에서, <code>what-needs-a-stablecoin</code> 이 원화 쪽에서 도달하는 바로 그 지점입니다.
-
-</strong>규율은 비교하기 전에 언제나 빼는 것입니다.<strong> </strong>수익률은 바닥을 넘는 만큼만 흥미롭고<strong>, 대부분의 발표된 비교는 </strong>총액 온체인 숫자를 아무것도 아닌 것 옆에 놓습니다.<strong> </strong>국채를 빼고, 배출을 빼면 남는 것이 실제 제안<strong>입니다 — </strong>대개 작고, 가끔 훌륭하며, 언제나 광고보다 작습니다.</strong></p>
+      <p><strong>나눗셈이 카드의 전부이고, 누구나 다시 해 볼 수 있는 산수입니다.</strong> 자기회귀 디코딩은 <strong>연산이 아니라 메모리에 묶입니다</strong> — 토큰 하나를 만들려면 <strong>활성 가중치를 메모리에서 읽어야</strong> 하므로, <strong>속도의 상한은 대역폭 ÷ 그 바이트</strong>입니다. <strong>1.2 TB/s</strong> 에서 <strong>4비트로 양자화한 200B 밀집 모델</strong>은 토큰당 대략 <strong>100GB 를 읽는 셈</strong>이고, 이는 <strong>이론 상한으로 초당 10여 토큰</strong>, 실제로는 그보다 낮습니다. <strong>자는 동안 도는 작업에는 충분하고, 에이전트에게는 정말로 괴로운 수치</strong>입니다 — <strong>에이전트는 한 스텝에 많은 토큰을 뱉고, 지연이 스텝마다 누적되기 때문</strong>입니다. <strong>그래서 글의 두 약속 — 이만큼 큰 모델, 그리고 상시 어시스턴트 — 은 기계 두 대 몫의 일을 한 대 위에 올려놓은 것</strong>입니다. 해법은 <strong>구조</strong>입니다 — <strong>MoE 에서는 총 파라미터가 용량 요구를, 활성 파라미터가 속도를 정합니다.</strong> 그래서 <strong>숫자보다 &quot;어떤&quot; 200B 인지가 훨씬 중요합니다.</strong> 그리고 <strong><code>sub-2bit-local-llm</code></strong> 은 같은 분수에 걸린 다른 지렛대입니다 — <strong>가중치당 비트가 적으면 토큰당 바이트가 적으므로, 양자화는 자리만큼이나 직접적으로 속도를 삽니다.</strong></p>
+<p><strong>경제성 주장은 분모 없이 진술됐습니다.</strong> <em>&quot;클라우드는 토큰마다 지불, 로컬은 한 번 사고 종일 돌린다&quot;</em> 는 <strong>가동률이 높을 때만 참</strong>입니다. <strong>토큰당 비용 = 하드웨어 ÷ 수명 동안 실제 생성한 토큰</strong>이니까요. <strong>하루 열아홉 시간 노는 책상은 상자가 아무리 쌌어도 숫자가 나쁩니다.</strong> <strong>그래서 진짜 질문이 바뀝니다 — 로컬이냐 클라우드냐가 아니라, 토큰을 끊임없이 생성하는 작업을 가지고 있느냐입니다.</strong> <strong>에이전트가 그런 최초의 작업</strong>입니다 — <strong>사람이 토큰 하나하나를 기다리지 않고도 토큰이 나옵니다.</strong> 로컬 추론의 셈이 맞아떨어지는 경우가 정확히 그것이고, 글이 에이전트를 지목한 것은 <strong>이유를 생략했을 뿐 옳습니다.</strong> <strong>두 번째 이유는 프라이버시이고 더 강합니다</strong> — <strong>가동률에 전혀 의존하지 않기 때문</strong>입니다. <strong>파일·프롬프트·에이전트 컨텍스트가 기계를 떠나지 않는 것</strong>은 어떤 일이 그냥 갖고 있는 <strong>제약</strong>이고, <strong>제약은 설득으로 물릴 수 있는 최적화가 아닙니다.</strong></p>
+<p><strong>그리고 출처는 각주가 아니라 카드 본문에 있어야 합니다.</strong> 글은 이렇게 끝납니다 — <em>&quot;우리 라운드가 열려 있습니다. 8월 31일 전까지 1,000달러부터, 최대 22% 보너스 주식.&quot;</em> <strong>모든 수치가 그 수치로 돈을 모으는 쪽에서 제시된 것</strong>입니다. 틀렸다는 뜻이 아니라 <strong>홍보물이라는 뜻</strong>이고, 이 목록의 상시 규칙은 <strong>반복하지 말고 다시 유도하라</strong>입니다. 글이 <strong>인정하고 지나가는 부분</strong>도 보십시오 — <strong>애플이 데이터센터에서 NVIDIA 를 대체하는 것은 아니다.</strong> 주장은 <strong>책상</strong>에 대한 것입니다. <strong>그것은 제약이 다른 진짜로 다른 싸움</strong>이고 — <strong>배치 크기 1, 처리량이 아니라 지연, 탄력적이 아니라 고정된 메모리 예산</strong> — <strong>정직한 버전의 주장은 책상이 애초에 NVIDIA 가 최적화하던 싸움이 아니었다는 것</strong>입니다.</p>
       <h2>동작 방식</h2>
-      <h3>뺄셈, 제대로</h3>
+      <h3>상한을 정하는 나눗셈</h3>
+<p><strong>초당 토큰 ≲ 메모리 대역폭 ÷ 토큰당 읽는 바이트.</strong> <strong>1.2 TB/s</strong>, 가중치 <strong>4비트</strong> 기준:</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>단계</th>
-<th>예</th>
+<th>모델</th>
+<th>토큰당 활성 바이트</th>
+<th>이론 상한</th>
+<th>판정</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>광고된 APY</td>
-<td><strong>12%</strong></td>
+<td>30B 밀집</td>
+<td>약 15 GB</td>
+<td>약 80 tok/s</td>
+<td>여유 있게 인터랙티브</td>
 </tr>
 <tr>
-<td>배출분 차감(<code>where-yield-comes-from</code>)</td>
-<td>−7% → <strong>실질 5%</strong></td>
+<td><strong>200B 밀집</strong></td>
+<td><strong>약 100 GB</strong></td>
+<td><strong>약 12 tok/s</strong></td>
+<td><strong>배치 작업 전용</strong></td>
 </tr>
 <tr>
-<td>단기 국채 수익률 차감</td>
-<td>−4% → <strong>프리미엄 1%</strong></td>
-</tr>
-<tr>
-<td><strong>그 1% 가 값을 치르는 대상</strong></td>
-<td><strong>스마트컨트랙트 + 오라클 + 수탁 + 이탈 위험, 전부 합쳐서</strong></td>
+<td>총 200B MoE, 활성 약 20B</td>
+<td>약 10 GB</td>
+<td>약 120 tok/s</td>
+<td>인터랙티브 — <strong>크기가 아니라 구조</strong></td>
 </tr>
 </tbody></table></div>
-<h3>바닥이 움직이면 무엇이 움직이나</h3>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>무위험 이자율</th>
-<th>온체인 수익률 수요에 미치는 영향</th>
-<th>스테이블코인 발행사에 미치는 영향</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>0 근처</strong></td>
-<td>어떤 양의 수익률도 자본을 끌어옴. <strong>위험 선호가 싸다</strong></td>
-<td><strong>준비금 수익 0 근처 — 발행사는 다른 사업이 필요</strong></td>
-</tr>
-<tr>
-<td><strong>높음</strong></td>
-<td>자본에 <strong>안전한 대안</strong>이 있음. 온체인은 그것을 이겨야 함</td>
-<td><strong>준비금 수익이 곧 사업이고, 아주 좋다</strong></td>
-</tr>
-</tbody></table></div>
-<p><strong>같은 프로토콜, 다른 분모.</strong> <strong>사이클을 순전히 채택으로 설명하는 이야기 옆에</strong> 놓아 둘 값이 있습니다.</p>
-<h3>왜 발행사의 사업이 이 한 줄인가</h3>
+<p><strong>이것은 상한이지 측정값이 아닙니다.</strong> 실제 처리량은 <strong>한참 아래</strong>이고, <strong>컨텍스트가 자랄수록 더 떨어집니다.</strong></p>
+<h3>용량과 대역폭은 다르게 고장난다</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
 <th></th>
-<th>보유자</th>
-<th>발행사</th>
+<th>정하는 것</th>
+<th>고장나는 방식</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>보유</td>
-<td><strong>$1 짜리 토큰</strong></td>
-<td><strong>단기 국채</strong></td>
+<td><strong>통합 메모리 크기</strong></td>
+<td>애초에 올라가는가</td>
+<td><strong>단단하게</strong> — 안 올라감</td>
 </tr>
 <tr>
-<td>수취</td>
-<td><strong>없음</strong></td>
-<td><strong>국채 수익률</strong></td>
-</tr>
-<tr>
-<td>부담</td>
-<td>상환 위험</td>
-<td>듀레이션·운영 위험</td>
+<td><strong>메모리 대역폭</strong></td>
+<td>얼마나 빨리 답하는가</td>
+<td><strong>무르게</strong> — 올라가고, 기다림</td>
 </tr>
 </tbody></table></div>
-<p>그래서 <strong>유로·원화 표시 판본은 구조적으로 얇습니다</strong> — <strong>플로트 서사는 그 통화 자체 단기물의 금리만큼만 좋습니다.</strong></p>
-<h3>정직한 단서</h3>
+<p><strong>사양표가 앞의 것을 앞세우는 이유는 그 고장이 눈에 보이기 때문</strong>입니다. <strong>같이 살아야 하는 것은 뒤의 것</strong>입니다.</p>
+<h3>토큰당 비용에는 분모가 있다</h3>
+<p><strong>하드웨어 ÷ 수명 동안 생성한 토큰.</strong> 세 국면:</p>
 <ul>
-<li><em>무위험</em> 은 <strong>신용위험이 없다는 뜻이지 위험이 없다는 뜻이 아닙니다</strong> — <strong>듀레이션과 인플레이션</strong>은 여전히 물어뜯고, 그게 <code>m2-and-the-dollar</code> 의 주제입니다.</li>
-<li>올바른 비교 대상은 <strong>당신의 부채가 표시된 통화의 국채</strong>이지 언제나 달러가 아닙니다.</li>
-<li><strong>얇아 보이는 프리미엄도 위험이 정말 작으면 옳을 수 있습니다.</strong> <strong>요점은 거부가 아니라 값을 매기는 것입니다.</strong></li>
+<li><strong>노는 책상</strong> — 하루 몇 천 토큰: <strong>클라우드가 큰 차이로 이깁니다.</strong></li>
+<li><strong>에이전트가 도는 경우</strong> — 사람이 기다리지 않고 토큰이 나옴: <strong>분모가 커지고 로컬이 이깁니다.</strong></li>
+<li><strong>프라이버시 제약 작업</strong> — <strong>비교 자체가 성립하지 않습니다.</strong> 한쪽이 <strong>허용되지 않기</strong> 때문입니다. <strong>제약은 최적화가 아닙니다.</strong></li>
 </ul>
-      <p><a href="https://www.jaylabs.xyz/poc/risk-free-rate-is-the-floor">Open on jaylabs.xyz &rarr;</a></p>
+<h3>글이 인정한 것, 그리고 실제 주장</h3>
+<ul>
+<li>인정: <strong>데이터센터가 아니다.</strong> 주장은 <strong>책상</strong>입니다.</li>
+<li>책상은 <strong>배치 크기 1, 지연에 묶이고, 메모리가 고정</strong> — <strong>더 작은 문제가 아니라 다른 문제</strong>입니다.</li>
+<li>글은 <strong>투자 권유로 끝납니다.</strong> 위의 모든 수치는 <strong>공개 사양에서 다시 유도하기 전까지 홍보물</strong>입니다.</li>
+</ul>
+      <p><a href="https://www.jaylabs.xyz/poc/bandwidth-not-capacity">Open on jaylabs.xyz &rarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-gross-over-net.html">&larr; 74. Gross over net — the recycling multiple</a><a href="pocs-m2-and-the-dollar.html">76. M2, the dollar, and why crypto is a liquidity trade &rarr;</a></div>
+    <div class="pager"><a href="pocs-sub-2bit-local-llm.html">&larr; 81. Sub-2-bit LLMs, locally</a><a href="pocs-robotics-entry-decision.html">83. Four ways into robotics, and what each one actually buys &rarr;</a></div>
   </div>
   </main>
 </div>
