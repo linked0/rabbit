@@ -179,8 +179,18 @@ export function buildMandate(t: MandateTerms): Delegation {
 }
 
 /// 브라우저가 MetaMask 로 서명할 EIP-712 페이로드. 서버가 만들어 내려보낸다.
+///
+/// **salt 를 문자열로 내린다** (2026-08-28). `toDelegationStruct` 는 salt 를
+/// `bigint` 로 돌려주는데, JSON 에는 bigint 가 없다 — `NextResponse.json()` 이
+/// `TypeError: Do not know how to serialize a BigInt` 을 던지고, Next 는 **본문
+/// 없는 500** 을 보낸다. 브라우저에는 그것이 `Unexpected end of JSON input` 으로만
+/// 도착해서, 서명 한 번 해 보지도 못한 채 원인이 파서 에러로 위장됐다.
+///
+/// 문자열이어도 서명은 같다: `eth_signTypedData_v4` 는 uint256 을 10진 문자열로
+/// 받고, 해시는 값에 대해 계산되지 표현에 대해 계산되지 않는다.
 export function mandateTypedData(delegation: Delegation) {
   const { chainId, environment } = loadEnv();
+  const struct = toDelegationStruct({ ...delegation, signature: "0x" });
   return {
     domain: {
       chainId,
@@ -190,7 +200,7 @@ export function mandateTypedData(delegation: Delegation) {
     },
     types: SIGNABLE_DELEGATION_TYPED_DATA,
     primaryType: "Delegation" as const,
-    message: toDelegationStruct({ ...delegation, signature: "0x" }),
+    message: { ...struct, salt: struct.salt.toString() },
   };
 }
 

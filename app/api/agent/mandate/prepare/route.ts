@@ -61,30 +61,42 @@ export async function POST(req: NextRequest) {
   }
 
   const owner = body.owner as Address;
-  const account = await ensureOwnerDeployed(owner);
 
-  // V-B 의 주소 지정 faucet 을 그대로 쓴다 — Phase 1 에서 만든 조각이 여기 맞물린다.
-  // 금액은 verex 쪽 고정값이다. 상한과 맞추지 않는 이유: 상한은 **뽑을 수 있는**
-  // 한도이고 잔고는 **있는** 돈이라 서로 다른 것이며, 둘이 어긋나는 상태
-  // ("한도는 남았는데 잔고가 없음")가 실제로 존재한다는 걸 화면이 보여줘야 한다.
-  const funded = await verex.faucet(account.address).catch(() => null);
+  // 여기부터는 체인과 네트워크다 — 배포·faucet·구조체 생성 전부 던질 수 있다.
+  // 감싸지 않으면 Next 가 **본문 없는 500** 을 보내고, 브라우저에는 그것이
+  // `Unexpected end of JSON input` 으로만 도착한다 (2026-08-28, jay 가 여기서
+  // 막혔다). verex 의 `/faucet` 과 같은 처방: 진단을 프레임워크가 대신
+  // 요약하게 두지 말고, 실패한 이유를 그대로 실어 보낸다.
+  try {
+    const account = await ensureOwnerDeployed(owner);
 
-  const delegation = buildMandate({
-    delegator: account.address,
-    capUsdc: body.capUsdc,
-    expiresAtSec: Math.floor(expiresAt.getTime() / 1000),
-    usdc: config.usdc,
-  });
+    // V-B 의 주소 지정 faucet 을 그대로 쓴다 — Phase 1 에서 만든 조각이 여기 맞물린다.
+    // 금액은 verex 쪽 고정값이다. 상한과 맞추지 않는 이유: 상한은 **뽑을 수 있는**
+    // 한도이고 잔고는 **있는** 돈이라 서로 다른 것이며, 둘이 어긋나는 상태
+    // ("한도는 남았는데 잔고가 없음")가 실제로 존재한다는 걸 화면이 보여줘야 한다.
+    const funded = await verex.faucet(account.address).catch(() => null);
 
-  return NextResponse.json({
-    smartAccount: {
-      address: account.address,
-      justDeployed: !account.deployed,
-      deployTxHash: account.txHash,
-      usdc: funded?.usdc ?? null,
-    },
-    delegation,
-    // 브라우저는 이걸 그대로 `eth_signTypedData_v4` 에 넣는다.
-    typedData: mandateTypedData(delegation),
-  });
+    const delegation = buildMandate({
+      delegator: account.address,
+      capUsdc: body.capUsdc,
+      expiresAtSec: Math.floor(expiresAt.getTime() / 1000),
+      usdc: config.usdc,
+    });
+
+    return NextResponse.json({
+      smartAccount: {
+        address: account.address,
+        justDeployed: !account.deployed,
+        deployTxHash: account.txHash,
+        usdc: funded?.usdc ?? null,
+      },
+      delegation,
+      // 브라우저는 이걸 그대로 `eth_signTypedData_v4` 에 넣는다.
+      typedData: mandateTypedData(delegation),
+    });
+  } catch (e) {
+    const message = String(e instanceof Error ? e.message : e);
+    console.error("[mandate/prepare]", e);
+    return NextResponse.json({ error: `mandate prepare failed: ${message}` }, { status: 500 });
+  }
 }

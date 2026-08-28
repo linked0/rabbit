@@ -15,9 +15,19 @@ import { erc7715ProviderActions } from "@metamask/smart-accounts-kit/actions";
 import { useLang } from "../../../LangContext";
 import { pick } from "@/lib/i18n";
 import { short } from "./Preflight";
+import { fetchJson } from "./fetchJson";
 
 // `window.ethereum` 의 전역 선언은 `app/live/aa/SessionKeyDemo.tsx` 에 이미 있다.
 // 두 번 선언하면 타입이 충돌하므로 여기서는 호출 지점에서만 좁힌다.
+/// `/api/agent/mandate/prepare` 의 응답. 서명 대상(typedData)과 그 서명이 실릴
+/// 위임 원본, 그리고 방금 배포/충전된 소유자 스마트 계정.
+type Prepared = {
+  error?: string;
+  typedData: unknown;
+  delegation: Record<string, unknown>;
+  smartAccount: { address: string; justDeployed: boolean; usdc: number | null };
+};
+
 type Eip1193 = { request: (a: { method: string; params?: unknown[] }) => Promise<unknown> };
 const eth = () => {
   const e = window.ethereum as Eip1193 | undefined;
@@ -55,10 +65,16 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
   const [, tickNow] = useState(0);
 
   const reload = useCallback(async () => {
-    const r = await fetch("/api/agent/mandate").then((x) => x.json());
-    if (r.error) return setErr(r.error);
-    setAgent(r.agentAddress);
-    setMandate(r.mandate);
+    try {
+      const r = await fetchJson<{ error?: string; agentAddress: string; mandate: Mandate | null }>(
+        "/api/agent/mandate",
+      );
+      if (r.error) return setErr(r.error);
+      setAgent(r.agentAddress);
+      setMandate(r.mandate);
+    } catch (e) {
+      setErr(String(e instanceof Error ? e.message : e));
+    }
   }, []);
 
   useEffect(() => {
@@ -90,11 +106,11 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
       const expiresAt = new Date(Date.now() + Number(minutes) * 60_000).toISOString();
 
       // 1) 서버가 스마트 계정을 배포하고, 자금을 넣고, 구조체를 만든다.
-      const prep = await fetch("/api/agent/mandate/prepare", {
+      const prep = await fetchJson<Prepared>("/api/agent/mandate/prepare", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ owner, capUsdc: Number(cap), expiresAt }),
-      }).then((r) => r.json());
+      });
       if (prep.error) throw new Error(prep.error);
 
       // 2) MetaMask 가 서명한다. 평범한 eth_signTypedData_v4 라 어느 체인에서든 된다.
@@ -104,7 +120,7 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
       })) as string;
 
       // 3) 서명을 채워 기록한다.
-      const res = await fetch("/api/agent/mandate", {
+      const res = await fetchJson<{ error?: string }>("/api/agent/mandate", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -113,7 +129,7 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
           expiresAt,
           delegation: { ...prep.delegation, signature },
         }),
-      }).then((r) => r.json());
+      });
       if (res.error) throw new Error(res.error);
 
       setNote(
@@ -135,7 +151,7 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
     setBusy(true);
     setErr(null);
     try {
-      const r = await fetch("/api/agent/mandate", { method: "DELETE" }).then((x) => x.json());
+      const r = await fetchJson<{ error?: string }>("/api/agent/mandate", { method: "DELETE" });
       if (r.error) throw new Error(r.error);
       await reload();
       onChanged();

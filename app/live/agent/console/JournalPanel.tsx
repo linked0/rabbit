@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLang } from "../../../LangContext";
 import { pick } from "@/lib/i18n";
+import { fetchJson } from "./fetchJson";
 
 type Cited = { id: string; headline: string | null; source: string | null; missing: boolean };
 type Tick = {
@@ -60,9 +61,15 @@ export default function JournalPanel({
   const [err, setErr] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
-    const r = await fetch("/api/agent/tick").then((x) => x.json());
-    if (r.error) return setErr(r.error);
-    setTicks(r.ticks);
+    // 읽기 실패도 화면에 남긴다. 이 catch 가 없으면 처리되지 않은 rejection 이
+    // 되어 브라우저 콘솔에만 뜨고, 페이지는 빈 저널을 정상인 척 보여준다.
+    try {
+      const r = await fetchJson<{ error?: string; ticks: Tick[] }>("/api/agent/tick");
+      if (r.error) return setErr(r.error);
+      setTicks(r.ticks);
+    } catch (e) {
+      setErr(String(e instanceof Error ? e.message : e));
+    }
   }, []);
 
   useEffect(() => {
@@ -74,11 +81,11 @@ export default function JournalPanel({
     setBusy(true);
     setErr(null);
     try {
-      const r = await fetch("/api/agent/tick", {
+      const r = await fetchJson<{ error?: string }>("/api/agent/tick", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ marketSlug, outcome, ...settings }),
-      }).then((x) => x.json());
+      });
       if (r.error) throw new Error(r.error);
       await reload();
       onChanged();

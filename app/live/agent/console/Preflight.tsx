@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react";
 import { useLang } from "../../../LangContext";
 import { pick } from "@/lib/i18n";
+import { fetchJson } from "./fetchJson";
 
 export type PreflightData = {
   agent: { address: string; keyIsPersistent: boolean; usdc: number | null };
@@ -41,8 +42,7 @@ export default function Preflight({ owner, refreshKey }: { owner: string | null;
 
   useEffect(() => {
     const url = `/api/agent/preflight${owner ? `?owner=${owner}` : ""}`;
-    fetch(url)
-      .then((r) => r.json())
+    fetchJson<PreflightData & { error?: string }>(url)
       .then((j) => (j.error ? setErr(j.error) : (setData(j), setErr(null))))
       .catch((e) => setErr(String(e)));
   }, [owner, refreshKey]);

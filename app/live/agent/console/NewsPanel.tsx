@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLang } from "../../../LangContext";
 import { pick } from "@/lib/i18n";
+import { fetchJson } from "./fetchJson";
 
 type NewsRow = {
   id: string;
@@ -44,9 +45,15 @@ export default function NewsPanel({
 
   const reload = useCallback(async () => {
     if (!marketSlug) return setRows([]);
-    const r = await fetch(`/api/agent/news?marketSlug=${encodeURIComponent(marketSlug)}`).then((x) => x.json());
-    if (r.error) return setErr(r.error);
-    setRows(r.news);
+    try {
+      const r = await fetchJson<{ error?: string; news: NewsRow[] }>(
+        `/api/agent/news?marketSlug=${encodeURIComponent(marketSlug)}`,
+      );
+      if (r.error) return setErr(r.error);
+      setRows(r.news);
+    } catch (e) {
+      setErr(String(e instanceof Error ? e.message : e));
+    }
   }, [marketSlug]);
 
   useEffect(() => {
@@ -58,11 +65,11 @@ export default function NewsPanel({
     setBusy(true);
     setErr(null);
     try {
-      const r = await fetch("/api/agent/news", {
+      const r = await fetchJson<{ error?: string }>("/api/agent/news", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ marketSlug, headline, source: source || undefined, body: body || undefined }),
-      }).then((x) => x.json());
+      });
       if (r.error) throw new Error(r.error);
       setHeadline("");
       setSource("");
