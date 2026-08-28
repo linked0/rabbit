@@ -220,6 +220,7 @@
      한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
 
   /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
      읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
@@ -420,12 +421,11 @@
       <p class="lead">Querying balance/net-worth for an address with Moralis&#39;s Wallet API.</p>
       <p class="meta">Service — from 2026-08-03&#39;s service-discovery track (39/113: Moralis).</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-    <script type="application/json" id="copy-en">"# Moralis — wallet snapshot via API\n\nQuerying balance/net-worth for an address with Moralis's Wallet API.\n\nService — from 2026-08-03's service-discovery track (39/113: Moralis).\n\n## Why\n\nA quick evaluation of a common build-vs-buy tradeoff in crypto tooling — instead of indexing chain data yourself (event logs, balance changes) to answer \"what does this wallet hold,\" a hosted indexing API like Moralis answers it in one call.\n\n## How it works\n\nPlanned: a small server route calling Moralis's Wallet API (net-worth and token-balance endpoints) with a server-held API key, rendering a simple portfolio snapshot for any address a visitor enters — read-only, no wallet connection needed. Not yet built.\n"</script>
-    <script type="application/json" id="copy-ko">"# Moralis — API로 지갑 스냅샷 조회\n\nMoralis Wallet API로 특정 주소의 잔고·순자산 조회.\n\n서비스 — 2026-08-03 서비스 탐방 트랙 (39/113: Moralis).\n\n## 왜\n\n크립토 도구에서 흔히 마주치는 build-vs-buy 판단을 빠르게 검증합니다 — \"이 지갑이 뭘 들고 있는가\"에 답하려고 이벤트 로그·잔고 변화를 직접 인덱싱하는 대신, Moralis 같은 호스팅 인덱싱 API가 호출 한 번으로 답을 줍니다.\n\n## 동작 방식\n\n계획: 서버 라우트가 서버에 보관된 API 키로 Moralis Wallet API(순자산·토큰 잔고 엔드포인트)를 호출해, 방문자가 입력한 임의 주소에 대한 간단한 포트폴리오 스냅샷을 보여줍니다 — 읽기 전용이며 지갑 연결이 필요 없습니다. 아직 미구현.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Moralis — wallet snapshot via API\n\nQuerying balance/net-worth for an address with Moralis's Wallet API.\n\nService — from 2026-08-03's service-discovery track (39/113: Moralis).\n\n## Why\n\nA quick evaluation of a common build-vs-buy tradeoff in crypto tooling — instead of indexing chain data yourself (event logs, balance changes) to answer \"what does this wallet hold,\" a hosted indexing API like Moralis answers it in one call.\n\n## How it works\n\nPlanned: a small server route calling Moralis's Wallet API (net-worth and token-balance endpoints) with a server-held API key, rendering a simple portfolio snapshot for any address a visitor enters — read-only, no wallet connection needed. Not yet built.\n"</script>
       <h2>Why</h2>
       <p>A quick evaluation of a common build-vs-buy tradeoff in crypto tooling — instead of indexing chain data yourself (event logs, balance changes) to answer &quot;what does this wallet hold,&quot; a hosted indexing API like Moralis answers it in one call.</p>
       <h2>How it works</h2>
@@ -477,6 +477,8 @@ print(f&quot;\ntotal portfolio value: ${total:,.2f}&quot;)
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# Moralis — API로 지갑 스냅샷 조회\n\nMoralis Wallet API로 특정 주소의 잔고·순자산 조회.\n\n서비스 — 2026-08-03 서비스 탐방 트랙 (39/113: Moralis).\n\n## 왜\n\n크립토 도구에서 흔히 마주치는 build-vs-buy 판단을 빠르게 검증합니다 — \"이 지갑이 뭘 들고 있는가\"에 답하려고 이벤트 로그·잔고 변화를 직접 인덱싱하는 대신, Moralis 같은 호스팅 인덱싱 API가 호출 한 번으로 답을 줍니다.\n\n## 동작 방식\n\n계획: 서버 라우트가 서버에 보관된 API 키로 Moralis Wallet API(순자산·토큰 잔고 엔드포인트)를 호출해, 방문자가 입력한 임의 주소에 대한 간단한 포트폴리오 스냅샷을 보여줍니다 — 읽기 전용이며 지갑 연결이 필요 없습니다. 아직 미구현.\n"</script>
       <h1>Moralis — API로 지갑 스냅샷 조회</h1>
       <p class="lead">Moralis Wallet API로 특정 주소의 잔고·순자산 조회.</p>
       <p class="meta">서비스 — 2026-08-03 서비스 탐방 트랙 (39/113: Moralis).</p>

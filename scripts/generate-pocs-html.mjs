@@ -566,11 +566,14 @@ function detailNavGroups(current) {
   // 있는 카드에만 원래 링크를 뒤에 붙인다 — 쓸모 있는 경우는 남기고 죽은 링크만 없앤다.
   const copyEn = copyEnOf(c);
   const copyKo = copyKoOf(c);
-  const copyRow =
-    `<p class="copy-row">` +
-    `<button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button>` +
-    `<button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button>` +
-    `</p>\n    ${jsonBlock('copy-en', copyEn)}\n    ${jsonBlock('copy-ko', copyKo)}`;
+  // 버튼을 hero 에 모아 두면 한국어 본문을 읽다가 복사하려면 맨 위까지 올라가야 했다
+  // (jay, 2026-08-28). 각 언어 덩어리가 자기 버튼을 갖는다 — 읽고 있는 자리에서 집어간다.
+  const copyRowEn =
+    `<p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>` +
+    `\n      ${jsonBlock('copy-en', copyEn)}`;
+  const copyRowKo =
+    `<p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>` +
+    `\n      ${jsonBlock('copy-ko', copyKo)}`;
   const liveLink = c.href ? ` &middot; <a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a>` : '';
   const openLink = `<a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a>${liveLink}`;
   const openLinkKo = `<a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a>${liveLink}`;
@@ -599,10 +602,10 @@ function detailNavGroups(current) {
       <p class="lead">${mdInline(c.description)}</p>
       <p class="meta">${mdInline(c.howTo)}</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-      ${copyRow}
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      ${copyRowEn}
       <h2>Why</h2>
       ${md(c.purpose)}
       <h2>How it works</h2>
@@ -611,6 +614,7 @@ ${diagramNote}${codeHtml}      <p>${openLink}</p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      ${copyRowKo}
       <h1>${escapeHtml(c.titleKo)}</h1>
       <p class="lead">${mdInline(c.descriptionKo)}</p>
       <p class="meta">${mdInline(c.howToKo)}</p>

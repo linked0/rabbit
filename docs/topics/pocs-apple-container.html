@@ -220,6 +220,7 @@
      한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
 
   /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
      읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
@@ -420,12 +421,11 @@
       <p class="lead">Apple&#39;s official open-source tool for running Linux containers as lightweight VMs on Apple Silicon — a Docker Desktop alternative candidate.</p>
       <p class="meta">Not yet scoped. github.com/apple/container</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-    <script type="application/json" id="copy-en">"# Apple container\n\nApple's official open-source tool for running Linux containers as lightweight VMs on Apple Silicon — a Docker Desktop alternative candidate.\n\nNot yet scoped. github.com/apple/container\n\n## Why\n\nA Docker Desktop alternative candidate for local infra across two PCs and midnight automated jobs.\n\n## How it works\n\nApple's official open source — runs Linux containers as lightweight VMs on Apple Silicon Macs. Written in Swift, OCI-compatible (pulls/pushes Docker images as-is), at 1.0.0, requires macOS 26.\n"</script>
-    <script type="application/json" id="copy-ko">"# Apple `container` 써보기\n\n애플 공식 오픈소스 — Mac(Apple Silicon)에서 Linux 컨테이너를 경량 VM으로 실행 — Docker Desktop 대안 검토.\n\n아직 범위 미정. github.com/apple/container\n\n## 왜\n\nDocker Desktop 대안 검토 — 2대 PC·자정 자동작업의 로컬 인프라 후보.\n\n## 동작 방식\n\n애플 공식 오픈소스 — Mac(Apple Silicon)에서 Linux 컨테이너를 경량 VM으로 실행. Swift 제작 · OCI 호환(Docker 이미지 그대로 pull/push) · 1.0.0 릴리스 · macOS 26 필요.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Apple container\n\nApple's official open-source tool for running Linux containers as lightweight VMs on Apple Silicon — a Docker Desktop alternative candidate.\n\nNot yet scoped. github.com/apple/container\n\n## Why\n\nA Docker Desktop alternative candidate for local infra across two PCs and midnight automated jobs.\n\n## How it works\n\nApple's official open source — runs Linux containers as lightweight VMs on Apple Silicon Macs. Written in Swift, OCI-compatible (pulls/pushes Docker images as-is), at 1.0.0, requires macOS 26.\n"</script>
       <h2>Why</h2>
       <p>A Docker Desktop alternative candidate for local infra across two PCs and midnight automated jobs.</p>
       <h2>How it works</h2>
@@ -478,6 +478,8 @@ for ref in [&quot;nginx:1.27&quot;, &quot;alpine&quot;]:
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# Apple `container` 써보기\n\n애플 공식 오픈소스 — Mac(Apple Silicon)에서 Linux 컨테이너를 경량 VM으로 실행 — Docker Desktop 대안 검토.\n\n아직 범위 미정. github.com/apple/container\n\n## 왜\n\nDocker Desktop 대안 검토 — 2대 PC·자정 자동작업의 로컬 인프라 후보.\n\n## 동작 방식\n\n애플 공식 오픈소스 — Mac(Apple Silicon)에서 Linux 컨테이너를 경량 VM으로 실행. Swift 제작 · OCI 호환(Docker 이미지 그대로 pull/push) · 1.0.0 릴리스 · macOS 26 필요.\n"</script>
       <h1>Apple `container` 써보기</h1>
       <p class="lead">애플 공식 오픈소스 — Mac(Apple Silicon)에서 Linux 컨테이너를 경량 VM으로 실행 — Docker Desktop 대안 검토.</p>
       <p class="meta">아직 범위 미정. github.com/apple/container</p>

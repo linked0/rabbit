@@ -220,6 +220,7 @@
      한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
 
   /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
      읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
@@ -385,12 +386,11 @@
       <p class="lead">Why proof size, not hashing speed, is what decides whether stateless clients are possible.</p>
       <p class="meta">Reference — docs/knowledge/merkle-vs-verkle.html.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-    <script type="application/json" id="copy-en">"# Merkle vs Verkle\n\nWhy proof size, not hashing speed, is what decides whether stateless clients are possible.\n\nReference — docs/knowledge/merkle-vs-verkle.html.\n\n## Why\n\nThe state-bloat problem this catalogue keeps running into from the application side, looked at from the protocol side. Every card here that writes a storage slot — an enforcer's spent counter, a token balance — adds to state that every node keeps live forever. Verkle trees do not delete any of it; they change what a node must carry to *prove* a piece of it, which is the difference between \"state is too big\" and \"state is too big to sync\".\n\n## How it works\n\nReading note, not a demo: how a Merkle proof's size grows with tree width (you must supply every sibling at every level), why vector commitments collapse that to a constant-size proof regardless of width, and what Ethereum's Verge roadmap intends to buy with the swap — stateless clients that validate without holding the state. Also what it costs: heavier cryptography, and a migration of the entire state trie.\n"</script>
-    <script type="application/json" id="copy-ko">"# Merkle vs Verkle\n\n무상태 클라이언트의 가능 여부를 가르는 건 해싱 속도가 아니라 증명 크기라는 것.\n\n참조 — docs/knowledge/merkle-vs-verkle.html.\n\n## 왜\n\n이 카탈로그가 애플리케이션 쪽에서 계속 부딪히는 상태 팽창 문제를, 프로토콜 쪽에서 본 것입니다. 스토리지 슬롯을 쓰는 여기 모든 카드 — 강제기의 지출 카운터, 토큰 잔고 — 가 모든 노드가 영구히 살려 두는 상태에 더해집니다. Verkle 트리는 그걸 지우지 않습니다. 노드가 그중 한 조각을 *증명*하기 위해 들고 다녀야 하는 양을 바꿀 뿐이고, 그게 \"상태가 너무 크다\"와 \"상태가 너무 커서 동기화가 안 된다\" 사이의 차이입니다.\n\n## 동작 방식\n\n데모가 아니라 정독 노트입니다: 머클 증명의 크기가 트리 폭에 따라 어떻게 늘어나는지(각 레벨의 형제 노드를 전부 제출해야 한다), 벡터 커밋먼트가 어떻게 폭과 무관한 상수 크기 증명으로 그것을 접는지, 그리고 이더리움 Verge 로드맵이 그 교체로 사려는 것 — 상태를 들고 있지 않고도 검증하는 무상태 클라이언트. 대가도 함께: 더 무거운 암호학, 그리고 상태 트라이 전체의 마이그레이션.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Merkle vs Verkle\n\nWhy proof size, not hashing speed, is what decides whether stateless clients are possible.\n\nReference — docs/knowledge/merkle-vs-verkle.html.\n\n## Why\n\nThe state-bloat problem this catalogue keeps running into from the application side, looked at from the protocol side. Every card here that writes a storage slot — an enforcer's spent counter, a token balance — adds to state that every node keeps live forever. Verkle trees do not delete any of it; they change what a node must carry to *prove* a piece of it, which is the difference between \"state is too big\" and \"state is too big to sync\".\n\n## How it works\n\nReading note, not a demo: how a Merkle proof's size grows with tree width (you must supply every sibling at every level), why vector commitments collapse that to a constant-size proof regardless of width, and what Ethereum's Verge roadmap intends to buy with the swap — stateless clients that validate without holding the state. Also what it costs: heavier cryptography, and a migration of the entire state trie.\n"</script>
       <h2>Why</h2>
       <p>The state-bloat problem this catalogue keeps running into from the application side, looked at from the protocol side. Every card here that writes a storage slot — an enforcer&#39;s spent counter, a token balance — adds to state that every node keeps live forever. Verkle trees do not delete any of it; they change what a node must carry to <em>prove</em> a piece of it, which is the difference between &quot;state is too big&quot; and &quot;state is too big to sync&quot;.</p>
       <h2>How it works</h2>
@@ -449,6 +449,8 @@ if __name__ == &quot;__main__&quot;:
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# Merkle vs Verkle\n\n무상태 클라이언트의 가능 여부를 가르는 건 해싱 속도가 아니라 증명 크기라는 것.\n\n참조 — docs/knowledge/merkle-vs-verkle.html.\n\n## 왜\n\n이 카탈로그가 애플리케이션 쪽에서 계속 부딪히는 상태 팽창 문제를, 프로토콜 쪽에서 본 것입니다. 스토리지 슬롯을 쓰는 여기 모든 카드 — 강제기의 지출 카운터, 토큰 잔고 — 가 모든 노드가 영구히 살려 두는 상태에 더해집니다. Verkle 트리는 그걸 지우지 않습니다. 노드가 그중 한 조각을 *증명*하기 위해 들고 다녀야 하는 양을 바꿀 뿐이고, 그게 \"상태가 너무 크다\"와 \"상태가 너무 커서 동기화가 안 된다\" 사이의 차이입니다.\n\n## 동작 방식\n\n데모가 아니라 정독 노트입니다: 머클 증명의 크기가 트리 폭에 따라 어떻게 늘어나는지(각 레벨의 형제 노드를 전부 제출해야 한다), 벡터 커밋먼트가 어떻게 폭과 무관한 상수 크기 증명으로 그것을 접는지, 그리고 이더리움 Verge 로드맵이 그 교체로 사려는 것 — 상태를 들고 있지 않고도 검증하는 무상태 클라이언트. 대가도 함께: 더 무거운 암호학, 그리고 상태 트라이 전체의 마이그레이션.\n"</script>
       <h1>Merkle vs Verkle</h1>
       <p class="lead">무상태 클라이언트의 가능 여부를 가르는 건 해싱 속도가 아니라 증명 크기라는 것.</p>
       <p class="meta">참조 — docs/knowledge/merkle-vs-verkle.html.</p>

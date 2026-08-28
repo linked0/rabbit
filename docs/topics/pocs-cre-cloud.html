@@ -220,6 +220,7 @@
      한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
 
   /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
      읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
@@ -420,12 +421,11 @@
       <p class="lead">Cloud holds the private truth, CRE is the verified bridge, the chain settles.</p>
       <p class="meta">Reference — docs/features/cre-cloud.md.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-    <script type="application/json" id="copy-en">"# CRE × Cloud — four hybrid patterns\n\nCloud holds the private truth, CRE is the verified bridge, the chain settles.\n\nReference — docs/features/cre-cloud.md.\n\n## Why\n\nMost of this catalogue assumes the interesting data is already on-chain. Real institutional workloads are the opposite: the authoritative record is in a private system that cannot be published, and the chain is only the settlement venue. That inversion is what the four patterns — RWA servicing, proof of reserves, DvP, prediction-market settlement — all share, and it is the same split this project keeps arriving at from the other direction: enforce on-chain, remember off-chain.\n\n## How it works\n\nReading note: four patterns sharing one shape — a private system of record, a verified bridge that attests to it without publishing it, and on-chain settlement conditioned on that attestation. The load-bearing question in each is what the bridge's attestation is actually worth, since the chain cannot check the private data itself.\n"</script>
-    <script type="application/json" id="copy-ko">"# CRE × Cloud — 하이브리드 4패턴\n\n진실은 클라우드에, 검증된 다리는 CRE, 정산은 체인.\n\n참조 — docs/features/cre-cloud.md.\n\n## 왜\n\n이 카탈로그의 대부분은 흥미로운 데이터가 이미 온체인에 있다고 가정합니다. 실제 기관 워크로드는 정반대입니다 — 권위 있는 기록은 공개할 수 없는 사설 시스템에 있고, 체인은 정산 장소일 뿐입니다. 네 패턴(RWA 서비싱·준비금 증명·DvP·예측시장 정산)이 공유하는 게 그 뒤집힘이고, 이 프로젝트가 반대 방향에서 계속 도달하는 바로 그 분리이기도 합니다: **강제는 온체인, 기억은 오프체인.**\n\n## 동작 방식\n\n정독 노트: 하나의 모양을 공유하는 네 패턴 — 사설 원장, 그것을 공개하지 않으면서 증명하는 검증된 다리, 그리고 그 증명에 조건부인 온체인 정산. 각각에서 핵심 질문은 **그 다리의 증명이 실제로 얼마짜리인가**입니다. 체인은 사설 데이터 자체를 검사할 수 없으니까요.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# CRE × Cloud — four hybrid patterns\n\nCloud holds the private truth, CRE is the verified bridge, the chain settles.\n\nReference — docs/features/cre-cloud.md.\n\n## Why\n\nMost of this catalogue assumes the interesting data is already on-chain. Real institutional workloads are the opposite: the authoritative record is in a private system that cannot be published, and the chain is only the settlement venue. That inversion is what the four patterns — RWA servicing, proof of reserves, DvP, prediction-market settlement — all share, and it is the same split this project keeps arriving at from the other direction: enforce on-chain, remember off-chain.\n\n## How it works\n\nReading note: four patterns sharing one shape — a private system of record, a verified bridge that attests to it without publishing it, and on-chain settlement conditioned on that attestation. The load-bearing question in each is what the bridge's attestation is actually worth, since the chain cannot check the private data itself.\n"</script>
       <h2>Why</h2>
       <p>Most of this catalogue assumes the interesting data is already on-chain. Real institutional workloads are the opposite: the authoritative record is in a private system that cannot be published, and the chain is only the settlement venue. That inversion is what the four patterns — RWA servicing, proof of reserves, DvP, prediction-market settlement — all share, and it is the same split this project keeps arriving at from the other direction: enforce on-chain, remember off-chain.</p>
       <h2>How it works</h2>
@@ -489,6 +489,8 @@ if __name__ == &quot;__main__&quot;:
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# CRE × Cloud — 하이브리드 4패턴\n\n진실은 클라우드에, 검증된 다리는 CRE, 정산은 체인.\n\n참조 — docs/features/cre-cloud.md.\n\n## 왜\n\n이 카탈로그의 대부분은 흥미로운 데이터가 이미 온체인에 있다고 가정합니다. 실제 기관 워크로드는 정반대입니다 — 권위 있는 기록은 공개할 수 없는 사설 시스템에 있고, 체인은 정산 장소일 뿐입니다. 네 패턴(RWA 서비싱·준비금 증명·DvP·예측시장 정산)이 공유하는 게 그 뒤집힘이고, 이 프로젝트가 반대 방향에서 계속 도달하는 바로 그 분리이기도 합니다: **강제는 온체인, 기억은 오프체인.**\n\n## 동작 방식\n\n정독 노트: 하나의 모양을 공유하는 네 패턴 — 사설 원장, 그것을 공개하지 않으면서 증명하는 검증된 다리, 그리고 그 증명에 조건부인 온체인 정산. 각각에서 핵심 질문은 **그 다리의 증명이 실제로 얼마짜리인가**입니다. 체인은 사설 데이터 자체를 검사할 수 없으니까요.\n"</script>
       <h1>CRE × Cloud — 하이브리드 4패턴</h1>
       <p class="lead">진실은 클라우드에, 검증된 다리는 CRE, 정산은 체인.</p>
       <p class="meta">참조 — docs/features/cre-cloud.md.</p>

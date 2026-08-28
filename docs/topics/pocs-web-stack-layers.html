@@ -220,6 +220,7 @@
      한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
 
   /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
      읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
@@ -420,12 +421,11 @@
       <p class="lead">A five-layer map of the stack, with this project overlaid on it.</p>
       <p class="meta">Reference — docs/knowledge/web-stack-layers.html.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-    <script type="application/json" id="copy-en">"# Web stack layers\n\nA five-layer map of the stack, with this project overlaid on it.\n\nReference — docs/knowledge/web-stack-layers.html.\n\n## Why\n\nAn orientation map rather than a study: which layer each piece of this project actually lives at, and where the gaps are. Useful mostly for noticing that several cards which sound like different problems turn out to sit at the same layer — and that one or two layers have nothing on them at all.\n\n## How it works\n\nA static five-layer diagram with the project's routes and demos placed on it. No code.\n"</script>
-    <script type="application/json" id="copy-ko">"# 웹 스택 계층\n\n스택의 5계층 지도 위에 이 프로젝트를 얹어 본 것.\n\n참조 — docs/knowledge/web-stack-layers.html.\n\n## 왜\n\n스터디라기보다 방향 지도입니다: 이 프로젝트의 각 조각이 실제로 어느 계층에 사는지, 그리고 빈 곳은 어디인지. 서로 다른 문제처럼 들리던 카드 여럿이 사실 같은 계층에 앉아 있다는 것, 그리고 어떤 계층은 아예 비어 있다는 것을 알아차리는 데 주로 쓸모가 있습니다.\n\n## 동작 방식\n\n프로젝트의 라우트와 데모를 얹은 정적 5계층 다이어그램. 코드는 없습니다.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Web stack layers\n\nA five-layer map of the stack, with this project overlaid on it.\n\nReference — docs/knowledge/web-stack-layers.html.\n\n## Why\n\nAn orientation map rather than a study: which layer each piece of this project actually lives at, and where the gaps are. Useful mostly for noticing that several cards which sound like different problems turn out to sit at the same layer — and that one or two layers have nothing on them at all.\n\n## How it works\n\nA static five-layer diagram with the project's routes and demos placed on it. No code.\n"</script>
       <h2>Why</h2>
       <p>An orientation map rather than a study: which layer each piece of this project actually lives at, and where the gaps are. Useful mostly for noticing that several cards which sound like different problems turn out to sit at the same layer — and that one or two layers have nothing on them at all.</p>
       <h2>How it works</h2>
@@ -493,6 +493,8 @@ if __name__ == &quot;__main__&quot;:
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# 웹 스택 계층\n\n스택의 5계층 지도 위에 이 프로젝트를 얹어 본 것.\n\n참조 — docs/knowledge/web-stack-layers.html.\n\n## 왜\n\n스터디라기보다 방향 지도입니다: 이 프로젝트의 각 조각이 실제로 어느 계층에 사는지, 그리고 빈 곳은 어디인지. 서로 다른 문제처럼 들리던 카드 여럿이 사실 같은 계층에 앉아 있다는 것, 그리고 어떤 계층은 아예 비어 있다는 것을 알아차리는 데 주로 쓸모가 있습니다.\n\n## 동작 방식\n\n프로젝트의 라우트와 데모를 얹은 정적 5계층 다이어그램. 코드는 없습니다.\n"</script>
       <h1>웹 스택 계층</h1>
       <p class="lead">스택의 5계층 지도 위에 이 프로젝트를 얹어 본 것.</p>
       <p class="meta">참조 — docs/knowledge/web-stack-layers.html.</p>

@@ -220,6 +220,7 @@
      한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
 
   /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
      읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
@@ -385,12 +386,11 @@
       <p class="lead">Blockstream&#39;s first Simplicity CTF — unlock 0.01 LBTC (~$600) locked in a contract for the reward; hands-on practice with Simplicity, the new smart-contract language for Bitcoin/Liquid.</p>
       <p class="meta">Not yet scoped — for later. github.com/Arvolear/simplicity-ctf (added 2026-07-07)</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-    <script type="application/json" id="copy-en">"# Simplicity CTF\n\nBlockstream's first Simplicity CTF — unlock 0.01 LBTC (~$600) locked in a contract for the reward; hands-on practice with Simplicity, the new smart-contract language for Bitcoin/Liquid.\n\nNot yet scoped — for later. github.com/Arvolear/simplicity-ctf (added 2026-07-07)\n\n## Why\n\nA hands-on way to actually learn Simplicity rather than just read about it.\n\n## How it works\n\nBlockstream's first Simplicity CTF — solve it to unlock 0.01 LBTC (~$600) locked in a contract.\n"</script>
-    <script type="application/json" id="copy-ko">"# Simplicity CTF 나중에 도전\n\nBlockstream의 첫 Simplicity CTF — 컨트랙트에 잠긴 0.01 LBTC(~$600) 해제하면 보상. Simplicity(비트코인/Liquid용 신 스마트컨트랙트 언어) 실전 학습 기회.\n\n아직 범위 미정 — 시간 날 때 도전. github.com/Arvolear/simplicity-ctf (7/7 추가)\n\n## 왜\n\nSimplicity 실전 학습 기회 — 시간 날 때 도전.\n\n## 동작 방식\n\nBlockstream의 첫 Simplicity CTF — 컨트랙트에 잠긴 0.01 LBTC(~$600) 해제하면 보상.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Simplicity CTF\n\nBlockstream's first Simplicity CTF — unlock 0.01 LBTC (~$600) locked in a contract for the reward; hands-on practice with Simplicity, the new smart-contract language for Bitcoin/Liquid.\n\nNot yet scoped — for later. github.com/Arvolear/simplicity-ctf (added 2026-07-07)\n\n## Why\n\nA hands-on way to actually learn Simplicity rather than just read about it.\n\n## How it works\n\nBlockstream's first Simplicity CTF — solve it to unlock 0.01 LBTC (~$600) locked in a contract.\n"</script>
       <h2>Why</h2>
       <p>A hands-on way to actually learn Simplicity rather than just read about it.</p>
       <h2>How it works</h2>
@@ -452,6 +452,8 @@ for label, witness in [
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# Simplicity CTF 나중에 도전\n\nBlockstream의 첫 Simplicity CTF — 컨트랙트에 잠긴 0.01 LBTC(~$600) 해제하면 보상. Simplicity(비트코인/Liquid용 신 스마트컨트랙트 언어) 실전 학습 기회.\n\n아직 범위 미정 — 시간 날 때 도전. github.com/Arvolear/simplicity-ctf (7/7 추가)\n\n## 왜\n\nSimplicity 실전 학습 기회 — 시간 날 때 도전.\n\n## 동작 방식\n\nBlockstream의 첫 Simplicity CTF — 컨트랙트에 잠긴 0.01 LBTC(~$600) 해제하면 보상.\n"</script>
       <h1>Simplicity CTF 나중에 도전</h1>
       <p class="lead">Blockstream의 첫 Simplicity CTF — 컨트랙트에 잠긴 0.01 LBTC(~$600) 해제하면 보상. Simplicity(비트코인/Liquid용 신 스마트컨트랙트 언어) 실전 학습 기회.</p>
       <p class="meta">아직 범위 미정 — 시간 날 때 도전. github.com/Arvolear/simplicity-ctf (7/7 추가)</p>

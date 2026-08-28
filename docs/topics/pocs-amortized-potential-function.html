@@ -220,6 +220,7 @@
      한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
 
   /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
      읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
@@ -420,12 +421,11 @@
       <p class="lead">Proving O(1) amortized cost for dynamic-array doubling with a potential function.</p>
       <p class="meta">Algorithms — from 2026-08-03&#39;s advanced dev-knowledge track (Day 1/100).</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-    <script type="application/json" id="copy-en">"# Amortized analysis via potential functions\n\nProving O(1) amortized cost for dynamic-array doubling with a potential function.\n\nAlgorithms — from 2026-08-03's advanced dev-knowledge track (Day 1/100).\n\n## Why\n\nA core algorithms-interview topic: proving that an operation with occasional expensive worst cases (like a dynamic array's resize-and-copy) is still O(1) on average over a sequence of operations, using the potential-function accounting method rather than a hand-wavy argument.\n\n## How it works\n\nPlanned: an interactive dynamic array (a growable vector) where each push is logged with its real cost, alongside a running potential function Φ that tracks \"banked\" cost from cheap operations — demonstrating that amortized cost = real cost + ΔΦ stays bounded even across a resize. Not yet built.\n"</script>
-    <script type="application/json" id="copy-ko">"# 포텐셜 함수를 이용한 분할상환 분석\n\n포텐셜 함수로 동적 배열 2배 증가의 분할상환 비용이 O(1)임을 증명.\n\n알고리즘 — 2026-08-03 매일의 개발 지식 100 트랙 (Day 1/100).\n\n## 왜\n\n알고리즘 면접의 핵심 주제 중 하나입니다: 동적 배열의 resize-and-copy처럼 가끔 비싼 최악의 경우가 있는 연산이라도, 일련의 연산 전체로 보면 평균 O(1)임을 대충 넘어가는 논증이 아니라 포텐셜 함수 회계 기법으로 엄밀하게 증명합니다.\n\n## 동작 방식\n\n계획: 각 push 연산의 실제 비용을 기록하는 인터랙티브 동적 배열(확장 가능한 벡터)을 만들고, 저렴한 연산에서 \"적립된\" 비용을 추적하는 포텐셜 함수 Φ를 함께 보여줍니다 — 분할상환 비용(= 실제 비용 + ΔΦ)이 resize가 일어나는 순간에도 항상 일정 범위 안에 머무름을 증명합니다. 아직 미구현.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Amortized analysis via potential functions\n\nProving O(1) amortized cost for dynamic-array doubling with a potential function.\n\nAlgorithms — from 2026-08-03's advanced dev-knowledge track (Day 1/100).\n\n## Why\n\nA core algorithms-interview topic: proving that an operation with occasional expensive worst cases (like a dynamic array's resize-and-copy) is still O(1) on average over a sequence of operations, using the potential-function accounting method rather than a hand-wavy argument.\n\n## How it works\n\nPlanned: an interactive dynamic array (a growable vector) where each push is logged with its real cost, alongside a running potential function Φ that tracks \"banked\" cost from cheap operations — demonstrating that amortized cost = real cost + ΔΦ stays bounded even across a resize. Not yet built.\n"</script>
       <h2>Why</h2>
       <p>A core algorithms-interview topic: proving that an operation with occasional expensive worst cases (like a dynamic array&#39;s resize-and-copy) is still O(1) on average over a sequence of operations, using the potential-function accounting method rather than a hand-wavy argument.</p>
       <h2>How it works</h2>
@@ -434,6 +434,8 @@
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# 포텐셜 함수를 이용한 분할상환 분석\n\n포텐셜 함수로 동적 배열 2배 증가의 분할상환 비용이 O(1)임을 증명.\n\n알고리즘 — 2026-08-03 매일의 개발 지식 100 트랙 (Day 1/100).\n\n## 왜\n\n알고리즘 면접의 핵심 주제 중 하나입니다: 동적 배열의 resize-and-copy처럼 가끔 비싼 최악의 경우가 있는 연산이라도, 일련의 연산 전체로 보면 평균 O(1)임을 대충 넘어가는 논증이 아니라 포텐셜 함수 회계 기법으로 엄밀하게 증명합니다.\n\n## 동작 방식\n\n계획: 각 push 연산의 실제 비용을 기록하는 인터랙티브 동적 배열(확장 가능한 벡터)을 만들고, 저렴한 연산에서 \"적립된\" 비용을 추적하는 포텐셜 함수 Φ를 함께 보여줍니다 — 분할상환 비용(= 실제 비용 + ΔΦ)이 resize가 일어나는 순간에도 항상 일정 범위 안에 머무름을 증명합니다. 아직 미구현.\n"</script>
       <h1>포텐셜 함수를 이용한 분할상환 분석</h1>
       <p class="lead">포텐셜 함수로 동적 배열 2배 증가의 분할상환 비용이 O(1)임을 증명.</p>
       <p class="meta">알고리즘 — 2026-08-03 매일의 개발 지식 100 트랙 (Day 1/100).</p>

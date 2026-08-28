@@ -220,6 +220,7 @@
      한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
 
   /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
      읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
@@ -420,12 +421,11 @@
       <p class="lead">Contracts, wallets/AA, backend tx, Unity SDK — breadth bought with best-in-class parts.</p>
       <p class="meta">Reference — docs/features/thirdweb.md. Already used in the AA card&#39;s pillars ②③.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-    <script type="application/json" id="copy-en">"# Thirdweb — platform survey\n\nContracts, wallets/AA, backend tx, Unity SDK — breadth bought with best-in-class parts.\n\nReference — docs/features/thirdweb.md. Already used in the AA card's pillars ②③.\n\n## Why\n\nNot a neutral survey — this project already depends on it. The AA card's sponsored-gas and atomic-batch pillars run on thirdweb's 4337 stack, and the D1 gas decision on the agent PoC turns on exactly the tradeoff this note names: thirdweb gives you a paymaster, but only for a 4337 account, which is a different account type from the 7702/7710 one the mandate story is built on. Breadth is convenient right up to the point where one part has to be the best one.\n\n## How it works\n\nReading note across four surfaces (contract deploys, Connect wallets and account abstraction, Engine for backend-signed transactions, the Unity SDK), each rated against doing it directly. The touchpoints that matter here are named: the AA pillars already shipped, backend transactions for the AP2 path, and the Unity track the game card would need.\n"</script>
-    <script type="application/json" id="copy-ko">"# Thirdweb — 플랫폼 서베이\n\n컨트랙트·지갑/AA·백엔드 tx·Unity SDK — 각 부문 1등을 내주고 산 넓이.\n\n참조 — docs/features/thirdweb.md. AA 카드의 ②③ 요소에서 이미 쓰고 있습니다.\n\n## 왜\n\n중립적 서베이가 아닙니다 — 이 프로젝트가 이미 의존하고 있습니다. AA 카드의 가스 대납·원자적 배치 요소가 thirdweb의 4337 스택 위에서 돌고, 에이전트 PoC의 D1 가스 결정이 정확히 이 노트가 짚는 트레이드오프에 달려 있습니다: thirdweb은 paymaster를 주지만 **4337 계정에 한해서**이고, 그건 위임 서사가 딛고 선 7702/7710 계정과 다른 종류입니다. **넓이는 편리합니다 — 어느 한 부분이 반드시 최고여야 하는 지점 전까지는.**\n\n## 동작 방식\n\n네 표면(컨트랙트 배포, Connect 지갑·계정 추상화, 백엔드 서명 트랜잭션용 Engine, Unity SDK)에 걸친 정독 노트로, 각각을 직접 구현하는 경우와 견줍니다. 여기서 의미 있는 접점은 명시되어 있습니다 — 이미 나간 AA 요소들, AP2 경로의 백엔드 트랜잭션, 그리고 게임 카드가 필요로 할 Unity 트랙.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Thirdweb — platform survey\n\nContracts, wallets/AA, backend tx, Unity SDK — breadth bought with best-in-class parts.\n\nReference — docs/features/thirdweb.md. Already used in the AA card's pillars ②③.\n\n## Why\n\nNot a neutral survey — this project already depends on it. The AA card's sponsored-gas and atomic-batch pillars run on thirdweb's 4337 stack, and the D1 gas decision on the agent PoC turns on exactly the tradeoff this note names: thirdweb gives you a paymaster, but only for a 4337 account, which is a different account type from the 7702/7710 one the mandate story is built on. Breadth is convenient right up to the point where one part has to be the best one.\n\n## How it works\n\nReading note across four surfaces (contract deploys, Connect wallets and account abstraction, Engine for backend-signed transactions, the Unity SDK), each rated against doing it directly. The touchpoints that matter here are named: the AA pillars already shipped, backend transactions for the AP2 path, and the Unity track the game card would need.\n"</script>
       <h2>Why</h2>
       <p>Not a neutral survey — this project already depends on it. The AA card&#39;s sponsored-gas and atomic-batch pillars run on thirdweb&#39;s 4337 stack, and the D1 gas decision on the agent PoC turns on exactly the tradeoff this note names: thirdweb gives you a paymaster, but only for a 4337 account, which is a different account type from the 7702/7710 one the mandate story is built on. Breadth is convenient right up to the point where one part has to be the best one.</p>
       <h2>How it works</h2>
@@ -495,6 +495,8 @@ if __name__ == &quot;__main__&quot;:
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# Thirdweb — 플랫폼 서베이\n\n컨트랙트·지갑/AA·백엔드 tx·Unity SDK — 각 부문 1등을 내주고 산 넓이.\n\n참조 — docs/features/thirdweb.md. AA 카드의 ②③ 요소에서 이미 쓰고 있습니다.\n\n## 왜\n\n중립적 서베이가 아닙니다 — 이 프로젝트가 이미 의존하고 있습니다. AA 카드의 가스 대납·원자적 배치 요소가 thirdweb의 4337 스택 위에서 돌고, 에이전트 PoC의 D1 가스 결정이 정확히 이 노트가 짚는 트레이드오프에 달려 있습니다: thirdweb은 paymaster를 주지만 **4337 계정에 한해서**이고, 그건 위임 서사가 딛고 선 7702/7710 계정과 다른 종류입니다. **넓이는 편리합니다 — 어느 한 부분이 반드시 최고여야 하는 지점 전까지는.**\n\n## 동작 방식\n\n네 표면(컨트랙트 배포, Connect 지갑·계정 추상화, 백엔드 서명 트랜잭션용 Engine, Unity SDK)에 걸친 정독 노트로, 각각을 직접 구현하는 경우와 견줍니다. 여기서 의미 있는 접점은 명시되어 있습니다 — 이미 나간 AA 요소들, AP2 경로의 백엔드 트랜잭션, 그리고 게임 카드가 필요로 할 Unity 트랙.\n"</script>
       <h1>Thirdweb — 플랫폼 서베이</h1>
       <p class="lead">컨트랙트·지갑/AA·백엔드 tx·Unity SDK — 각 부문 1등을 내주고 산 넓이.</p>
       <p class="meta">참조 — docs/features/thirdweb.md. AA 카드의 ②③ 요소에서 이미 쓰고 있습니다.</p>

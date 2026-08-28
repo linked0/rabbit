@@ -220,6 +220,7 @@
      한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
   .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
   .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
 
   /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
      읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
@@ -420,12 +421,11 @@
       <p class="lead">One chain per user — removing blockspace contention instead of pricing it.</p>
       <p class="meta">Reference — docs/knowledge/linera-microchains.html.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
-      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-    <script type="application/json" id="copy-en">"# Linera microchains\n\nOne chain per user — removing blockspace contention instead of pricing it.\n\nReference — docs/knowledge/linera-microchains.html.\n\n## Why\n\nAlmost every scaling design here takes contention as a given and competes for the block: PBS auctions it, gas prices it, a relayer sequences around it. Linera's premise is that contention is a choice — give each user their own chain and there is nothing to contend for. Worth reading precisely because it rejects the assumption the rest of the catalogue is built on.\n\n## How it works\n\nReading note: the microchain model where each user owns a chain they alone extend, validators run all of them, and cross-chain messages replace shared-state contention. The interesting question the note tracks is not throughput but composability — what happens to an application whose whole point is that many users touch the same state, like an order book.\n"</script>
-    <script type="application/json" id="copy-ko">"# Linera 마이크로체인\n\n사용자당 체인 하나 — 블록스페이스 경합에 값을 매기는 대신 없애버리기.\n\n참조 — docs/knowledge/linera-microchains.html.\n\n## 왜\n\n여기 있는 거의 모든 확장 설계는 경합을 주어진 것으로 두고 블록을 놓고 경쟁합니다 — PBS는 경매에 부치고, 가스는 값을 매기고, 릴레이어는 그 주위로 순서를 잡습니다. Linera의 전제는 **경합이 선택**이라는 것입니다: 사용자마다 자기 체인을 주면 다툴 대상이 없습니다. 카탈로그의 나머지가 딛고 선 가정을 정면으로 거부하기 때문에 읽을 가치가 있습니다.\n\n## 동작 방식\n\n정독 노트: 각 사용자가 자기만 확장하는 체인을 소유하고, 검증자들이 그 전부를 돌리며, 공유 상태 경합을 체인 간 메시지가 대체하는 마이크로체인 모델. 노트가 따라가는 흥미로운 질문은 처리량이 아니라 **조합 가능성**입니다 — 여러 사용자가 같은 상태를 건드리는 것이 존재 이유인 애플리케이션(오더북 같은)은 어떻게 되는가.\n"</script>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Linera microchains\n\nOne chain per user — removing blockspace contention instead of pricing it.\n\nReference — docs/knowledge/linera-microchains.html.\n\n## Why\n\nAlmost every scaling design here takes contention as a given and competes for the block: PBS auctions it, gas prices it, a relayer sequences around it. Linera's premise is that contention is a choice — give each user their own chain and there is nothing to contend for. Worth reading precisely because it rejects the assumption the rest of the catalogue is built on.\n\n## How it works\n\nReading note: the microchain model where each user owns a chain they alone extend, validators run all of them, and cross-chain messages replace shared-state contention. The interesting question the note tracks is not throughput but composability — what happens to an application whose whole point is that many users touch the same state, like an order book.\n"</script>
       <h2>Why</h2>
       <p>Almost every scaling design here takes contention as a given and competes for the block: PBS auctions it, gas prices it, a relayer sequences around it. Linera&#39;s premise is that contention is a choice — give each user their own chain and there is nothing to contend for. Worth reading precisely because it rejects the assumption the rest of the catalogue is built on.</p>
       <h2>How it works</h2>
@@ -494,6 +494,8 @@ if __name__ == &quot;__main__&quot;:
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# Linera 마이크로체인\n\n사용자당 체인 하나 — 블록스페이스 경합에 값을 매기는 대신 없애버리기.\n\n참조 — docs/knowledge/linera-microchains.html.\n\n## 왜\n\n여기 있는 거의 모든 확장 설계는 경합을 주어진 것으로 두고 블록을 놓고 경쟁합니다 — PBS는 경매에 부치고, 가스는 값을 매기고, 릴레이어는 그 주위로 순서를 잡습니다. Linera의 전제는 **경합이 선택**이라는 것입니다: 사용자마다 자기 체인을 주면 다툴 대상이 없습니다. 카탈로그의 나머지가 딛고 선 가정을 정면으로 거부하기 때문에 읽을 가치가 있습니다.\n\n## 동작 방식\n\n정독 노트: 각 사용자가 자기만 확장하는 체인을 소유하고, 검증자들이 그 전부를 돌리며, 공유 상태 경합을 체인 간 메시지가 대체하는 마이크로체인 모델. 노트가 따라가는 흥미로운 질문은 처리량이 아니라 **조합 가능성**입니다 — 여러 사용자가 같은 상태를 건드리는 것이 존재 이유인 애플리케이션(오더북 같은)은 어떻게 되는가.\n"</script>
       <h1>Linera 마이크로체인</h1>
       <p class="lead">사용자당 체인 하나 — 블록스페이스 경합에 값을 매기는 대신 없애버리기.</p>
       <p class="meta">참조 — docs/knowledge/linera-microchains.html.</p>
