@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// J2 / R-B — 에이전트 EOA 가 verex Exchange 에 USDC 사용을 승인한다.
+// J2 / R-B — 에이전트 EOA 가 verex Exchange 에 **두 가지**를 승인한다.
 //
 // **왜 별도 단계인가** (2026-08-27, jay 가 "Recent activity 에 거래가 안 보인다"고
 // 물어서 드러났다). verex 의 `checkExternalFunds` 는 외부 메이커에 대해 **읽고
@@ -11,6 +11,17 @@
 //
 // 서명은 오프체인이지만 **승인은 온체인 트랜잭션**이라 에이전트에게 가스가 필요하다.
 // 거래 자체는 여전히 무료다(체결은 verex operator 가 보낸다) — 승인 한 번만 예외다.
+//
+// **승인은 두 개다** (2026-08-28, 틱이 SELL 을 고르면서 드러났다). 어제 이 스크립트는
+// USDC(ERC-20) 만 승인했고, 그래서 매수는 되는데 매도가 이 에러로 막혔다:
+//
+//   0x1Eae… has not approved the exchange for CTF transfers —
+//   call setApprovalForAll(0x8f86…, true) first.
+//
+// verex 의 `checkExternalFunds` 는 BUY 에서 USDC 잔고+allowance 를, SELL 에서 토큰
+// 잔고+`isApprovedForAll` 을 본다 — **서로 다른 표준의 서로 다른 승인**이라 하나가
+// 다른 하나를 대신하지 못한다. 에이전트는 어느 쪽을 고를지 미리 알 수 없으므로
+// (`buying = p > bestAsk`, 호가에 따라 매 틱 달라진다) 둘 다 미리 걸어 둔다.
 //
 // 멱등: 이미 충분히 승인돼 있으면 아무것도 보내지 않는다.
 // Exchange 주소는 **반드시 /config 에서 읽는다** — reset.sh 마다 바뀐다.
@@ -48,26 +59,42 @@ const ERC20 = [
     inputs: [{ name: "account", type: "address" }], outputs: [{ type: "uint256" }] },
 ];
 
+// ERC-1155: 수량이 아니라 **연산자 전체 승인**이다. 부분 승인이라는 개념이 없어
+// 무한/유한을 고를 여지도 없다 — USDC 쪽에서 유한을 고른 것과 대비된다.
+const ERC1155 = [
+  { name: "setApprovalForAll", type: "function", stateMutability: "nonpayable",
+    inputs: [{ name: "operator", type: "address" }, { name: "approved", type: "bool" }],
+    outputs: [] },
+  { name: "isApprovedForAll", type: "function", stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }, { name: "operator", type: "address" }],
+    outputs: [{ type: "bool" }] },
+];
+
 const cfg = await fetch(`${VEREX}/config`).then((r) => r.json());
 if (!cfg.usdc || !cfg.exchange) throw new Error("verex /config has no usdc/exchange — is it seeded?");
+if (!cfg.ctf) throw new Error("verex /config has no ctf address — is it seeded?");
 
 const account = privateKeyToAccount(agentKey());
 const publicClient = createPublicClient({ chain: anvil, transport: http(RPC) });
 const wallet = createWalletClient({ account, chain: anvil, transport: http(RPC) });
 
 const need = parseUnits(String(AMOUNT), 6);
-const [allowance, balance, gas] = await Promise.all([
+const [allowance, balance, gas, ctfApproved] = await Promise.all([
   publicClient.readContract({ address: cfg.usdc, abi: ERC20, functionName: "allowance", args: [account.address, cfg.exchange] }),
   publicClient.readContract({ address: cfg.usdc, abi: ERC20, functionName: "balanceOf", args: [account.address] }),
   publicClient.getBalance({ address: account.address }),
+  publicClient.readContract({ address: cfg.ctf, abi: ERC1155, functionName: "isApprovedForAll", args: [account.address, cfg.exchange] }),
 ]);
 
 console.log(`agent    ${account.address}`);
 console.log(`exchange ${cfg.exchange}   (read from /config — it changes on every reset.sh)`);
 console.log(`USDC     ${formatUnits(balance, 6)}   allowance ${formatUnits(allowance, 6)}   gas ${formatUnits(gas, 18)} ETH`);
+console.log(`CTF      ${cfg.ctf}   approvedForAll ${ctfApproved}`);
 
-if (allowance >= need) {
-  console.log(`\n✓ already approved for ≥ ${AMOUNT} USDC — nothing sent.`);
+const needUsdc = allowance < need;
+const needCtf = !ctfApproved;
+if (!needUsdc && !needCtf) {
+  console.log(`\n✓ already approved — USDC ≥ ${AMOUNT} and CTF operator set. Nothing sent.`);
   process.exit(0);
 }
 if (gas === 0n) {
@@ -80,8 +107,18 @@ if (gas === 0n) {
   process.exit(1);
 }
 
-const hash = await wallet.writeContract({
-  address: cfg.usdc, abi: ERC20, functionName: "approve", args: [cfg.exchange, need],
-});
-await publicClient.waitForTransactionReceipt({ hash });
-console.log(`\n✓ approved ${AMOUNT} USDC to the exchange — ${hash}`);
+console.log("");
+if (needUsdc) {
+  const hash = await wallet.writeContract({
+    address: cfg.usdc, abi: ERC20, functionName: "approve", args: [cfg.exchange, need],
+  });
+  await publicClient.waitForTransactionReceipt({ hash });
+  console.log(`✓ approved ${AMOUNT} USDC to the exchange — ${hash}   (BUY side)`);
+}
+if (needCtf) {
+  const hash = await wallet.writeContract({
+    address: cfg.ctf, abi: ERC1155, functionName: "setApprovalForAll", args: [cfg.exchange, true],
+  });
+  await publicClient.waitForTransactionReceipt({ hash });
+  console.log(`✓ set the exchange as CTF operator — ${hash}   (SELL side)`);
+}
