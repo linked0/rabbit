@@ -219,7 +219,7 @@ const sectionCards = (reviewedCards.length ? reviewedCards : cards)
   .map((c) => {
     const b = badge(c);
     return `                    <a href="${cardUrl(c)}" class="card" style="border-left: 4px solid ${b.color};">
-                        <span class="card-title">${escapeHtml(c.title)} <span class="badge" style="background: ${b.color}22; color: ${b.color};">${b.label}</span></span>
+                        <span class="card-title">${escapeHtml(c.title)}</span>
                     </a>`;
   })
   .join('\n');
