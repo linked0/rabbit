@@ -3,6 +3,8 @@
 // Always-on About-me persona (never general-purpose) + its own cost/abuse guardrails,
 // since this endpoint is reachable by anyone with no login.
 
+import { aiProvider, reportIfLimited } from "./ai-provider";
+
 export type ChatMessage = {
   role: "user" | "assistant" | "system";
   content: string;
@@ -12,8 +14,8 @@ export type ChatMessage = {
 // Same wire format as OpenAI, ~45% cheaper per typical turn ($0.05/$0.40 vs $0.15/$0.60
 // per 1M in/out) — which is what pays for the 3× budget raise below. International
 // endpoint (Singapore); the mainland variant is dashscope.aliyuncs.com.
-const QWEN_MODEL = "qwen-flash";
-const QWEN_ENDPOINT = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions";
+// 모델·엔드포인트·키는 `lib/ai-provider.ts` 한 곳에서 온다 (2026-08-28). 기본값은
+// 여기 있던 값 그대로라 설정이 비면 동작이 바뀌지 않는다.
 // 500 → 1000 → 1500 (jay, 2026-08-12): 한국어는 1–1.5자당 1토큰이라 경력 요약 같은 목록형
 // 답변이 500에서 단어 중간에 잘렸다. Qwen Flash 출력 단가($0.40/M)에선 1500토큰이 $0.0006 —
 // 비용 방어는 어차피 시간당 예산이 하고, 이 값은 요청 하나의 상한만 잡으면 된다.
@@ -78,24 +80,32 @@ export function burstLimited(ip: string): boolean {
 export async function streamJayChat(
   messages: ChatMessage[]
 ): Promise<ReadableStream<Uint8Array>> {
-  const key = process.env.AI_API_KEY;
-  if (!key) throw new Error("AI_API_KEY가 설정되지 않았습니다.");
+  const llm = aiProvider();
+  if (!llm.key) throw new Error("AI_API_KEY가 설정되지 않았습니다.");
 
-  const res = await fetch(QWEN_ENDPOINT, {
+  const res = await fetch(llm.endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
+      Authorization: `Bearer ${llm.key}`,
     },
     body: JSON.stringify({
-      model: QWEN_MODEL,
+      model: llm.model,
       messages,
       max_tokens: MAX_OUTPUT_TOKENS,
       stream: true,
       stream_options: { include_usage: true },
     }),
   });
-  if (!res.ok || !res.body) throw new Error(`Qwen 오류: HTTP ${res.status}`);
+  if (!res.ok || !res.body) {
+    // 실패 본문을 **읽고** 나서 던진다 (2026-08-28). 상태 코드만으로는 소진과
+    // 스로틀이 구별되지 않는다 — OpenAI 는 둘 다 429 로 보내고 `code` 로만 갈린다.
+    // 공개 엔드포인트라 이 실패는 방문자에게 그대로 보이므로, 원인이 크레딧이면
+    // jay 가 로그를 뒤지기 전에 알아야 한다.
+    const detail = res.body ? await res.text().catch(() => "") : "";
+    reportIfLimited(llm, res.status, detail);
+    throw new Error(`${llm.model} 오류: HTTP ${res.status} (${llm.host})`);
+  }
 
   const decoder = new TextDecoder();
   const encoder = new TextEncoder();

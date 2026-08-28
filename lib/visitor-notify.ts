@@ -50,3 +50,39 @@ export function notifyChatStart(ip: string) {
 export function notifyChatMilestone(turns: number, ip: string) {
   send(`🐰 🔥 Rabbit — Jay Chat: ${turns} questions in one conversation (${ip})`);
 }
+
+// ── LLM 제공자 한도 (jay, 2026-08-28) ─────────────────────────────────
+// **왜 이것만 따로 알리나.** 위 세 알림은 "누가 왔다"는 좋은 소식이고, 이건
+// **기능이 멈췄다**는 나쁜 소식이다. 크레딧이 떨어지면 Jay Chat(공개)과
+// 에이전트 추정이 동시에 죽는데, 그 사실은 지금 서버 로그에만 남는다 — 아무도
+// 안 보는 곳이다. 사이트가 조용히 반쯤 죽은 채로 며칠 가는 것이 실제 위험이다.
+//
+// 소진(quota)과 스로틀(rate)은 **다른 사건**이라 문구를 나눈다: 하나는 돈을
+// 넣어야 풀리고, 하나는 기다리면 풀린다. 같은 문장으로 뭉개면 받는 사람이
+// 지갑을 열지 기다릴지 정할 수 없다.
+const LIMIT_DEBOUNCE_MS = 30 * 60 * 1000;
+const lastLimit = new Map<string, number>();
+
+export function notifyAiLimit(args: {
+  kind: "quota" | "rate";
+  host: string;
+  model: string;
+  status: number;
+  detail: string;
+}) {
+  // 소진 상태는 몇 시간씩 이어진다. 5분 디바운스로는 틱마다 같은 비명을 지른다.
+  const key = `ai:${args.kind}:${args.host}`;
+  const now = Date.now();
+  const prev = lastLimit.get(key);
+  if (prev !== undefined && now - prev < LIMIT_DEBOUNCE_MS) return;
+  lastLimit.set(key, now);
+
+  const head =
+    args.kind === "quota"
+      ? `🐰 🚨 Rabbit — ${args.host} quota exhausted (top up)`
+      : `🐰 ⏳ Rabbit — ${args.host} rate limited (will recover)`;
+  send(
+    `${head}\nmodel ${args.model} · HTTP ${args.status}\n${args.detail.slice(0, 300)}\n` +
+      `Jay Chat and the agent tick are both down until this clears.`,
+  );
+}

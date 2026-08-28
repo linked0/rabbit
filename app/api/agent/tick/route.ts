@@ -67,7 +67,26 @@ async function record(args: {
 }
 
 // POST /api/agent/tick  { marketSlug, outcome?, cooldownSec?, edgeThreshold?, sizeUsdc? }
+//
+// 얇은 껍데기 하나를 두는 이유(2026-08-28): 아래 단계 중 관측·추정·주문은 전부
+// 던질 수 있고, 감싸지 않으면 Next 가 **본문 없는 500** 을 보낸다. 브라우저에는
+// `Unexpected end of JSON input` 으로만 도착해 원인이 파서 에러로 위장된다.
+//
+// **저널에 행을 쓰지 않는다.** 판정 일곱 가지는 전부 "에이전트가 판단한 결과"이고,
+// 모델 호출이 401 로 죽은 것은 판단이 아니라 고장이다. 이것을 `SKIP_NO_ESTIMATE`
+// 로 적으면 "뉴스가 없어서 부르지 않았다"는 뜻이 되어 저널이 거짓말을 한다 —
+// `agent-estimate.ts` 가 파싱 실패를 삼키지 않는 것과 같은 이유다.
 export async function POST(req: NextRequest) {
+  try {
+    return await runTick(req);
+  } catch (e) {
+    const message = String(e instanceof Error ? e.message : e);
+    console.error("[agent/tick]", e);
+    return NextResponse.json({ error: `tick failed: ${message}` }, { status: 500 });
+  }
+}
+
+async function runTick(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.email) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 

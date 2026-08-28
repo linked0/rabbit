@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLang } from "../../../LangContext";
 import { pick } from "@/lib/i18n";
+import { fetchJson } from "./fetchJson";
 import Preflight from "./Preflight";
 import MandatePanel from "./MandatePanel";
 import NewsPanel from "./NewsPanel";
@@ -39,8 +40,7 @@ export default function Console() {
   const bump = useCallback(() => setRefreshKey((n) => n + 1), []);
 
   useEffect(() => {
-    fetch("/api/agent/markets")
-      .then((r) => r.json())
+    fetchJson<{ error?: string; markets: Market[] }>("/api/agent/markets")
       .then((j) => {
         if (j.error) return setMarketsErr(j.error);
         setMarkets(j.markets);

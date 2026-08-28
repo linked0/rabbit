@@ -87,6 +87,14 @@ PUBLIC_ENV=""
 [ -n "${NEXT_PUBLIC_TOSS_CLIENT_KEY:-}" ] && PUBLIC_ENV="${PUBLIC_ENV},TOSS_CLIENT_KEY=${NEXT_PUBLIC_TOSS_CLIENT_KEY}"
 [ -n "${NEXT_PUBLIC_THIRDWEB_CLIENT_ID:-}" ] && PUBLIC_ENV="${PUBLIC_ENV},THIRDWEB_CLIENT_ID=${NEXT_PUBLIC_THIRDWEB_CLIENT_ID}"
 
+# LLM 제공자 — 키는 시크릿, **엔드포인트와 모델은 비밀이 아니라 평범한 env** 다
+# (2026-08-28). 이 둘을 빠뜨리면 배포는 성공하는데 운영이 조용히 깨진다:
+# `upsert_secret rabbit-ai-key` 가 로컬 .env 의 키를 그대로 올리므로, 로컬을
+# OpenAI 로 바꾼 상태에서 배포하면 **운영은 OpenAI 키로 DashScope 를 부르게 되고**
+# Jay Chat 이 401 로 죽는다. 셋은 언제나 함께 움직여야 한다.
+# 비워 두면 코드 기본값(DashScope + qwen-flash)이라 예전과 같다.
+AI_ENV=",AI_API_ENDPOINT=${AI_API_ENDPOINT:-},AI_API_MODEL=${AI_API_MODEL:-}"
+
 # 메뉴 표시 플래그(ALLOW_*)를 .env 에서 읽어 Cloud Run env 로 전달한다.
 # 클라우드는 기본 "숨김"이라 전달하지 않으면 모든 메뉴가 사라진다. 나중에 추가한 ALLOW_* 도 자동 포함.
 MENU_ENV=""
@@ -105,7 +113,7 @@ gcloud run deploy "$SERVICE" \
   --region "$REGION" \
   --allow-unauthenticated \
   --max-instances 1 \
-  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-},TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-},JAY_CHAT_HOURLY_TOKEN_BUDGET=${JAY_CHAT_HOURLY_TOKEN_BUDGET:-450000}${MENU_ENV}${PUBLIC_ENV}" \
+  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-},TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-},JAY_CHAT_HOURLY_TOKEN_BUDGET=${JAY_CHAT_HOURLY_TOKEN_BUDGET:-450000}${AI_ENV}${MENU_ENV}${PUBLIC_ENV}" \
   --set-secrets "$SECRETS"
 
 # Cloud SQL 연결 — deploy.env에 CLOUDSQL_INSTANCE=프로젝트:리전:인스턴스 설정 시
