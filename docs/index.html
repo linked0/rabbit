@@ -120,6 +120,10 @@
         }
 
         .card {
+            /* nowrap 경로가 카드의 최소 폭을 문자열 길이만큼 밀어올린다 — 격자 항목은
+               기본 min-width:auto 라 그만큼 열이 넓어지고 좁은 화면에서 넘쳤다.
+               경로가 이제 말줄임표로 잘리므로 0 까지 줄어도 안전하다. */
+            min-width: 0;
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -148,7 +152,12 @@
             color: var(--text-secondary);
             font-size: 0.85rem;
             font-family: monospace;
-            word-break: break-all;
+            /* 긴 경로가 "…verkle.htm / l" 처럼 한 글자만 남기고 접히던 것 (jay, 2026-08-28).
+               break-all 은 넘치지 않게는 해줬지만 아무 데서나 끊었다. 한 줄로 고정하고
+               넘치는 만큼만 말줄임표로 자른다 — 전체 경로는 title 로 hover 에 남긴다. */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .badge {
@@ -239,15 +248,15 @@
                          갱신이 필요 없는 색인 셋만 남긴다. -->
                     <a href="html/docs/features/README.html" class="card" style="border-left: 4px solid #0ea5e9;">
                         <span class="card-title">Rabbit &mdash; Feature Designs <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">docs/features/README.md</span>
+                        <span class="card-path" title="docs/features/README.md">docs/features/README.md</span>
                     </a>
                     <a href="html/docs/tasks/current-plan.html" class="card" style="border-left: 4px solid #16a34a;">
                         <span class="card-title">Rabbit &mdash; Current Plan <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">docs/tasks/current-plan.md</span>
+                        <span class="card-path" title="docs/tasks/current-plan.md">docs/tasks/current-plan.md</span>
                     </a>
                     <a href="logs.html" class="card" style="border-left: 4px solid #d97706;">
                         <span class="card-title">Rabbit &mdash; Logs <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">docs/history/*.md</span>
+                        <span class="card-path" title="docs/history/*.md">docs/history/*.md</span>
                     </a>
                     <!-- Verex 카드는 rabbit 안의 미러가 아니라 verex 의 GitHub Pages 를 직접 건다
                          (jay, 2026-08-21). 미러는 2026-08-01 스냅샷에서 멈춰 낡은 내용을 보여준
@@ -255,15 +264,15 @@
                          Pages 는 verex 의 main:/docs 를 서빙하므로 main 에 푸시된 것만 보인다. -->
                     <a href="https://linked0.github.io/verex/features/" target="_blank" rel="noopener noreferrer" class="card" style="border-left: 4px solid #0ea5e9;">
                         <span class="card-title">Verex &mdash; Feature Designs <span class="badge badge-html">GH PAGES</span></span>
-                        <span class="card-path">linked0.github.io/verex/features/</span>
+                        <span class="card-path" title="linked0.github.io/verex/features/">linked0.github.io/verex/features/</span>
                     </a>
                     <a href="https://linked0.github.io/verex/tasks/current-plan.html" target="_blank" rel="noopener noreferrer" class="card" style="border-left: 4px solid #16a34a;">
                         <span class="card-title">Verex &mdash; Current Plan <span class="badge badge-html">GH PAGES</span></span>
-                        <span class="card-path">linked0.github.io/verex/tasks/current-plan.html</span>
+                        <span class="card-path" title="linked0.github.io/verex/tasks/current-plan.html">linked0.github.io/verex/tasks/current-plan.html</span>
                     </a>
                     <a href="https://linked0.github.io/verex/history/" target="_blank" rel="noopener noreferrer" class="card" style="border-left: 4px solid #d97706;">
                         <span class="card-title">Verex &mdash; Logs <span class="badge badge-html">GH PAGES</span></span>
-                        <span class="card-path">linked0.github.io/verex/history/</span>
+                        <span class="card-path" title="linked0.github.io/verex/history/">linked0.github.io/verex/history/</span>
                     </a>
                 </div>
                 <div style="text-align: right; margin-top: 12px;">
@@ -315,48 +324,48 @@
                 <div class="grid">
                     <a href="html/docs/dev.html" class="card">
                         <span class="card-title">Dev Knowledge Base &amp; Projects <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">docs/dev.md</span>
+                        <span class="card-path" title="docs/dev.md">docs/dev.md</span>
                     </a>
                     <a href="html/archive/unity/README.html" class="card">
                         <span class="card-title">Unity Study Notes <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">unity/README.md</span>
+                        <span class="card-path" title="unity/README.md">unity/README.md</span>
                     </a>
                     <a href="html/archive/ai/README.html" class="card">
                         <span class="card-title">AI Readme <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">ai/README.md</span>
+                        <span class="card-path" title="ai/README.md">ai/README.md</span>
                     </a>
                     <a href="agentic-ai-multi-turn.html" class="card">
                         <span class="card-title">Agentic AI & Multi-turn Interactions <span
                                 class="badge badge-html">DOC</span></span>
-                        <span class="card-path">docs/agentic...</span>
+                        <span class="card-path" title="docs/agentic...">docs/agentic...</span>
                     </a>
                     <a href="html/docs/knowledge/management.html" class="card">
                         <span class="card-title">Project Management <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">management.md</span>
+                        <span class="card-path" title="management.md">management.md</span>
                     </a>
                     <a href="html/docs/sub-agents.html" class="card">
                         <span class="card-title">Sub Agents <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">docs/sub-agents.md</span>
+                        <span class="card-path" title="docs/sub-agents.md">docs/sub-agents.md</span>
                         <span class="card-desc">좁은 에이전트 × Dispatch(패턴 vs Beta 기능) — Scheduled, fan-out, control plane 3단계 정리</span>
                     </a>
                     <a href="db.html" class="card">
                         <span class="card-title">DB <span class="badge" style="background: rgba(59,130,246,0.2); color: #2563eb;">SHELL</span></span>
-                        <span class="card-path">docs/db.html</span>
+                        <span class="card-path" title="docs/db.html">docs/db.html</span>
                         <span class="card-desc">데이터베이스 노트 — Postgres upsert, Redis 분산 락 등 (전체 보기 →)</span>
                     </a>
                     <a href="knowledge/merkle-vs-verkle.html" class="card">
                         <span class="card-title">Merkle vs Verkle Tree <span class="badge badge-html">DOC</span></span>
-                        <span class="card-path">knowledge/merkle-vs-verkle.html</span>
+                        <span class="card-path" title="knowledge/merkle-vs-verkle.html">knowledge/merkle-vs-verkle.html</span>
                         <span class="card-desc">머클 vs 버클 트리 비교 — 증명 구조 SVG 도표 + 비교표 + Ethereum The Verge 배경</span>
                     </a>
                     <a href="knowledge/linera-microchains.html" class="card">
                         <span class="card-title">Linera Microchains <span class="badge badge-html">DOC</span></span>
-                        <span class="card-path">knowledge/linera-microchains.html</span>
+                        <span class="card-path" title="knowledge/linera-microchains.html">knowledge/linera-microchains.html</span>
                         <span class="card-desc">블록스페이스 경합 vs 마이크로체인 — 흐름도 + 비교표 + AI 에이전트 마이크로 결제 관점</span>
                     </a>
                     <a href="knowledge/web-stack-layers.html" class="card">
                         <span class="card-title">Web Stack — 5 Layers <span class="badge badge-html">DOC</span></span>
-                        <span class="card-path">knowledge/web-stack-layers.html</span>
+                        <span class="card-path" title="knowledge/web-stack-layers.html">knowledge/web-stack-layers.html</span>
                         <span class="card-desc">웹 스택 5계층 지도 (Presentation/Edge → Infra) + rabbit 현재 위치 대입</span>
                     </a>
                 </div>
@@ -374,25 +383,25 @@
                         target="_blank">
                         <span class="card-title">Best Films & TV Shows 2025 <span class="badge badge-html"
                                 style="background: rgba(0, 119, 181, 0.2); color: #0077b5;">LN</span></span>
-                        <span class="card-path">linkedin.com/pulse/...</span>
+                        <span class="card-path" title="linkedin.com/pulse/...">linkedin.com/pulse/...</span>
                     </a>
                     <a href="https://medium.com/@cdcore/mcp-is-broken-and-anthropic-just-admitted-it-7eeb8ee41933"
                         class="card" target="_blank">
                         <span class="card-title">MCP is Broken (Anthropic Admitted) <span class="badge badge-html"
                                 style="background: rgba(0, 0, 0, 0.2); color: #000;">MED</span></span>
-                        <span class="card-path">medium.com/@cdcore/...</span>
+                        <span class="card-path" title="medium.com/@cdcore/...">medium.com/@cdcore/...</span>
                     </a>
                     <a href="https://www.economist.com/business/2025/12/08/how-ai-is-disrupting-shopping" class="card"
                         target="_blank">
                         <span class="card-title">How AI is Disrupting Shopping <span class="badge badge-html"
                                 style="background: rgba(227, 18, 11, 0.2); color: #e3120b;">ECON</span></span>
-                        <span class="card-path">economist.com/...</span>
+                        <span class="card-path" title="economist.com/...">economist.com/...</span>
                     </a>
                     <a href="https://www.youtube.com/watch?v=uzFOhkORVfk" target="_blank"
                         class="card card-span2">
                         <span class="card-title">Coding Agent PR Review (YouTube) <span class="badge badge-html"
                                 style="background: rgba(255, 0, 0, 0.2); color: #ff0000;">YT</span></span>
-                        <span class="card-path">youtube.com/watch?v=uzFOhkORVfk</span>
+                        <span class="card-path" title="youtube.com/watch?v=uzFOhkORVfk">youtube.com/watch?v=uzFOhkORVfk</span>
                         <span class="card-desc">"The most impressive shift is that instead of reviewing code in PRs,
                             with
                             coding agents we review implementation plans and test cases."</span>
@@ -400,21 +409,21 @@
                     <a href="https://red.anthropic.com/2025/smart-contracts/" class="card" target="_blank">
                         <span class="card-title">Anthropic: AI Agents & Exploits <span class="badge badge-html"
                                 style="background: rgba(239, 68, 68, 0.2); color: #ef4444;">WEB</span></span>
-                        <span class="card-path">red.anthropic.com/...</span>
+                        <span class="card-path" title="red.anthropic.com/...">red.anthropic.com/...</span>
                     </a>
                     <a href="https://www.youtube.com/watch?v=gKsRyd1fQfY" class="card" target="_blank">
                         <span class="card-title">YouTube Video (gKsRyd1fQfY) <span class="badge badge-html"
                                 style="background: rgba(255, 0, 0, 0.2); color: #ff0000;">YT</span></span>
-                        <span class="card-path">youtube.com/watch?v=gKsRyd1fQfY</span>
+                        <span class="card-path" title="youtube.com/watch?v=gKsRyd1fQfY">youtube.com/watch?v=gKsRyd1fQfY</span>
                     </a>
                     <a href="https://www.youtube.com/watch?v=CEvIs9y1uog" class="card" target="_blank">
                         <span class="card-title">YouTube Video (CEvIs9y1uog) <span class="badge badge-html"
                                 style="background: rgba(255, 0, 0, 0.2); color: #ff0000;">YT</span></span>
-                        <span class="card-path">youtube.com/watch?v=CEvIs9y1uog</span>
+                        <span class="card-path" title="youtube.com/watch?v=CEvIs9y1uog">youtube.com/watch?v=CEvIs9y1uog</span>
                     </a>
                     <a href="archive/zksnark_math.html" class="card">
                         <span class="card-title">ZK-SNARKs Math <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">zksnark_math.html</span>
+                        <span class="card-path" title="zksnark_math.html">zksnark_math.html</span>
                     </a>
                 </div>
                 <div style="text-align: right; margin-top: 12px;">
@@ -430,31 +439,31 @@
                     <a href="archive/nostra/eng.html" class="card">
                         <span class="card-title">General English Feedback <span
                                 class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/eng.html</span>
+                        <span class="card-path" title="nostra/eng.html">nostra/eng.html</span>
                     </a>
                     <a href="archive/eng/holy-grail-study-light.html" class="card">
                         <span class="card-title">Holy Grail Study (Light) <span
                                 class="badge badge-html">HTML</span></span>
-                        <span class="card-path">eng/holy-grail-study-light.html</span>
+                        <span class="card-path" title="eng/holy-grail-study-light.html">eng/holy-grail-study-light.html</span>
                     </a>
                     <a href="archive/eng/2025-12-11-market-creation-feedback.html" class="card">
                         <span class="card-title">Market Creation Feedback <span
                                 class="badge badge-html">HTML</span></span>
-                        <span class="card-path">eng/2025-12-11-market-creation...html</span>
+                        <span class="card-path" title="eng/2025-12-11-market-creation...html">eng/2025-12-11-market-creation...html</span>
                     </a>
                     <a href="archive/eng/2025-12-11-design-feedback-grammar.html" class="card">
                         <span class="card-title">Design Feedback Grammar <span
                                 class="badge badge-html">HTML</span></span>
-                        <span class="card-path">eng/2025-12-11-design-feedback...html</span>
+                        <span class="card-path" title="eng/2025-12-11-design-feedback...html">eng/2025-12-11-design-feedback...html</span>
                     </a>
                     <a href="archive/eng/2025-12-11-election-grammar.html" class="card">
                         <span class="card-title">Election Grammar <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">eng/2025-12-11-election...html</span>
+                        <span class="card-path" title="eng/2025-12-11-election...html">eng/2025-12-11-election...html</span>
                     </a>
                     <a href="archive/eng/2025-12-11-server-instruction-grammar.html" class="card">
                         <span class="card-title">Server Instruct Grammar <span
                                 class="badge badge-html">HTML</span></span>
-                        <span class="card-path">eng/2025-12-11-server...html</span>
+                        <span class="card-path" title="eng/2025-12-11-server...html">eng/2025-12-11-server...html</span>
                     </a>
                 </div>
                 <div style="text-align: right; margin-top: 12px;">
@@ -469,45 +478,45 @@
                 <div class="grid">
                     <a href="archive/nostra/designs/liquidity_preview.html" class="card">
                         <span class="card-title">Liquidity Preview <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/designs/liquidity_preview.html</span>
+                        <span class="card-path" title="nostra/designs/liquidity_preview.html">nostra/designs/liquidity_preview.html</span>
                     </a>
                     <a href="archive/nostra/designs/market-design-discussion.html" class="card">
                         <span class="card-title">Market Design <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/designs/market-design-discussion.html</span>
+                        <span class="card-path" title="nostra/designs/market-design-discussion.html">nostra/designs/market-design-discussion.html</span>
                     </a>
                     <a href="archive/nostra/design.html" class="card">
                         <span class="card-title">Design Root <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/design.html</span>
+                        <span class="card-path" title="nostra/design.html">nostra/design.html</span>
                     </a>
                     <a href="archive/nostra/designs/negrisk-adapter-explained.html" class="card">
                         <span class="card-title">Negrisk Adapter <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/designs/negrisk-adapter-explained.html</span>
+                        <span class="card-path" title="nostra/designs/negrisk-adapter-explained.html">nostra/designs/negrisk-adapter-explained.html</span>
                     </a>
                     <a href="archive/nostra/designs/batch-processing-design-2025-12-09.html" class="card">
                         <span class="card-title">Batch Processing Design <span
                                 class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/designs/batch-processing-design...html</span>
+                        <span class="card-path" title="nostra/designs/batch-processing-design...html">nostra/designs/batch-processing-design...html</span>
                     </a>
                     <a href="archive/nostra/designs/cloud-run-deployment-guide.html" class="card">
                         <span class="card-title">Cloud Run Guide <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/designs/cloud-run...html</span>
+                        <span class="card-path" title="nostra/designs/cloud-run...html">nostra/designs/cloud-run...html</span>
                     </a>
                     <a href="html/archive/nostra/designs/task-1-create-market.html" class="card">
                         <span class="card-title">Task 1: Create Market <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/designs/task-1-create-market.md</span>
+                        <span class="card-path" title="nostra/designs/task-1-create-market.md">nostra/designs/task-1-create-market.md</span>
                     </a>
                     <a href="html/archive/nostra/designs/task-2-deposit-withdrawal.html" class="card">
                         <span class="card-title">Task 2: Deposit/Withdrawal <span
                                 class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/designs/task-2-deposit-withdrawal.md</span>
+                        <span class="card-path" title="nostra/designs/task-2-deposit-withdrawal.md">nostra/designs/task-2-deposit-withdrawal.md</span>
                     </a>
                     <a href="html/archive/nostra/designs/task-3-batching.html" class="card">
                         <span class="card-title">Task 3: Batching <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/designs/task-3-batching.md</span>
+                        <span class="card-path" title="nostra/designs/task-3-batching.md">nostra/designs/task-3-batching.md</span>
                     </a>
                     <a href="html/archive/nostra/designs/liquidity-ui-concept.html" class="card">
                         <span class="card-title">Liquidity UI Concept <span class="badge badge-html">HTML</span></span>
-                        <span class="card-path">nostra/designs/liquidity-ui-concept.md</span>
+                        <span class="card-path" title="nostra/designs/liquidity-ui-concept.md">nostra/designs/liquidity-ui-concept.md</span>
                     </a>
                 </div>
                 <div style="text-align: right; margin-top: 12px;">
