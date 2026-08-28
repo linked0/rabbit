@@ -32,6 +32,11 @@
             min-height: 100vh;
         }
 
+        /* 넘침의 원인은 격자가 아니라 상자 모형이었다 (jay, 2026-08-28: "레이아웃이 못생겼다").
+           전역 리셋이 없어서 .card 의 padding 20px·border 1px 가 폭 바깥에 더해졌고,
+           420px 에서 열은 380px 인데 카드는 422px 이 되어 71px 이 삐져나왔다. */
+        *, *::before, *::after { box-sizing: border-box; }
+
         .container {
             max-width: 1000px;
             margin: 0 auto;
@@ -97,8 +102,21 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            /* stretch 가 기본이라 한 행의 카드가 모두 가장 높은 카드만큼 늘어났다.
+               제목 한 줄짜리 카드 아래에 빈 공간이 크게 남던 이유다. */
+            align-items: start;
             gap: 16px;
+        }
+
+
+        /* 두 칸을 차지하는 카드 — 인용문이 붙어 세로로 길어지는 것 하나뿐이다. */
+        .card-span2 { grid-column: span 2; }
+
+        @media (max-width: 620px) {
+            .grid { grid-template-columns: 1fr; }
+            /* span 을 취소하지 않으면 1열 격자에 암시적 2열이 생겨 다시 2열이 된다. */
+            .card-span2 { grid-column: auto; }
         }
 
         .card {
@@ -123,6 +141,7 @@
             color: var(--text-primary);
             font-weight: 500;
             margin-bottom: 4px;
+            overflow-wrap: break-word;
         }
 
         .card-path {
@@ -369,8 +388,8 @@
                                 style="background: rgba(227, 18, 11, 0.2); color: #e3120b;">ECON</span></span>
                         <span class="card-path">economist.com/...</span>
                     </a>
-                    <a href="https://www.youtube.com/watch?v=uzFOhkORVfk" class="card" target="_blank"
-                        style="grid-column: span 2;">
+                    <a href="https://www.youtube.com/watch?v=uzFOhkORVfk" target="_blank"
+                        class="card card-span2">
                         <span class="card-title">Coding Agent PR Review (YouTube) <span class="badge badge-html"
                                 style="background: rgba(255, 0, 0, 0.2); color: #ff0000;">YT</span></span>
                         <span class="card-path">youtube.com/watch?v=uzFOhkORVfk</span>
