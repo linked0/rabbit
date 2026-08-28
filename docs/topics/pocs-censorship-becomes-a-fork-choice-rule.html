@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ERC-8141 — PoCs</title>
+<title>Censorship resistance stops being a norm and becomes a fork-choice rule — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -367,8 +367,8 @@
         <li><a class="nav-link" href="pocs-the-settlement-instant.html" data-key="the-settlement-instant"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">13</span>A price at a moment — the instant, the window, and who can move it</span></a></li>
         <li><a class="nav-link" href="pocs-what-encryption-does-not-hide.html" data-key="what-encryption-does-not-hide"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">14</span>Hiding the amount is the easy half</span></a></li>
         <li><a class="nav-link" href="pocs-dkg-resharing.html" data-key="dkg-resharing"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">15</span>The ceremony ends, the committee doesn't</span></a></li>
-        <li><a class="nav-link active" href="pocs-erc-8141.html" data-key="erc-8141"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">16</span>ERC-8141</span></a></li>
-        <li><a class="nav-link" href="pocs-censorship-becomes-a-fork-choice-rule.html" data-key="censorship-becomes-a-fork-choice-rule"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">17</span>Censorship resistance stops being a norm and becomes a fork-choice rule</span></a></li>
+        <li><a class="nav-link" href="pocs-erc-8141.html" data-key="erc-8141"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">16</span>ERC-8141</span></a></li>
+        <li><a class="nav-link active" href="pocs-censorship-becomes-a-fork-choice-rule.html" data-key="censorship-becomes-a-fork-choice-rule"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">17</span>Censorship resistance stops being a norm and becomes a fork-choice rule</span></a></li>
         <li><a class="nav-link" href="pocs-the-record-is-not-the-path.html" data-key="the-record-is-not-the-path"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">18</span>The record is not the path — a registry and a vault for the same problem</span></a></li>
         <li><a class="nav-link" href="pocs-fork-date-provenance.html" data-key="fork-date-provenance"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">19</span>A fork date nobody decided — reading the claim, not the number</span></a></li>
         <li><a class="nav-link" href="pocs-simplicity-ctf.html" data-key="simplicity-ctf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">20</span>Simplicity CTF</span></a></li>
@@ -380,224 +380,166 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ERC-8141</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Censorship resistance stops being a norm and becomes a fork-choice rule</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#16</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>ERC-8141</h1>
-      <p class="lead">Native account-abstraction explainer — Ethereum&#39;s protocol-level Frame Transactions.</p>
-      <p class="meta">Read-only explainer — no wallet needed.</p>
+      <p class="topic-kicker"><span class="topic-no">#17</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>Censorship resistance stops being a norm and becomes a fork-choice rule</h1>
+      <p class="lead">FOCIL moves inclusion-list authorship from one proposer to a randomly drawn committee, and — the part that matters — moves enforcement into fork choice. Attesters withhold votes from blocks that ignore the aggregated list, so a censoring block cannot become canonical. The guarantee changes category: not &quot;please include this&quot; but &quot;omit it and your block does not count.&quot;</p>
+      <p class="meta">Not a build — read two sections and write down one number. In EIP-7805 read only the Rationale and the parameters: how the committee size is justified, and how the view-freeze deadline is chosen. Those two choices carry the whole design. Then do the part that is actually yours: list every path in your own system where a one-slot delay changes an outcome — an order at the close, a dispute filing, an oracle update — and next to each write the number of slots it can absorb. That number is the deliverable; FOCIL knowledge is not. Figures here (a committee on the order of sixteen plus the proposer, a per-slot gossip subnet, a separate gas allowance for the list) come from a 2026-08-28 reading and need checking against the current spec, which is still moving.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# ERC-8141\n\nNative account-abstraction explainer — Ethereum's protocol-level Frame Transactions.\n\nRead-only explainer — no wallet needed.\n\n## Why\n\nA protocol-native preview of what this project's application-layer AA demos (session keys, atomic batching) do today with smart contracts and delegation — EIP-8141 proposes moving those same properties into Ethereum's base transaction format itself.\n\n## How it works\n\nNot a working demo by necessity: EIP-8141 defines a new transaction type where a single transaction carries a sequence of frames (a VERIFY frame for signature/fee authorization, then one or more EXECUTE frames) instead of one implicit call — but no client or RPC can send this transaction type yet, since it requires execution-layer support the network doesn't have. As of writing it's only \"considered for inclusion\" in a future fork, so this stays a diagram/explainer page rather than a live demo.\n\n### The ACDE readout, and the two kinds of \"no\" (2026-08-28)\n\nThe call was set to conclude between this proposal and EIP-8130, and as of writing no public readout confirms an outcome. What the developer timeline did in that gap is the useful part: **the argument moved off the content and onto the weight.** The recurring sentence was *\"the direction is right, but this is too heavy for the current stage\"* — and that is a **schedule objection, not a technical one**.\n\nThe distinction is worth holding onto because the two look identical from outside and demand opposite responses:\n\n| The objection | What it actually says | What you do next |\n| --- | --- | --- |\n| **\"This is wrong\"** | the design does not achieve the goal | change the design |\n| **\"This is not now\"** | the design is right and too large to land here | **split the scope** |\n\nHearing the second and redesigning is wasted work; hearing the first and merely deferring is worse. **The question to ask in the room is which one you are being given** — and the tell is usually whether the objection survives when you make the proposal smaller.\n"</script>
+      <script type="application/json" id="copy-en">"# Censorship resistance stops being a norm and becomes a fork-choice rule\n\nFOCIL moves inclusion-list authorship from one proposer to a randomly drawn committee, and — the part that matters — moves enforcement into fork choice. Attesters withhold votes from blocks that ignore the aggregated list, so a censoring block cannot become canonical. The guarantee changes category: not \"please include this\" but \"omit it and your block does not count.\"\n\nNot a build — read two sections and write down one number. In EIP-7805 read only the Rationale and the parameters: how the committee size is justified, and how the view-freeze deadline is chosen. Those two choices carry the whole design. Then do the part that is actually yours: list every path in your own system where a one-slot delay changes an outcome — an order at the close, a dispute filing, an oracle update — and next to each write the number of slots it can absorb. That number is the deliverable; FOCIL knowledge is not. Figures here (a committee on the order of sixteen plus the proposer, a per-slot gossip subnet, a separate gas allowance for the list) come from a 2026-08-28 reading and need checking against the current spec, which is still moving.\n\n## Why\n\n**The old inclusion-list designs asked the censor to police himself.** One proposer wrote the list, and that proposer could be exactly the party leaving the transaction out — the watchman and the watched were the same seat. FOCIL's committee is not primarily about redundancy; it is about **separating those two roles**, and it buys a specific and unusually cheap trust assumption: **1-of-N honesty**. One member out of sixteen reflecting their own mempool is enough to force inclusion. That is the whole design, and everything argued about it is downstream of that one line.\n\n**The enforcement is the real change, and it is a change of category rather than degree.** Today, excluding a transaction is not a protocol violation — it is a choice a builder makes, and the only pressure against it is social. Putting the check into fork choice means attesters simply do not vote for a block that ignores the list, and a block without votes never becomes canonical. **There is no route around it — not through a relay, not through a builder** — because the thing being changed is not who builds but what counts as a block.\n\n**The cost lands in two places, and both are worth more than the headline.** First, safety now depends on a **timing parameter**: lists arriving after the view-freeze deadline are ignored for that slot. Set it late and an honest block can be rejected over propagation luck; set it early and a censor only has to delay list gossip slightly to win. That is protocol security resting on network latency, which is a physical property, not a cryptographic one. Second, enforcement is **conditional** — roughly \"include the list's valid transactions while block space remains\" — because an unconditional rule would make honest proposers fail when the list overflows the block. And a conditional rule always creates its own evasion: **the moment \"if there is space\" appears, consuming the space becomes the new censorship**. FOCIL answers that by separating the gas accounting so the attack is expensive, which is the right answer and does not repeal the principle: **unconditional rules fail honest participants, conditional rules turn the condition into the attack surface, and the quality of a design is how narrowly and verifiably the condition is written.**\n\n## How it works\n\n### What moves where\n\n| | Before | Under FOCIL |\n| --- | --- | --- |\n| Who writes the list | **one proposer** — possibly the censor | a randomly drawn committee **plus** the proposer |\n| Trust needed | that one party is honest | **1-of-N** — one member reflecting their mempool |\n| Enforcement | social pressure; omission is legal | **fork choice** — attesters withhold votes |\n| Route around it | relay, builder | **none** — what counts as a block changed |\n\n### The slot has to hold three things in order\n\n1. Committee members build lists from their own mempool view and gossip them on a dedicated subnet.\n2. The builder or proposer assembles a block **having seen** those lists.\n3. Attesters compare the block against **the lists they saw** — and different attesters can have seen different sets.\n\nStep 3 is why a **view-freeze deadline** exists at all: lists arriving after it are not counted for that slot.\n\n### The freeze deadline is a two-sided failure\n\n| Set it | Failure |\n| --- | --- |\n| **too late** | an honest block is rejected because a list arrived slowly |\n| **too early** | a censor wins by delaying list gossip slightly |\n\nThere is no setting that is safe in both directions, only a setting matched to observed network latency — which is why this parameter is the spec.\n\n### Unconditional versus conditional, as a general rule\n\n- **Unconditional**: safe to state, but it can make an honest participant unable to comply.\n- **Conditional**: protects the honest participant, and hands the attacker the condition.\n- **Therefore**: design quality lives in how narrow and checkable the condition is — here, separate gas accounting so filling the block to deny space costs real money.\n\n### The part that is actually yours\n\nCensorship resistance in a prediction market is not philosophy, it is **settlement accuracy**: an order at the close, a dispute, an oracle update. FOCIL does not promise \"cannot be censored\"; it promises **the cost of censoring becomes explicit**. What you write in a design doc is not FOCIL — it is **the number of slots each time-sensitive path can absorb.**\n"</script>
       <h2>Why</h2>
-      <p>A protocol-native preview of what this project&#39;s application-layer AA demos (session keys, atomic batching) do today with smart contracts and delegation — EIP-8141 proposes moving those same properties into Ethereum&#39;s base transaction format itself.</p>
+      <p><strong>The old inclusion-list designs asked the censor to police himself.</strong> One proposer wrote the list, and that proposer could be exactly the party leaving the transaction out — the watchman and the watched were the same seat. FOCIL&#39;s committee is not primarily about redundancy; it is about <strong>separating those two roles</strong>, and it buys a specific and unusually cheap trust assumption: <strong>1-of-N honesty</strong>. One member out of sixteen reflecting their own mempool is enough to force inclusion. That is the whole design, and everything argued about it is downstream of that one line.</p>
+<p><strong>The enforcement is the real change, and it is a change of category rather than degree.</strong> Today, excluding a transaction is not a protocol violation — it is a choice a builder makes, and the only pressure against it is social. Putting the check into fork choice means attesters simply do not vote for a block that ignores the list, and a block without votes never becomes canonical. <strong>There is no route around it — not through a relay, not through a builder</strong> — because the thing being changed is not who builds but what counts as a block.</p>
+<p><strong>The cost lands in two places, and both are worth more than the headline.</strong> First, safety now depends on a <strong>timing parameter</strong>: lists arriving after the view-freeze deadline are ignored for that slot. Set it late and an honest block can be rejected over propagation luck; set it early and a censor only has to delay list gossip slightly to win. That is protocol security resting on network latency, which is a physical property, not a cryptographic one. Second, enforcement is <strong>conditional</strong> — roughly &quot;include the list&#39;s valid transactions while block space remains&quot; — because an unconditional rule would make honest proposers fail when the list overflows the block. And a conditional rule always creates its own evasion: <strong>the moment &quot;if there is space&quot; appears, consuming the space becomes the new censorship</strong>. FOCIL answers that by separating the gas accounting so the attack is expensive, which is the right answer and does not repeal the principle: <strong>unconditional rules fail honest participants, conditional rules turn the condition into the attack surface, and the quality of a design is how narrowly and verifiably the condition is written.</strong></p>
       <h2>How it works</h2>
-      <p>Not a working demo by necessity: EIP-8141 defines a new transaction type where a single transaction carries a sequence of frames (a VERIFY frame for signature/fee authorization, then one or more EXECUTE frames) instead of one implicit call — but no client or RPC can send this transaction type yet, since it requires execution-layer support the network doesn&#39;t have. As of writing it&#39;s only &quot;considered for inclusion&quot; in a future fork, so this stays a diagram/explainer page rather than a live demo.</p>
-<h3>The ACDE readout, and the two kinds of &quot;no&quot; (2026-08-28)</h3>
-<p>The call was set to conclude between this proposal and EIP-8130, and as of writing no public readout confirms an outcome. What the developer timeline did in that gap is the useful part: <strong>the argument moved off the content and onto the weight.</strong> The recurring sentence was <em>&quot;the direction is right, but this is too heavy for the current stage&quot;</em> — and that is a <strong>schedule objection, not a technical one</strong>.</p>
-<p>The distinction is worth holding onto because the two look identical from outside and demand opposite responses:</p>
+      <h3>What moves where</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>The objection</th>
-<th>What it actually says</th>
-<th>What you do next</th>
+<th></th>
+<th>Before</th>
+<th>Under FOCIL</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>&quot;This is wrong&quot;</strong></td>
-<td>the design does not achieve the goal</td>
-<td>change the design</td>
+<td>Who writes the list</td>
+<td><strong>one proposer</strong> — possibly the censor</td>
+<td>a randomly drawn committee <strong>plus</strong> the proposer</td>
 </tr>
 <tr>
-<td><strong>&quot;This is not now&quot;</strong></td>
-<td>the design is right and too large to land here</td>
-<td><strong>split the scope</strong></td>
+<td>Trust needed</td>
+<td>that one party is honest</td>
+<td><strong>1-of-N</strong> — one member reflecting their mempool</td>
+</tr>
+<tr>
+<td>Enforcement</td>
+<td>social pressure; omission is legal</td>
+<td><strong>fork choice</strong> — attesters withhold votes</td>
+</tr>
+<tr>
+<td>Route around it</td>
+<td>relay, builder</td>
+<td><strong>none</strong> — what counts as a block changed</td>
 </tr>
 </tbody></table></div>
-<p>Hearing the second and redesigning is wasted work; hearing the first and merely deferring is worse. <strong>The question to ask in the room is which one you are being given</strong> — and the tell is usually whether the objection survives when you make the proposal smaller.</p>
-      <h2>Related code</h2>
-      <pre><code># ERC-8141 — a transaction carries a sequence of frames instead of one implicit call:
-# a VERIFY frame (signature/fee authorization) followed by one or more EXECUTE frames.
-# Simulates the frame structure and runs it in sequence, aborting if VERIFY fails.
-
-from dataclasses import dataclass, field
-from typing import Callable
-
-
-@dataclass
-class Frame:
-    kind: str  # &quot;VERIFY&quot; or &quot;EXECUTE&quot;
-    description: str
-    run: Callable[[dict], bool]
-
-
-@dataclass
-class FrameTransaction:
-    frames: list[Frame] = field(default_factory=list)
-
-    def execute(self, context: dict) -&gt; bool:
-        for frame in self.frames:
-            print(f&quot;  [{frame.kind}] {frame.description} ...&quot;, end=&quot; &quot;)
-            ok = frame.run(context)
-            print(&quot;OK&quot; if ok else &quot;FAILED&quot;)
-            if frame.kind == &quot;VERIFY&quot; and not ok:
-                print(&quot;  -&gt; VERIFY frame failed: transaction aborted before any EXECUTE frame runs.&quot;)
-                return False
-            if frame.kind == &quot;EXECUTE&quot; and not ok:
-                print(&quot;  -&gt; EXECUTE frame failed: transaction reverts.&quot;)
-                return False
-        return True
-
-
-def verify_signature_and_fee(ctx: dict) -&gt; bool:
-    return ctx.get(&quot;signature_valid&quot;, False) and ctx.get(&quot;balance&quot;, 0) &gt;= ctx.get(&quot;max_fee&quot;, 0)
-
-
-def execute_transfer(ctx: dict) -&gt; bool:
-    ctx[&quot;balance&quot;] -= ctx[&quot;transfer_amount&quot;]
-    return ctx[&quot;balance&quot;] &gt;= 0
-
-
-def execute_approve(ctx: dict) -&gt; bool:
-    ctx[&quot;allowance&quot;] = ctx.get(&quot;allowance&quot;, 0) + ctx[&quot;approve_amount&quot;]
-    return True
-
-
-def build_transaction() -&gt; FrameTransaction:
-    return FrameTransaction(frames=[
-        Frame(&quot;VERIFY&quot;, &quot;signature + fee authorization&quot;, verify_signature_and_fee),
-        Frame(&quot;EXECUTE&quot;, &quot;transfer 50 tokens&quot;, execute_transfer),
-        Frame(&quot;EXECUTE&quot;, &quot;approve spender for 20 tokens&quot;, execute_approve),
-    ])
-
-
-if __name__ == &quot;__main__&quot;:
-    print(&quot;EIP-8141 Frame Transaction — VERIFY then EXECUTE, EXECUTE, ...\n&quot;)
-
-    print(&quot;Case 1: valid signature, sufficient balance&quot;)
-    ctx = {&quot;signature_valid&quot;: True, &quot;balance&quot;: 100, &quot;max_fee&quot;: 5, &quot;transfer_amount&quot;: 50, &quot;approve_amount&quot;: 20}
-    ok = build_transaction().execute(ctx)
-    print(f&quot;Transaction succeeded: {ok}, final state: {ctx}\n&quot;)
-
-    print(&quot;Case 2: invalid signature — VERIFY frame blocks all EXECUTE frames&quot;)
-    ctx = {&quot;signature_valid&quot;: False, &quot;balance&quot;: 100, &quot;max_fee&quot;: 5, &quot;transfer_amount&quot;: 50, &quot;approve_amount&quot;: 20}
-    ok = build_transaction().execute(ctx)
-    print(f&quot;Transaction succeeded: {ok}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/erc-8141.py">docs/code/pocs/erc-8141.py</a></p>
+<h3>The slot has to hold three things in order</h3>
+<ol>
+<li>Committee members build lists from their own mempool view and gossip them on a dedicated subnet.</li>
+<li>The builder or proposer assembles a block <strong>having seen</strong> those lists.</li>
+<li>Attesters compare the block against <strong>the lists they saw</strong> — and different attesters can have seen different sets.</li>
+</ol>
+<p>Step 3 is why a <strong>view-freeze deadline</strong> exists at all: lists arriving after it are not counted for that slot.</p>
+<h3>The freeze deadline is a two-sided failure</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Set it</th>
+<th>Failure</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>too late</strong></td>
+<td>an honest block is rejected because a list arrived slowly</td>
+</tr>
+<tr>
+<td><strong>too early</strong></td>
+<td>a censor wins by delaying list gossip slightly</td>
+</tr>
+</tbody></table></div>
+<p>There is no setting that is safe in both directions, only a setting matched to observed network latency — which is why this parameter is the spec.</p>
+<h3>Unconditional versus conditional, as a general rule</h3>
+<ul>
+<li><strong>Unconditional</strong>: safe to state, but it can make an honest participant unable to comply.</li>
+<li><strong>Conditional</strong>: protects the honest participant, and hands the attacker the condition.</li>
+<li><strong>Therefore</strong>: design quality lives in how narrow and checkable the condition is — here, separate gas accounting so filling the block to deny space costs real money.</li>
+</ul>
+<h3>The part that is actually yours</h3>
+<p>Censorship resistance in a prediction market is not philosophy, it is <strong>settlement accuracy</strong>: an order at the close, a dispute, an oracle update. FOCIL does not promise &quot;cannot be censored&quot;; it promises <strong>the cost of censoring becomes explicit</strong>. What you write in a design doc is not FOCIL — it is <strong>the number of slots each time-sensitive path can absorb.</strong></p>
       <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# ERC-8141\n\n네이티브 계정 추상화 설명 페이지 — 이더리움 프로토콜 레벨 Frame Transactions.\n\n읽기 전용 설명 페이지 — 지갑 불필요.\n\n## 왜\n\n이 프로젝트의 애플리케이션 레벨 AA 데모(세션 키, 원자적 배치)가 스마트 컨트랙트와 위임으로 지금 하고 있는 일을, 프로토콜 네이티브 수준에서 미리 보여줍니다 — EIP-8141은 같은 속성을 이더리움의 기본 트랜잭션 포맷 자체로 옮기자는 제안입니다.\n\n## 동작 방식\n\n구조상 실제 동작하는 데모가 될 수 없습니다: EIP-8141은 트랜잭션 하나가 암묵적 호출 한 번이 아니라 프레임의 시퀀스(서명·수수료 인가를 담당하는 VERIFY 프레임, 이어지는 하나 이상의 EXECUTE 프레임)를 담는 새 트랜잭션 타입을 정의하지만, 아직 어떤 클라이언트나 RPC도 이 타입을 보낼 수 없습니다 — 네트워크에 없는 실행 계층 지원이 필요하기 때문입니다. 이 글을 쓰는 시점 기준 향후 포크에 \"포함 검토 중\"인 단계라, 라이브 데모가 아니라 다이어그램·설명 페이지로 남습니다.\n\n### ACDE 리드아웃, 그리고 두 종류의 \"아니오\" (2026-08-28)\n\n이 제안과 EIP-8130 사이의 결론이 예정돼 있었고, 이 글을 쓰는 시점까지 **공개된 리드아웃은 확인되지 않습니다.** 그 공백에서 개발자 타임라인이 향한 곳이 쓸모 있는 부분입니다 — **논쟁이 내용이 아니라 무게로 옮겨갔습니다.** 반복된 문장은 *\"방향은 맞는데 지금 단계에서 너무 무겁다\"* 였고, 이건 **기술 반대가 아니라 일정 반대**입니다.\n\n이 구분은 붙들 값이 있습니다 — **밖에서 보면 똑같이 생겼는데 요구하는 대응이 정반대**이기 때문입니다:\n\n| 반대 | 실제로 하는 말 | 다음에 할 일 |\n| --- | --- | --- |\n| **\"이건 틀렸다\"** | 설계가 목적을 달성하지 못한다 | **설계를 바꾼다** |\n| **\"이건 지금이 아니다\"** | 설계는 맞고, 여기 넣기엔 크다 | **범위를 쪼갠다** |\n\n**두 번째를 듣고 재설계하면 헛일**이고, **첫 번째를 듣고 미루기만 하면 더 나쁩니다.** **회의실에서 물어야 할 것은 지금 받은 게 어느 쪽인가**이고, 판별법은 대개 **제안을 작게 만들었을 때도 그 반대가 살아남는가**입니다.\n"</script>
-      <h1>ERC-8141</h1>
-      <p class="lead">네이티브 계정 추상화 설명 페이지 — 이더리움 프로토콜 레벨 Frame Transactions.</p>
-      <p class="meta">읽기 전용 설명 페이지 — 지갑 불필요.</p>
+      <script type="application/json" id="copy-ko">"# 검열저항이 규범이기를 그만두고 포크초이스 규칙이 된다\n\nFOCIL 은 인클루전 리스트 작성을 **프로포저 한 명에서 무작위 위원회로** 옮기고 — **진짜 중요한 부분** — **강제를 포크초이스 안으로** 옮깁니다. 어테스터가 집계된 리스트를 무시한 블록에 **투표를 주지 않으므로, 검열하는 블록은 정본이 될 수 없습니다.** **보장의 범주가 바뀝니다** — *\"넣어 주세요\"* 가 아니라 **\"빼면 당신 블록이 안 세어진다\"** 입니다.\n\n**만드는 일이 아니라 두 절을 읽고 숫자 하나를 적는 일**입니다. EIP-7805 에서 **Rationale 과 파라미터 절만** 읽습니다 — **위원회 크기가 어떻게 정당화되는지**, 그리고 **관점 동결(view freeze) 시각이 어떻게 정해지는지.** **이 두 선택이 설계 전체를 떠받칩니다.** 그다음 **진짜 내 몫**을 합니다 — **내 시스템에서 한 슬롯 지연이 결과를 바꾸는 모든 경로**를 적고(마감 직전 주문, 분쟁 제기, 오라클 갱신), **각각이 견딜 수 있는 슬롯 수 N** 을 옆에 적습니다. **산출물은 그 숫자이지 FOCIL 지식이 아닙니다.** 여기의 수치(프로포저 + 16명 규모 위원회, 슬롯별 가십 서브넷, 리스트 전용 가스 한도)는 **2026-08-28 기준 독해**이며, **아직 움직이는 스펙**이므로 원문 확인이 필요합니다.\n\n## 왜\n\n**기존 인클루전 리스트 설계는 검열자에게 자기 자신을 감시하라고 요구했습니다.** 프로포저 한 명이 리스트를 썼고, **그 프로포저가 바로 그 트랜잭션을 빼는 당사자일 수 있었습니다** — **감시자와 감시 대상이 같은 자리**였습니다. FOCIL 의 위원회는 일차적으로 중복성이 아니라 **그 두 역할을 분리하는 장치**이고, 그 대가로 **이례적으로 싼 신뢰 가정** 하나를 삽니다 — **1-of-N 정직성.** **16명 중 한 명만 자기 멤풀을 정직하게 반영하면 포함이 강제됩니다.** 이게 설계의 전부이고, 이 설계를 둘러싼 모든 논쟁은 그 한 줄의 하류입니다.\n\n**진짜 변화는 강제 방식이고, 그것은 정도가 아니라 범주의 변화입니다.** 오늘 트랜잭션을 빼는 것은 **프로토콜 위반이 아닙니다** — 빌더의 선택이고, 그에 맞서는 압력은 사회적인 것뿐입니다. 검사를 **포크초이스에 넣는다**는 것은, 어테스터가 리스트를 무시한 블록에 **그냥 투표하지 않는다**는 뜻이고, **표를 못 받은 블록은 정본이 되지 못합니다.** **우회로가 없습니다 — 릴레이를 통해도, 빌더를 통해도** — 바뀐 것이 **누가 만드는가가 아니라 무엇이 블록으로 세어지는가**이기 때문입니다.\n\n**대가는 두 곳에 떨어지고, 둘 다 헤드라인보다 값이 나갑니다.** 첫째, 안전성이 **타이밍 파라미터**에 걸립니다 — **동결 시각 이후 도착한 리스트는 그 슬롯 평가에서 빠집니다.** 늦게 잡으면 **전파 운 때문에 정직한 블록이 탈락**하고, 이르게 잡으면 **검열자가 리스트 전파를 조금만 늦춰도 이깁니다.** **프로토콜 보안을 네트워크 지연이라는 물리 현상 위에 올려놓는 설계**입니다. 둘째, 강제가 **조건부**입니다 — 대략 *\"블록에 공간이 남아 있는 한 리스트의 유효 트랜잭션을 넣어야 한다\"* — **무조건 규칙이면 리스트가 블록을 넘칠 때 정직한 프로포저가 규칙을 못 지키기 때문**입니다. 그리고 **조건부 규칙은 언제나 자기 회피 경로를 만듭니다** — ***\"공간이 있으면\"* 이 붙는 순간, 공간을 없애는 것이 새로운 검열 수법이 됩니다.** FOCIL 은 **가스 회계를 분리해 그 공격을 비싸게** 만드는 쪽으로 답했고, 그건 옳은 답이지만 원리를 폐기하지는 않습니다 — **무조건 규칙은 정직한 참여자를 실패시키고, 조건부 규칙은 조건을 공격면으로 만들며, 설계의 질은 그 조건을 얼마나 좁고 검증 가능하게 썼는가에서 갈립니다.**\n\n## 동작 방식\n\n### 무엇이 어디로 옮겨가는가\n\n| | 이전 | FOCIL |\n| --- | --- | --- |\n| 리스트 작성 | **프로포저 한 명** — 검열자일 수 있음 | 무작위 위원회 **+** 프로포저 |\n| 필요한 신뢰 | 그 한 명이 정직할 것 | **1-of-N** — 한 명만 자기 멤풀 반영 |\n| 강제 | 사회적 압력; 배제는 합법 | **포크초이스** — 어테스터가 투표를 안 줌 |\n| 우회로 | 릴레이·빌더 | **없음** — 무엇이 블록인가가 바뀜 |\n\n### 한 슬롯 안에 세 가지가 순서대로\n\n1. 위원들이 **자기 멤풀 관점**으로 리스트를 만들어 전용 서브넷에 가십.\n2. 빌더·프로포저가 **그 리스트를 본 상태로** 블록 조립.\n3. 어테스터가 **자기가 본 리스트 집합**과 블록을 대조 — **어테스터마다 본 집합이 다를 수 있습니다.**\n\n**3번이 관점 동결(view freeze) 시각이 존재하는 이유**입니다 — 그 이후 도착한 리스트는 그 슬롯에서 세지 않습니다.\n\n### 동결 시각은 양쪽으로 실패한다\n\n| 잡기 | 실패 |\n| --- | --- |\n| **너무 늦게** | 리스트가 늦게 왔다는 이유로 **정직한 블록이 탈락** |\n| **너무 이르게** | **검열자가 전파를 조금만 늦춰도 승리** |\n\n**양방향으로 안전한 값은 없고**, 관측된 네트워크 지연에 맞춘 값만 있습니다 — **그래서 이 파라미터가 곧 스펙**입니다.\n\n### 무조건 vs 조건부, 일반 규칙으로\n\n- **무조건**: 진술은 안전하지만 **정직한 참여자가 지킬 수 없게** 만들 수 있습니다.\n- **조건부**: 정직한 참여자를 보호하고, **조건을 공격자에게 넘깁니다.**\n- **따라서**: 설계의 질은 **조건이 얼마나 좁고 검증 가능한가**에 있습니다 — 여기서는 **가스 회계 분리**로 공간을 없애는 공격에 실제 비용을 물립니다.\n\n### 진짜 내 몫\n\n예측시장에서 검열저항은 철학이 아니라 **정산 정확성**입니다 — 마감 직전 주문, 분쟁, 오라클 갱신. FOCIL 이 주는 것은 *\"검열 불가\"* 가 아니라 **\"검열의 비용이 명시적이 된다\"** 입니다. 설계 문서에 적을 것은 FOCIL 이 아니라 — **시간 민감 경로마다 견딜 수 있는 슬롯 수** 입니다.\n"</script>
+      <h1>검열저항이 규범이기를 그만두고 포크초이스 규칙이 된다</h1>
+      <p class="lead">FOCIL 은 인클루전 리스트 작성을 <strong>프로포저 한 명에서 무작위 위원회로</strong> 옮기고 — <strong>진짜 중요한 부분</strong> — <strong>강제를 포크초이스 안으로</strong> 옮깁니다. 어테스터가 집계된 리스트를 무시한 블록에 <strong>투표를 주지 않으므로, 검열하는 블록은 정본이 될 수 없습니다.</strong> <strong>보장의 범주가 바뀝니다</strong> — <em>&quot;넣어 주세요&quot;</em> 가 아니라 <strong>&quot;빼면 당신 블록이 안 세어진다&quot;</strong> 입니다.</p>
+      <p class="meta"><strong>만드는 일이 아니라 두 절을 읽고 숫자 하나를 적는 일</strong>입니다. EIP-7805 에서 <strong>Rationale 과 파라미터 절만</strong> 읽습니다 — <strong>위원회 크기가 어떻게 정당화되는지</strong>, 그리고 <strong>관점 동결(view freeze) 시각이 어떻게 정해지는지.</strong> <strong>이 두 선택이 설계 전체를 떠받칩니다.</strong> 그다음 <strong>진짜 내 몫</strong>을 합니다 — <strong>내 시스템에서 한 슬롯 지연이 결과를 바꾸는 모든 경로</strong>를 적고(마감 직전 주문, 분쟁 제기, 오라클 갱신), <strong>각각이 견딜 수 있는 슬롯 수 N</strong> 을 옆에 적습니다. <strong>산출물은 그 숫자이지 FOCIL 지식이 아닙니다.</strong> 여기의 수치(프로포저 + 16명 규모 위원회, 슬롯별 가십 서브넷, 리스트 전용 가스 한도)는 <strong>2026-08-28 기준 독해</strong>이며, <strong>아직 움직이는 스펙</strong>이므로 원문 확인이 필요합니다.</p>
       <h2>왜</h2>
-      <p>이 프로젝트의 애플리케이션 레벨 AA 데모(세션 키, 원자적 배치)가 스마트 컨트랙트와 위임으로 지금 하고 있는 일을, 프로토콜 네이티브 수준에서 미리 보여줍니다 — EIP-8141은 같은 속성을 이더리움의 기본 트랜잭션 포맷 자체로 옮기자는 제안입니다.</p>
+      <p><strong>기존 인클루전 리스트 설계는 검열자에게 자기 자신을 감시하라고 요구했습니다.</strong> 프로포저 한 명이 리스트를 썼고, <strong>그 프로포저가 바로 그 트랜잭션을 빼는 당사자일 수 있었습니다</strong> — <strong>감시자와 감시 대상이 같은 자리</strong>였습니다. FOCIL 의 위원회는 일차적으로 중복성이 아니라 <strong>그 두 역할을 분리하는 장치</strong>이고, 그 대가로 <strong>이례적으로 싼 신뢰 가정</strong> 하나를 삽니다 — <strong>1-of-N 정직성.</strong> <strong>16명 중 한 명만 자기 멤풀을 정직하게 반영하면 포함이 강제됩니다.</strong> 이게 설계의 전부이고, 이 설계를 둘러싼 모든 논쟁은 그 한 줄의 하류입니다.</p>
+<p><strong>진짜 변화는 강제 방식이고, 그것은 정도가 아니라 범주의 변화입니다.</strong> 오늘 트랜잭션을 빼는 것은 <strong>프로토콜 위반이 아닙니다</strong> — 빌더의 선택이고, 그에 맞서는 압력은 사회적인 것뿐입니다. 검사를 <strong>포크초이스에 넣는다</strong>는 것은, 어테스터가 리스트를 무시한 블록에 <strong>그냥 투표하지 않는다</strong>는 뜻이고, <strong>표를 못 받은 블록은 정본이 되지 못합니다.</strong> <strong>우회로가 없습니다 — 릴레이를 통해도, 빌더를 통해도</strong> — 바뀐 것이 <strong>누가 만드는가가 아니라 무엇이 블록으로 세어지는가</strong>이기 때문입니다.</p>
+<p><strong>대가는 두 곳에 떨어지고, 둘 다 헤드라인보다 값이 나갑니다.</strong> 첫째, 안전성이 <strong>타이밍 파라미터</strong>에 걸립니다 — <strong>동결 시각 이후 도착한 리스트는 그 슬롯 평가에서 빠집니다.</strong> 늦게 잡으면 <strong>전파 운 때문에 정직한 블록이 탈락</strong>하고, 이르게 잡으면 <strong>검열자가 리스트 전파를 조금만 늦춰도 이깁니다.</strong> <strong>프로토콜 보안을 네트워크 지연이라는 물리 현상 위에 올려놓는 설계</strong>입니다. 둘째, 강제가 <strong>조건부</strong>입니다 — 대략 <em>&quot;블록에 공간이 남아 있는 한 리스트의 유효 트랜잭션을 넣어야 한다&quot;</em> — <strong>무조건 규칙이면 리스트가 블록을 넘칠 때 정직한 프로포저가 규칙을 못 지키기 때문</strong>입니다. 그리고 <strong>조건부 규칙은 언제나 자기 회피 경로를 만듭니다</strong> — <strong><em>&quot;공간이 있으면&quot;</em> 이 붙는 순간, 공간을 없애는 것이 새로운 검열 수법이 됩니다.<strong> FOCIL 은 </strong>가스 회계를 분리해 그 공격을 비싸게<strong> 만드는 쪽으로 답했고, 그건 옳은 답이지만 원리를 폐기하지는 않습니다 — </strong>무조건 규칙은 정직한 참여자를 실패시키고, 조건부 규칙은 조건을 공격면으로 만들며, 설계의 질은 그 조건을 얼마나 좁고 검증 가능하게 썼는가에서 갈립니다.</strong></p>
       <h2>동작 방식</h2>
-      <p>구조상 실제 동작하는 데모가 될 수 없습니다: EIP-8141은 트랜잭션 하나가 암묵적 호출 한 번이 아니라 프레임의 시퀀스(서명·수수료 인가를 담당하는 VERIFY 프레임, 이어지는 하나 이상의 EXECUTE 프레임)를 담는 새 트랜잭션 타입을 정의하지만, 아직 어떤 클라이언트나 RPC도 이 타입을 보낼 수 없습니다 — 네트워크에 없는 실행 계층 지원이 필요하기 때문입니다. 이 글을 쓰는 시점 기준 향후 포크에 &quot;포함 검토 중&quot;인 단계라, 라이브 데모가 아니라 다이어그램·설명 페이지로 남습니다.</p>
-<h3>ACDE 리드아웃, 그리고 두 종류의 &quot;아니오&quot; (2026-08-28)</h3>
-<p>이 제안과 EIP-8130 사이의 결론이 예정돼 있었고, 이 글을 쓰는 시점까지 <strong>공개된 리드아웃은 확인되지 않습니다.</strong> 그 공백에서 개발자 타임라인이 향한 곳이 쓸모 있는 부분입니다 — <strong>논쟁이 내용이 아니라 무게로 옮겨갔습니다.</strong> 반복된 문장은 <em>&quot;방향은 맞는데 지금 단계에서 너무 무겁다&quot;</em> 였고, 이건 <strong>기술 반대가 아니라 일정 반대</strong>입니다.</p>
-<p>이 구분은 붙들 값이 있습니다 — <strong>밖에서 보면 똑같이 생겼는데 요구하는 대응이 정반대</strong>이기 때문입니다:</p>
+      <h3>무엇이 어디로 옮겨가는가</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>반대</th>
-<th>실제로 하는 말</th>
-<th>다음에 할 일</th>
+<th></th>
+<th>이전</th>
+<th>FOCIL</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>&quot;이건 틀렸다&quot;</strong></td>
-<td>설계가 목적을 달성하지 못한다</td>
-<td><strong>설계를 바꾼다</strong></td>
+<td>리스트 작성</td>
+<td><strong>프로포저 한 명</strong> — 검열자일 수 있음</td>
+<td>무작위 위원회 <strong>+</strong> 프로포저</td>
 </tr>
 <tr>
-<td><strong>&quot;이건 지금이 아니다&quot;</strong></td>
-<td>설계는 맞고, 여기 넣기엔 크다</td>
-<td><strong>범위를 쪼갠다</strong></td>
+<td>필요한 신뢰</td>
+<td>그 한 명이 정직할 것</td>
+<td><strong>1-of-N</strong> — 한 명만 자기 멤풀 반영</td>
+</tr>
+<tr>
+<td>강제</td>
+<td>사회적 압력; 배제는 합법</td>
+<td><strong>포크초이스</strong> — 어테스터가 투표를 안 줌</td>
+</tr>
+<tr>
+<td>우회로</td>
+<td>릴레이·빌더</td>
+<td><strong>없음</strong> — 무엇이 블록인가가 바뀜</td>
 </tr>
 </tbody></table></div>
-<p><strong>두 번째를 듣고 재설계하면 헛일</strong>이고, <strong>첫 번째를 듣고 미루기만 하면 더 나쁩니다.</strong> <strong>회의실에서 물어야 할 것은 지금 받은 게 어느 쪽인가</strong>이고, 판별법은 대개 <strong>제안을 작게 만들었을 때도 그 반대가 살아남는가</strong>입니다.</p>
-      <h2>관련 코드</h2>
-      <pre><code># ERC-8141 — a transaction carries a sequence of frames instead of one implicit call:
-# a VERIFY frame (signature/fee authorization) followed by one or more EXECUTE frames.
-# Simulates the frame structure and runs it in sequence, aborting if VERIFY fails.
-
-from dataclasses import dataclass, field
-from typing import Callable
-
-
-@dataclass
-class Frame:
-    kind: str  # &quot;VERIFY&quot; or &quot;EXECUTE&quot;
-    description: str
-    run: Callable[[dict], bool]
-
-
-@dataclass
-class FrameTransaction:
-    frames: list[Frame] = field(default_factory=list)
-
-    def execute(self, context: dict) -&gt; bool:
-        for frame in self.frames:
-            print(f&quot;  [{frame.kind}] {frame.description} ...&quot;, end=&quot; &quot;)
-            ok = frame.run(context)
-            print(&quot;OK&quot; if ok else &quot;FAILED&quot;)
-            if frame.kind == &quot;VERIFY&quot; and not ok:
-                print(&quot;  -&gt; VERIFY frame failed: transaction aborted before any EXECUTE frame runs.&quot;)
-                return False
-            if frame.kind == &quot;EXECUTE&quot; and not ok:
-                print(&quot;  -&gt; EXECUTE frame failed: transaction reverts.&quot;)
-                return False
-        return True
-
-
-def verify_signature_and_fee(ctx: dict) -&gt; bool:
-    return ctx.get(&quot;signature_valid&quot;, False) and ctx.get(&quot;balance&quot;, 0) &gt;= ctx.get(&quot;max_fee&quot;, 0)
-
-
-def execute_transfer(ctx: dict) -&gt; bool:
-    ctx[&quot;balance&quot;] -= ctx[&quot;transfer_amount&quot;]
-    return ctx[&quot;balance&quot;] &gt;= 0
-
-
-def execute_approve(ctx: dict) -&gt; bool:
-    ctx[&quot;allowance&quot;] = ctx.get(&quot;allowance&quot;, 0) + ctx[&quot;approve_amount&quot;]
-    return True
-
-
-def build_transaction() -&gt; FrameTransaction:
-    return FrameTransaction(frames=[
-        Frame(&quot;VERIFY&quot;, &quot;signature + fee authorization&quot;, verify_signature_and_fee),
-        Frame(&quot;EXECUTE&quot;, &quot;transfer 50 tokens&quot;, execute_transfer),
-        Frame(&quot;EXECUTE&quot;, &quot;approve spender for 20 tokens&quot;, execute_approve),
-    ])
-
-
-if __name__ == &quot;__main__&quot;:
-    print(&quot;EIP-8141 Frame Transaction — VERIFY then EXECUTE, EXECUTE, ...\n&quot;)
-
-    print(&quot;Case 1: valid signature, sufficient balance&quot;)
-    ctx = {&quot;signature_valid&quot;: True, &quot;balance&quot;: 100, &quot;max_fee&quot;: 5, &quot;transfer_amount&quot;: 50, &quot;approve_amount&quot;: 20}
-    ok = build_transaction().execute(ctx)
-    print(f&quot;Transaction succeeded: {ok}, final state: {ctx}\n&quot;)
-
-    print(&quot;Case 2: invalid signature — VERIFY frame blocks all EXECUTE frames&quot;)
-    ctx = {&quot;signature_valid&quot;: False, &quot;balance&quot;: 100, &quot;max_fee&quot;: 5, &quot;transfer_amount&quot;: 50, &quot;approve_amount&quot;: 20}
-    ok = build_transaction().execute(ctx)
-    print(f&quot;Transaction succeeded: {ok}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/erc-8141.py">docs/code/pocs/erc-8141.py</a></p>
+<h3>한 슬롯 안에 세 가지가 순서대로</h3>
+<ol>
+<li>위원들이 <strong>자기 멤풀 관점</strong>으로 리스트를 만들어 전용 서브넷에 가십.</li>
+<li>빌더·프로포저가 <strong>그 리스트를 본 상태로</strong> 블록 조립.</li>
+<li>어테스터가 <strong>자기가 본 리스트 집합</strong>과 블록을 대조 — <strong>어테스터마다 본 집합이 다를 수 있습니다.</strong></li>
+</ol>
+<p><strong>3번이 관점 동결(view freeze) 시각이 존재하는 이유</strong>입니다 — 그 이후 도착한 리스트는 그 슬롯에서 세지 않습니다.</p>
+<h3>동결 시각은 양쪽으로 실패한다</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>잡기</th>
+<th>실패</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>너무 늦게</strong></td>
+<td>리스트가 늦게 왔다는 이유로 <strong>정직한 블록이 탈락</strong></td>
+</tr>
+<tr>
+<td><strong>너무 이르게</strong></td>
+<td><strong>검열자가 전파를 조금만 늦춰도 승리</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>양방향으로 안전한 값은 없고</strong>, 관측된 네트워크 지연에 맞춘 값만 있습니다 — <strong>그래서 이 파라미터가 곧 스펙</strong>입니다.</p>
+<h3>무조건 vs 조건부, 일반 규칙으로</h3>
+<ul>
+<li><strong>무조건</strong>: 진술은 안전하지만 <strong>정직한 참여자가 지킬 수 없게</strong> 만들 수 있습니다.</li>
+<li><strong>조건부</strong>: 정직한 참여자를 보호하고, <strong>조건을 공격자에게 넘깁니다.</strong></li>
+<li><strong>따라서</strong>: 설계의 질은 <strong>조건이 얼마나 좁고 검증 가능한가</strong>에 있습니다 — 여기서는 <strong>가스 회계 분리</strong>로 공간을 없애는 공격에 실제 비용을 물립니다.</li>
+</ul>
+<h3>진짜 내 몫</h3>
+<p>예측시장에서 검열저항은 철학이 아니라 <strong>정산 정확성</strong>입니다 — 마감 직전 주문, 분쟁, 오라클 갱신. FOCIL 이 주는 것은 <em>&quot;검열 불가&quot;</em> 가 아니라 <strong>&quot;검열의 비용이 명시적이 된다&quot;</strong> 입니다. 설계 문서에 적을 것은 FOCIL 이 아니라 — <strong>시간 민감 경로마다 견딜 수 있는 슬롯 수</strong> 입니다.</p>
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-dkg-resharing.html">&larr; 15. The ceremony ends, the committee doesn't</a><a href="pocs-censorship-becomes-a-fork-choice-rule.html">17. Censorship resistance stops being a norm and becomes a fork-choice rule &rarr;</a></div>
+    <div class="pager"><a href="pocs-erc-8141.html">&larr; 16. ERC-8141</a><a href="pocs-the-record-is-not-the-path.html">18. The record is not the path — a registry and a vault for the same problem &rarr;</a></div>
   </div>
   </main>
 </div>
