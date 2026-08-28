@@ -1,4 +1,5 @@
 import { prisma } from "./db";
+import { aiProvider, reportIfLimited } from "./ai-provider";
 
 // J2 / R-D — LLM 확률 추정.
 //
@@ -14,9 +15,6 @@ import { prisma } from "./db";
 // **그어둔 선.** 저장소에 들어가는 것은 **헤드라인(증거)**이지 **입장(조종)**이
 // 아니다. "강세로 봐"를 넣을 수 있으면 에이전트는 스스로 견해를 형성하는 게
 // 아니라 시킨 대로 하는 것이고, 화면에서는 둘을 구별할 수 없다.
-
-const MODEL = "qwen-flash";
-const ENDPOINT = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions";
 
 export type Estimate = {
   /// 0..1 확률
@@ -45,8 +43,12 @@ export async function estimate(args: {
   /// p 를 움직여선 안 된다.
   withinHours?: number;
 }): Promise<Estimate | null> {
-  const key = process.env.AI_API_KEY;
-  if (!key) throw new Error("AI_API_KEY is not set — the estimate step needs it");
+  const llm = aiProvider();
+  if (!llm.key) {
+    throw new Error(
+      "AI_API_KEY is not set — the estimate step needs it",
+    );
+  }
 
   const since = args.withinHours
     ? new Date(Date.now() - args.withinHours * 3_600_000)
@@ -72,11 +74,11 @@ export async function estimate(args: {
     .filter(Boolean)
     .join("\n");
 
-  const res = await fetch(ENDPOINT, {
+  const res = await fetch(llm.endpoint, {
     method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+    headers: { "content-type": "application/json", authorization: `Bearer ${llm.key}` },
     body: JSON.stringify({
-      model: MODEL,
+      model: llm.model,
       max_tokens: 300,
       temperature: 0,
       messages: [
@@ -85,7 +87,24 @@ export async function estimate(args: {
       ],
     }),
   });
-  if (!res.ok) throw new Error(`estimate: model returned ${res.status}`);
+  // 상태 코드만 적던 것을 본문까지 싣도록 바꿨다 (2026-08-28). `estimate: model
+  // returned 401` 은 참이지만 아무 데도 가리키지 않는다 — 실제로는 키가 부른 곳의
+  // 것이 아니어서 났고, 그 사실은 본문에만 있었다. **어디를 불렀는지**도 함께
+  // 적는다: 401 의 가장 흔한 원인이 "다른 제공자의 키"라서, 호스트가 보이면
+  // 키와 엔드포인트가 짝이 맞는지 한눈에 걸린다.
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    // 한도라면 텔레그램으로. 던지는 것과 별개다 — 이 틱은 어차피 실패하지만,
+    // 크레딧이 떨어졌다는 사실은 로그가 아니라 사람에게 가야 한다.
+    reportIfLimited(llm, res.status, detail);
+    throw new Error(
+      `estimate: ${llm.model} at ${llm.host} returned ${res.status}` +
+        (res.status === 401
+          ? ` — the key does not belong to ${llm.host}. Check AI_API_KEY (and AI_API_ENDPOINT) in .env.`
+          : "") +
+        (detail ? `: ${detail.slice(0, 200)}` : ""),
+    );
+  }
   const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
   const text = json.choices?.[0]?.message?.content ?? "";
 
