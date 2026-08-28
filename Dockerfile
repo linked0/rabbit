@@ -6,6 +6,10 @@ WORKDIR /app
 # pnpm-workspace.yaml 포함 — allowBuilds(@prisma/*) 승인이 컨테이너 안에서도 적용되어야
 # pnpm 11의 ERR_PNPM_IGNORED_BUILDS 없이 설치된다.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# vendor/verex-sdk — `@verex/sdk` 는 `file:` 의존성이라 **install 이 돌기 전에**
+# 존재해야 한다. 아래 `COPY . .` 는 install 다음이므로 그때는 이미 늦다
+# (2026-08-28: 이 순서 때문에 컨테이너 빌드가 ENOENT 로 죽었다).
+COPY vendor ./vendor
 RUN corepack enable && pnpm install --frozen-lockfile
 COPY . .
 # Prisma 클라이언트 생성 (스키마가 있어야 하므로 소스 복사 후)
