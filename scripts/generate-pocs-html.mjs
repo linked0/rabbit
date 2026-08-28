@@ -351,12 +351,29 @@ const firstSentences = (s, n = 2) => {
 // (jay, 2026-08-28). "Open on jaylabs.xyz"를 페이지 내 이동 두 개로 바꾼다 — 라이브
 // 카드의 실제 링크는 상세 페이지에 그대로 남아 있다. `#top`은 그런 id가 없어도
 // 문서 맨 위로 가는 것이 HTML 명세에 정의된 동작이라 셸을 건드릴 필요가 없다.
+// 복사용 원본 마크다운 — 상세 페이지와 목록 행이 같은 것을 넘긴다 (jay, 2026-08-28).
+// 렌더된 DOM 이 아니라 카드 데이터를 쓴다: 표·코드블록·굵게가 붙여넣은 쪽에서 살아 있어야
+// 한다. 순서는 화면과 같다 — 제목 → 요약 → howTo → Why → How it works.
+const copyDoc = (t, d, h, why, how, L) =>
+  `# ${t}\n\n${d}\n\n${h}\n\n## ${L.why}\n\n${why}\n\n## ${L.how}\n\n${how}\n`;
+const jsonBlock = (id, text) =>
+  `<script type="application/json" id="${id}">${JSON.stringify(text).replace(/</g, '\\u003c')}</script>`;
+const copyEnOf = (c) => copyDoc(c.title, c.description, c.howTo, c.purpose, c.howItWorks, { why: 'Why', how: 'How it works' });
+const copyKoOf = (c) => copyDoc(c.titleKo, c.descriptionKo, c.howToKo, c.purposeKo, c.howItWorksKo, { why: '왜', how: '동작 방식' });
+
 function rowsFor(list, sectionAnchor) {
   return list
   .map((c) => {
     const b = badge(c);
     const mark = ` <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span>`;
-    const links = `<a href="${detailHref(c)}">Detail &rarr;</a> &middot; <a href="#top">Top &uarr;</a> &middot; <a href="#${sectionAnchor}">Section top &uarr;</a>`;
+    // 목록에서도 카드를 통째로 집어갈 수 있게 (jay, 2026-08-28) — 상세 페이지를 열지
+    // 않고 붙여넣기까지 가는 길. id 는 카드 키로 유일하게 만든다.
+    const ids = [`copy-en-${c.key}`, `copy-ko-${c.key}`];
+    const links =
+      `<a href="${detailHref(c)}">Detail &rarr;</a> &middot; <a href="#top">Top &uarr;</a> &middot; <a href="#${sectionAnchor}">Section top &uarr;</a>` +
+      ` &middot; <button type="button" class="copy-btn copy-inline" data-copy="${ids[0]}" data-done="Copied &#10003;">Copy EN</button>` +
+      `<button type="button" class="copy-btn copy-inline" data-copy="${ids[1]}" data-done="복사됨 &#10003;">Copy KO</button>` +
+      `${jsonBlock(ids[0], copyEnOf(c))}${jsonBlock(ids[1], copyKoOf(c))}`;
     // How it works — 상세 페이지의 howItWorks 필드를 그대로 복사한다 (jay, 2026-08-13:
     // "add why and how it works to the list page, not move — just copy it"). 상세
     // 페이지는 전체 문단을 그대로 유지한다.
@@ -547,15 +564,8 @@ function detailNavGroups(current) {
   // 본문 끝의 "Open on jaylabs.xyz"는 대부분의 카드에서 아직 없는 페이지를 가리켰다
   // (jay, 2026-08-28). 레일 바닥과 같은 이동 링크로 바꾸고, 라이브 라우트(href)가 실제로
   // 있는 카드에만 원래 링크를 뒤에 붙인다 — 쓸모 있는 경우는 남기고 죽은 링크만 없앤다.
-  // 복사 버튼이 넘길 원본 마크다운 (jay, 2026-08-28). 렌더된 DOM 이 아니라 카드 데이터를
-  // 그대로 쓴다 — 표·코드블록·굵게가 붙여넣은 쪽에서 그대로 살아 있어야 하기 때문이다.
-  // 순서는 화면과 같다: 제목 → 요약 → howTo → Why → How it works.
-  const copyDoc = (t, d, h, why, how, L) =>
-    `# ${t}\n\n${d}\n\n${h}\n\n## ${L.why}\n\n${why}\n\n## ${L.how}\n\n${how}\n`;
-  const jsonBlock = (id, text) =>
-    `<script type="application/json" id="${id}">${JSON.stringify(text).replace(/</g, '\\u003c')}</script>`;
-  const copyEn = copyDoc(c.title, c.description, c.howTo, c.purpose, c.howItWorks, { why: 'Why', how: 'How it works' });
-  const copyKo = copyDoc(c.titleKo, c.descriptionKo, c.howToKo, c.purposeKo, c.howItWorksKo, { why: '왜', how: '동작 방식' });
+  const copyEn = copyEnOf(c);
+  const copyKo = copyKoOf(c);
   const copyRow =
     `<p class="copy-row">` +
     `<button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button>` +
