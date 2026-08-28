@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The lead time is the product — a fault detected at failure is worth nothing — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 제목과 배지를 한 줄에 — .rail-title 이 block 이라 그냥 두면 배지가 아래로 떨어진다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-left:8px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-done { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
+
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  /* 목록 행 안에서는 링크들과 한 줄에 서야 하므로 더 작고 납작하게 (jay, 2026-08-28). */
+  .copy-inline { font-size:0.72rem; padding:2px 9px; margin-left:6px; vertical-align:baseline; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-protocol" title="Protocol &mdash; done (6) / all (20)">Protocol<b><span class="count-done">6</span><span class="count-all">/20</span></b></a><a href="../pocs.html#sec-applied" title="Applied &mdash; done (6) / all (57)">Applied<b><span class="count-done">6</span><span class="count-all">/57</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; done (0) / all (7)">Economics<b><span class="count-done">0</span><span class="count-all">/7</span></b></a><a href="../pocs.html#sec-future" title="Future/Etc &mdash; done (0) / all (13)">Future/Etc<b><span class="count-done">0</span><span class="count-all">/13</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; done (3) / all (100)">Algorithms<b><span class="count-done">3</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; done (3) / all (52)">Math<b><span class="count-done">3</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-future" data-group>
+        <p class="nav-group-label">Future/Etc (13)</p>
+        <ul>
+        <li><a class="nav-link" href="pocs-procedural-not-generated.html" data-key="procedural-not-generated"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">85</span>Procedural, not generated — when the model is a program</span></a></li>
+        <li><a class="nav-link" href="pocs-sub-2bit-local-llm.html" data-key="sub-2bit-local-llm"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">86</span>Sub-2-bit LLMs, locally</span></a></li>
+        <li><a class="nav-link" href="pocs-bandwidth-not-capacity.html" data-key="bandwidth-not-capacity"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">87</span>Capacity loads the model; bandwidth serves it</span></a></li>
+        <li><a class="nav-link" href="pocs-robotics-entry-decision.html" data-key="robotics-entry-decision"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">88</span>Four ways into robotics, and what each one actually buys</span></a></li>
+        <li><a class="nav-link" href="pocs-opencv-robot-vision.html" data-key="opencv-robot-vision"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">89</span>Pixels to millimetres — the step before the arm moves</span></a></li>
+        <li><a class="nav-link" href="pocs-the-70-has-to-be-wrong.html" data-key="the-70-has-to-be-wrong"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">90</span>The 70% has to be wrong three times in ten</span></a></li>
+        <li><a class="nav-link" href="pocs-the-split-is-the-experiment.html" data-key="the-split-is-the-experiment"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">91</span>The model is not the experiment — the split is</span></a></li>
+        <li><a class="nav-link" href="pocs-huggingface-is-a-package-manager.html" data-key="huggingface-is-a-package-manager"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">92</span>Hugging Face is a package manager, and almost nobody pins the version</span></a></li>
+        <li><a class="nav-link active" href="pocs-lead-time-is-the-product.html" data-key="lead-time-is-the-product"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">93</span>The lead time is the product — a fault detected at failure is worth nothing</span></a></li>
+        <li><a class="nav-link" href="pocs-share-the-code-you-write.html" data-key="share-the-code-you-write"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">94</span>You can share the code you write, not the code you must obey</span></a></li>
+        <li><a class="nav-link" href="pocs-architecture-is-accepted-failure.html" data-key="architecture-is-accepted-failure"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">95</span>An architecture is a record of which failure you agreed to accept</span></a></li>
+        <li><a class="nav-link" href="pocs-the-boundary-is-the-unit.html" data-key="the-boundary-is-the-unit"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">96</span>A list of attacks does not transfer — the trust boundary does</span></a></li>
+        <li><a class="nav-link" href="pocs-google-glass-stitch.html" data-key="google-glass-stitch"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">97</span>Google Glass form factor &amp; Stitch</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The lead time is the product — a fault detected at failure is worth nothing</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#93</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>The lead time is the product — a fault detected at failure is worth nothing</h1>
+      <p class="lead">The slide that motivates fault detection states a cost ratio: unplanned downtime costs multiples of planned maintenance. That ratio is not motivation, it is the alert threshold. But the saving only exists if the warning arrives earlier than a repair can be scheduled — so the first number in the project is the time-to-repair distribution, and it needs no model.</p>
+      <p class="meta">Not yet scoped, and the first two steps involve no data science at all. First, get the time-to-repair distribution for the equipment in question — how long from a work order to a machine running again, including parts lead time. That number sets the horizon H below which any warning is worthless, and it comes from asking maintenance, not from modelling. Second, write down the cost ratio the motivating slide already asserts, because it is the alert threshold. Only then a model, and it can be trivial: a residual from a moving average on one sensor is enough to draw the curve. Sweep the alert threshold, plot expected cost per machine-month at the asserted ratio, and report three numbers — the chosen threshold, the lead time it buys, and the false-alarm rate at that threshold. Compare against the honest baseline, which is not &quot;do nothing&quot; but the schedule-based maintenance interval already in place.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# The lead time is the product — a fault detected at failure is worth nothing\n\nThe slide that motivates fault detection states a cost ratio: unplanned downtime costs multiples of planned maintenance. That ratio is not motivation, it is the alert threshold. But the saving only exists if the warning arrives earlier than a repair can be scheduled — so the first number in the project is the time-to-repair distribution, and it needs no model.\n\nNot yet scoped, and the first two steps involve no data science at all. First, get the time-to-repair distribution for the equipment in question — how long from a work order to a machine running again, including parts lead time. That number sets the horizon H below which any warning is worthless, and it comes from asking maintenance, not from modelling. Second, write down the cost ratio the motivating slide already asserts, because it is the alert threshold. Only then a model, and it can be trivial: a residual from a moving average on one sensor is enough to draw the curve. Sweep the alert threshold, plot expected cost per machine-month at the asserted ratio, and report three numbers — the chosen threshold, the lead time it buys, and the false-alarm rate at that threshold. Compare against the honest baseline, which is not \"do nothing\" but the schedule-based maintenance interval already in place.\n\n## Why\n\n**The motivating slide for every fault-detection project says the same thing, and it says more than it means to.** Unplanned downtime costs multiples of planned maintenance; the failure modes underneath it are safety, quality and throughput. That is a correct and well-known argument. What is usually missed is that **it has already specified the model** — a statement that missing a failure costs ten to a hundred times more than an unnecessary inspection is a statement about where the alert threshold goes, and it was available before anyone touched the data.\n\n**The part the slide does not say is that the saving is a function of time, not of correctness.** Three different problems share the name: **detection** asks whether behaviour is abnormal now, **diagnosis** asks what is abnormal, and **prognosis** asks when it will fail. The economics quoted are prognosis economics, and they only pay out if the warning arrives with enough room to act. A model that flags a bearing two hours before seizure, in a plant where the spare takes three days, has converted an unplanned stop into a slightly better-documented unplanned stop. **The lead time has to exceed the time to repair, and the time to repair is an organisational fact that can be measured this week without a single model.**\n\n**That reframing changes what the first deliverable is.** Not accuracy on a held-out set, but a horizon: given how long a repair actually takes, how much warning is required before an alert is worth acting on. Every modelling decision downstream — the label horizon, the feature window, the sampling rate — is set by that number. Projects that skip it end up optimising a metric that is real and a product that is not, and the failure is invisible in every plot they produce.\n\n**Then the data problem, which is the opposite of what people expect.** The machines whose downtime is expensive are the machines that rarely fail — that is the same sentence said twice. So labelled failures are scarce, often a few dozen across years, and frequently not labelled at all: a maintenance log records that a bearing was replaced, not that degradation began eleven days earlier. Supervised classification on that is not a hard problem, it is an under-specified one. The workable route is to model normal behaviour and score deviation from it, which trades a labelling problem for a different and more honest one — **an anomaly is not a failure.** Most deviations in real plant data are sensor faults, maintenance actions, product changeovers and ambient shifts. **The base rate of \"anomaly that turns out to be an impending failure\" is the number that decides whether an alarm is worth anything, and it is almost never measured.**\n\n**Finally, this domain triggers every leak in `the-split-is-the-experiment` at once, plus one of its own.** Sensor data is ordered in time, grouped by machine, and labelled by a forward window — so a random split lets the future predict the past, a time-only split lets the model memorise machine identity and then fail on a new installation, and a forward-horizon label overlaps the validation period even after a clean date cut. The extra one is specific to this literature: **run-to-failure datasets are pre-truncated**, ending at the failure they document, so remaining useful life is partly inferable from position in the file. A model can learn that the recording is ending rather than that the bearing is degrading, and it will score beautifully right up until it meets a machine that is still running.\n\n## How it works\n\n### Three problems wearing one name\n\n| | The question | The output | What it is worth |\n|---|---|---|---|\n| **Detection** | Is behaviour abnormal **now**? | An anomaly score at time t | An alarm. Nothing more |\n| **Diagnosis** | **What** is abnormal? | Component or failure mode | Routes the work order |\n| **Prognosis** | **When** will it fail? | Remaining useful life, or P(fail within H) | **The schedule — this is where the slide's economics live** |\n\nThe value of the whole thing is a function of **lead time minus time to act**, and that difference can be negative while every accuracy metric looks excellent. **A detector that is perfect and late is worth zero**, which is not a statement about models at all.\n\n### The cost ratio is the threshold\n\nLet **k = cost(missed failure) / cost(false alarm)**. The motivating slide asserts k is somewhere between ten and a hundred. Three consequences follow immediately:\n\n- **F1 assumes k = 1.** Precision and recall are weighted equally, which is a claim that an unnecessary inspection costs exactly as much as a destroyed machine. Nobody believes that, and models are tuned on it constantly.\n- **At k = 10 you should accept roughly ten false alarms per catch.** That feels wrong to operators and is arithmetically correct, which is exactly the conversation the number exists to make possible.\n- **The threshold precedes the data.** This is the same point `the-70-has-to-be-wrong` makes about probabilistic output — a threshold is a statement about costs, not a property of the model — and here the costs were written on slide one.\n\n**One honest correction to the arithmetic.** Alarm fatigue is a real cost that does not appear in cost(false alarm). If operators stop investigating after the twentieth false alarm, the effective k collapses toward one, because a missed failure is now certain rather than unlikely. **So \"ten false alarms per catch\" is an upper bound set by economics, not a target**, and the binding constraint is usually the credibility budget rather than the inspection cost.\n\n### Why the first model should not be supervised\n\n| Approach | What it needs | Why it usually fails here |\n|---|---|---|\n| **Supervised classification** | Many labelled failures | The valuable machines rarely fail; labels are dozens, and often mark the **repair** rather than the onset |\n| **Model normal, score deviation** | Only healthy history | Workable — but **an anomaly is not a failure** |\n| **Residual against a physics model** | A model of the machine | Strongest signal where it exists, since the residual has units and meaning |\n\nThe cheapest first artifact is not a model at all. **Take the anomalies the plant already noticed and label their causes from the maintenance log.** If most of them are changeovers and sensor faults, the honest conclusion is that the project's first deliverable is a changeover detector, and finding that out costs a day rather than a quarter.\n\n### The build: a cost curve, not a model\n\n1. **Time to repair** — from maintenance, not from data. Sets H.\n2. **The cost ratio** — from the motivating slide. Sets the threshold.\n3. **Any scorer** — a moving-average residual on one sensor is enough to draw the curve. `indicators-add-a-decision` applies directly: the transform adds no information, it adds a decision, and the decision is where the value is.\n4. **Sweep the threshold**, plot expected cost per machine-month, and report the threshold, the lead time it buys, and the false-alarm rate at that point.\n\n**The baseline is the part people get wrong.** It is not \"do nothing\". Almost every plant already runs schedule-based maintenance, which prevents some failures at a known cost. **A model that beats doing nothing and loses to replacing the part every six months is a negative result that looks like a positive one**, and only the cost curve shows it.\n"</script>
+      <h2>Why</h2>
+      <p><strong>The motivating slide for every fault-detection project says the same thing, and it says more than it means to.</strong> Unplanned downtime costs multiples of planned maintenance; the failure modes underneath it are safety, quality and throughput. That is a correct and well-known argument. What is usually missed is that <strong>it has already specified the model</strong> — a statement that missing a failure costs ten to a hundred times more than an unnecessary inspection is a statement about where the alert threshold goes, and it was available before anyone touched the data.</p>
+<p><strong>The part the slide does not say is that the saving is a function of time, not of correctness.</strong> Three different problems share the name: <strong>detection</strong> asks whether behaviour is abnormal now, <strong>diagnosis</strong> asks what is abnormal, and <strong>prognosis</strong> asks when it will fail. The economics quoted are prognosis economics, and they only pay out if the warning arrives with enough room to act. A model that flags a bearing two hours before seizure, in a plant where the spare takes three days, has converted an unplanned stop into a slightly better-documented unplanned stop. <strong>The lead time has to exceed the time to repair, and the time to repair is an organisational fact that can be measured this week without a single model.</strong></p>
+<p><strong>That reframing changes what the first deliverable is.</strong> Not accuracy on a held-out set, but a horizon: given how long a repair actually takes, how much warning is required before an alert is worth acting on. Every modelling decision downstream — the label horizon, the feature window, the sampling rate — is set by that number. Projects that skip it end up optimising a metric that is real and a product that is not, and the failure is invisible in every plot they produce.</p>
+<p><strong>Then the data problem, which is the opposite of what people expect.</strong> The machines whose downtime is expensive are the machines that rarely fail — that is the same sentence said twice. So labelled failures are scarce, often a few dozen across years, and frequently not labelled at all: a maintenance log records that a bearing was replaced, not that degradation began eleven days earlier. Supervised classification on that is not a hard problem, it is an under-specified one. The workable route is to model normal behaviour and score deviation from it, which trades a labelling problem for a different and more honest one — <strong>an anomaly is not a failure.</strong> Most deviations in real plant data are sensor faults, maintenance actions, product changeovers and ambient shifts. <strong>The base rate of &quot;anomaly that turns out to be an impending failure&quot; is the number that decides whether an alarm is worth anything, and it is almost never measured.</strong></p>
+<p><strong>Finally, this domain triggers every leak in <code>the-split-is-the-experiment</code> at once, plus one of its own.</strong> Sensor data is ordered in time, grouped by machine, and labelled by a forward window — so a random split lets the future predict the past, a time-only split lets the model memorise machine identity and then fail on a new installation, and a forward-horizon label overlaps the validation period even after a clean date cut. The extra one is specific to this literature: <strong>run-to-failure datasets are pre-truncated</strong>, ending at the failure they document, so remaining useful life is partly inferable from position in the file. A model can learn that the recording is ending rather than that the bearing is degrading, and it will score beautifully right up until it meets a machine that is still running.</p>
+      <h2>How it works</h2>
+      <h3>Three problems wearing one name</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>The question</th>
+<th>The output</th>
+<th>What it is worth</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Detection</strong></td>
+<td>Is behaviour abnormal <strong>now</strong>?</td>
+<td>An anomaly score at time t</td>
+<td>An alarm. Nothing more</td>
+</tr>
+<tr>
+<td><strong>Diagnosis</strong></td>
+<td><strong>What</strong> is abnormal?</td>
+<td>Component or failure mode</td>
+<td>Routes the work order</td>
+</tr>
+<tr>
+<td><strong>Prognosis</strong></td>
+<td><strong>When</strong> will it fail?</td>
+<td>Remaining useful life, or P(fail within H)</td>
+<td><strong>The schedule — this is where the slide&#39;s economics live</strong></td>
+</tr>
+</tbody></table></div>
+<p>The value of the whole thing is a function of <strong>lead time minus time to act</strong>, and that difference can be negative while every accuracy metric looks excellent. <strong>A detector that is perfect and late is worth zero</strong>, which is not a statement about models at all.</p>
+<h3>The cost ratio is the threshold</h3>
+<p>Let <strong>k = cost(missed failure) / cost(false alarm)</strong>. The motivating slide asserts k is somewhere between ten and a hundred. Three consequences follow immediately:</p>
+<ul>
+<li><strong>F1 assumes k = 1.</strong> Precision and recall are weighted equally, which is a claim that an unnecessary inspection costs exactly as much as a destroyed machine. Nobody believes that, and models are tuned on it constantly.</li>
+<li><strong>At k = 10 you should accept roughly ten false alarms per catch.</strong> That feels wrong to operators and is arithmetically correct, which is exactly the conversation the number exists to make possible.</li>
+<li><strong>The threshold precedes the data.</strong> This is the same point <code>the-70-has-to-be-wrong</code> makes about probabilistic output — a threshold is a statement about costs, not a property of the model — and here the costs were written on slide one.</li>
+</ul>
+<p><strong>One honest correction to the arithmetic.</strong> Alarm fatigue is a real cost that does not appear in cost(false alarm). If operators stop investigating after the twentieth false alarm, the effective k collapses toward one, because a missed failure is now certain rather than unlikely. <strong>So &quot;ten false alarms per catch&quot; is an upper bound set by economics, not a target</strong>, and the binding constraint is usually the credibility budget rather than the inspection cost.</p>
+<h3>Why the first model should not be supervised</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>What it needs</th>
+<th>Why it usually fails here</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Supervised classification</strong></td>
+<td>Many labelled failures</td>
+<td>The valuable machines rarely fail; labels are dozens, and often mark the <strong>repair</strong> rather than the onset</td>
+</tr>
+<tr>
+<td><strong>Model normal, score deviation</strong></td>
+<td>Only healthy history</td>
+<td>Workable — but <strong>an anomaly is not a failure</strong></td>
+</tr>
+<tr>
+<td><strong>Residual against a physics model</strong></td>
+<td>A model of the machine</td>
+<td>Strongest signal where it exists, since the residual has units and meaning</td>
+</tr>
+</tbody></table></div>
+<p>The cheapest first artifact is not a model at all. <strong>Take the anomalies the plant already noticed and label their causes from the maintenance log.</strong> If most of them are changeovers and sensor faults, the honest conclusion is that the project&#39;s first deliverable is a changeover detector, and finding that out costs a day rather than a quarter.</p>
+<h3>The build: a cost curve, not a model</h3>
+<ol>
+<li><strong>Time to repair</strong> — from maintenance, not from data. Sets H.</li>
+<li><strong>The cost ratio</strong> — from the motivating slide. Sets the threshold.</li>
+<li><strong>Any scorer</strong> — a moving-average residual on one sensor is enough to draw the curve. <code>indicators-add-a-decision</code> applies directly: the transform adds no information, it adds a decision, and the decision is where the value is.</li>
+<li><strong>Sweep the threshold</strong>, plot expected cost per machine-month, and report the threshold, the lead time it buys, and the false-alarm rate at that point.</li>
+</ol>
+<p><strong>The baseline is the part people get wrong.</strong> It is not &quot;do nothing&quot;. Almost every plant already runs schedule-based maintenance, which prevents some failures at a known cost. <strong>A model that beats doing nothing and loses to replacing the part every six months is a negative result that looks like a positive one</strong>, and only the cost curve shows it.</p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# 제품은 리드타임이다 — 고장 나는 순간 감지한 것은 값이 0이다\n\n고장 감지를 설득하는 슬라이드는 **비용비**를 말합니다 — 비계획 다운타임은 계획정비의 수배~수십 배. **그 비율은 동기가 아니라 경보 임계값입니다.** 다만 그 절감은 **경보가 수리를 잡을 수 있을 만큼 일찍 올 때만** 존재하므로, 프로젝트의 **첫 숫자는 수리 소요시간 분포**이고 **모델이 필요 없습니다.**\n\n아직 범위 미정이고, **처음 두 단계에는 데이터 과학이 전혀 들어가지 않습니다.** 첫째, 해당 설비의 **수리 소요시간 분포**를 구합니다 — 작업지시부터 기계가 다시 도는 데까지, **부품 조달 리드타임 포함.** 이 숫자가 **그 아래로는 어떤 경보도 값이 없는 지평 H** 를 정하고, 이건 모델링이 아니라 **정비팀에 물어서** 나옵니다. 둘째, **슬라이드가 이미 주장하는 비용비를 받아 적습니다.** 그게 경보 임계값이니까요. **그다음에야 모델**이고, 그건 사소해도 됩니다 — 센서 하나에 이동평균 잔차만 있어도 곡선은 그려집니다. 임계값을 훑으며 그 비용비로 **기계·월당 기대비용**을 그리고, 숫자 셋을 보고합니다 — **선택한 임계값, 그것이 사주는 리드타임, 그 임계값에서의 오경보율.** 비교 대상은 **\"아무것도 안 하기\"가 아니라 이미 돌고 있는 주기적 정비 간격**입니다.\n\n## 왜\n\n**모든 고장 감지 프로젝트의 동기 슬라이드는 같은 말을 하고, 자기가 뜻한 것보다 많은 말을 합니다.** 비계획 다운타임은 계획정비의 수배~수십 배이고, 그 아래 고장 양식은 안전·품질·생산성입니다. 맞고 잘 알려진 논증입니다. 보통 놓치는 것은 **그 문장이 이미 모델을 명세했다**는 점입니다 — **고장을 놓치는 비용이 불필요한 점검의 10~100배**라는 진술은 **경보 임계값을 어디 둘지에 대한 진술**이고, **데이터를 만지기 전에 이미 손에 있었습니다.**\n\n**슬라이드가 말하지 않는 부분은, 그 절감이 정확도가 아니라 시간의 함수라는 것입니다.** 한 이름을 공유하는 서로 다른 문제가 셋입니다 — **탐지**는 지금 이상한가, **진단**은 무엇이 이상한가, **예지**는 언제 고장 나는가. **인용된 경제성은 예지의 경제성**이고, **행동할 여유를 두고 경보가 와야만** 지급됩니다. 소착 2시간 전에 베어링을 잡아내는 모델은, **예비품 조달이 3일 걸리는 공장에서는 비계획 정지를 조금 더 잘 기록된 비계획 정지로 바꾼 것**입니다. **리드타임이 수리 소요시간을 넘어야 하고, 수리 소요시간은 모델 하나 없이 이번 주에 잴 수 있는 조직의 사실입니다.**\n\n**이 재구성이 첫 결과물을 바꿉니다.** 홀드아웃 정확도가 아니라 **지평**입니다 — 수리가 실제로 얼마나 걸리는지를 감안할 때, 경보가 행동할 값어치를 가지려면 얼마나 미리 와야 하는가. 그 아래 모든 모델링 결정이 — **라벨 지평, 피처 윈도, 샘플링 주기** — 그 숫자로 정해집니다. 이 단계를 건너뛴 프로젝트는 **지표는 진짜인데 제품은 아닌 것**을 최적화하게 되고, **그 실패는 자기가 그리는 어떤 그림에도 나타나지 않습니다.**\n\n**그다음은 데이터 문제인데, 사람들이 예상하는 것과 정반대입니다.** **다운타임이 비싼 기계는 좀처럼 고장 나지 않는 기계입니다** — 같은 문장을 두 번 말한 것이죠. 그래서 라벨된 고장은 희소하고(수년에 걸쳐 수십 건), 아예 라벨이 없는 경우도 잦습니다 — 정비 기록은 **베어링을 교체했다**고 적지 **열하루 전에 열화가 시작됐다**고 적지 않습니다. 그 위의 지도학습은 **어려운 문제가 아니라 미명세된 문제**입니다. 쓸 만한 경로는 **정상을 모델링하고 이탈을 점수화하는 것**이고, 이건 라벨링 문제를 **다르고 더 정직한 문제로** 바꿉니다 — **이상은 고장이 아닙니다.** 실제 공장 데이터의 이탈 대부분은 **센서 고장, 정비 작업, 품종 교체, 외기 변화**입니다. **\"이상 중에서 실제로 임박한 고장이었던 것의 비율\"이 경보의 값어치를 결정하는 숫자이고, 거의 아무도 재지 않습니다.**\n\n**마지막으로, 이 도메인은 `the-split-is-the-experiment` 의 누수를 한꺼번에 전부 켜고, 자기만의 것을 하나 더 얹습니다.** 센서 데이터는 **시간순이고, 기계로 그룹져 있고, 미래 창으로 라벨됩니다** — 그래서 무작위 분할은 미래가 과거를 예측하게 하고, 시간만 나눈 분할은 모델이 **기계 정체성을 외우게** 해서 **신규 설치 기계에서 무너지며**, 미래 지평 라벨은 날짜를 깨끗이 잘라도 검증 구간과 겹칩니다. 하나 더는 이 분야 고유의 것입니다: **run-to-failure 데이터셋은 미리 잘려 있습니다.** 자기가 기록한 고장에서 끝나므로 **잔여수명이 파일 안 위치에서 부분적으로 유추됩니다.** 모델은 **베어링이 열화한다**가 아니라 **녹음이 끝나간다**를 배울 수 있고, **여전히 돌고 있는 기계를 만나기 직전까지 훌륭한 점수**를 냅니다.\n\n## 동작 방식\n\n### 이름 하나를 쓴 문제 셋\n\n| | 질문 | 출력 | 값어치 |\n|---|---|---|---|\n| **탐지(Detection)** | **지금** 이상한가? | 시점 t 의 이상 점수 | **경보. 그 이상은 아님** |\n| **진단(Diagnosis)** | **무엇이** 이상한가? | 부품 또는 고장 양식 | 작업지시를 어디로 보낼지 정함 |\n| **예지(Prognosis)** | **언제** 고장 나는가? | 잔여수명, 또는 H 안에 고장 날 확률 | **일정 — 슬라이드의 경제성이 사는 곳** |\n\n전체의 값어치는 **리드타임 빼기 행동 소요시간**의 함수이고, **모든 정확도 지표가 훌륭해 보이는 동안 그 차이가 음수일 수 있습니다.** **완벽하지만 늦은 탐지기의 값은 0이고**, 이건 애초에 모델에 대한 진술이 아닙니다.\n\n### 비용비가 곧 임계값이다\n\n**k = 고장을 놓친 비용 ÷ 오경보 비용** 이라 두면, 동기 슬라이드는 k 가 10에서 100 사이라고 주장하고 있습니다. 결과 셋이 바로 따라옵니다:\n\n- **F1 은 k = 1 을 가정합니다.** 정밀도와 재현율에 같은 가중치를 준다는 것은 **불필요한 점검 한 번이 기계 한 대 파손과 정확히 같은 값**이라는 주장입니다. 아무도 그렇게 믿지 않는데 **모델은 끊임없이 그 위에서 튜닝됩니다.**\n- **k = 10 이면 잡아내는 한 건당 오경보 열 건까지 받아들여야 합니다.** 현장 감각에는 틀리게 느껴지고 **산수로는 맞으며**, 정확히 그 대화를 가능하게 하려고 이 숫자가 존재합니다.\n- **임계값이 데이터보다 먼저입니다.** `the-70-has-to-be-wrong` 이 확률 출력에 대해 하는 말과 같습니다 — **임계값은 비용에 대한 진술이지 모델의 속성이 아니다** — 그리고 여기서는 **그 비용이 1페이지에 적혀 있었습니다.**\n\n**산수에 대한 정직한 보정 하나.** **경보 피로(alarm fatigue)는 오경보 비용에 안 잡히는 진짜 비용**입니다. 스무 번째 오경보 뒤에 현장이 확인을 그만두면 **놓친 고장이 드문 일이 아니라 확정 사건이 되므로 실효 k 가 1 쪽으로 붕괴합니다.** 그래서 **\"건당 오경보 열 건\"은 경제성이 정한 상한이지 목표가 아니며**, 실제로 묶이는 제약은 대개 점검 비용이 아니라 **신뢰 예산**입니다.\n\n### 왜 첫 모델이 지도학습이면 안 되는가\n\n| 접근 | 필요한 것 | 여기서 대개 실패하는 이유 |\n|---|---|---|\n| **지도 분류** | 라벨된 고장이 많이 | **값나가는 기계는 좀처럼 고장 안 남.** 라벨은 수십 건이고, 그나마 **열화 시작이 아니라 수리 시점**을 가리킴 |\n| **정상 모델링 + 이탈 점수화** | 정상 이력만 | 쓸 만함 — 다만 **이상은 고장이 아님** |\n| **물리 모델 대비 잔차** | 기계에 대한 모델 | 있는 곳에서는 **가장 강한 신호.** 잔차에 **단위와 의미**가 있으므로 |\n\n**가장 싼 첫 산출물은 모델이 아닙니다.** **현장이 이미 알아챈 이상들을 가져와 정비 기록에서 원인을 라벨링하십시오.** 대부분이 품종 교체와 센서 고장이면, 정직한 결론은 **이 프로젝트의 첫 결과물이 품종 교체 감지기라는 것**이고, 그걸 알아내는 데 **분기가 아니라 하루**가 듭니다.\n\n### 만들 것: 모델이 아니라 비용 곡선\n\n1. **수리 소요시간** — 데이터가 아니라 정비팀에서. **H 를 정함.**\n2. **비용비** — 동기 슬라이드에서. **임계값을 정함.**\n3. **아무 점수기나** — 센서 하나의 이동평균 잔차면 곡선은 그려집니다. `indicators-add-a-decision` 이 그대로 적용됩니다 — **변환은 정보를 더하지 않고 결정을 더하며, 값어치는 그 결정에 있습니다.**\n4. **임계값을 훑어** 기계·월당 기대비용을 그리고, **임계값·리드타임·그 지점의 오경보율**을 보고합니다.\n\n**사람들이 틀리는 부분은 기준선입니다.** **\"아무것도 안 하기\"가 아닙니다.** 거의 모든 공장이 이미 **주기적 정비**를 돌리고 있고, 그건 **알려진 비용으로 일부 고장을 막고 있습니다.** **아무것도 안 하기는 이기고 6개월마다 교체하기에는 지는 모델은, 양성처럼 보이는 음성 결과**이며, **그것을 보여주는 것은 비용 곡선뿐입니다.**\n"</script>
+      <h1>제품은 리드타임이다 — 고장 나는 순간 감지한 것은 값이 0이다</h1>
+      <p class="lead">고장 감지를 설득하는 슬라이드는 <strong>비용비</strong>를 말합니다 — 비계획 다운타임은 계획정비의 수배~수십 배. <strong>그 비율은 동기가 아니라 경보 임계값입니다.</strong> 다만 그 절감은 <strong>경보가 수리를 잡을 수 있을 만큼 일찍 올 때만</strong> 존재하므로, 프로젝트의 <strong>첫 숫자는 수리 소요시간 분포</strong>이고 <strong>모델이 필요 없습니다.</strong></p>
+      <p class="meta">아직 범위 미정이고, <strong>처음 두 단계에는 데이터 과학이 전혀 들어가지 않습니다.</strong> 첫째, 해당 설비의 <strong>수리 소요시간 분포</strong>를 구합니다 — 작업지시부터 기계가 다시 도는 데까지, <strong>부품 조달 리드타임 포함.</strong> 이 숫자가 <strong>그 아래로는 어떤 경보도 값이 없는 지평 H</strong> 를 정하고, 이건 모델링이 아니라 <strong>정비팀에 물어서</strong> 나옵니다. 둘째, <strong>슬라이드가 이미 주장하는 비용비를 받아 적습니다.</strong> 그게 경보 임계값이니까요. <strong>그다음에야 모델</strong>이고, 그건 사소해도 됩니다 — 센서 하나에 이동평균 잔차만 있어도 곡선은 그려집니다. 임계값을 훑으며 그 비용비로 <strong>기계·월당 기대비용</strong>을 그리고, 숫자 셋을 보고합니다 — <strong>선택한 임계값, 그것이 사주는 리드타임, 그 임계값에서의 오경보율.</strong> 비교 대상은 <strong>&quot;아무것도 안 하기&quot;가 아니라 이미 돌고 있는 주기적 정비 간격</strong>입니다.</p>
+      <h2>왜</h2>
+      <p><strong>모든 고장 감지 프로젝트의 동기 슬라이드는 같은 말을 하고, 자기가 뜻한 것보다 많은 말을 합니다.</strong> 비계획 다운타임은 계획정비의 수배~수십 배이고, 그 아래 고장 양식은 안전·품질·생산성입니다. 맞고 잘 알려진 논증입니다. 보통 놓치는 것은 <strong>그 문장이 이미 모델을 명세했다</strong>는 점입니다 — <strong>고장을 놓치는 비용이 불필요한 점검의 10~100배</strong>라는 진술은 <strong>경보 임계값을 어디 둘지에 대한 진술</strong>이고, <strong>데이터를 만지기 전에 이미 손에 있었습니다.</strong></p>
+<p><strong>슬라이드가 말하지 않는 부분은, 그 절감이 정확도가 아니라 시간의 함수라는 것입니다.</strong> 한 이름을 공유하는 서로 다른 문제가 셋입니다 — <strong>탐지</strong>는 지금 이상한가, <strong>진단</strong>은 무엇이 이상한가, <strong>예지</strong>는 언제 고장 나는가. <strong>인용된 경제성은 예지의 경제성</strong>이고, <strong>행동할 여유를 두고 경보가 와야만</strong> 지급됩니다. 소착 2시간 전에 베어링을 잡아내는 모델은, <strong>예비품 조달이 3일 걸리는 공장에서는 비계획 정지를 조금 더 잘 기록된 비계획 정지로 바꾼 것</strong>입니다. <strong>리드타임이 수리 소요시간을 넘어야 하고, 수리 소요시간은 모델 하나 없이 이번 주에 잴 수 있는 조직의 사실입니다.</strong></p>
+<p><strong>이 재구성이 첫 결과물을 바꿉니다.</strong> 홀드아웃 정확도가 아니라 <strong>지평</strong>입니다 — 수리가 실제로 얼마나 걸리는지를 감안할 때, 경보가 행동할 값어치를 가지려면 얼마나 미리 와야 하는가. 그 아래 모든 모델링 결정이 — <strong>라벨 지평, 피처 윈도, 샘플링 주기</strong> — 그 숫자로 정해집니다. 이 단계를 건너뛴 프로젝트는 <strong>지표는 진짜인데 제품은 아닌 것</strong>을 최적화하게 되고, <strong>그 실패는 자기가 그리는 어떤 그림에도 나타나지 않습니다.</strong></p>
+<p><strong>그다음은 데이터 문제인데, 사람들이 예상하는 것과 정반대입니다.</strong> <strong>다운타임이 비싼 기계는 좀처럼 고장 나지 않는 기계입니다</strong> — 같은 문장을 두 번 말한 것이죠. 그래서 라벨된 고장은 희소하고(수년에 걸쳐 수십 건), 아예 라벨이 없는 경우도 잦습니다 — 정비 기록은 <strong>베어링을 교체했다</strong>고 적지 <strong>열하루 전에 열화가 시작됐다</strong>고 적지 않습니다. 그 위의 지도학습은 <strong>어려운 문제가 아니라 미명세된 문제</strong>입니다. 쓸 만한 경로는 <strong>정상을 모델링하고 이탈을 점수화하는 것</strong>이고, 이건 라벨링 문제를 <strong>다르고 더 정직한 문제로</strong> 바꿉니다 — <strong>이상은 고장이 아닙니다.</strong> 실제 공장 데이터의 이탈 대부분은 <strong>센서 고장, 정비 작업, 품종 교체, 외기 변화</strong>입니다. <strong>&quot;이상 중에서 실제로 임박한 고장이었던 것의 비율&quot;이 경보의 값어치를 결정하는 숫자이고, 거의 아무도 재지 않습니다.</strong></p>
+<p><strong>마지막으로, 이 도메인은 <code>the-split-is-the-experiment</code> 의 누수를 한꺼번에 전부 켜고, 자기만의 것을 하나 더 얹습니다.</strong> 센서 데이터는 <strong>시간순이고, 기계로 그룹져 있고, 미래 창으로 라벨됩니다</strong> — 그래서 무작위 분할은 미래가 과거를 예측하게 하고, 시간만 나눈 분할은 모델이 <strong>기계 정체성을 외우게</strong> 해서 <strong>신규 설치 기계에서 무너지며</strong>, 미래 지평 라벨은 날짜를 깨끗이 잘라도 검증 구간과 겹칩니다. 하나 더는 이 분야 고유의 것입니다: <strong>run-to-failure 데이터셋은 미리 잘려 있습니다.</strong> 자기가 기록한 고장에서 끝나므로 <strong>잔여수명이 파일 안 위치에서 부분적으로 유추됩니다.</strong> 모델은 <strong>베어링이 열화한다</strong>가 아니라 <strong>녹음이 끝나간다</strong>를 배울 수 있고, <strong>여전히 돌고 있는 기계를 만나기 직전까지 훌륭한 점수</strong>를 냅니다.</p>
+      <h2>동작 방식</h2>
+      <h3>이름 하나를 쓴 문제 셋</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>질문</th>
+<th>출력</th>
+<th>값어치</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>탐지(Detection)</strong></td>
+<td><strong>지금</strong> 이상한가?</td>
+<td>시점 t 의 이상 점수</td>
+<td><strong>경보. 그 이상은 아님</strong></td>
+</tr>
+<tr>
+<td><strong>진단(Diagnosis)</strong></td>
+<td><strong>무엇이</strong> 이상한가?</td>
+<td>부품 또는 고장 양식</td>
+<td>작업지시를 어디로 보낼지 정함</td>
+</tr>
+<tr>
+<td><strong>예지(Prognosis)</strong></td>
+<td><strong>언제</strong> 고장 나는가?</td>
+<td>잔여수명, 또는 H 안에 고장 날 확률</td>
+<td><strong>일정 — 슬라이드의 경제성이 사는 곳</strong></td>
+</tr>
+</tbody></table></div>
+<p>전체의 값어치는 <strong>리드타임 빼기 행동 소요시간</strong>의 함수이고, <strong>모든 정확도 지표가 훌륭해 보이는 동안 그 차이가 음수일 수 있습니다.</strong> <strong>완벽하지만 늦은 탐지기의 값은 0이고</strong>, 이건 애초에 모델에 대한 진술이 아닙니다.</p>
+<h3>비용비가 곧 임계값이다</h3>
+<p><strong>k = 고장을 놓친 비용 ÷ 오경보 비용</strong> 이라 두면, 동기 슬라이드는 k 가 10에서 100 사이라고 주장하고 있습니다. 결과 셋이 바로 따라옵니다:</p>
+<ul>
+<li><strong>F1 은 k = 1 을 가정합니다.</strong> 정밀도와 재현율에 같은 가중치를 준다는 것은 <strong>불필요한 점검 한 번이 기계 한 대 파손과 정확히 같은 값</strong>이라는 주장입니다. 아무도 그렇게 믿지 않는데 <strong>모델은 끊임없이 그 위에서 튜닝됩니다.</strong></li>
+<li><strong>k = 10 이면 잡아내는 한 건당 오경보 열 건까지 받아들여야 합니다.</strong> 현장 감각에는 틀리게 느껴지고 <strong>산수로는 맞으며</strong>, 정확히 그 대화를 가능하게 하려고 이 숫자가 존재합니다.</li>
+<li><strong>임계값이 데이터보다 먼저입니다.</strong> <code>the-70-has-to-be-wrong</code> 이 확률 출력에 대해 하는 말과 같습니다 — <strong>임계값은 비용에 대한 진술이지 모델의 속성이 아니다</strong> — 그리고 여기서는 <strong>그 비용이 1페이지에 적혀 있었습니다.</strong></li>
+</ul>
+<p><strong>산수에 대한 정직한 보정 하나.</strong> <strong>경보 피로(alarm fatigue)는 오경보 비용에 안 잡히는 진짜 비용</strong>입니다. 스무 번째 오경보 뒤에 현장이 확인을 그만두면 <strong>놓친 고장이 드문 일이 아니라 확정 사건이 되므로 실효 k 가 1 쪽으로 붕괴합니다.</strong> 그래서 <strong>&quot;건당 오경보 열 건&quot;은 경제성이 정한 상한이지 목표가 아니며</strong>, 실제로 묶이는 제약은 대개 점검 비용이 아니라 <strong>신뢰 예산</strong>입니다.</p>
+<h3>왜 첫 모델이 지도학습이면 안 되는가</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>접근</th>
+<th>필요한 것</th>
+<th>여기서 대개 실패하는 이유</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>지도 분류</strong></td>
+<td>라벨된 고장이 많이</td>
+<td><strong>값나가는 기계는 좀처럼 고장 안 남.</strong> 라벨은 수십 건이고, 그나마 <strong>열화 시작이 아니라 수리 시점</strong>을 가리킴</td>
+</tr>
+<tr>
+<td><strong>정상 모델링 + 이탈 점수화</strong></td>
+<td>정상 이력만</td>
+<td>쓸 만함 — 다만 <strong>이상은 고장이 아님</strong></td>
+</tr>
+<tr>
+<td><strong>물리 모델 대비 잔차</strong></td>
+<td>기계에 대한 모델</td>
+<td>있는 곳에서는 <strong>가장 강한 신호.</strong> 잔차에 <strong>단위와 의미</strong>가 있으므로</td>
+</tr>
+</tbody></table></div>
+<p><strong>가장 싼 첫 산출물은 모델이 아닙니다.</strong> <strong>현장이 이미 알아챈 이상들을 가져와 정비 기록에서 원인을 라벨링하십시오.</strong> 대부분이 품종 교체와 센서 고장이면, 정직한 결론은 <strong>이 프로젝트의 첫 결과물이 품종 교체 감지기라는 것</strong>이고, 그걸 알아내는 데 <strong>분기가 아니라 하루</strong>가 듭니다.</p>
+<h3>만들 것: 모델이 아니라 비용 곡선</h3>
+<ol>
+<li><strong>수리 소요시간</strong> — 데이터가 아니라 정비팀에서. <strong>H 를 정함.</strong></li>
+<li><strong>비용비</strong> — 동기 슬라이드에서. <strong>임계값을 정함.</strong></li>
+<li><strong>아무 점수기나</strong> — 센서 하나의 이동평균 잔차면 곡선은 그려집니다. <code>indicators-add-a-decision</code> 이 그대로 적용됩니다 — <strong>변환은 정보를 더하지 않고 결정을 더하며, 값어치는 그 결정에 있습니다.</strong></li>
+<li><strong>임계값을 훑어</strong> 기계·월당 기대비용을 그리고, <strong>임계값·리드타임·그 지점의 오경보율</strong>을 보고합니다.</li>
+</ol>
+<p><strong>사람들이 틀리는 부분은 기준선입니다.</strong> <strong>&quot;아무것도 안 하기&quot;가 아닙니다.</strong> 거의 모든 공장이 이미 <strong>주기적 정비</strong>를 돌리고 있고, 그건 <strong>알려진 비용으로 일부 고장을 막고 있습니다.</strong> <strong>아무것도 안 하기는 이기고 6개월마다 교체하기에는 지는 모델은, 양성처럼 보이는 음성 결과</strong>이며, <strong>그것을 보여주는 것은 비용 곡선뿐입니다.</strong></p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-huggingface-is-a-package-manager.html">&larr; 92. Hugging Face is a package manager, and almost nobody pins the version</a><a href="pocs-share-the-code-you-write.html">94. You can share the code you write, not the code you must obey &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const observed = new Map();
+  let revealTimer;
+  // 밴드에 걸친 항목 중 "문서 순서로 첫 번째"를 고르면 언제나 한 칸 앞이 켜진다
+  // (jay, 2026-08-27: "the left pane should sync with right pane in the item's position").
+  // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
+  // 고르면 방금 도착한 항목이 켜진다.
+  function syncActive() {
+    // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
+    // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
+    // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
+    const line = window.innerHeight * 0.1;
+    let first = null;
+    let started = -Infinity;
+    let upcoming = Infinity;
+    let firstUpcoming = null;
+    for (const k of seen) {
+      const el = observed.get(k);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top <= line) {
+        if (top > started) {
+          started = top;
+          first = k;
+        }
+      } else if (top < upcoming) {
+        upcoming = top;
+        firstUpcoming = k;
+      }
+    }
+    if (first === null) first = firstUpcoming;
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }
+
+  // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
+  // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
+  let ticking = false;
+  addEventListener(
+    'scroll',
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncActive();
+      });
+    },
+    { passive: true }
+  );
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    syncActive();
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) {
+      observed.set(key, el);
+      io.observe(el);
+    }
+  }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
+</script>
+</body>
+</html>

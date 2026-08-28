@@ -127,7 +127,10 @@ const cards = [
 // 뒤. 예전의 "Later" 묶음은 없앴고 그 항목들은 뒤 구획으로 합쳐졌다 — 지금 중요하지 않다는
 // 표시가 목록을 셋으로 가를 만큼의 값을 하지 못했다. 번호는 두 구획을 가로질러 이어진다.
 // 카드 구획 (jay, 2026-08-27 에 Economics·Future 추가). 순서가 곧 번호 순서다 —
-// 기계 → 그 위에 지은 것 → 돈의 논리 → 아직 오지 않은 것.
+// 기계 → 그 위에 지은 것 → 돈의 논리 → 나머지 전부.
+// 마지막 칸은 2026-08-28 에 Future → "Future/Etc" 로 바뀌었다 (jay): 로보틱스·미래 기술만
+// 담기에는 좁았고, "어느 칸에도 안 들어가는 것"을 둘 자리가 따로 없었다. id 는 'future' 로
+// 두므로 카드의 group 값과 #sec-future 앵커는 그대로다 — 바뀐 것은 표시 이름과 성격뿐.
 const CARD_GROUPS = [
   {
     id: 'protocol',
@@ -146,8 +149,8 @@ const CARD_GROUPS = [
   },
   {
     id: 'future',
-    title: 'Future',
-    lead: 'Robotics, embodied AI, and the constraints that decide which of it arrives &mdash; the adjacent track, kept honest about what is a demo and what is a cost curve.',
+    title: 'Future/Etc',
+    lead: 'Robotics, embodied AI and data-science method, plus anything that does not belong to a section above &mdash; the catch-all, kept honest about what is a demo and what is a cost curve.',
   },
 ];
 const cardsInGroup = (id) =>
