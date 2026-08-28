@@ -430,22 +430,19 @@ const CURRICULUM_LEAD = {
 // 전체 합계 한 줄(all / planned)은 지웠다 (jay, 2026-08-27: "this number is irrelevant") —
 // 네 섹션이 서로 다른 것을 세는데 하나로 합치면 아무것도 뜻하지 않는다. 대신 같은 형식을
 // 섹션마다 붙인다: 알약에는 압축해서(19/13), 섹션 머리에는 풀어서.
-const plannedIn = (list) => list.filter((c) => c.status === 'soon').length;
+const doneIn = (list) => list.filter((c) => c.status === 'done').length;
 const SECTIONS = [
-  ...grouped.map((g) => [`sec-${g.id}`, g.title, g.numbered.length, plannedIn(g.numbered)]),
-  ...curricula.map(({ cfg, items }) => [
-    `sec-${cfg.id}`,
-    cfg.sectionTitle,
-    items.length,
-    items.filter((i) => !i.done).length,
-  ]),
+  ...grouped.map((g) => [`sec-${g.id}`, g.title, g.numbered.length, doneIn(g.numbered)]),
+  ...curricula.map(({ cfg, items, done }) => [`sec-${cfg.id}`, cfg.sectionTitle, items.length, done]),
 ];
-// planned 를 앞에, 그리고 파랗게 (jay, 2026-08-27) — 이 페이지에서 먼저 알고 싶은 것은
-// 전체 개수가 아니라 남은 일의 크기다. 전체는 그 뒤의 맥락이라 흐리게 둔다.
+// 파란 숫자는 done 개수다 (jay, 2026-08-28). 2026-08-27 에는 남은 일(soon)을 셌지만,
+// 이 페이지에서 먼저 알고 싶은 것은 "얼마나 남았나"가 아니라 "얼마나 끝냈나"로 바뀌었다.
+// live 는 어느 쪽에도 세지 않는다 (jay: "live는 여기 poc랑 상관없어") — 상시 구동 데모는
+// 이 목록이 재는 대상이 아니므로 status === 'done' 만 센다. 전체는 맥락이라 흐리게 둔다.
 const sectionMeta = Object.fromEntries(
-  SECTIONS.map(([id, , all, planned]) => [
+  SECTIONS.map(([id, , all, done]) => [
     id,
-    `<span class="count-planned">planned (${planned})</span> <span class="count-all">/ all (${all})</span>`,
+    `<span class="count-done">done (${done})</span> <span class="count-all">/ all (${all})</span>`,
   ])
 );
 // 제목 옆 진척률 — 카드와 커리큘럼을 통틀어 done ÷ all (jay, 2026-08-27).
@@ -456,8 +453,8 @@ const doneTotals = [
 const doneNote = `${Math.round((doneTotals[0] / doneTotals[1]) * 100)}% done`;
 
 const railJump = SECTIONS.map(
-  ([id, label, all, planned]) =>
-    `<a href="#${id}" title="${label} &mdash; planned (${planned}) / all (${all})">${label}<b><span class="count-planned">${planned}</span><span class="count-all">/${all}</span></b></a>`
+  ([id, label, all, done]) =>
+    `<a href="#${id}" title="${label} &mdash; done (${done}) / all (${all})">${label}<b><span class="count-done">${done}</span><span class="count-all">/${all}</span></b></a>`
 ).join('');
 
 const curriculumHtml = curricula
@@ -525,8 +522,8 @@ for (const [idx, c] of numbered.entries()) {
 // 상세 페이지 레일 — 구획 알약은 목록 페이지의 앵커를 가리키고, 항목 목록은 같은 구획의
 // 형제들을 파일 링크로 잇는다. 지금 보고 있는 항목은 active 로 표시된다.
 const detailRailJump = SECTIONS.map(
-  ([id, label, all, planned]) =>
-    `<a href="../pocs.html#${id}" title="${label} &mdash; planned (${planned}) / all (${all})">${label}<b><span class="count-planned">${planned}</span><span class="count-all">/${all}</span></b></a>`
+  ([id, label, all, done]) =>
+    `<a href="../pocs.html#${id}" title="${label} &mdash; done (${done}) / all (${all})">${label}<b><span class="count-done">${done}</span><span class="count-all">/${all}</span></b></a>`
 ).join('');
 
 function detailNavGroups(current) {

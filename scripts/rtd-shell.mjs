@@ -101,7 +101,7 @@ const PAGE_CSS = `
   .rail-jump a b { font-weight:600; margin-left:4px; }
   /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
      맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
-  .count-planned { color:var(--accent); font-weight:600; }
+  .count-done { color:var(--accent); font-weight:600; }
   .count-all { opacity:0.5; }
   .rail-search { padding:14px 16px 8px; }
   .rail-search input {
