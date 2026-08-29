@@ -261,6 +261,17 @@ fs.writeFileSync(INDEX_HTML, marked, 'utf8');
 // 좌측 고정 레일에 **전체 항목**을 싣고 본문은 오른쪽 (jay, 2026-08-12, verex /docs 레퍼런스).
 // 인덱스가 6장만 보여주게 된 뒤로 이 페이지가 "전부 있는 곳"이 됐고, 상단 TOC 하나로는
 // 18개를 훑기 어렵다 — 레일은 어디까지 왔든 목록이 눈앞에 남는다.
+// 최근에 손댄 항목 표시 (jay, 2026-08-29) — 왼쪽 레일에서 제목이 분홍색으로 뜬다.
+// 기준은 카드의 updated 필드(= 본문이 실제로 바뀐 날)이고, 이 창을 지나면 저절로 꺼진다.
+// 숫자를 줄이고 싶으면 이 상수 하나만 바꾸면 된다.
+const NEW_WINDOW_DAYS = 4;
+const NEW_SINCE = (() => {
+  const d = new Date();
+  d.setDate(d.getDate() - NEW_WINDOW_DAYS);
+  return d.toISOString().slice(0, 10);
+})();
+const isRecentlyUpdated = (c) => Boolean(c.updated) && c.updated >= NEW_SINCE;
+
 function navItems(list) {
   return list.map((c) => {
       const b = badge(c);
@@ -271,6 +282,7 @@ function navItems(list) {
         text: `<span class="topic-no">${c.no}</span>${escapeHtml(c.title)}`,
         color: b.color,
         statusLabel: b.label,
+        isNew: isRecentlyUpdated(c),
       };
   });
 }
@@ -434,6 +446,7 @@ const CURRICULUM_LEAD = {
 // 네 섹션이 서로 다른 것을 세는데 하나로 합치면 아무것도 뜻하지 않는다. 대신 같은 형식을
 // 섹션마다 붙인다: 알약에는 압축해서(19/13), 섹션 머리에는 풀어서.
 const doneIn = (list) => list.filter((c) => c.status === 'done').length;
+
 const SECTIONS = [
   ...grouped.map((g) => [`sec-${g.id}`, g.title, g.numbered.length, doneIn(g.numbered)]),
   ...curricula.map(({ cfg, items, done }) => [`sec-${cfg.id}`, cfg.sectionTitle, items.length, done]),
@@ -545,6 +558,7 @@ function detailNavGroups(current) {
           text: `<span class="topic-no">${n.no}</span>${escapeHtml(n.title)}`,
           color: b.color,
           statusLabel: b.label,
+          isNew: isRecentlyUpdated(n),
         };
       }),
     },

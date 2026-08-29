@@ -231,6 +231,7 @@ export const POC_CARDS: DemoCard[] = [
     // 위 "aa" 카드가 남긴 빈자리를 메우는 카드 — 4대 요소는 전부 사람이 버튼을 눌러 시작하므로
     // 능력이지 자율성이 아니다(jay, 2026-08-05). 설계: docs/tasks/current-plan.md.
     key: "agent",
+    updated: "2026-08-26",
     title: "Autonomous payment agent",
     titleKo: "자율 결제 에이전트",
     description:
@@ -412,6 +413,7 @@ export const POC_CARDS: DemoCard[] = [
     // 실제 보안은 토큰 분포로 넘어갔는데, 토큰 분포를 감사하는 사람은 없다.
     // stake-concentration(겉보기 N개 단위) · aqua(먼저 온 사람에게만 실재하는 깊이)와 같은 계열.
     key: "governance-capture-cost",
+    updated: "2026-08-25",
     group: "protocol",
     title: "Governance capture — when the exploit is a market order",
     titleKo: "거버넌스 장악 — 익스플로잇이 그냥 시장가 매수일 때",
@@ -442,6 +444,7 @@ export const POC_CARDS: DemoCard[] = [
     // 안전이 "모두가 더 싼 쪽을 고르지는 않는다"에 기대는 구조라, aqua-shared-liquidity 카드
     // (호가된 깊이는 먼저 온 사람에게만 실재)와 논리 형태가 같다.
     key: "l1-zkevm-optional-proofs",
+    updated: "2026-08-25",
     group: "protocol",
     title: "L1 zkEVM — the word doing the work is \"optional\"",
     titleKo: "L1 zkEVM — 정작 일하는 단어는 '선택적'이다",
@@ -468,6 +471,7 @@ export const POC_CARDS: DemoCard[] = [
     // 주문 형식(GaslessCrossChainOrder)은 표준화됐지만 정산 검증과 리스크는 필러가 지는 구조.
     // governance-capture-cost(감사 경계 vs 신뢰 경계) 및 l1-zkevm-optional-proofs(경제적 선택에 기댄 안전)와 같은 계열.
     key: "erc-7683-settlement-security",
+    updated: "2026-08-25",
     group: "protocol",
     title: "ERC-7683 settlement security — the layer left deliberately unstandardized",
     titleKo: "ERC-7683 정산 보안 — 표준이 일부러 비워둔 그 층",
@@ -523,6 +527,7 @@ export const POC_CARDS: DemoCard[] = [
     // 뽑는 사람이 "예측시장 전문가"가 아니라 청산·정산·주문 라우팅·규제 보고 백엔드라는 것이 신호의 전부.
     // 같은 주 한국은 Polymarket을 형법상 도박으로 차단 — 같은 상품, 두 법역, 다른 재료.
     key: "event-contract-plumbing",
+    updated: "2026-08-28",
     title: "The hiring signal is the spec — event-contract plumbing",
     titleKo: "채용 신호가 곧 명세서다 — 이벤트 계약 배관",
     description:
@@ -580,6 +585,7 @@ export const POC_CARDS: DemoCard[] = [
     // 카드가 더하는 것은 두 가지 — ① 이 초안의 기법은 컨트랙트를 똑똑하게 만드는 게 아니라
     // 의견을 갖지 않게 만드는 것이고, ② 되돌릴 수 없다는 성질은 위험이 아니라 보장 그 자체다.
     key: "irreversible-switch-design",
+    updated: "2026-08-27",
     group: "protocol",
     title: "The migration works by making the contract dumber",
     titleKo: "마이그레이션은 컨트랙트를 더 멍청하게 만들어서 성립한다",
@@ -624,6 +630,7 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-26 리포트에서 뽑은 카드 1/5 (jay). 프로토콜 묶음 중 EIP-8198 Quick Slots.
     // 요지는 프로토콜 변경 자체가 아니라, 앱 코드 곳곳에 적히지 않은 채 박혀 있는 "12초"다.
     key: "quick-slots-10s",
+    updated: "2026-08-27",
     group: "protocol",
     title: "Ten-second slots — the constant nobody wrote down",
     titleKo: "10초 슬롯 — 아무도 적어두지 않은 상수",
@@ -649,6 +656,7 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-26 리포트 카드 2/5 (jay). S티어 L1 스케일링 — EIP-8131 · EIP-8279.
     // 단일 가스 숫자가 감추고 있던 교차보조를 이 프로젝트의 트랜잭션 구성으로 재계산한다.
     key: "l1-data-pricing-dimensions",
+    updated: "2026-08-27",
     group: "protocol",
     title: "When gas stops being one number — data pricing and bandwidth accounting",
     titleKo: "가스가 더 이상 숫자 하나가 아닐 때 — 데이터 가격과 대역폭 회계",
@@ -704,6 +712,7 @@ export const POC_CARDS: DemoCard[] = [
     // plumbing-skills-buyback 의 네 번째 줄(아무도 안 볼 때 도는 감시 코드)이 정확히
     // 이런 상태 전이를 잡으라고 있는 것이다.
     key: "storage-collision-admin-takeover",
+    updated: "2026-08-26",
     group: "protocol",
     title: "The code was right and the layout was wrong",
     titleKo: "코드는 맞았고 배치가 틀렸다",
@@ -731,6 +740,7 @@ export const POC_CARDS: DemoCard[] = [
     // 두 사고"이고, 다른 쪽은 "그래서 Pull 오라클이 존재한다"이다. 문제와 답이라
     // 한 카드가 맞다. group 은 price-at-a-moment 의 분류를 유지한다.
     key: "the-settlement-instant",
+    updated: "2026-08-27",
     group: "protocol",
     title: "A price at a moment — the instant, the window, and who can move it",
     titleKo: "한 시점의 가격 — 그 순간, 그 창, 그리고 그것을 움직일 수 있는 자",
@@ -778,6 +788,7 @@ export const POC_CARDS: DemoCard[] = [
     // 원래도 짝으로 배치돼 있었다 — 한쪽은 "끝내 읽히지 않는 데이터 위에서 계산하기",
     // 다른 쪽은 "값만 가렸을 때 무엇이 새는가". 두 절반이 하나의 트릴레마를 이룬다.
     key: "what-encryption-does-not-hide",
+    updated: "2026-08-28",
     group: "protocol",
     title: "Hiding the amount is the easy half",
     titleKo: "금액을 가리는 것은 쉬운 절반이다",
@@ -828,6 +839,7 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "erc-8141",
+    updated: "2026-08-28",
     group: "protocol",
     title: "ERC-8141",
     titleKo: "ERC-8141",
@@ -852,6 +864,7 @@ export const POC_CARDS: DemoCard[] = [
     // 안전성이 타이밍 파라미터 하나(view freeze)에 걸리고, 강제가 조건부라 조건이 공격면이
     // 된다. 위원회 16명·동결 시각 등 수치는 다이제스트 기준이므로 원문 스펙으로 확인.
     key: "censorship-becomes-a-fork-choice-rule",
+    updated: "2026-08-28",
     title: "Censorship resistance stops being a norm and becomes a fork-choice rule",
     titleKo: "검열저항이 규범이기를 그만두고 포크초이스 규칙이 된다",
     group: "protocol",
@@ -879,6 +892,7 @@ export const POC_CARDS: DemoCard[] = [
     // 한쪽은 온체인 싱글턴 레지스트리, 다른 쪽은 내 기계 위의 카탈로그.
     // 둘을 나란히 놓으면 공통 결론이 드러난다: 경로도 계정도 정체성이 아니다.
     key: "the-record-is-not-the-path",
+    updated: "2026-08-27",
     group: "protocol",
     title: "The record is not the path — a registry and a vault for the same problem",
     titleKo: "기록은 경로가 아니다 — 같은 문제의 레지스트리와 금고",
@@ -906,6 +920,7 @@ export const POC_CARDS: DemoCard[] = [
     // 유통 과정에서 떨어져 나가는 경로다. 기존 pbs 카드가 다루는 시장이 7732로 프로토콜
     // 안으로 들어오므로 그 카드와 직접 이어진다.
     key: "fork-date-provenance",
+    updated: "2026-08-28",
     group: "protocol",
     title: "A fork date nobody decided — reading the claim, not the number",
     titleKo: "아무도 정하지 않은 포크 날짜 — 숫자가 아니라 주장의 지위를 읽기",
@@ -950,6 +965,7 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "tokenized-money-banks",
+    updated: "2026-08-27",
     title: "Tokenized Money for Banks",
     titleKo: "은행을 위한 토큰화된 화폐",
     description:
@@ -975,6 +991,7 @@ export const POC_CARDS: DemoCard[] = [
     // ① 그 시험을 원문의 후보 4개에 실제로 적용하면 셋이 죽거나 모양이 바뀐다는 것,
     // ② 그리고 한국의 기존 마찰 기준선이 달러권과 달라 방법론까지 수입하면 안 된다는 것.
     key: "what-needs-a-stablecoin",
+    updated: "2026-08-27",
     title: "Not what a stablecoin can do — what needs one",
     titleKo: "스테이블코인으로 할 수 있는 일이 아니라, 스테이블코인이 필요한 일",
     description:
@@ -1004,6 +1021,7 @@ export const POC_CARDS: DemoCard[] = [
     // 정산할 수 있게 되는가"라고 적은 바로 그 사건의 첫 사례이므로 서로 잇는다.
     // KRW1·참여사·범위는 기사와 배너 기준 — 원문과 이후 공시로 확인 필요.
     key: "float-not-the-paperwork",
+    updated: "2026-08-28",
     title: "The stablecoin replaces the float, not the paperwork",
     titleKo: "스테이블코인이 대체하는 것은 플로트이지 서류가 아니다",
     description:
@@ -1029,6 +1047,7 @@ export const POC_CARDS: DemoCard[] = [
     // kb-hybrid-payment. 셋이 한 질문의 세 답이었다 — 레일을 만들 것인가, 빌릴 것인가,
     // 같이 소유할 것인가. KB 카드의 가역성 불일치는 셋 다 물려받는 문제라 안에 넣었다.
     key: "build-rent-or-own-the-rail",
+    updated: "2026-08-27",
     title: "Build the rail, rent it, or own it together — three answers in one month",
     titleKo: "레일을 만들까, 빌릴까, 같이 소유할까 — 한 달 안에 나온 세 답",
     description:
@@ -1057,6 +1076,7 @@ export const POC_CARDS: DemoCard[] = [
     // 아니라 준비금 수익과 상환 통제의 문제다. ③ 거래소는 잔액이 있고 가맹점이 없다 —
     // 은행이 비자에서 사는 것과 정반대다. OUSD·Open Standard·일정은 기사 기준, 확인 필요.
     key: "the-only-commitment-is-the-issuer",
+    updated: "2026-08-28",
     title: "Every verb is \"explore\" — the one commitment is which stablecoin",
     titleKo: "동사는 전부 \"모색\"이다 — 유일한 약속은 어느 스테이블코인인가",
     reviewed: "2026-08-28",
@@ -1084,6 +1104,7 @@ export const POC_CARDS: DemoCard[] = [
     // 이 카드는 발행·상환 운영의 문제라 축이 다르다. jay의 3주째 결론("승부처는 TPS가 아니라
     // 분모와 유통")에 붙는 항목.
     key: "stablecoin-redemption-desk",
+    updated: "2026-08-27",
     title: "The redemption desk — what actually makes a stablecoin's denominator",
     titleKo: "상환 창구 — 스테이블코인의 분모를 만드는 것",
     description:
@@ -1111,6 +1132,7 @@ export const POC_CARDS: DemoCard[] = [
     // 얇다), ③ "달러와 유로가 서로 거래된다"는 중심 주장은 오늘 잴 수 있다 — 온체인
     // EUR/USD 스프레드와 깊이 대 인터뱅크. 셋 중 셋째만 측정 가능하고, 그게 카드다.
     key: "two-currencies-one-ledger",
+    updated: "2026-08-27",
     title: "Two currencies on one ledger — the spread is the claim",
     titleKo: "한 원장 위의 두 통화 — 스프레드가 곧 그 주장이다",
     description:
@@ -1139,6 +1161,7 @@ export const POC_CARDS: DemoCard[] = [
     // ② 만기가 없으므로 수렴을 강제하는 것이 없다 — 페그는 구조가 아니라 행동이다,
     // ③ 관측되는 베이시스 폭은 곧 가장 싼 참가자의 비용 구조를 읽는 계기판이다.
     key: "arb-bots-are-the-peg",
+    updated: "2026-08-27",
     title: "Nobody runs the peg — the competing bots are the mechanism",
     titleKo: "페그를 돌리는 주체는 없다 — 경쟁하는 봇들이 곧 메커니즘이다",
     description:
@@ -1165,6 +1188,7 @@ export const POC_CARDS: DemoCard[] = [
     // 한쪽은 그 층을 인프라(게이트웨이)로 말하고, 다른 쪽은 실제 자본으로 운영 중인
     // 사례(Senpi)로 말한다 — 주장과 살아 있는 반례/확증이 한 카드에 있는 게 낫다.
     key: "the-harness-not-the-model",
+    updated: "2026-08-28",
     title: "The harness, not the model — governing agents instead of building them",
     titleKo: "모델이 아니라 하네스 — 에이전트를 만드는 대신 통치하기",
     description:
@@ -1191,6 +1215,7 @@ export const POC_CARDS: DemoCard[] = [
     // 에이전트를 서버로 노출한다(프레임워크). 순서가 실제로 중요해서 한 카드가 맞다:
     // 프로토콜 질문을 먼저 풀면 나머지 둘이 래퍼 작업이 된다.
     key: "mcp-three-sides",
+    updated: "2026-08-28",
     title: "MCP from three sides — build one, consume one, wrap an agent as one",
     titleKo: "MCP 를 세 방향에서 — 만들고, 쓰고, 에이전트를 그것으로 감싸기",
     description:
@@ -1217,6 +1242,7 @@ export const POC_CARDS: DemoCard[] = [
     // 다른 하나는 "그럼 내 페이지에 어떻게 넣나"(in-page GUI 에이전트).
     // 키와 href 는 앱 라우트가 살아 있어 그대로 둔다.
     key: "agents-computer-use",
+    updated: "2026-08-28",
     title: "Can an agent drive a computer yet — and if so, whose?",
     titleKo: "에이전트는 이제 컴퓨터를 쓸 수 있나 — 그렇다면, 누구의 컴퓨터를?",
     description:
@@ -1243,6 +1269,7 @@ export const POC_CARDS: DemoCard[] = [
     // 토큰화 실물 청구권으로 옮겨간 자리 — Coinbase·Base·Alpaca, 그리고 B20.
     // event-contract-plumbing 의 같은 논지가 명사만 바꿔 반복된다.
     key: "tokenized-equity-claim-rail",
+    updated: "2026-08-26",
     title: "A claim, not a derivative — the three jobs a tokenized share creates",
     titleKo: "파생이 아니라 청구권 — 토큰화 주식이 만들어내는 일 셋",
     description:
@@ -1270,6 +1297,7 @@ export const POC_CARDS: DemoCard[] = [
     // "누가 이기고 있는가"를 재는 자(scoreboard). 발표가 아니라 출시 이후의 질문이다.
     // 숫자(약 $3B 시장, Ondo 약 $1B)와 B20 세부는 기사 기준이므로 원문 확인 필요.
     key: "tokenized-equity-scoreboard",
+    updated: "2026-08-27",
     title: "The token is not the product — composability is, and volume is its scoreboard",
     titleKo: "상품은 토큰이 아니다 — 조립 가능성이고, 그 점수판은 거래량이다",
     description:
@@ -1296,6 +1324,7 @@ export const POC_CARDS: DemoCard[] = [
     // 없애는 것이 결제 리스크만이 아니라는 것 — 네팅도 같이 사라진다. 그래서 일본은행
     // 당좌예금이 표제가 아니라 하중을 받는 부분이다.
     key: "japan-t0-settlement",
+    updated: "2026-08-26",
     title: "T+0 removes settlement risk, and removes netting with it",
     titleKo: "T+0는 결제 리스크를 없애면서 네팅도 같이 없앤다",
     description:
@@ -1349,6 +1378,7 @@ export const POC_CARDS: DemoCard[] = [
     // ② 진짜 사실은 프로젝트가 아니라 한국의 '자리'다(7곳 중 비준비통화 둘 중 하나),
     // ③ 통합원장은 스테이블코인 경로의 제도권 대응짝이라 나란히 놓아야 읽힌다.
     key: "non-reserve-currency-seat",
+    updated: "2026-08-27",
     title: "The seat is the point — a non-reserve currency at the standards table",
     titleKo: "자리가 요점이다 — 표준을 정하는 테이블에 앉은 비준비통화",
     description:
@@ -1400,6 +1430,7 @@ export const POC_CARDS: DemoCard[] = [
     // "거래소를 빌려주는 회사"로 이동. 카드가 더하는 것은 파트너 명단의 독법 — Citadel
     // Securities·DTCC·ARK·ICE 는 유통이 아니라 배관의 이름들이고, 그 조합이 곧 명세서다.
     key: "headless-exchange-engines",
+    updated: "2026-08-27",
     title: "Headless arrives — the company that sells the engine, not the app",
     titleKo: "헤드리스가 도착했다 — 앱이 아니라 엔진을 파는 회사",
     description:
@@ -1456,6 +1487,7 @@ export const POC_CARDS: DemoCard[] = [
     // 정리한 것도 아니고 **만들 물건의 설계**다. 그래서 soon 묶음 앞쪽(7번)에 둔다.
     // AP2·AA·price-at-a-moment 세 카드가 만나는 지점이라 새 주제가 아니라 수렴점에 가깝다.
     key: "agentic-intent-veto",
+    updated: "2026-08-27",
     group: "protocol",
     title: "The budget is the wrong invariant",
     titleKo: "한도는 틀린 불변식이다",
@@ -1484,6 +1516,7 @@ export const POC_CARDS: DemoCard[] = [
     // 체인을 고르는 일이 기술 선택이 아니라 임대 계약 체결이 됐다. 카드의 산출물은
     // 후보 체인들을 나란히 놓는 term sheet — 시퀀서 통제권·수수료 분배·이탈 비용.
     key: "choosing-a-chain-is-a-lease",
+    updated: "2026-08-27",
     title: "Choosing a chain is signing a lease",
     titleKo: "체인을 고르는 일은 임대 계약을 맺는 일이다",
     description:
@@ -1511,6 +1544,7 @@ export const POC_CARDS: DemoCard[] = [
     // 빌리는 것이다 — choosing-a-chain-is-a-lease 를 체인이 아니라 클라이언트에 적용한 것.
     // 세부(매니페스트 경로·SDK 이름·심사)는 내 지식 기준일 이후라 반드시 원문 확인.
     key: "base-app-mini-app",
+    updated: "2026-08-27",
     title: "Base App — what a Mini App buys, and what it rents",
     titleKo: "Base App — 미니앱이 사는 것과 빌리는 것",
     description:
@@ -1536,6 +1570,7 @@ export const POC_CARDS: DemoCard[] = [
     // 요지는 "마지막 범용 L1"이라는 표제가 아니라, 그 명제를 채점할 단위가 없다는 것.
     // 특히 통합이 만드는 프리미엄은 재면서 통합이 닫아버리는 카테고리(LST)는 아무도 재지 않는다.
     key: "monad-last-general-purpose-l1",
+    updated: "2026-08-28",
     title: "Monad — the last general-purpose L1, and the number nobody adjusts for",
     titleKo: "Monad, 마지막 범용 L1 — 그리고 아무도 보정하지 않는 숫자",
     description:
@@ -1562,6 +1597,7 @@ export const POC_CARDS: DemoCard[] = [
     // DVN 을 고르지 않으면 기본값을 신뢰하는 것이고, 그 사실이 코드 어디에도 안 적힌다.
     // ATLAS 의 논지 쪽은 headless-exchange-engines 가 맡는다.
     key: "layerzero-default-is-a-choice",
+    updated: "2026-08-27",
     title: "LayerZero — the default verifier is a trust assumption nobody wrote down",
     titleKo: "LayerZero — 기본 검증자는 아무도 적어두지 않은 신뢰 가정이다",
     description:
@@ -1592,6 +1628,7 @@ export const POC_CARDS: DemoCard[] = [
     // layerzero-default-is-a-choice 와 같은 축의 반대 끝 — 저기선 고를 수 있고 여긴 "독점"이다.
     // CCT 의 발행 권한 위임 구조·$7.5B·독점 여부는 게시물 기준이므로 원문 확인 필요.
     key: "the-bridge-is-inside-the-token",
+    updated: "2026-08-28",
     title: "The bridge is not beside the token any more — it is inside it",
     titleKo: "브리지는 이제 토큰 옆이 아니라 토큰 안에 있다",
     description:
@@ -1618,6 +1655,7 @@ export const POC_CARDS: DemoCard[] = [
     // 카드의 척추라 그대로 카드에 적었다. rwa-multichain 카드와 같은 방식(원 논지를 적고,
     // 그 논지가 멈추는 자리를 표시).
     key: "third-party-blast-radius",
+    updated: "2026-08-28",
     title: "Trusted third parties — the blast radius nobody maps",
     titleKo: "신뢰된 서드파티 — 아무도 그리지 않는 폭발 반경",
     description:
@@ -1645,6 +1683,7 @@ export const POC_CARDS: DemoCard[] = [
     // 카드가 더하는 것: 브랜드 하나가 실은 네 개의 독립된 공급망이고, 이번 달에 소리를 낸 세 층보다
     // 소리를 내지 않는 네 번째 층(서명 nonce)이 더 위험하다는 것.
     key: "pick-a-signer-not-a-brand",
+    updated: "2026-08-28",
     title: "Three layers failed in a month; the fourth one fails silently",
     titleKo: "한 달에 세 층이 무너졌다 — 네 번째 층은 조용히 무너진다",
     description:
@@ -1692,6 +1731,7 @@ export const POC_CARDS: DemoCard[] = [
     // ② 같은 작업을 두 번 녹화해 diff 하면 우연한 것과 본질적인 것이 분리된다 —
     // 그게 이 카드가 실제로 만들 수 있는 실험이다.
     key: "demonstration-is-not-a-specification",
+    updated: "2026-08-28",
     title: "Showing is not telling — a demonstration is an example, not a specification",
     titleKo: "보여주는 것은 말하는 것이 아니다 — 시연은 명세가 아니라 예시다",
     description:
@@ -1721,6 +1761,7 @@ export const POC_CARDS: DemoCard[] = [
     // 닿는 것이고(스왑라인), 그래서 질문은 "참가자냐 상대방이냐"다.
     // 일 600~900억 달러는 글이 인용한 추정치이므로 1차 출처 확인 필요.
     key: "ndf-measures-the-restriction",
+    updated: "2026-08-29",
     title:
       "The NDF market is the size of the restriction, and removing it does not relocate the market",
     titleKo:
@@ -1754,6 +1795,7 @@ export const POC_CARDS: DemoCard[] = [
     // 소프트웨어 밖에서도 성립하는 첫 사례다.
     // 게시자의 "우리 상황을 알고 쓴 건가"에 대한 답도 적었다 — 그 직감은 거꾸로다.
     key: "the-rule-names-an-entity",
+    updated: "2026-08-29",
     title:
       "The rule names an entity and the risk lives in the group",
     titleKo:
@@ -1811,6 +1853,7 @@ export const POC_CARDS: DemoCard[] = [
     // 아직 존재하지 않는다는 것, ② 작전이 필요했던 이유가 탐지가 아니라 주소-신원 조인이라는
     // 것 — 체인은 그래프를 공짜로 주고 이름은 절대 주지 않는다. pet-clean-room 과 이어진다.
     key: "address-to-identity-join",
+    updated: "2026-08-27",
     title: "The chain gives you the graph and never the names",
     titleKo: "체인은 그래프를 주고 이름은 절대 주지 않는다",
     description:
@@ -1840,6 +1883,7 @@ export const POC_CARDS: DemoCard[] = [
     // cap-table-ceiling 과 짝이다 — 그 카드가 "아무도 합을 안 본다"고 말하는 은행 집중이,
     // 여기서는 원화 스테이블코인 발행 요건으로 **법에 적히려 하고 있다**.
     key: "korea-digital-asset-act",
+    updated: "2026-08-25",
     title: "The bill count is not the disagreement count",
     titleKo: "법안 수는 쟁점 수가 아니다",
     description:
@@ -1869,6 +1913,7 @@ export const POC_CARDS: DemoCard[] = [
     // 않는다 — 여기는 시장 구조와 그 숫자가 무엇을 재는가이다. 30% 수치·계좌 규제 세부는
     // 게시물 기준이므로 원문과 현행 규정으로 확인 필요.
     key: "korea-spot-share-is-an-artifact",
+    updated: "2026-08-28",
     title: "Thirty percent of spot is a restriction, not a market size",
     titleKo: "현물의 30%는 시장 규모가 아니라 제약의 흔적이다",
     description:
@@ -1893,6 +1938,7 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-26 리포트 카드 4/5 (jay). Four Pillars 항목의 3층 대조 + a16z 정책 항목.
     // 산출물은 시스템이 아니라 문장 하나 — 12월 문서의 법역 칸.
     key: "jurisdiction-decides-the-category",
+    updated: "2026-08-26",
     title: "Same product, three verdicts in eight days",
     titleKo: "같은 상품, 8일 사이 세 개의 판정",
     description:
@@ -1919,6 +1965,7 @@ export const POC_CARDS: DemoCard[] = [
     // "이해관계자가 실제로 쓸 수 있는 해법"을 카드의 산출물로 넣는다: 국가 코드가 아니라
     // (관할, 판정, 제품 속성) 삼중항으로 키를 잡은 적격성 정책과 그 감사 추적.
     key: "jurisdiction-below-the-country",
+    updated: "2026-08-27",
     title: "Jurisdiction is not country-sized",
     titleKo: "법역은 국가 크기가 아니다",
     description:
@@ -1973,6 +2020,7 @@ export const POC_CARDS: DemoCard[] = [
     // aml-compliance 바로 앞에 둔다 — 둘 다 "기술이 멈추고 제도가 시작되는 자리"를 다루고,
     // 이 카드의 결론(진짜 의존성은 체인이 아니라 등록부)이 그쪽 2열 지도로 이어진다.
     key: "fisheries-receivable-rail",
+    updated: "2026-08-27",
     title: "The custody was never the hard part",
     titleKo: "수탁은 애초에 어려운 쪽이 아니었다",
     description:
@@ -2018,6 +2066,7 @@ export const POC_CARDS: DemoCard[] = [
     // 결과를 바꿀 수 없어야 한다"가, 방심위가 도박 판정 근거로 든 "이용자가 통제할 수 없는
     // 사건"과 정확히 같은 속성이다. 그리고 결정시장은 그 선을 의도적으로 넘은 설계다.
     key: "decision-market-uncontrollability",
+    updated: "2026-08-27",
     title: "The property that makes a market work is the one that makes it gambling",
     titleKo: "시장을 작동하게 하는 속성이, 그것을 도박으로 만든다",
     description:
@@ -2068,6 +2117,7 @@ export const POC_CARDS: DemoCard[] = [
     // 값 매겨지는 것. 하나는 현물시장이 예측시장 질문을 대신 매기고, 다른 하나는
     // 애초에 연속 가격이 없는 기초자산이다. 결론이 같아서 따로 두면 두 번 논증하게 된다.
     key: "priced-by-the-wrong-thing",
+    updated: "2026-08-27",
     title: "Priced by the wrong thing — a question, an instrument, and the gap between them",
     titleKo: "엉뚱한 것으로 매겨진 가격 — 질문, 도구, 그리고 그 사이의 간격",
     description:
@@ -2168,6 +2218,7 @@ export const POC_CARDS: DemoCard[] = [
     // 를 다룬다 — 그리고 네 항목이 전부 같은 모양이다: 체인이 공짜로 버린 것을 값을 치르고
     // 되사는 일. 그래서 "공부 목록"이 아니라 되사기 가격표가 되도록 항목마다 잴 숫자를 붙였다.
     key: "plumbing-skills-buyback",
+    updated: "2026-08-26",
     title: "Four capabilities, each buying back what the chain gave away",
     titleKo: "네 가지 역량, 각각은 체인이 버린 것을 되사는 일",
     description:
@@ -2194,6 +2245,7 @@ export const POC_CARDS: DemoCard[] = [
     // 하중을 받는 단어라는 것(메시가 아니라 기하를 만드는 코드), ② 화살표 방향이 주장과
     // 반대일 수 있다는 것 — 그리고 그건 반증 가능한 실험 하나로 갈린다.
     key: "procedural-not-generated",
+    updated: "2026-08-26",
     group: "future",
     title: "Procedural, not generated — when the model is a program",
     titleKo: "생성이 아니라 절차적 — 모델이 프로그램일 때",
@@ -2243,6 +2295,7 @@ export const POC_CARDS: DemoCard[] = [
     // 그 숫자로 돈을 모으는 쪽이므로, 반복하지 말고 다시 유도한다.
     // 아래 tok/s 는 대역폭 ÷ 토큰당 바이트의 이론 상한이며 실측은 그보다 낮다.
     key: "bandwidth-not-capacity",
+    updated: "2026-08-28",
     reviewed: "2026-08-28",
     title: "Capacity loads the model; bandwidth serves it",
     titleKo: "용량은 모델을 올리고, 대역폭이 모델을 서빙한다",
@@ -2271,6 +2324,7 @@ export const POC_CARDS: DemoCard[] = [
     // 답하고 있었다 — "어느 입구로 들어가고, 그게 실제로 무엇을 사주는가."
     // 합치되 긴장은 남긴다: 몸이냐 연산이냐, 파이프라인이냐 루프냐는 권고가 아니라 표다.
     key: "robotics-entry-decision",
+    updated: "2026-08-28",
     group: "future",
     title: "Four ways into robotics, and what each one actually buys",
     titleKo: "로보틱스로 들어가는 네 입구, 각각이 실제로 사주는 것",
@@ -2339,6 +2393,7 @@ export const POC_CARDS: DemoCard[] = [
     // ② 캘리브레이션만으로는 부족하다(기저율만 외쳐도 완벽히 캘리브레이션된다) —
     // 그래서 resolution 과 시장가 기준선이 같이 있어야 한다.
     key: "the-70-has-to-be-wrong",
+    updated: "2026-08-28",
     group: "future",
     title: "The 70% has to be wrong three times in ten",
     titleKo: "70%는 열 번 중 세 번은 틀려야 한다",
@@ -2366,6 +2421,7 @@ export const POC_CARDS: DemoCard[] = [
     // 온체인 데이터가 시간순이면서 동시에 주소로 그룹지어져 있다는 점이 이 카드가
     // 교과서 요약이 아니라 이 카탈로그의 카드인 이유.
     key: "the-split-is-the-experiment",
+    updated: "2026-08-28",
     group: "future",
     title: "The model is not the experiment — the split is",
     titleKo: "실험은 모델이 아니라 분할이다",
@@ -2393,6 +2449,7 @@ export const POC_CARDS: DemoCard[] = [
     // `third-party-blast-radius` 의 "인가됐나가 아니라 무엇을 할 수 있나"와
     // `pick-a-signer-not-a-brand` 의 공급망 논지가 여기서 파이썬 코드로 나타난다.
     key: "huggingface-is-a-package-manager",
+    updated: "2026-08-28",
     group: "future",
     title: "Hugging Face is a package manager, and almost nobody pins the version",
     titleKo: "허깅페이스는 패키지 매니저인데, 버전을 고정하는 사람이 거의 없다",
@@ -2422,6 +2479,7 @@ export const POC_CARDS: DemoCard[] = [
     // `the-70-has-to-be-wrong`(임계값은 비용 결정)과 `the-split-is-the-experiment`(누수)이
     // 여기서 한 도메인에 동시에 걸린다.
     key: "lead-time-is-the-product",
+    updated: "2026-08-28",
     group: "future",
     title: "The lead time is the product — a fault detected at failure is worth nothing",
     titleKo: "제품은 리드타임이다 — 고장 나는 순간 감지한 것은 값이 0이다",
@@ -2449,6 +2507,7 @@ export const POC_CARDS: DemoCard[] = [
     // 그 이유가 카드의 각도다 — 공유되는 층은 원래 쉬웠던 층이다. 그리고 지갑·결제를 다루는
     // 이 프로젝트에서는 공유가 가장 안 되는 칸이 정확히 가장 중요한 칸이다.
     key: "share-the-code-you-write",
+    updated: "2026-08-28",
     group: "future",
     title:
       "You can share the code you write, not the code you must obey",
@@ -2478,6 +2537,7 @@ export const POC_CARDS: DemoCard[] = [
     // 실제로 행동을 예측하는 이론은 둘뿐(Little's Law, 이용률 절벽)이고 나머지는 어휘라는 것이
     // 이 카드가 더하는 부분.
     key: "architecture-is-accepted-failure",
+    updated: "2026-08-28",
     group: "future",
     title:
       "An architecture is a record of which failure you agreed to accept",
@@ -2506,6 +2566,7 @@ export const POC_CARDS: DemoCard[] = [
     // 이 카탈로그에 이미 같은 수를 둔 카드가 여섯 장 있다는 사실 자체가 근거 —
     // "인가됐는가"가 아니라 "경계가 어디이고 무엇이 그것을 넘는가".
     key: "the-boundary-is-the-unit",
+    updated: "2026-08-28",
     group: "future",
     title:
       "A list of attacks does not transfer — the trust boundary does",
@@ -2536,6 +2597,7 @@ export const POC_CARDS: DemoCard[] = [
     // 갈린다. 그러면 글의 순서(풀스택 → 운영)가 뒤집힌다 — 데이터가 첫째, 풀스택이 꼴찌.
     // 다섯 중 셋(데이터·아키텍처·보안)은 이 글을 읽기 전에 이미 카드가 있었다.
     key: "the-gap-widens-where-wrong-is-silent",
+    updated: "2026-08-29",
     group: "future",
     title:
       "The gap widens only where being wrong is silent",
@@ -2564,6 +2626,7 @@ export const POC_CARDS: DemoCard[] = [
     // 둘 다 읽을거리였고, 둘 다 "내용이 아니라 구조를 훔쳐 오는 것이 값어치"라는
     // 같은 이유로 큐에 들어와 있었다. 한 카드에서 30분씩 쪼개 쓰는 편이 낫다.
     key: "steal-the-structure",
+    updated: "2026-08-27",
     title: "Two reading lists, and the same instruction — steal the structure, not the content",
     titleKo: "읽을거리 둘, 그리고 같은 지시 — 내용이 아니라 구조를 훔쳐 올 것",
     description:
@@ -2589,6 +2652,7 @@ export const POC_CARDS: DemoCard[] = [
     // 둘째 카드가 첫째로 "연결된다"고 스스로 적고 있었다 — 즉 하나가 다른 하나의
     // 수동 버전이다. 둘 다 보류(later) 상태였으므로 합치는 데 잃는 것이 없다.
     key: "claude-in-slack",
+    updated: "2026-08-27",
     title: "Claude in Slack — the workflow first, the presence second",
     titleKo: "Slack 속 Claude — 워크플로가 먼저, 상주는 나중",
     description:
@@ -2616,6 +2680,7 @@ export const POC_CARDS: DemoCard[] = [
     // 뜨거워진 이유가 마이크로서비스가 아니라 에이전트라는 점이 카드의 뼈대.
     // 가격·투자 라운드·통합 목록은 다이제스트 기준이라 확인 필요.
     key: "the-product-is-resume-not-schedule",
+    updated: "2026-08-28",
     title: "What you are buying is resume, not scheduling",
     titleKo: "사는 것은 스케줄링이 아니라 재개(resume)다",
     description:
@@ -2773,6 +2838,7 @@ export const POC_CARDS: DemoCard[] = [
     // 것이 아니라 오늘 막힌 곳의 한 페이지를 꺼내 읽는 것 — 8년차에게 특히. 이 저장소가
     // algorithms 100 · math 52 커리큘럼을 갖고 있으므로 남의 이야기가 아니다.
     key: "one-page-not-the-curriculum",
+    updated: "2026-08-27",
     title: "Pull the page you are stuck on, not the next one in order",
     titleKo: "순서상 다음 장이 아니라, 오늘 막힌 그 한 페이지를",
     description:
@@ -2797,6 +2863,7 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-26 리포트 카드 5/5 (jay). 개인 필자 항목(Aiden Park)에서 나온 실행 항목.
     // 읽을 자료가 아니라 결정 하나 — 매일 쓰는 글 중 무엇을 그대로 공개할 것인가.
     key: "publish-by-default-rule",
+    updated: "2026-08-26",
     title: "The draft already exists — a selection rule, not a new channel",
     titleKo: "초안은 이미 있다 — 새 채널이 아니라 선별 규칙",
     description:
@@ -2859,6 +2926,7 @@ export const POC_CARDS: DemoCard[] = [
     // 수익률은 어디선가 누군가의 비용이고, 원천이 셋뿐이라는 것. Monad 정리에서 나온
     // 총액÷순액 항등식이 이 카드의 실습 대상이다.
     key: "where-yield-comes-from",
+    updated: "2026-08-27",
     group: "economics",
     title: "Every yield is somebody's cost — the three places it can come from",
     titleKo: "모든 수익률은 누군가의 비용이다 — 나올 수 있는 자리는 셋뿐",
@@ -2884,6 +2952,7 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-27. jay 의 Monad 정리에서 나온 항등식을 독립 카드로 세운다 — 그쪽은 한 체인의
     // 사례이고, 이건 어디에나 적용되는 도구다. "모두가 총액을 발표하면서 그걸 순액이라 부른다."
     key: "gross-over-net",
+    updated: "2026-08-27",
     group: "economics",
     title: "Gross over net — the recycling multiple",
     titleKo: "총액 ÷ 순액 — 재활용 배수",
@@ -2910,6 +2979,7 @@ export const POC_CARDS: DemoCard[] = [
     // 이 한 줄의 함수라는 것이 카드의 각도다 — 국채 금리가 오르면 온체인 수익률은
     // 실력이 아니라 상대가격 때문에 매력을 잃는다.
     key: "risk-free-rate-is-the-floor",
+    updated: "2026-08-27",
     group: "economics",
     title: "The risk-free rate is the floor under every yield",
     titleKo: "무위험 이자율이 모든 수익률의 바닥이다",
@@ -2935,6 +3005,7 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-27. 유동성 렌즈. 크립토가 "매크로 자산"이라는 말은 대개 근거 없이 쓰이지만,
     // 실질금리와 통화량이라는 두 축으로는 실제로 검증 가능한 진술이 된다.
     key: "m2-and-the-dollar",
+    updated: "2026-08-27",
     group: "economics",
     title: "M2, the dollar, and why crypto is a liquidity trade",
     titleKo: "M2, 달러, 그리고 크립토가 유동성 트레이드인 이유",
@@ -2960,6 +3031,7 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-27. LP 는 수수료를 버는 게 아니라 변동성을 판다. 이름(impermanent)이 잘못
     // 붙어서 잘못 이해되는 대표 사례이고, verex 의 LMSR 보조금과 같은 구조라 실무 연결도 있다.
     key: "lp-is-a-short-volatility-position",
+    updated: "2026-08-27",
     group: "economics",
     title: "Providing liquidity is selling volatility, and the loss is not impermanent",
     titleKo: "유동성 공급은 변동성을 파는 것이고, 그 손실은 비영구적이지 않다",
@@ -2989,6 +3061,7 @@ export const POC_CARDS: DemoCard[] = [
     // arb-bots-are-the-peg 과 직접 이어지고, 볼린저는 lp-is-a-short-volatility-position 의
     // 같은 σ 를 화면에 그린 것이다. 지표 파라미터 관례(20, 2σ, 14, 200일)는 널리 쓰이는 값.
     key: "indicators-add-a-decision",
+    updated: "2026-08-27",
     title: "An indicator adds no information — it adds a decision",
     titleKo: "지표는 정보를 더하지 않는다 — 결정을 더한다",
     group: "economics",
@@ -3014,6 +3087,7 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-27. Monad 정리의 "체인별 수수료 ÷ 보안 예산 — 아무도 발표 안 함" 을 카드로.
     // 크립토판 손익계산서에 가장 가까운 비율이고, 목록의 모든 체인 카드에 적용된다.
     key: "fees-over-security-budget",
+    updated: "2026-08-27",
     group: "economics",
     title: "Does a chain pay for its own security?",
     titleKo: "체인은 자기 보안 비용을 자기가 내고 있는가",

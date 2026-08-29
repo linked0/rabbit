@@ -121,7 +121,11 @@ const PAGE_CSS = `
     font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
   }
   .nav-link:hover { background:var(--card); color:var(--text); }
+  /* 최근 N일 안에 본문이 바뀐 항목 (jay, 2026-08-29) — 점은 이미 상태(live/done/planned)를
+     말하고 있으므로 제목 쪽에 색을 준다. active 규칙을 뒤에 두어 현재 항목 표시가 이긴다. */
+  .nav-link.is-new .nav-text { color:#db2777; font-weight:600; }
   .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  .nav-link.active .nav-text { color:var(--accent); }
   /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
   .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
   .nav-text { min-width:0; flex:1 1 auto; }
@@ -558,7 +562,7 @@ function renderNavGroups(groups) {
           // (jay, 2026-08-27: "디테일 페이지에서도 왼쪽 페인을 없어지지 않도록").
           const href = it.href ? escapeHtml(it.href) : `#${escapeHtml(it.anchor)}`;
           const cur = it.current ? ' active' : '';
-          return `        <li><a class="nav-link${cur}" href="${href}"${key}><span class="nav-dot" style="background:${it.color};" title="${escapeHtml(it.statusLabel)}"></span><span class="nav-text">${it.text}</span></a></li>`;
+          return `        <li><a class="nav-link${cur}${it.isNew ? ' is-new' : ''}" href="${href}"${key}><span class="nav-dot" style="background:${it.color};" title="${escapeHtml(it.statusLabel)}"></span><span class="nav-text">${it.text}</span></a></li>`;
         })
         .join('\n');
       const gid = g.id ? ` id="${escapeHtml(g.id)}"` : '';

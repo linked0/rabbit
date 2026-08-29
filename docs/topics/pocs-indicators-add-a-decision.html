@@ -93,7 +93,11 @@
     font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
   }
   .nav-link:hover { background:var(--card); color:var(--text); }
+  /* 최근 N일 안에 본문이 바뀐 항목 (jay, 2026-08-29) — 점은 이미 상태(live/done/planned)를
+     말하고 있으므로 제목 쪽에 색을 준다. active 규칙을 뒤에 두어 현재 항목 표시가 이긴다. */
+  .nav-link.is-new .nav-text { color:#db2777; font-weight:600; }
   .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  .nav-link.active .nav-text { color:var(--accent); }
   /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
   .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
   .nav-text { min-width:0; flex:1 1 auto; }
@@ -352,13 +356,13 @@
       <div class="nav-group" id="nav-sec-economics" data-group>
         <p class="nav-group-label">Economics (7)</p>
         <ul>
-        <li><a class="nav-link" href="pocs-where-yield-comes-from.html" data-key="where-yield-comes-from"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">80</span>Every yield is somebody's cost — the three places it can come from</span></a></li>
-        <li><a class="nav-link" href="pocs-gross-over-net.html" data-key="gross-over-net"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">81</span>Gross over net — the recycling multiple</span></a></li>
-        <li><a class="nav-link" href="pocs-risk-free-rate-is-the-floor.html" data-key="risk-free-rate-is-the-floor"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">82</span>The risk-free rate is the floor under every yield</span></a></li>
-        <li><a class="nav-link" href="pocs-m2-and-the-dollar.html" data-key="m2-and-the-dollar"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">83</span>M2, the dollar, and why crypto is a liquidity trade</span></a></li>
-        <li><a class="nav-link" href="pocs-lp-is-a-short-volatility-position.html" data-key="lp-is-a-short-volatility-position"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">84</span>Providing liquidity is selling volatility, and the loss is not impermanent</span></a></li>
-        <li><a class="nav-link active" href="pocs-indicators-add-a-decision.html" data-key="indicators-add-a-decision"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">85</span>An indicator adds no information — it adds a decision</span></a></li>
-        <li><a class="nav-link" href="pocs-fees-over-security-budget.html" data-key="fees-over-security-budget"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">86</span>Does a chain pay for its own security?</span></a></li>
+        <li><a class="nav-link is-new" href="pocs-where-yield-comes-from.html" data-key="where-yield-comes-from"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">80</span>Every yield is somebody's cost — the three places it can come from</span></a></li>
+        <li><a class="nav-link is-new" href="pocs-gross-over-net.html" data-key="gross-over-net"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">81</span>Gross over net — the recycling multiple</span></a></li>
+        <li><a class="nav-link is-new" href="pocs-risk-free-rate-is-the-floor.html" data-key="risk-free-rate-is-the-floor"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">82</span>The risk-free rate is the floor under every yield</span></a></li>
+        <li><a class="nav-link is-new" href="pocs-m2-and-the-dollar.html" data-key="m2-and-the-dollar"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">83</span>M2, the dollar, and why crypto is a liquidity trade</span></a></li>
+        <li><a class="nav-link is-new" href="pocs-lp-is-a-short-volatility-position.html" data-key="lp-is-a-short-volatility-position"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">84</span>Providing liquidity is selling volatility, and the loss is not impermanent</span></a></li>
+        <li><a class="nav-link active is-new" href="pocs-indicators-add-a-decision.html" data-key="indicators-add-a-decision"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">85</span>An indicator adds no information — it adds a decision</span></a></li>
+        <li><a class="nav-link is-new" href="pocs-fees-over-security-budget.html" data-key="fees-over-security-budget"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">86</span>Does a chain pay for its own security?</span></a></li>
         </ul>
       </div>
       <p class="no-results" id="no-results">No match.</p>

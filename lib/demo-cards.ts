@@ -32,6 +32,14 @@ export type DemoCard = {
   // reviewed 는 "내가 이 카드를 마지막으로 검토한 날"이라 계획 카드에도 붙는다.
   // index.html 의 PoCs 섹션은 이 값이 가장 최근인 두 장만 싣는다 — 없는 카드는 안 나온다.
   reviewed?: string;
+  // "마지막으로 내용이 바뀐 날" (jay, 2026-08-29) — reviewed 와 다르다. reviewed 는 "내가
+  // 검토한 날"이라 인덱스 두 장을 고르는 데 쓰고, updated 는 "카드 본문이 실제로 바뀐 날"이라
+  // 목록 왼쪽 레일에서 최근 N일 안에 손댄 항목을 분홍색 제목으로 표시하는 데 쓴다.
+  // **규칙: 카드를 새로 만들거나 본문(title/description/purpose/howTo/howItWorks)을 고치면
+  // 반드시 이 값을 그날 날짜로 갱신한다.** group 추가 같은 형식 변경에는 건드리지 않는다 —
+  // 일괄 리팩터까지 세면 목록 전체가 분홍이 되어 표시가 아무것도 뜻하지 않게 된다.
+  // 창(N일)이 지나면 표시는 저절로 사라지므로 나중에 지울 필요가 없다.
+  updated?: string;
   howTo: string;
   howToKo: string;
   // Longer technical write-up rendered in the "Technical Notes" section at the page bottom
