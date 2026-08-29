@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Three layers failed in a month; the fourth one fails silently — PoCs</title>
+<title>The rule names an entity and the risk lives in the group — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -380,10 +380,10 @@
         <li><a class="nav-link" href="pocs-layerzero-default-is-a-choice.html" data-key="layerzero-default-is-a-choice"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">46</span>LayerZero — the default verifier is a trust assumption nobody wrote down</span></a></li>
         <li><a class="nav-link" href="pocs-the-bridge-is-inside-the-token.html" data-key="the-bridge-is-inside-the-token"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">47</span>The bridge is not beside the token any more — it is inside it</span></a></li>
         <li><a class="nav-link" href="pocs-third-party-blast-radius.html" data-key="third-party-blast-radius"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">48</span>Trusted third parties — the blast radius nobody maps</span></a></li>
-        <li><a class="nav-link active" href="pocs-pick-a-signer-not-a-brand.html" data-key="pick-a-signer-not-a-brand"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">49</span>Three layers failed in a month; the fourth one fails silently</span></a></li>
+        <li><a class="nav-link" href="pocs-pick-a-signer-not-a-brand.html" data-key="pick-a-signer-not-a-brand"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">49</span>Three layers failed in a month; the fourth one fails silently</span></a></li>
         <li><a class="nav-link" href="pocs-demonstration-is-not-a-specification.html" data-key="demonstration-is-not-a-specification"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">50</span>Showing is not telling — a demonstration is an example, not a specification</span></a></li>
         <li><a class="nav-link" href="pocs-ndf-measures-the-restriction.html" data-key="ndf-measures-the-restriction"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">51</span>The NDF market is the size of the restriction, and removing it does not relocate the market</span></a></li>
-        <li><a class="nav-link" href="pocs-the-rule-names-an-entity.html" data-key="the-rule-names-an-entity"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">52</span>The rule names an entity and the risk lives in the group</span></a></li>
+        <li><a class="nav-link active" href="pocs-the-rule-names-an-entity.html" data-key="the-rule-names-an-entity"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">52</span>The rule names an entity and the risk lives in the group</span></a></li>
         <li><a class="nav-link" href="pocs-aml-compliance.html" data-key="aml-compliance"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">53</span>AML — where the cryptography stops</span></a></li>
         <li><a class="nav-link" href="pocs-address-to-identity-join.html" data-key="address-to-identity-join"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">54</span>The chain gives you the graph and never the names</span></a></li>
         <li><a class="nav-link" href="pocs-korea-digital-asset-act.html" data-key="korea-digital-asset-act"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">55</span>The bill count is not the disagreement count</span></a></li>
@@ -419,140 +419,264 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Three layers failed in a month; the fourth one fails silently</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The rule names an entity and the risk lives in the group</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#49</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
-      <h1>Three layers failed in a month; the fourth one fails silently</h1>
-      <p class="lead">Coldcard&#39;s entropy source, Trezor&#39;s fulfilment partner, Ledger&#39;s Ethereum app — three manufacturers, three different layers, one month. A brand name is four independent supply chains wearing one word, and the layer that stayed quiet is the one whose failures never announce themselves.</p>
-      <p class="meta">Not yet scoped — and the deliverable is a one-page comparison table filled in before any purchase, not after. For each candidate device, find five things and write down where each answer came from: (a) the most recent independent audit of the app that signs for the chain you actually use, with its date; (b) whether signing uses deterministic nonces (RFC 6979) or hedged determinism, and whether that is verifiable rather than claimed; (c) what generates the seed and whether the entropy path has ever been audited end-to-end — plus whether the device accepts user-supplied entropy; (d) the manufacturer&#39;s fulfilment and logistics partners, whether a purchase requires an account and a shipping address, and its last incident disclosure read in full; (e) whether firmware can replace the signature algorithm or the curve is fixed in silicon. Two of the five are testable at the desk: sign the same message twice and compare bytes, and add dice entropy if the device offers it. Sources: the Coldcard Mk2/Mk3 seed-entropy defect (July 2026), Trezor&#39;s ShipMonk disclosure (2026-08-13), and the Ledger Ethereum app fix (2026-08-25, as reported — read the advisory before repeating the severity).</p>
+      <p class="topic-kicker"><span class="topic-no">#52</span><span>PoC</span><span class="badge" style="background:#64748b22; color:#64748b;">PLANNED</span></p>
+      <h1>The rule names an entity and the risk lives in the group</h1>
+      <p class="lead">A BIS brief points out that activity restrictions reach only the issuer, so a prohibited activity moves to a sister company and the restriction is satisfied while nothing about the risk changed. The asymmetry is sharper than it sounds: banks already carry group-wide supervision and non-banks do not, so the same rule binds hardest where it was least needed.</p>
+      <p class="meta">Not yet scoped, and the deliverable is a diagram of a group rather than a reading of a regime. For any stablecoin this project would accept or quote, list six functions and name the legal entity performing each: issuance, reserve management, custody of the reserve, the primary trading venue, the market maker quoting the pair, and the redemption desk. Then draw the ownership lines between them and mark which entities sit inside the stablecoin regime&#39;s perimeter. <strong>The number worth writing down is how many load-bearing functions are performed outside that perimeter by a related party</strong> — that is the figure the entity-level rule does not see. Do it for two issuers with different structures so the comparison has a control. Source: BIS FSI Briefs no. 33, &quot;Regulating stablecoin issuance: permissible entities and activities&quot;, section 4, seen 2026-08-29 via a practitioner post. Read section 4 at source before quoting it; the passage circulating is one paragraph of a comparative brief.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Three layers failed in a month; the fourth one fails silently\n\nColdcard's entropy source, Trezor's fulfilment partner, Ledger's Ethereum app — three manufacturers, three different layers, one month. A brand name is four independent supply chains wearing one word, and the layer that stayed quiet is the one whose failures never announce themselves.\n\nNot yet scoped — and the deliverable is a one-page comparison table filled in before any purchase, not after. For each candidate device, find five things and write down where each answer came from: (a) the most recent independent audit of the app that signs for the chain you actually use, with its date; (b) whether signing uses deterministic nonces (RFC 6979) or hedged determinism, and whether that is verifiable rather than claimed; (c) what generates the seed and whether the entropy path has ever been audited end-to-end — plus whether the device accepts user-supplied entropy; (d) the manufacturer's fulfilment and logistics partners, whether a purchase requires an account and a shipping address, and its last incident disclosure read in full; (e) whether firmware can replace the signature algorithm or the curve is fixed in silicon. Two of the five are testable at the desk: sign the same message twice and compare bytes, and add dice entropy if the device offers it. Sources: the Coldcard Mk2/Mk3 seed-entropy defect (July 2026), Trezor's ShipMonk disclosure (2026-08-13), and the Ledger Ethereum app fix (2026-08-25, as reported — read the advisory before repeating the severity).\n\n## Why\n\nThe question \"which hardware wallet\" is usually answered with a brand, and a brand is the wrong unit. One word stands in for at least four independent supply chains — the silicon and firmware that generate the seed, the application that constructs and signs a transaction for a specific chain, the cryptographic construction that turns a key and a message into a signature, and the logistics that put the box in your hands. Each is built by different people, audited on a different schedule, and fails in a way the other three cannot detect.\n\nOne month made that concrete, which is why the criteria below are worth writing down now rather than after a purchase. Coldcard's defect was in the **entropy source**: a 2021 build-configuration error routed seed generation to a software PRNG instead of the STM32 hardware RNG, leaving roughly 40 bits of effective entropy on Mk2/Mk3 devices, and at least 1,719 BTC across more than 5,200 addresses was swept once someone noticed. Trezor's incident was in **logistics**: its fulfilment partner ShipMonk was breached and 13,689 customer records were exposed, with no key touched — the asset stolen was a verified roster of people known to hold hardware wallets, complete with delivery addresses. And on 2026-08-25 Ledger patched a critical flaw in its **Ethereum application**, the layer between the chain's encoding rules and the device's screen. Three manufacturers, three layers, one month, and no overlap between the failures.\n\nThat pattern kills the criterion most buyers actually use. **\"The vendor with no incidents\" is not an observable property** — it is the absence of a disclosure, which is also exactly what a vendor that does not look, or does not tell, produces. What can be observed is the shape of a disclosure: how long between discovery and patch, whether the root cause is named specifically enough to be checked, whether the affected build range is stated, whether the fix appears in a changelog you can read. **Buy the manufacturer whose incident you can read end to end**, because the alternative is buying silence and calling it a clean record.\n\nThe fourth layer is the one worth staring at, precisely because it did not appear in the month's news. A signature scheme fails without an event: if the same nonce is ever reused across two signatures, the private key falls out by arithmetic, and nothing on the device, the chain or the balance looks unusual until the funds are gone. RFC 6979 exists to remove that failure mode by deriving the nonce deterministically from the key and the message rather than from a random source — which matters most on exactly the devices whose randomness you cannot inspect. **A layer that has been quiet for a decade is not evidence that it is sound; for this layer, quiet is what failure looks like.**\n\nAnd there is now a fifth criterion that did not exist a few years ago. The post-quantum deposit-contract draft in `irreversible-switch-design` is one instance of a broader move: signature schemes are being prepared for replacement, and the technique is to strip out hardcoded assumptions about the scheme rather than to teach systems a new one. A device bought today will outlive the algorithm it ships with. So the question **\"can this device receive a new signature algorithm as firmware, or is the curve fixed in hardware?\"** is not a hypothetical — it is the criterion with the longest half-life on the list, and almost nobody asks it at the point of sale.\n\n## How it works\n\n### One word, four vendors\n\n| Layer | What it actually is | What its failure looks like | Evidence to demand before buying |\n|---|---|---|---|\n| **Entropy** | Silicon RNG plus the firmware path that reaches it | Keys that were never yours — and no symptom until a sweep | An end-to-end audit of the entropy path, naming the RNG; support for user-supplied (dice) entropy |\n| **Application** | The per-chain app that decodes a transaction and renders it on screen | You approve something other than what the screen showed | Date and scope of the last independent audit **of that chain's app**, not of the device |\n| **Signing** | The construction turning key + message into a signature | **Nothing.** A reused nonce leaks the key by arithmetic | RFC 6979 or hedged determinism, stated in documentation and confirmed by the two-signature test below |\n| **Logistics** | Fulfilment partner, carrier, order database | No key touched — a targeting list of known holders, with addresses | Named fulfilment partners, purchase without an account where possible, and the full text of the last disclosure |\n\nThe four columns are not ranked. They are **independent**, which is the entire point: an audit of the application says nothing about the RNG, and a flawless RNG does not stop a fulfilment partner from selling your address to a wrench.\n\n### The two tests you can run yourself\n\n**Sign the same message twice and compare the bytes.** Under RFC 6979 the nonce is a deterministic function of the private key and the message, so two signatures over identical input are byte-identical. If they differ, that is not automatically a defect — hedged determinism deliberately mixes in fresh randomness, and it is *safer* than pure determinism against fault attacks. What the test buys is the right follow-up question: **if they differ, which of the two is it?** A vendor that cannot answer that in one sentence has told you something.\n\n**Supply your own entropy if the device allows it.** Rolling dice into the seed does not require trusting the manufacturer's RNG; it requires trusting only that the device mixes your input in rather than discarding it — a far smaller claim, and one the Coldcard defect shows is worth reducing to. The device that refuses user entropy is asking for trust it has no way to let you verify.\n\n### Why \"no incidents\" is the wrong filter\n\nThe three failures this month came from three of the four layers and none of them overlapped, so a clean record in one layer is not evidence about the others. Worse, the record itself is not a measurement. **An incident count is a disclosure count**, and disclosure is a behaviour of the vendor rather than a property of the device.\n\nWhat a disclosure does reveal, if you read the whole thing rather than the headline, is four things worth scoring: **time from discovery to patch**, **specificity of root cause** (\"a build-configuration error routed seed generation to a software PRNG\" is checkable; \"a security issue\" is not), **whether the affected range is stated**, and **whether the fix is traceable in public source or a changelog**. A vendor that scores well on those has demonstrated the only capability that generalises to the next incident — because there will be one.\n\n### The criterion with the longest half-life\n\n`irreversible-switch-design` reads a draft EIP that prepares the deposit contract for a signature-scheme replacement, and the technique there is instructive here: it works by **removing the contract's hardcoded opinion about the old scheme** rather than by teaching it the new one. Hardware has the same distinction in a harder form. A device whose curve arithmetic lives in a secure element's fixed instruction set cannot be given a new scheme by firmware; a device that implements signing in updatable firmware can, at some cost in side-channel exposure.\n\nThat is a real trade rather than an obvious answer, which is why it belongs on the table as a question rather than as a rule: **the device that cannot be updated is also the device that cannot be updated against you.** But given that a scheme replacement is now visibly being designed for, a buyer who never asks the question has made the choice by default.\n\n### The conclusion that follows from independence\n\nIf the four layers are independent across vendors and correlated inside one, then the strongest available control is not a better single device — it is **a multisig whose signers come from different manufacturers**. A quorum of two devices from one brand shares an entropy path, an app codebase, a signing implementation and a fulfilment partner; a quorum spanning two brands shares none of them. This is the same argument as `third-party-blast-radius` turned toward hardware: the question is never whether a vendor is trustworthy, it is **how far the damage reaches when one turns out not to be.**\n"</script>
+      <script type="application/json" id="copy-en">"# The rule names an entity and the risk lives in the group\n\nA BIS brief points out that activity restrictions reach only the issuer, so a prohibited activity moves to a sister company and the restriction is satisfied while nothing about the risk changed. The asymmetry is sharper than it sounds: banks already carry group-wide supervision and non-banks do not, so the same rule binds hardest where it was least needed.\n\nNot yet scoped, and the deliverable is a diagram of a group rather than a reading of a regime. For any stablecoin this project would accept or quote, list six functions and name the legal entity performing each: issuance, reserve management, custody of the reserve, the primary trading venue, the market maker quoting the pair, and the redemption desk. Then draw the ownership lines between them and mark which entities sit inside the stablecoin regime's perimeter. **The number worth writing down is how many load-bearing functions are performed outside that perimeter by a related party** — that is the figure the entity-level rule does not see. Do it for two issuers with different structures so the comparison has a control. Source: BIS FSI Briefs no. 33, \"Regulating stablecoin issuance: permissible entities and activities\", section 4, seen 2026-08-29 via a practitioner post. Read section 4 at source before quoting it; the passage circulating is one paragraph of a comparative brief.\n\n## Why\n\n**The sentence doing the work is an ordinary one about corporate structure, and it dissolves a whole class of rule.** If a regime says an issuer may not do X, and X can be performed by a sister company owned by the same parent, then the restriction has been satisfied by a filing. Nothing about the exposure changed — the same balance sheet stands behind it, the same people decide, the same conflict exists — but the regulated entity is now clean. **The rule was written against a box on an org chart, and org charts are cheap to redraw.**\n\n**The asymmetry BIS names is the part that inverts the intent.** Banks are already supervised on a consolidated basis: the group is the unit, so relocating an activity inside the group does not move it outside supervision. Non-banks are supervised entity by entity, so the same relocation works. That means an identical activity restriction **binds the bank, which was already the safer case, and slides off the non-bank, which was the reason the restriction was written.** A rule that is strictest where it is least needed is not merely ineffective; it is a subsidy to the structure it was aimed at, because the compliant path is available only to the party you were worried about.\n\n**This catalogue has a name for the move already, and it arrived from software.** `the-boundary-is-the-unit` argues that the transferable question in security is never *was this authorised* but *where is the boundary and what crosses it* — and that the usual check fails because it returns yes at exactly the moment of the attack. **This is the same failure in a regulatory register.** The perimeter was drawn around the issuer. The group crosses it. And the compliance check returns yes, truthfully, at exactly the moment the risk is being held somewhere the check does not look. That the same shape shows up in vendor scripts, storage slots, model loading and now corporate structure is the strongest evidence available that the boundary framing generalises past code.\n\n**The concrete damage is specific, and it lands on two cards this catalogue already has.** `stablecoin-redemption-desk` argues that what actually makes a stablecoin's denominator is the desk that redeems at par under stress, and `arb-bots-are-the-peg` argues that nobody operates the peg — competing bots are the mechanism. Both depend on **independence**. Under vertical integration the redemption desk can be the group's own trading arm and the arbitrageur can be the affiliate, so the two mechanisms that are supposed to hold the peg are being run by the party whose failure they are supposed to reveal. **The peg is still maintained; it is just no longer evidence of anything.** That is a more precise statement of the harm than \"conflicts of interest\", and it is checkable from an ownership diagram.\n\n**One correction to how the passage is being read.** The natural instinct on seeing text that fits a local situation is to ask whether the authors meant it — and that instinct is backwards. A general principle that happens to fit is **more** useful than a targeted one, because it means the pattern recurs across jurisdictions and the remedies have been tried elsewhere. Reading local intent into an international comparative brief is the same error `fork-date-provenance` exists to prevent: **a claim's usefulness comes from what it says and what it is based on, not from who you think it was aimed at.**\n\n## How it works\n\n### The same restriction, two structures\n\n| | Bank issuer | Non-bank issuer |\n|---|---|---|\n| Unit of supervision | **The group** (consolidated) | **The entity** |\n| Move activity X to a sister company | Still supervised | **Now outside the regime** |\n| So the activity restriction | **Binds** | **Slides off** |\n| Which was the case the rule was written for | No | **Yes** |\n\nThe last two rows are the whole problem. **A restriction that binds only the party it was not aimed at is worse than no restriction**, because it also prices the compliant structure out of the market.\n\n### The six functions, and which ones the perimeter actually covers\n\n| Function | Load-bearing because | Commonly inside the issuer? |\n|---|---|---|\n| **Issuance** | It is the regulated act | **Yes** |\n| **Reserve management** | Decides what the claim is backed by | Often a sister entity |\n| **Custody of the reserve** | Decides who can move it | Often external, sometimes affiliated |\n| **Primary trading venue** | Where the price is observed | Frequently affiliated |\n| **Market making the pair** | `arb-bots-are-the-peg` &mdash; this *is* the peg | Frequently affiliated |\n| **Redemption desk** | `stablecoin-redemption-desk` &mdash; this *is* the denominator | Frequently affiliated |\n\n**Count the rows that are load-bearing and affiliated but outside the perimeter.** That count is the card's number, and it is obtainable from public ownership records rather than from a regulator.\n\n### Why vertical integration is the specific harm\n\nTwo mechanisms in this catalogue are supposed to keep a stablecoin honest, and both are independence arguments:\n\n1. **The redemption desk** makes the denominator real by paying par under stress.\n2. **Competing arbitrageurs** make the peg real because no single party operates it.\n\nUnder one group both can be the same party. **The peg still holds and stops being evidence** &mdash; which is worse than a visibly broken peg, because a broken peg is information and a manufactured one is not.\n\n### The same shape, four domains\n\n| Where | The perimeter drawn | What crossed it |\n|---|---|---|\n| Frontend (`third-party-blast-radius`) | \"our site\" | An authorised vendor's script |\n| Contract (`storage-collision-admin-takeover`) | \"each module owns its state\" | A shared storage slot |\n| Model loading (`huggingface-is-a-package-manager`) | \"loading weights\" | Repo code, executed |\n| **Regulation (here)** | **\"the issuer\"** | **The group** |\n\n`the-boundary-is-the-unit` claimed the boundary question transfers. **This is the test of that claim outside software, and it passes.**\n"</script>
       <h2>Why</h2>
-      <p>The question &quot;which hardware wallet&quot; is usually answered with a brand, and a brand is the wrong unit. One word stands in for at least four independent supply chains — the silicon and firmware that generate the seed, the application that constructs and signs a transaction for a specific chain, the cryptographic construction that turns a key and a message into a signature, and the logistics that put the box in your hands. Each is built by different people, audited on a different schedule, and fails in a way the other three cannot detect.</p>
-<p>One month made that concrete, which is why the criteria below are worth writing down now rather than after a purchase. Coldcard&#39;s defect was in the <strong>entropy source</strong>: a 2021 build-configuration error routed seed generation to a software PRNG instead of the STM32 hardware RNG, leaving roughly 40 bits of effective entropy on Mk2/Mk3 devices, and at least 1,719 BTC across more than 5,200 addresses was swept once someone noticed. Trezor&#39;s incident was in <strong>logistics</strong>: its fulfilment partner ShipMonk was breached and 13,689 customer records were exposed, with no key touched — the asset stolen was a verified roster of people known to hold hardware wallets, complete with delivery addresses. And on 2026-08-25 Ledger patched a critical flaw in its <strong>Ethereum application</strong>, the layer between the chain&#39;s encoding rules and the device&#39;s screen. Three manufacturers, three layers, one month, and no overlap between the failures.</p>
-<p>That pattern kills the criterion most buyers actually use. <strong>&quot;The vendor with no incidents&quot; is not an observable property</strong> — it is the absence of a disclosure, which is also exactly what a vendor that does not look, or does not tell, produces. What can be observed is the shape of a disclosure: how long between discovery and patch, whether the root cause is named specifically enough to be checked, whether the affected build range is stated, whether the fix appears in a changelog you can read. <strong>Buy the manufacturer whose incident you can read end to end</strong>, because the alternative is buying silence and calling it a clean record.</p>
-<p>The fourth layer is the one worth staring at, precisely because it did not appear in the month&#39;s news. A signature scheme fails without an event: if the same nonce is ever reused across two signatures, the private key falls out by arithmetic, and nothing on the device, the chain or the balance looks unusual until the funds are gone. RFC 6979 exists to remove that failure mode by deriving the nonce deterministically from the key and the message rather than from a random source — which matters most on exactly the devices whose randomness you cannot inspect. <strong>A layer that has been quiet for a decade is not evidence that it is sound; for this layer, quiet is what failure looks like.</strong></p>
-<p>And there is now a fifth criterion that did not exist a few years ago. The post-quantum deposit-contract draft in <code>irreversible-switch-design</code> is one instance of a broader move: signature schemes are being prepared for replacement, and the technique is to strip out hardcoded assumptions about the scheme rather than to teach systems a new one. A device bought today will outlive the algorithm it ships with. So the question <strong>&quot;can this device receive a new signature algorithm as firmware, or is the curve fixed in hardware?&quot;</strong> is not a hypothetical — it is the criterion with the longest half-life on the list, and almost nobody asks it at the point of sale.</p>
+      <p><strong>The sentence doing the work is an ordinary one about corporate structure, and it dissolves a whole class of rule.</strong> If a regime says an issuer may not do X, and X can be performed by a sister company owned by the same parent, then the restriction has been satisfied by a filing. Nothing about the exposure changed — the same balance sheet stands behind it, the same people decide, the same conflict exists — but the regulated entity is now clean. <strong>The rule was written against a box on an org chart, and org charts are cheap to redraw.</strong></p>
+<p><strong>The asymmetry BIS names is the part that inverts the intent.</strong> Banks are already supervised on a consolidated basis: the group is the unit, so relocating an activity inside the group does not move it outside supervision. Non-banks are supervised entity by entity, so the same relocation works. That means an identical activity restriction <strong>binds the bank, which was already the safer case, and slides off the non-bank, which was the reason the restriction was written.</strong> A rule that is strictest where it is least needed is not merely ineffective; it is a subsidy to the structure it was aimed at, because the compliant path is available only to the party you were worried about.</p>
+<p><strong>This catalogue has a name for the move already, and it arrived from software.</strong> <code>the-boundary-is-the-unit</code> argues that the transferable question in security is never <em>was this authorised</em> but <em>where is the boundary and what crosses it</em> — and that the usual check fails because it returns yes at exactly the moment of the attack. <strong>This is the same failure in a regulatory register.</strong> The perimeter was drawn around the issuer. The group crosses it. And the compliance check returns yes, truthfully, at exactly the moment the risk is being held somewhere the check does not look. That the same shape shows up in vendor scripts, storage slots, model loading and now corporate structure is the strongest evidence available that the boundary framing generalises past code.</p>
+<p><strong>The concrete damage is specific, and it lands on two cards this catalogue already has.</strong> <code>stablecoin-redemption-desk</code> argues that what actually makes a stablecoin&#39;s denominator is the desk that redeems at par under stress, and <code>arb-bots-are-the-peg</code> argues that nobody operates the peg — competing bots are the mechanism. Both depend on <strong>independence</strong>. Under vertical integration the redemption desk can be the group&#39;s own trading arm and the arbitrageur can be the affiliate, so the two mechanisms that are supposed to hold the peg are being run by the party whose failure they are supposed to reveal. <strong>The peg is still maintained; it is just no longer evidence of anything.</strong> That is a more precise statement of the harm than &quot;conflicts of interest&quot;, and it is checkable from an ownership diagram.</p>
+<p><strong>One correction to how the passage is being read.</strong> The natural instinct on seeing text that fits a local situation is to ask whether the authors meant it — and that instinct is backwards. A general principle that happens to fit is <strong>more</strong> useful than a targeted one, because it means the pattern recurs across jurisdictions and the remedies have been tried elsewhere. Reading local intent into an international comparative brief is the same error <code>fork-date-provenance</code> exists to prevent: <strong>a claim&#39;s usefulness comes from what it says and what it is based on, not from who you think it was aimed at.</strong></p>
       <h2>How it works</h2>
-      <h3>One word, four vendors</h3>
+      <h3>The same restriction, two structures</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Layer</th>
-<th>What it actually is</th>
-<th>What its failure looks like</th>
-<th>Evidence to demand before buying</th>
+<th></th>
+<th>Bank issuer</th>
+<th>Non-bank issuer</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Entropy</strong></td>
-<td>Silicon RNG plus the firmware path that reaches it</td>
-<td>Keys that were never yours — and no symptom until a sweep</td>
-<td>An end-to-end audit of the entropy path, naming the RNG; support for user-supplied (dice) entropy</td>
+<td>Unit of supervision</td>
+<td><strong>The group</strong> (consolidated)</td>
+<td><strong>The entity</strong></td>
 </tr>
 <tr>
-<td><strong>Application</strong></td>
-<td>The per-chain app that decodes a transaction and renders it on screen</td>
-<td>You approve something other than what the screen showed</td>
-<td>Date and scope of the last independent audit <strong>of that chain&#39;s app</strong>, not of the device</td>
+<td>Move activity X to a sister company</td>
+<td>Still supervised</td>
+<td><strong>Now outside the regime</strong></td>
 </tr>
 <tr>
-<td><strong>Signing</strong></td>
-<td>The construction turning key + message into a signature</td>
-<td><strong>Nothing.</strong> A reused nonce leaks the key by arithmetic</td>
-<td>RFC 6979 or hedged determinism, stated in documentation and confirmed by the two-signature test below</td>
+<td>So the activity restriction</td>
+<td><strong>Binds</strong></td>
+<td><strong>Slides off</strong></td>
 </tr>
 <tr>
-<td><strong>Logistics</strong></td>
-<td>Fulfilment partner, carrier, order database</td>
-<td>No key touched — a targeting list of known holders, with addresses</td>
-<td>Named fulfilment partners, purchase without an account where possible, and the full text of the last disclosure</td>
+<td>Which was the case the rule was written for</td>
+<td>No</td>
+<td><strong>Yes</strong></td>
 </tr>
 </tbody></table></div>
-<p>The four columns are not ranked. They are <strong>independent</strong>, which is the entire point: an audit of the application says nothing about the RNG, and a flawless RNG does not stop a fulfilment partner from selling your address to a wrench.</p>
-<h3>The two tests you can run yourself</h3>
-<p><strong>Sign the same message twice and compare the bytes.</strong> Under RFC 6979 the nonce is a deterministic function of the private key and the message, so two signatures over identical input are byte-identical. If they differ, that is not automatically a defect — hedged determinism deliberately mixes in fresh randomness, and it is <em>safer</em> than pure determinism against fault attacks. What the test buys is the right follow-up question: <strong>if they differ, which of the two is it?</strong> A vendor that cannot answer that in one sentence has told you something.</p>
-<p><strong>Supply your own entropy if the device allows it.</strong> Rolling dice into the seed does not require trusting the manufacturer&#39;s RNG; it requires trusting only that the device mixes your input in rather than discarding it — a far smaller claim, and one the Coldcard defect shows is worth reducing to. The device that refuses user entropy is asking for trust it has no way to let you verify.</p>
-<h3>Why &quot;no incidents&quot; is the wrong filter</h3>
-<p>The three failures this month came from three of the four layers and none of them overlapped, so a clean record in one layer is not evidence about the others. Worse, the record itself is not a measurement. <strong>An incident count is a disclosure count</strong>, and disclosure is a behaviour of the vendor rather than a property of the device.</p>
-<p>What a disclosure does reveal, if you read the whole thing rather than the headline, is four things worth scoring: <strong>time from discovery to patch</strong>, <strong>specificity of root cause</strong> (&quot;a build-configuration error routed seed generation to a software PRNG&quot; is checkable; &quot;a security issue&quot; is not), <strong>whether the affected range is stated</strong>, and <strong>whether the fix is traceable in public source or a changelog</strong>. A vendor that scores well on those has demonstrated the only capability that generalises to the next incident — because there will be one.</p>
-<h3>The criterion with the longest half-life</h3>
-<p><code>irreversible-switch-design</code> reads a draft EIP that prepares the deposit contract for a signature-scheme replacement, and the technique there is instructive here: it works by <strong>removing the contract&#39;s hardcoded opinion about the old scheme</strong> rather than by teaching it the new one. Hardware has the same distinction in a harder form. A device whose curve arithmetic lives in a secure element&#39;s fixed instruction set cannot be given a new scheme by firmware; a device that implements signing in updatable firmware can, at some cost in side-channel exposure.</p>
-<p>That is a real trade rather than an obvious answer, which is why it belongs on the table as a question rather than as a rule: <strong>the device that cannot be updated is also the device that cannot be updated against you.</strong> But given that a scheme replacement is now visibly being designed for, a buyer who never asks the question has made the choice by default.</p>
-<h3>The conclusion that follows from independence</h3>
-<p>If the four layers are independent across vendors and correlated inside one, then the strongest available control is not a better single device — it is <strong>a multisig whose signers come from different manufacturers</strong>. A quorum of two devices from one brand shares an entropy path, an app codebase, a signing implementation and a fulfilment partner; a quorum spanning two brands shares none of them. This is the same argument as <code>third-party-blast-radius</code> turned toward hardware: the question is never whether a vendor is trustworthy, it is <strong>how far the damage reaches when one turns out not to be.</strong></p>
-      <p class="meta">1 diagram(s) on the live page.</p>
+<p>The last two rows are the whole problem. <strong>A restriction that binds only the party it was not aimed at is worse than no restriction</strong>, because it also prices the compliant structure out of the market.</p>
+<h3>The six functions, and which ones the perimeter actually covers</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Load-bearing because</th>
+<th>Commonly inside the issuer?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Issuance</strong></td>
+<td>It is the regulated act</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td><strong>Reserve management</strong></td>
+<td>Decides what the claim is backed by</td>
+<td>Often a sister entity</td>
+</tr>
+<tr>
+<td><strong>Custody of the reserve</strong></td>
+<td>Decides who can move it</td>
+<td>Often external, sometimes affiliated</td>
+</tr>
+<tr>
+<td><strong>Primary trading venue</strong></td>
+<td>Where the price is observed</td>
+<td>Frequently affiliated</td>
+</tr>
+<tr>
+<td><strong>Market making the pair</strong></td>
+<td><code>arb-bots-are-the-peg</code> &amp;mdash; this <em>is</em> the peg</td>
+<td>Frequently affiliated</td>
+</tr>
+<tr>
+<td><strong>Redemption desk</strong></td>
+<td><code>stablecoin-redemption-desk</code> &amp;mdash; this <em>is</em> the denominator</td>
+<td>Frequently affiliated</td>
+</tr>
+</tbody></table></div>
+<p><strong>Count the rows that are load-bearing and affiliated but outside the perimeter.</strong> That count is the card&#39;s number, and it is obtainable from public ownership records rather than from a regulator.</p>
+<h3>Why vertical integration is the specific harm</h3>
+<p>Two mechanisms in this catalogue are supposed to keep a stablecoin honest, and both are independence arguments:</p>
+<ol>
+<li><strong>The redemption desk</strong> makes the denominator real by paying par under stress.</li>
+<li><strong>Competing arbitrageurs</strong> make the peg real because no single party operates it.</li>
+</ol>
+<p>Under one group both can be the same party. <strong>The peg still holds and stops being evidence</strong> &amp;mdash; which is worse than a visibly broken peg, because a broken peg is information and a manufactured one is not.</p>
+<h3>The same shape, four domains</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Where</th>
+<th>The perimeter drawn</th>
+<th>What crossed it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Frontend (<code>third-party-blast-radius</code>)</td>
+<td>&quot;our site&quot;</td>
+<td>An authorised vendor&#39;s script</td>
+</tr>
+<tr>
+<td>Contract (<code>storage-collision-admin-takeover</code>)</td>
+<td>&quot;each module owns its state&quot;</td>
+<td>A shared storage slot</td>
+</tr>
+<tr>
+<td>Model loading (<code>huggingface-is-a-package-manager</code>)</td>
+<td>&quot;loading weights&quot;</td>
+<td>Repo code, executed</td>
+</tr>
+<tr>
+<td><strong>Regulation (here)</strong></td>
+<td><strong>&quot;the issuer&quot;</strong></td>
+<td><strong>The group</strong></td>
+</tr>
+</tbody></table></div>
+<p><code>the-boundary-is-the-unit</code> claimed the boundary question transfers. <strong>This is the test of that claim outside software, and it passes.</strong></p>
       <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 한 달에 세 층이 무너졌다 — 네 번째 층은 조용히 무너진다\n\nColdcard의 엔트로피 소스, Trezor의 배송 위탁사, Ledger의 이더리움 앱 — 세 제조사가 한 달 안에 각각 다른 층에서 사고를 냈습니다. 브랜드 이름 하나는 실은 네 개의 독립된 공급망이고, 이번 달에 조용했던 층이야말로 무너져도 티가 나지 않는 층입니다.\n\n아직 범위 미정 — 결과물은 **구매 후가 아니라 구매 전에** 채우는 한 장짜리 비교표입니다. 후보 기기마다 다섯 가지를 찾고, **각 답이 어디서 나왔는지 출처를 같이 적습니다**: (a) 실제로 쓰는 체인에 서명하는 앱의 **가장 최근 독립 감사와 그 날짜**, (b) 서명이 결정적 nonce(RFC 6979)인지 hedged 방식인지, 그리고 그게 **주장인지 검증 가능한지**, (c) 시드를 무엇이 생성하며 엔트로피 경로가 **끝에서 끝까지 감사된 적이 있는지** — 그리고 기기가 **사용자 제공 엔트로피**를 받는지, (d) 제조사의 물류·배송 위탁사, 구매에 계정과 배송지가 필요한지, 그리고 **마지막 사고 공지를 끝까지 읽은 내용**, (e) 펌웨어로 **서명 알고리즘을 교체할 수 있는지**, 아니면 곡선이 실리콘에 박혀 있는지. 다섯 중 둘은 책상에서 바로 시험됩니다: **같은 메시지를 두 번 서명해 바이트 비교**, 그리고 기기가 지원하면 **주사위 엔트로피 주입**. 출처: Coldcard Mk2/Mk3 시드 엔트로피 결함(2026-07), Trezor·ShipMonk 공지(2026-08-13), Ledger 이더리움 앱 수정(2026-08-25, 보도 기준 — 심각도를 옮겨 적기 전에 권고문 원문을 읽을 것).\n\n## 왜\n\n\"어떤 하드웨어 월렛?\"이라는 질문에는 보통 브랜드로 답하는데, **브랜드는 잘못된 단위**입니다. 단어 하나가 최소 **네 개의 독립된 공급망**을 대신합니다 — 시드를 만드는 실리콘과 펌웨어, 특정 체인의 트랜잭션을 구성하고 서명하는 애플리케이션, 키와 메시지를 서명으로 바꾸는 암호학적 구성, 그리고 상자를 손에 쥐여주는 물류. 각각을 **다른 사람들이 만들고, 다른 주기로 감사받고, 나머지 셋이 탐지할 수 없는 방식으로 무너집니다.**\n\n한 달이 그걸 구체적으로 보여줬고, 그래서 아래 기준은 구매 후가 아니라 **지금** 적어둘 값어치가 있습니다. Coldcard의 결함은 **엔트로피 소스**에 있었습니다 — 2021년 빌드 설정 오류가 시드 생성을 STM32 하드웨어 RNG 대신 소프트웨어 PRNG로 흘려보내 Mk2/Mk3에 유효 엔트로피 약 40비트만 남겼고, 누군가 알아챈 뒤 5,200개 넘는 주소에서 최소 1,719 BTC가 쓸려 나갔습니다. Trezor의 사고는 **물류**에 있었습니다 — 배송 위탁사 ShipMonk가 침해돼 고객 13,689건이 노출됐고 **키는 하나도 건드려지지 않았습니다.** 도난당한 자산은 배송지가 붙은, **하드웨어 월렛 보유자로 검증된 명부**였습니다. 그리고 2026-08-25 Ledger가 **이더리움 앱**의 치명적 결함을 패치했습니다 — 체인의 인코딩 규칙과 기기 화면 사이에 있는 층입니다. **세 제조사, 세 층, 한 달, 그리고 실패들 사이에 겹침이 전혀 없습니다.**\n\n이 패턴은 대부분의 구매자가 실제로 쓰는 기준을 무너뜨립니다. **\"사고가 없는 제조사\"는 관측 가능한 속성이 아닙니다** — 그건 **공지의 부재**이고, 들여다보지 않는 회사나 알리지 않는 회사가 만들어내는 것도 정확히 같은 모습입니다. 관측할 수 있는 것은 **공지의 형태**입니다: 발견에서 패치까지 며칠인가, 근본 원인이 **확인 가능할 만큼 구체적으로** 지목됐는가, 영향받는 빌드 범위가 적혀 있는가, 수정이 읽을 수 있는 체인지로그에 나타나는가. **사고를 끝까지 읽을 수 있는 제조사를 사십시오.** 대안은 침묵을 사놓고 그걸 무사고 기록이라 부르는 것입니다.\n\n**네 번째 층이 노려볼 값어치가 있습니다 — 정확히 이번 달 뉴스에 나오지 않았기 때문에.** 서명 방식은 **사건 없이** 무너집니다: 같은 nonce가 두 서명에 한 번이라도 재사용되면 **개인키가 산수로 떨어져 나오고**, 자금이 사라질 때까지 기기에도 체인에도 잔액에도 이상해 보이는 게 없습니다. RFC 6979는 nonce를 난수원이 아니라 **키와 메시지에서 결정적으로 유도**해 그 실패 양식을 제거하려고 존재하고, **난수를 들여다볼 수 없는 기기에서 가장 중요합니다.** **10년간 조용했다는 것은 그 층이 건전하다는 증거가 아닙니다 — 이 층에서는 조용한 것이 곧 실패의 모습입니다.**\n\n그리고 몇 년 전에는 없던 **다섯 번째 기준**이 생겼습니다. `irreversible-switch-design` 의 포스트퀀텀 예치 컨트랙트 초안은 더 큰 움직임의 한 사례입니다 — **서명 방식이 교체될 준비를 하는 중**이고, 그 기법은 시스템에 새 방식을 가르치는 게 아니라 **옛 방식에 대한 하드코딩된 전제를 걷어내는 것**입니다. 오늘 산 기기는 **자기가 달고 나온 알고리즘보다 오래 삽니다.** 그래서 **\"이 기기는 새 서명 알고리즘을 펌웨어로 받을 수 있는가, 아니면 곡선이 하드웨어에 박혀 있는가?\"** 는 가정이 아닙니다 — 목록에서 **반감기가 가장 긴 기준**이고, 판매 시점에 이걸 묻는 사람은 거의 없습니다.\n\n## 동작 방식\n\n### 단어 하나, 공급사 넷\n\n| 층 | 실제로 무엇인가 | 실패는 어떻게 보이는가 | 사기 전에 요구할 증거 |\n|---|---|---|---|\n| **엔트로피** | 실리콘 RNG + 거기 닿는 펌웨어 경로 | **애초에 내 키가 아니었던 키** — 쓸려 나가기 전까지 증상 없음 | RNG를 명시한 **엔트로피 경로 끝-끝 감사**, 그리고 **사용자 제공(주사위) 엔트로피** 지원 여부 |\n| **애플리케이션** | 트랜잭션을 해독해 화면에 그리는 체인별 앱 | **화면에 보인 것과 다른 것에 승인** | 기기가 아니라 **그 체인 앱**의 마지막 독립 감사 날짜와 범위 |\n| **서명** | 키 + 메시지를 서명으로 바꾸는 구성 | **아무것도 안 보임.** nonce 재사용이면 키가 산수로 새어나감 | 문서에 명시된 RFC 6979 또는 hedged 방식 + 아래 **두 번 서명 테스트**로 확인 |\n| **물류** | 배송 위탁사, 운송사, 주문 DB | **키는 안 건드려짐** — 주소가 붙은 **보유자 표적 명부** | 위탁사 실명 공개, 가능하면 **계정 없이 구매**, 그리고 마지막 공지 전문 |\n\n네 칸에는 **순위가 없습니다.** 이들은 **독립적**이고, 그게 요점의 전부입니다: 애플리케이션 감사는 RNG에 대해 아무 말도 하지 않고, 완벽한 RNG도 배송 위탁사가 당신 주소를 렌치에게 파는 것을 막지 못합니다.\n\n### 직접 돌릴 수 있는 시험 두 개\n\n**같은 메시지를 두 번 서명해 바이트를 비교합니다.** RFC 6979에서 nonce는 개인키와 메시지의 결정적 함수이므로, **동일 입력에 대한 두 서명은 바이트까지 같습니다.** 다르다면 그게 자동으로 결함은 아닙니다 — **hedged 결정성**은 의도적으로 새 난수를 섞고, 고장 주입 공격에 대해서는 순수 결정성보다 *더 안전*합니다. 이 시험이 사주는 것은 **다음 질문을 할 권리**입니다: **다르다면, 둘 중 어느 쪽인가?** 이걸 한 문장으로 답하지 못하는 제조사는 이미 뭔가를 말한 것입니다.\n\n**기기가 허용하면 엔트로피를 직접 넣습니다.** 시드에 주사위를 굴려 넣는 것은 제조사의 RNG를 신뢰할 것을 요구하지 않습니다. **내 입력을 버리지 않고 섞는다**는 것만 신뢰하면 되고, 이건 훨씬 작은 주장입니다 — Coldcard 결함이 보여주듯 **거기까지 줄여둘 값어치가 있는** 주장이고요. **사용자 엔트로피를 거부하는 기기는 검증할 방법이 없는 신뢰를 요구하는 것입니다.**\n\n### 왜 \"무사고\"가 잘못된 필터인가\n\n이번 달 세 건은 네 층 중 셋에서 나왔고 **서로 겹치지 않았습니다.** 즉 한 층의 깨끗한 기록은 나머지 층에 대한 증거가 아닙니다. 더 나쁜 건, **기록 자체가 측정이 아니라는 것**입니다. **사고 건수는 공지 건수**이고, 공지는 기기의 속성이 아니라 **제조사의 행동**입니다.\n\n헤드라인이 아니라 공지를 끝까지 읽으면 점수 매길 것이 넷 나옵니다: **발견에서 패치까지 걸린 시간**, **근본 원인의 구체성**(\"빌드 설정 오류가 시드 생성을 소프트웨어 PRNG로 흘려보냈다\"는 **확인 가능**하고, \"보안 이슈\"는 아닙니다), **영향 범위가 적혀 있는가**, **수정이 공개 소스나 체인지로그에서 추적되는가**. 여기서 점수가 좋은 제조사는 **다음 사고에도 일반화되는 유일한 역량**을 보여준 것입니다 — 다음 사고는 반드시 있으니까요.\n\n### 반감기가 가장 긴 기준\n\n`irreversible-switch-design` 은 예치 컨트랙트를 서명 방식 교체에 대비시키는 초안 EIP를 읽는 카드인데, 거기 기법이 여기서도 시사적입니다: 그 초안은 **새 방식을 가르쳐서가 아니라 옛 방식에 대한 하드코딩된 의견을 걷어내서** 작동합니다. 하드웨어에는 같은 구분이 더 어려운 형태로 있습니다. **곡선 연산이 시큐어 엘리먼트의 고정 명령어 집합 안에 있는 기기는 펌웨어로 새 방식을 받을 수 없고**, 서명을 갱신 가능한 펌웨어에서 구현한 기기는 받을 수 있습니다 — 부채널 노출이라는 비용을 치르고요.\n\n이건 뻔한 정답이 아니라 **진짜 트레이드오프**이고, 그래서 규칙이 아니라 **질문으로** 표에 들어가야 합니다: **갱신할 수 없는 기기는 당신을 향해서도 갱신될 수 없는 기기입니다.** 다만 방식 교체가 눈에 보이게 설계되고 있는 지금, **이 질문을 아예 하지 않는 구매자는 기본값으로 선택을 마친 것**입니다.\n\n### 독립성에서 따라 나오는 결론\n\n네 층이 **제조사 사이에서는 독립적이고 한 제조사 안에서는 상관**되어 있다면, 쓸 수 있는 가장 강한 통제는 더 좋은 기기 한 대가 아니라 **서명자를 서로 다른 제조사에서 가져온 멀티시그**입니다. 같은 브랜드 기기 두 대로 만든 정족수는 **엔트로피 경로·앱 코드베이스·서명 구현·배송 위탁사를 전부 공유**하고, 두 브랜드에 걸친 정족수는 **하나도 공유하지 않습니다.** 이건 `third-party-blast-radius` 의 논지를 하드웨어 쪽으로 돌린 것입니다: 질문은 결코 **\"이 공급사가 믿을 만한가\"** 가 아니라 **\"믿을 만하지 않은 것으로 드러났을 때 피해가 어디까지 닿는가\"** 입니다.\n"</script>
-      <h1>한 달에 세 층이 무너졌다 — 네 번째 층은 조용히 무너진다</h1>
-      <p class="lead">Coldcard의 엔트로피 소스, Trezor의 배송 위탁사, Ledger의 이더리움 앱 — 세 제조사가 한 달 안에 각각 다른 층에서 사고를 냈습니다. 브랜드 이름 하나는 실은 네 개의 독립된 공급망이고, 이번 달에 조용했던 층이야말로 무너져도 티가 나지 않는 층입니다.</p>
-      <p class="meta">아직 범위 미정 — 결과물은 <strong>구매 후가 아니라 구매 전에</strong> 채우는 한 장짜리 비교표입니다. 후보 기기마다 다섯 가지를 찾고, <strong>각 답이 어디서 나왔는지 출처를 같이 적습니다</strong>: (a) 실제로 쓰는 체인에 서명하는 앱의 <strong>가장 최근 독립 감사와 그 날짜</strong>, (b) 서명이 결정적 nonce(RFC 6979)인지 hedged 방식인지, 그리고 그게 <strong>주장인지 검증 가능한지</strong>, (c) 시드를 무엇이 생성하며 엔트로피 경로가 <strong>끝에서 끝까지 감사된 적이 있는지</strong> — 그리고 기기가 <strong>사용자 제공 엔트로피</strong>를 받는지, (d) 제조사의 물류·배송 위탁사, 구매에 계정과 배송지가 필요한지, 그리고 <strong>마지막 사고 공지를 끝까지 읽은 내용</strong>, (e) 펌웨어로 <strong>서명 알고리즘을 교체할 수 있는지</strong>, 아니면 곡선이 실리콘에 박혀 있는지. 다섯 중 둘은 책상에서 바로 시험됩니다: <strong>같은 메시지를 두 번 서명해 바이트 비교</strong>, 그리고 기기가 지원하면 <strong>주사위 엔트로피 주입</strong>. 출처: Coldcard Mk2/Mk3 시드 엔트로피 결함(2026-07), Trezor·ShipMonk 공지(2026-08-13), Ledger 이더리움 앱 수정(2026-08-25, 보도 기준 — 심각도를 옮겨 적기 전에 권고문 원문을 읽을 것).</p>
+      <script type="application/json" id="copy-ko">"# 규칙은 법인을 지목하고, 위험은 그룹에 산다\n\nBIS 브리프가 짚습니다 — **활동 규제는 발행자에게만 닿으므로**, 금지된 활동을 **자매회사로 옮기면 규제는 충족되고 위험은 그대로**입니다. 비대칭은 들리는 것보다 날카롭습니다: **은행은 이미 그룹 단위 감독을 받고 비은행은 아니어서**, **같은 규칙이 가장 덜 필요한 곳에서 가장 세게 묶입니다.**\n\n아직 범위 미정이고, **결과물은 규제 해설이 아니라 그룹 구조도**입니다. 이 프로젝트가 받거나 호가할 스테이블코인 하나에 대해 **기능 여섯**을 적고 **각각을 수행하는 법인의 이름**을 씁니다: **발행, 준비금 운용, 준비금 수탁, 주 거래장, 그 페어를 호가하는 마켓메이커, 그리고 환매 데스크.** 그다음 **그들 사이의 지분 관계를 선으로 긋고**, **어느 법인이 스테이블코인 규제의 경계 안에 있는지** 표시합니다. **적어둘 값어치가 있는 숫자는, 하중을 받는 기능 중 몇 개가 그 경계 밖에서 특수관계인에 의해 수행되는가**입니다 — **법인 단위 규칙이 보지 못하는 숫자가 그것**입니다. **구조가 다른 발행자 둘**에 대해 해서 비교에 대조군을 두십시오. 출처: BIS FSI Briefs no. 33, \"Regulating stablecoin issuance: permissible entities and activities\" 4장. 2026-08-29 실무자 게시물로 확인. **인용 전에 4장을 원문에서 읽을 것** — 도는 것은 **비교 브리프의 한 문단**입니다.\n\n## 왜\n\n**하중을 받는 문장은 기업 구조에 관한 평범한 문장이고, 그 한 문장이 규칙 한 부류를 통째로 녹입니다.** 어떤 규제가 **발행자는 X 를 하면 안 된다**고 하는데 **같은 모회사를 둔 자매회사가 X 를 할 수 있다면**, 그 규제는 **서류 한 장으로 충족**됩니다. **익스포저는 아무것도 안 바뀌었습니다** — 같은 대차대조표가 뒤에 있고, 같은 사람들이 결정하고, 같은 이해상충이 있습니다 — **다만 규제 대상 법인만 깨끗해졌습니다.** **규칙은 조직도의 네모 하나를 겨냥해 쓰였고, 조직도는 다시 그리는 비용이 쌉니다.**\n\n**BIS 가 지목한 비대칭이 의도를 뒤집는 지점입니다.** **은행은 이미 연결 기준으로 감독**받습니다 — **그룹이 단위**이므로 활동을 그룹 안에서 옮겨도 **감독 밖으로 나가지 않습니다.** **비은행은 법인별로 감독**되므로 **같은 이전이 통합니다.** 즉 **동일한 활동 규제가 이미 더 안전했던 은행은 묶고, 그 규제를 쓰게 만든 이유였던 비은행에서는 미끄러집니다.** **가장 덜 필요한 곳에서 가장 엄격한 규칙은 단지 무효한 게 아니라, 겨냥한 구조에 대한 보조금**입니다 — **준수 경로가 걱정하던 쪽에게만 열려 있으니까요.**\n\n**이 목록에는 이미 그 수의 이름이 있고, 그건 소프트웨어에서 왔습니다.** `the-boundary-is-the-unit` 은 보안에서 이전되는 질문이 **인가됐는가**가 아니라 **경계가 어디이고 무엇이 넘는가**이며, **통상의 검사는 공격이 일어나는 바로 그 순간에 예 라고 답하기 때문에 실패한다**고 주장합니다. **이건 같은 실패의 규제 버전입니다.** **경계는 발행자 둘레에 그어졌고, 그룹이 그것을 넘습니다.** 그리고 **컴플라이언스 검사는 정직하게 예 라고 답합니다** — **위험이 검사가 보지 않는 곳에 놓이는 바로 그 순간에.** **같은 모양이 협력사 스크립트에서, 스토리지 슬롯에서, 모델 로딩에서, 이제 기업 구조에서 나타난다는 것**이 **경계 프레이밍이 코드 밖으로 일반화된다는 가장 강한 증거**입니다.\n\n**구체적 피해는 특정적이고, 이 목록의 카드 두 장에 그대로 떨어집니다.** `stablecoin-redemption-desk` 는 **스테이블코인의 분모를 실제로 만드는 것은 스트레스 상황에서 액면가로 환매하는 데스크**라고 하고, `arb-bots-are-the-peg` 는 **아무도 페그를 운영하지 않으며 경쟁하는 봇들이 곧 메커니즘**이라고 합니다. **둘 다 독립성에 의존합니다.** **수직 계열화 아래서는 환매 데스크가 그룹 자체의 트레이딩 부문일 수 있고 차익거래자가 계열사일 수 있습니다.** 그러면 **페그를 붙들기로 되어 있는 두 메커니즘을, 그 실패를 드러내야 할 바로 그 당사자가 돌리고 있는 것**입니다. **페그는 여전히 유지됩니다 — 다만 더 이상 아무것의 증거도 아닙니다.** **\"이해상충\"보다 정확한 피해 진술**이고, **지분 구조도만으로 확인 가능합니다.**\n\n**그 문단을 읽는 방식에 대한 정정 하나.** 우리 상황에 들어맞는 문장을 보면 **저자가 의도한 것인지 묻고 싶어지는데, 그 직감은 거꾸로입니다.** **우연히 들어맞는 일반 원리가 겨냥된 원리보다 더 쓸모 있습니다** — **패턴이 여러 법역에서 반복된다는 뜻이고, 처방이 다른 곳에서 이미 시도됐다는 뜻**이니까요. **국제 비교 브리프에서 국내적 의도를 읽어내는 것**은 `fork-date-provenance` 가 막으려는 것과 같은 오류입니다: **주장의 쓸모는 그것이 무엇을 말하고 무엇에 근거하는가에서 오지, 누구를 겨눴다고 내가 생각하는가에서 오지 않습니다.**\n\n## 동작 방식\n\n### 같은 규제, 두 구조\n\n| | 은행 발행자 | 비은행 발행자 |\n|---|---|---|\n| 감독의 단위 | **그룹**(연결) | **법인** |\n| 활동 X 를 자매회사로 이전 | **여전히 감독 대상** | **규제 밖으로 나감** |\n| 그래서 활동 규제는 | **묶음** | **미끄러짐** |\n| 규칙이 겨냥한 대상이었나 | 아니오 | **예** |\n\n**마지막 두 줄이 문제의 전부**입니다. **겨냥하지 않은 쪽만 묶는 규제는 규제가 없는 것보다 나쁩니다** — **준수하는 구조를 시장에서 가격으로 밀어내기까지** 하니까요.\n\n### 기능 여섯, 그리고 경계가 실제로 덮는 것\n\n| 기능 | 왜 하중을 받나 | 보통 발행자 안에 있나 |\n|---|---|---|\n| **발행** | **규제되는 행위 그 자체** | **예** |\n| **준비금 운용** | 청구권이 무엇으로 뒷받침되는지 결정 | 자주 자매회사 |\n| **준비금 수탁** | **누가 그것을 움직일 수 있는지** 결정 | 외부, 때로 계열 |\n| **주 거래장** | **가격이 관측되는 곳** | 자주 계열 |\n| **해당 페어 마켓메이킹** | `arb-bots-are-the-peg` &mdash; **이것이 곧 페그** | 자주 계열 |\n| **환매 데스크** | `stablecoin-redemption-desk` &mdash; **이것이 곧 분모** | 자주 계열 |\n\n**하중을 받고, 계열이며, 경계 밖인 줄을 셉니다.** **그 개수가 이 카드의 숫자**이고, **규제기관이 아니라 공개된 지분 기록으로 구할 수 있습니다.**\n\n### 왜 수직 계열화가 구체적 피해인가\n\n이 목록에서 스테이블코인을 정직하게 유지한다고 보는 메커니즘 둘은 **모두 독립성 논증**입니다:\n\n1. **환매 데스크** — 스트레스 상황에서 액면가를 지급해 **분모를 실재하게** 함\n2. **경쟁하는 차익거래자** — **아무도 혼자 운영하지 않으므로 페그가 실재**함\n\n**한 그룹 아래서는 둘이 같은 당사자일 수 있습니다.** **페그는 여전히 유지되고, 증거이기를 멈춥니다** — **눈에 보이게 깨진 페그보다 나쁩니다.** **깨진 페그는 정보이고, 만들어진 페그는 아니기** 때문입니다.\n\n### 같은 모양, 네 도메인\n\n| 어디서 | 그어진 경계 | 무엇이 넘었나 |\n|---|---|---|\n| 프론트엔드 (`third-party-blast-radius`) | \"우리 사이트\" | **인가된 협력사의 스크립트** |\n| 컨트랙트 (`storage-collision-admin-takeover`) | \"각 모듈이 자기 상태 소유\" | **공유된 스토리지 슬롯** |\n| 모델 로딩 (`huggingface-is-a-package-manager`) | \"가중치를 불러온다\" | **실행되는 저장소 코드** |\n| **규제 (여기)** | **\"발행자\"** | **그룹** |\n\n`the-boundary-is-the-unit` 은 **경계 질문이 이전된다**고 주장했습니다. **이것이 소프트웨어 밖에서의 그 시험이고, 통과합니다.**\n"</script>
+      <h1>규칙은 법인을 지목하고, 위험은 그룹에 산다</h1>
+      <p class="lead">BIS 브리프가 짚습니다 — <strong>활동 규제는 발행자에게만 닿으므로</strong>, 금지된 활동을 <strong>자매회사로 옮기면 규제는 충족되고 위험은 그대로</strong>입니다. 비대칭은 들리는 것보다 날카롭습니다: <strong>은행은 이미 그룹 단위 감독을 받고 비은행은 아니어서</strong>, <strong>같은 규칙이 가장 덜 필요한 곳에서 가장 세게 묶입니다.</strong></p>
+      <p class="meta">아직 범위 미정이고, <strong>결과물은 규제 해설이 아니라 그룹 구조도</strong>입니다. 이 프로젝트가 받거나 호가할 스테이블코인 하나에 대해 <strong>기능 여섯</strong>을 적고 <strong>각각을 수행하는 법인의 이름</strong>을 씁니다: <strong>발행, 준비금 운용, 준비금 수탁, 주 거래장, 그 페어를 호가하는 마켓메이커, 그리고 환매 데스크.</strong> 그다음 <strong>그들 사이의 지분 관계를 선으로 긋고</strong>, <strong>어느 법인이 스테이블코인 규제의 경계 안에 있는지</strong> 표시합니다. <strong>적어둘 값어치가 있는 숫자는, 하중을 받는 기능 중 몇 개가 그 경계 밖에서 특수관계인에 의해 수행되는가</strong>입니다 — <strong>법인 단위 규칙이 보지 못하는 숫자가 그것</strong>입니다. <strong>구조가 다른 발행자 둘</strong>에 대해 해서 비교에 대조군을 두십시오. 출처: BIS FSI Briefs no. 33, &quot;Regulating stablecoin issuance: permissible entities and activities&quot; 4장. 2026-08-29 실무자 게시물로 확인. <strong>인용 전에 4장을 원문에서 읽을 것</strong> — 도는 것은 <strong>비교 브리프의 한 문단</strong>입니다.</p>
       <h2>왜</h2>
-      <p>&quot;어떤 하드웨어 월렛?&quot;이라는 질문에는 보통 브랜드로 답하는데, <strong>브랜드는 잘못된 단위</strong>입니다. 단어 하나가 최소 <strong>네 개의 독립된 공급망</strong>을 대신합니다 — 시드를 만드는 실리콘과 펌웨어, 특정 체인의 트랜잭션을 구성하고 서명하는 애플리케이션, 키와 메시지를 서명으로 바꾸는 암호학적 구성, 그리고 상자를 손에 쥐여주는 물류. 각각을 <strong>다른 사람들이 만들고, 다른 주기로 감사받고, 나머지 셋이 탐지할 수 없는 방식으로 무너집니다.</strong></p>
-<p>한 달이 그걸 구체적으로 보여줬고, 그래서 아래 기준은 구매 후가 아니라 <strong>지금</strong> 적어둘 값어치가 있습니다. Coldcard의 결함은 <strong>엔트로피 소스</strong>에 있었습니다 — 2021년 빌드 설정 오류가 시드 생성을 STM32 하드웨어 RNG 대신 소프트웨어 PRNG로 흘려보내 Mk2/Mk3에 유효 엔트로피 약 40비트만 남겼고, 누군가 알아챈 뒤 5,200개 넘는 주소에서 최소 1,719 BTC가 쓸려 나갔습니다. Trezor의 사고는 <strong>물류</strong>에 있었습니다 — 배송 위탁사 ShipMonk가 침해돼 고객 13,689건이 노출됐고 <strong>키는 하나도 건드려지지 않았습니다.</strong> 도난당한 자산은 배송지가 붙은, <strong>하드웨어 월렛 보유자로 검증된 명부</strong>였습니다. 그리고 2026-08-25 Ledger가 <strong>이더리움 앱</strong>의 치명적 결함을 패치했습니다 — 체인의 인코딩 규칙과 기기 화면 사이에 있는 층입니다. <strong>세 제조사, 세 층, 한 달, 그리고 실패들 사이에 겹침이 전혀 없습니다.</strong></p>
-<p>이 패턴은 대부분의 구매자가 실제로 쓰는 기준을 무너뜨립니다. <strong>&quot;사고가 없는 제조사&quot;는 관측 가능한 속성이 아닙니다</strong> — 그건 <strong>공지의 부재</strong>이고, 들여다보지 않는 회사나 알리지 않는 회사가 만들어내는 것도 정확히 같은 모습입니다. 관측할 수 있는 것은 <strong>공지의 형태</strong>입니다: 발견에서 패치까지 며칠인가, 근본 원인이 <strong>확인 가능할 만큼 구체적으로</strong> 지목됐는가, 영향받는 빌드 범위가 적혀 있는가, 수정이 읽을 수 있는 체인지로그에 나타나는가. <strong>사고를 끝까지 읽을 수 있는 제조사를 사십시오.</strong> 대안은 침묵을 사놓고 그걸 무사고 기록이라 부르는 것입니다.</p>
-<p><strong>네 번째 층이 노려볼 값어치가 있습니다 — 정확히 이번 달 뉴스에 나오지 않았기 때문에.</strong> 서명 방식은 <strong>사건 없이</strong> 무너집니다: 같은 nonce가 두 서명에 한 번이라도 재사용되면 <strong>개인키가 산수로 떨어져 나오고</strong>, 자금이 사라질 때까지 기기에도 체인에도 잔액에도 이상해 보이는 게 없습니다. RFC 6979는 nonce를 난수원이 아니라 <strong>키와 메시지에서 결정적으로 유도</strong>해 그 실패 양식을 제거하려고 존재하고, <strong>난수를 들여다볼 수 없는 기기에서 가장 중요합니다.</strong> <strong>10년간 조용했다는 것은 그 층이 건전하다는 증거가 아닙니다 — 이 층에서는 조용한 것이 곧 실패의 모습입니다.</strong></p>
-<p>그리고 몇 년 전에는 없던 <strong>다섯 번째 기준</strong>이 생겼습니다. <code>irreversible-switch-design</code> 의 포스트퀀텀 예치 컨트랙트 초안은 더 큰 움직임의 한 사례입니다 — <strong>서명 방식이 교체될 준비를 하는 중</strong>이고, 그 기법은 시스템에 새 방식을 가르치는 게 아니라 <strong>옛 방식에 대한 하드코딩된 전제를 걷어내는 것</strong>입니다. 오늘 산 기기는 <strong>자기가 달고 나온 알고리즘보다 오래 삽니다.</strong> 그래서 <strong>&quot;이 기기는 새 서명 알고리즘을 펌웨어로 받을 수 있는가, 아니면 곡선이 하드웨어에 박혀 있는가?&quot;</strong> 는 가정이 아닙니다 — 목록에서 <strong>반감기가 가장 긴 기준</strong>이고, 판매 시점에 이걸 묻는 사람은 거의 없습니다.</p>
+      <p><strong>하중을 받는 문장은 기업 구조에 관한 평범한 문장이고, 그 한 문장이 규칙 한 부류를 통째로 녹입니다.</strong> 어떤 규제가 <strong>발행자는 X 를 하면 안 된다</strong>고 하는데 <strong>같은 모회사를 둔 자매회사가 X 를 할 수 있다면</strong>, 그 규제는 <strong>서류 한 장으로 충족</strong>됩니다. <strong>익스포저는 아무것도 안 바뀌었습니다</strong> — 같은 대차대조표가 뒤에 있고, 같은 사람들이 결정하고, 같은 이해상충이 있습니다 — <strong>다만 규제 대상 법인만 깨끗해졌습니다.</strong> <strong>규칙은 조직도의 네모 하나를 겨냥해 쓰였고, 조직도는 다시 그리는 비용이 쌉니다.</strong></p>
+<p><strong>BIS 가 지목한 비대칭이 의도를 뒤집는 지점입니다.</strong> <strong>은행은 이미 연결 기준으로 감독</strong>받습니다 — <strong>그룹이 단위</strong>이므로 활동을 그룹 안에서 옮겨도 <strong>감독 밖으로 나가지 않습니다.</strong> <strong>비은행은 법인별로 감독</strong>되므로 <strong>같은 이전이 통합니다.</strong> 즉 <strong>동일한 활동 규제가 이미 더 안전했던 은행은 묶고, 그 규제를 쓰게 만든 이유였던 비은행에서는 미끄러집니다.</strong> <strong>가장 덜 필요한 곳에서 가장 엄격한 규칙은 단지 무효한 게 아니라, 겨냥한 구조에 대한 보조금</strong>입니다 — <strong>준수 경로가 걱정하던 쪽에게만 열려 있으니까요.</strong></p>
+<p><strong>이 목록에는 이미 그 수의 이름이 있고, 그건 소프트웨어에서 왔습니다.</strong> <code>the-boundary-is-the-unit</code> 은 보안에서 이전되는 질문이 <strong>인가됐는가</strong>가 아니라 <strong>경계가 어디이고 무엇이 넘는가</strong>이며, <strong>통상의 검사는 공격이 일어나는 바로 그 순간에 예 라고 답하기 때문에 실패한다</strong>고 주장합니다. <strong>이건 같은 실패의 규제 버전입니다.</strong> <strong>경계는 발행자 둘레에 그어졌고, 그룹이 그것을 넘습니다.</strong> 그리고 <strong>컴플라이언스 검사는 정직하게 예 라고 답합니다</strong> — <strong>위험이 검사가 보지 않는 곳에 놓이는 바로 그 순간에.</strong> <strong>같은 모양이 협력사 스크립트에서, 스토리지 슬롯에서, 모델 로딩에서, 이제 기업 구조에서 나타난다는 것</strong>이 <strong>경계 프레이밍이 코드 밖으로 일반화된다는 가장 강한 증거</strong>입니다.</p>
+<p><strong>구체적 피해는 특정적이고, 이 목록의 카드 두 장에 그대로 떨어집니다.</strong> <code>stablecoin-redemption-desk</code> 는 <strong>스테이블코인의 분모를 실제로 만드는 것은 스트레스 상황에서 액면가로 환매하는 데스크</strong>라고 하고, <code>arb-bots-are-the-peg</code> 는 <strong>아무도 페그를 운영하지 않으며 경쟁하는 봇들이 곧 메커니즘</strong>이라고 합니다. <strong>둘 다 독립성에 의존합니다.</strong> <strong>수직 계열화 아래서는 환매 데스크가 그룹 자체의 트레이딩 부문일 수 있고 차익거래자가 계열사일 수 있습니다.</strong> 그러면 <strong>페그를 붙들기로 되어 있는 두 메커니즘을, 그 실패를 드러내야 할 바로 그 당사자가 돌리고 있는 것</strong>입니다. <strong>페그는 여전히 유지됩니다 — 다만 더 이상 아무것의 증거도 아닙니다.</strong> <strong>&quot;이해상충&quot;보다 정확한 피해 진술</strong>이고, <strong>지분 구조도만으로 확인 가능합니다.</strong></p>
+<p><strong>그 문단을 읽는 방식에 대한 정정 하나.</strong> 우리 상황에 들어맞는 문장을 보면 <strong>저자가 의도한 것인지 묻고 싶어지는데, 그 직감은 거꾸로입니다.</strong> <strong>우연히 들어맞는 일반 원리가 겨냥된 원리보다 더 쓸모 있습니다</strong> — <strong>패턴이 여러 법역에서 반복된다는 뜻이고, 처방이 다른 곳에서 이미 시도됐다는 뜻</strong>이니까요. <strong>국제 비교 브리프에서 국내적 의도를 읽어내는 것</strong>은 <code>fork-date-provenance</code> 가 막으려는 것과 같은 오류입니다: <strong>주장의 쓸모는 그것이 무엇을 말하고 무엇에 근거하는가에서 오지, 누구를 겨눴다고 내가 생각하는가에서 오지 않습니다.</strong></p>
       <h2>동작 방식</h2>
-      <h3>단어 하나, 공급사 넷</h3>
+      <h3>같은 규제, 두 구조</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>층</th>
-<th>실제로 무엇인가</th>
-<th>실패는 어떻게 보이는가</th>
-<th>사기 전에 요구할 증거</th>
+<th></th>
+<th>은행 발행자</th>
+<th>비은행 발행자</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>엔트로피</strong></td>
-<td>실리콘 RNG + 거기 닿는 펌웨어 경로</td>
-<td><strong>애초에 내 키가 아니었던 키</strong> — 쓸려 나가기 전까지 증상 없음</td>
-<td>RNG를 명시한 <strong>엔트로피 경로 끝-끝 감사</strong>, 그리고 <strong>사용자 제공(주사위) 엔트로피</strong> 지원 여부</td>
+<td>감독의 단위</td>
+<td><strong>그룹</strong>(연결)</td>
+<td><strong>법인</strong></td>
 </tr>
 <tr>
-<td><strong>애플리케이션</strong></td>
-<td>트랜잭션을 해독해 화면에 그리는 체인별 앱</td>
-<td><strong>화면에 보인 것과 다른 것에 승인</strong></td>
-<td>기기가 아니라 <strong>그 체인 앱</strong>의 마지막 독립 감사 날짜와 범위</td>
+<td>활동 X 를 자매회사로 이전</td>
+<td><strong>여전히 감독 대상</strong></td>
+<td><strong>규제 밖으로 나감</strong></td>
 </tr>
 <tr>
-<td><strong>서명</strong></td>
-<td>키 + 메시지를 서명으로 바꾸는 구성</td>
-<td><strong>아무것도 안 보임.</strong> nonce 재사용이면 키가 산수로 새어나감</td>
-<td>문서에 명시된 RFC 6979 또는 hedged 방식 + 아래 <strong>두 번 서명 테스트</strong>로 확인</td>
+<td>그래서 활동 규제는</td>
+<td><strong>묶음</strong></td>
+<td><strong>미끄러짐</strong></td>
 </tr>
 <tr>
-<td><strong>물류</strong></td>
-<td>배송 위탁사, 운송사, 주문 DB</td>
-<td><strong>키는 안 건드려짐</strong> — 주소가 붙은 <strong>보유자 표적 명부</strong></td>
-<td>위탁사 실명 공개, 가능하면 <strong>계정 없이 구매</strong>, 그리고 마지막 공지 전문</td>
+<td>규칙이 겨냥한 대상이었나</td>
+<td>아니오</td>
+<td><strong>예</strong></td>
 </tr>
 </tbody></table></div>
-<p>네 칸에는 <strong>순위가 없습니다.</strong> 이들은 <strong>독립적</strong>이고, 그게 요점의 전부입니다: 애플리케이션 감사는 RNG에 대해 아무 말도 하지 않고, 완벽한 RNG도 배송 위탁사가 당신 주소를 렌치에게 파는 것을 막지 못합니다.</p>
-<h3>직접 돌릴 수 있는 시험 두 개</h3>
-<p><strong>같은 메시지를 두 번 서명해 바이트를 비교합니다.</strong> RFC 6979에서 nonce는 개인키와 메시지의 결정적 함수이므로, <strong>동일 입력에 대한 두 서명은 바이트까지 같습니다.</strong> 다르다면 그게 자동으로 결함은 아닙니다 — <strong>hedged 결정성</strong>은 의도적으로 새 난수를 섞고, 고장 주입 공격에 대해서는 순수 결정성보다 <em>더 안전</em>합니다. 이 시험이 사주는 것은 <strong>다음 질문을 할 권리</strong>입니다: <strong>다르다면, 둘 중 어느 쪽인가?</strong> 이걸 한 문장으로 답하지 못하는 제조사는 이미 뭔가를 말한 것입니다.</p>
-<p><strong>기기가 허용하면 엔트로피를 직접 넣습니다.</strong> 시드에 주사위를 굴려 넣는 것은 제조사의 RNG를 신뢰할 것을 요구하지 않습니다. <strong>내 입력을 버리지 않고 섞는다</strong>는 것만 신뢰하면 되고, 이건 훨씬 작은 주장입니다 — Coldcard 결함이 보여주듯 <strong>거기까지 줄여둘 값어치가 있는</strong> 주장이고요. <strong>사용자 엔트로피를 거부하는 기기는 검증할 방법이 없는 신뢰를 요구하는 것입니다.</strong></p>
-<h3>왜 &quot;무사고&quot;가 잘못된 필터인가</h3>
-<p>이번 달 세 건은 네 층 중 셋에서 나왔고 <strong>서로 겹치지 않았습니다.</strong> 즉 한 층의 깨끗한 기록은 나머지 층에 대한 증거가 아닙니다. 더 나쁜 건, <strong>기록 자체가 측정이 아니라는 것</strong>입니다. <strong>사고 건수는 공지 건수</strong>이고, 공지는 기기의 속성이 아니라 <strong>제조사의 행동</strong>입니다.</p>
-<p>헤드라인이 아니라 공지를 끝까지 읽으면 점수 매길 것이 넷 나옵니다: <strong>발견에서 패치까지 걸린 시간</strong>, <strong>근본 원인의 구체성</strong>(&quot;빌드 설정 오류가 시드 생성을 소프트웨어 PRNG로 흘려보냈다&quot;는 <strong>확인 가능</strong>하고, &quot;보안 이슈&quot;는 아닙니다), <strong>영향 범위가 적혀 있는가</strong>, <strong>수정이 공개 소스나 체인지로그에서 추적되는가</strong>. 여기서 점수가 좋은 제조사는 <strong>다음 사고에도 일반화되는 유일한 역량</strong>을 보여준 것입니다 — 다음 사고는 반드시 있으니까요.</p>
-<h3>반감기가 가장 긴 기준</h3>
-<p><code>irreversible-switch-design</code> 은 예치 컨트랙트를 서명 방식 교체에 대비시키는 초안 EIP를 읽는 카드인데, 거기 기법이 여기서도 시사적입니다: 그 초안은 <strong>새 방식을 가르쳐서가 아니라 옛 방식에 대한 하드코딩된 의견을 걷어내서</strong> 작동합니다. 하드웨어에는 같은 구분이 더 어려운 형태로 있습니다. <strong>곡선 연산이 시큐어 엘리먼트의 고정 명령어 집합 안에 있는 기기는 펌웨어로 새 방식을 받을 수 없고</strong>, 서명을 갱신 가능한 펌웨어에서 구현한 기기는 받을 수 있습니다 — 부채널 노출이라는 비용을 치르고요.</p>
-<p>이건 뻔한 정답이 아니라 <strong>진짜 트레이드오프</strong>이고, 그래서 규칙이 아니라 <strong>질문으로</strong> 표에 들어가야 합니다: <strong>갱신할 수 없는 기기는 당신을 향해서도 갱신될 수 없는 기기입니다.</strong> 다만 방식 교체가 눈에 보이게 설계되고 있는 지금, <strong>이 질문을 아예 하지 않는 구매자는 기본값으로 선택을 마친 것</strong>입니다.</p>
-<h3>독립성에서 따라 나오는 결론</h3>
-<p>네 층이 <strong>제조사 사이에서는 독립적이고 한 제조사 안에서는 상관</strong>되어 있다면, 쓸 수 있는 가장 강한 통제는 더 좋은 기기 한 대가 아니라 <strong>서명자를 서로 다른 제조사에서 가져온 멀티시그</strong>입니다. 같은 브랜드 기기 두 대로 만든 정족수는 <strong>엔트로피 경로·앱 코드베이스·서명 구현·배송 위탁사를 전부 공유</strong>하고, 두 브랜드에 걸친 정족수는 <strong>하나도 공유하지 않습니다.</strong> 이건 <code>third-party-blast-radius</code> 의 논지를 하드웨어 쪽으로 돌린 것입니다: 질문은 결코 <strong>&quot;이 공급사가 믿을 만한가&quot;</strong> 가 아니라 <strong>&quot;믿을 만하지 않은 것으로 드러났을 때 피해가 어디까지 닿는가&quot;</strong> 입니다.</p>
-      <p class="meta">1 diagram(s) on the live page.</p>
+<p><strong>마지막 두 줄이 문제의 전부</strong>입니다. <strong>겨냥하지 않은 쪽만 묶는 규제는 규제가 없는 것보다 나쁩니다</strong> — <strong>준수하는 구조를 시장에서 가격으로 밀어내기까지</strong> 하니까요.</p>
+<h3>기능 여섯, 그리고 경계가 실제로 덮는 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>기능</th>
+<th>왜 하중을 받나</th>
+<th>보통 발행자 안에 있나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>발행</strong></td>
+<td><strong>규제되는 행위 그 자체</strong></td>
+<td><strong>예</strong></td>
+</tr>
+<tr>
+<td><strong>준비금 운용</strong></td>
+<td>청구권이 무엇으로 뒷받침되는지 결정</td>
+<td>자주 자매회사</td>
+</tr>
+<tr>
+<td><strong>준비금 수탁</strong></td>
+<td><strong>누가 그것을 움직일 수 있는지</strong> 결정</td>
+<td>외부, 때로 계열</td>
+</tr>
+<tr>
+<td><strong>주 거래장</strong></td>
+<td><strong>가격이 관측되는 곳</strong></td>
+<td>자주 계열</td>
+</tr>
+<tr>
+<td><strong>해당 페어 마켓메이킹</strong></td>
+<td><code>arb-bots-are-the-peg</code> &amp;mdash; <strong>이것이 곧 페그</strong></td>
+<td>자주 계열</td>
+</tr>
+<tr>
+<td><strong>환매 데스크</strong></td>
+<td><code>stablecoin-redemption-desk</code> &amp;mdash; <strong>이것이 곧 분모</strong></td>
+<td>자주 계열</td>
+</tr>
+</tbody></table></div>
+<p><strong>하중을 받고, 계열이며, 경계 밖인 줄을 셉니다.</strong> <strong>그 개수가 이 카드의 숫자</strong>이고, <strong>규제기관이 아니라 공개된 지분 기록으로 구할 수 있습니다.</strong></p>
+<h3>왜 수직 계열화가 구체적 피해인가</h3>
+<p>이 목록에서 스테이블코인을 정직하게 유지한다고 보는 메커니즘 둘은 <strong>모두 독립성 논증</strong>입니다:</p>
+<ol>
+<li><strong>환매 데스크</strong> — 스트레스 상황에서 액면가를 지급해 <strong>분모를 실재하게</strong> 함</li>
+<li><strong>경쟁하는 차익거래자</strong> — <strong>아무도 혼자 운영하지 않으므로 페그가 실재</strong>함</li>
+</ol>
+<p><strong>한 그룹 아래서는 둘이 같은 당사자일 수 있습니다.</strong> <strong>페그는 여전히 유지되고, 증거이기를 멈춥니다</strong> — <strong>눈에 보이게 깨진 페그보다 나쁩니다.</strong> <strong>깨진 페그는 정보이고, 만들어진 페그는 아니기</strong> 때문입니다.</p>
+<h3>같은 모양, 네 도메인</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>어디서</th>
+<th>그어진 경계</th>
+<th>무엇이 넘었나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>프론트엔드 (<code>third-party-blast-radius</code>)</td>
+<td>&quot;우리 사이트&quot;</td>
+<td><strong>인가된 협력사의 스크립트</strong></td>
+</tr>
+<tr>
+<td>컨트랙트 (<code>storage-collision-admin-takeover</code>)</td>
+<td>&quot;각 모듈이 자기 상태 소유&quot;</td>
+<td><strong>공유된 스토리지 슬롯</strong></td>
+</tr>
+<tr>
+<td>모델 로딩 (<code>huggingface-is-a-package-manager</code>)</td>
+<td>&quot;가중치를 불러온다&quot;</td>
+<td><strong>실행되는 저장소 코드</strong></td>
+</tr>
+<tr>
+<td><strong>규제 (여기)</strong></td>
+<td><strong>&quot;발행자&quot;</strong></td>
+<td><strong>그룹</strong></td>
+</tr>
+</tbody></table></div>
+<p><code>the-boundary-is-the-unit</code> 은 <strong>경계 질문이 이전된다</strong>고 주장했습니다. <strong>이것이 소프트웨어 밖에서의 그 시험이고, 통과합니다.</strong></p>
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-third-party-blast-radius.html">&larr; 48. Trusted third parties — the blast radius nobody maps</a><a href="pocs-demonstration-is-not-a-specification.html">50. Showing is not telling — a demonstration is an example, not a specification &rarr;</a></div>
+    <div class="pager"><a href="pocs-ndf-measures-the-restriction.html">&larr; 51. The NDF market is the size of the restriction, and removing it does not relocate the market</a><a href="pocs-aml-compliance.html">53. AML — where the cryptography stops &rarr;</a></div>
   </div>
   </main>
 </div>
