@@ -131,21 +131,19 @@ const cards = [
 // 두 구획으로 가른다 (jay, 2026-08-27): 이더리움 프로토콜·코어 기술이 앞, 그 밖의 전부가
 // 뒤. 예전의 "Later" 묶음은 없앴고 그 항목들은 뒤 구획으로 합쳐졌다 — 지금 중요하지 않다는
 // 표시가 목록을 셋으로 가를 만큼의 값을 하지 못했다. 번호는 두 구획을 가로질러 이어진다.
-// 카드 구획 (jay, 2026-08-27 에 Economics·Future 추가). 순서가 곧 번호 순서다 —
-// 기계 → 그 위에 지은 것 → 돈의 논리 → 나머지 전부.
+// 카드 구획. 순서가 곧 번호 순서다 — 체인 → 돈의 논리 → 나머지 전부.
+// 2026-08-29 에 Protocol 과 Applied 를 Blockchain 하나로 합쳤다 (jay): 프로토콜과 그 위에
+// 지은 것을 가르는 선이 카드가 늘수록 임의로워졌다. EIP 를 읽는 카드와 그 EIP 를 쓰는
+// 서비스를 다룬 카드가 매번 경계에 걸렸고, 어느 쪽인지 정하는 데 드는 시간이 그 구분이
+// 주는 값어치보다 컸다.
 // 마지막 칸은 2026-08-28 에 Future → "Future/Etc" 로 바뀌었다 (jay): 로보틱스·미래 기술만
 // 담기에는 좁았고, "어느 칸에도 안 들어가는 것"을 둘 자리가 따로 없었다. id 는 'future' 로
 // 두므로 카드의 group 값과 #sec-future 앵커는 그대로다 — 바뀐 것은 표시 이름과 성격뿐.
 const CARD_GROUPS = [
   {
-    id: 'protocol',
-    title: 'Protocol',
-    lead: 'Ethereum protocol and core technologies &mdash; consensus, EIPs, cryptography, and the mechanisms everything else is standing on.',
-  },
-  {
-    id: 'applied',
-    title: 'Applied',
-    lead: 'Everything built on top: services, APIs, chains, payments, and the market and regulatory reading that decides what any of it is allowed to be.',
+    id: 'blockchain',
+    title: 'Blockchain',
+    lead: 'The protocol underneath and everything standing on it &mdash; consensus, EIPs and cryptography, then the services, chains, payments, and the market and regulatory reading that decides what any of it is allowed to be.',
   },
   {
     id: 'economics',
@@ -158,9 +156,12 @@ const CARD_GROUPS = [
     lead: 'Robotics, embodied AI and data-science method, plus anything that does not belong to a section above &mdash; the catch-all, kept honest about what is a demo and what is a cost curve.',
   },
 ];
+// group 을 안 붙인 카드가 전부 Blockchain 으로 온다 (2026-08-29 에 Protocol+Applied 를
+// 합치면서 기본 구획의 이름만 바뀌었다). 나머지 구획은 group 값으로 정확히 걸러낸다.
+const DEFAULT_GROUP = 'blockchain';
 const cardsInGroup = (id) =>
-  id === 'applied'
-    ? cards.filter((c) => !CARD_GROUPS.some((g) => g.id !== 'applied' && c.group === g.id))
+  id === DEFAULT_GROUP
+    ? cards.filter((c) => !CARD_GROUPS.some((g) => g.id !== DEFAULT_GROUP && c.group === g.id))
     : cards.filter((c) => c.group === id);
 const grouped = CARD_GROUPS.map((g) => ({ ...g, cards: cardsInGroup(g.id) })).filter(
   (g) => g.cards.length

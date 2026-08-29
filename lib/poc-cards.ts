@@ -33,7 +33,6 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "pbs",
-    group: "protocol",
     title: "PBS (searcher / relay)",
     titleKo: "PBS (서처 / 릴레이)",
     description: "Submit a Sepolia bundle as a searcher, watch mainnet relay inclusion live.",
@@ -96,7 +95,6 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "erc-7702",
-    group: "protocol",
     title: "EIP-7702 — smart account, same address",
     titleKo: "EIP-7702 — 주소 그대로 스마트 계정",
     description: "Inspect an account's delegation designator live, plus what the spec is used for.",
@@ -138,7 +136,6 @@ export const POC_CARDS: DemoCard[] = [
   {
     key: "aa",
     important: true,
-    group: "protocol",
     title: "AA — delegatable accounts & session keys",
     titleKo: "AA — 위임형 계정 & 세션 키",
     description: "ERC-7702/7715 delegation + the four AA building blocks an agent needs (paymaster, atomic tx, KYA).",
@@ -418,7 +415,6 @@ export const POC_CARDS: DemoCard[] = [
     // stake-concentration(겉보기 N개 단위) · aqua(먼저 온 사람에게만 실재하는 깊이)와 같은 계열.
     key: "governance-capture-cost",
     updated: "2026-08-25",
-    group: "protocol",
     title: "Governance capture — when the exploit is a market order",
     titleKo: "거버넌스 장악 — 익스플로잇이 그냥 시장가 매수일 때",
     description:
@@ -449,7 +445,6 @@ export const POC_CARDS: DemoCard[] = [
     // (호가된 깊이는 먼저 온 사람에게만 실재)와 논리 형태가 같다.
     key: "l1-zkevm-optional-proofs",
     updated: "2026-08-25",
-    group: "protocol",
     title: "L1 zkEVM — the word doing the work is \"optional\"",
     titleKo: "L1 zkEVM — 정작 일하는 단어는 '선택적'이다",
     description:
@@ -477,7 +472,6 @@ export const POC_CARDS: DemoCard[] = [
     key: "erc-7683-settlement-security",
     important: true,
     updated: "2026-08-25",
-    group: "protocol",
     title: "ERC-7683 settlement security — the layer left deliberately unstandardized",
     titleKo: "ERC-7683 정산 보안 — 표준이 일부러 비워둔 그 층",
     description:
@@ -592,7 +586,6 @@ export const POC_CARDS: DemoCard[] = [
     // 의견을 갖지 않게 만드는 것이고, ② 되돌릴 수 없다는 성질은 위험이 아니라 보장 그 자체다.
     key: "irreversible-switch-design",
     updated: "2026-08-27",
-    group: "protocol",
     title: "The migration works by making the contract dumber",
     titleKo: "마이그레이션은 컨트랙트를 더 멍청하게 만들어서 성립한다",
     description:
@@ -615,7 +608,6 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "merkle-vs-verkle",
-    group: "protocol",
     title: "Merkle vs Verkle",
     titleKo: "Merkle vs Verkle",
     description: "Why proof size, not hashing speed, is what decides whether stateless clients are possible.",
@@ -637,7 +629,6 @@ export const POC_CARDS: DemoCard[] = [
     // 요지는 프로토콜 변경 자체가 아니라, 앱 코드 곳곳에 적히지 않은 채 박혀 있는 "12초"다.
     key: "quick-slots-10s",
     updated: "2026-08-27",
-    group: "protocol",
     title: "Ten-second slots — the constant nobody wrote down",
     titleKo: "10초 슬롯 — 아무도 적어두지 않은 상수",
     description:
@@ -663,7 +654,6 @@ export const POC_CARDS: DemoCard[] = [
     // 단일 가스 숫자가 감추고 있던 교차보조를 이 프로젝트의 트랜잭션 구성으로 재계산한다.
     key: "l1-data-pricing-dimensions",
     updated: "2026-08-27",
-    group: "protocol",
     title: "When gas stops being one number — data pricing and bandwidth accounting",
     titleKo: "가스가 더 이상 숫자 하나가 아닐 때 — 데이터 가격과 대역폭 회계",
     description:
@@ -690,7 +680,6 @@ export const POC_CARDS: DemoCard[] = [
     // 구간에 무엇이 보이느냐"다. 라이브 pbs 카드가 MEV를 공급 측(서처·릴레이)에서
     // 만졌다면, 이 카드는 같은 시장을 방어 측 명세로 다시 본다.
     key: "encrypted-mempool",
-    group: "protocol",
     title: "What encryption does not hide",
     titleKo: "암호화가 가리지 못하는 것",
     description:
@@ -719,7 +708,6 @@ export const POC_CARDS: DemoCard[] = [
     // 이런 상태 전이를 잡으라고 있는 것이다.
     key: "storage-collision-admin-takeover",
     updated: "2026-08-26",
-    group: "protocol",
     title: "The code was right and the layout was wrong",
     titleKo: "코드는 맞았고 배치가 틀렸다",
     description:
@@ -748,7 +736,6 @@ export const POC_CARDS: DemoCard[] = [
     key: "the-settlement-instant",
     important: true,
     updated: "2026-08-27",
-    group: "protocol",
     title: "A price at a moment — the instant, the window, and who can move it",
     titleKo: "한 시점의 가격 — 그 순간, 그 창, 그리고 그것을 움직일 수 있는 자",
     description:
@@ -796,7 +783,6 @@ export const POC_CARDS: DemoCard[] = [
     // 다른 쪽은 "값만 가렸을 때 무엇이 새는가". 두 절반이 하나의 트릴레마를 이룬다.
     key: "what-encryption-does-not-hide",
     updated: "2026-08-28",
-    group: "protocol",
     title: "Hiding the amount is the easy half",
     titleKo: "금액을 가리는 것은 쉬운 절반이다",
     description:
@@ -823,7 +809,6 @@ export const POC_CARDS: DemoCard[] = [
     // dvt 카드에 덧붙이지 않은 이유: 그쪽은 done + 손으로 쓴 페이지(docsHref)이고, DKG 는
     // DVT 한 곳이 아니라 keyper 위원회·MPC 수탁·랜덤성 비콘까지 걸쳐 있어 범위가 더 넓다.
     key: "dkg-resharing",
-    group: "protocol",
     title: "The ceremony ends, the committee doesn't",
     titleKo: "의식은 끝나지만 위원회는 남는다",
     description:
@@ -847,7 +832,6 @@ export const POC_CARDS: DemoCard[] = [
   {
     key: "erc-8141",
     updated: "2026-08-28",
-    group: "protocol",
     title: "ERC-8141",
     titleKo: "ERC-8141",
     description: "Native account-abstraction explainer — Ethereum's protocol-level Frame Transactions.",
@@ -874,7 +858,6 @@ export const POC_CARDS: DemoCard[] = [
     updated: "2026-08-28",
     title: "Censorship resistance stops being a norm and becomes a fork-choice rule",
     titleKo: "검열저항이 규범이기를 그만두고 포크초이스 규칙이 된다",
-    group: "protocol",
     description:
       "FOCIL moves inclusion-list authorship from one proposer to a randomly drawn committee, and — the part that matters — moves enforcement into fork choice. Attesters withhold votes from blocks that ignore the aggregated list, so a censoring block cannot become canonical. The guarantee changes category: not \"please include this\" but \"omit it and your block does not count.\"",
     descriptionKo:
@@ -900,7 +883,6 @@ export const POC_CARDS: DemoCard[] = [
     // 둘을 나란히 놓으면 공통 결론이 드러난다: 경로도 계정도 정체성이 아니다.
     key: "the-record-is-not-the-path",
     updated: "2026-08-27",
-    group: "protocol",
     title: "The record is not the path — a registry and a vault for the same problem",
     titleKo: "기록은 경로가 아니다 — 같은 문제의 레지스트리와 금고",
     description:
@@ -928,7 +910,6 @@ export const POC_CARDS: DemoCard[] = [
     // 안으로 들어오므로 그 카드와 직접 이어진다.
     key: "fork-date-provenance",
     updated: "2026-08-28",
-    group: "protocol",
     title: "A fork date nobody decided — reading the claim, not the number",
     titleKo: "아무도 정하지 않은 포크 날짜 — 숫자가 아니라 주장의 지위를 읽기",
     description:
@@ -951,7 +932,6 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "simplicity-ctf",
-    group: "protocol",
     title: "Simplicity CTF",
     titleKo: "Simplicity CTF 나중에 도전",
     description:
@@ -999,14 +979,19 @@ export const POC_CARDS: DemoCard[] = [
     // ② 그리고 한국의 기존 마찰 기준선이 달러권과 달라 방법론까지 수입하면 안 된다는 것.
     key: "what-needs-a-stablecoin",
     important: true,
-    updated: "2026-08-27",
+    updated: "2026-08-29",
     title: "Not what a stablecoin can do — what needs one",
     titleKo: "스테이블코인으로 할 수 있는 일이 아니라, 스테이블코인이 필요한 일",
     description:
       "Start from \"where could we use a won stablecoin?\" and you will find somewhere. Start from \"which transactions are painful enough today?\" and the list gets much shorter — and in Korea the incumbent to beat is not slow settlement, it is an instant free transfer.",
     descriptionKo:
       "\"원화 스테이블코인을 어디에 쓸 수 있을까\"에서 출발하면 **어디든 찾아냅니다.** \"오늘 어떤 거래가 충분히 불편한가\"에서 출발하면 **목록이 훨씬 짧아집니다** — 그리고 한국에서 이겨야 할 상대는 느린 정산이 아니라 **즉시·무료 계좌이체**입니다.",
-    status: "soon",
+    // done (jay, 2026-08-29) — 방법론 카드이고, 그 방법이 이 카드 안에서 이미 한 번
+    // 돌았다: 순서를 뒤집은 시험을 원문의 후보 넷에 적용해 셋이 죽거나 모양이 바뀌는 것을
+    // 보였고, 한국의 마찰 기준선이 달러권과 다르다는 단서까지 붙였다. 남은 것은 실제 거래를
+    // 하나 골라 네 숫자를 재는 일인데, 그건 이 카드의 결론이 아니라 그 결론의 적용이다.
+    // date 를 붙이지 않는다 (jay, 2026-08-26 규칙): 날짜가 있으면 done 묶음 맨 앞으로 간다.
+    status: "done",
     howTo:
       "A day, no code. Take one candidate transaction and record four numbers as it works today: elapsed time from instruction to usable funds, all-in cost, how many institutions the money passes through, and how many times a human confirms something. Then write the same four for the stablecoin version, honestly — including the on- and off-ramp at both ends, which is where most of the saving usually goes. If any row fails to move, the candidate is something a stablecoin *can* do, not something that *needs* one. Source: a Korean practitioner note on won-stablecoin use-case discovery, 2026-08-27, proposing transaction size, existing friction, and whether a won token actually reduces that friction as the screen. The framing is the contribution; the candidate list is where it has to be tested.",
     howToKo:
@@ -1498,7 +1483,6 @@ export const POC_CARDS: DemoCard[] = [
     // AP2·AA·price-at-a-moment 세 카드가 만나는 지점이라 새 주제가 아니라 수렴점에 가깝다.
     key: "agentic-intent-veto",
     updated: "2026-08-27",
-    group: "protocol",
     title: "The budget is the wrong invariant",
     titleKo: "한도는 틀린 불변식이다",
     description:
@@ -2142,7 +2126,6 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "stake-concentration",
-    group: "protocol",
     title: "Stake concentration risk",
     titleKo: "스테이킹 집중 위험",
     description: "How much stake sits behind one router, one ASN, one data centre — and how close that is to halting finality.",
@@ -2761,7 +2744,6 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "dvt",
-    group: "protocol",
     title: "DVT in the protocol",
     titleKo: "프로토콜에 흡수된 DVT",
     // 상세 페이지를 손으로 쓴다 (jay, 2026-08-13) — 생성된 이중언어 카드 요약은 그대로 두고,

@@ -23,10 +23,12 @@ export type DemoCard = {
   // 여전히 계획(soon)이고 언젠가 할 수도 있지만, 지금 목록 위쪽을 차지할 이유가 없다.
   // true 면 목록 본문과 레일에서 별도 "Later" 묶음으로 내려가고, 번호도 그 뒤에 이어진다.
   later?: boolean;
-  // 목록 구획 (jay, 2026-08-27) — "Ethereum Protocol / Core Technologies" 와 그 밖의 모든 것.
-  // 기본값이 후자이므로 프로토콜·코어 기술 카드에만 group: "protocol" 을 붙인다.
-  // 기존 later 플래그는 남겨 두되 더 이상 구획을 가르지 않는다 — Later 묶음은 폐지됐다.
-  group?: "protocol" | "economics" | "future";
+  // 목록 구획. 2026-08-29 에 Protocol 과 Applied 를 "Blockchain" 하나로 합쳤다 (jay) —
+  // 프로토콜과 그 위에 지은 것을 가르는 선이 카드가 늘수록 임의로워졌고, 어느 쪽인지
+  // 판단하는 데 드는 시간이 그 구분이 주는 값어치보다 컸다. 그래서 group 을 안 붙이면
+  // Blockchain 이고, 여기 적힌 둘만 따로 뺀다. 기존 later 플래그는 남겨 두되 더 이상
+  // 구획을 가르지 않는다 — Later 묶음은 폐지됐다.
+  group?: "economics" | "future";
   // "마지막으로 손본 날" (jay, 2026-08-28) — date 와 다르다. date 는 "그 데모가 동작하게 된
   // 날"이라 아직 안 만든 카드에는 없고, 그래서 인덱스 상위는 늘 오래된 live 데모가 차지했다.
   // reviewed 는 "내가 이 카드를 마지막으로 검토한 날"이라 계획 카드에도 붙는다.
