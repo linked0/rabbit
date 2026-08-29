@@ -1638,14 +1638,19 @@ export const POC_CARDS: DemoCard[] = [
     // layerzero-default-is-a-choice 와 같은 축의 반대 끝 — 저기선 고를 수 있고 여긴 "독점"이다.
     // CCT 의 발행 권한 위임 구조·$7.5B·독점 여부는 게시물 기준이므로 원문 확인 필요.
     key: "the-bridge-is-inside-the-token",
-    updated: "2026-08-28",
+    updated: "2026-08-29",
     title: "The bridge is not beside the token any more — it is inside it",
     titleKo: "브리지는 이제 토큰 옆이 아니라 토큰 안에 있다",
     description:
       "cbBTC is expanding to another chain with one messaging layer named as its exclusive cross-chain infrastructure, and the announcement argues the design reduces systemic risk by holding and auditing the underlying Bitcoin in one place instead of fragmenting issuance. The surface area really does shrink. The blast radius grows by the same move — and under a natively-interoperable token standard the bridge stops being a counterparty beside the asset and becomes a component of it.",
     descriptionKo:
       "cbBTC 가 또 하나의 체인으로 확장되면서 **한 메시징 레이어가 독점(exclusive) 크로스체인 인프라로 지명**됐고, 발표문은 **발행을 여러 체인에 쪼개는 대신 기초 비트코인을 한곳에 보관·감사하므로 시스템 리스크가 줄어든다**고 주장합니다. **표면적은 실제로 줄어듭니다.** 그리고 **같은 동작으로 폭발 반경이 커집니다** — 그리고 **네이티브 상호운용 토큰 표준 아래에서 브리지는 자산 옆의 거래상대방이기를 그만두고 자산의 구성요소가 됩니다.**",
-    status: "soon",
+    // done (jay, 2026-08-29) — 카드가 요구한 것은 빌드가 아니라 고장 표였고, 네 고장과
+    // 설계가 딛고 선 숫자(Σ 공급량 ≤ 커스터디 BTC)가 본문에 다 적혔다. 남은 것은 원문 대조뿐이라
+    // 별도 항목으로 두지 않는다.
+    // date 를 붙이지 않는다 (jay, 2026-08-26 규칙): 날짜가 있으면 done 묶음 맨 앞으로 올라가
+    // 목록 1번이 된다. 완료로 바뀌었다고 순서까지 바뀔 이유는 없다.
+    status: "done",
     howTo:
       "Not a build — a failure table, which is the only artifact that makes a claim like \"reduces systemic risk\" checkable. List the four failures separately: the custodian fails, the messaging layer halts, the messaging layer is compromised and mints, and one destination chain reorgs deeply. For each, write what a holder on a chain that is not the issuing one actually sees, who notices first, how fast, and what recourse exists that does not depend on the failed party. Then find the one number the whole design rests on — total wrapped supply summed across every chain against Bitcoin held in custody — and record who publishes it, at what frequency, and whether anyone other than the issuer can halt minting when the two disagree. If that number is published less often than the token can be minted, the audit is a snapshot of a thing that moves. Facts here come from a Chainlink Labs post seen 2026-08-28 — cbBTC expanding to Robinhood Chain, CCIP named as exclusive cross-chain infrastructure, over $7.5B in circulation, and the Cross-Chain Token standard described as making the token natively interoperable. Vendor content about the vendor's own product: confirm the exclusivity, the circulation figure, and especially how mint authority is delegated under CCT against primary documentation.",
     howToKo:

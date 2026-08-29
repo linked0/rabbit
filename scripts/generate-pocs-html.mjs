@@ -394,8 +394,8 @@ const copyKoOf = (c) => copyDoc(c.titleKo, c.descriptionKo, c.howToKo, c.purpose
 function rowsFor(list, sectionAnchor) {
   return list
   .map((c) => {
-    const b = badge(c);
-    const mark = ` <span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span>`;
+    // 목록 행의 DONE/PLANNED 글자 배지는 뺐다 (jay, 2026-08-29: "Only dots are sufficient").
+    // 왼쪽 레일의 점이 이미 네 상태를 말하고 있어서 같은 정보를 두 번 적을 이유가 없다.
     // 목록에서도 카드를 통째로 집어갈 수 있게 (jay, 2026-08-28) — 상세 페이지를 열지
     // 않고 붙여넣기까지 가는 길. id 는 카드 키로 유일하게 만든다.
     const ids = [`copy-en-${c.key}`, `copy-ko-${c.key}`];
@@ -412,7 +412,7 @@ function rowsFor(list, sectionAnchor) {
     const why = firstSentences(c.purpose, 2);
     const whyHtml = why ? `\n          <p class="topic-why"><strong>Why</strong>${mdInline(why)}</p>` : '';
     return `        <li id="${c.key}">
-          <div class="topic-head"><span class="topic-no">${c.no}</span><span class="topic-title">${escapeHtml(c.title)}</span>${mark}</div>
+          <div class="topic-head"><span class="topic-no">${c.no}</span><span class="topic-title">${escapeHtml(c.title)}</span></div>
           <p class="topic-summary">${mdInline(c.description)}</p>${howHtml}${whyHtml}
           <p class="topic-link">${links}</p>
         </li>`;
@@ -434,9 +434,8 @@ function curriculumRows(cfg, items) {
   return items
     .map((i) => {
       const href = escapeHtml(itemUrl(cfg, i));
-      const mark = i.done
-        ? ` <span class="badge topic-done" style="background:${DONE_COLOR}22; color:${DONE_COLOR};">DONE</span>`
-        : '';
+      // 커리큘럼 행의 DONE 배지도 같이 뺐다 (jay, 2026-08-29) — 같은 페이지 안에서
+      // PoC 행만 배지가 없으면 어긋난다. 여기서도 레일 점이 상태를 말한다.
       const ex = EXPLAINERS[cfg.id]?.[String(i.no)];
       const sub = ex?.concept ? curFirstSentences(ex.concept, 2) : subtitle(i.text);
       const summaryHtml = sub ? `\n          <p class="topic-summary">${curInline(sub)}</p>` : '';
@@ -444,7 +443,7 @@ function curriculumRows(cfg, items) {
       const howHtml = how ? `\n          <p class="topic-how"><strong>How it works</strong>${curInline(how)}</p>` : '';
       const whyHtml = ex?.why ? `\n          <p class="topic-why"><strong>Why</strong>${curInline(ex.why)}</p>` : '';
       return `        <li id="${cfg.id}-${i.no}">
-          <div class="topic-head"><span class="topic-no">${i.no}</span><span class="topic-title">${curInline(shortLabel(i.text))}</span>${mark}</div>${summaryHtml}${howHtml}${whyHtml}
+          <div class="topic-head"><span class="topic-no">${i.no}</span><span class="topic-title">${curInline(shortLabel(i.text))}</span></div>${summaryHtml}${howHtml}${whyHtml}
           <p class="topic-link"><a href="${href}">Detail &rarr;</a> &middot; <a href="#top">Top &uarr;</a> &middot; <a href="#sec-${cfg.id}">Section top &uarr;</a></p>
         </li>`;
     })
@@ -625,7 +624,7 @@ function detailNavGroups(current) {
       // 번호·상태·제목·요약·언어 전환을 hero 한 곳에 모으고, 본문 두 덩어리(영/한)는
       // 각자 상자를 갖는다 — 이중언어 페이지에서 위아래로 훑지 않고 건너뛸 수 있다.
       bodyHtml: `  <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#${c.no}</span><span>PoC</span><span class="badge" style="background:${b.color}22; color:${b.color};">${b.label}</span></p>
+      <p class="topic-kicker"><span class="topic-no">#${c.no}</span><span>PoC</span></p>
       <h1>${escapeHtml(c.title)}</h1>
       <p class="lead">${mdInline(c.description)}</p>
       <p class="meta">${mdInline(c.howTo)}</p>
