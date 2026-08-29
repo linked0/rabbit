@@ -67,10 +67,15 @@ import { marked as mdEngine } from 'marked'; // 아래쪽 지역 변수 marked �
 function mdRender(v, { inline = false } = {}) {
   if (!v) return '';
   const bold = [];
-  const tokenised = escapeHtml(String(v)).replace(
-    /\*\*([^*]+?)\*\*/g,
-    (_, inner) => `@@B${bold.push(inner) - 1}@@`
-  );
+  // 안쪽 별표를 통과시켜야 한다 (jay, 2026-08-29: "파서 고쳐"). 예전 패턴은 [^*]+? 라
+  // **볼드 안의 *이탤릭*** 을 통째로 못 잡았고, 그러면 원본 ** 가 그대로 marked 로 흘러가
+  // <strong> 하나가 열린 채 닫히지 않는다 — 그 뒤의 제목과 표까지 통째로 삼켰다.
+  // 조용히 실패해서(오류도 경고도 없음) 카드 넷이 며칠간 반쯤 빈 페이지로 서 있었다.
+  // (?:[^*]|\*(?!\*)) 는 홑별표는 허용하고 겹별표에서만 멈춘다. ***강조***는 먼저 잡아
+  // 안쪽을 *…* 로 남겨 두면 복원 때 <strong><em> 으로 되살아난다.
+  const tokenised = escapeHtml(String(v))
+    .replace(/\*\*\*([^*]+?)\*\*\*/g, (_, inner) => `@@B${bold.push(`*${inner}*`) - 1}@@`)
+    .replace(/\*\*((?:[^*]|\*(?!\*))+?)\*\*/g, (_, inner) => `@@B${bold.push(inner) - 1}@@`);
   const html = inline
     ? mdEngine.parseInline(tokenised, { async: false })
     : mdEngine.parse(tokenised, { async: false });
@@ -105,7 +110,7 @@ execFileSync(
 const require_ = createRequire(import.meta.url);
 const { POC_CARDS } = require_(path.join(TMP_DIR, 'poc-cards.js'));
 const { TIL_REMAINING } = require_(path.join(TMP_DIR, 'algorithm-cards.js'));
-const { sortDemoCards } = require_(path.join(TMP_DIR, 'demo-cards.js'));
+const { sortDemoCards, cardTier, NEW_WINDOW_DAYS } = require_(path.join(TMP_DIR, 'demo-cards.js'));
 fs.rmSync(TMP_DIR, { recursive: true, force: true });
 
 // 앱의 /poc 페이지와 같은 목록·순서 (app/poc/page.tsx): 라이브는 /live 허브 소관이라 뺀다.
@@ -261,32 +266,18 @@ fs.writeFileSync(INDEX_HTML, marked, 'utf8');
 // 좌측 고정 레일에 **전체 항목**을 싣고 본문은 오른쪽 (jay, 2026-08-12, verex /docs 레퍼런스).
 // 인덱스가 6장만 보여주게 된 뒤로 이 페이지가 "전부 있는 곳"이 됐고, 상단 TOC 하나로는
 // 18개를 훑기 어렵다 — 레일은 어디까지 왔든 목록이 눈앞에 남는다.
-// 최근에 손댄 항목 표시 (jay, 2026-08-29) — 왼쪽 레일에서 제목이 분홍색으로 뜬다.
-// 기준은 카드의 updated 필드(= 본문이 실제로 바뀐 날)이고, 이 창을 지나면 저절로 꺼진다.
-// 숫자를 줄이고 싶으면 이 상수 하나만 바꾸면 된다.
-const NEW_WINDOW_DAYS = 4;
-const NEW_SINCE = (() => {
-  const d = new Date();
-  d.setDate(d.getDate() - NEW_WINDOW_DAYS);
-  return d.toISOString().slice(0, 10);
-})();
-const isRecentlyUpdated = (c) => Boolean(c.updated) && c.updated >= NEW_SINCE;
+// 레일 점 색 — 칸(tier)은 lib/demo-cards.ts 의 cardTier 가 정하고, 목록 정렬도 같은 함수를
+// 쓴다. 그래서 목록은 위에서부터 검정 → 파랑 → 노랑 → 회색 네 덩어리로 내려간다.
+// 창(NEW_WINDOW_DAYS)도 거기서 온다 — 숫자를 바꿀 곳은 lib/demo-cards.ts 한 곳뿐이다.
+const DOT = [
+  { color: '#111827', label: 'DONE' },
+  { color: '#0284c7', label: 'IMPORTANT' },
+  { color: '#eab308', label: 'NEW' },
+  { color: '#64748b', label: 'PLANNED' },
+];
+const navDot = (c) => DOT[cardTier(c)];
 
-// 왼쪽 레일 점의 색 (jay, 2026-08-29). 네 가지이고 순서가 곧 규칙이다:
-//   검정 = 끝난 것        — done 은 최근에 손댔어도 done 색을 유지한다 (jay가 명시).
-//   파랑 = 중요한 것      — important 는 new 를 이긴다 (jay, 2026-08-29: "If important and new
-//                          it should have blue"). 중요도는 오래 가고 최신성은 창이 지나면 꺼진다.
-//   노랑 = 최근에 바뀐 것  — updated 가 NEW_WINDOW_DAYS 안. 창이 지나면 저절로 회색이 된다.
-//   회색 = 계획된 것      — 나머지 전부.
-// 점 하나에 네 가지를 담으므로 우선순위를 코드 한 곳에만 둔다. 라벨은 hover 툴팁으로 남긴다.
-const navDot = (c) =>
-  c.status === 'done'
-    ? { color: '#111827', label: 'DONE' }
-    : c.important
-      ? { color: '#0284c7', label: 'IMPORTANT' }
-      : isRecentlyUpdated(c)
-        ? { color: '#eab308', label: 'NEW' }
-        : { color: '#64748b', label: 'PLANNED' };
+
 
 function navItems(list) {
   return list.map((c) => {

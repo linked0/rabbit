@@ -70,11 +70,32 @@ export type DemoDiagram = {
 //   ② 같은 그룹 안에서는 구현 날짜 최신순 (jay, 2026-08-06) — 최근 작업이 위로 온다.
 // 날짜가 없는 카드(아직 구현 전)는 날짜가 있는 카드 뒤로 가고, 자기들끼리는 배열 순서 유지.
 // 상태와 날짜만 보므로, 카드가 바뀌어도 배열 순서를 손으로 맞출 필요는 여전히 없다.
+// 우선순위 (jay, 2026-08-29): done → important → new → planned.
+// 목록 순서와 왼쪽 레일의 점 색이 **같은 함수**를 쓴다 — 그래야 목록이 색 블록 네 덩어리로
+// 읽히고, 색과 위치가 어긋날 수 없다. live 는 done 과 같은 칸에 둔다: 돌아가는 데모가 아직
+// 안 만든 카드 뒤로 갈 이유가 없고, 네 칸에 live 자리가 따로 없다.
+// (docs/pocs.html 은 애초에 live 를 걸러내므로 그 페이지에서는 이 분기가 쓰이지 않는다.)
+export const NEW_WINDOW_DAYS = 4;
+
+export function newSinceDate(today: Date = new Date()): string {
+  const d = new Date(today);
+  d.setDate(d.getDate() - NEW_WINDOW_DAYS);
+  return d.toISOString().slice(0, 10);
+}
+
+export function cardTier(card: DemoCard, newSince: string = newSinceDate()): 0 | 1 | 2 | 3 {
+  if (card.status === 'done' || card.status === 'live') return 0; // 끝난 것 — 검정
+  if (card.important) return 1; // 중요한 것 — 파랑. new 를 이긴다
+  if (card.updated && card.updated >= newSince) return 2; // 최근에 바뀐 것 — 노랑
+  return 3; // 계획된 것 — 회색
+}
+
 export function sortDemoCards(cards: DemoCard[]): DemoCard[] {
-  // live → done → soon: 동작하는 것, 끝난 것, 아직인 것 순.
-  const rank = { live: 0, done: 1, soon: 2 } as const;
+  const newSince = newSinceDate();
   return [...cards].sort((a, b) => {
-    if (a.status !== b.status) return rank[a.status] - rank[b.status];
+    const ta = cardTier(a, newSince);
+    const tb = cardTier(b, newSince);
+    if (ta !== tb) return ta - tb;
     if (a.date && b.date) return b.date.localeCompare(a.date); // ISO 문자열이라 사전순 = 시간순
     if (a.date) return -1;
     if (b.date) return 1;
