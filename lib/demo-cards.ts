@@ -40,6 +40,11 @@ export type DemoCard = {
   // 일괄 리팩터까지 세면 목록 전체가 분홍이 되어 표시가 아무것도 뜻하지 않게 된다.
   // 창(N일)이 지나면 표시는 저절로 사라지므로 나중에 지울 필요가 없다.
   updated?: string;
+  // "내가 보기에 중요한 카드" (jay, 2026-08-29: "blue is important items you think").
+  // 왼쪽 레일의 점을 파랗게 만든다. 판단 기준은 셋 중 하나 — 이 프로젝트가 실제로 짓는 것에
+  // 직접 걸리거나, 다른 카드들이 반복해서 참조하는 허브이거나, 도메인을 넘어 이전되는 방법이거나.
+  // 선별이 목적이므로 늘려서는 안 된다. 전부가 중요하면 아무것도 중요하지 않다.
+  important?: boolean;
   howTo: string;
   howToKo: string;
   // Longer technical write-up rendered in the "Technical Notes" section at the page bottom

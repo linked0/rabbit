@@ -272,6 +272,22 @@ const NEW_SINCE = (() => {
 })();
 const isRecentlyUpdated = (c) => Boolean(c.updated) && c.updated >= NEW_SINCE;
 
+// 왼쪽 레일 점의 색 (jay, 2026-08-29). 네 가지이고 순서가 곧 규칙이다:
+//   검정 = 끝난 것        — done 은 최근에 손댔어도 done 색을 유지한다 (jay가 명시).
+//   파랑 = 중요한 것      — important 는 new 를 이긴다 (jay, 2026-08-29: "If important and new
+//                          it should have blue"). 중요도는 오래 가고 최신성은 창이 지나면 꺼진다.
+//   노랑 = 최근에 바뀐 것  — updated 가 NEW_WINDOW_DAYS 안. 창이 지나면 저절로 회색이 된다.
+//   회색 = 계획된 것      — 나머지 전부.
+// 점 하나에 네 가지를 담으므로 우선순위를 코드 한 곳에만 둔다. 라벨은 hover 툴팁으로 남긴다.
+const navDot = (c) =>
+  c.status === 'done'
+    ? { color: '#111827', label: 'DONE' }
+    : c.important
+      ? { color: '#0284c7', label: 'IMPORTANT' }
+      : isRecentlyUpdated(c)
+        ? { color: '#eab308', label: 'NEW' }
+        : { color: '#64748b', label: 'PLANNED' };
+
 function navItems(list) {
   return list.map((c) => {
       const b = badge(c);
@@ -280,9 +296,8 @@ function navItems(list) {
       return {
         anchor: c.key,
         text: `<span class="topic-no">${c.no}</span>${escapeHtml(c.title)}`,
-        color: b.color,
-        statusLabel: b.label,
-        isNew: isRecentlyUpdated(c),
+        color: navDot(c).color,
+        statusLabel: navDot(c).label,
       };
   });
 }
@@ -556,9 +571,8 @@ function detailNavGroups(current) {
           href: detailHref(n).replace(/^topics\//, ''),
           current: n.key === current.key,
           text: `<span class="topic-no">${n.no}</span>${escapeHtml(n.title)}`,
-          color: b.color,
-          statusLabel: b.label,
-          isNew: isRecentlyUpdated(n),
+          color: navDot(n).color,
+          statusLabel: navDot(n).label,
         };
       }),
     },

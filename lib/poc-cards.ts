@@ -54,6 +54,7 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "ap2",
+    important: true,
     title: "AP2 — Stripe settlement",
     titleKo: "AP2 — Stripe 정산",
     description: "Agent buys data, settles via Stripe Checkout — an educational fiat-rail example.",
@@ -136,6 +137,7 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "aa",
+    important: true,
     group: "protocol",
     title: "AA — delegatable accounts & session keys",
     titleKo: "AA — 위임형 계정 & 세션 키",
@@ -231,6 +233,7 @@ export const POC_CARDS: DemoCard[] = [
     // 위 "aa" 카드가 남긴 빈자리를 메우는 카드 — 4대 요소는 전부 사람이 버튼을 눌러 시작하므로
     // 능력이지 자율성이 아니다(jay, 2026-08-05). 설계: docs/tasks/current-plan.md.
     key: "agent",
+    important: true,
     updated: "2026-08-26",
     title: "Autonomous payment agent",
     titleKo: "자율 결제 에이전트",
@@ -380,6 +383,7 @@ export const POC_CARDS: DemoCard[] = [
     // 내 분석을 카드 안에서 분리해 적었다 — 나중에 다시 볼 때 어느 쪽이 누구 주장인지
     // 헷갈리지 않게. soon 묶음의 맨 앞(5번)에 두려고 배열에서 dsrv-portal 앞에 넣었다.
     key: "rwa-multichain",
+    important: true,
     title: "RWA across chains — the invariant nobody enforces",
     titleKo: "멀티체인 RWA — 아무도 강제하지 않는 불변식",
     // 상세 페이지를 손으로 쓴다 (jay, 2026-08-14) — 생성 템플릿 아래에 원저자 글 원문을
@@ -471,6 +475,7 @@ export const POC_CARDS: DemoCard[] = [
     // 주문 형식(GaslessCrossChainOrder)은 표준화됐지만 정산 검증과 리스크는 필러가 지는 구조.
     // governance-capture-cost(감사 경계 vs 신뢰 경계) 및 l1-zkevm-optional-proofs(경제적 선택에 기댄 안전)와 같은 계열.
     key: "erc-7683-settlement-security",
+    important: true,
     updated: "2026-08-25",
     group: "protocol",
     title: "ERC-7683 settlement security — the layer left deliberately unstandardized",
@@ -527,6 +532,7 @@ export const POC_CARDS: DemoCard[] = [
     // 뽑는 사람이 "예측시장 전문가"가 아니라 청산·정산·주문 라우팅·규제 보고 백엔드라는 것이 신호의 전부.
     // 같은 주 한국은 Polymarket을 형법상 도박으로 차단 — 같은 상품, 두 법역, 다른 재료.
     key: "event-contract-plumbing",
+    important: true,
     updated: "2026-08-28",
     title: "The hiring signal is the spec — event-contract plumbing",
     titleKo: "채용 신호가 곧 명세서다 — 이벤트 계약 배관",
@@ -740,6 +746,7 @@ export const POC_CARDS: DemoCard[] = [
     // 두 사고"이고, 다른 쪽은 "그래서 Pull 오라클이 존재한다"이다. 문제와 답이라
     // 한 카드가 맞다. group 은 price-at-a-moment 의 분류를 유지한다.
     key: "the-settlement-instant",
+    important: true,
     updated: "2026-08-27",
     group: "protocol",
     title: "A price at a moment — the instant, the window, and who can move it",
@@ -991,6 +998,7 @@ export const POC_CARDS: DemoCard[] = [
     // ① 그 시험을 원문의 후보 4개에 실제로 적용하면 셋이 죽거나 모양이 바뀐다는 것,
     // ② 그리고 한국의 기존 마찰 기준선이 달러권과 달라 방법론까지 수입하면 안 된다는 것.
     key: "what-needs-a-stablecoin",
+    important: true,
     updated: "2026-08-27",
     title: "Not what a stablecoin can do — what needs one",
     titleKo: "스테이블코인으로 할 수 있는 일이 아니라, 스테이블코인이 필요한 일",
@@ -1104,6 +1112,7 @@ export const POC_CARDS: DemoCard[] = [
     // 이 카드는 발행·상환 운영의 문제라 축이 다르다. jay의 3주째 결론("승부처는 TPS가 아니라
     // 분모와 유통")에 붙는 항목.
     key: "stablecoin-redemption-desk",
+    important: true,
     updated: "2026-08-27",
     title: "The redemption desk — what actually makes a stablecoin's denominator",
     titleKo: "상환 창구 — 스테이블코인의 분모를 만드는 것",
@@ -1161,6 +1170,7 @@ export const POC_CARDS: DemoCard[] = [
     // ② 만기가 없으므로 수렴을 강제하는 것이 없다 — 페그는 구조가 아니라 행동이다,
     // ③ 관측되는 베이시스 폭은 곧 가장 싼 참가자의 비용 구조를 읽는 계기판이다.
     key: "arb-bots-are-the-peg",
+    important: true,
     updated: "2026-08-27",
     title: "Nobody runs the peg — the competing bots are the mechanism",
     titleKo: "페그를 돌리는 주체는 없다 — 경쟁하는 봇들이 곧 메커니즘이다",
@@ -1655,6 +1665,7 @@ export const POC_CARDS: DemoCard[] = [
     // 카드의 척추라 그대로 카드에 적었다. rwa-multichain 카드와 같은 방식(원 논지를 적고,
     // 그 논지가 멈추는 자리를 표시).
     key: "third-party-blast-radius",
+    important: true,
     updated: "2026-08-28",
     title: "Trusted third parties — the blast radius nobody maps",
     titleKo: "신뢰된 서드파티 — 아무도 그리지 않는 폭발 반경",
@@ -1938,6 +1949,7 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-26 리포트 카드 4/5 (jay). Four Pillars 항목의 3층 대조 + a16z 정책 항목.
     // 산출물은 시스템이 아니라 문장 하나 — 12월 문서의 법역 칸.
     key: "jurisdiction-decides-the-category",
+    important: true,
     updated: "2026-08-26",
     title: "Same product, three verdicts in eight days",
     titleKo: "같은 상품, 8일 사이 세 개의 판정",
@@ -2066,6 +2078,7 @@ export const POC_CARDS: DemoCard[] = [
     // 결과를 바꿀 수 없어야 한다"가, 방심위가 도박 판정 근거로 든 "이용자가 통제할 수 없는
     // 사건"과 정확히 같은 속성이다. 그리고 결정시장은 그 선을 의도적으로 넘은 설계다.
     key: "decision-market-uncontrollability",
+    important: true,
     updated: "2026-08-27",
     title: "The property that makes a market work is the one that makes it gambling",
     titleKo: "시장을 작동하게 하는 속성이, 그것을 도박으로 만든다",
@@ -2218,6 +2231,7 @@ export const POC_CARDS: DemoCard[] = [
     // 를 다룬다 — 그리고 네 항목이 전부 같은 모양이다: 체인이 공짜로 버린 것을 값을 치르고
     // 되사는 일. 그래서 "공부 목록"이 아니라 되사기 가격표가 되도록 항목마다 잴 숫자를 붙였다.
     key: "plumbing-skills-buyback",
+    important: true,
     updated: "2026-08-26",
     title: "Four capabilities, each buying back what the chain gave away",
     titleKo: "네 가지 역량, 각각은 체인이 버린 것을 되사는 일",
@@ -2393,6 +2407,7 @@ export const POC_CARDS: DemoCard[] = [
     // ② 캘리브레이션만으로는 부족하다(기저율만 외쳐도 완벽히 캘리브레이션된다) —
     // 그래서 resolution 과 시장가 기준선이 같이 있어야 한다.
     key: "the-70-has-to-be-wrong",
+    important: true,
     updated: "2026-08-28",
     group: "future",
     title: "The 70% has to be wrong three times in ten",
@@ -2421,6 +2436,7 @@ export const POC_CARDS: DemoCard[] = [
     // 온체인 데이터가 시간순이면서 동시에 주소로 그룹지어져 있다는 점이 이 카드가
     // 교과서 요약이 아니라 이 카탈로그의 카드인 이유.
     key: "the-split-is-the-experiment",
+    important: true,
     updated: "2026-08-28",
     group: "future",
     title: "The model is not the experiment — the split is",
@@ -2537,6 +2553,7 @@ export const POC_CARDS: DemoCard[] = [
     // 실제로 행동을 예측하는 이론은 둘뿐(Little's Law, 이용률 절벽)이고 나머지는 어휘라는 것이
     // 이 카드가 더하는 부분.
     key: "architecture-is-accepted-failure",
+    important: true,
     updated: "2026-08-28",
     group: "future",
     title:
@@ -2566,6 +2583,7 @@ export const POC_CARDS: DemoCard[] = [
     // 이 카탈로그에 이미 같은 수를 둔 카드가 여섯 장 있다는 사실 자체가 근거 —
     // "인가됐는가"가 아니라 "경계가 어디이고 무엇이 그것을 넘는가".
     key: "the-boundary-is-the-unit",
+    important: true,
     updated: "2026-08-28",
     group: "future",
     title:
