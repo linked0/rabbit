@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A good bet that lost looks exactly like a bad bet that lost — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 제목과 배지를 한 줄에 — .rail-title 이 block 이라 그냥 두면 배지가 아래로 떨어진다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-left:8px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-done { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
+
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  /* 목록 행 안에서는 링크들과 한 줄에 서야 하므로 더 작고 납작하게 (jay, 2026-08-28). */
+  .copy-inline { font-size:0.72rem; padding:2px 9px; margin-left:6px; vertical-align:baseline; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-blockchain" title="Blockchain &mdash; done (14) / all (80)">Blockchain<b><span class="count-done">14</span><span class="count-all">/80</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; done (0) / all (8)">Economics<b><span class="count-done">0</span><span class="count-all">/8</span></b></a><a href="../pocs.html#sec-future" title="Future/Etc &mdash; done (0) / all (14)">Future/Etc<b><span class="count-done">0</span><span class="count-all">/14</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; done (3) / all (100)">Algorithms<b><span class="count-done">3</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; done (3) / all (52)">Math<b><span class="count-done">3</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-economics" data-group>
+        <p class="nav-group-label">Economics (8)</p>
+        <ul>
+        <li><a class="nav-link active" href="pocs-a-good-bet-that-lost.html" data-key="a-good-bet-that-lost"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">81</span>A good bet that lost looks exactly like a bad bet that lost</span></a></li>
+        <li><a class="nav-link" href="pocs-where-yield-comes-from.html" data-key="where-yield-comes-from"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">82</span>Every yield is somebody's cost — the three places it can come from</span></a></li>
+        <li><a class="nav-link" href="pocs-gross-over-net.html" data-key="gross-over-net"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">83</span>Gross over net — the recycling multiple</span></a></li>
+        <li><a class="nav-link" href="pocs-risk-free-rate-is-the-floor.html" data-key="risk-free-rate-is-the-floor"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">84</span>The risk-free rate is the floor under every yield</span></a></li>
+        <li><a class="nav-link" href="pocs-m2-and-the-dollar.html" data-key="m2-and-the-dollar"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">85</span>M2, the dollar, and why crypto is a liquidity trade</span></a></li>
+        <li><a class="nav-link" href="pocs-lp-is-a-short-volatility-position.html" data-key="lp-is-a-short-volatility-position"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">86</span>Providing liquidity is selling volatility, and the loss is not impermanent</span></a></li>
+        <li><a class="nav-link" href="pocs-indicators-add-a-decision.html" data-key="indicators-add-a-decision"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">87</span>An indicator adds no information — it adds a decision</span></a></li>
+        <li><a class="nav-link" href="pocs-fees-over-security-budget.html" data-key="fees-over-security-budget"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">88</span>Does a chain pay for its own security?</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; A good bet that lost looks exactly like a bad bet that lost</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#81</span><span>PoC</span></p>
+      <h1>A good bet that lost looks exactly like a bad bet that lost</h1>
+      <p class="lead">Poker is the widely played game whose practitioners had to build a vocabulary for the gap between a good decision and a good outcome. Three ideas transfer to anything that bets on a probability — the threshold is arithmetic on costs, the objective is the bankroll rather than expected value, and a record means nothing until it is long enough. The fourth is where the analogy stops, and that is the useful half.</p>
+      <p class="meta">Not a build — a measurement on work that already runs. The <code>agent</code> card logs a probability and acts on an order book, so take that log and add one derived column: the break-even probability implied by the price it traded at. That is pot odds, and it needs nothing but the cost. Then three numbers. First, what fraction of decisions actually had edge over their own break-even — not over 50%, over the number the price demanded. Second, the stake taken as a fraction of the bankroll against the Kelly fraction implied by the claimed edge; the ratio between them is the leverage being run, whether or not anyone chose it. Third, and this is the one that ends arguments: given the claimed edge and the observed variance, how many resolutions until the record separates that edge from zero. Compute the third before running the strategy, because it is the honest answer to &quot;is it working yet&quot; and it is usually a much larger number than the sample anyone has.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# A good bet that lost looks exactly like a bad bet that lost\n\nPoker is the widely played game whose practitioners had to build a vocabulary for the gap between a good decision and a good outcome. Three ideas transfer to anything that bets on a probability — the threshold is arithmetic on costs, the objective is the bankroll rather than expected value, and a record means nothing until it is long enough. The fourth is where the analogy stops, and that is the useful half.\n\nNot a build — a measurement on work that already runs. The `agent` card logs a probability and acts on an order book, so take that log and add one derived column: the break-even probability implied by the price it traded at. That is pot odds, and it needs nothing but the cost. Then three numbers. First, what fraction of decisions actually had edge over their own break-even — not over 50%, over the number the price demanded. Second, the stake taken as a fraction of the bankroll against the Kelly fraction implied by the claimed edge; the ratio between them is the leverage being run, whether or not anyone chose it. Third, and this is the one that ends arguments: given the claimed edge and the observed variance, how many resolutions until the record separates that edge from zero. Compute the third before running the strategy, because it is the honest answer to \"is it working yet\" and it is usually a much larger number than the sample anyone has.\n\n## Why\n\n**Poker had to invent a word for judging a decision by its outcome, and the word is \"resulting\".** It needed one because the correct play loses often enough that a player who learns from results learns the wrong lesson — folds a hand that was right to call because the last one lost, calls a hand that was wrong because the last one hit. Every field with noisy feedback has this problem; poker is unusual in having named it, priced it, and built its whole training culture around separating process from outcome. **In a sample of one, a good bet that lost and a bad bet that lost are indistinguishable, and the only thing that separates them is a record of the reasoning made before the result was known.**\n\n**The first transferable idea is that the threshold is arithmetic on costs rather than a level of confidence.** Calling is correct when the probability of winning exceeds the amount to call divided by the pot plus that amount — a number the price hands you before you know anything about the hand. This catalogue keeps arriving at the same structure from other directions: `lead-time-is-the-product` finds the alert threshold already stated in the cost ratio on the motivating slide, and `the-70-has-to-be-wrong` argues that a threshold is a statement about costs and not a property of the forecast. **Poker's contribution is that it writes the number down and everyone else leaves it implicit.**\n\n**The second is that expected value is not the objective, and this is the correction most people need.** A strategy that maximises expected value per decision, sized without regard to the bankroll, goes broke with probability one given enough time — because ruin is absorbing and no later edge can be collected from zero. Kelly turns a probability into a size, and the constraint that binds is not the size that maximises growth but the size that survives a bad run of the length the variance actually produces. **Calibration gets you the right p, Kelly turns p into a stake, and risk of ruin says the stake is capped by survival rather than by edge.** A trading agent with a well-calibrated model and no bankroll rule is a solved forecasting problem attached to an unsolved sizing problem.\n\n**The third is that a record means nothing until it is long enough, and how long is computable rather than a matter of opinion.** Winning players lose over stretches long enough to destroy confidence, so \"am I any good\" is not answerable from a month of results. Given a claimed edge and a variance, the number of trials needed to distinguish that edge from zero at a stated confidence is arithmetic, and it is routinely far larger than the sample anyone has. **Computing it first converts an argument into a schedule** — the same move as the observation window in `monad-last-general-purpose-l1`, where the useful act was recording a baseline before it became unrecoverable.\n\n**And then the part that matters most, which is where the analogy stops.** Poker is a game of **risk**: the distribution is known exactly — fifty-two cards, fixed rules — and only the realisation is hidden. Forecasting is a problem of **uncertainty**: the distribution itself is unknown and is the thing being estimated. So a poker player's calibration is arithmetic while a forecaster's is an empirical claim that has to be earned against reality, and poker intuitions systematically overrate how well calibrated one can be about the world. **Borrow poker's decision hygiene and not its confidence.** The second half of the disanalogy does transfer, though, and people forget it: poker is adversarial, so an edge decays as it is used and the opponent adapts. Markets do the same thing, which is why a backtest describes a world that no longer contains you once you trade in it.\n\n## How it works\n\n### Three ideas that transfer, and their form here\n\n| Poker | The general form | Where this catalogue already has it |\n|---|---|---|\n| **Pot odds** &mdash; call if p &gt; c / (pot + c) | The threshold is arithmetic on costs, available before you know anything | `lead-time-is-the-product`, `the-70-has-to-be-wrong` |\n| **Bankroll management** | Expected value is not the objective; survival caps the stake | Kelly, mentioned but not built out, in `the-70-has-to-be-wrong` |\n| **Variance and sample size** | A record means nothing until N is large enough, and N is computable | The observation window in `monad-last-general-purpose-l1` |\n| **Resulting** | Judging a decision by its outcome, which noisy feedback punishes | &mdash; this card |\n\n### The threshold, written out\n\n| Pot | To call | Break-even p | Read as |\n|---|---|---|---|\n| 100 | 50 | **33%** | The price is demanding a one-in-three |\n| 100 | 20 | **17%** | Cheap; a weak read still calls |\n| 100 | 200 | **67%** | Expensive; needs a strong read |\n\n**The number comes from the price, not from the hand.** A decision that skips it is choosing a threshold anyway &mdash; just not on purpose, which is the same failure `the-70-has-to-be-wrong` finds in scoring a probability with accuracy.\n\n### Why expected value is the wrong objective\n\n| Objective | What it maximises | How it fails |\n|---|---|---|\n| **EV per decision** | Average outcome, ignoring path | **Ruin is absorbing.** With enough time, probability of ruin &rarr; 1 |\n| **Growth rate (Kelly)** | Long-run compounding | Assumes the edge estimate is right; overbetting is punished asymmetrically |\n| **Survival first** | Time in the game | Leaves growth on the table, and that is the price of staying |\n\nA well-calibrated model with no bankroll rule is **a solved forecasting problem bolted to an unsolved sizing problem**.\n\n### Where the analogy stops, which is the useful half\n\n| | Poker | Forecasting the world |\n|---|---|---|\n| **The distribution** | **Known exactly** &mdash; 52 cards | **Unknown, and is what is being estimated** |\n| **Kind of unknown** | Risk | **Uncertainty** |\n| **Calibration is** | Arithmetic | **An empirical claim to be earned** |\n| **Adversarial** | Yes &mdash; the opponent adapts | **Markets too**, which is why a backtest describes a world that no longer contains you |\n\nThe first three rows are why poker intuitions overrate achievable calibration: **borrow the decision hygiene, not the confidence.** The last row is the one that does transfer and gets forgotten.\n"</script>
+      <h2>Why</h2>
+      <p><strong>Poker had to invent a word for judging a decision by its outcome, and the word is &quot;resulting&quot;.</strong> It needed one because the correct play loses often enough that a player who learns from results learns the wrong lesson — folds a hand that was right to call because the last one lost, calls a hand that was wrong because the last one hit. Every field with noisy feedback has this problem; poker is unusual in having named it, priced it, and built its whole training culture around separating process from outcome. <strong>In a sample of one, a good bet that lost and a bad bet that lost are indistinguishable, and the only thing that separates them is a record of the reasoning made before the result was known.</strong></p>
+<p><strong>The first transferable idea is that the threshold is arithmetic on costs rather than a level of confidence.</strong> Calling is correct when the probability of winning exceeds the amount to call divided by the pot plus that amount — a number the price hands you before you know anything about the hand. This catalogue keeps arriving at the same structure from other directions: <code>lead-time-is-the-product</code> finds the alert threshold already stated in the cost ratio on the motivating slide, and <code>the-70-has-to-be-wrong</code> argues that a threshold is a statement about costs and not a property of the forecast. <strong>Poker&#39;s contribution is that it writes the number down and everyone else leaves it implicit.</strong></p>
+<p><strong>The second is that expected value is not the objective, and this is the correction most people need.</strong> A strategy that maximises expected value per decision, sized without regard to the bankroll, goes broke with probability one given enough time — because ruin is absorbing and no later edge can be collected from zero. Kelly turns a probability into a size, and the constraint that binds is not the size that maximises growth but the size that survives a bad run of the length the variance actually produces. <strong>Calibration gets you the right p, Kelly turns p into a stake, and risk of ruin says the stake is capped by survival rather than by edge.</strong> A trading agent with a well-calibrated model and no bankroll rule is a solved forecasting problem attached to an unsolved sizing problem.</p>
+<p><strong>The third is that a record means nothing until it is long enough, and how long is computable rather than a matter of opinion.</strong> Winning players lose over stretches long enough to destroy confidence, so &quot;am I any good&quot; is not answerable from a month of results. Given a claimed edge and a variance, the number of trials needed to distinguish that edge from zero at a stated confidence is arithmetic, and it is routinely far larger than the sample anyone has. <strong>Computing it first converts an argument into a schedule</strong> — the same move as the observation window in <code>monad-last-general-purpose-l1</code>, where the useful act was recording a baseline before it became unrecoverable.</p>
+<p><strong>And then the part that matters most, which is where the analogy stops.</strong> Poker is a game of <strong>risk</strong>: the distribution is known exactly — fifty-two cards, fixed rules — and only the realisation is hidden. Forecasting is a problem of <strong>uncertainty</strong>: the distribution itself is unknown and is the thing being estimated. So a poker player&#39;s calibration is arithmetic while a forecaster&#39;s is an empirical claim that has to be earned against reality, and poker intuitions systematically overrate how well calibrated one can be about the world. <strong>Borrow poker&#39;s decision hygiene and not its confidence.</strong> The second half of the disanalogy does transfer, though, and people forget it: poker is adversarial, so an edge decays as it is used and the opponent adapts. Markets do the same thing, which is why a backtest describes a world that no longer contains you once you trade in it.</p>
+      <h2>How it works</h2>
+      <h3>Three ideas that transfer, and their form here</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Poker</th>
+<th>The general form</th>
+<th>Where this catalogue already has it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Pot odds</strong> &amp;mdash; call if p &amp;gt; c / (pot + c)</td>
+<td>The threshold is arithmetic on costs, available before you know anything</td>
+<td><code>lead-time-is-the-product</code>, <code>the-70-has-to-be-wrong</code></td>
+</tr>
+<tr>
+<td><strong>Bankroll management</strong></td>
+<td>Expected value is not the objective; survival caps the stake</td>
+<td>Kelly, mentioned but not built out, in <code>the-70-has-to-be-wrong</code></td>
+</tr>
+<tr>
+<td><strong>Variance and sample size</strong></td>
+<td>A record means nothing until N is large enough, and N is computable</td>
+<td>The observation window in <code>monad-last-general-purpose-l1</code></td>
+</tr>
+<tr>
+<td><strong>Resulting</strong></td>
+<td>Judging a decision by its outcome, which noisy feedback punishes</td>
+<td>&amp;mdash; this card</td>
+</tr>
+</tbody></table></div>
+<h3>The threshold, written out</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Pot</th>
+<th>To call</th>
+<th>Break-even p</th>
+<th>Read as</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100</td>
+<td>50</td>
+<td><strong>33%</strong></td>
+<td>The price is demanding a one-in-three</td>
+</tr>
+<tr>
+<td>100</td>
+<td>20</td>
+<td><strong>17%</strong></td>
+<td>Cheap; a weak read still calls</td>
+</tr>
+<tr>
+<td>100</td>
+<td>200</td>
+<td><strong>67%</strong></td>
+<td>Expensive; needs a strong read</td>
+</tr>
+</tbody></table></div>
+<p><strong>The number comes from the price, not from the hand.</strong> A decision that skips it is choosing a threshold anyway &amp;mdash; just not on purpose, which is the same failure <code>the-70-has-to-be-wrong</code> finds in scoring a probability with accuracy.</p>
+<h3>Why expected value is the wrong objective</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Objective</th>
+<th>What it maximises</th>
+<th>How it fails</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>EV per decision</strong></td>
+<td>Average outcome, ignoring path</td>
+<td><strong>Ruin is absorbing.</strong> With enough time, probability of ruin &amp;rarr; 1</td>
+</tr>
+<tr>
+<td><strong>Growth rate (Kelly)</strong></td>
+<td>Long-run compounding</td>
+<td>Assumes the edge estimate is right; overbetting is punished asymmetrically</td>
+</tr>
+<tr>
+<td><strong>Survival first</strong></td>
+<td>Time in the game</td>
+<td>Leaves growth on the table, and that is the price of staying</td>
+</tr>
+</tbody></table></div>
+<p>A well-calibrated model with no bankroll rule is <strong>a solved forecasting problem bolted to an unsolved sizing problem</strong>.</p>
+<h3>Where the analogy stops, which is the useful half</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Poker</th>
+<th>Forecasting the world</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>The distribution</strong></td>
+<td><strong>Known exactly</strong> &amp;mdash; 52 cards</td>
+<td><strong>Unknown, and is what is being estimated</strong></td>
+</tr>
+<tr>
+<td><strong>Kind of unknown</strong></td>
+<td>Risk</td>
+<td><strong>Uncertainty</strong></td>
+</tr>
+<tr>
+<td><strong>Calibration is</strong></td>
+<td>Arithmetic</td>
+<td><strong>An empirical claim to be earned</strong></td>
+</tr>
+<tr>
+<td><strong>Adversarial</strong></td>
+<td>Yes &amp;mdash; the opponent adapts</td>
+<td><strong>Markets too</strong>, which is why a backtest describes a world that no longer contains you</td>
+</tr>
+</tbody></table></div>
+<p>The first three rows are why poker intuitions overrate achievable calibration: <strong>borrow the decision hygiene, not the confidence.</strong> The last row is the one that does transfer and gets forgotten.</p>
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# 잃은 좋은 베팅과 잃은 나쁜 베팅은 똑같이 생겼다\n\n포커는 **좋은 결정과 좋은 결과 사이의 간극에 이름을 붙여야만 했던** 게임입니다. 확률에 베팅하는 어떤 일에든 **세 가지가 이전됩니다** — **임계값은 비용에 대한 산수**이고, **목적함수는 기대값이 아니라 뱅크롤**이며, **기록은 충분히 길어지기 전까지 아무 뜻도 없습니다.** 네 번째는 **비유가 끝나는 지점**이고, 그쪽이 더 쓸모 있는 절반입니다.\n\n빌드가 아니라 **이미 돌고 있는 것에 대한 측정**입니다. `agent` 카드가 확률을 기록하고 오더북에 대고 행동하니, **그 로그에 파생 칸 하나**를 더합니다 — **거래한 가격이 함축하는 손익분기 확률.** 그게 **팟 오즈**이고, **비용 말고는 아무것도 필요 없습니다.** 그다음 숫자 셋. **첫째, 결정 중 몇 퍼센트가 실제로 자기 손익분기점을 넘는 엣지를 가졌는가** — 50%가 아니라 **가격이 요구한 그 숫자**를 넘었는지. **둘째, 실제로 건 금액을 뱅크롤 대비 비율로 잡고, 주장한 엣지가 함축하는 켈리 비율과 비교**합니다. **둘의 비가 곧 지금 쓰고 있는 레버리지**이고, 그걸 아무도 고르지 않았어도 쓰고 있는 것입니다. **셋째, 그리고 이것이 논쟁을 끝냅니다: 주장한 엣지와 관측된 분산이 주어졌을 때, 기록이 그 엣지를 0과 구별하려면 몇 번의 결과가 필요한가.** **셋째는 전략을 돌리기 전에 계산하십시오** — **\"이거 되고 있는 건가\"에 대한 정직한 답**이고, 대개 **누구든 가진 표본보다 훨씬 큰 숫자**입니다.\n\n## 왜\n\n**포커는 결과로 결정을 판단하는 것에 이름을 붙여야만 했고, 그 이름이 \"resulting\"입니다.** 필요했던 이유는 **옳은 플레이가 충분히 자주 지기 때문**입니다 — 결과로 배우는 사람은 **틀린 것을 배웁니다.** 지난번에 졌다는 이유로 **콜이 맞는 패를 폴드**하고, 지난번에 맞았다는 이유로 **틀린 패를 콜**합니다. 피드백이 시끄러운 모든 분야에 이 문제가 있는데, **포커는 그것에 이름을 붙이고, 값을 매기고, 훈련 문화 전체를 과정과 결과를 분리하는 데 세웠다는 점에서 특이합니다.** **표본이 하나일 때 잃은 좋은 베팅과 잃은 나쁜 베팅은 구별되지 않고, 둘을 가르는 유일한 것은 결과를 알기 전에 남긴 판단의 기록입니다.**\n\n**이전되는 첫 번째는, 임계값이 확신의 수준이 아니라 비용에 대한 산수라는 것입니다.** **콜은 이길 확률이 (콜 금액 ÷ (팟 + 콜 금액))을 넘을 때 옳습니다** — **패에 대해 아무것도 모르는 상태에서 가격이 건네주는 숫자**입니다. 이 목록은 다른 방향에서 같은 구조에 계속 도달합니다: `lead-time-is-the-product` 는 **경보 임계값이 동기 슬라이드의 비용비에 이미 적혀 있다**는 것을 찾았고, `the-70-has-to-be-wrong` 은 **임계값은 비용에 대한 진술이지 예측의 속성이 아니다**라고 주장합니다. **포커의 기여는 그 숫자를 적어 둔다는 것이고, 나머지는 전부 암묵으로 남겨 둡니다.**\n\n**두 번째는 기대값이 목적함수가 아니라는 것이고, 대부분이 필요로 하는 교정입니다.** **결정마다 기대값을 최대화하되 뱅크롤을 무시하고 크기를 잡는 전략은, 시간이 충분하면 확률 1로 파산합니다** — **파산은 흡수 상태**이고 **0에서는 이후의 어떤 엣지도 거둘 수 없기** 때문입니다. **켈리는 확률을 크기로 바꾸고**, 묶이는 제약은 **성장을 최대화하는 크기가 아니라 분산이 실제로 만들어내는 길이의 연패를 견디는 크기**입니다. **캘리브레이션이 올바른 p 를 주고, 켈리가 p 를 베팅 크기로 바꾸며, 파산 위험이 그 크기의 상한은 엣지가 아니라 생존이라고 말합니다.** **잘 캘리브레이션된 모델에 뱅크롤 규칙이 없는 트레이딩 에이전트는, 푼 예측 문제에 안 푼 사이징 문제를 붙여 놓은 것**입니다.\n\n**세 번째는 기록이 충분히 길어지기 전까지 아무 뜻도 없다는 것이고, 얼마나 길어야 하는지는 의견이 아니라 계산입니다.** **이기는 플레이어도 확신을 부술 만큼 긴 구간에서 집니다.** 그러니 **\"내가 잘하는 건가\"는 한 달치 결과로 답할 수 없습니다.** **주장한 엣지와 분산이 주어지면, 그 엣지를 정해진 신뢰수준에서 0과 구별하는 데 필요한 시행 횟수는 산수**이고, **대개 누구든 가진 표본보다 훨씬 큽니다.** **먼저 계산하면 논쟁이 일정표로 바뀝니다** — `monad-last-general-purpose-l1` 의 관찰 창과 같은 수입니다. 거기서도 **쓸모 있는 행동은 복원 불가능해지기 전에 기준선을 기록하는 것**이었습니다.\n\n**그리고 가장 중요한 부분, 비유가 끝나는 지점입니다.** 포커는 **위험(risk)** 의 게임입니다 — **분포가 정확히 알려져 있고**(카드 52장, 고정된 규칙) **감춰진 것은 실현값뿐**입니다. 예측은 **불확실성(uncertainty)** 의 문제입니다 — **분포 자체를 모르고, 그것이 바로 추정 대상**입니다. 그래서 **포커 플레이어의 캘리브레이션은 산수이고 예측자의 캘리브레이션은 현실에 대고 벌어야 하는 경험적 주장**이며, **포커 직관은 세상에 대해 얼마나 잘 캘리브레이션될 수 있는지를 체계적으로 과대평가합니다.** **포커의 결정 위생은 빌려 오되 자신감은 빌려 오지 마십시오.** 다만 **비유가 어긋나는 나머지 절반은 실제로 이전되고, 사람들이 그것을 잊습니다** — **포커는 적대적이라 엣지는 쓸수록 닳고 상대가 적응합니다.** **시장도 똑같이 하고**, 그래서 **백테스트는 내가 거래하는 순간 더 이상 나를 포함하지 않는 세계를 서술합니다.**\n\n## 동작 방식\n\n### 이전되는 셋, 그리고 여기서의 형태\n\n| 포커 | 일반형 | 이 목록의 어디에 이미 있나 |\n|---|---|---|\n| **팟 오즈** &mdash; p &gt; c / (팟 + c) 면 콜 | **임계값은 비용에 대한 산수**, 아무것도 모를 때 이미 손에 있음 | `lead-time-is-the-product`, `the-70-has-to-be-wrong` |\n| **뱅크롤 관리** | **기대값은 목적함수가 아니고, 생존이 베팅 크기의 상한** | `the-70-has-to-be-wrong` 의 켈리 언급 (전개는 안 됨) |\n| **분산과 표본 크기** | **N 이 충분히 커지기 전까지 기록은 무의미**하고, N 은 계산 가능 | `monad-last-general-purpose-l1` 의 관찰 창 |\n| **resulting** | **결과로 결정을 판단하는 것**. 시끄러운 피드백이 벌하는 습관 | &mdash; 이 카드 |\n\n### 임계값을 적어 보면\n\n| 팟 | 콜 금액 | 손익분기 p | 읽는 법 |\n|---|---|---|---|\n| 100 | 50 | **33%** | **가격이 3번에 1번을 요구하고 있음** |\n| 100 | 20 | **17%** | 싸다. 약한 근거로도 콜 |\n| 100 | 200 | **67%** | 비싸다. 강한 근거가 필요 |\n\n**숫자는 패가 아니라 가격에서 나옵니다.** 이걸 건너뛴 결정도 **임계값을 고르긴 한 것**입니다 — **다만 의도적으로 고르지 않았을 뿐**이고, `the-70-has-to-be-wrong` 이 **확률을 정확도로 채점하는 것**에서 찾아낸 실패와 같습니다.\n\n### 왜 기대값이 틀린 목적함수인가\n\n| 목적함수 | 무엇을 최대화하나 | 어떻게 실패하나 |\n|---|---|---|\n| **결정당 EV** | 경로를 무시한 평균 결과 | **파산은 흡수 상태.** 시간이 충분하면 파산 확률 &rarr; 1 |\n| **성장률 (켈리)** | 장기 복리 | **엣지 추정이 맞다고 가정.** 과대 베팅은 비대칭적으로 벌받음 |\n| **생존 우선** | 게임에 남아 있는 시간 | 성장을 남겨 둠 — **그게 남아 있기 위한 값** |\n\n**잘 캘리브레이션된 모델에 뱅크롤 규칙이 없으면, 푼 예측 문제에 안 푼 사이징 문제를 볼트로 붙여 놓은 것**입니다.\n\n### 비유가 끝나는 곳, 그리고 그쪽이 쓸모 있는 절반\n\n| | 포커 | 세상을 예측하는 일 |\n|---|---|---|\n| **분포** | **정확히 알려짐** &mdash; 카드 52장 | **모름. 그리고 그것이 추정 대상** |\n| **모름의 종류** | 위험(risk) | **불확실성(uncertainty)** |\n| **캘리브레이션은** | 산수 | **현실에 대고 벌어야 하는 경험적 주장** |\n| **적대적인가** | 예 &mdash; 상대가 적응 | **시장도 그렇다.** 그래서 **백테스트는 내가 거래하는 순간 더 이상 나를 포함하지 않는 세계를 서술** |\n\n**앞 세 줄이 포커 직관이 달성 가능한 캘리브레이션을 과대평가하는 이유**입니다 — **결정 위생은 빌려 오되 자신감은 빌려 오지 마십시오.** **마지막 줄이 실제로 이전되는데 잊히는 줄**입니다.\n"</script>
+      <h1>잃은 좋은 베팅과 잃은 나쁜 베팅은 똑같이 생겼다</h1>
+      <p class="lead">포커는 <strong>좋은 결정과 좋은 결과 사이의 간극에 이름을 붙여야만 했던</strong> 게임입니다. 확률에 베팅하는 어떤 일에든 <strong>세 가지가 이전됩니다</strong> — <strong>임계값은 비용에 대한 산수</strong>이고, <strong>목적함수는 기대값이 아니라 뱅크롤</strong>이며, <strong>기록은 충분히 길어지기 전까지 아무 뜻도 없습니다.</strong> 네 번째는 <strong>비유가 끝나는 지점</strong>이고, 그쪽이 더 쓸모 있는 절반입니다.</p>
+      <p class="meta">빌드가 아니라 <strong>이미 돌고 있는 것에 대한 측정</strong>입니다. <code>agent</code> 카드가 확률을 기록하고 오더북에 대고 행동하니, <strong>그 로그에 파생 칸 하나</strong>를 더합니다 — <strong>거래한 가격이 함축하는 손익분기 확률.</strong> 그게 <strong>팟 오즈</strong>이고, <strong>비용 말고는 아무것도 필요 없습니다.</strong> 그다음 숫자 셋. <strong>첫째, 결정 중 몇 퍼센트가 실제로 자기 손익분기점을 넘는 엣지를 가졌는가</strong> — 50%가 아니라 <strong>가격이 요구한 그 숫자</strong>를 넘었는지. <strong>둘째, 실제로 건 금액을 뱅크롤 대비 비율로 잡고, 주장한 엣지가 함축하는 켈리 비율과 비교</strong>합니다. <strong>둘의 비가 곧 지금 쓰고 있는 레버리지</strong>이고, 그걸 아무도 고르지 않았어도 쓰고 있는 것입니다. <strong>셋째, 그리고 이것이 논쟁을 끝냅니다: 주장한 엣지와 관측된 분산이 주어졌을 때, 기록이 그 엣지를 0과 구별하려면 몇 번의 결과가 필요한가.</strong> <strong>셋째는 전략을 돌리기 전에 계산하십시오</strong> — <strong>&quot;이거 되고 있는 건가&quot;에 대한 정직한 답</strong>이고, 대개 <strong>누구든 가진 표본보다 훨씬 큰 숫자</strong>입니다.</p>
+      <h2>왜</h2>
+      <p><strong>포커는 결과로 결정을 판단하는 것에 이름을 붙여야만 했고, 그 이름이 &quot;resulting&quot;입니다.</strong> 필요했던 이유는 <strong>옳은 플레이가 충분히 자주 지기 때문</strong>입니다 — 결과로 배우는 사람은 <strong>틀린 것을 배웁니다.</strong> 지난번에 졌다는 이유로 <strong>콜이 맞는 패를 폴드</strong>하고, 지난번에 맞았다는 이유로 <strong>틀린 패를 콜</strong>합니다. 피드백이 시끄러운 모든 분야에 이 문제가 있는데, <strong>포커는 그것에 이름을 붙이고, 값을 매기고, 훈련 문화 전체를 과정과 결과를 분리하는 데 세웠다는 점에서 특이합니다.</strong> <strong>표본이 하나일 때 잃은 좋은 베팅과 잃은 나쁜 베팅은 구별되지 않고, 둘을 가르는 유일한 것은 결과를 알기 전에 남긴 판단의 기록입니다.</strong></p>
+<p><strong>이전되는 첫 번째는, 임계값이 확신의 수준이 아니라 비용에 대한 산수라는 것입니다.</strong> <strong>콜은 이길 확률이 (콜 금액 ÷ (팟 + 콜 금액))을 넘을 때 옳습니다</strong> — <strong>패에 대해 아무것도 모르는 상태에서 가격이 건네주는 숫자</strong>입니다. 이 목록은 다른 방향에서 같은 구조에 계속 도달합니다: <code>lead-time-is-the-product</code> 는 <strong>경보 임계값이 동기 슬라이드의 비용비에 이미 적혀 있다</strong>는 것을 찾았고, <code>the-70-has-to-be-wrong</code> 은 <strong>임계값은 비용에 대한 진술이지 예측의 속성이 아니다</strong>라고 주장합니다. <strong>포커의 기여는 그 숫자를 적어 둔다는 것이고, 나머지는 전부 암묵으로 남겨 둡니다.</strong></p>
+<p><strong>두 번째는 기대값이 목적함수가 아니라는 것이고, 대부분이 필요로 하는 교정입니다.</strong> <strong>결정마다 기대값을 최대화하되 뱅크롤을 무시하고 크기를 잡는 전략은, 시간이 충분하면 확률 1로 파산합니다</strong> — <strong>파산은 흡수 상태</strong>이고 <strong>0에서는 이후의 어떤 엣지도 거둘 수 없기</strong> 때문입니다. <strong>켈리는 확률을 크기로 바꾸고</strong>, 묶이는 제약은 <strong>성장을 최대화하는 크기가 아니라 분산이 실제로 만들어내는 길이의 연패를 견디는 크기</strong>입니다. <strong>캘리브레이션이 올바른 p 를 주고, 켈리가 p 를 베팅 크기로 바꾸며, 파산 위험이 그 크기의 상한은 엣지가 아니라 생존이라고 말합니다.</strong> <strong>잘 캘리브레이션된 모델에 뱅크롤 규칙이 없는 트레이딩 에이전트는, 푼 예측 문제에 안 푼 사이징 문제를 붙여 놓은 것</strong>입니다.</p>
+<p><strong>세 번째는 기록이 충분히 길어지기 전까지 아무 뜻도 없다는 것이고, 얼마나 길어야 하는지는 의견이 아니라 계산입니다.</strong> <strong>이기는 플레이어도 확신을 부술 만큼 긴 구간에서 집니다.</strong> 그러니 <strong>&quot;내가 잘하는 건가&quot;는 한 달치 결과로 답할 수 없습니다.</strong> <strong>주장한 엣지와 분산이 주어지면, 그 엣지를 정해진 신뢰수준에서 0과 구별하는 데 필요한 시행 횟수는 산수</strong>이고, <strong>대개 누구든 가진 표본보다 훨씬 큽니다.</strong> <strong>먼저 계산하면 논쟁이 일정표로 바뀝니다</strong> — <code>monad-last-general-purpose-l1</code> 의 관찰 창과 같은 수입니다. 거기서도 <strong>쓸모 있는 행동은 복원 불가능해지기 전에 기준선을 기록하는 것</strong>이었습니다.</p>
+<p><strong>그리고 가장 중요한 부분, 비유가 끝나는 지점입니다.</strong> 포커는 <strong>위험(risk)</strong> 의 게임입니다 — <strong>분포가 정확히 알려져 있고</strong>(카드 52장, 고정된 규칙) <strong>감춰진 것은 실현값뿐</strong>입니다. 예측은 <strong>불확실성(uncertainty)</strong> 의 문제입니다 — <strong>분포 자체를 모르고, 그것이 바로 추정 대상</strong>입니다. 그래서 <strong>포커 플레이어의 캘리브레이션은 산수이고 예측자의 캘리브레이션은 현실에 대고 벌어야 하는 경험적 주장</strong>이며, <strong>포커 직관은 세상에 대해 얼마나 잘 캘리브레이션될 수 있는지를 체계적으로 과대평가합니다.</strong> <strong>포커의 결정 위생은 빌려 오되 자신감은 빌려 오지 마십시오.</strong> 다만 <strong>비유가 어긋나는 나머지 절반은 실제로 이전되고, 사람들이 그것을 잊습니다</strong> — <strong>포커는 적대적이라 엣지는 쓸수록 닳고 상대가 적응합니다.</strong> <strong>시장도 똑같이 하고</strong>, 그래서 <strong>백테스트는 내가 거래하는 순간 더 이상 나를 포함하지 않는 세계를 서술합니다.</strong></p>
+      <h2>동작 방식</h2>
+      <h3>이전되는 셋, 그리고 여기서의 형태</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>포커</th>
+<th>일반형</th>
+<th>이 목록의 어디에 이미 있나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>팟 오즈</strong> &amp;mdash; p &amp;gt; c / (팟 + c) 면 콜</td>
+<td><strong>임계값은 비용에 대한 산수</strong>, 아무것도 모를 때 이미 손에 있음</td>
+<td><code>lead-time-is-the-product</code>, <code>the-70-has-to-be-wrong</code></td>
+</tr>
+<tr>
+<td><strong>뱅크롤 관리</strong></td>
+<td><strong>기대값은 목적함수가 아니고, 생존이 베팅 크기의 상한</strong></td>
+<td><code>the-70-has-to-be-wrong</code> 의 켈리 언급 (전개는 안 됨)</td>
+</tr>
+<tr>
+<td><strong>분산과 표본 크기</strong></td>
+<td><strong>N 이 충분히 커지기 전까지 기록은 무의미</strong>하고, N 은 계산 가능</td>
+<td><code>monad-last-general-purpose-l1</code> 의 관찰 창</td>
+</tr>
+<tr>
+<td><strong>resulting</strong></td>
+<td><strong>결과로 결정을 판단하는 것</strong>. 시끄러운 피드백이 벌하는 습관</td>
+<td>&amp;mdash; 이 카드</td>
+</tr>
+</tbody></table></div>
+<h3>임계값을 적어 보면</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>팟</th>
+<th>콜 금액</th>
+<th>손익분기 p</th>
+<th>읽는 법</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100</td>
+<td>50</td>
+<td><strong>33%</strong></td>
+<td><strong>가격이 3번에 1번을 요구하고 있음</strong></td>
+</tr>
+<tr>
+<td>100</td>
+<td>20</td>
+<td><strong>17%</strong></td>
+<td>싸다. 약한 근거로도 콜</td>
+</tr>
+<tr>
+<td>100</td>
+<td>200</td>
+<td><strong>67%</strong></td>
+<td>비싸다. 강한 근거가 필요</td>
+</tr>
+</tbody></table></div>
+<p><strong>숫자는 패가 아니라 가격에서 나옵니다.</strong> 이걸 건너뛴 결정도 <strong>임계값을 고르긴 한 것</strong>입니다 — <strong>다만 의도적으로 고르지 않았을 뿐</strong>이고, <code>the-70-has-to-be-wrong</code> 이 <strong>확률을 정확도로 채점하는 것</strong>에서 찾아낸 실패와 같습니다.</p>
+<h3>왜 기대값이 틀린 목적함수인가</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>목적함수</th>
+<th>무엇을 최대화하나</th>
+<th>어떻게 실패하나</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>결정당 EV</strong></td>
+<td>경로를 무시한 평균 결과</td>
+<td><strong>파산은 흡수 상태.</strong> 시간이 충분하면 파산 확률 &amp;rarr; 1</td>
+</tr>
+<tr>
+<td><strong>성장률 (켈리)</strong></td>
+<td>장기 복리</td>
+<td><strong>엣지 추정이 맞다고 가정.</strong> 과대 베팅은 비대칭적으로 벌받음</td>
+</tr>
+<tr>
+<td><strong>생존 우선</strong></td>
+<td>게임에 남아 있는 시간</td>
+<td>성장을 남겨 둠 — <strong>그게 남아 있기 위한 값</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>잘 캘리브레이션된 모델에 뱅크롤 규칙이 없으면, 푼 예측 문제에 안 푼 사이징 문제를 볼트로 붙여 놓은 것</strong>입니다.</p>
+<h3>비유가 끝나는 곳, 그리고 그쪽이 쓸모 있는 절반</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>포커</th>
+<th>세상을 예측하는 일</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>분포</strong></td>
+<td><strong>정확히 알려짐</strong> &amp;mdash; 카드 52장</td>
+<td><strong>모름. 그리고 그것이 추정 대상</strong></td>
+</tr>
+<tr>
+<td><strong>모름의 종류</strong></td>
+<td>위험(risk)</td>
+<td><strong>불확실성(uncertainty)</strong></td>
+</tr>
+<tr>
+<td><strong>캘리브레이션은</strong></td>
+<td>산수</td>
+<td><strong>현실에 대고 벌어야 하는 경험적 주장</strong></td>
+</tr>
+<tr>
+<td><strong>적대적인가</strong></td>
+<td>예 &amp;mdash; 상대가 적응</td>
+<td><strong>시장도 그렇다.</strong> 그래서 <strong>백테스트는 내가 거래하는 순간 더 이상 나를 포함하지 않는 세계를 서술</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>앞 세 줄이 포커 직관이 달성 가능한 캘리브레이션을 과대평가하는 이유</strong>입니다 — <strong>결정 위생은 빌려 오되 자신감은 빌려 오지 마십시오.</strong> <strong>마지막 줄이 실제로 이전되는데 잊히는 줄</strong>입니다.</p>
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-moralis-wallet-api.html">&larr; 80. Moralis — wallet snapshot via API</a><a href="pocs-where-yield-comes-from.html">82. Every yield is somebody's cost — the three places it can come from &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const observed = new Map();
+  let revealTimer;
+  // 밴드에 걸친 항목 중 "문서 순서로 첫 번째"를 고르면 언제나 한 칸 앞이 켜진다
+  // (jay, 2026-08-27: "the left pane should sync with right pane in the item's position").
+  // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
+  // 고르면 방금 도착한 항목이 켜진다.
+  function syncActive() {
+    // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
+    // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
+    // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
+    const line = window.innerHeight * 0.1;
+    let first = null;
+    let started = -Infinity;
+    let upcoming = Infinity;
+    let firstUpcoming = null;
+    for (const k of seen) {
+      const el = observed.get(k);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top <= line) {
+        if (top > started) {
+          started = top;
+          first = k;
+        }
+      } else if (top < upcoming) {
+        upcoming = top;
+        firstUpcoming = k;
+      }
+    }
+    if (first === null) first = firstUpcoming;
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }
+
+  // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
+  // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
+  let ticking = false;
+  addEventListener(
+    'scroll',
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncActive();
+      });
+    },
+    { passive: true }
+  );
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    syncActive();
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) {
+      observed.set(key, el);
+      io.observe(el);
+    }
+  }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
+</script>
+</body>
+</html>
