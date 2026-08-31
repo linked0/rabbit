@@ -246,6 +246,12 @@
                          반복되는 실패다("All Logs — 63 entries"도 같은 이유로 숫자를 뺐다).
                          지름길 자체는 아래 "All …" 링크가 이미 맡고 있으므로, 카드는
                          갱신이 필요 없는 색인 셋만 남긴다. -->
+                    <!-- All PoCs 카드 (jay, 2026-08-31) — 인덱스의 PoCs 섹션을 없애고 그 자리에
+                         전체 목록(pocs.html)으로 가는 카드 하나만 이 섹션 맨 앞에 둔다. -->
+                    <a href="pocs.html" class="card" style="border-left: 4px solid #7c3aed;">
+                        <span class="card-title">Rabbit &mdash; All PoCs</span>
+                        <span class="card-path" title="docs/pocs.html">docs/pocs.html</span>
+                    </a>
                     <a href="html/docs/features/README.html" class="card" style="border-left: 4px solid #0ea5e9;">
                         <span class="card-title">Rabbit &mdash; Feature Designs</span>
                         <span class="card-path" title="docs/features/README.md">docs/features/README.md</span>
@@ -284,39 +290,15 @@
                     &nbsp;&middot;&nbsp;
                     <a href="https://linked0.github.io/verex/tasks/" target="_blank" rel="noopener noreferrer"
                         style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All Verex Tasks &rarr;</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="algorithms.html"
+                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All Algorithms &rarr;</a>
+                    &nbsp;&middot;&nbsp;
+                    <a href="math.html"
+                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All Math &rarr;</a>
                 </div>
             </div>
 
-            <!-- PoCs — 앱의 PoCs 상단 메뉴(/poc)와 같은 카드 목록 (2026-08-11, jay).
-                 마커 사이는 scripts/generate-pocs-html.mjs 가 lib/poc-cards.ts 에서 다시 만든다.
-                 손으로 고치지 말 것 — 카드가 바뀌면 `pnpm docs:pocs` 를 다시 돌린다.
-                 (TIL 라벨 표류 같은 실패를 막으려고 소스를 한 곳으로 묶었다.) -->
-            <!-- POCS:BEGIN -->
-            <div class="section">
-                <h2 class="section-title">PoCs</h2>
-                <div class="grid">
-                    <a href="https://www.jaylabs.xyz/poc/the-only-commitment-is-the-issuer" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Every verb is &quot;explore&quot; — the one commitment is which stablecoin</span>
-                    </a>
-                    <a href="https://www.jaylabs.xyz/poc/bandwidth-not-capacity" class="card" style="border-left: 4px solid #64748b;">
-                        <span class="card-title">Capacity loads the model; bandwidth serves it</span>
-                    </a>
-                </div>
-                <div style="text-align: right; margin-top: 12px;">
-                    <a href="pocs.html"
-                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All
-                        PoCs &rarr;</a>
-                    &nbsp;&middot;&nbsp;
-                    <a href="algorithms.html"
-                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All
-                        Algorithms &rarr;</a>
-                    &nbsp;&middot;&nbsp;
-                    <a href="math.html"
-                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All
-                        Math &rarr;</a>
-                </div>
-            </div>
-            <!-- POCS:END -->
 
             <!-- Knowledge Base -->
             <div class="section">

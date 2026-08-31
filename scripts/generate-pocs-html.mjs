@@ -1,8 +1,6 @@
 #!/usr/bin/env node
-// PoCs → docs. 두 가지를 만든다 (jay 요청, 2026-08-11):
-//   1) docs/index.html 의 POCS:BEGIN/END 마커 사이 — 앱의 PoCs 상단 메뉴(/poc)와 같은
-//      카드 목록을 컴팩트 카드로.
-//   2) docs/pocs.html — "View All PoCs" 대상. 카드마다 전체 내용(설명·purpose·howItWorks)을
+// PoCs → docs. 만드는 것 (jay 요청, 2026-08-11; index.html 의 PoCs 섹션은 2026-08-31 에 뺐다):
+//   docs/pocs.html — "View All PoCs" 대상. 카드마다 전체 내용(설명·purpose·howItWorks)을
 //      docs/html/* 와 같은 read-the-docs 포맷으로.
 //
 // 소스는 lib/poc-cards.ts / lib/algorithm-cards.ts 하나뿐이다 — 앱과 문서가 같은 데이터를
@@ -90,7 +88,6 @@ const md = (v) => mdRender(v);
 const mdInline = (v) => mdRender(v, { inline: true });
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..');
-const INDEX_HTML = path.join(REPO_ROOT, 'docs', 'index.html');
 const OUT_HTML = path.join(REPO_ROOT, 'docs', 'pocs.html');
 const TOPICS_DIR = path.join(REPO_ROOT, 'docs', 'topics'); // 항목별 상세 페이지 (Algorithms·Math 와 같은 디렉터리)
 const TMP_DIR = path.join(REPO_ROOT, '.pocs-cards-tmp');
@@ -213,55 +210,10 @@ function topicPagerHref(card) {
 }
 
 
-// ── 1) index.html 의 PoCs 섹션 ──────────────────────────────────────────────
-// 인덱스에는 "마지막으로 검토한" 두 장만 (jay, 2026-08-28) — 전체 목록은 pocs.html
-// ("View All PoCs")이 맡는다. 이전에는 정렬 상위 6장이었는데, 정렬이 live→done→soon 이라
-// 몇 달 된 라이브 데모가 늘 자리를 차지했다 — 인덱스는 "무엇이 가장 완성됐나"가 아니라
-// "내가 방금 무엇을 봤나"를 보여줘야 한다. reviewed 가 없는 카드는 후보에서 빠지고,
-// 아무 카드에도 없으면 예전 규칙(정렬 상위)으로 되돌아간다.
-const INDEX_CARD_LIMIT = 2;
-const reviewedCards = cards
-  .filter((c) => c.reviewed)
-  .sort((a, b) => b.reviewed.localeCompare(a.reviewed)); // 같은 날이면 배열 순서 유지
-const sectionCards = (reviewedCards.length ? reviewedCards : cards)
-  .slice(0, INDEX_CARD_LIMIT)
-  .map((c) => {
-    const b = badge(c);
-    return `                    <a href="${cardUrl(c)}" class="card" style="border-left: 4px solid ${b.color};">
-                        <span class="card-title">${escapeHtml(c.title)}</span>
-                    </a>`;
-  })
-  .join('\n');
-
-const section = `            <div class="section">
-                <h2 class="section-title">PoCs</h2>
-                <div class="grid">
-${sectionCards}
-                </div>
-                <div style="text-align: right; margin-top: 12px;">
-                    <a href="pocs.html"
-                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All
-                        PoCs &rarr;</a>
-                    &nbsp;&middot;&nbsp;
-                    <a href="algorithms.html"
-                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All
-                        Algorithms &rarr;</a>
-                    &nbsp;&middot;&nbsp;
-                    <a href="math.html"
-                        style="color: var(--accent); font-weight: 600; text-decoration: none; font-size: 0.95rem;">All
-                        Math &rarr;</a>
-                </div>
-            </div>`;
-
-const index = fs.readFileSync(INDEX_HTML, 'utf8');
-const marked = index.replace(
-  /(<!-- POCS:BEGIN -->)[\s\S]*?(<!-- POCS:END -->)/,
-  `$1\n${section}\n            $2`,
-);
-if (marked === index && !index.includes('<!-- POCS:BEGIN -->')) {
-  throw new Error('docs/index.html 에 POCS:BEGIN/END 마커가 없습니다.');
-}
-fs.writeFileSync(INDEX_HTML, marked, 'utf8');
+// ── 1) index.html 의 PoCs 섹션 — 더 이상 만들지 않는다 (jay, 2026-08-31) ─────────
+// 인덱스의 PoCs 섹션(POCS:BEGIN/END 마커)은 없앴고, 그 자리는 Current Projects 맨 앞의
+// "Rabbit — All PoCs" 카드 하나(→ pocs.html)가 맡는다. 마지막으로 검토한 두 장을 인덱스에
+// 두던 규칙(2026-08-28)은 여기서 끝난다 — 전체 목록·진척률은 pocs.html 이 답한다.
 
 // ── 2) docs/pocs.html — 읽기 문서(read-the-docs) 레이아웃 ───────────────────
 // 좌측 고정 레일에 **전체 항목**을 싣고 본문은 오른쪽 (jay, 2026-08-12, verex /docs 레퍼런스).
@@ -472,7 +424,8 @@ const doneTotals = [
   ...grouped.map((g) => [g.numbered.filter((c) => c.status === 'done').length, g.numbered.length]),
   ...curricula.map(({ items, done }) => [done, items.length]),
 ].reduce(([a, b], [c, d]) => [a + c, b + d], [0, 0]);
-const doneNote = `${Math.round((doneTotals[0] / doneTotals[1]) * 100)}% done`;
+// 퍼센트 옆에 done/total 도 같이 (jay, 2026-08-31: "add done/total beside % done").
+const doneNote = `${Math.round((doneTotals[0] / doneTotals[1]) * 100)}% done &middot; ${doneTotals[0]}/${doneTotals[1]}`;
 
 const railJump = SECTIONS.map(
   ([id, label, all, done]) =>
@@ -683,5 +636,5 @@ fs.writeFileSync(
   'utf8'
 );
 console.log(
-  `PoCs: index section (${Math.min(cards.length, INDEX_CARD_LIMIT)}/${cards.length} cards) + docs/pocs.html (${cards.length} in sidebar) updated`
+  `PoCs: docs/pocs.html (${cards.length} in sidebar) updated`
 );
