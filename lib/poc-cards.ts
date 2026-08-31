@@ -742,7 +742,7 @@ export const POC_CARDS: DemoCard[] = [
       "Polymarket's five-second trick and Balance Coin's oracle attack are the same defect: one price, one instant, no band, no delay. The push-versus-pull oracle split exists because of exactly that problem, and the fix is a parameter with a number attached rather than a principle.",
     descriptionKo:
       "폴리마켓의 5초 트릭과 Balance Coin 오라클 공격은 **같은 결함**입니다 — **가격 하나, 순간 하나, 검증 범위 없음, 지연 없음.** Push 대 Pull 오라클의 갈림은 정확히 그 문제 때문에 존재하고, **해법은 원칙이 아니라 숫자가 붙은 파라미터**입니다.",
-    status: "soon",
+    status: "done",
     howTo:
       "Start by pricing the attack rather than modelling anything: given order-book depth on the reference venue, what does it cost to move the price by X for T seconds, and how does that cost scale as the averaging window grows? Then trace the other half in code — the off-chain signature verification path in the Data Streams docs — and calculate the bounded gas cost of settling a single market, which is the number that makes per-market unit economics computable. Sources: Stanford/SMU settlement-manipulation study (CoinDesk, 2026-08-07); SlowMist on the Balance Coin oracle exploit (2026-07-22); docs.chain.link/data-streams.",
     howToKo:
@@ -1105,7 +1105,7 @@ export const POC_CARDS: DemoCard[] = [
       "Ripple Mint turns issuance and redemption into an institutional workflow. The claim worth testing: circulation is won at the redemption desk, not on the chain.",
     descriptionKo:
       "Ripple Mint는 발행과 상환을 기관 워크플로우로 제품화했습니다. 검증해 볼 주장: 유통은 체인이 아니라 상환 창구에서 갈린다.",
-    status: "soon",
+    status: "done",
     howTo:
       "Not yet scoped — start by writing down one issuer's redemption path end to end (eligibility, SLA, suspension conditions, audit trail) and see which parts are actually documented. Source: Ripple Mint launch, 2026-07-23.",
     howToKo:
@@ -1163,7 +1163,7 @@ export const POC_CARDS: DemoCard[] = [
       "A perpetual future tracks spot with no expiry date forcing it to. What holds the two together is funding payments making the gap painful, and dozens of arbitrage bots racing each other to close it — which means the basis you observe is a readout of the cheapest arbitrageur's cost floor.",
     descriptionKo:
       "영구선물에는 **수렴을 강제하는 만기일이 없습니다.** 둘을 붙들어 두는 것은 **간격을 아프게 만드는 펀딩 지급**과, 그 간격을 먼저 닫으려 경쟁하는 **수십 개의 차익거래 봇**입니다 — 그래서 **관측되는 베이시스는 가장 싼 차익거래자의 비용 하한을 읽는 계기판**입니다.",
-    status: "soon",
+    status: "done",
     howTo:
       "A week of data collection, no capital at risk. For one liquid asset, record spot, perp mark and the funding rate at every funding interval. Compute the basis series and look at its distribution rather than its mean: the width of the band it lives inside is an estimate of what the cheapest participant pays to close it, since anything wider would already have been traded away. Then price your own round trip — fees, slippage at your size, cost of capital, margin buffer — and put the two numbers side by side. If your cost sits inside the observed band there is room; if it sits outside, the honest conclusion is that you are reading the market, not competing in it. Source: a practitioner explanation of basis and funding arbitrage, 2026-08-27, with a worked example at 2% basis against roughly 0.75% total cost.",
     howToKo:
@@ -1694,7 +1694,7 @@ export const POC_CARDS: DemoCard[] = [
       "Four 2026 incidents with one root: a vendor you authorized. And the control everyone reaches for first — SRI and CSP — would have stopped none of them.",
     descriptionKo:
       "2026년 사고 네 건, 뿌리는 하나 — 내가 승인한 협력사. 그리고 가장 먼저 손이 가는 통제인 SRI·CSP는 그중 어느 것도 막지 못했을 것입니다.",
-    status: "soon",
+    status: "done",
     howTo:
       "Not yet scoped — start with an inventory of one real frontend: every third-party script, every vendor holding customer PII, and each vendor's own vendors where discoverable. Sources: Polymarket incidents 2026-05-22 and 2026-06-25; Trezor/ShipMonk disclosure 2026-08-13; Bits of Gold disclosure 2026-08-16.",
     howToKo:
@@ -2047,7 +2047,7 @@ export const POC_CARDS: DemoCard[] = [
       "Between 8/18 and 8/25 one activity was criminal gambling in Korea, a brokerage product line in the US, and something a US company sells only outside the US. The axis is not the product — it is the jurisdiction, and no design document has a box for it.",
     descriptionKo:
       "8/18부터 8/25 사이, **같은 행위**가 한국에서는 형법상 도박, 미국에서는 증권사 상품 라인, 그리고 미국 회사가 **미국 밖에서만** 파는 것이 됐습니다. 축은 상품이 아닙니다 — **법역**이고, 어떤 설계 문서에도 그 칸이 없습니다.",
-    status: "soon",
+    status: "done",
     howTo:
       "Not yet scoped — and the deliverable is one sentence, not a system. Translate the Korean regulator's stated grounds into design levers, decide where this project sits on each lever, and write the result as: what this product is, and is not, under Korean law. Sources to confirm against the primary documents: the 방심위 access block of 2026-08-18, the Gemini Titan / Apex Fintech exclusive of 2026-08-24, the non-US restriction on Coinbase's tokenized equities of 2026-08-25, and the announced Jackson Hole 2026 theme, Financial Innovation: Implications for Payments and Policy.",
     howToKo:
