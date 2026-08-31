@@ -212,7 +212,7 @@ function topicPagerHref(card) {
 
 // ── 1) index.html 의 PoCs 섹션 — 더 이상 만들지 않는다 (jay, 2026-08-31) ─────────
 // 인덱스의 PoCs 섹션(POCS:BEGIN/END 마커)은 없앴고, 그 자리는 Current Projects 맨 앞의
-// "Rabbit — All PoCs" 카드 하나(→ pocs.html)가 맡는다. 마지막으로 검토한 두 장을 인덱스에
+// "All PoCs" 카드 하나(→ pocs.html)가 맡는다. 마지막으로 검토한 두 장을 인덱스에
 // 두던 규칙(2026-08-28)은 여기서 끝난다 — 전체 목록·진척률은 pocs.html 이 답한다.
 
 // ── 2) docs/pocs.html — 읽기 문서(read-the-docs) 레이아웃 ───────────────────
