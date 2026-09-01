@@ -41,6 +41,12 @@ export default function TechNotes({ cards, lang }: { cards: DemoCard[]; lang: La
               <strong>{pick(lang, "동작 방식: ", "How it works: ")}</strong>
               {pick(lang, card.howItWorksKo, card.howItWorks)}
             </p>
+            {card.discussion && card.discussionKo && (
+              <p style={{ marginTop: 8 }}>
+                <strong>{pick(lang, "검토 후 보완: ", "Review clarification: ")}</strong>
+                {pick(lang, card.discussionKo, card.discussion)}
+              </p>
+            )}
             {card.diagrams?.map((d) => (
               <figure key={d.title} style={{ margin: "16px 0 0" }}>
                 <figcaption className="sub" style={{ fontSize: 13, marginBottom: 4 }}>

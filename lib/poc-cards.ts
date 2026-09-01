@@ -1886,14 +1886,18 @@ export const POC_CARDS: DemoCard[] = [
     // 사건"과 정확히 같은 속성이다. 그리고 결정시장은 그 선을 의도적으로 넘은 설계다.
     key: "decision-market-uncontrollability",
     important: true,
-    updated: "2026-08-27",
+    updated: "2026-09-01",
     title: "The property that makes a market work is the one that makes it gambling",
     titleKo: "시장을 작동하게 하는 속성이, 그것을 도박으로 만든다",
     description:
       "Umia routes corporate decisions through markets and enforces them with a Cayman entity. The same essay argues a prediction market only works if participants cannot change the outcome — which is the exact property Korea's regulator cited when it called prediction markets gambling. Decision markets cross that line on purpose.",
     descriptionKo:
       "Umia는 기업 의사결정을 시장에 태우고 케이맨 법인으로 강제합니다. 그런데 같은 글이 예측시장의 성립 조건으로 **참여자가 결과를 바꿀 수 없어야 한다**를 듭니다 — 방심위가 예측시장을 도박이라 부를 때 든 **바로 그 속성**입니다. **결정시장은 그 선을 의도적으로 넘습니다.**",
-    status: "soon",
+    status: "done",
+    discussion:
+      "### What the mechanism is\n\nA **decision market** is the conditional-market tool; **futarchy** is a governance system that uses it to choose and execute policy. Umia did not invent either concept. Its distinctive move is to package paired markets, an on-chain treasury and a legal wrapper so the result can bind a token-native organisation.\n\n| Market | Counterfactual question |\n|---|---|\n| **Proposal** | What is the token worth if the proposal executes? |\n| **No-Op** | What is it worth if this proposal does not execute? |\n\nOne price is insufficient: Proposal at 120 is favourable if No-Op is 100 and harmful if No-Op is 150. No-Op means *this proposal is not executed*, not that nothing else ever changes.\n\n### Participation and manipulation\n\nThe pair creates a comparison; it does not create informed traders. Thin participation can leave a large treasury dependent on one trader, and incentives can add volume without information. A credible rule therefore needs minimum liquidity and independent participation as well as a TWAP spread.\n\n`expected net manipulation cost < external value of the decision` is a general attack test, not an official Umia formula. It matters because a trader may lose in the market yet profit from a grant, contract or strategic benefit produced by the decision. D, T and W alone are insufficient: the AMM curve, fees, external fair price, arbitrage capacity and speed, order flow and recoverable position value also matter. Likewise, uncontrollability may be one legal factor in gambling analysis; this card does not establish it as a sufficient condition by itself.",
+    discussionKo:
+      "### 메커니즘의 정체\n\n**결정시장**은 조건부 시장이라는 도구이고, **퓨타키**는 그것으로 정책을 선택하고 실행하는 지배구조입니다. Umia가 둘 중 어느 개념도 발명한 것은 아닙니다. Umia의 특징은 시장 쌍, 온체인 재무금고, 법적 래퍼를 묶어 결과가 토큰 기반 조직을 구속하게 하는 데 있습니다.\n\n| 시장 | 반사실 질문 |\n|---|---|\n| **Proposal** | 제안을 실행하면 토큰 가치는 얼마인가? |\n| **No-Op** | 이 제안을 실행하지 않으면 얼마인가? |\n\n가격 하나로는 부족합니다. Proposal 120은 No-Op가 100이면 유리하지만 150이면 해롭습니다. No-Op는 *이 제안을 실행하지 않음*이지 앞으로 아무 변화도 없다는 뜻이 아닙니다.\n\n### 참여와 조작\n\n시장 쌍은 비교를 만들지만 정보력 있는 거래자를 만들지는 않습니다. 참여가 얕으면 큰 재무금고가 한 거래자에게 의존할 수 있고, 보상은 정보 없이 거래량만 늘릴 수 있습니다. 따라서 신뢰할 수 있는 규칙에는 TWAP 차이뿐 아니라 최소 유동성과 독립 참여가 필요합니다.\n\n`조작의 기대 순비용 < 결정의 외부 가치`는 Umia의 공식이 아니라 일반적인 공격 평가식입니다. 공격자는 시장에서 손해를 보더라도 결정이 만든 보조금, 계약, 전략적 이익으로 수익을 낼 수 있습니다. D, T, W만으로는 부족하고 AMM 곡선, 수수료, 외부 공정가격, 차익거래의 규모와 속도, 주문 흐름, 회수 가능한 포지션까지 필요합니다. 통제 불가능성도 도박 판단 요소 중 하나일 수 있지만, 이 카드만으로 단독 충분조건이라고 확정할 수는 없습니다.",
     howTo:
       "Not yet scoped — and the deliverable is one formula, not a build. For a conditional AMM of depth D, a TWAP window of length W and an execution threshold T over the No-Op market, compute the capital required to hold the price above the threshold for the whole window against arbitrageurs taking the other side. That number is the price of a corporate decision. Compute it twice: at the liquidity a young market actually has, and at the liquidity it would need for the cost to exceed the value of the decision being bought. Source: Four Pillars, Steve, \"Umia: A New Way to Build Crypto Projects\", 2026-08-26 — TWAP settlement, a No-Op status-quo market, a threshold above it, Uniswap v4 CCA auctions, a MetaLeX BORG Cayman SPC wrapper, first $UMIA auction at the end of August. Confirm against the primer before relying on any mechanism detail.",
     howToKo:
@@ -2199,14 +2203,18 @@ export const POC_CARDS: DemoCard[] = [
     // 되사는 일. 그래서 "공부 목록"이 아니라 되사기 가격표가 되도록 항목마다 잴 숫자를 붙였다.
     key: "plumbing-skills-buyback",
     important: true,
-    updated: "2026-08-26",
+    updated: "2026-09-01",
     title: "Four capabilities, each buying back what the chain gave away",
     titleKo: "네 가지 역량, 각각은 체인이 버린 것을 되사는 일",
     description:
       "The must-build column of the plumbing table turns into four engineering capabilities: netting, hybrid matching with a verifiable audit trail, intent routing, and oracle failure with surveillance. Each one re-acquires, at a cost, a property the on-chain design discarded for free.",
     descriptionKo:
       "배관 표의 **만들어야 함** 칸은 네 가지 엔지니어링 역량으로 바뀝니다 — 네팅, 검증 가능한 감사 추적을 갖춘 하이브리드 매칭, 인텐트 라우팅, 오라클 장애 대응과 시장 감시. **넷 모두 온체인 설계가 공짜로 버린 속성을 값을 치르고 되사는 일**입니다.",
-    status: "soon",
+    status: "done",
+    discussion:
+      "### Why use a chain if trust comes back?\n\nThe remaining value is not *no trust* but **constrained trust**. A sequencer may order trades without receiving custody or power to rewrite final settlement; an oracle may decide an event without authority over unrelated treasury funds. The deepest test is **credible exit**: if one service disappears, do users retain their assets, history and ability to continue elsewhere? If not, the chain may be extra cost around an effectively centralised system.\n\n### Every efficiency number needs a risk counter-number\n\n| Capability | Efficiency measure | Risk counter-measure |\n|---|---|---|\n| Netting | `1 - net exposure / gross exposure` | collateral / stressed potential loss |\n| Matching | lifecycle steps with proofs | meaningful deviations still undetectable |\n| Routing | slippage from executable bid/ask | benchmark age, impact, accessible venues |\n| Oracle fallback | time to resolution | incorrect-resolution risk and source independence |\n\nCollateral below net exposure may be under-collateralisation, not netting. A high provable fraction can hide censorship. Slippage mixes routing quality with latency and impact. Fast oracle recovery can mean one unsafe fallback. The evaluation must pair **efficiency gained with risk reintroduced**.",
+    discussionKo:
+      "### 신뢰가 돌아오는데 왜 체인을 쓰는가\n\n남는 가치는 무신뢰가 아니라 **제약된 신뢰**입니다. 시퀀서는 주문 순서를 정하되 자산 보관이나 최종 결제 변경 권한은 갖지 않고, 오라클은 사건을 판단하되 관련 없는 재무금을 쓸 권한은 갖지 않을 수 있습니다. 가장 깊은 검사는 **실질적 이탈권**입니다. 서비스 하나가 사라져도 사용자가 자산, 기록, 다른 곳에서 계속할 능력을 유지하는가? 아니라면 체인은 사실상 중앙화된 시스템에 비용만 더할 수 있습니다.\n\n### 효율 숫자에는 위험 반대숫자가 필요하다\n\n| 역량 | 효율 지표 | 위험 반대지표 |\n|---|---|---|\n| 네팅 | `1 - 순노출 / 총노출` | 담보 / 스트레스 잠재손실 |\n| 매칭 | 증명 가능한 생애주기 단계 | 여전히 탐지 불가능한 유의미한 위반 |\n| 라우팅 | 체결 가능한 bid/ask 대비 슬리피지 | 벤치마크 시점, 시장충격, 접근 가능 거래소 |\n| 오라클 폴백 | 해결 시간 | 오판 위험과 출처 독립성 |\n\n담보가 순노출보다 적으면 네팅이 아니라 부족담보일 수 있습니다. 높은 증명 비율도 검열을 숨길 수 있고, 슬리피지는 라우팅 품질과 지연·시장충격을 섞습니다. 빠른 오라클 복구는 위험한 단일 폴백을 뜻할 수 있습니다. 평가는 **얻은 효율성과 다시 도입된 위험**을 짝지어야 합니다.",
     howTo:
       "Not yet scoped — and the discipline is to keep this a price list rather than a syllabus. For each of the four rows below, write the one number that says whether the capability exists in a given system, not whether it has been studied: required collateral over net exposure, the fraction of the order lifecycle provable to an outsider, realised slippage against the executable side of the book, and time-to-resolution when the primary oracle is unavailable. Anything that cannot be reduced to such a number belongs in reading, not in a card. Successor to `event-contract-plumbing`, whose three-bucket table is the input to this one.",
     howToKo:
@@ -2227,14 +2235,18 @@ export const POC_CARDS: DemoCard[] = [
     // 의견을 갖지 않게 만드는 것이고, ② 되돌릴 수 없다는 성질은 위험이 아니라 보장 그 자체다.
     key: "irreversible-switch-design",
     important: true, // 2026-08-31 (jay) — 배열 위치는 번호 보존용: important 구획 끝에 둔다
-    updated: "2026-08-27",
+    updated: "2026-09-01",
     title: "The migration works by making the contract dumber",
     titleKo: "마이그레이션은 컨트랙트를 더 멍청하게 만들어서 성립한다",
     description:
       "A draft EIP replaces the deposit contract's hardcoded BLS12-381 dimensions with variable-length credentials, and adds a BLS retirement mode that a system call flips once and never back. The technique is not teaching the contract a new scheme — it is removing the opinion it held about the old one.",
     descriptionKo:
       "초안 EIP가 예치 컨트랙트에 하드코딩된 **BLS12-381 치수**를 **가변 길이 자격증명**으로 바꾸고, 시스템 콜로 **한 번 넘기면 되돌릴 수 없는 BLS 은퇴 모드**를 더합니다. 기법은 컨트랙트에 새 방식을 **가르치는 것이 아니라**, 옛 방식에 대해 갖고 있던 **의견을 없애는 것**입니다.",
-    status: "soon",
+    status: "done",
+    discussion:
+      "### Protocol proposal first, design principle second\n\nThe immediate subject is an Ethereum protocol migration affecting the execution layer, consensus clients, validator onboarding, staking services and indexers. The reusable lesson is not an official Ethereum policy: **a contract should understand only what it needs to enforce its own invariants.** The current deposit path is already closer to transport than to a full BLS verifier, so the direction is better described as *BLS-shaped transport → scheme-neutral transport*. Complexity moves to the consensus or verifier layer; it does not disappear.\n\n### Split at trust and change boundaries\n\n```text\nMarketFactory → EventMarket → fixed IResolver\n                              ├─ ChainlinkResolver\n                              ├─ CommitteeResolver\n                              └─ TLSProofResolver\n```\n\n`EventMarket` should keep positions, collateral, finality and payout invariants together so redemption remains atomic. A resolver converts vendor-specific evidence into a canonical `{status, outcome, resolvedAt}` and receives no arbitrary custody authority. Pin it when the market is created; approve replacements only for future markets.\n\nDo not split because a function is long. Split when security authority, upgrade cadence, failure mode or implementation choice genuinely differs; otherwise use an internal function or library. Variable length must remain bounded for gas and denial-of-service safety. Design the core around stable economic invariants and place changing formats behind bounded, versioned interfaces.",
+    discussionKo:
+      "### 먼저 프로토콜 제안, 그다음 설계 원칙\n\n직접적인 주제는 실행 계층, 합의 클라이언트, 검증자 등록, 스테이킹 서비스, 인덱서에 영향을 주는 Ethereum 프로토콜 마이그레이션입니다. 일반 교훈은 Ethereum의 공식 정책이 아닙니다. **컨트랙트는 자기 불변조건을 집행하는 데 필요한 것만 이해해야 합니다.** 현재 예치 경로도 완전한 BLS 검증기보다 운반 계층에 가까우므로 방향은 *똑똑한 검증기 → 멍청한 운반*보다 *BLS 모양 운반 → 방식 중립 운반*에 가깝습니다. 복잡성은 사라지지 않고 합의 또는 검증 계층으로 이동합니다.\n\n### 신뢰·변경 경계에서 나눈다\n\n```text\nMarketFactory → EventMarket → 고정 IResolver\n                              ├─ ChainlinkResolver\n                              ├─ CommitteeResolver\n                              └─ TLSProofResolver\n```\n\n`EventMarket`은 포지션, 담보, 최종성, 지급 불변조건을 함께 보유해 상환의 원자성을 유지합니다. Resolver는 공급자별 증거를 표준 `{status, outcome, resolvedAt}`로 바꾸고 임의 보관 권한은 받지 않습니다. 시장 생성 시 고정하고 교체는 미래 시장에만 적용합니다.\n\n함수가 길다는 이유로 나누지 않습니다. 보안 권한, 변경 주기, 장애 모드, 구현 선택이 실제로 다를 때 나누고, 아니면 내부 함수나 라이브러리를 사용합니다. 가변 길이도 가스와 서비스 거부 안전을 위해 상한이 필요합니다. 안정적인 경제 불변조건을 중심으로 코어를 설계하고 변하는 형식은 크기가 제한되고 버전이 있는 인터페이스 뒤에 둡니다.",
     howTo:
       "Not yet scoped — and the first task is an inventory of opinions, not a design. List every place this project's settlement path hardcodes a fact about a scheme it does not own: signature format and length, oracle payload encoding, resolution record shape, collateral token decimals, address size. For each, mark whether it could become variable-length with validity checked elsewhere, or whether the contract genuinely has to understand it. That list is the migration surface, and it exists whether or not anything is ever migrated. Source: a post-quantum deposit contract EIP draft submitted 2026-08-24 by Kevaundray Wedderburn, Tom Wambsgans and Thomas Coratger — public key 48 bytes and signature metadata 96 bytes today, variable credentials up to 8,192 bytes proposed, plus an irreversible BLS retirement mode triggered by a system call. Read the draft itself before relying on any of these figures.",
     howToKo:

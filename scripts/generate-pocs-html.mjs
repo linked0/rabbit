@@ -332,8 +332,10 @@ const copyDoc = (t, d, h, why, how, L) =>
   `# ${t}\n\n${d}\n\n${h}\n\n## ${L.why}\n\n${why}\n\n## ${L.how}\n\n${how}\n`;
 const jsonBlock = (id, text) =>
   `<script type="application/json" id="${id}">${JSON.stringify(text).replace(/</g, '\\u003c')}</script>`;
-const copyEnOf = (c) => copyDoc(c.title, c.description, c.howTo, c.purpose, c.howItWorks, { why: 'Why', how: 'How it works' });
-const copyKoOf = (c) => copyDoc(c.titleKo, c.descriptionKo, c.howToKo, c.purposeKo, c.howItWorksKo, { why: '왜', how: '동작 방식' });
+const reviewedHow = (how, discussion, title) =>
+  discussion ? `${how}\n\n## ${title}\n\n${discussion}` : how;
+const copyEnOf = (c) => copyDoc(c.title, c.description, c.howTo, c.purpose, reviewedHow(c.howItWorks, c.discussion, 'Review clarification'), { why: 'Why', how: 'How it works' });
+const copyKoOf = (c) => copyDoc(c.titleKo, c.descriptionKo, c.howToKo, c.purposeKo, reviewedHow(c.howItWorksKo, c.discussionKo, '검토 후 보완'), { why: '왜', how: '동작 방식' });
 
 function rowsFor(list, sectionAnchor) {
   return list
@@ -582,6 +584,7 @@ function detailNavGroups(current) {
       ${md(c.purpose)}
       <h2>How it works</h2>
       ${md(c.howItWorks)}
+      ${c.discussion ? `<h2>Review clarification</h2>\n      ${md(c.discussion)}` : ''}
 ${diagramNote}${codeHtml}      <p>${openLink}</p>
     </article>
     <article id="ko" lang="ko">
@@ -594,6 +597,7 @@ ${diagramNote}${codeHtml}      <p>${openLink}</p>
       ${md(c.purposeKo)}
       <h2>동작 방식</h2>
       ${md(c.howItWorksKo)}
+      ${c.discussionKo ? `<h2>검토 후 보완</h2>\n      ${md(c.discussionKo)}` : ''}
 ${diagramNote}${codeHtmlKo}      <p>${openLinkKo}</p>
     </article>`,
       pagerHtml: `${

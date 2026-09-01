@@ -55,6 +55,10 @@ export type DemoCard = {
   purposeKo: string;
   howItWorks: string;
   howItWorksKo: string;
+  // Follow-up clarification added after reviewing a card in discussion. Kept separate so the
+  // original thesis remains readable while later corrections and boundaries are explicit.
+  discussion?: string;
+  discussionKo?: string;
   // Mermaid 흐름도 (선택 — 실제로 그릴 흐름이 있는 카드에만).
   // 배열인 이유: 한 데모에 성격이 다른 그림이 둘 이상 필요할 수 있다 —
   // 예를 들어 AA는 "전체 수명주기"와 "행사 한 건의 호출 경로"가 답하는 질문이 다르다 (jay, 2026-08-05).
