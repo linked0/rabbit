@@ -40,9 +40,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "expiresAt is already in the past" }, { status: 400 });
   }
 
-  let env: ReturnType<typeof loadEnv>;
+  let env: Awaited<ReturnType<typeof loadEnv>>;
   try {
-    env = loadEnv();
+    env = await loadEnv();
   } catch (e) {
     return NextResponse.json({ error: String(e instanceof Error ? e.message : e) }, { status: 503 });
   }
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     // ("한도는 남았는데 잔고가 없음")가 실제로 존재한다는 걸 화면이 보여줘야 한다.
     const funded = await verex.faucet(account.address).catch(() => null);
 
-    const delegation = buildMandate({
+    const delegation = await buildMandate({
       delegator: account.address,
       capUsdc: body.capUsdc,
       expiresAtSec: Math.floor(expiresAt.getTime() / 1000),
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       },
       delegation,
       // 브라우저는 이걸 그대로 `eth_signTypedData_v4` 에 넣는다.
-      typedData: mandateTypedData(delegation),
+      typedData: await mandateTypedData(delegation),
     });
   } catch (e) {
     const message = String(e instanceof Error ? e.message : e);

@@ -4,8 +4,7 @@ import { prisma } from "@/lib/db";
 import { agentAddress } from "@/lib/agent-wallet";
 import { verex, placeSignedLimitOrder } from "@/lib/verex-client";
 import { estimate } from "@/lib/agent-estimate";
-import { redeemMandate, simulateMandateDraw } from "@/lib/delegation";
-import type { Delegation } from "@metamask/smart-accounts-kit";
+import { parseStoredMandate, redeemMandate, simulateMandateDraw } from "@/lib/delegation";
 import type { TickVerdict } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -107,7 +106,10 @@ async function runTick(req: NextRequest) {
   const budgetLeft = Number((cap - drawn).toFixed(6));
   const base = { mandateId: mandate.id, marketSlug: s.marketSlug, outcome, citedNewsIds: [] as string[] };
 
-  const delegation = mandate.delegation as unknown as Delegation | null;
+  // 저장된 위임은 두 모양 중 하나다(서명된 구조체 / 지갑이 준 ERC-7715 context).
+  // 어느 쪽이든 "온체인에서 강제되는가"라는 질문의 답은 같다 — 그래서 이 아래
+  // 로직은 모양을 몰라도 되고, `parseStoredMandate` 만 그 차이를 안다.
+  const stored = parseStoredMandate(mandate.delegation);
 
   // ── 1. 만료. 계획서의 money shot — 아무도 취소하지 않았고 창이 닫혔을 뿐이다.
   //
@@ -117,11 +119,11 @@ async function runTick(req: NextRequest) {
   // 없으면 그 사실이 문장에 드러나야 한다 — 근거 없는 주장 대신.
   if (mandate.expiresAt.getTime() <= Date.now()) {
     let reason = `mandate expired at ${mandate.expiresAt.toISOString()} — recorded from the DB mirror (no on-chain delegation to ask)`;
-    if (delegation) {
+    if (stored) {
       const cfg = await verex.config().catch(() => null);
       if (cfg?.usdc) {
         const probe = await simulateMandateDraw({
-          delegation,
+          mandate: stored,
           usdc: cfg.usdc,
           amountUsdc: Math.min(s.sizeUsdc, Math.max(budgetLeft, 0.000001)),
         });
@@ -240,11 +242,11 @@ async function runTick(req: NextRequest) {
   // enforcer 가 revert 시킨다. 주문을 먼저 냈다가 인출이 막히면 verex 에 정산할 수
   // 없는 호가만 남는다(verex 계획서 W6.5 와 같은 실패 모양).
   let drawTxHash: string | null = null;
-  if (delegation && side === "BUY") {
+  if (stored && side === "BUY") {
     const cfg = await verex.config();
     if (!cfg.usdc) return NextResponse.json({ error: "verex has no USDC address" }, { status: 503 });
     try {
-      drawTxHash = await redeemMandate({ delegation, usdc: cfg.usdc, amountUsdc: notional });
+      drawTxHash = await redeemMandate({ mandate: stored, usdc: cfg.usdc, amountUsdc: notional });
     } catch (e) {
       // 체인이 거절했다면 그것이 결과다. 저널에 남기고 조용히 넘어가지 않는다.
       const tick = await record({

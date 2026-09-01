@@ -32,7 +32,13 @@ declare global {
 // faucet.circle.com에서 받을 수 있고, MetaMask ERC-7715 문서 예제도 같은 주소를 쓴다.
 const USDC_SEPOLIA = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" as const;
 // 공개 읽기 전용 RPC — 키 불필요 (세션 계정의 브로드캐스트 전용, jay의 Alchemy 키는 안 씀).
-const PUBLIC_SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
+//
+// 로컬에서 Sepolia **포크**(`anvil --fork-url $SEPOLIA_RPC --chain-id 11155111 --port 8546`)에
+// 대고 시험하려면 `.env` 에 `NEXT_PUBLIC_SEPOLIA_RPC=http://127.0.0.1:8546` 을 넣는다.
+// 값을 하드코딩하지 않는 이유: 이 페이지는 운영에도 배포된다 — localhost 를 박아 넣으면
+// 방문자의 브라우저가 자기 8546 을 찾다가 조용히 실패한다. 기본값은 공개 RPC 그대로다.
+const PUBLIC_SEPOLIA_RPC =
+  process.env.NEXT_PUBLIC_SEPOLIA_RPC || "https://ethereum-sepolia-rpc.publicnode.com";
 const ALLOWANCE_USDC = "5"; // 최대 5 테스트 USDC
 const EXPIRY_SECONDS = 3600; // 1시간
 // 세션 계정 가스용 — Sepolia 전송 한 건이면 충분하고도 남는 금액.

@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     .then((config) => ({ ok: true as const, config }))
     .catch((e: unknown) => ({ ok: false as const, error: String(e instanceof Error ? e.message : e) }));
 
-  const env = delegationEnvOrNull();
+  const env = await delegationEnvOrNull();
   let ownerAccount: { address: string; deployed: boolean; usdc: number | null } | null = null;
   let agentUsdc: number | null = null;
 

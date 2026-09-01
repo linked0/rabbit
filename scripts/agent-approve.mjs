@@ -26,9 +26,8 @@
 // 멱등: 이미 충분히 승인돼 있으면 아무것도 보내지 않는다.
 // Exchange 주소는 **반드시 /config 에서 읽는다** — reset.sh 마다 바뀐다.
 
-import { createWalletClient, createPublicClient, http, parseUnits, formatUnits } from "viem";
+import { createWalletClient, createPublicClient, defineChain, http, parseUnits, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { anvil } from "viem/chains";
 import { readFileSync, existsSync } from "node:fs";
 
 const RPC = process.env.ANVIL_RPC_URL ?? "http://127.0.0.1:8545";
@@ -75,8 +74,20 @@ if (!cfg.usdc || !cfg.exchange) throw new Error("verex /config has no usdc/excha
 if (!cfg.ctf) throw new Error("verex /config has no ctf address — is it seeded?");
 
 const account = privateKeyToAccount(agentKey());
-const publicClient = createPublicClient({ chain: anvil, transport: http(RPC) });
-const wallet = createWalletClient({ account, chain: anvil, transport: http(RPC) });
+// 체인을 RPC 에 물어본다. viem 의 `anvil` 체인은 id 가 31337 로 고정이라,
+// Sepolia 포크(`--chain-id 11155111`)에 대고 쓰면 viem 이 체인 불일치로 거절한다.
+// 어느 로컬 노드에 붙든 맞도록 여기서 만든다 — 설정이 아니라 현실을 따른다.
+const probe = createPublicClient({ transport: http(RPC) });
+const chainId = await probe.getChainId();
+const chain = defineChain({
+  id: chainId,
+  name: `local-${chainId}`,
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: [RPC] } },
+});
+
+const publicClient = createPublicClient({ chain, transport: http(RPC) });
+const wallet = createWalletClient({ account, chain, transport: http(RPC) });
 
 const need = parseUnits(String(AMOUNT), 6);
 const [allowance, balance, gas, ctfApproved] = await Promise.all([

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { agentAddress, agentKeyIsPersistent } from "@/lib/agent-wallet";
-import { delegationEnvOrNull } from "@/lib/delegation";
+import { verex } from "@/lib/verex-client";
+import { delegationEnvOrNull, storedDelegator } from "@/lib/delegation";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +31,14 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  const env = delegationEnvOrNull();
+  const env = await delegationEnvOrNull();
+  // ERC-7715 권한은 **어느 토큰**에 대한 상한인지 지갑에 알려줘야 한다. 그 주소의
+  // 출처는 언제나 verex 다 — 여기서 굳이 한 번 더 정의하면 두 정의가 갈라진다.
+  const cfg = await verex.config().catch(() => null);
 
   return NextResponse.json({
+    usdc: cfg?.usdc ?? null,
+    chainId: cfg?.chainId ?? env?.chainId ?? null,
     // 브라우저에 나가는 유일한 것. 개인키는 서버에 있고, 페이지는 이 사실을
     // "testnet-grade"로 표시해야 한다 — 숨기면 데모가 정직하지 않다.
     agentAddress: agentAddress(),
@@ -54,7 +60,7 @@ export async function GET() {
           /// 화면은 그렇게 말해야 한다 — "체인이 막는다"를 근거 없이 주장하면
           /// 이 데모가 증명하려는 바로 그 지점이 거짓이 된다.
           onChain: mandate.delegation !== null,
-          delegator: (mandate.delegation as { delegator?: string } | null)?.delegator ?? null,
+          delegator: storedDelegator(mandate.delegation),
         }
       : null,
   });
@@ -69,9 +75,11 @@ export async function POST(req: NextRequest) {
     owner?: string;
     capUsdc?: number;
     expiresAt?: string;
-    /// `/prepare` 가 만들어 준 구조체에 브라우저가 서명을 채워 되돌려준 것.
+    /// 두 가지 중 하나가 온다:
+    ///   • `/prepare` 가 만든 구조체 + 브라우저 서명 (31337 경로)
+    ///   • 지갑이 ERC-7715 로 발급한 `{ kind, context, delegationManager }` (표준 체인)
     /// 없으면 mandate 는 DB 행일 뿐이고 GET 의 `onChain` 이 false 가 된다.
-    delegation?: { signature?: string } & Record<string, unknown>;
+    delegation?: Record<string, unknown>;
   } | null;
 
   if (!body?.owner || typeof body.capUsdc !== "number" || !body.expiresAt) {
@@ -87,10 +95,14 @@ export async function POST(req: NextRequest) {
   if (expiresAt.getTime() <= Date.now()) {
     return NextResponse.json({ error: "expiresAt is already in the past" }, { status: 400 });
   }
-  // 서명 없는 위임을 저장하면 온체인 강제가 없는데 있는 것처럼 보인다.
-  // 서명이 붙어 오면 반드시 채워져 있어야 한다.
-  if (body.delegation && !body.delegation.signature) {
-    return NextResponse.json({ error: "delegation has no signature" }, { status: 400 });
+  // 온체인 강제가 없는데 있는 것처럼 저장하지 않는다. 두 모양 각각에 대해
+  // "이게 정말 체인에서 강제되는가"를 만족하는 최소 조건을 확인한다.
+  if (body.delegation) {
+    const d = body.delegation;
+    const isErc7715 = typeof d.context === "string" && typeof d.delegationManager === "string";
+    if (!isErc7715 && !d.signature) {
+      return NextResponse.json({ error: "delegation has no signature" }, { status: 400 });
+    }
   }
 
   // 새 mandate 를 부여하면 이전 것은 닫는다. 두 개가 동시에 살아 있으면

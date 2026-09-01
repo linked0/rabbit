@@ -54,6 +54,8 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
 
   const [owner, setOwner] = useState<string | null>(null);
   const [agent, setAgent] = useState<string | null>(null);
+  /// 상한이 걸리는 토큰. ERC-7715 요청에 필요하고, 출처는 언제나 verex 다.
+  const [usdc, setUsdc] = useState<string | null>(null);
   const [mandate, setMandate] = useState<Mandate | null>(null);
   const [cap, setCap] = useState("10");
   const [minutes, setMinutes] = useState("60");
@@ -66,11 +68,15 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
 
   const reload = useCallback(async () => {
     try {
-      const r = await fetchJson<{ error?: string; agentAddress: string; mandate: Mandate | null }>(
-        "/api/agent/mandate",
-      );
+      const r = await fetchJson<{
+        error?: string;
+        agentAddress: string;
+        usdc: string | null;
+        mandate: Mandate | null;
+      }>("/api/agent/mandate");
       if (r.error) return setErr(r.error);
       setAgent(r.agentAddress);
+      setUsdc(r.usdc);
       setMandate(r.mandate);
     } catch (e) {
       setErr(String(e instanceof Error ? e.message : e));
@@ -97,6 +103,62 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
     }
   }
 
+  /// ERC-7715 경로. 우리는 구조체를 만들지도, 보지도 않는다 — 상한·만료·수령인만
+  /// 넘기고 지갑이 나머지를 한다. 돌아오는 것은 불투명한 `context` 와, **지갑이
+  /// 알려주는** DelegationManager 주소다. 우리 코드에 그 주소가 없다는 점이
+  /// 이 경로의 요점이다.
+  async function grantVia7715(chainId: number, expiresAt: string) {
+    if (!agent) throw new Error("agent address is not loaded yet");
+    if (!usdc) throw new Error("no USDC address from verex — is the market API up?");
+
+    const client = createWalletClient({ transport: custom(window.ethereum as never) }).extend(
+      erc7715ProviderActions(),
+    );
+    const now = Math.floor(Date.now() / 1000);
+    const granted = await client.requestExecutionPermissions([
+      {
+        chainId,
+        expiry: Math.floor(new Date(expiresAt).getTime() / 1000),
+        to: agent as `0x${string}`,
+        permission: {
+          type: "erc20-token-allowance",
+          data: {
+            tokenAddress: usdc as `0x${string}`,
+            allowanceAmount: BigInt(Math.round(Number(cap) * 1e6)),
+            startTime: now,
+            justification: `rabbit agent mandate — up to ${cap} USDC until ${expiresAt}`,
+          },
+          isAdjustmentAllowed: false,
+        },
+      },
+    ]);
+
+    const res = await fetchJson<{ error?: string }>("/api/agent/mandate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        owner,
+        capUsdc: Number(cap),
+        expiresAt,
+        delegation: {
+          kind: "erc7715",
+          context: granted[0].context,
+          delegationManager: granted[0].delegationManager,
+        },
+      }),
+    });
+    if (res.error) throw new Error(res.error);
+
+    setNote(
+      t(
+        `지갑이 권한을 발급했습니다 — DelegationManager ${short(granted[0].delegationManager)} (우리가 아니라 지갑이 알려준 주소)`,
+        `The wallet issued the permission — DelegationManager ${short(granted[0].delegationManager)} (its address came from the wallet, not from us)`,
+      ),
+    );
+    await reload();
+    onChanged();
+  }
+
   async function grant() {
     if (!owner) return;
     setBusy(true);
@@ -104,6 +166,17 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
     setNote(null);
     try {
       const expiresAt = new Date(Date.now() + Number(minutes) * 60_000).toISOString();
+
+      // 지갑이 이 체인에서 ERC-7715 를 제공하는가로 갈린다. 31337 에는 MetaMask 의
+      // 표준 배포가 없어 지갑이 답하지 않고(2026-08-31 측정: 지원 목록에 31337 없음),
+      // 표준 배포가 있는 체인에서는 **지갑이 직접** 권한을 만들고 자기 UI 로 보여 준다
+      // — 사용자가 날것의 EIP-712 구조체 대신 "최대 10 USDC, 60분"을 읽게 되는 지점.
+      const chainIdHex = (await eth().request({ method: "eth_chainId" })) as string;
+      const chainId = parseInt(chainIdHex, 16);
+      if (chainId !== 31337) {
+        await grantVia7715(chainId, expiresAt);
+        return;
+      }
 
       // 1) 서버가 스마트 계정을 배포하고, 자금을 넣고, 구조체를 만든다.
       const prep = await fetchJson<Prepared>("/api/agent/mandate/prepare", {
