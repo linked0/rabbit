@@ -36,6 +36,19 @@ function curriculumListFor(mdAbs) {
 
 const EXCLUDE_DIRS = new Set(['node_modules', '.venv', '.git', 'dist', 'build', '.next', '.turbo', 'coverage']);
 
+// 마크다운이 아닌 설정 파일도 그대로 페이지로 (jay, 2026-08-31) — 인덱스의 Knowledge Base 에서
+// 링크하려는 dotfile 들. <pre><code> 한 덩어리로 렌더하고, 출력 이름은 확장자를 뗀
+// <basename>.html (docs/zsub/karabiner.json -> docs/html/docs/zsub/karabiner.html).
+const VERBATIM = [
+  { src: 'docs/zsub/karabiner.json', lang: 'json' },
+  { src: 'docs/zsub/gitconfig', lang: 'ini' },
+];
+function verbatimOutputPath(srcAbs) {
+  const relFromRoot = path.relative(REPO_ROOT, srcAbs);
+  const base = path.basename(relFromRoot).replace(/\.[^.]+$/, '');
+  return path.join(OUT_ROOT, path.dirname(relFromRoot), base + '.html');
+}
+
 function findMdFiles(dir, results = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
@@ -194,7 +207,23 @@ function main() {
     converted++;
   }
 
-  console.log(`Converted ${converted} markdown files to ${path.relative(REPO_ROOT, OUT_ROOT)}/`);
+  // 설정 파일은 파일 인자가 없을 때(전체 스캔)와, 인자로 직접 지목됐을 때 렌더한다.
+  const argSet = new Set(process.argv.slice(2).map((a) => path.resolve(REPO_ROOT, a)));
+  let verbatim = 0;
+  for (const { src, lang } of VERBATIM) {
+    const srcAbs = path.join(REPO_ROOT, src);
+    if (!fs.existsSync(srcAbs)) continue;
+    if (argFiles.length && !argSet.has(srcAbs)) continue;
+    const outAbs = verbatimOutputPath(srcAbs);
+    const raw = fs.readFileSync(srcAbs, 'utf8');
+    const bodyHtml = `<h1>${escapeHtml(path.basename(src))}</h1>\n<pre><code class="language-${lang}">${escapeHtml(raw)}</code></pre>\n`;
+    const backHref = path.relative(path.dirname(outAbs), INDEX_HTML);
+    fs.mkdirSync(path.dirname(outAbs), { recursive: true });
+    fs.writeFileSync(outAbs, renderPage({ title: path.basename(src), sourceRel: src, bodyHtml, backHref, backLabel: 'Index' }), 'utf8');
+    verbatim++;
+  }
+
+  console.log(`Converted ${converted} markdown files (+ ${verbatim} verbatim) to ${path.relative(REPO_ROOT, OUT_ROOT)}/`);
   if (conflicts.length) {
     console.log(`WARNING: ${conflicts.length} output path conflicts (later file skipped):`);
     for (const [a, b] of conflicts) console.log(`  ${a}  <->  ${b}`);
