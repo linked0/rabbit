@@ -385,6 +385,26 @@ ${navGroupsHtml}
   </aside>`;
 }
 
+// 목록 페이지를 열면 레일을 첫 important 항목이 가운데 오도록 초기 스크롤한다
+// (jay, 2026-09-02: "the first important items should be shown in the center").
+// done 구간이 길어져 목록 맨 위는 이미 끝난 항목들뿐이라, 처음 보이는 화면이
+// "지금 볼 것"의 경계(done↔important)가 되게 한다. 해시로 특정 항목을 연 경우와
+// important 점이 없는 페이지(일반 문서 레일)에서는 아무것도 하지 않는다.
+// renderRtdPage 에만 싣는다 — 상세 페이지 레일은 현재 항목이 초점이므로 제외.
+const CENTER_FIRST_IMPORTANT_SCRIPT = String.raw`
+(function () {
+  if (location.hash) return;
+  var nav = document.querySelector('.rail-nav');
+  if (!nav) return;
+  var dot = nav.querySelector('.nav-dot[title="IMPORTANT"]');
+  if (!dot) return;
+  var el = dot.closest('a') || dot;
+  var r = el.getBoundingClientRect();
+  var c = nav.getBoundingClientRect();
+  nav.scrollTop += (r.top - c.top) - (c.height / 2 - r.height / 2);
+})();
+`;
+
 const COPY_SCRIPT = String.raw`
 (function () {
   // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
@@ -510,16 +530,24 @@ const RAIL_SCRIPT = String.raw`
       if (on) activeEl = a;
     }
     // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    // 사용자가 실제로 스크롤하기 전에는 끌어오지 않는다 (jay, 2026-09-02) — 로드 직후
+    // 관측자의 첫 콜백이 1번 항목으로 레일을 되감아, 초기 스크롤(첫 important 가운데
+    // 정렬)을 덮어쓰는 것을 막는다. 해시 딥링크는 브라우저 앵커 스크롤이 scroll 이벤트를
+    // 내므로 여전히 첫 프레임부터 동기화된다.
     clearTimeout(revealTimer);
-    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+    if (userScrolled) revealTimer = setTimeout(() => revealInRail(activeEl), 120);
   }
 
   // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
   // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
   let ticking = false;
+  // 해시 딥링크는 스크롤 이벤트가 리스너 등록 전에 끝날 수 있으므로 처음부터 켠다 —
+  // 특정 항목을 열었다는 것 자체가 "그 항목을 보라"는 의도다.
+  let userScrolled = !!location.hash;
   addEventListener(
     'scroll',
     () => {
+      userScrolled = true;
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
@@ -592,7 +620,7 @@ ${o.contentHtml}
     <p class="src">${o.srcLine}</p>
   </main>
 </div>
-<script>${RAIL_SCRIPT}${COPY_SCRIPT}</script>
+<script>${RAIL_SCRIPT}${COPY_SCRIPT}${CENTER_FIRST_IMPORTANT_SCRIPT}</script>
 </body>
 </html>
 `;
