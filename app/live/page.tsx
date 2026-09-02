@@ -28,7 +28,7 @@ export default function LivePage() {
     <>
       <Nav />
       <main>
-        <h1>{pick(lang, "라이브", "Live")}</h1>
+        <h1>{pick(lang, "데모", "Demo")}</h1>
         <p className="sub">
           {pick(
             lang,

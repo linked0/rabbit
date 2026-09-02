@@ -42,7 +42,7 @@ const MENU: NavItem[] = [
   // 라이브 — 실제로 돌아가는 카드만. 이제 카드로 들어가는 **유일한** 메뉴다.
   // ⚠️ 새 메뉴는 `ALLOW_LIVE=true` 가 있어야 뜬다 — .env 에 넣었고, deploy.sh 가
   // ALLOW_* 를 전부 Cloud Run env 로 전달하므로 배포 시 자동으로 따라간다.
-  { href: "/live", ko: "라이브", en: "Live", code: "LIVE", pub: true },
+  { href: "/live", ko: "데모", en: "Demo", code: "LIVE", pub: true },
   // 알고리즘 상단 메뉴는 제거 (2026-08-11, jay) — 수학·알고리즘 노트는 데모가 아니라 문서라,
   // 문서 색인(docs/index.html)의 Algorithms 섹션이 정본이 됐다. 카드는 /poc 로 돌아온다.
   // TIL 메뉴는 제거 — /poc 안의 섹션으로 흡수했다 (2026-08-11, jay). /til 은 /poc 로

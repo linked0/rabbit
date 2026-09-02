@@ -55,7 +55,7 @@ that had sourced <code>packages/contracts/.env</code> could broadcast a &quot;lo
 the local fork is now deployed/operated by <code>0xABDB…</code> (fund it on the fork before <code>reset.sh</code>; ~32 seed txs);
 the API warns <code>Operator mismatch</code> until <code>reset.sh</code> re-seeds; safety now rests only on <code>VEREX_RPC_URL</code> being loopback.</p>
 <h2>2026-09-01 — why approve / seed-news / faucet before a tick</h2>
-<pre><code class="language-bash">ANVIL_RPC_URL=http://127.0.0.1:8546 pnpm agent:approve
+<pre><code class="language-bash">ANVIL_RPC_URL=http://127.0.0.1:8545 pnpm agent:approve
 pnpm agent:seed-news
 curl -s -X POST -H &#39;content-type: application/json&#39; -d &#39;{&quot;address&quot;:&quot;&lt;AGENT_OR_OWNER_ADDRESS&gt;&quot;}&#39; http://127.0.0.1:4000/faucet
 </code></pre>
@@ -78,7 +78,7 @@ on 31337) and optionally the <strong>agent</strong> as a cushion.</li>
 <h2>1. Sepolia fork anvil (persistent state)</h2>
 <pre><code class="language-bash">cd /Users/jay/work
 set -a; source rabbit/.env; set +a
-anvil --fork-url &quot;$SEPOLIA_RPC&quot; --fork-block-number 11609470 --chain-id 11155111 --port 8546 --state ./anvil-sepolia-state.json --state-interval 60
+anvil --fork-url &quot;$SEPOLIA_RPC&quot; --fork-block-number 11609470 --chain-id 11155111 --state ./anvil-sepolia-state.json --state-interval 60
 </code></pre>
 <h2>2. verex (API only — root <code>pnpm dev</code> also starts web on :3000)</h2>
 <pre><code class="language-bash">cd /Users/jay/work/verex
@@ -89,25 +89,25 @@ curl -s http://127.0.0.1:4000/config    # expect chainId 11155111, tradingEnable
 <h2>3. rabbit (rerun approve + faucet after every reset.sh — USDC/exchange addresses change)</h2>
 <pre><code class="language-bash">cd /Users/jay/work/rabbit
 pnpm dev                                # :3100
-ANVIL_RPC_URL=http://127.0.0.1:8546 pnpm agent:approve
+ANVIL_RPC_URL=http://127.0.0.1:8545 pnpm agent:approve
 pnpm agent:seed-news
 curl -s -X POST -H &#39;content-type: application/json&#39; -d &#39;{&quot;address&quot;:&quot;&lt;AGENT_OR_OWNER_ADDRESS&gt;&quot;}&#39; http://127.0.0.1:4000/faucet
 </code></pre>
 <h2>4. Test</h2>
 <ol>
-<li>MetaMask → Sepolia, RPC <code>http://127.0.0.1:8546</code>, an account that is <strong>not</strong> the agent.</li>
+<li>MetaMask → Sepolia, RPC <code>http://127.0.0.1:8545</code>, an account that is <strong>not</strong> the agent.</li>
 <li>Fund it: faucet (above) + ETH (below).</li>
 <li><code>http://127.0.0.1:3100/live/agent/console</code> → Connect → <strong>Grant mandate</strong> → MetaMask&#39;s own &quot;up to 10 USDC, 60 min&quot; popup.</li>
 <li>Tick <code>us-federal-stablecoin-law-2026</code> with a short <code>cooldownSec</code> → expect <code>TRADED … (drawn on-chain 0x…)</code>.</li>
 <li>Tick <code>eth-above-10k-2026</code> → expect <code>SKIP_EDGE</code>.</li>
 </ol>
 <h2>Transfer ETH from a private key to an address</h2>
-<pre><code class="language-bash">cast send &lt;TO_ADDRESS&gt; --value 10ether --private-key &lt;PRIVATE_KEY&gt; --rpc-url http://127.0.0.1:8546
-cast balance &lt;TO_ADDRESS&gt; --ether --rpc-url http://127.0.0.1:8546
+<pre><code class="language-bash">cast send &lt;TO_ADDRESS&gt; --value 10ether --private-key &lt;PRIVATE_KEY&gt; --rpc-url http://127.0.0.1:8545
+cast balance &lt;TO_ADDRESS&gt; --ether --rpc-url http://127.0.0.1:8545
 </code></pre>
 <p>Example — anvil #0 (<code>0xf39F…2266</code>) → <code>0xABDB…6d8B</code>:</p>
-<pre><code class="language-bash">cast send 0xABDB93C5642f3342D5195fcf8c1A735e32266d8B --value 10ether --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8546
-cast balance 0xABDB93C5642f3342D5195fcf8c1A735e32266d8B --ether --rpc-url http://127.0.0.1:8546
+<pre><code class="language-bash">cast send 0xABDB93C5642f3342D5195fcf8c1A735e32266d8B --value 10ether --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8545
+cast balance 0xABDB93C5642f3342D5195fcf8c1A735e32266d8B --ether --rpc-url http://127.0.0.1:8545
 </code></pre>
 <h1>Backup</h1>
 
