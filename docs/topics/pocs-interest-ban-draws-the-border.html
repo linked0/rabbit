@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The wallet disappeared into the app — PoCs</title>
+<title>No yield allowed — the interest ban is the border between payment and deposit — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -378,7 +378,7 @@
         <li><a class="nav-link" href="pocs-l1-data-pricing-dimensions.html" data-key="l1-data-pricing-dimensions"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">24</span>When gas stops being one number — data pricing and bandwidth accounting</span></a></li>
         <li><a class="nav-link" href="pocs-rpc-view-not-consensus.html" data-key="rpc-view-not-consensus"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">25</span>An RPC response is a view, not consensus</span></a></li>
         <li><a class="nav-link" href="pocs-ponder-reorg-indexer.html" data-key="ponder-reorg-indexer"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">26</span>Ponder — the indexer is the reorg handler</span></a></li>
-        <li><a class="nav-link active" href="pocs-embedded-wallet-policy.html" data-key="embedded-wallet-policy"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">27</span>The wallet disappeared into the app</span></a></li>
+        <li><a class="nav-link" href="pocs-embedded-wallet-policy.html" data-key="embedded-wallet-policy"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">27</span>The wallet disappeared into the app</span></a></li>
         <li><a class="nav-link" href="pocs-x402-settlement-retry.html" data-key="x402-settlement-retry"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">28</span>HTTP 402 is the easy part — settlement owns the retry</span></a></li>
         <li><a class="nav-link" href="pocs-safe-module-root-key.html" data-key="safe-module-root-key"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">29</span>A Safe module is a root key with an interface</span></a></li>
         <li><a class="nav-link" href="pocs-what-encryption-does-not-hide.html" data-key="what-encryption-does-not-hide"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">30</span>Hiding the amount is the easy half</span></a></li>
@@ -400,7 +400,7 @@
         <li><a class="nav-link" href="pocs-deposit-rate-is-a-trade.html" data-key="deposit-rate-is-a-trade"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">46</span>6% is not interest — a neobank whose deposit rate is a trade</span></a></li>
         <li><a class="nav-link" href="pocs-halted-or-upgraded.html" data-key="halted-or-upgraded"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">47</span>Halted or upgraded — the block gap is the same either way</span></a></li>
         <li><a class="nav-link" href="pocs-incumbent-lists-the-wrapper.html" data-key="incumbent-lists-the-wrapper"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">48</span>The incumbent lists the wrapper — xStocks moves inside the LSE</span></a></li>
-        <li><a class="nav-link" href="pocs-interest-ban-draws-the-border.html" data-key="interest-ban-draws-the-border"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">49</span>No yield allowed — the interest ban is the border between payment and deposit</span></a></li>
+        <li><a class="nav-link active" href="pocs-interest-ban-draws-the-border.html" data-key="interest-ban-draws-the-border"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">49</span>No yield allowed — the interest ban is the border between payment and deposit</span></a></li>
         <li><a class="nav-link" href="pocs-merkle-vs-verkle.html" data-key="merkle-vs-verkle"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">50</span>Merkle vs Verkle</span></a></li>
         <li><a class="nav-link" href="pocs-encrypted-mempool.html" data-key="encrypted-mempool"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">51</span>What encryption does not hide</span></a></li>
         <li><a class="nav-link" href="pocs-storage-collision-admin-takeover.html" data-key="storage-collision-admin-takeover"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">52</span>The code was right and the layout was wrong</span></a></li>
@@ -460,244 +460,226 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The wallet disappeared into the app</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; No yield allowed — the interest ban is the border between payment and deposit</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#27</span><span>PoC</span></p>
-      <h1>The wallet disappeared into the app</h1>
-      <p class="lead">Embedded wallets and passkeys remove the seed phrase from onboarding, but the trust question moves into recovery, export, app signers, and transaction policies.</p>
-      <p class="meta">Build one login-to-first-transaction flow with an embedded wallet provider (e.g. Privy), then run the four failure paths — new device, lost authentication factor, key export, scoped app signer — and fill in the authority matrix before comparing click counts.</p>
+      <p class="topic-kicker"><span class="topic-no">#49</span><span>PoC</span></p>
+      <h1>No yield allowed — the interest ban is the border between payment and deposit</h1>
+      <p class="lead">MAS&#39;s draft stablecoin rules require 100% segregated reserves, stress tests, and wind-down plans — all table stakes now. The clause that defines the instrument is the ban on paying holders any interest: a stablecoin that yields is functionally a deposit, and the ban legislates it back into a payment object. The yield doesn&#39;t disappear; it moves one layer up, out of the regulated category.</p>
+      <p class="meta">Not yet scoped — the deliverable is a comparison table plus a boundary probe.
+
+<strong>The three-regime table.</strong> Map the same five clauses — reserve ratio, reserve location, interest to holders, redemption terms, wind-down plan — across GENIUS, MiCA, and this MAS draft. The prediction: reserves converge at 100%, and the interest ban appears in all three, because every regulator is drawing the same border for the same reason.
+
+<strong>The boundary probe.</strong> The draft bans &quot;interest or other returns by virtue of holding.&quot; List the products that pay <em>adjacent to</em> holding — cashback on spending, points, staking of a wrapped version, app-level rates like Ethena Pay&#39;s 6% — and mark which ones the wording catches. The uncaught ones are where the market will build.
+
+<strong>The wind-down clause.</strong> Compare the required recovery/orderly-wind-down plan against what <code>stablecoin-redemption-desk</code> measures operationally: the statute is the desk&#39;s hours written into law. Check whether the plan must name the redemption agent and the timeline.
+
+Source: overnight crypto news roundup, 2026-09-02 — MAS Payment Services Act amendment consultation, open until 2026-10-16; no implementation date set.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# The wallet disappeared into the app\n\nEmbedded wallets and passkeys remove the seed phrase from onboarding, but the trust question moves into recovery, export, app signers, and transaction policies.\n\nBuild one login-to-first-transaction flow with an embedded wallet provider (e.g. Privy), then run the four failure paths — new device, lost authentication factor, key export, scoped app signer — and fill in the authority matrix before comparing click counts.\n\n## Why\n\nThe trend is not \"wallets became easy.\" Wallet responsibilities moved into the application. The PoC measures whether the user has an exit and whether the app can act beyond what the UI implies.\n\nEmbedded wallets and passkeys remove the seed phrase from onboarding. They do not remove custody and authorization questions; those questions move into recovery, export, additional signers, and policies controlled through the application stack.\n\n## How it works\n\nBuild one login-to-first-transaction flow with an embedded wallet, then test device loss, key export, MFA recovery, and a scoped app signer. Draw the authority matrix before judging the UX.\n\n### PoC\n\nBuild login-to-first-transaction with an embedded wallet. Then test four paths: a new device, lost authentication factor, key export, and a scoped application signer. Produce the authority matrix before comparing click counts.\n\n| Actor | Can sign? | Can recover? | Can export? |\n| --- | --- | --- | --- |\n| User | Under configured authentication | Test explicitly | Verify the escape hatch |\n| Application signer | Only within policy — or the policy is cosmetic | No | No |\n| Provider | Depends on custody and key architecture | Document the exact role | Document the exact role |\n\nReference: [Privy embedded-wallet overview](https://docs.privy.io/wallets/overview/embedded).\n\n## Notes — background for the PoC (2026-09-02)\n\n### What an embedded wallet is\n\nA conventional wallet (MetaMask) is *external*: a separate app or extension the user installs, holding a seed phrase, that websites connect to. An **embedded wallet** lives inside the application. Logging in with email, Google, or a passkey silently provisions a real on-chain wallet — no extension, no seed-phrase ceremony, no visible \"wallet\" concept at all. The wallet becomes an implementation detail instead of a prerequisite, which is why this is now the default onboarding pattern for consumer crypto apps.\n\nThe technical trick is that no single place ever holds the whole private key: either **MPC** (the key never exists in one piece; parties co-sign) or **Shamir key sharding** (split into shares, reassembled briefly at signing time), with signing inside an isolated environment — a sandboxed iframe on the client, or a TEE on a server.\n\n### Privy specifically\n\n- **Shamir 3-share model** — a *device share* (browser/app storage), an *auth share* (held by Privy, released after login), and a *recovery share*. Any two reconstruct the key briefly inside an isolated iframe; Privy's servers never see the full key.\n- **Recovery** — the recovery share sits with Privy (default \"automatic\" mode) or is user-controlled (password-encrypted, or in iCloud/Google Drive). This choice *is* the custody decision — it is the answer to the lost-auth-factor path.\n- **Export** — users can export the full private key through a Privy-hosted flow; the app configures whether this is exposed.\n- **Server wallets & session signers** — TEE-based server-side wallets plus scoped signers with a policy engine (\"this signer may only call this contract, up to this amount\"). That is the fourth path.\n- **Context** — Stripe acquired Privy in June 2025 (paired with its stablecoin acquisition, Bridge): embedded wallets are becoming mainstream payments plumbing. Farcaster and Hyperliquid ship on it. Competitors — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — differ exactly along the authority-matrix dimensions: who holds which share, how recovery works, who can change policy.\n\n### What each of the four paths measures\n\n1. **New device** — a fresh device has no device share, so login requires Privy's servers to participate. The uncomfortable question: if Privy is down or deplatforms you, can you sign at all? Expected answer: not without a prior export. Privy holds an *availability veto* — it cannot take the assets, but it can block access.\n2. **Lost authentication factor** — recovery is where the real custodian reveals itself: whoever can approve recovery can, in effect, take the wallet. If recovery is \"email a support team,\" the custody story is weaker than the marketing.\n3. **Key export** — the exit door, and the strongest evidence for the self-custody claim. Test more than existence: the friction, whether the app developer can disable it, and whether the exported key is complete (it should reconstruct the same address in a vanilla wallet).\n4. **Scoped app signer** — the delegation boundary: what can the app do without the user, and who can widen that scope later? A policy the developer can rotate silently is a different object from one the user must re-approve.\n\n### The matrix before click counts\n\nClick counts measure onboarding friction; the matrix measures the trust model. Comparing UX first is how \"2 clicks to a wallet\" hides that several parties can act on the funds. Expanded matrix — rows are actions, columns are actors; fill each cell as *alone / needs cooperation / cannot*, from observation, not docs. Expected values to verify:\n\n| Action | User | Privy | App developer |\n| --- | --- | --- | --- |\n| Sign a transaction | Alone, after login | Cooperation — releases the auth share | Within signer policy only |\n| Export the key | Alone, if exposed | Cooperation — hosts the flow | Can gate exposure — verify |\n| Approve recovery | Depends on recovery mode | Default holder of the recovery share | Chooses the recovery mode |\n| Add / scope a signer | Consent per config — verify | Executes policy | Initiates |\n| Change policy | Re-approval? — verify | Enforces | Often alone — verify |\n| Block access (availability) | — | Auth-share veto | Can remove the UI |\n\nThe most interesting cells are usually \"approve recovery\" and \"change policy\" — that is where authority quietly concentrates in the app stack. Prediction to test: the app developer holds more authority than users assume, and Privy holds the availability veto. Neither appears in a click-count comparison.\n\n### The developer is the auditor\n\nThe end user never sees any of this — that is the point of embedded wallets, and the risk. Whatever the integrator configures becomes the custody reality users silently inherit. And the answers are configuration choices, not fixed properties: \"Privy is non-custodial\" is a marketing sentence, and two apps on the same Privy SDK can have genuinely different custody models. Run the four paths by hand because docs describe the design; the paths reveal deployed behavior — unnoticed defaults, failing flows, support-team backdoors. That is also why the matrix comes first: it forces \"who can do what\" onto paper as observed facts before any UX judgment.\n"</script>
+      <script type="application/json" id="copy-en">"# No yield allowed — the interest ban is the border between payment and deposit\n\nMAS's draft stablecoin rules require 100% segregated reserves, stress tests, and wind-down plans — all table stakes now. The clause that defines the instrument is the ban on paying holders any interest: a stablecoin that yields is functionally a deposit, and the ban legislates it back into a payment object. The yield doesn't disappear; it moves one layer up, out of the regulated category.\n\nNot yet scoped — the deliverable is a comparison table plus a boundary probe.\n\n**The three-regime table.** Map the same five clauses — reserve ratio, reserve location, interest to holders, redemption terms, wind-down plan — across GENIUS, MiCA, and this MAS draft. The prediction: reserves converge at 100%, and the interest ban appears in all three, because every regulator is drawing the same border for the same reason.\n\n**The boundary probe.** The draft bans \"interest or other returns by virtue of holding.\" List the products that pay *adjacent to* holding — cashback on spending, points, staking of a wrapped version, app-level rates like Ethena Pay's 6% — and mark which ones the wording catches. The uncaught ones are where the market will build.\n\n**The wind-down clause.** Compare the required recovery/orderly-wind-down plan against what `stablecoin-redemption-desk` measures operationally: the statute is the desk's hours written into law. Check whether the plan must name the redemption agent and the timeline.\n\nSource: overnight crypto news roundup, 2026-09-02 — MAS Payment Services Act amendment consultation, open until 2026-10-16; no implementation date set.\n\n## Why\n\n**Ask why a regulator would ban paying people money.** The answer defines the instrument. A stablecoin that pays interest competes with bank deposits without banking's obligations — no capital rules, no deposit insurance, no lender of last resort — and a run on it looks exactly like a money-market-fund run. The interest ban is not consumer protection; it is a category fence: on one side, a payment object that must always redeem at par and may never promise more; on the other, a deposit, with a banking license as the toll. Every major regime is converging on the same fence, which tells you the fear is shared.\n\n**The fence works on the issuer, and only on the issuer.** Yield doesn't vanish — reserves still earn T-bill rates, and the issuer keeps that spread; that spread *is* the stablecoin business model. And holder-side yield reappears one layer up, in products the definition doesn't reach: apps, wrappers, exchanges. `deposit-rate-is-a-trade` — announced the same day — is the live exhibit: 6% paid on stablecoin balances, by an app, from a trading strategy, in no banking category at all. Reading the two stories together is the point: the tighter the issuer rule, the more valuable the layer just outside it.\n\n**For the catalogue, this closes a loop.** `jurisdiction-decides-the-category` said the category is a legal decision; here is the decision being drafted, clause by clause, with a comment deadline. `the-only-commitment-is-the-issuer` said every promise lives in a document; the wind-down-plan requirement makes that document mandatory. The consultation period is the rare window where the border is visible while still movable.\n\n## How it works\n\n### The five clauses, three regimes\n\n| Clause | MAS draft | GENIUS (US) | MiCA (EU) |\n| --- | --- | --- | --- |\n| Reserves | ≥100%, segregated at licensed institutions | 100%, prescribed assets | 100%+, EMT rules |\n| Interest to holders | Banned | Banned | Banned (EMTs) |\n| Scope | SGD + G10 single-currency, issued in SG | USD payment stablecoins | EU-offered EMTs/ARTs |\n| Foreign issuers | Opt-in if compliant | Restricted pathway | Passporting rules |\n| Failure planning | Stress tests + wind-down plan | Prudential standards | Own funds + redemption plan |\n\nThree drafts, one border. The convergence is the finding.\n\n### Where the yield goes when the issuer can't pay it\n\n| Layer | Instrument | Caught by the ban? |\n| --- | --- | --- |\n| Issuer | Interest on the stablecoin itself | Yes — the target |\n| Issuer's balance sheet | Reserve spread (T-bill yield kept by issuer) | No — the business model |\n| App / neobank | Rates on balances (Ethena Pay's 6%) | Wording-dependent — the probe |\n| DeFi wrapper | Staked/wrapped versions with yield | Usually outside — different issuer |\n| Exchange | \"Earn\" programs | Jurisdiction of the exchange |\n\n### Questions for the consultation window (until 2026-10-16)\n\n1. Does \"other returns by virtue of holding\" catch cashback, points, or app-level rates?\n2. Must the wind-down plan name a redemption agent and a par-redemption timeline?\n3. What makes a foreign stablecoin \"compliant enough\" to opt in — and who checks?\n4. Is the reserve's *duration* constrained, or only its amount? (100% of illiquid assets still runs.)\n"</script>
       <h2>Why</h2>
-      <p>The trend is not &quot;wallets became easy.&quot; Wallet responsibilities moved into the application. The PoC measures whether the user has an exit and whether the app can act beyond what the UI implies.</p>
-<p>Embedded wallets and passkeys remove the seed phrase from onboarding. They do not remove custody and authorization questions; those questions move into recovery, export, additional signers, and policies controlled through the application stack.</p>
+      <p><strong>Ask why a regulator would ban paying people money.</strong> The answer defines the instrument. A stablecoin that pays interest competes with bank deposits without banking&#39;s obligations — no capital rules, no deposit insurance, no lender of last resort — and a run on it looks exactly like a money-market-fund run. The interest ban is not consumer protection; it is a category fence: on one side, a payment object that must always redeem at par and may never promise more; on the other, a deposit, with a banking license as the toll. Every major regime is converging on the same fence, which tells you the fear is shared.</p>
+<p><strong>The fence works on the issuer, and only on the issuer.</strong> Yield doesn&#39;t vanish — reserves still earn T-bill rates, and the issuer keeps that spread; that spread <em>is</em> the stablecoin business model. And holder-side yield reappears one layer up, in products the definition doesn&#39;t reach: apps, wrappers, exchanges. <code>deposit-rate-is-a-trade</code> — announced the same day — is the live exhibit: 6% paid on stablecoin balances, by an app, from a trading strategy, in no banking category at all. Reading the two stories together is the point: the tighter the issuer rule, the more valuable the layer just outside it.</p>
+<p><strong>For the catalogue, this closes a loop.</strong> <code>jurisdiction-decides-the-category</code> said the category is a legal decision; here is the decision being drafted, clause by clause, with a comment deadline. <code>the-only-commitment-is-the-issuer</code> said every promise lives in a document; the wind-down-plan requirement makes that document mandatory. The consultation period is the rare window where the border is visible while still movable.</p>
       <h2>How it works</h2>
-      <p>Build one login-to-first-transaction flow with an embedded wallet, then test device loss, key export, MFA recovery, and a scoped app signer. Draw the authority matrix before judging the UX.</p>
-<h3>PoC</h3>
-<p>Build login-to-first-transaction with an embedded wallet. Then test four paths: a new device, lost authentication factor, key export, and a scoped application signer. Produce the authority matrix before comparing click counts.</p>
+      <h3>The five clauses, three regimes</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Actor</th>
-<th>Can sign?</th>
-<th>Can recover?</th>
-<th>Can export?</th>
+<th>Clause</th>
+<th>MAS draft</th>
+<th>GENIUS (US)</th>
+<th>MiCA (EU)</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>User</td>
-<td>Under configured authentication</td>
-<td>Test explicitly</td>
-<td>Verify the escape hatch</td>
+<td>Reserves</td>
+<td>≥100%, segregated at licensed institutions</td>
+<td>100%, prescribed assets</td>
+<td>100%+, EMT rules</td>
 </tr>
 <tr>
-<td>Application signer</td>
-<td>Only within policy — or the policy is cosmetic</td>
-<td>No</td>
-<td>No</td>
+<td>Interest to holders</td>
+<td>Banned</td>
+<td>Banned</td>
+<td>Banned (EMTs)</td>
 </tr>
 <tr>
-<td>Provider</td>
-<td>Depends on custody and key architecture</td>
-<td>Document the exact role</td>
-<td>Document the exact role</td>
+<td>Scope</td>
+<td>SGD + G10 single-currency, issued in SG</td>
+<td>USD payment stablecoins</td>
+<td>EU-offered EMTs/ARTs</td>
+</tr>
+<tr>
+<td>Foreign issuers</td>
+<td>Opt-in if compliant</td>
+<td>Restricted pathway</td>
+<td>Passporting rules</td>
+</tr>
+<tr>
+<td>Failure planning</td>
+<td>Stress tests + wind-down plan</td>
+<td>Prudential standards</td>
+<td>Own funds + redemption plan</td>
 </tr>
 </tbody></table></div>
-<p>Reference: <a href="https://docs.privy.io/wallets/overview/embedded">Privy embedded-wallet overview</a>.</p>
-<h2>Notes — background for the PoC (2026-09-02)</h2>
-<h3>What an embedded wallet is</h3>
-<p>A conventional wallet (MetaMask) is <em>external</em>: a separate app or extension the user installs, holding a seed phrase, that websites connect to. An <strong>embedded wallet</strong> lives inside the application. Logging in with email, Google, or a passkey silently provisions a real on-chain wallet — no extension, no seed-phrase ceremony, no visible &quot;wallet&quot; concept at all. The wallet becomes an implementation detail instead of a prerequisite, which is why this is now the default onboarding pattern for consumer crypto apps.</p>
-<p>The technical trick is that no single place ever holds the whole private key: either <strong>MPC</strong> (the key never exists in one piece; parties co-sign) or <strong>Shamir key sharding</strong> (split into shares, reassembled briefly at signing time), with signing inside an isolated environment — a sandboxed iframe on the client, or a TEE on a server.</p>
-<h3>Privy specifically</h3>
-<ul>
-<li><strong>Shamir 3-share model</strong> — a <em>device share</em> (browser/app storage), an <em>auth share</em> (held by Privy, released after login), and a <em>recovery share</em>. Any two reconstruct the key briefly inside an isolated iframe; Privy&#39;s servers never see the full key.</li>
-<li><strong>Recovery</strong> — the recovery share sits with Privy (default &quot;automatic&quot; mode) or is user-controlled (password-encrypted, or in iCloud/Google Drive). This choice <em>is</em> the custody decision — it is the answer to the lost-auth-factor path.</li>
-<li><strong>Export</strong> — users can export the full private key through a Privy-hosted flow; the app configures whether this is exposed.</li>
-<li><strong>Server wallets &amp; session signers</strong> — TEE-based server-side wallets plus scoped signers with a policy engine (&quot;this signer may only call this contract, up to this amount&quot;). That is the fourth path.</li>
-<li><strong>Context</strong> — Stripe acquired Privy in June 2025 (paired with its stablecoin acquisition, Bridge): embedded wallets are becoming mainstream payments plumbing. Farcaster and Hyperliquid ship on it. Competitors — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — differ exactly along the authority-matrix dimensions: who holds which share, how recovery works, who can change policy.</li>
-</ul>
-<h3>What each of the four paths measures</h3>
+<p>Three drafts, one border. The convergence is the finding.</p>
+<h3>Where the yield goes when the issuer can&#39;t pay it</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Instrument</th>
+<th>Caught by the ban?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Issuer</td>
+<td>Interest on the stablecoin itself</td>
+<td>Yes — the target</td>
+</tr>
+<tr>
+<td>Issuer&#39;s balance sheet</td>
+<td>Reserve spread (T-bill yield kept by issuer)</td>
+<td>No — the business model</td>
+</tr>
+<tr>
+<td>App / neobank</td>
+<td>Rates on balances (Ethena Pay&#39;s 6%)</td>
+<td>Wording-dependent — the probe</td>
+</tr>
+<tr>
+<td>DeFi wrapper</td>
+<td>Staked/wrapped versions with yield</td>
+<td>Usually outside — different issuer</td>
+</tr>
+<tr>
+<td>Exchange</td>
+<td>&quot;Earn&quot; programs</td>
+<td>Jurisdiction of the exchange</td>
+</tr>
+</tbody></table></div>
+<h3>Questions for the consultation window (until 2026-10-16)</h3>
 <ol>
-<li><strong>New device</strong> — a fresh device has no device share, so login requires Privy&#39;s servers to participate. The uncomfortable question: if Privy is down or deplatforms you, can you sign at all? Expected answer: not without a prior export. Privy holds an <em>availability veto</em> — it cannot take the assets, but it can block access.</li>
-<li><strong>Lost authentication factor</strong> — recovery is where the real custodian reveals itself: whoever can approve recovery can, in effect, take the wallet. If recovery is &quot;email a support team,&quot; the custody story is weaker than the marketing.</li>
-<li><strong>Key export</strong> — the exit door, and the strongest evidence for the self-custody claim. Test more than existence: the friction, whether the app developer can disable it, and whether the exported key is complete (it should reconstruct the same address in a vanilla wallet).</li>
-<li><strong>Scoped app signer</strong> — the delegation boundary: what can the app do without the user, and who can widen that scope later? A policy the developer can rotate silently is a different object from one the user must re-approve.</li>
+<li>Does &quot;other returns by virtue of holding&quot; catch cashback, points, or app-level rates?</li>
+<li>Must the wind-down plan name a redemption agent and a par-redemption timeline?</li>
+<li>What makes a foreign stablecoin &quot;compliant enough&quot; to opt in — and who checks?</li>
+<li>Is the reserve&#39;s <em>duration</em> constrained, or only its amount? (100% of illiquid assets still runs.)</li>
 </ol>
-<h3>The matrix before click counts</h3>
-<p>Click counts measure onboarding friction; the matrix measures the trust model. Comparing UX first is how &quot;2 clicks to a wallet&quot; hides that several parties can act on the funds. Expanded matrix — rows are actions, columns are actors; fill each cell as <em>alone / needs cooperation / cannot</em>, from observation, not docs. Expected values to verify:</p>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>Action</th>
-<th>User</th>
-<th>Privy</th>
-<th>App developer</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Sign a transaction</td>
-<td>Alone, after login</td>
-<td>Cooperation — releases the auth share</td>
-<td>Within signer policy only</td>
-</tr>
-<tr>
-<td>Export the key</td>
-<td>Alone, if exposed</td>
-<td>Cooperation — hosts the flow</td>
-<td>Can gate exposure — verify</td>
-</tr>
-<tr>
-<td>Approve recovery</td>
-<td>Depends on recovery mode</td>
-<td>Default holder of the recovery share</td>
-<td>Chooses the recovery mode</td>
-</tr>
-<tr>
-<td>Add / scope a signer</td>
-<td>Consent per config — verify</td>
-<td>Executes policy</td>
-<td>Initiates</td>
-</tr>
-<tr>
-<td>Change policy</td>
-<td>Re-approval? — verify</td>
-<td>Enforces</td>
-<td>Often alone — verify</td>
-</tr>
-<tr>
-<td>Block access (availability)</td>
-<td>—</td>
-<td>Auth-share veto</td>
-<td>Can remove the UI</td>
-</tr>
-</tbody></table></div>
-<p>The most interesting cells are usually &quot;approve recovery&quot; and &quot;change policy&quot; — that is where authority quietly concentrates in the app stack. Prediction to test: the app developer holds more authority than users assume, and Privy holds the availability veto. Neither appears in a click-count comparison.</p>
-<h3>The developer is the auditor</h3>
-<p>The end user never sees any of this — that is the point of embedded wallets, and the risk. Whatever the integrator configures becomes the custody reality users silently inherit. And the answers are configuration choices, not fixed properties: &quot;Privy is non-custodial&quot; is a marketing sentence, and two apps on the same Privy SDK can have genuinely different custody models. Run the four paths by hand because docs describe the design; the paths reveal deployed behavior — unnoticed defaults, failing flows, support-team backdoors. That is also why the matrix comes first: it forces &quot;who can do what&quot; onto paper as observed facts before any UX judgment.</p>
       
       <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 지갑이 앱 속으로 사라졌다\n\n임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없애지만, 신뢰 문제는 복구·내보내기·앱 서명자·트랜잭션 정책으로 옮겨 갑니다.\n\n임베디드 지갑 제공자(예: Privy)로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 네 가지 경로 — 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자 — 를 실행합니다. 클릭 수를 비교하기 전에 권한표부터 채웁니다.\n\n## 왜\n\n이 흐름의 본질은 \"지갑이 쉬워졌다\"가 아닙니다. 지갑의 책임이 애플리케이션 안으로 옮겨 간 것입니다. 이 PoC 는 사용자에게 출구가 있는지, 그리고 앱이 UI 가 암시하는 것 이상으로 행동할 수 있는지를 측정합니다.\n\n임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없앱니다. 하지만 수탁과 인가의 문제를 없애지는 않습니다 — 그 문제들은 복구, 내보내기, 추가 서명자, 애플리케이션 스택으로 제어되는 정책 속으로 옮겨 갑니다.\n\n## 동작 방식\n\n임베디드 지갑으로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 기기 분실, 키 내보내기, MFA 복구, 범위가 제한된 앱 서명자를 시험합니다. UX 를 평가하기 전에 권한표부터 그립니다.\n\n### PoC\n\n임베디드 지갑으로 로그인→첫 트랜잭션을 만듭니다. 그다음 네 경로를 시험합니다: 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자. 클릭 수를 비교하기 전에 권한표를 만듭니다.\n\n| 행위자 | 서명 가능? | 복구 가능? | 내보내기 가능? |\n| --- | --- | --- | --- |\n| 사용자 | 설정된 인증 아래에서 | 명시적으로 시험할 것 | 탈출구가 실재하는지 확인할 것 |\n| 앱 서명자 | 정책 안에서만 — 아니면 그 정책은 장식 | 불가 | 불가 |\n| 제공자 | 수탁·키 구조에 따라 다름 | 정확한 역할을 문서화할 것 | 정확한 역할을 문서화할 것 |\n\n참고: [Privy 임베디드 지갑 개요](https://docs.privy.io/wallets/overview/embedded).\n\n## 노트 — PoC 를 위한 배경 (2026-09-02)\n\n### 임베디드 지갑이란\n\nMetaMask 같은 일반 지갑은 *외부형*입니다: 사용자가 따로 설치하는 앱/확장 프로그램이 시드 문구를 보관하고, 웹사이트가 거기에 연결합니다. **임베디드 지갑**은 애플리케이션 안에 삽입됩니다. 이메일·구글·패스키로 로그인하면 앱이 백그라운드에서 실제 온체인 지갑을 조용히 만들어 줍니다 — 확장 프로그램도, 시드 문구 의식도, 눈에 보이는 \"지갑\" 개념 자체도 없습니다. 지갑이 전제조건이 아니라 구현 세부사항이 되고, 그래서 지금 소비자용 크립토 앱의 기본 온보딩 패턴이 됐습니다.\n\n기술적 핵심은 개인키 전체를 한 곳에 두지 않는 것: **MPC**(키가 한 조각으로 존재한 적 없이 여러 당사자가 공동 서명) 또는 **Shamir 키 분할**(조각으로 나눠 서명 순간에만 잠깐 재조합). 서명은 격리된 환경 — 클라이언트의 샌드박스 iframe 이나 서버의 TEE — 에서 일어납니다.\n\n### Privy 는 구체적으로\n\n- **Shamir 3조각 모델** — *기기 조각*(브라우저/앱 저장소), *인증 조각*(Privy 보관, 로그인 후 제공), *복구 조각*. 셋 중 둘만 있으면 격리된 iframe 안에서 키가 잠깐 재조합되고, Privy 서버는 전체 키를 본 적이 없습니다.\n- **복구** — 복구 조각을 Privy 가 보관(기본 \"자동\" 모드)하거나 사용자가 통제(비밀번호 암호화, iCloud/Google Drive)합니다. 이 선택이 *곧* 수탁 결정 — 인증수단 분실 경로의 답이 여기 있습니다.\n- **내보내기** — Privy 가 호스팅하는 절차로 전체 개인키를 내보낼 수 있고, 이 기능의 노출 여부는 앱이 설정합니다.\n- **서버 지갑과 세션 서명자** — TEE 기반 서버 지갑, 그리고 정책 엔진이 붙은 범위 제한 서명자(\"이 서명자는 이 컨트랙트만, 이 금액까지만\"). 네 번째 경로가 이것입니다.\n- **맥락** — 2025년 6월 Stripe 가 Privy 를 인수했습니다(스테이블코인 회사 Bridge 인수와 짝): 임베디드 지갑이 주류 결제 인프라가 되고 있다는 신호. Farcaster, Hyperliquid 가 사용 중입니다. 경쟁사 — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — 의 차이가 정확히 권한표의 차원들입니다: 누가 어떤 조각을 쥐고, 복구가 어떻게 되고, 정책을 누가 바꾸는가.\n\n### 네 경로가 각각 측정하는 것\n\n1. **새 기기** — 새 기기에는 기기 조각이 없으므로 로그인에 Privy 서버의 참여가 필수입니다. 불편한 질문: Privy 가 다운되거나 나를 차단하면 서명이 가능한가? 예상 답: 사전에 내보내기를 하지 않았다면 불가능. Privy 는 *가용성 거부권*을 쥡니다 — 자산을 뺏을 수는 없지만 접근을 막을 수는 있습니다.\n2. **인증수단 분실** — 복구야말로 진짜 수탁자가 드러나는 지점: 복구를 승인할 수 있는 자가 사실상 지갑을 가져갈 수 있습니다. 복구가 \"지원팀에 이메일\" 수준이라면 수탁 스토리는 마케팅보다 약한 겁니다.\n3. **키 내보내기** — 비상구이자 셀프 커스터디 주장의 가장 강력한 증거. 존재 여부만이 아니라 마찰의 정도, 앱 개발자가 비활성화할 수 있는지, 내보낸 키가 완전한지(일반 지갑에서 같은 주소가 복원되는지)까지 시험합니다.\n4. **범위 제한 앱 서명자** — 위임의 경계: 앱이 사용자 없이 무엇을 할 수 있고, 그 범위를 누가 나중에 넓힐 수 있는가? 개발자가 조용히 바꿀 수 있는 정책과 사용자가 재승인해야 하는 정책은 전혀 다른 물건입니다.\n\n### 클릭 수보다 권한표가 먼저인 이유\n\n클릭 수는 온보딩 마찰을 재고, 권한표는 신뢰 모델을 잽니다. UX 부터 비교하면 \"2클릭이면 지갑 생성\"이 여러 당사자가 자금에 손댈 수 있다는 사실을 가립니다. 확장된 권한표 — 행은 행위, 열은 주체, 각 칸은 *단독 가능 / 협조 필요 / 불가* 를 문서가 아니라 관찰로 채웁니다. 검증할 예상값:\n\n| 행위 | 사용자 | Privy | 앱 개발자 |\n| --- | --- | --- | --- |\n| 트랜잭션 서명 | 로그인 후 단독 | 협조 — 인증 조각 제공 | 서명자 정책 안에서만 |\n| 키 내보내기 | 노출돼 있다면 단독 | 협조 — 절차 호스팅 | 노출 차단 가능 — 검증 |\n| 복구 승인 | 복구 모드에 따라 다름 | 복구 조각의 기본 보관자 | 복구 모드를 선택 |\n| 서명자 추가/범위 지정 | 설정에 따른 동의 — 검증 | 정책 실행 | 주도 |\n| 정책 변경 | 재승인 필요? — 검증 | 집행 | 단독인 경우 많음 — 검증 |\n| 접근 차단 (가용성) | — | 인증 조각 거부권 | UI 제거 가능 |\n\n가장 흥미로운 칸은 보통 \"복구 승인\"과 \"정책 변경\" — 권한이 앱 스택 쪽으로 조용히 집중되는 지점입니다. 시험할 예측: 앱 개발자는 사용자 생각보다 많은 권한을 쥐고, Privy 는 가용성 거부권을 쥔다. 둘 다 클릭 수 비교에는 나타나지 않습니다.\n\n### 개발자가 곧 감사인이다\n\n최종 사용자는 이 어떤 것도 보지 못합니다 — 그게 임베디드 지갑의 존재 이유이자 위험입니다. 도입자가 설정한 그대로가 사용자들이 조용히 물려받는 수탁 현실이 됩니다. 그리고 답들은 고정된 성질이 아니라 설정 선택입니다: \"Privy 는 논커스터디얼\"은 마케팅 문장이고, 같은 Privy SDK 로 만든 두 앱이 진짜로 다른 수탁 모델을 가질 수 있습니다. 문서는 설계를 설명할 뿐이므로 네 경로를 직접 실행합니다 — 미처 못 본 기본값, 실패하는 플로우, 지원팀 뒷문은 배포된 동작에서만 드러납니다. 권한표를 먼저 만드는 이유도 같습니다: UX 판단에 앞서 \"누가 무엇을 할 수 있는가\"를 관찰된 사실로 종이에 강제하는 산출물이기 때문입니다.\n"</script>
-      <h1>지갑이 앱 속으로 사라졌다</h1>
-      <p class="lead">임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없애지만, 신뢰 문제는 복구·내보내기·앱 서명자·트랜잭션 정책으로 옮겨 갑니다.</p>
-      <p class="meta">임베디드 지갑 제공자(예: Privy)로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 네 가지 경로 — 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자 — 를 실행합니다. 클릭 수를 비교하기 전에 권한표부터 채웁니다.</p>
+      <script type="application/json" id="copy-ko">"# 이자 금지 — 그 금지선이 결제와 예금의 국경이다\n\nMAS 의 스테이블코인 규제 초안은 준비금 100%·분리 보관, 스트레스 테스트, 청산 계획을 요구합니다 — 이제는 전부 기본값입니다. **수단의 정체를 정의하는 조항은 보유자 이자 지급 금지입니다: 수익을 주는 스테이블코인은 기능적으로 예금이고, 금지는 그것을 결제 수단으로 되돌려 입법합니다.** 수익은 사라지지 않습니다 — **규제된 범주 바깥, 한 층 위로 이동합니다.**\n\n**아직 범위 미정** — 산출물은 **비교표 하나와 경계 탐침 하나**입니다.\n\n**세 체제 표.** 같은 다섯 조항 — 준비금 비율, 준비금 보관처, 보유자 이자, 상환 조건, 청산 계획 — 을 GENIUS, MiCA, 이번 MAS 초안에 걸쳐 매핑합니다. 예측: **준비금은 100% 로 수렴하고, 이자 금지는 셋 모두에 나타납니다** — 모든 규제자가 같은 이유로 같은 국경을 긋고 있으니까.\n\n**경계 탐침.** 초안은 \"보유에 따른 이자나 기타 수익\"을 금지합니다. 보유에 *인접해서* 지급하는 제품들 — 소비 캐시백, 포인트, 래핑 버전의 스테이킹, Ethena Pay 의 6% 같은 앱 수준 금리 — 을 나열하고 **문구가 어디까지 잡는지** 표시합니다. **안 잡히는 곳이 시장이 지을 자리입니다.**\n\n**청산 조항.** 요구되는 회생·질서 있는 청산 계획을 `stablecoin-redemption-desk` 가 운영적으로 재는 것과 비교합니다: **법조문은 상환 창구의 영업시간을 법에 써 넣은 것**입니다. 계획이 상환 대리인과 시한을 명시해야 하는지 확인합니다.\n\n출처: 글로벌 크립토 뉴스 정리, 2026-09-02 — MAS 지급서비스법 개정안, 의견 수렴 2026-10-16 까지, 시행 시점 미정.\n\n## 왜\n\n**규제자가 왜 돈을 주는 것을 금지하는지 물어야 합니다.** 그 답이 수단을 정의합니다. 이자를 주는 스테이블코인은 은행업의 의무 없이 — 자본 규제도, 예금자 보호도, 최종 대부자도 없이 — 은행 예금과 경쟁하고, 거기에 대한 런은 정확히 머니마켓펀드 런처럼 생겼습니다. **이자 금지는 소비자 보호가 아니라 범주의 울타리입니다:** 한쪽에는 언제나 액면 상환해야 하고 그 이상을 약속해선 안 되는 결제 수단, 다른 쪽에는 은행 면허를 통행료로 내는 예금. **주요 체제 전부가 같은 울타리로 수렴한다는 것이 공포가 공유된다는 증거입니다.**\n\n**울타리는 발행사에게만 작동합니다.** 수익은 사라지지 않습니다 — 준비금은 여전히 국채 금리를 벌고 발행사가 그 스프레드를 가집니다; **그 스프레드가 곧 스테이블코인 사업 모델입니다.** 그리고 보유자 쪽 수익은 정의가 닿지 않는 한 층 위 — 앱, 래퍼, 거래소 — 에서 다시 나타납니다. 같은 날 발표된 **`deposit-rate-is-a-trade` 가 살아 있는 전시물입니다:** 스테이블코인 잔액에, 앱이, 트레이딩 전략으로, 어떤 은행업 범주에도 속하지 않고 지급하는 6%. **두 기사를 함께 읽는 것이 핵심입니다: 발행사 규칙이 조일수록, 그 바로 바깥 층의 가치가 올라갑니다.**\n\n**카탈로그에는 이 카드가 고리 하나를 닫습니다.** `jurisdiction-decides-the-category` 는 범주가 법적 결정이라 했는데, 여기 그 결정이 조항 단위로, 의견 마감일과 함께 초안되고 있습니다. `the-only-commitment-is-the-issuer` 는 모든 약속이 문서에 산다고 했는데, 청산 계획 요구는 그 문서를 의무로 만듭니다. **의견 수렴 기간은 국경이 아직 움직일 수 있으면서 눈에 보이는 드문 창입니다.**\n\n## 동작 방식\n\n### 다섯 조항, 세 체제\n\n| 조항 | MAS 초안 | GENIUS (미국) | MiCA (EU) |\n| --- | --- | --- | --- |\n| 준비금 | ≥100%, 인가 기관에 분리 보관 | 100%, 지정 자산 | 100%+, EMT 규칙 |\n| 보유자 이자 | 금지 | 금지 | 금지 (EMT) |\n| 범위 | 싱가포르 발행 SGD·G10 단일통화 | USD 결제 스테이블코인 | EU 내 제공 EMT/ART |\n| 해외 발행사 | 요건 충족 시 옵트인 | 제한적 경로 | 패스포팅 규칙 |\n| 실패 대비 | 스트레스 테스트 + 청산 계획 | 건전성 기준 | 자기자본 + 상환 계획 |\n\n**초안 셋, 국경 하나. 수렴 자체가 결과물입니다.**\n\n### 발행사가 못 줄 때 수익이 가는 곳\n\n| 층 | 수단 | 금지에 잡히나? |\n| --- | --- | --- |\n| 발행사 | 스테이블코인 자체의 이자 | **예 — 표적** |\n| 발행사 대차대조표 | 준비금 스프레드(발행사가 갖는 국채 수익) | 아니오 — **사업 모델** |\n| 앱/네오뱅크 | 잔액에 붙는 금리(Ethena Pay 6%) | **문구에 달림 — 탐침 지점** |\n| DeFi 래퍼 | 수익이 붙는 스테이킹/래핑 버전 | 대개 바깥 — 발행 주체가 다름 |\n| 거래소 | \"Earn\" 프로그램 | 거래소의 관할 문제 |\n\n### 의견 수렴 창(2026-10-16 까지)에 던질 질문\n\n1. \"보유에 따른 기타 수익\"이 캐시백·포인트·앱 금리를 잡는가?\n2. 청산 계획은 상환 대리인과 액면 상환 시한을 명시해야 하는가?\n3. 해외 스테이블코인의 \"충분한 요건\"은 무엇이고 — 누가 검증하는가?\n4. 준비금의 **듀레이션**도 제약되는가, 금액만인가? (비유동 자산 100% 도 런은 난다.)\n"</script>
+      <h1>이자 금지 — 그 금지선이 결제와 예금의 국경이다</h1>
+      <p class="lead">MAS 의 스테이블코인 규제 초안은 준비금 100%·분리 보관, 스트레스 테스트, 청산 계획을 요구합니다 — 이제는 전부 기본값입니다. <strong>수단의 정체를 정의하는 조항은 보유자 이자 지급 금지입니다: 수익을 주는 스테이블코인은 기능적으로 예금이고, 금지는 그것을 결제 수단으로 되돌려 입법합니다.</strong> 수익은 사라지지 않습니다 — <strong>규제된 범주 바깥, 한 층 위로 이동합니다.</strong></p>
+      <p class="meta"><strong>아직 범위 미정</strong> — 산출물은 <strong>비교표 하나와 경계 탐침 하나</strong>입니다.
+
+<strong>세 체제 표.</strong> 같은 다섯 조항 — 준비금 비율, 준비금 보관처, 보유자 이자, 상환 조건, 청산 계획 — 을 GENIUS, MiCA, 이번 MAS 초안에 걸쳐 매핑합니다. 예측: <strong>준비금은 100% 로 수렴하고, 이자 금지는 셋 모두에 나타납니다</strong> — 모든 규제자가 같은 이유로 같은 국경을 긋고 있으니까.
+
+<strong>경계 탐침.</strong> 초안은 &quot;보유에 따른 이자나 기타 수익&quot;을 금지합니다. 보유에 <em>인접해서</em> 지급하는 제품들 — 소비 캐시백, 포인트, 래핑 버전의 스테이킹, Ethena Pay 의 6% 같은 앱 수준 금리 — 을 나열하고 <strong>문구가 어디까지 잡는지</strong> 표시합니다. <strong>안 잡히는 곳이 시장이 지을 자리입니다.</strong>
+
+<strong>청산 조항.</strong> 요구되는 회생·질서 있는 청산 계획을 <code>stablecoin-redemption-desk</code> 가 운영적으로 재는 것과 비교합니다: <strong>법조문은 상환 창구의 영업시간을 법에 써 넣은 것</strong>입니다. 계획이 상환 대리인과 시한을 명시해야 하는지 확인합니다.
+
+출처: 글로벌 크립토 뉴스 정리, 2026-09-02 — MAS 지급서비스법 개정안, 의견 수렴 2026-10-16 까지, 시행 시점 미정.</p>
       <h2>왜</h2>
-      <p>이 흐름의 본질은 &quot;지갑이 쉬워졌다&quot;가 아닙니다. 지갑의 책임이 애플리케이션 안으로 옮겨 간 것입니다. 이 PoC 는 사용자에게 출구가 있는지, 그리고 앱이 UI 가 암시하는 것 이상으로 행동할 수 있는지를 측정합니다.</p>
-<p>임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없앱니다. 하지만 수탁과 인가의 문제를 없애지는 않습니다 — 그 문제들은 복구, 내보내기, 추가 서명자, 애플리케이션 스택으로 제어되는 정책 속으로 옮겨 갑니다.</p>
+      <p><strong>규제자가 왜 돈을 주는 것을 금지하는지 물어야 합니다.</strong> 그 답이 수단을 정의합니다. 이자를 주는 스테이블코인은 은행업의 의무 없이 — 자본 규제도, 예금자 보호도, 최종 대부자도 없이 — 은행 예금과 경쟁하고, 거기에 대한 런은 정확히 머니마켓펀드 런처럼 생겼습니다. <strong>이자 금지는 소비자 보호가 아니라 범주의 울타리입니다:</strong> 한쪽에는 언제나 액면 상환해야 하고 그 이상을 약속해선 안 되는 결제 수단, 다른 쪽에는 은행 면허를 통행료로 내는 예금. <strong>주요 체제 전부가 같은 울타리로 수렴한다는 것이 공포가 공유된다는 증거입니다.</strong></p>
+<p><strong>울타리는 발행사에게만 작동합니다.</strong> 수익은 사라지지 않습니다 — 준비금은 여전히 국채 금리를 벌고 발행사가 그 스프레드를 가집니다; <strong>그 스프레드가 곧 스테이블코인 사업 모델입니다.</strong> 그리고 보유자 쪽 수익은 정의가 닿지 않는 한 층 위 — 앱, 래퍼, 거래소 — 에서 다시 나타납니다. 같은 날 발표된 <strong><code>deposit-rate-is-a-trade</code> 가 살아 있는 전시물입니다:</strong> 스테이블코인 잔액에, 앱이, 트레이딩 전략으로, 어떤 은행업 범주에도 속하지 않고 지급하는 6%. <strong>두 기사를 함께 읽는 것이 핵심입니다: 발행사 규칙이 조일수록, 그 바로 바깥 층의 가치가 올라갑니다.</strong></p>
+<p><strong>카탈로그에는 이 카드가 고리 하나를 닫습니다.</strong> <code>jurisdiction-decides-the-category</code> 는 범주가 법적 결정이라 했는데, 여기 그 결정이 조항 단위로, 의견 마감일과 함께 초안되고 있습니다. <code>the-only-commitment-is-the-issuer</code> 는 모든 약속이 문서에 산다고 했는데, 청산 계획 요구는 그 문서를 의무로 만듭니다. <strong>의견 수렴 기간은 국경이 아직 움직일 수 있으면서 눈에 보이는 드문 창입니다.</strong></p>
       <h2>동작 방식</h2>
-      <p>임베디드 지갑으로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 기기 분실, 키 내보내기, MFA 복구, 범위가 제한된 앱 서명자를 시험합니다. UX 를 평가하기 전에 권한표부터 그립니다.</p>
-<h3>PoC</h3>
-<p>임베디드 지갑으로 로그인→첫 트랜잭션을 만듭니다. 그다음 네 경로를 시험합니다: 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자. 클릭 수를 비교하기 전에 권한표를 만듭니다.</p>
+      <h3>다섯 조항, 세 체제</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>행위자</th>
-<th>서명 가능?</th>
-<th>복구 가능?</th>
-<th>내보내기 가능?</th>
+<th>조항</th>
+<th>MAS 초안</th>
+<th>GENIUS (미국)</th>
+<th>MiCA (EU)</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>사용자</td>
-<td>설정된 인증 아래에서</td>
-<td>명시적으로 시험할 것</td>
-<td>탈출구가 실재하는지 확인할 것</td>
+<td>준비금</td>
+<td>≥100%, 인가 기관에 분리 보관</td>
+<td>100%, 지정 자산</td>
+<td>100%+, EMT 규칙</td>
 </tr>
 <tr>
-<td>앱 서명자</td>
-<td>정책 안에서만 — 아니면 그 정책은 장식</td>
-<td>불가</td>
-<td>불가</td>
+<td>보유자 이자</td>
+<td>금지</td>
+<td>금지</td>
+<td>금지 (EMT)</td>
 </tr>
 <tr>
-<td>제공자</td>
-<td>수탁·키 구조에 따라 다름</td>
-<td>정확한 역할을 문서화할 것</td>
-<td>정확한 역할을 문서화할 것</td>
+<td>범위</td>
+<td>싱가포르 발행 SGD·G10 단일통화</td>
+<td>USD 결제 스테이블코인</td>
+<td>EU 내 제공 EMT/ART</td>
+</tr>
+<tr>
+<td>해외 발행사</td>
+<td>요건 충족 시 옵트인</td>
+<td>제한적 경로</td>
+<td>패스포팅 규칙</td>
+</tr>
+<tr>
+<td>실패 대비</td>
+<td>스트레스 테스트 + 청산 계획</td>
+<td>건전성 기준</td>
+<td>자기자본 + 상환 계획</td>
 </tr>
 </tbody></table></div>
-<p>참고: <a href="https://docs.privy.io/wallets/overview/embedded">Privy 임베디드 지갑 개요</a>.</p>
-<h2>노트 — PoC 를 위한 배경 (2026-09-02)</h2>
-<h3>임베디드 지갑이란</h3>
-<p>MetaMask 같은 일반 지갑은 <em>외부형</em>입니다: 사용자가 따로 설치하는 앱/확장 프로그램이 시드 문구를 보관하고, 웹사이트가 거기에 연결합니다. <strong>임베디드 지갑</strong>은 애플리케이션 안에 삽입됩니다. 이메일·구글·패스키로 로그인하면 앱이 백그라운드에서 실제 온체인 지갑을 조용히 만들어 줍니다 — 확장 프로그램도, 시드 문구 의식도, 눈에 보이는 &quot;지갑&quot; 개념 자체도 없습니다. 지갑이 전제조건이 아니라 구현 세부사항이 되고, 그래서 지금 소비자용 크립토 앱의 기본 온보딩 패턴이 됐습니다.</p>
-<p>기술적 핵심은 개인키 전체를 한 곳에 두지 않는 것: <strong>MPC</strong>(키가 한 조각으로 존재한 적 없이 여러 당사자가 공동 서명) 또는 <strong>Shamir 키 분할</strong>(조각으로 나눠 서명 순간에만 잠깐 재조합). 서명은 격리된 환경 — 클라이언트의 샌드박스 iframe 이나 서버의 TEE — 에서 일어납니다.</p>
-<h3>Privy 는 구체적으로</h3>
-<ul>
-<li><strong>Shamir 3조각 모델</strong> — <em>기기 조각</em>(브라우저/앱 저장소), <em>인증 조각</em>(Privy 보관, 로그인 후 제공), <em>복구 조각</em>. 셋 중 둘만 있으면 격리된 iframe 안에서 키가 잠깐 재조합되고, Privy 서버는 전체 키를 본 적이 없습니다.</li>
-<li><strong>복구</strong> — 복구 조각을 Privy 가 보관(기본 &quot;자동&quot; 모드)하거나 사용자가 통제(비밀번호 암호화, iCloud/Google Drive)합니다. 이 선택이 <em>곧</em> 수탁 결정 — 인증수단 분실 경로의 답이 여기 있습니다.</li>
-<li><strong>내보내기</strong> — Privy 가 호스팅하는 절차로 전체 개인키를 내보낼 수 있고, 이 기능의 노출 여부는 앱이 설정합니다.</li>
-<li><strong>서버 지갑과 세션 서명자</strong> — TEE 기반 서버 지갑, 그리고 정책 엔진이 붙은 범위 제한 서명자(&quot;이 서명자는 이 컨트랙트만, 이 금액까지만&quot;). 네 번째 경로가 이것입니다.</li>
-<li><strong>맥락</strong> — 2025년 6월 Stripe 가 Privy 를 인수했습니다(스테이블코인 회사 Bridge 인수와 짝): 임베디드 지갑이 주류 결제 인프라가 되고 있다는 신호. Farcaster, Hyperliquid 가 사용 중입니다. 경쟁사 — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — 의 차이가 정확히 권한표의 차원들입니다: 누가 어떤 조각을 쥐고, 복구가 어떻게 되고, 정책을 누가 바꾸는가.</li>
-</ul>
-<h3>네 경로가 각각 측정하는 것</h3>
+<p><strong>초안 셋, 국경 하나. 수렴 자체가 결과물입니다.</strong></p>
+<h3>발행사가 못 줄 때 수익이 가는 곳</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>층</th>
+<th>수단</th>
+<th>금지에 잡히나?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>발행사</td>
+<td>스테이블코인 자체의 이자</td>
+<td><strong>예 — 표적</strong></td>
+</tr>
+<tr>
+<td>발행사 대차대조표</td>
+<td>준비금 스프레드(발행사가 갖는 국채 수익)</td>
+<td>아니오 — <strong>사업 모델</strong></td>
+</tr>
+<tr>
+<td>앱/네오뱅크</td>
+<td>잔액에 붙는 금리(Ethena Pay 6%)</td>
+<td><strong>문구에 달림 — 탐침 지점</strong></td>
+</tr>
+<tr>
+<td>DeFi 래퍼</td>
+<td>수익이 붙는 스테이킹/래핑 버전</td>
+<td>대개 바깥 — 발행 주체가 다름</td>
+</tr>
+<tr>
+<td>거래소</td>
+<td>&quot;Earn&quot; 프로그램</td>
+<td>거래소의 관할 문제</td>
+</tr>
+</tbody></table></div>
+<h3>의견 수렴 창(2026-10-16 까지)에 던질 질문</h3>
 <ol>
-<li><strong>새 기기</strong> — 새 기기에는 기기 조각이 없으므로 로그인에 Privy 서버의 참여가 필수입니다. 불편한 질문: Privy 가 다운되거나 나를 차단하면 서명이 가능한가? 예상 답: 사전에 내보내기를 하지 않았다면 불가능. Privy 는 <em>가용성 거부권</em>을 쥡니다 — 자산을 뺏을 수는 없지만 접근을 막을 수는 있습니다.</li>
-<li><strong>인증수단 분실</strong> — 복구야말로 진짜 수탁자가 드러나는 지점: 복구를 승인할 수 있는 자가 사실상 지갑을 가져갈 수 있습니다. 복구가 &quot;지원팀에 이메일&quot; 수준이라면 수탁 스토리는 마케팅보다 약한 겁니다.</li>
-<li><strong>키 내보내기</strong> — 비상구이자 셀프 커스터디 주장의 가장 강력한 증거. 존재 여부만이 아니라 마찰의 정도, 앱 개발자가 비활성화할 수 있는지, 내보낸 키가 완전한지(일반 지갑에서 같은 주소가 복원되는지)까지 시험합니다.</li>
-<li><strong>범위 제한 앱 서명자</strong> — 위임의 경계: 앱이 사용자 없이 무엇을 할 수 있고, 그 범위를 누가 나중에 넓힐 수 있는가? 개발자가 조용히 바꿀 수 있는 정책과 사용자가 재승인해야 하는 정책은 전혀 다른 물건입니다.</li>
+<li>&quot;보유에 따른 기타 수익&quot;이 캐시백·포인트·앱 금리를 잡는가?</li>
+<li>청산 계획은 상환 대리인과 액면 상환 시한을 명시해야 하는가?</li>
+<li>해외 스테이블코인의 &quot;충분한 요건&quot;은 무엇이고 — 누가 검증하는가?</li>
+<li>준비금의 <strong>듀레이션</strong>도 제약되는가, 금액만인가? (비유동 자산 100% 도 런은 난다.)</li>
 </ol>
-<h3>클릭 수보다 권한표가 먼저인 이유</h3>
-<p>클릭 수는 온보딩 마찰을 재고, 권한표는 신뢰 모델을 잽니다. UX 부터 비교하면 &quot;2클릭이면 지갑 생성&quot;이 여러 당사자가 자금에 손댈 수 있다는 사실을 가립니다. 확장된 권한표 — 행은 행위, 열은 주체, 각 칸은 <em>단독 가능 / 협조 필요 / 불가</em> 를 문서가 아니라 관찰로 채웁니다. 검증할 예상값:</p>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>행위</th>
-<th>사용자</th>
-<th>Privy</th>
-<th>앱 개발자</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>트랜잭션 서명</td>
-<td>로그인 후 단독</td>
-<td>협조 — 인증 조각 제공</td>
-<td>서명자 정책 안에서만</td>
-</tr>
-<tr>
-<td>키 내보내기</td>
-<td>노출돼 있다면 단독</td>
-<td>협조 — 절차 호스팅</td>
-<td>노출 차단 가능 — 검증</td>
-</tr>
-<tr>
-<td>복구 승인</td>
-<td>복구 모드에 따라 다름</td>
-<td>복구 조각의 기본 보관자</td>
-<td>복구 모드를 선택</td>
-</tr>
-<tr>
-<td>서명자 추가/범위 지정</td>
-<td>설정에 따른 동의 — 검증</td>
-<td>정책 실행</td>
-<td>주도</td>
-</tr>
-<tr>
-<td>정책 변경</td>
-<td>재승인 필요? — 검증</td>
-<td>집행</td>
-<td>단독인 경우 많음 — 검증</td>
-</tr>
-<tr>
-<td>접근 차단 (가용성)</td>
-<td>—</td>
-<td>인증 조각 거부권</td>
-<td>UI 제거 가능</td>
-</tr>
-</tbody></table></div>
-<p>가장 흥미로운 칸은 보통 &quot;복구 승인&quot;과 &quot;정책 변경&quot; — 권한이 앱 스택 쪽으로 조용히 집중되는 지점입니다. 시험할 예측: 앱 개발자는 사용자 생각보다 많은 권한을 쥐고, Privy 는 가용성 거부권을 쥔다. 둘 다 클릭 수 비교에는 나타나지 않습니다.</p>
-<h3>개발자가 곧 감사인이다</h3>
-<p>최종 사용자는 이 어떤 것도 보지 못합니다 — 그게 임베디드 지갑의 존재 이유이자 위험입니다. 도입자가 설정한 그대로가 사용자들이 조용히 물려받는 수탁 현실이 됩니다. 그리고 답들은 고정된 성질이 아니라 설정 선택입니다: &quot;Privy 는 논커스터디얼&quot;은 마케팅 문장이고, 같은 Privy SDK 로 만든 두 앱이 진짜로 다른 수탁 모델을 가질 수 있습니다. 문서는 설계를 설명할 뿐이므로 네 경로를 직접 실행합니다 — 미처 못 본 기본값, 실패하는 플로우, 지원팀 뒷문은 배포된 동작에서만 드러납니다. 권한표를 먼저 만드는 이유도 같습니다: UX 판단에 앞서 &quot;누가 무엇을 할 수 있는가&quot;를 관찰된 사실로 종이에 강제하는 산출물이기 때문입니다.</p>
       
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-ponder-reorg-indexer.html">&larr; 26. Ponder — the indexer is the reorg handler</a><a href="pocs-x402-settlement-retry.html">28. HTTP 402 is the easy part — settlement owns the retry &rarr;</a></div>
+    <div class="pager"><a href="pocs-incumbent-lists-the-wrapper.html">&larr; 48. The incumbent lists the wrapper — xStocks moves inside the LSE</a><a href="pocs-merkle-vs-verkle.html">50. Merkle vs Verkle &rarr;</a></div>
   </div>
   </main>
 </div>

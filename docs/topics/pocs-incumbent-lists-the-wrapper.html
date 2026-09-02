@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The wallet disappeared into the app — PoCs</title>
+<title>The incumbent lists the wrapper — xStocks moves inside the LSE — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -378,7 +378,7 @@
         <li><a class="nav-link" href="pocs-l1-data-pricing-dimensions.html" data-key="l1-data-pricing-dimensions"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">24</span>When gas stops being one number — data pricing and bandwidth accounting</span></a></li>
         <li><a class="nav-link" href="pocs-rpc-view-not-consensus.html" data-key="rpc-view-not-consensus"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">25</span>An RPC response is a view, not consensus</span></a></li>
         <li><a class="nav-link" href="pocs-ponder-reorg-indexer.html" data-key="ponder-reorg-indexer"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">26</span>Ponder — the indexer is the reorg handler</span></a></li>
-        <li><a class="nav-link active" href="pocs-embedded-wallet-policy.html" data-key="embedded-wallet-policy"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">27</span>The wallet disappeared into the app</span></a></li>
+        <li><a class="nav-link" href="pocs-embedded-wallet-policy.html" data-key="embedded-wallet-policy"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">27</span>The wallet disappeared into the app</span></a></li>
         <li><a class="nav-link" href="pocs-x402-settlement-retry.html" data-key="x402-settlement-retry"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">28</span>HTTP 402 is the easy part — settlement owns the retry</span></a></li>
         <li><a class="nav-link" href="pocs-safe-module-root-key.html" data-key="safe-module-root-key"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">29</span>A Safe module is a root key with an interface</span></a></li>
         <li><a class="nav-link" href="pocs-what-encryption-does-not-hide.html" data-key="what-encryption-does-not-hide"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">30</span>Hiding the amount is the easy half</span></a></li>
@@ -399,7 +399,7 @@
         <li><a class="nav-link" href="pocs-x402-facilitator-market.html" data-key="x402-facilitator-market"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">45</span>The middleman is optional in the spec — and standard in practice</span></a></li>
         <li><a class="nav-link" href="pocs-deposit-rate-is-a-trade.html" data-key="deposit-rate-is-a-trade"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">46</span>6% is not interest — a neobank whose deposit rate is a trade</span></a></li>
         <li><a class="nav-link" href="pocs-halted-or-upgraded.html" data-key="halted-or-upgraded"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">47</span>Halted or upgraded — the block gap is the same either way</span></a></li>
-        <li><a class="nav-link" href="pocs-incumbent-lists-the-wrapper.html" data-key="incumbent-lists-the-wrapper"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">48</span>The incumbent lists the wrapper — xStocks moves inside the LSE</span></a></li>
+        <li><a class="nav-link active" href="pocs-incumbent-lists-the-wrapper.html" data-key="incumbent-lists-the-wrapper"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">48</span>The incumbent lists the wrapper — xStocks moves inside the LSE</span></a></li>
         <li><a class="nav-link" href="pocs-interest-ban-draws-the-border.html" data-key="interest-ban-draws-the-border"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">49</span>No yield allowed — the interest ban is the border between payment and deposit</span></a></li>
         <li><a class="nav-link" href="pocs-merkle-vs-verkle.html" data-key="merkle-vs-verkle"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">50</span>Merkle vs Verkle</span></a></li>
         <li><a class="nav-link" href="pocs-encrypted-mempool.html" data-key="encrypted-mempool"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">51</span>What encryption does not hide</span></a></li>
@@ -460,244 +460,192 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The wallet disappeared into the app</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The incumbent lists the wrapper — xStocks moves inside the LSE</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#27</span><span>PoC</span></p>
-      <h1>The wallet disappeared into the app</h1>
-      <p class="lead">Embedded wallets and passkeys remove the seed phrase from onboarding, but the trust question moves into recovery, export, app signers, and transaction policies.</p>
-      <p class="meta">Build one login-to-first-transaction flow with an embedded wallet provider (e.g. Privy), then run the four failure paths — new device, lost authentication factor, key export, scoped app signer — and fill in the authority matrix before comparing click counts.</p>
+      <p class="topic-kicker"><span class="topic-no">#48</span><span>PoC</span></p>
+      <h1>The incumbent lists the wrapper — xStocks moves inside the LSE</h1>
+      <p class="lead">Tokenized stocks have lived on crypto venues, wrapping shares held somewhere else. LSE partnering with Kraken&#39;s parent Payward to list xStocks on its 24-hour platform in 2027 inverts the direction: the venue that runs the actual market adopts the token. Whether that token becomes a real register entry or stays an IOU is now a choice the incumbent gets to make.</p>
+      <p class="meta">Not yet scoped — nothing is testable until the structure documents publish, so the PoC is a reading list with a scorecard.
+
+<strong>The claim test.</strong> When the UK tokenized-equity structure is published, score it on one axis: is the token the register entry itself, a beneficial interest via a nominee/SPV, or a contractual claim on Payward? Each answer assigns the counterparty you actually hold.
+
+<strong>The corporate-actions test.</strong> Dividends, votes, splits: do they flow to the token holder natively, or through a servicing chain? Every intermediary in that chain is a party that can fail on a Friday.
+
+<strong>The close test.</strong> LSE 24 means trading with no daily close — but index funds, derivatives and NAV calculations reference a closing price. Find what the reference price becomes, because a number that thousands of contracts settle on is being quietly redefined.
+
+Source: overnight crypto news roundup, 2026-09-02 — LSE × Payward partnership; xStocks on LSE 24 planned for 2027, subject to regulatory approval.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# The wallet disappeared into the app\n\nEmbedded wallets and passkeys remove the seed phrase from onboarding, but the trust question moves into recovery, export, app signers, and transaction policies.\n\nBuild one login-to-first-transaction flow with an embedded wallet provider (e.g. Privy), then run the four failure paths — new device, lost authentication factor, key export, scoped app signer — and fill in the authority matrix before comparing click counts.\n\n## Why\n\nThe trend is not \"wallets became easy.\" Wallet responsibilities moved into the application. The PoC measures whether the user has an exit and whether the app can act beyond what the UI implies.\n\nEmbedded wallets and passkeys remove the seed phrase from onboarding. They do not remove custody and authorization questions; those questions move into recovery, export, additional signers, and policies controlled through the application stack.\n\n## How it works\n\nBuild one login-to-first-transaction flow with an embedded wallet, then test device loss, key export, MFA recovery, and a scoped app signer. Draw the authority matrix before judging the UX.\n\n### PoC\n\nBuild login-to-first-transaction with an embedded wallet. Then test four paths: a new device, lost authentication factor, key export, and a scoped application signer. Produce the authority matrix before comparing click counts.\n\n| Actor | Can sign? | Can recover? | Can export? |\n| --- | --- | --- | --- |\n| User | Under configured authentication | Test explicitly | Verify the escape hatch |\n| Application signer | Only within policy — or the policy is cosmetic | No | No |\n| Provider | Depends on custody and key architecture | Document the exact role | Document the exact role |\n\nReference: [Privy embedded-wallet overview](https://docs.privy.io/wallets/overview/embedded).\n\n## Notes — background for the PoC (2026-09-02)\n\n### What an embedded wallet is\n\nA conventional wallet (MetaMask) is *external*: a separate app or extension the user installs, holding a seed phrase, that websites connect to. An **embedded wallet** lives inside the application. Logging in with email, Google, or a passkey silently provisions a real on-chain wallet — no extension, no seed-phrase ceremony, no visible \"wallet\" concept at all. The wallet becomes an implementation detail instead of a prerequisite, which is why this is now the default onboarding pattern for consumer crypto apps.\n\nThe technical trick is that no single place ever holds the whole private key: either **MPC** (the key never exists in one piece; parties co-sign) or **Shamir key sharding** (split into shares, reassembled briefly at signing time), with signing inside an isolated environment — a sandboxed iframe on the client, or a TEE on a server.\n\n### Privy specifically\n\n- **Shamir 3-share model** — a *device share* (browser/app storage), an *auth share* (held by Privy, released after login), and a *recovery share*. Any two reconstruct the key briefly inside an isolated iframe; Privy's servers never see the full key.\n- **Recovery** — the recovery share sits with Privy (default \"automatic\" mode) or is user-controlled (password-encrypted, or in iCloud/Google Drive). This choice *is* the custody decision — it is the answer to the lost-auth-factor path.\n- **Export** — users can export the full private key through a Privy-hosted flow; the app configures whether this is exposed.\n- **Server wallets & session signers** — TEE-based server-side wallets plus scoped signers with a policy engine (\"this signer may only call this contract, up to this amount\"). That is the fourth path.\n- **Context** — Stripe acquired Privy in June 2025 (paired with its stablecoin acquisition, Bridge): embedded wallets are becoming mainstream payments plumbing. Farcaster and Hyperliquid ship on it. Competitors — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — differ exactly along the authority-matrix dimensions: who holds which share, how recovery works, who can change policy.\n\n### What each of the four paths measures\n\n1. **New device** — a fresh device has no device share, so login requires Privy's servers to participate. The uncomfortable question: if Privy is down or deplatforms you, can you sign at all? Expected answer: not without a prior export. Privy holds an *availability veto* — it cannot take the assets, but it can block access.\n2. **Lost authentication factor** — recovery is where the real custodian reveals itself: whoever can approve recovery can, in effect, take the wallet. If recovery is \"email a support team,\" the custody story is weaker than the marketing.\n3. **Key export** — the exit door, and the strongest evidence for the self-custody claim. Test more than existence: the friction, whether the app developer can disable it, and whether the exported key is complete (it should reconstruct the same address in a vanilla wallet).\n4. **Scoped app signer** — the delegation boundary: what can the app do without the user, and who can widen that scope later? A policy the developer can rotate silently is a different object from one the user must re-approve.\n\n### The matrix before click counts\n\nClick counts measure onboarding friction; the matrix measures the trust model. Comparing UX first is how \"2 clicks to a wallet\" hides that several parties can act on the funds. Expanded matrix — rows are actions, columns are actors; fill each cell as *alone / needs cooperation / cannot*, from observation, not docs. Expected values to verify:\n\n| Action | User | Privy | App developer |\n| --- | --- | --- | --- |\n| Sign a transaction | Alone, after login | Cooperation — releases the auth share | Within signer policy only |\n| Export the key | Alone, if exposed | Cooperation — hosts the flow | Can gate exposure — verify |\n| Approve recovery | Depends on recovery mode | Default holder of the recovery share | Chooses the recovery mode |\n| Add / scope a signer | Consent per config — verify | Executes policy | Initiates |\n| Change policy | Re-approval? — verify | Enforces | Often alone — verify |\n| Block access (availability) | — | Auth-share veto | Can remove the UI |\n\nThe most interesting cells are usually \"approve recovery\" and \"change policy\" — that is where authority quietly concentrates in the app stack. Prediction to test: the app developer holds more authority than users assume, and Privy holds the availability veto. Neither appears in a click-count comparison.\n\n### The developer is the auditor\n\nThe end user never sees any of this — that is the point of embedded wallets, and the risk. Whatever the integrator configures becomes the custody reality users silently inherit. And the answers are configuration choices, not fixed properties: \"Privy is non-custodial\" is a marketing sentence, and two apps on the same Privy SDK can have genuinely different custody models. Run the four paths by hand because docs describe the design; the paths reveal deployed behavior — unnoticed defaults, failing flows, support-team backdoors. That is also why the matrix comes first: it forces \"who can do what\" onto paper as observed facts before any UX judgment.\n"</script>
+      <script type="application/json" id="copy-en">"# The incumbent lists the wrapper — xStocks moves inside the LSE\n\nTokenized stocks have lived on crypto venues, wrapping shares held somewhere else. LSE partnering with Kraken's parent Payward to list xStocks on its 24-hour platform in 2027 inverts the direction: the venue that runs the actual market adopts the token. Whether that token becomes a real register entry or stays an IOU is now a choice the incumbent gets to make.\n\nNot yet scoped — nothing is testable until the structure documents publish, so the PoC is a reading list with a scorecard.\n\n**The claim test.** When the UK tokenized-equity structure is published, score it on one axis: is the token the register entry itself, a beneficial interest via a nominee/SPV, or a contractual claim on Payward? Each answer assigns the counterparty you actually hold.\n\n**The corporate-actions test.** Dividends, votes, splits: do they flow to the token holder natively, or through a servicing chain? Every intermediary in that chain is a party that can fail on a Friday.\n\n**The close test.** LSE 24 means trading with no daily close — but index funds, derivatives and NAV calculations reference a closing price. Find what the reference price becomes, because a number that thousands of contracts settle on is being quietly redefined.\n\nSource: overnight crypto news roundup, 2026-09-02 — LSE × Payward partnership; xStocks on LSE 24 planned for 2027, subject to regulatory approval.\n\n## Why\n\n**Until now the wrapper chased the register; now the register considers the wrapper.** xStocks on a crypto exchange is a token whose issuer promises there is a share somewhere — `tokenized-equity-claim-rail`'s whole problem is auditing that promise. The operator of the primary market doesn't need to promise: it can, if regulators allow, make the token *be* the entry. That is the one thing no crypto-native venue could ever offer, and it is why this partnership is categorically different from another xStocks listing.\n\n**But \"can\" is not \"will\" — the structure document is the product.** If LSE lists xStocks as yet another beneficial-interest wrapper, then even on the incumbent's own platform the token is an IOU, and the news is just distribution. The deciding sentence will be about the register, corporate actions, and insolvency — the same test as `jurisdiction-decides-the-category`: the category is decided in the paperwork, not the press release. Watch for the quiet detail of *which* entity faces the token holder.\n\n**The sleeper story is the death of the close.** 24-hour equity trading doesn't just extend hours; it removes the daily fixing that funds, futures and margin systems are built around. Japan's T+0 lesson (`japan-t0-settlement`) was that removing settlement risk also removes netting; removing the close removes the day's agreed number. Some infrastructure somewhere is about to inherit the job of saying what a share was worth \"today.\"\n\n## How it works\n\n### Three structures the same ticker can hide\n\n| Structure | The token is | Your counterparty | Corporate actions |\n| --- | --- | --- | --- |\n| Register-native | The share's register entry | The issuer (the company) | Native |\n| Nominee / SPV | A beneficial interest | The nominee and its jurisdiction | Passed through, with lag |\n| Contractual wrapper | An IOU tracking the price | The wrapper's issuer | Synthetic or absent |\n\nOne axis, three counterparties. The 2027 listing lands on exactly one row, and the row matters more than the listing.\n\n### What the incumbent changes — and what it can't\n\n| Question | Crypto venue xStocks | LSE xStocks |\n| --- | --- | --- |\n| Can the token be the register? | Never | Possible — the actual news |\n| Regulatory home | Offshore, varies | UK, explicit |\n| 24h trading | Already | New for the venue — the close problem |\n| Distribution | Crypto-native users | Both worlds, wallet-based access |\n\n### What to read in 2027, in order\n\n1. The structure document: which row of the first table.\n2. The insolvency section: what happens to holders if Payward fails; if the nominee fails.\n3. The reference-price methodology for a market with no close.\n4. Fungibility: can a share move between the main book and LSE 24, and who performs the conversion?\n"</script>
       <h2>Why</h2>
-      <p>The trend is not &quot;wallets became easy.&quot; Wallet responsibilities moved into the application. The PoC measures whether the user has an exit and whether the app can act beyond what the UI implies.</p>
-<p>Embedded wallets and passkeys remove the seed phrase from onboarding. They do not remove custody and authorization questions; those questions move into recovery, export, additional signers, and policies controlled through the application stack.</p>
+      <p><strong>Until now the wrapper chased the register; now the register considers the wrapper.</strong> xStocks on a crypto exchange is a token whose issuer promises there is a share somewhere — <code>tokenized-equity-claim-rail</code>&#39;s whole problem is auditing that promise. The operator of the primary market doesn&#39;t need to promise: it can, if regulators allow, make the token <em>be</em> the entry. That is the one thing no crypto-native venue could ever offer, and it is why this partnership is categorically different from another xStocks listing.</p>
+<p><strong>But &quot;can&quot; is not &quot;will&quot; — the structure document is the product.</strong> If LSE lists xStocks as yet another beneficial-interest wrapper, then even on the incumbent&#39;s own platform the token is an IOU, and the news is just distribution. The deciding sentence will be about the register, corporate actions, and insolvency — the same test as <code>jurisdiction-decides-the-category</code>: the category is decided in the paperwork, not the press release. Watch for the quiet detail of <em>which</em> entity faces the token holder.</p>
+<p><strong>The sleeper story is the death of the close.</strong> 24-hour equity trading doesn&#39;t just extend hours; it removes the daily fixing that funds, futures and margin systems are built around. Japan&#39;s T+0 lesson (<code>japan-t0-settlement</code>) was that removing settlement risk also removes netting; removing the close removes the day&#39;s agreed number. Some infrastructure somewhere is about to inherit the job of saying what a share was worth &quot;today.&quot;</p>
       <h2>How it works</h2>
-      <p>Build one login-to-first-transaction flow with an embedded wallet, then test device loss, key export, MFA recovery, and a scoped app signer. Draw the authority matrix before judging the UX.</p>
-<h3>PoC</h3>
-<p>Build login-to-first-transaction with an embedded wallet. Then test four paths: a new device, lost authentication factor, key export, and a scoped application signer. Produce the authority matrix before comparing click counts.</p>
+      <h3>Three structures the same ticker can hide</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Actor</th>
-<th>Can sign?</th>
-<th>Can recover?</th>
-<th>Can export?</th>
+<th>Structure</th>
+<th>The token is</th>
+<th>Your counterparty</th>
+<th>Corporate actions</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>User</td>
-<td>Under configured authentication</td>
-<td>Test explicitly</td>
-<td>Verify the escape hatch</td>
+<td>Register-native</td>
+<td>The share&#39;s register entry</td>
+<td>The issuer (the company)</td>
+<td>Native</td>
 </tr>
 <tr>
-<td>Application signer</td>
-<td>Only within policy — or the policy is cosmetic</td>
-<td>No</td>
-<td>No</td>
+<td>Nominee / SPV</td>
+<td>A beneficial interest</td>
+<td>The nominee and its jurisdiction</td>
+<td>Passed through, with lag</td>
 </tr>
 <tr>
-<td>Provider</td>
-<td>Depends on custody and key architecture</td>
-<td>Document the exact role</td>
-<td>Document the exact role</td>
+<td>Contractual wrapper</td>
+<td>An IOU tracking the price</td>
+<td>The wrapper&#39;s issuer</td>
+<td>Synthetic or absent</td>
 </tr>
 </tbody></table></div>
-<p>Reference: <a href="https://docs.privy.io/wallets/overview/embedded">Privy embedded-wallet overview</a>.</p>
-<h2>Notes — background for the PoC (2026-09-02)</h2>
-<h3>What an embedded wallet is</h3>
-<p>A conventional wallet (MetaMask) is <em>external</em>: a separate app or extension the user installs, holding a seed phrase, that websites connect to. An <strong>embedded wallet</strong> lives inside the application. Logging in with email, Google, or a passkey silently provisions a real on-chain wallet — no extension, no seed-phrase ceremony, no visible &quot;wallet&quot; concept at all. The wallet becomes an implementation detail instead of a prerequisite, which is why this is now the default onboarding pattern for consumer crypto apps.</p>
-<p>The technical trick is that no single place ever holds the whole private key: either <strong>MPC</strong> (the key never exists in one piece; parties co-sign) or <strong>Shamir key sharding</strong> (split into shares, reassembled briefly at signing time), with signing inside an isolated environment — a sandboxed iframe on the client, or a TEE on a server.</p>
-<h3>Privy specifically</h3>
-<ul>
-<li><strong>Shamir 3-share model</strong> — a <em>device share</em> (browser/app storage), an <em>auth share</em> (held by Privy, released after login), and a <em>recovery share</em>. Any two reconstruct the key briefly inside an isolated iframe; Privy&#39;s servers never see the full key.</li>
-<li><strong>Recovery</strong> — the recovery share sits with Privy (default &quot;automatic&quot; mode) or is user-controlled (password-encrypted, or in iCloud/Google Drive). This choice <em>is</em> the custody decision — it is the answer to the lost-auth-factor path.</li>
-<li><strong>Export</strong> — users can export the full private key through a Privy-hosted flow; the app configures whether this is exposed.</li>
-<li><strong>Server wallets &amp; session signers</strong> — TEE-based server-side wallets plus scoped signers with a policy engine (&quot;this signer may only call this contract, up to this amount&quot;). That is the fourth path.</li>
-<li><strong>Context</strong> — Stripe acquired Privy in June 2025 (paired with its stablecoin acquisition, Bridge): embedded wallets are becoming mainstream payments plumbing. Farcaster and Hyperliquid ship on it. Competitors — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — differ exactly along the authority-matrix dimensions: who holds which share, how recovery works, who can change policy.</li>
-</ul>
-<h3>What each of the four paths measures</h3>
+<p>One axis, three counterparties. The 2027 listing lands on exactly one row, and the row matters more than the listing.</p>
+<h3>What the incumbent changes — and what it can&#39;t</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Crypto venue xStocks</th>
+<th>LSE xStocks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Can the token be the register?</td>
+<td>Never</td>
+<td>Possible — the actual news</td>
+</tr>
+<tr>
+<td>Regulatory home</td>
+<td>Offshore, varies</td>
+<td>UK, explicit</td>
+</tr>
+<tr>
+<td>24h trading</td>
+<td>Already</td>
+<td>New for the venue — the close problem</td>
+</tr>
+<tr>
+<td>Distribution</td>
+<td>Crypto-native users</td>
+<td>Both worlds, wallet-based access</td>
+</tr>
+</tbody></table></div>
+<h3>What to read in 2027, in order</h3>
 <ol>
-<li><strong>New device</strong> — a fresh device has no device share, so login requires Privy&#39;s servers to participate. The uncomfortable question: if Privy is down or deplatforms you, can you sign at all? Expected answer: not without a prior export. Privy holds an <em>availability veto</em> — it cannot take the assets, but it can block access.</li>
-<li><strong>Lost authentication factor</strong> — recovery is where the real custodian reveals itself: whoever can approve recovery can, in effect, take the wallet. If recovery is &quot;email a support team,&quot; the custody story is weaker than the marketing.</li>
-<li><strong>Key export</strong> — the exit door, and the strongest evidence for the self-custody claim. Test more than existence: the friction, whether the app developer can disable it, and whether the exported key is complete (it should reconstruct the same address in a vanilla wallet).</li>
-<li><strong>Scoped app signer</strong> — the delegation boundary: what can the app do without the user, and who can widen that scope later? A policy the developer can rotate silently is a different object from one the user must re-approve.</li>
+<li>The structure document: which row of the first table.</li>
+<li>The insolvency section: what happens to holders if Payward fails; if the nominee fails.</li>
+<li>The reference-price methodology for a market with no close.</li>
+<li>Fungibility: can a share move between the main book and LSE 24, and who performs the conversion?</li>
 </ol>
-<h3>The matrix before click counts</h3>
-<p>Click counts measure onboarding friction; the matrix measures the trust model. Comparing UX first is how &quot;2 clicks to a wallet&quot; hides that several parties can act on the funds. Expanded matrix — rows are actions, columns are actors; fill each cell as <em>alone / needs cooperation / cannot</em>, from observation, not docs. Expected values to verify:</p>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>Action</th>
-<th>User</th>
-<th>Privy</th>
-<th>App developer</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Sign a transaction</td>
-<td>Alone, after login</td>
-<td>Cooperation — releases the auth share</td>
-<td>Within signer policy only</td>
-</tr>
-<tr>
-<td>Export the key</td>
-<td>Alone, if exposed</td>
-<td>Cooperation — hosts the flow</td>
-<td>Can gate exposure — verify</td>
-</tr>
-<tr>
-<td>Approve recovery</td>
-<td>Depends on recovery mode</td>
-<td>Default holder of the recovery share</td>
-<td>Chooses the recovery mode</td>
-</tr>
-<tr>
-<td>Add / scope a signer</td>
-<td>Consent per config — verify</td>
-<td>Executes policy</td>
-<td>Initiates</td>
-</tr>
-<tr>
-<td>Change policy</td>
-<td>Re-approval? — verify</td>
-<td>Enforces</td>
-<td>Often alone — verify</td>
-</tr>
-<tr>
-<td>Block access (availability)</td>
-<td>—</td>
-<td>Auth-share veto</td>
-<td>Can remove the UI</td>
-</tr>
-</tbody></table></div>
-<p>The most interesting cells are usually &quot;approve recovery&quot; and &quot;change policy&quot; — that is where authority quietly concentrates in the app stack. Prediction to test: the app developer holds more authority than users assume, and Privy holds the availability veto. Neither appears in a click-count comparison.</p>
-<h3>The developer is the auditor</h3>
-<p>The end user never sees any of this — that is the point of embedded wallets, and the risk. Whatever the integrator configures becomes the custody reality users silently inherit. And the answers are configuration choices, not fixed properties: &quot;Privy is non-custodial&quot; is a marketing sentence, and two apps on the same Privy SDK can have genuinely different custody models. Run the four paths by hand because docs describe the design; the paths reveal deployed behavior — unnoticed defaults, failing flows, support-team backdoors. That is also why the matrix comes first: it forces &quot;who can do what&quot; onto paper as observed facts before any UX judgment.</p>
       
       <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 지갑이 앱 속으로 사라졌다\n\n임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없애지만, 신뢰 문제는 복구·내보내기·앱 서명자·트랜잭션 정책으로 옮겨 갑니다.\n\n임베디드 지갑 제공자(예: Privy)로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 네 가지 경로 — 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자 — 를 실행합니다. 클릭 수를 비교하기 전에 권한표부터 채웁니다.\n\n## 왜\n\n이 흐름의 본질은 \"지갑이 쉬워졌다\"가 아닙니다. 지갑의 책임이 애플리케이션 안으로 옮겨 간 것입니다. 이 PoC 는 사용자에게 출구가 있는지, 그리고 앱이 UI 가 암시하는 것 이상으로 행동할 수 있는지를 측정합니다.\n\n임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없앱니다. 하지만 수탁과 인가의 문제를 없애지는 않습니다 — 그 문제들은 복구, 내보내기, 추가 서명자, 애플리케이션 스택으로 제어되는 정책 속으로 옮겨 갑니다.\n\n## 동작 방식\n\n임베디드 지갑으로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 기기 분실, 키 내보내기, MFA 복구, 범위가 제한된 앱 서명자를 시험합니다. UX 를 평가하기 전에 권한표부터 그립니다.\n\n### PoC\n\n임베디드 지갑으로 로그인→첫 트랜잭션을 만듭니다. 그다음 네 경로를 시험합니다: 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자. 클릭 수를 비교하기 전에 권한표를 만듭니다.\n\n| 행위자 | 서명 가능? | 복구 가능? | 내보내기 가능? |\n| --- | --- | --- | --- |\n| 사용자 | 설정된 인증 아래에서 | 명시적으로 시험할 것 | 탈출구가 실재하는지 확인할 것 |\n| 앱 서명자 | 정책 안에서만 — 아니면 그 정책은 장식 | 불가 | 불가 |\n| 제공자 | 수탁·키 구조에 따라 다름 | 정확한 역할을 문서화할 것 | 정확한 역할을 문서화할 것 |\n\n참고: [Privy 임베디드 지갑 개요](https://docs.privy.io/wallets/overview/embedded).\n\n## 노트 — PoC 를 위한 배경 (2026-09-02)\n\n### 임베디드 지갑이란\n\nMetaMask 같은 일반 지갑은 *외부형*입니다: 사용자가 따로 설치하는 앱/확장 프로그램이 시드 문구를 보관하고, 웹사이트가 거기에 연결합니다. **임베디드 지갑**은 애플리케이션 안에 삽입됩니다. 이메일·구글·패스키로 로그인하면 앱이 백그라운드에서 실제 온체인 지갑을 조용히 만들어 줍니다 — 확장 프로그램도, 시드 문구 의식도, 눈에 보이는 \"지갑\" 개념 자체도 없습니다. 지갑이 전제조건이 아니라 구현 세부사항이 되고, 그래서 지금 소비자용 크립토 앱의 기본 온보딩 패턴이 됐습니다.\n\n기술적 핵심은 개인키 전체를 한 곳에 두지 않는 것: **MPC**(키가 한 조각으로 존재한 적 없이 여러 당사자가 공동 서명) 또는 **Shamir 키 분할**(조각으로 나눠 서명 순간에만 잠깐 재조합). 서명은 격리된 환경 — 클라이언트의 샌드박스 iframe 이나 서버의 TEE — 에서 일어납니다.\n\n### Privy 는 구체적으로\n\n- **Shamir 3조각 모델** — *기기 조각*(브라우저/앱 저장소), *인증 조각*(Privy 보관, 로그인 후 제공), *복구 조각*. 셋 중 둘만 있으면 격리된 iframe 안에서 키가 잠깐 재조합되고, Privy 서버는 전체 키를 본 적이 없습니다.\n- **복구** — 복구 조각을 Privy 가 보관(기본 \"자동\" 모드)하거나 사용자가 통제(비밀번호 암호화, iCloud/Google Drive)합니다. 이 선택이 *곧* 수탁 결정 — 인증수단 분실 경로의 답이 여기 있습니다.\n- **내보내기** — Privy 가 호스팅하는 절차로 전체 개인키를 내보낼 수 있고, 이 기능의 노출 여부는 앱이 설정합니다.\n- **서버 지갑과 세션 서명자** — TEE 기반 서버 지갑, 그리고 정책 엔진이 붙은 범위 제한 서명자(\"이 서명자는 이 컨트랙트만, 이 금액까지만\"). 네 번째 경로가 이것입니다.\n- **맥락** — 2025년 6월 Stripe 가 Privy 를 인수했습니다(스테이블코인 회사 Bridge 인수와 짝): 임베디드 지갑이 주류 결제 인프라가 되고 있다는 신호. Farcaster, Hyperliquid 가 사용 중입니다. 경쟁사 — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — 의 차이가 정확히 권한표의 차원들입니다: 누가 어떤 조각을 쥐고, 복구가 어떻게 되고, 정책을 누가 바꾸는가.\n\n### 네 경로가 각각 측정하는 것\n\n1. **새 기기** — 새 기기에는 기기 조각이 없으므로 로그인에 Privy 서버의 참여가 필수입니다. 불편한 질문: Privy 가 다운되거나 나를 차단하면 서명이 가능한가? 예상 답: 사전에 내보내기를 하지 않았다면 불가능. Privy 는 *가용성 거부권*을 쥡니다 — 자산을 뺏을 수는 없지만 접근을 막을 수는 있습니다.\n2. **인증수단 분실** — 복구야말로 진짜 수탁자가 드러나는 지점: 복구를 승인할 수 있는 자가 사실상 지갑을 가져갈 수 있습니다. 복구가 \"지원팀에 이메일\" 수준이라면 수탁 스토리는 마케팅보다 약한 겁니다.\n3. **키 내보내기** — 비상구이자 셀프 커스터디 주장의 가장 강력한 증거. 존재 여부만이 아니라 마찰의 정도, 앱 개발자가 비활성화할 수 있는지, 내보낸 키가 완전한지(일반 지갑에서 같은 주소가 복원되는지)까지 시험합니다.\n4. **범위 제한 앱 서명자** — 위임의 경계: 앱이 사용자 없이 무엇을 할 수 있고, 그 범위를 누가 나중에 넓힐 수 있는가? 개발자가 조용히 바꿀 수 있는 정책과 사용자가 재승인해야 하는 정책은 전혀 다른 물건입니다.\n\n### 클릭 수보다 권한표가 먼저인 이유\n\n클릭 수는 온보딩 마찰을 재고, 권한표는 신뢰 모델을 잽니다. UX 부터 비교하면 \"2클릭이면 지갑 생성\"이 여러 당사자가 자금에 손댈 수 있다는 사실을 가립니다. 확장된 권한표 — 행은 행위, 열은 주체, 각 칸은 *단독 가능 / 협조 필요 / 불가* 를 문서가 아니라 관찰로 채웁니다. 검증할 예상값:\n\n| 행위 | 사용자 | Privy | 앱 개발자 |\n| --- | --- | --- | --- |\n| 트랜잭션 서명 | 로그인 후 단독 | 협조 — 인증 조각 제공 | 서명자 정책 안에서만 |\n| 키 내보내기 | 노출돼 있다면 단독 | 협조 — 절차 호스팅 | 노출 차단 가능 — 검증 |\n| 복구 승인 | 복구 모드에 따라 다름 | 복구 조각의 기본 보관자 | 복구 모드를 선택 |\n| 서명자 추가/범위 지정 | 설정에 따른 동의 — 검증 | 정책 실행 | 주도 |\n| 정책 변경 | 재승인 필요? — 검증 | 집행 | 단독인 경우 많음 — 검증 |\n| 접근 차단 (가용성) | — | 인증 조각 거부권 | UI 제거 가능 |\n\n가장 흥미로운 칸은 보통 \"복구 승인\"과 \"정책 변경\" — 권한이 앱 스택 쪽으로 조용히 집중되는 지점입니다. 시험할 예측: 앱 개발자는 사용자 생각보다 많은 권한을 쥐고, Privy 는 가용성 거부권을 쥔다. 둘 다 클릭 수 비교에는 나타나지 않습니다.\n\n### 개발자가 곧 감사인이다\n\n최종 사용자는 이 어떤 것도 보지 못합니다 — 그게 임베디드 지갑의 존재 이유이자 위험입니다. 도입자가 설정한 그대로가 사용자들이 조용히 물려받는 수탁 현실이 됩니다. 그리고 답들은 고정된 성질이 아니라 설정 선택입니다: \"Privy 는 논커스터디얼\"은 마케팅 문장이고, 같은 Privy SDK 로 만든 두 앱이 진짜로 다른 수탁 모델을 가질 수 있습니다. 문서는 설계를 설명할 뿐이므로 네 경로를 직접 실행합니다 — 미처 못 본 기본값, 실패하는 플로우, 지원팀 뒷문은 배포된 동작에서만 드러납니다. 권한표를 먼저 만드는 이유도 같습니다: UX 판단에 앞서 \"누가 무엇을 할 수 있는가\"를 관찰된 사실로 종이에 강제하는 산출물이기 때문입니다.\n"</script>
-      <h1>지갑이 앱 속으로 사라졌다</h1>
-      <p class="lead">임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없애지만, 신뢰 문제는 복구·내보내기·앱 서명자·트랜잭션 정책으로 옮겨 갑니다.</p>
-      <p class="meta">임베디드 지갑 제공자(예: Privy)로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 네 가지 경로 — 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자 — 를 실행합니다. 클릭 수를 비교하기 전에 권한표부터 채웁니다.</p>
+      <script type="application/json" id="copy-ko">"# 현직 거래소가 래퍼를 상장하다 — xStocks, LSE 안으로\n\n토큰화 주식은 지금껏 크립토 거래소에 살았습니다 — 다른 어딘가에 보관된 주식을 감싼 채로. LSE 가 크라켄의 모회사 페이워드와 손잡고 2027년 24시간 플랫폼에 xStocks 를 상장하는 것은 **방향을 뒤집습니다: 실제 시장을 운영하는 거래소가 토큰을 들입니다.** 그 토큰이 **진짜 등록부 기재가 될지 IOU 로 남을지는 이제 현직자가 고를 수 있는 선택**입니다.\n\n**아직 범위 미정** — 구조 문서가 공개되기 전에는 시험할 것이 없으므로, PoC 는 **채점표가 붙은 읽기 목록**입니다.\n\n**청구권 시험.** 영국 토큰화 주식 구조가 공개되면 한 축으로 채점합니다: 토큰이 **등록부 기재 그 자체**인가, 노미니/SPV 를 통한 **수익적 권리**인가, 페이워드에 대한 **계약상 청구**인가? 각 답이 **내가 실제로 들고 있는 상대방**을 지정합니다.\n\n**주주 행위 시험.** 배당·의결·분할이 토큰 보유자에게 **네이티브로** 흐르나, 서비싱 체인을 거치나? 그 체인의 중개자 하나하나가 **금요일에 무너질 수 있는 당사자**입니다.\n\n**종가 시험.** LSE 24 는 일일 종가 없는 거래를 뜻합니다 — 그런데 인덱스 펀드, 파생상품, NAV 계산은 종가를 참조합니다. **참조 가격이 무엇이 되는지** 찾으십시오. 수천 개 계약이 정산 기준으로 삼는 숫자가 조용히 재정의되고 있으니까.\n\n출처: 글로벌 크립토 뉴스 정리, 2026-09-02 — LSE × 페이워드 파트너십; 규제 승인 전제, 2027년 LSE 24 에 xStocks 상장 예정.\n\n## 왜\n\n**지금까지는 래퍼가 등록부를 쫓아다녔는데, 이제 등록부가 래퍼를 검토합니다.** 크립토 거래소의 xStocks 는 **어딘가에 주식이 있다고 발행사가 약속하는 토큰**이고 — `tokenized-equity-claim-rail` 의 문제 전체가 그 약속의 감사였습니다. 1차 시장 운영자는 약속할 필요가 없습니다: 규제가 허락하면 **토큰이 기재 그 자체가 되게** 할 수 있습니다. 크립토 네이티브 거래소는 결코 줄 수 없던 한 가지이고, 이 파트너십이 또 하나의 xStocks 상장과 범주적으로 다른 이유입니다.\n\n**하지만 \"할 수 있다\"는 \"한다\"가 아닙니다 — 구조 문서가 곧 제품입니다.** LSE 가 xStocks 를 또 하나의 수익적 권리 래퍼로 상장하면, 현직자의 플랫폼 위에서도 토큰은 IOU 이고 뉴스는 유통망 얘기일 뿐입니다. 결정적 문장은 등록부·주주 행위·도산에 관한 것일 겁니다 — `jurisdiction-decides-the-category` 와 같은 시험: **범주는 보도자료가 아니라 서류에서 결정됩니다.** 토큰 보유자를 마주 보는 주체가 *누구인지*의 조용한 디테일을 지켜보십시오.\n\n**숨은 이야기는 종가의 소멸입니다.** 24시간 주식 거래는 시간을 늘리는 게 아니라 **펀드·선물·마진 시스템이 딛고 선 일일 픽싱을 없앱니다.** 일본 T+0 의 교훈(`japan-t0-settlement`)이 정산 리스크를 없애면 네팅도 없어진다는 것이었듯, 종가를 없애면 **그날의 합의된 숫자**가 없어집니다. 어딘가의 인프라가 \"오늘\" 주식이 얼마였는지 말하는 일을 곧 물려받게 됩니다.\n\n## 동작 방식\n\n### 같은 티커가 숨길 수 있는 세 구조\n\n| 구조 | 토큰은 | 나의 상대방 | 주주 행위 |\n| --- | --- | --- | --- |\n| 등록부 네이티브 | 주식의 등록부 기재 | 발행사(회사) | 네이티브 |\n| 노미니 / SPV | 수익적 권리 | 노미니와 그 관할 | 지연을 두고 전달 |\n| 계약상 래퍼 | 가격을 추적하는 IOU | 래퍼 발행자 | 합성이거나 없음 |\n\n한 축, 세 상대방. 2027년 상장은 정확히 한 줄에 떨어지고, **상장보다 그 줄이 중요합니다.**\n\n### 현직자가 바꾸는 것 — 못 바꾸는 것\n\n| 질문 | 크립토 거래소 xStocks | LSE xStocks |\n| --- | --- | --- |\n| 토큰이 등록부일 수 있나? | 불가능 | **가능 — 이게 진짜 뉴스** |\n| 규제상 거처 | 역외, 제각각 | 영국, 명시적 |\n| 24시간 거래 | 이미 | 거래소에는 처음 — 종가 문제 |\n| 유통 | 크립토 네이티브 사용자 | 두 세계 모두, 지갑 기반 접근 |\n\n### 2027년에 읽을 것, 순서대로\n\n1. 구조 문서: 첫 표의 어느 줄인가.\n2. 도산 조항: 페이워드가 무너지면, 노미니가 무너지면 보유자는 어떻게 되나.\n3. 종가 없는 시장의 참조 가격 산정 방식.\n4. 대체 가능성: 주식이 메인 북과 LSE 24 사이를 오갈 수 있나, 전환은 누가 수행하나?\n"</script>
+      <h1>현직 거래소가 래퍼를 상장하다 — xStocks, LSE 안으로</h1>
+      <p class="lead">토큰화 주식은 지금껏 크립토 거래소에 살았습니다 — 다른 어딘가에 보관된 주식을 감싼 채로. LSE 가 크라켄의 모회사 페이워드와 손잡고 2027년 24시간 플랫폼에 xStocks 를 상장하는 것은 <strong>방향을 뒤집습니다: 실제 시장을 운영하는 거래소가 토큰을 들입니다.</strong> 그 토큰이 <strong>진짜 등록부 기재가 될지 IOU 로 남을지는 이제 현직자가 고를 수 있는 선택</strong>입니다.</p>
+      <p class="meta"><strong>아직 범위 미정</strong> — 구조 문서가 공개되기 전에는 시험할 것이 없으므로, PoC 는 <strong>채점표가 붙은 읽기 목록</strong>입니다.
+
+<strong>청구권 시험.</strong> 영국 토큰화 주식 구조가 공개되면 한 축으로 채점합니다: 토큰이 <strong>등록부 기재 그 자체</strong>인가, 노미니/SPV 를 통한 <strong>수익적 권리</strong>인가, 페이워드에 대한 <strong>계약상 청구</strong>인가? 각 답이 <strong>내가 실제로 들고 있는 상대방</strong>을 지정합니다.
+
+<strong>주주 행위 시험.</strong> 배당·의결·분할이 토큰 보유자에게 <strong>네이티브로</strong> 흐르나, 서비싱 체인을 거치나? 그 체인의 중개자 하나하나가 <strong>금요일에 무너질 수 있는 당사자</strong>입니다.
+
+<strong>종가 시험.</strong> LSE 24 는 일일 종가 없는 거래를 뜻합니다 — 그런데 인덱스 펀드, 파생상품, NAV 계산은 종가를 참조합니다. <strong>참조 가격이 무엇이 되는지</strong> 찾으십시오. 수천 개 계약이 정산 기준으로 삼는 숫자가 조용히 재정의되고 있으니까.
+
+출처: 글로벌 크립토 뉴스 정리, 2026-09-02 — LSE × 페이워드 파트너십; 규제 승인 전제, 2027년 LSE 24 에 xStocks 상장 예정.</p>
       <h2>왜</h2>
-      <p>이 흐름의 본질은 &quot;지갑이 쉬워졌다&quot;가 아닙니다. 지갑의 책임이 애플리케이션 안으로 옮겨 간 것입니다. 이 PoC 는 사용자에게 출구가 있는지, 그리고 앱이 UI 가 암시하는 것 이상으로 행동할 수 있는지를 측정합니다.</p>
-<p>임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없앱니다. 하지만 수탁과 인가의 문제를 없애지는 않습니다 — 그 문제들은 복구, 내보내기, 추가 서명자, 애플리케이션 스택으로 제어되는 정책 속으로 옮겨 갑니다.</p>
+      <p><strong>지금까지는 래퍼가 등록부를 쫓아다녔는데, 이제 등록부가 래퍼를 검토합니다.</strong> 크립토 거래소의 xStocks 는 <strong>어딘가에 주식이 있다고 발행사가 약속하는 토큰</strong>이고 — <code>tokenized-equity-claim-rail</code> 의 문제 전체가 그 약속의 감사였습니다. 1차 시장 운영자는 약속할 필요가 없습니다: 규제가 허락하면 <strong>토큰이 기재 그 자체가 되게</strong> 할 수 있습니다. 크립토 네이티브 거래소는 결코 줄 수 없던 한 가지이고, 이 파트너십이 또 하나의 xStocks 상장과 범주적으로 다른 이유입니다.</p>
+<p><strong>하지만 &quot;할 수 있다&quot;는 &quot;한다&quot;가 아닙니다 — 구조 문서가 곧 제품입니다.</strong> LSE 가 xStocks 를 또 하나의 수익적 권리 래퍼로 상장하면, 현직자의 플랫폼 위에서도 토큰은 IOU 이고 뉴스는 유통망 얘기일 뿐입니다. 결정적 문장은 등록부·주주 행위·도산에 관한 것일 겁니다 — <code>jurisdiction-decides-the-category</code> 와 같은 시험: <strong>범주는 보도자료가 아니라 서류에서 결정됩니다.</strong> 토큰 보유자를 마주 보는 주체가 <em>누구인지</em>의 조용한 디테일을 지켜보십시오.</p>
+<p><strong>숨은 이야기는 종가의 소멸입니다.</strong> 24시간 주식 거래는 시간을 늘리는 게 아니라 <strong>펀드·선물·마진 시스템이 딛고 선 일일 픽싱을 없앱니다.</strong> 일본 T+0 의 교훈(<code>japan-t0-settlement</code>)이 정산 리스크를 없애면 네팅도 없어진다는 것이었듯, 종가를 없애면 <strong>그날의 합의된 숫자</strong>가 없어집니다. 어딘가의 인프라가 &quot;오늘&quot; 주식이 얼마였는지 말하는 일을 곧 물려받게 됩니다.</p>
       <h2>동작 방식</h2>
-      <p>임베디드 지갑으로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 기기 분실, 키 내보내기, MFA 복구, 범위가 제한된 앱 서명자를 시험합니다. UX 를 평가하기 전에 권한표부터 그립니다.</p>
-<h3>PoC</h3>
-<p>임베디드 지갑으로 로그인→첫 트랜잭션을 만듭니다. 그다음 네 경로를 시험합니다: 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자. 클릭 수를 비교하기 전에 권한표를 만듭니다.</p>
+      <h3>같은 티커가 숨길 수 있는 세 구조</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>행위자</th>
-<th>서명 가능?</th>
-<th>복구 가능?</th>
-<th>내보내기 가능?</th>
+<th>구조</th>
+<th>토큰은</th>
+<th>나의 상대방</th>
+<th>주주 행위</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>사용자</td>
-<td>설정된 인증 아래에서</td>
-<td>명시적으로 시험할 것</td>
-<td>탈출구가 실재하는지 확인할 것</td>
+<td>등록부 네이티브</td>
+<td>주식의 등록부 기재</td>
+<td>발행사(회사)</td>
+<td>네이티브</td>
 </tr>
 <tr>
-<td>앱 서명자</td>
-<td>정책 안에서만 — 아니면 그 정책은 장식</td>
-<td>불가</td>
-<td>불가</td>
+<td>노미니 / SPV</td>
+<td>수익적 권리</td>
+<td>노미니와 그 관할</td>
+<td>지연을 두고 전달</td>
 </tr>
 <tr>
-<td>제공자</td>
-<td>수탁·키 구조에 따라 다름</td>
-<td>정확한 역할을 문서화할 것</td>
-<td>정확한 역할을 문서화할 것</td>
+<td>계약상 래퍼</td>
+<td>가격을 추적하는 IOU</td>
+<td>래퍼 발행자</td>
+<td>합성이거나 없음</td>
 </tr>
 </tbody></table></div>
-<p>참고: <a href="https://docs.privy.io/wallets/overview/embedded">Privy 임베디드 지갑 개요</a>.</p>
-<h2>노트 — PoC 를 위한 배경 (2026-09-02)</h2>
-<h3>임베디드 지갑이란</h3>
-<p>MetaMask 같은 일반 지갑은 <em>외부형</em>입니다: 사용자가 따로 설치하는 앱/확장 프로그램이 시드 문구를 보관하고, 웹사이트가 거기에 연결합니다. <strong>임베디드 지갑</strong>은 애플리케이션 안에 삽입됩니다. 이메일·구글·패스키로 로그인하면 앱이 백그라운드에서 실제 온체인 지갑을 조용히 만들어 줍니다 — 확장 프로그램도, 시드 문구 의식도, 눈에 보이는 &quot;지갑&quot; 개념 자체도 없습니다. 지갑이 전제조건이 아니라 구현 세부사항이 되고, 그래서 지금 소비자용 크립토 앱의 기본 온보딩 패턴이 됐습니다.</p>
-<p>기술적 핵심은 개인키 전체를 한 곳에 두지 않는 것: <strong>MPC</strong>(키가 한 조각으로 존재한 적 없이 여러 당사자가 공동 서명) 또는 <strong>Shamir 키 분할</strong>(조각으로 나눠 서명 순간에만 잠깐 재조합). 서명은 격리된 환경 — 클라이언트의 샌드박스 iframe 이나 서버의 TEE — 에서 일어납니다.</p>
-<h3>Privy 는 구체적으로</h3>
-<ul>
-<li><strong>Shamir 3조각 모델</strong> — <em>기기 조각</em>(브라우저/앱 저장소), <em>인증 조각</em>(Privy 보관, 로그인 후 제공), <em>복구 조각</em>. 셋 중 둘만 있으면 격리된 iframe 안에서 키가 잠깐 재조합되고, Privy 서버는 전체 키를 본 적이 없습니다.</li>
-<li><strong>복구</strong> — 복구 조각을 Privy 가 보관(기본 &quot;자동&quot; 모드)하거나 사용자가 통제(비밀번호 암호화, iCloud/Google Drive)합니다. 이 선택이 <em>곧</em> 수탁 결정 — 인증수단 분실 경로의 답이 여기 있습니다.</li>
-<li><strong>내보내기</strong> — Privy 가 호스팅하는 절차로 전체 개인키를 내보낼 수 있고, 이 기능의 노출 여부는 앱이 설정합니다.</li>
-<li><strong>서버 지갑과 세션 서명자</strong> — TEE 기반 서버 지갑, 그리고 정책 엔진이 붙은 범위 제한 서명자(&quot;이 서명자는 이 컨트랙트만, 이 금액까지만&quot;). 네 번째 경로가 이것입니다.</li>
-<li><strong>맥락</strong> — 2025년 6월 Stripe 가 Privy 를 인수했습니다(스테이블코인 회사 Bridge 인수와 짝): 임베디드 지갑이 주류 결제 인프라가 되고 있다는 신호. Farcaster, Hyperliquid 가 사용 중입니다. 경쟁사 — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — 의 차이가 정확히 권한표의 차원들입니다: 누가 어떤 조각을 쥐고, 복구가 어떻게 되고, 정책을 누가 바꾸는가.</li>
-</ul>
-<h3>네 경로가 각각 측정하는 것</h3>
+<p>한 축, 세 상대방. 2027년 상장은 정확히 한 줄에 떨어지고, <strong>상장보다 그 줄이 중요합니다.</strong></p>
+<h3>현직자가 바꾸는 것 — 못 바꾸는 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>질문</th>
+<th>크립토 거래소 xStocks</th>
+<th>LSE xStocks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>토큰이 등록부일 수 있나?</td>
+<td>불가능</td>
+<td><strong>가능 — 이게 진짜 뉴스</strong></td>
+</tr>
+<tr>
+<td>규제상 거처</td>
+<td>역외, 제각각</td>
+<td>영국, 명시적</td>
+</tr>
+<tr>
+<td>24시간 거래</td>
+<td>이미</td>
+<td>거래소에는 처음 — 종가 문제</td>
+</tr>
+<tr>
+<td>유통</td>
+<td>크립토 네이티브 사용자</td>
+<td>두 세계 모두, 지갑 기반 접근</td>
+</tr>
+</tbody></table></div>
+<h3>2027년에 읽을 것, 순서대로</h3>
 <ol>
-<li><strong>새 기기</strong> — 새 기기에는 기기 조각이 없으므로 로그인에 Privy 서버의 참여가 필수입니다. 불편한 질문: Privy 가 다운되거나 나를 차단하면 서명이 가능한가? 예상 답: 사전에 내보내기를 하지 않았다면 불가능. Privy 는 <em>가용성 거부권</em>을 쥡니다 — 자산을 뺏을 수는 없지만 접근을 막을 수는 있습니다.</li>
-<li><strong>인증수단 분실</strong> — 복구야말로 진짜 수탁자가 드러나는 지점: 복구를 승인할 수 있는 자가 사실상 지갑을 가져갈 수 있습니다. 복구가 &quot;지원팀에 이메일&quot; 수준이라면 수탁 스토리는 마케팅보다 약한 겁니다.</li>
-<li><strong>키 내보내기</strong> — 비상구이자 셀프 커스터디 주장의 가장 강력한 증거. 존재 여부만이 아니라 마찰의 정도, 앱 개발자가 비활성화할 수 있는지, 내보낸 키가 완전한지(일반 지갑에서 같은 주소가 복원되는지)까지 시험합니다.</li>
-<li><strong>범위 제한 앱 서명자</strong> — 위임의 경계: 앱이 사용자 없이 무엇을 할 수 있고, 그 범위를 누가 나중에 넓힐 수 있는가? 개발자가 조용히 바꿀 수 있는 정책과 사용자가 재승인해야 하는 정책은 전혀 다른 물건입니다.</li>
+<li>구조 문서: 첫 표의 어느 줄인가.</li>
+<li>도산 조항: 페이워드가 무너지면, 노미니가 무너지면 보유자는 어떻게 되나.</li>
+<li>종가 없는 시장의 참조 가격 산정 방식.</li>
+<li>대체 가능성: 주식이 메인 북과 LSE 24 사이를 오갈 수 있나, 전환은 누가 수행하나?</li>
 </ol>
-<h3>클릭 수보다 권한표가 먼저인 이유</h3>
-<p>클릭 수는 온보딩 마찰을 재고, 권한표는 신뢰 모델을 잽니다. UX 부터 비교하면 &quot;2클릭이면 지갑 생성&quot;이 여러 당사자가 자금에 손댈 수 있다는 사실을 가립니다. 확장된 권한표 — 행은 행위, 열은 주체, 각 칸은 <em>단독 가능 / 협조 필요 / 불가</em> 를 문서가 아니라 관찰로 채웁니다. 검증할 예상값:</p>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>행위</th>
-<th>사용자</th>
-<th>Privy</th>
-<th>앱 개발자</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>트랜잭션 서명</td>
-<td>로그인 후 단독</td>
-<td>협조 — 인증 조각 제공</td>
-<td>서명자 정책 안에서만</td>
-</tr>
-<tr>
-<td>키 내보내기</td>
-<td>노출돼 있다면 단독</td>
-<td>협조 — 절차 호스팅</td>
-<td>노출 차단 가능 — 검증</td>
-</tr>
-<tr>
-<td>복구 승인</td>
-<td>복구 모드에 따라 다름</td>
-<td>복구 조각의 기본 보관자</td>
-<td>복구 모드를 선택</td>
-</tr>
-<tr>
-<td>서명자 추가/범위 지정</td>
-<td>설정에 따른 동의 — 검증</td>
-<td>정책 실행</td>
-<td>주도</td>
-</tr>
-<tr>
-<td>정책 변경</td>
-<td>재승인 필요? — 검증</td>
-<td>집행</td>
-<td>단독인 경우 많음 — 검증</td>
-</tr>
-<tr>
-<td>접근 차단 (가용성)</td>
-<td>—</td>
-<td>인증 조각 거부권</td>
-<td>UI 제거 가능</td>
-</tr>
-</tbody></table></div>
-<p>가장 흥미로운 칸은 보통 &quot;복구 승인&quot;과 &quot;정책 변경&quot; — 권한이 앱 스택 쪽으로 조용히 집중되는 지점입니다. 시험할 예측: 앱 개발자는 사용자 생각보다 많은 권한을 쥐고, Privy 는 가용성 거부권을 쥔다. 둘 다 클릭 수 비교에는 나타나지 않습니다.</p>
-<h3>개발자가 곧 감사인이다</h3>
-<p>최종 사용자는 이 어떤 것도 보지 못합니다 — 그게 임베디드 지갑의 존재 이유이자 위험입니다. 도입자가 설정한 그대로가 사용자들이 조용히 물려받는 수탁 현실이 됩니다. 그리고 답들은 고정된 성질이 아니라 설정 선택입니다: &quot;Privy 는 논커스터디얼&quot;은 마케팅 문장이고, 같은 Privy SDK 로 만든 두 앱이 진짜로 다른 수탁 모델을 가질 수 있습니다. 문서는 설계를 설명할 뿐이므로 네 경로를 직접 실행합니다 — 미처 못 본 기본값, 실패하는 플로우, 지원팀 뒷문은 배포된 동작에서만 드러납니다. 권한표를 먼저 만드는 이유도 같습니다: UX 판단에 앞서 &quot;누가 무엇을 할 수 있는가&quot;를 관찰된 사실로 종이에 강제하는 산출물이기 때문입니다.</p>
       
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-ponder-reorg-indexer.html">&larr; 26. Ponder — the indexer is the reorg handler</a><a href="pocs-x402-settlement-retry.html">28. HTTP 402 is the easy part — settlement owns the retry &rarr;</a></div>
+    <div class="pager"><a href="pocs-halted-or-upgraded.html">&larr; 47. Halted or upgraded — the block gap is the same either way</a><a href="pocs-interest-ban-draws-the-border.html">49. No yield allowed — the interest ban is the border between payment and deposit &rarr;</a></div>
   </div>
   </main>
 </div>
