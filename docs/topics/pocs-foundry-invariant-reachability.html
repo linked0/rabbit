@@ -1,8 +1,667 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>An invariant test is only as good as the actions it reaches — PoCs</title>
-<style>body{margin:0;background:#f8fafc;color:#0f172a;font:16px/1.7 system-ui,sans-serif}main{max-width:900px;margin:auto;padding:48px 24px}a{color:#0284c7}.kicker{color:#0284c7;font-weight:700}h1{font-size:2.5rem;line-height:1.15}article{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:32px}.lang-switch,.copy-row{display:flex;gap:10px;align-items:center}.lang-switch{margin:0 0 18px}.lang-switch a{padding:4px 10px;border-radius:999px;text-decoration:none}.lang-switch a.on{background:#e0f2fe;font-weight:700}.copy-btn{border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:7px 11px;cursor:pointer}.copy-btn.ok{color:#0284c7;border-color:#0284c7}code{background:#f1f5f9;border-radius:5px;padding:.15em .35em}@media(prefers-color-scheme:dark){body{background:#0b1220;color:#e2e8f0}article{background:#111a2b;border-color:#1e293b}.copy-btn{background:#111a2b;color:#e2e8f0}.lang-switch a.on,code{background:#1e293b}}</style></head>
-<body><main><p><a href="../pocs.html#foundry-invariant-reachability">← Blockchain PoCs</a></p><p class="kicker">#38 · IMPORTANT · LIBRARY / TOOLING</p><h1>An invariant test is only as good as the actions it reaches</h1>
-<nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav><article><section id="en"><p class="copy-row"><button type="button" class="copy-btn" data-copy="en" data-done="Copied ✓">Copy English</button></p><p>Foundry checks invariants after randomized sequences of calls. A campaign can remain green while accomplishing almost nothing when generated calls revert before reaching meaningful protocol states.</p>
-<h2>PoC</h2><p>Test the same ERC-4626-style vault twice: first by targeting the contracts directly, then through handlers that prepare balances and approvals. Track calls, reverts, deposits, withdrawals, actors, and reached states with metrics and ghost variables. Seed a bug that requires a deposit-transfer-withdraw sequence.</p>
-<h2>What it proves</h2><p>The assertion is only half the test. The action distribution must reach the state space where the property could fail. Compare the open and handler-based campaigns by coverage and meaningful transitions, not merely runs and depth.</p>
-</section><section id="ko" lang="ko"><nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav><p class="copy-row"><button type="button" class="copy-btn" data-copy="ko" data-done="복사됨 ✓">Copy 한국어</button></p><h1>Invariant 테스트는 도달하는 동작만큼만 좋다</h1><p>Foundry는 무작위 호출 순서 뒤에 invariant를 검사합니다. 하지만 생성된 호출이 의미 있는 프로토콜 상태에 도달하기 전에 대부분 revert하면, 캠페인은 거의 아무것도 하지 않고도 계속 초록색일 수 있습니다.</p><h2>PoC</h2><p>같은 ERC-4626 형태의 vault를 두 번 시험합니다. 먼저 컨트랙트를 직접 대상으로 삼고, 다음에는 잔액과 승인을 준비하는 handler를 사용합니다. 메트릭과 ghost variable로 호출, revert, 입금, 출금, 행위자, 도달 상태를 추적합니다. 입금-전송-출금 순서가 있어야 드러나는 버그도 의도적으로 심습니다.</p><h2>무엇을 증명하나</h2><p>Assertion은 테스트의 절반뿐입니다. 동작 분포가 속성이 깨질 수 있는 상태 공간에 도달해야 합니다. open 방식과 handler 방식의 캠페인을 runs와 depth만이 아니라 coverage와 의미 있는 상태 전이로 비교합니다.</p></section>
-<p>Reference: <a href="https://getfoundry.sh/forge/invariant-testing">Foundry invariant testing</a>.</p></article></main><script src="pocs-detail-copy.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>An invariant test is only as good as the actions it reaches — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 제목과 배지를 한 줄에 — .rail-title 이 block 이라 그냥 두면 배지가 아래로 떨어진다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-left:8px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-done { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
+
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  /* 목록 행 안에서는 링크들과 한 줄에 서야 하므로 더 작고 납작하게 (jay, 2026-08-28). */
+  .copy-inline { font-size:0.72rem; padding:2px 9px; margin-left:6px; vertical-align:baseline; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-blockchain" title="Blockchain &mdash; done (29) / all (96)">Blockchain<b><span class="count-done">29</span><span class="count-all">/96</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; done (0) / all (8)">Economics<b><span class="count-done">0</span><span class="count-all">/8</span></b></a><a href="../pocs.html#sec-future" title="Future/Etc &mdash; done (0) / all (14)">Future/Etc<b><span class="count-done">0</span><span class="count-all">/14</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; done (3) / all (100)">Algorithms<b><span class="count-done">3</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; done (3) / all (52)">Math<b><span class="count-done">3</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-blockchain" data-group>
+        <p class="nav-group-label">Blockchain (96)</p>
+        <ul>
+        <li><a class="nav-link" href="pocs-governance-capture-cost.html" data-key="governance-capture-cost"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>Governance capture — when the exploit is a market order</span></a></li>
+        <li><a class="nav-link" href="pocs-agentic-intent-veto.html" data-key="agentic-intent-veto"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>The budget is the wrong invariant</span></a></li>
+        <li><a class="nav-link" href="pocs-aqua-shared-liquidity.html" data-key="aqua-shared-liquidity"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">3</span>Shared liquidity — quoted depth vs. the balance behind it</span></a></li>
+        <li><a class="nav-link" href="pocs-rwa-multichain.html" data-key="rwa-multichain"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">4</span>RWA across chains — the invariant nobody enforces</span></a></li>
+        <li><a class="nav-link" href="pocs-oz-relayer.html" data-key="oz-relayer"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">5</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
+        <li><a class="nav-link" href="pocs-dvt.html" data-key="dvt"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">6</span>DVT in the protocol</span></a></li>
+        <li><a class="nav-link" href="pocs-l1-zkevm-optional-proofs.html" data-key="l1-zkevm-optional-proofs"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">7</span>L1 zkEVM — the word doing the work is &quot;optional&quot;</span></a></li>
+        <li><a class="nav-link" href="pocs-erc-7683-settlement-security.html" data-key="erc-7683-settlement-security"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">8</span>ERC-7683 settlement security — the layer left deliberately unstandardized</span></a></li>
+        <li><a class="nav-link" href="pocs-event-contract-plumbing.html" data-key="event-contract-plumbing"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">9</span>The hiring signal is the spec — event-contract plumbing</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenized-money-banks.html" data-key="tokenized-money-banks"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">10</span>Tokenized Money for Banks</span></a></li>
+        <li><a class="nav-link" href="pocs-what-needs-a-stablecoin.html" data-key="what-needs-a-stablecoin"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">11</span>Not what a stablecoin can do — what needs one</span></a></li>
+        <li><a class="nav-link" href="pocs-monad-last-general-purpose-l1.html" data-key="monad-last-general-purpose-l1"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">12</span>Monad — the last general-purpose L1, and the number nobody adjusts for</span></a></li>
+        <li><a class="nav-link" href="pocs-the-bridge-is-inside-the-token.html" data-key="the-bridge-is-inside-the-token"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">13</span>The bridge is not beside the token any more — it is inside it</span></a></li>
+        <li><a class="nav-link" href="pocs-decision-market-uncontrollability.html" data-key="decision-market-uncontrollability"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">14</span>The property that makes a market work is the one that makes it gambling</span></a></li>
+        <li><a class="nav-link" href="pocs-stake-concentration.html" data-key="stake-concentration"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">15</span>Stake concentration risk</span></a></li>
+        <li><a class="nav-link" href="pocs-the-settlement-instant.html" data-key="the-settlement-instant"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">16</span>A price at a moment — the instant, the window, and who can move it</span></a></li>
+        <li><a class="nav-link" href="pocs-stablecoin-redemption-desk.html" data-key="stablecoin-redemption-desk"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">17</span>The redemption desk — what actually makes a stablecoin's denominator</span></a></li>
+        <li><a class="nav-link" href="pocs-arb-bots-are-the-peg.html" data-key="arb-bots-are-the-peg"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">18</span>Nobody runs the peg — the competing bots are the mechanism</span></a></li>
+        <li><a class="nav-link" href="pocs-third-party-blast-radius.html" data-key="third-party-blast-radius"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">19</span>Trusted third parties — the blast radius nobody maps</span></a></li>
+        <li><a class="nav-link" href="pocs-jurisdiction-decides-the-category.html" data-key="jurisdiction-decides-the-category"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">20</span>Same product, three verdicts in eight days</span></a></li>
+        <li><a class="nav-link" href="pocs-plumbing-skills-buyback.html" data-key="plumbing-skills-buyback"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">21</span>Four capabilities, each buying back what the chain gave away</span></a></li>
+        <li><a class="nav-link" href="pocs-irreversible-switch-design.html" data-key="irreversible-switch-design"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">22</span>The migration works by making the contract dumber</span></a></li>
+        <li><a class="nav-link" href="pocs-quick-slots-10s.html" data-key="quick-slots-10s"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">23</span>Ten-second slots — the constant nobody wrote down</span></a></li>
+        <li><a class="nav-link" href="pocs-l1-data-pricing-dimensions.html" data-key="l1-data-pricing-dimensions"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">24</span>When gas stops being one number — data pricing and bandwidth accounting</span></a></li>
+        <li><a class="nav-link" href="pocs-rpc-view-not-consensus.html" data-key="rpc-view-not-consensus"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">25</span>An RPC response is a view, not consensus</span></a></li>
+        <li><a class="nav-link" href="pocs-ponder-reorg-indexer.html" data-key="ponder-reorg-indexer"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">26</span>Ponder — the indexer is the reorg handler</span></a></li>
+        <li><a class="nav-link" href="pocs-embedded-wallet-policy.html" data-key="embedded-wallet-policy"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">27</span>The wallet disappeared into the app</span></a></li>
+        <li><a class="nav-link" href="pocs-x402-settlement-retry.html" data-key="x402-settlement-retry"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">28</span>HTTP 402 is the easy part — settlement owns the retry</span></a></li>
+        <li><a class="nav-link" href="pocs-safe-module-root-key.html" data-key="safe-module-root-key"><span class="nav-dot" style="background:#111827;" title="DONE"></span><span class="nav-text"><span class="topic-no">29</span>A Safe module is a root key with an interface</span></a></li>
+        <li><a class="nav-link" href="pocs-what-encryption-does-not-hide.html" data-key="what-encryption-does-not-hide"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">30</span>Hiding the amount is the easy half</span></a></li>
+        <li><a class="nav-link" href="pocs-erc-8141.html" data-key="erc-8141"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">31</span>ERC-8141</span></a></li>
+        <li><a class="nav-link" href="pocs-receipt-is-not-settlement.html" data-key="receipt-is-not-settlement"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">32</span>A successful receipt is not settlement</span></a></li>
+        <li><a class="nav-link" href="pocs-l2-finality-three-clocks.html" data-key="l2-finality-three-clocks"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">33</span>L2 finality is three clocks</span></a></li>
+        <li><a class="nav-link" href="pocs-simulate-before-sign.html" data-key="simulate-before-sign"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">34</span>Simulation belongs before the wallet prompt</span></a></li>
+        <li><a class="nav-link" href="pocs-bundler-paymaster-dependencies.html" data-key="bundler-paymaster-dependencies"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">35</span>Gasless is two infrastructure services</span></a></li>
+        <li><a class="nav-link" href="pocs-private-rpc-visibility.html" data-key="private-rpc-visibility"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">36</span>Private RPC changes visibility, not settlement</span></a></li>
+        <li><a class="nav-link" href="pocs-walletconnect-session-authority.html" data-key="walletconnect-session-authority"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">37</span>Connect once means authorize a session</span></a></li>
+        <li><a class="nav-link active" href="pocs-foundry-invariant-reachability.html" data-key="foundry-invariant-reachability"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">38</span>An invariant test is only as good as the actions it reaches</span></a></li>
+        <li><a class="nav-link" href="pocs-constraint-was-the-product.html" data-key="constraint-was-the-product"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">39</span>Constraint was the product — and no firewall blocks a sentence</span></a></li>
+        <li><a class="nav-link" href="pocs-ndf-measures-the-restriction.html" data-key="ndf-measures-the-restriction"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">40</span>The NDF market is the size of the restriction, and removing it does not relocate the market</span></a></li>
+        <li><a class="nav-link" href="pocs-the-rule-names-an-entity.html" data-key="the-rule-names-an-entity"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">41</span>The rule names an entity and the risk lives in the group</span></a></li>
+        <li><a class="nav-link" href="pocs-supported-means-three-things.html" data-key="supported-means-three-things"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">42</span>Anvil proves the protocol, a testnet proves the chain, only a wallet proves the user</span></a></li>
+        <li><a class="nav-link" href="pocs-preview-means-no-promise.html" data-key="preview-means-no-promise"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">43</span>The data was always public — the SLA is the product</span></a></li>
+        <li><a class="nav-link" href="pocs-consortium-owns-the-rail.html" data-key="consortium-owns-the-rail"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">44</span>Twenty-one banks, one issuer — &quot;own it together&quot; becomes a company</span></a></li>
+        <li><a class="nav-link" href="pocs-x402-facilitator-market.html" data-key="x402-facilitator-market"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">45</span>The middleman is optional in the spec — and standard in practice</span></a></li>
+        <li><a class="nav-link" href="pocs-merkle-vs-verkle.html" data-key="merkle-vs-verkle"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">46</span>Merkle vs Verkle</span></a></li>
+        <li><a class="nav-link" href="pocs-encrypted-mempool.html" data-key="encrypted-mempool"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">47</span>What encryption does not hide</span></a></li>
+        <li><a class="nav-link" href="pocs-storage-collision-admin-takeover.html" data-key="storage-collision-admin-takeover"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">48</span>The code was right and the layout was wrong</span></a></li>
+        <li><a class="nav-link" href="pocs-dkg-resharing.html" data-key="dkg-resharing"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">49</span>The ceremony ends, the committee doesn't</span></a></li>
+        <li><a class="nav-link" href="pocs-censorship-becomes-a-fork-choice-rule.html" data-key="censorship-becomes-a-fork-choice-rule"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">50</span>Censorship resistance stops being a norm and becomes a fork-choice rule</span></a></li>
+        <li><a class="nav-link" href="pocs-the-record-is-not-the-path.html" data-key="the-record-is-not-the-path"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">51</span>The record is not the path — a registry and a vault for the same problem</span></a></li>
+        <li><a class="nav-link" href="pocs-fork-date-provenance.html" data-key="fork-date-provenance"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">52</span>A fork date nobody decided — reading the claim, not the number</span></a></li>
+        <li><a class="nav-link" href="pocs-simplicity-ctf.html" data-key="simplicity-ctf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">53</span>Simplicity CTF</span></a></li>
+        <li><a class="nav-link" href="pocs-float-not-the-paperwork.html" data-key="float-not-the-paperwork"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">54</span>The stablecoin replaces the float, not the paperwork</span></a></li>
+        <li><a class="nav-link" href="pocs-build-rent-or-own-the-rail.html" data-key="build-rent-or-own-the-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">55</span>Build the rail, rent it, or own it together — three answers in one month</span></a></li>
+        <li><a class="nav-link" href="pocs-the-only-commitment-is-the-issuer.html" data-key="the-only-commitment-is-the-issuer"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">56</span>Every verb is &quot;explore&quot; — the one commitment is which stablecoin</span></a></li>
+        <li><a class="nav-link" href="pocs-two-currencies-one-ledger.html" data-key="two-currencies-one-ledger"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">57</span>Two currencies on one ledger — the spread is the claim</span></a></li>
+        <li><a class="nav-link" href="pocs-the-harness-not-the-model.html" data-key="the-harness-not-the-model"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">58</span>The harness, not the model — governing agents instead of building them</span></a></li>
+        <li><a class="nav-link" href="pocs-mcp-three-sides.html" data-key="mcp-three-sides"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">59</span>MCP from three sides — build one, consume one, wrap an agent as one</span></a></li>
+        <li><a class="nav-link" href="pocs-agents-computer-use.html" data-key="agents-computer-use"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">60</span>Can an agent drive a computer yet — and if so, whose?</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenized-equity-claim-rail.html" data-key="tokenized-equity-claim-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">61</span>A claim, not a derivative — the three jobs a tokenized share creates</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenized-equity-scoreboard.html" data-key="tokenized-equity-scoreboard"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">62</span>The token is not the product — composability is, and volume is its scoreboard</span></a></li>
+        <li><a class="nav-link" href="pocs-japan-t0-settlement.html" data-key="japan-t0-settlement"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">63</span>T+0 removes settlement risk, and removes netting with it</span></a></li>
+        <li><a class="nav-link" href="pocs-cross-border-rail-interop.html" data-key="cross-border-rail-interop"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">64</span>Linking payment systems is a routing problem</span></a></li>
+        <li><a class="nav-link" href="pocs-non-reserve-currency-seat.html" data-key="non-reserve-currency-seat"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">65</span>The seat is the point — a non-reserve currency at the standards table</span></a></li>
+        <li><a class="nav-link" href="pocs-st-self-distribution.html" data-key="st-self-distribution"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">66</span>What tokenization actually removed</span></a></li>
+        <li><a class="nav-link" href="pocs-headless-exchange-engines.html" data-key="headless-exchange-engines"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">67</span>Headless arrives — the company that sells the engine, not the app</span></a></li>
+        <li><a class="nav-link" href="pocs-choosing-a-chain-is-a-lease.html" data-key="choosing-a-chain-is-a-lease"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">68</span>Choosing a chain is signing a lease</span></a></li>
+        <li><a class="nav-link" href="pocs-base-app-mini-app.html" data-key="base-app-mini-app"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">69</span>Base App — what a Mini App buys, and what it rents</span></a></li>
+        <li><a class="nav-link" href="pocs-layerzero-default-is-a-choice.html" data-key="layerzero-default-is-a-choice"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">70</span>LayerZero — the default verifier is a trust assumption nobody wrote down</span></a></li>
+        <li><a class="nav-link" href="pocs-pick-a-signer-not-a-brand.html" data-key="pick-a-signer-not-a-brand"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">71</span>Three layers failed in a month; the fourth one fails silently</span></a></li>
+        <li><a class="nav-link" href="pocs-demonstration-is-not-a-specification.html" data-key="demonstration-is-not-a-specification"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">72</span>Showing is not telling — a demonstration is an example, not a specification</span></a></li>
+        <li><a class="nav-link" href="pocs-aml-compliance.html" data-key="aml-compliance"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">73</span>AML — where the cryptography stops</span></a></li>
+        <li><a class="nav-link" href="pocs-address-to-identity-join.html" data-key="address-to-identity-join"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">74</span>The chain gives you the graph and never the names</span></a></li>
+        <li><a class="nav-link" href="pocs-korea-digital-asset-act.html" data-key="korea-digital-asset-act"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">75</span>The bill count is not the disagreement count</span></a></li>
+        <li><a class="nav-link" href="pocs-korea-spot-share-is-an-artifact.html" data-key="korea-spot-share-is-an-artifact"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">76</span>Thirty percent of spot is a restriction, not a market size</span></a></li>
+        <li><a class="nav-link" href="pocs-jurisdiction-below-the-country.html" data-key="jurisdiction-below-the-country"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">77</span>Jurisdiction is not country-sized</span></a></li>
+        <li><a class="nav-link" href="pocs-cap-table-ceiling.html" data-key="cap-table-ceiling"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">78</span>The ceiling is per holder, the control is not</span></a></li>
+        <li><a class="nav-link" href="pocs-fisheries-receivable-rail.html" data-key="fisheries-receivable-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">79</span>The custody was never the hard part</span></a></li>
+        <li><a class="nav-link" href="pocs-dsrv-portal.html" data-key="dsrv-portal"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">80</span>Institutional custody study</span></a></li>
+        <li><a class="nav-link" href="pocs-priced-by-the-wrong-thing.html" data-key="priced-by-the-wrong-thing"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">81</span>Priced by the wrong thing — a question, an instrument, and the gap between them</span></a></li>
+        <li><a class="nav-link" href="pocs-cre-cloud.html" data-key="cre-cloud"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">82</span>CRE × Cloud — four hybrid patterns</span></a></li>
+        <li><a class="nav-link" href="pocs-solana.html" data-key="solana"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">83</span>Solana</span></a></li>
+        <li><a class="nav-link" href="pocs-linera-microchains.html" data-key="linera-microchains"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">84</span>Linera microchains</span></a></li>
+        <li><a class="nav-link" href="pocs-thirdweb.html" data-key="thirdweb"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">85</span>Thirdweb — platform survey</span></a></li>
+        <li><a class="nav-link" href="pocs-steal-the-structure.html" data-key="steal-the-structure"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">86</span>Two reading lists, and the same instruction — steal the structure, not the content</span></a></li>
+        <li><a class="nav-link" href="pocs-claude-in-slack.html" data-key="claude-in-slack"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">87</span>Claude in Slack — the workflow first, the presence second</span></a></li>
+        <li><a class="nav-link" href="pocs-the-product-is-resume-not-schedule.html" data-key="the-product-is-resume-not-schedule"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">88</span>What you are buying is resume, not scheduling</span></a></li>
+        <li><a class="nav-link" href="pocs-circuit-breaker-saga.html" data-key="circuit-breaker-saga"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">89</span>Microservice patterns — Circuit Breaker &amp; Saga</span></a></li>
+        <li><a class="nav-link" href="pocs-web-stack-layers.html" data-key="web-stack-layers"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">90</span>Web stack layers</span></a></li>
+        <li><a class="nav-link" href="pocs-one-page-not-the-curriculum.html" data-key="one-page-not-the-curriculum"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">91</span>Pull the page you are stuck on, not the next one in order</span></a></li>
+        <li><a class="nav-link" href="pocs-publish-by-default-rule.html" data-key="publish-by-default-rule"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">92</span>The draft already exists — a selection rule, not a new channel</span></a></li>
+        <li><a class="nav-link" href="pocs-apple-container.html" data-key="apple-container"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">93</span>Apple container</span></a></li>
+        <li><a class="nav-link" href="pocs-geometric-series-dcf.html" data-key="geometric-series-dcf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">94</span>Geometric series → DCF valuation</span></a></li>
+        <li><a class="nav-link" href="pocs-amortized-potential-function.html" data-key="amortized-potential-function"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">95</span>Amortized analysis via potential functions</span></a></li>
+        <li><a class="nav-link" href="pocs-moralis-wallet-api.html" data-key="moralis-wallet-api"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">96</span>Moralis — wallet snapshot via API</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; An invariant test is only as good as the actions it reaches</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#38</span><span>PoC</span></p>
+      <h1>An invariant test is only as good as the actions it reaches</h1>
+      <p class="lead">Foundry can assert a property after randomized call sequences, but a green campaign proves little when most calls revert or important states are unreachable.</p>
+      <p class="meta">Test the same ERC-4626-style vault twice — open targeting first, then handler-based with prepared balances and approvals — track call/revert distributions and ghost-variable accounting, and seed a bug that only a deposit-transfer-withdraw sequence can reach.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# An invariant test is only as good as the actions it reaches\n\nFoundry can assert a property after randomized call sequences, but a green campaign proves little when most calls revert or important states are unreachable.\n\nTest the same ERC-4626-style vault twice — open targeting first, then handler-based with prepared balances and approvals — track call/revert distributions and ghost-variable accounting, and seed a bug that only a deposit-transfer-withdraw sequence can reach.\n\n## Why\n\nStateful fuzzing is becoming standard Solidity tooling, yet its main failure mode is silent: the test passes because the generator never performed meaningful work. Reachability metrics belong beside the assertion.\n\nFoundry checks invariants after randomized sequences of calls. A campaign can remain green while accomplishing almost nothing when generated calls revert before reaching meaningful protocol states.\n\n## How it works\n\nWrite an open invariant test and a handler-based version for the same vault, compare call/revert distributions, add ghost-variable accounting, and deliberately seed a sequence-only bug.\n\n### PoC\n\nTest the same ERC-4626-style vault twice: first by targeting the contracts directly, then through handlers that prepare balances and approvals. Track calls, reverts, deposits, withdrawals, actors, and reached states with metrics and ghost variables. Seed a bug that requires a deposit-transfer-withdraw sequence.\n\n### What it proves\n\nThe assertion is only half the test. The action distribution must reach the state space where the property could fail. Compare the open and handler-based campaigns by coverage and meaningful transitions, not merely runs and depth.\n\nReference: [Foundry invariant testing](https://getfoundry.sh/forge/invariant-testing).\n"</script>
+      <h2>Why</h2>
+      <p>Stateful fuzzing is becoming standard Solidity tooling, yet its main failure mode is silent: the test passes because the generator never performed meaningful work. Reachability metrics belong beside the assertion.</p>
+<p>Foundry checks invariants after randomized sequences of calls. A campaign can remain green while accomplishing almost nothing when generated calls revert before reaching meaningful protocol states.</p>
+      <h2>How it works</h2>
+      <p>Write an open invariant test and a handler-based version for the same vault, compare call/revert distributions, add ghost-variable accounting, and deliberately seed a sequence-only bug.</p>
+<h3>PoC</h3>
+<p>Test the same ERC-4626-style vault twice: first by targeting the contracts directly, then through handlers that prepare balances and approvals. Track calls, reverts, deposits, withdrawals, actors, and reached states with metrics and ghost variables. Seed a bug that requires a deposit-transfer-withdraw sequence.</p>
+<h3>What it proves</h3>
+<p>The assertion is only half the test. The action distribution must reach the state space where the property could fail. Compare the open and handler-based campaigns by coverage and meaningful transitions, not merely runs and depth.</p>
+<p>Reference: <a href="https://getfoundry.sh/forge/invariant-testing">Foundry invariant testing</a>.</p>
+      
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# Invariant 테스트는 도달하는 동작만큼만 좋다\n\nFoundry 는 무작위 호출 순서 뒤에 속성을 검증할 수 있지만, 대부분의 호출이 revert 하거나 중요한 상태에 도달하지 못하면 초록색 캠페인은 거의 아무것도 증명하지 못합니다.\n\n같은 ERC-4626 형태의 vault 를 두 번 시험합니다 — 먼저 컨트랙트를 직접 겨냥(open)하고, 다음에는 잔액과 승인을 준비하는 handler 방식으로. 호출/revert 분포와 ghost variable 회계를 추적하고, 입금-전송-출금 순서로만 도달할 수 있는 버그를 심습니다.\n\n## 왜\n\n상태 있는 퍼징은 표준 Solidity 도구가 되어 가고 있지만, 주된 실패 모드는 조용합니다: 생성기가 의미 있는 일을 한 번도 하지 못했기 때문에 테스트가 통과하는 것. 도달성 지표는 assertion 옆에 나란히 있어야 합니다.\n\nFoundry 는 무작위 호출 순서 뒤에 invariant 를 검사합니다. 생성된 호출이 의미 있는 프로토콜 상태에 도달하기 전에 대부분 revert 하면, 캠페인은 거의 아무것도 하지 않고도 계속 초록색일 수 있습니다.\n\n## 동작 방식\n\n같은 vault 에 대해 open invariant 테스트와 handler 기반 버전을 작성하고, 호출/revert 분포를 비교하고, ghost variable 회계를 더하고, 순서로만 드러나는 버그를 의도적으로 심습니다.\n\n### PoC\n\n같은 ERC-4626 형태의 vault 를 두 번 시험합니다: 먼저 컨트랙트를 직접 대상으로 삼고, 다음에는 잔액과 승인을 준비하는 handler 를 통해서. 메트릭과 ghost variable 로 호출, revert, 입금, 출금, 행위자, 도달 상태를 추적합니다. 입금-전송-출금 순서가 있어야 드러나는 버그를 심습니다.\n\n### 무엇을 증명하나\n\nAssertion 은 테스트의 절반뿐입니다. 동작 분포가 속성이 깨질 수 있는 상태 공간에 도달해야 합니다. open 방식과 handler 방식의 캠페인을 runs 와 depth 만이 아니라 coverage 와 의미 있는 상태 전이로 비교합니다.\n\n참고: [Foundry invariant testing](https://getfoundry.sh/forge/invariant-testing).\n"</script>
+      <h1>Invariant 테스트는 도달하는 동작만큼만 좋다</h1>
+      <p class="lead">Foundry 는 무작위 호출 순서 뒤에 속성을 검증할 수 있지만, 대부분의 호출이 revert 하거나 중요한 상태에 도달하지 못하면 초록색 캠페인은 거의 아무것도 증명하지 못합니다.</p>
+      <p class="meta">같은 ERC-4626 형태의 vault 를 두 번 시험합니다 — 먼저 컨트랙트를 직접 겨냥(open)하고, 다음에는 잔액과 승인을 준비하는 handler 방식으로. 호출/revert 분포와 ghost variable 회계를 추적하고, 입금-전송-출금 순서로만 도달할 수 있는 버그를 심습니다.</p>
+      <h2>왜</h2>
+      <p>상태 있는 퍼징은 표준 Solidity 도구가 되어 가고 있지만, 주된 실패 모드는 조용합니다: 생성기가 의미 있는 일을 한 번도 하지 못했기 때문에 테스트가 통과하는 것. 도달성 지표는 assertion 옆에 나란히 있어야 합니다.</p>
+<p>Foundry 는 무작위 호출 순서 뒤에 invariant 를 검사합니다. 생성된 호출이 의미 있는 프로토콜 상태에 도달하기 전에 대부분 revert 하면, 캠페인은 거의 아무것도 하지 않고도 계속 초록색일 수 있습니다.</p>
+      <h2>동작 방식</h2>
+      <p>같은 vault 에 대해 open invariant 테스트와 handler 기반 버전을 작성하고, 호출/revert 분포를 비교하고, ghost variable 회계를 더하고, 순서로만 드러나는 버그를 의도적으로 심습니다.</p>
+<h3>PoC</h3>
+<p>같은 ERC-4626 형태의 vault 를 두 번 시험합니다: 먼저 컨트랙트를 직접 대상으로 삼고, 다음에는 잔액과 승인을 준비하는 handler 를 통해서. 메트릭과 ghost variable 로 호출, revert, 입금, 출금, 행위자, 도달 상태를 추적합니다. 입금-전송-출금 순서가 있어야 드러나는 버그를 심습니다.</p>
+<h3>무엇을 증명하나</h3>
+<p>Assertion 은 테스트의 절반뿐입니다. 동작 분포가 속성이 깨질 수 있는 상태 공간에 도달해야 합니다. open 방식과 handler 방식의 캠페인을 runs 와 depth 만이 아니라 coverage 와 의미 있는 상태 전이로 비교합니다.</p>
+<p>참고: <a href="https://getfoundry.sh/forge/invariant-testing">Foundry invariant testing</a>.</p>
+      
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-walletconnect-session-authority.html">&larr; 37. Connect once means authorize a session</a><a href="pocs-constraint-was-the-product.html">39. Constraint was the product — and no firewall blocks a sentence &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const observed = new Map();
+  let revealTimer;
+  // 밴드에 걸친 항목 중 "문서 순서로 첫 번째"를 고르면 언제나 한 칸 앞이 켜진다
+  // (jay, 2026-08-27: "the left pane should sync with right pane in the item's position").
+  // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
+  // 고르면 방금 도착한 항목이 켜진다.
+  function syncActive() {
+    // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
+    // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
+    // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
+    const line = window.innerHeight * 0.1;
+    let first = null;
+    let started = -Infinity;
+    let upcoming = Infinity;
+    let firstUpcoming = null;
+    for (const k of seen) {
+      const el = observed.get(k);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top <= line) {
+        if (top > started) {
+          started = top;
+          first = k;
+        }
+      } else if (top < upcoming) {
+        upcoming = top;
+        firstUpcoming = k;
+      }
+    }
+    if (first === null) first = firstUpcoming;
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    clearTimeout(revealTimer);
+    revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }
+
+  // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
+  // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
+  let ticking = false;
+  addEventListener(
+    'scroll',
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncActive();
+      });
+    },
+    { passive: true }
+  );
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    syncActive();
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) {
+      observed.set(key, el);
+      io.observe(el);
+    }
+  }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
+</script>
+</body>
+</html>

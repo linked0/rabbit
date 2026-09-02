@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Connect once means authorize a session — PoCs</title>
+<title>The middleman is optional in the spec — and standard in practice — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -388,7 +388,7 @@
         <li><a class="nav-link" href="pocs-simulate-before-sign.html" data-key="simulate-before-sign"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">34</span>Simulation belongs before the wallet prompt</span></a></li>
         <li><a class="nav-link" href="pocs-bundler-paymaster-dependencies.html" data-key="bundler-paymaster-dependencies"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">35</span>Gasless is two infrastructure services</span></a></li>
         <li><a class="nav-link" href="pocs-private-rpc-visibility.html" data-key="private-rpc-visibility"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">36</span>Private RPC changes visibility, not settlement</span></a></li>
-        <li><a class="nav-link active" href="pocs-walletconnect-session-authority.html" data-key="walletconnect-session-authority"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">37</span>Connect once means authorize a session</span></a></li>
+        <li><a class="nav-link" href="pocs-walletconnect-session-authority.html" data-key="walletconnect-session-authority"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">37</span>Connect once means authorize a session</span></a></li>
         <li><a class="nav-link" href="pocs-foundry-invariant-reachability.html" data-key="foundry-invariant-reachability"><span class="nav-dot" style="background:#0284c7;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">38</span>An invariant test is only as good as the actions it reaches</span></a></li>
         <li><a class="nav-link" href="pocs-constraint-was-the-product.html" data-key="constraint-was-the-product"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">39</span>Constraint was the product — and no firewall blocks a sentence</span></a></li>
         <li><a class="nav-link" href="pocs-ndf-measures-the-restriction.html" data-key="ndf-measures-the-restriction"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">40</span>The NDF market is the size of the restriction, and removing it does not relocate the market</span></a></li>
@@ -396,7 +396,7 @@
         <li><a class="nav-link" href="pocs-supported-means-three-things.html" data-key="supported-means-three-things"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">42</span>Anvil proves the protocol, a testnet proves the chain, only a wallet proves the user</span></a></li>
         <li><a class="nav-link" href="pocs-preview-means-no-promise.html" data-key="preview-means-no-promise"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">43</span>The data was always public — the SLA is the product</span></a></li>
         <li><a class="nav-link" href="pocs-consortium-owns-the-rail.html" data-key="consortium-owns-the-rail"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">44</span>Twenty-one banks, one issuer — &quot;own it together&quot; becomes a company</span></a></li>
-        <li><a class="nav-link" href="pocs-x402-facilitator-market.html" data-key="x402-facilitator-market"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">45</span>The middleman is optional in the spec — and standard in practice</span></a></li>
+        <li><a class="nav-link active" href="pocs-x402-facilitator-market.html" data-key="x402-facilitator-market"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">45</span>The middleman is optional in the spec — and standard in practice</span></a></li>
         <li><a class="nav-link" href="pocs-merkle-vs-verkle.html" data-key="merkle-vs-verkle"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">46</span>Merkle vs Verkle</span></a></li>
         <li><a class="nav-link" href="pocs-encrypted-mempool.html" data-key="encrypted-mempool"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">47</span>What encryption does not hide</span></a></li>
         <li><a class="nav-link" href="pocs-storage-collision-admin-takeover.html" data-key="storage-collision-admin-takeover"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">48</span>The code was right and the layout was wrong</span></a></li>
@@ -456,52 +456,290 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Connect once means authorize a session</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The middleman is optional in the spec — and standard in practice</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#37</span><span>PoC</span></p>
-      <h1>Connect once means authorize a session</h1>
-      <p class="lead">A WalletConnect connection is not merely an address exchange. Its namespaces, chains, methods, accounts, expiry, and update events describe a standing capability that the application must track.</p>
-      <p class="meta">Create one minimal and one broad session proposal with the WalletConnect Sign client (or Reown AppKit), then exercise account change, chain change, session update, expiry, relay disconnect, reconnect, and explicit revocation — asserting each event narrows or invalidates application state correctly.</p>
+      <p class="topic-kicker"><span class="topic-no">#45</span><span>PoC</span></p>
+      <h1>The middleman is optional in the spec — and standard in practice</h1>
+      <p class="lead">x402&#39;s pitch is payment with no processor in the loop, yet every paid request still passes through a facilitator that verifies and settles — a role the spec leaves permissionless and the market mostly rents from Coinbase. Run one paid endpoint against three facilitators — the Coinbase-hosted default, one competitor, one self-hosted — and write the authority row for each before comparing latency: who can refuse to settle, who sees the traffic, and who sets the fee when the waiver ends.</p>
+      <p class="meta">Not yet scoped — the deliverable is one endpoint, three facilitator configs, and a filled authority table.
+
+1. <strong>The default.</strong> Protect one API route with x402 middleware and point it at the Coinbase CDP facilitator (Base, USDC). Record what onboarding demanded (CDP account, verification), the settle latency, and today&#39;s fee line.
+2. <strong>The swap test.</strong> Change the facilitator config to a second hosted one (PayAI; or Stripe&#39;s private preview if admitted). The code diff should be about one line — write down what <em>actually</em> changed: chains, fee schedule, refund and reporting surface, terms of service.
+3. <strong>The exit door.</strong> Self-host the reference facilitator: your own RPC, your own gas wallet, your own retry queue. The ops delta between this and step 1, measured in hours, is the price of the hosted default.
+4. <strong>The matrix.</strong> Per facilitator, answer: can it decline to settle a valid payment? what does it log per request? who can end the fee waiver, with what notice? and when it dies mid-settle, who owns the retry (<code>x402-settlement-retry</code> owns that path).
+
+References: <a href="https://docs.cdp.coinbase.com/x402/core-concepts/facilitator">x402 facilitator docs</a>, <a href="https://www.x402.org/ecosystem?category=facilitators">x402.org ecosystem — facilitators</a>.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Connect once means authorize a session\n\nA WalletConnect connection is not merely an address exchange. Its namespaces, chains, methods, accounts, expiry, and update events describe a standing capability that the application must track.\n\nCreate one minimal and one broad session proposal with the WalletConnect Sign client (or Reown AppKit), then exercise account change, chain change, session update, expiry, relay disconnect, reconnect, and explicit revocation — asserting each event narrows or invalidates application state correctly.\n\n## Why\n\nThe UI usually collapses session state to \"connected.\" That hides which methods remain authorized and produces stale-account bugs when the wallet changes state outside the application.\n\nA WalletConnect session contains accounts, chains, methods, events, and expiry. Treating it as a boolean `isConnected` discards the information that says what the application may request and whether its cached account is still current.\n\n## How it works\n\nConnect with the smallest method set, compare it with a broad default proposal, then exercise account change, chain change, session update, expiry, relay disconnect, and explicit revocation.\n\n### PoC\n\nCreate one minimal proposal and one broad proposal using the WalletConnect Sign client or Reown AppKit. Exercise account and chain changes, a session update, expiry, relay loss, reconnect, and explicit disconnect. Assert that each event invalidates or narrows application state correctly.\n\n### What it proves\n\nConnection UX is capability management. The safe default is the smallest requested namespace and method set, an observable session state machine, and a visible revocation path — not a green dot that survives stale state.\n\nReference: [Reown WalletConnect session usage](https://docs.reown.com/advanced/api/sign/dapp-usage).\n"</script>
+      <script type="application/json" id="copy-en">"# The middleman is optional in the spec — and standard in practice\n\nx402's pitch is payment with no processor in the loop, yet every paid request still passes through a facilitator that verifies and settles — a role the spec leaves permissionless and the market mostly rents from Coinbase. Run one paid endpoint against three facilitators — the Coinbase-hosted default, one competitor, one self-hosted — and write the authority row for each before comparing latency: who can refuse to settle, who sees the traffic, and who sets the fee when the waiver ends.\n\nNot yet scoped — the deliverable is one endpoint, three facilitator configs, and a filled authority table.\n\n1. **The default.** Protect one API route with x402 middleware and point it at the Coinbase CDP facilitator (Base, USDC). Record what onboarding demanded (CDP account, verification), the settle latency, and today's fee line.\n2. **The swap test.** Change the facilitator config to a second hosted one (PayAI; or Stripe's private preview if admitted). The code diff should be about one line — write down what *actually* changed: chains, fee schedule, refund and reporting surface, terms of service.\n3. **The exit door.** Self-host the reference facilitator: your own RPC, your own gas wallet, your own retry queue. The ops delta between this and step 1, measured in hours, is the price of the hosted default.\n4. **The matrix.** Per facilitator, answer: can it decline to settle a valid payment? what does it log per request? who can end the fee waiver, with what notice? and when it dies mid-settle, who owns the retry (`x402-settlement-retry` owns that path).\n\nReferences: [x402 facilitator docs](https://docs.cdp.coinbase.com/x402/core-concepts/facilitator), [x402.org ecosystem — facilitators](https://www.x402.org/ecosystem?category=facilitators).\n\n## Why\n\n**Start from the pitch and find the slot.** x402's story is payment with no processor: the server quotes a price in a 402 response, the client signs a USDC authorization, done. But verify-and-settle was outsourced to a *facilitator* — and the spec deliberately leaves that role permissionless: it is a URL the seller configures, not a party the protocol appoints. An open slot that anyone may fill and almost nobody wants to operate is exactly the shape a platform business looks for. Coinbase wrote the protocol, donated it to a foundation, and hosts the default facilitator free of charge. **The protocol is a standard; the facilitator is the business.**\n\n**The waiver is the tell.** Facilitators price at or near zero today — Coinbase's free tier, PayAI absorbing transaction fees — for the same reason embedded wallets removed the seed phrase (`embedded-wallet-policy`): adoption first, authority later. The facilitator sits where a fee line can be added, sees every paid request, and is the party that can decline to settle. None of that shows up in a latency benchmark, which is this catalogue's recurring lesson: measure the authority before the UX. It is `bundler-paymaster-dependencies` replayed for payments — \"no infrastructure\" means someone else's infrastructure, and the someone is doing it below cost for a reason.\n\n**The swap test settles it.** If moving from Coinbase's facilitator to PayAI's or to your own really is one config line with nothing else changing, the role stays commodity and the chokepoint stays theoretical — the protocol's neutrality is real. If the alternatives differ in chains, refund surfaces, and compliance posture — and Stripe's preview already settles x402 payments into PaymentIntents with fiat settlement and refunds — then \"facilitator\" is not one role but several different businesses wearing one word, switching costs are back, and the authority matrix, not the click count, is what tells them apart.\n\n## How it works\n\n### What a facilitator actually does\n\n| Step | Who | Notes |\n| --- | --- | --- |\n| Quote — 402 + payment requirements | seller | no facilitator involved |\n| Sign the payment payload | buyer | EIP-3009 `transferWithAuthorization` — the buyer pays no gas |\n| Verify | **facilitator** | checks signature and funds against the requirements |\n| Settle | **facilitator** | submits on-chain, fronts the gas, returns the receipt |\n\nThe facilitator holds no long-lived balance — but every paid request passes through it, and settlement happens only if it agrees.\n\n### The roster, as of 2026-09\n\n| Service | Host | Chains | Pricing today | Angle |\n| --- | --- | --- | --- | --- |\n| CDP facilitator | Coinbase | Base, Solana, Stellar | free tier (~1,000 tx/mo) | the default; written by the protocol's author |\n| PayAI | PayAI | Base, Solana, Polygon | fees currently absorbed | largest facilitator after Coinbase (~14% of transactions) |\n| Stripe x402 | Stripe | Base (USDC) | private preview | settles into PaymentIntents — reporting, refunds, fiat settlement |\n| Cloudflare | Cloudflare | — | — | x402 tooling for Workers and agents |\n| thirdweb | thirdweb | EVM | — | SDK support + Nexus (agents without API keys) |\n| Crossmint | Crossmint | EVM + Solana | — | wallets, onramps, and a facilitator in one platform |\n| Self-hosted | you | whatever you wire | gas at cost | the exit door — and the ops bill that comes with it |\n\n### Who governs the spec\n\n| | |\n| --- | --- |\n| x402 Foundation | now under the Linux Foundation; founding participants include AWS, Circle, Coinbase, Google, Mastercard, Microsoft, Shopify, Stripe, Visa |\n| Google AP2 | x402 is the crypto extension of the Agent Payments Protocol |\n\nThe governance roster is the second tell: processors and card networks joined the body that standardizes the role that was supposed to replace them.\n\n### The four questions the matrix must answer, per facilitator\n\n1. **Refusal** — can it decline to settle a valid signed payment (sanctions screening, terms of service), and is that documented or discovered?\n2. **Visibility** — what does it log per request, and who can subpoena it?\n3. **Pricing authority** — who can end the fee waiver, with what notice period?\n4. **Failure** — when it dies between verify and settle, who owns the retry? (`x402-settlement-retry` — the two cards share one endpoint.)\n"</script>
       <h2>Why</h2>
-      <p>The UI usually collapses session state to &quot;connected.&quot; That hides which methods remain authorized and produces stale-account bugs when the wallet changes state outside the application.</p>
-<p>A WalletConnect session contains accounts, chains, methods, events, and expiry. Treating it as a boolean <code>isConnected</code> discards the information that says what the application may request and whether its cached account is still current.</p>
+      <p><strong>Start from the pitch and find the slot.</strong> x402&#39;s story is payment with no processor: the server quotes a price in a 402 response, the client signs a USDC authorization, done. But verify-and-settle was outsourced to a <em>facilitator</em> — and the spec deliberately leaves that role permissionless: it is a URL the seller configures, not a party the protocol appoints. An open slot that anyone may fill and almost nobody wants to operate is exactly the shape a platform business looks for. Coinbase wrote the protocol, donated it to a foundation, and hosts the default facilitator free of charge. <strong>The protocol is a standard; the facilitator is the business.</strong></p>
+<p><strong>The waiver is the tell.</strong> Facilitators price at or near zero today — Coinbase&#39;s free tier, PayAI absorbing transaction fees — for the same reason embedded wallets removed the seed phrase (<code>embedded-wallet-policy</code>): adoption first, authority later. The facilitator sits where a fee line can be added, sees every paid request, and is the party that can decline to settle. None of that shows up in a latency benchmark, which is this catalogue&#39;s recurring lesson: measure the authority before the UX. It is <code>bundler-paymaster-dependencies</code> replayed for payments — &quot;no infrastructure&quot; means someone else&#39;s infrastructure, and the someone is doing it below cost for a reason.</p>
+<p><strong>The swap test settles it.</strong> If moving from Coinbase&#39;s facilitator to PayAI&#39;s or to your own really is one config line with nothing else changing, the role stays commodity and the chokepoint stays theoretical — the protocol&#39;s neutrality is real. If the alternatives differ in chains, refund surfaces, and compliance posture — and Stripe&#39;s preview already settles x402 payments into PaymentIntents with fiat settlement and refunds — then &quot;facilitator&quot; is not one role but several different businesses wearing one word, switching costs are back, and the authority matrix, not the click count, is what tells them apart.</p>
       <h2>How it works</h2>
-      <p>Connect with the smallest method set, compare it with a broad default proposal, then exercise account change, chain change, session update, expiry, relay disconnect, and explicit revocation.</p>
-<h3>PoC</h3>
-<p>Create one minimal proposal and one broad proposal using the WalletConnect Sign client or Reown AppKit. Exercise account and chain changes, a session update, expiry, relay loss, reconnect, and explicit disconnect. Assert that each event invalidates or narrows application state correctly.</p>
-<h3>What it proves</h3>
-<p>Connection UX is capability management. The safe default is the smallest requested namespace and method set, an observable session state machine, and a visible revocation path — not a green dot that survives stale state.</p>
-<p>Reference: <a href="https://docs.reown.com/advanced/api/sign/dapp-usage">Reown WalletConnect session usage</a>.</p>
+      <h3>What a facilitator actually does</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Who</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Quote — 402 + payment requirements</td>
+<td>seller</td>
+<td>no facilitator involved</td>
+</tr>
+<tr>
+<td>Sign the payment payload</td>
+<td>buyer</td>
+<td>EIP-3009 <code>transferWithAuthorization</code> — the buyer pays no gas</td>
+</tr>
+<tr>
+<td>Verify</td>
+<td><strong>facilitator</strong></td>
+<td>checks signature and funds against the requirements</td>
+</tr>
+<tr>
+<td>Settle</td>
+<td><strong>facilitator</strong></td>
+<td>submits on-chain, fronts the gas, returns the receipt</td>
+</tr>
+</tbody></table></div>
+<p>The facilitator holds no long-lived balance — but every paid request passes through it, and settlement happens only if it agrees.</p>
+<h3>The roster, as of 2026-09</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Host</th>
+<th>Chains</th>
+<th>Pricing today</th>
+<th>Angle</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CDP facilitator</td>
+<td>Coinbase</td>
+<td>Base, Solana, Stellar</td>
+<td>free tier (~1,000 tx/mo)</td>
+<td>the default; written by the protocol&#39;s author</td>
+</tr>
+<tr>
+<td>PayAI</td>
+<td>PayAI</td>
+<td>Base, Solana, Polygon</td>
+<td>fees currently absorbed</td>
+<td>largest facilitator after Coinbase (~14% of transactions)</td>
+</tr>
+<tr>
+<td>Stripe x402</td>
+<td>Stripe</td>
+<td>Base (USDC)</td>
+<td>private preview</td>
+<td>settles into PaymentIntents — reporting, refunds, fiat settlement</td>
+</tr>
+<tr>
+<td>Cloudflare</td>
+<td>Cloudflare</td>
+<td>—</td>
+<td>—</td>
+<td>x402 tooling for Workers and agents</td>
+</tr>
+<tr>
+<td>thirdweb</td>
+<td>thirdweb</td>
+<td>EVM</td>
+<td>—</td>
+<td>SDK support + Nexus (agents without API keys)</td>
+</tr>
+<tr>
+<td>Crossmint</td>
+<td>Crossmint</td>
+<td>EVM + Solana</td>
+<td>—</td>
+<td>wallets, onramps, and a facilitator in one platform</td>
+</tr>
+<tr>
+<td>Self-hosted</td>
+<td>you</td>
+<td>whatever you wire</td>
+<td>gas at cost</td>
+<td>the exit door — and the ops bill that comes with it</td>
+</tr>
+</tbody></table></div>
+<h3>Who governs the spec</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>x402 Foundation</td>
+<td>now under the Linux Foundation; founding participants include AWS, Circle, Coinbase, Google, Mastercard, Microsoft, Shopify, Stripe, Visa</td>
+</tr>
+<tr>
+<td>Google AP2</td>
+<td>x402 is the crypto extension of the Agent Payments Protocol</td>
+</tr>
+</tbody></table></div>
+<p>The governance roster is the second tell: processors and card networks joined the body that standardizes the role that was supposed to replace them.</p>
+<h3>The four questions the matrix must answer, per facilitator</h3>
+<ol>
+<li><strong>Refusal</strong> — can it decline to settle a valid signed payment (sanctions screening, terms of service), and is that documented or discovered?</li>
+<li><strong>Visibility</strong> — what does it log per request, and who can subpoena it?</li>
+<li><strong>Pricing authority</strong> — who can end the fee waiver, with what notice period?</li>
+<li><strong>Failure</strong> — when it dies between verify and settle, who owns the retry? (<code>x402-settlement-retry</code> — the two cards share one endpoint.)</li>
+</ol>
       
       <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 한 번 연결한다는 것은 세션을 인가한다는 뜻이다\n\nWalletConnect 연결은 단순한 주소 교환이 아닙니다. namespace, 체인, 메서드, 계정, 만료, 갱신 이벤트가 애플리케이션이 추적해야 할 상시 권한을 기술합니다.\n\nWalletConnect Sign client(또는 Reown AppKit)로 최소 권한 제안과 넓은 권한 제안을 하나씩 만들고, 계정 변경, 체인 변경, 세션 갱신, 만료, 릴레이 단절, 재연결, 명시적 해지를 차례로 실행합니다 — 각 이벤트가 애플리케이션 상태를 올바르게 좁히거나 무효화하는지 확인합니다.\n\n## 왜\n\nUI 는 보통 세션 상태를 \"connected\" 하나로 뭉갭니다. 그러면 어떤 메서드가 아직 인가되어 있는지가 가려지고, 지갑이 애플리케이션 바깥에서 상태를 바꿀 때 낡은 계정 버그가 생깁니다.\n\nWalletConnect 세션에는 계정, 체인, 메서드, 이벤트, 만료가 들어 있습니다. 이것을 `isConnected` 불리언 하나로 다루면, 애플리케이션이 무엇을 요청할 수 있는지와 캐시된 계정이 아직 최신인지 알려 주는 정보가 사라집니다.\n\n## 동작 방식\n\n가장 작은 메서드 집합으로 연결하고 넓은 기본 제안과 비교한 뒤, 계정 변경, 체인 변경, 세션 갱신, 만료, 릴레이 단절, 명시적 해지를 차례로 실행합니다.\n\n### PoC\n\nWalletConnect Sign client 또는 Reown AppKit 으로 최소 권한 제안과 넓은 권한 제안을 각각 만듭니다. 계정·체인 변경, 세션 갱신, 만료, 릴레이 단절, 재연결, 명시적 연결 해제를 실행합니다. 각 이벤트가 애플리케이션 상태를 올바르게 무효화하거나 좁히는지 확인합니다.\n\n### 무엇을 증명하나\n\n연결 UX 는 권한 관리입니다. 안전한 기본값은 최소한의 namespace 와 메서드 집합, 관찰 가능한 세션 상태 머신, 눈에 보이는 해지 경로입니다 — 낡은 상태에서도 살아남는 초록색 점이 아닙니다.\n\n참고: [Reown WalletConnect 세션 사용법](https://docs.reown.com/advanced/api/sign/dapp-usage).\n"</script>
-      <h1>한 번 연결한다는 것은 세션을 인가한다는 뜻이다</h1>
-      <p class="lead">WalletConnect 연결은 단순한 주소 교환이 아닙니다. namespace, 체인, 메서드, 계정, 만료, 갱신 이벤트가 애플리케이션이 추적해야 할 상시 권한을 기술합니다.</p>
-      <p class="meta">WalletConnect Sign client(또는 Reown AppKit)로 최소 권한 제안과 넓은 권한 제안을 하나씩 만들고, 계정 변경, 체인 변경, 세션 갱신, 만료, 릴레이 단절, 재연결, 명시적 해지를 차례로 실행합니다 — 각 이벤트가 애플리케이션 상태를 올바르게 좁히거나 무효화하는지 확인합니다.</p>
+      <script type="application/json" id="copy-ko">"# 중개자는 스펙에서는 선택이고, 현실에서는 표준이다\n\nx402 의 홍보 문구는 **결제 흐름에 프로세서가 없다**는 것이지만, 유료 요청 하나하나는 여전히 **검증하고 정산해 주는 facilitator** 를 지나갑니다 — **스펙은 이 역할을 무허가로 열어 두었고, 시장은 대부분 Coinbase 에서 빌려 씁니다.** 유료 엔드포인트 하나를 세 facilitator — **Coinbase 호스팅 기본값, 경쟁사 하나, 셀프호스팅 하나** — 에 붙여 보고, 지연시간을 비교하기 전에 **권한 행부터 채웁니다: 누가 정산을 거부할 수 있고, 누가 트래픽을 보고, 수수료 면제가 끝나면 누가 가격을 정하는가.**\n\n**아직 범위 미정** — 산출물은 **엔드포인트 하나, facilitator 설정 셋, 채워진 권한표 하나**입니다.\n\n1. **기본값.** API 경로 하나를 x402 미들웨어로 보호하고 **Coinbase CDP facilitator**(Base, USDC)에 연결합니다. 온보딩이 요구한 것(CDP 계정, 인증), 정산 지연시간, 오늘 기준 수수료 줄을 기록합니다.\n2. **교체 시험.** facilitator 설정을 두 번째 호스팅 서비스(PayAI, 또는 승인되면 Stripe 프라이빗 프리뷰)로 바꿉니다. **코드 diff 는 한 줄 안팎이어야 합니다** — 실제로 바뀐 것을 적습니다: 체인, 수수료 체계, 환불·리포팅 표면, 이용약관.\n3. **비상구.** 레퍼런스 facilitator 를 셀프호스팅합니다: 내 RPC, 내 가스 지갑, 내 재시도 큐. **이것과 1 번 사이의 운영 부담 차이를 시간 단위로 재면, 그것이 호스팅 기본값의 가격**입니다.\n4. **권한표.** facilitator 마다 답합니다: **유효한 결제의 정산을 거부할 수 있는가? 요청마다 무엇을 기록하는가? 수수료 면제를 누가, 어떤 예고 기간으로 끝낼 수 있는가?** 그리고 정산 도중에 죽으면 재시도는 누구 책임인가 (**`x402-settlement-retry`** 가 그 경로를 다룹니다).\n\n참고: [x402 facilitator 문서](https://docs.cdp.coinbase.com/x402/core-concepts/facilitator), [x402.org 생태계 — facilitators](https://www.x402.org/ecosystem?category=facilitators).\n\n## 왜\n\n**홍보 문구에서 출발해 빈 자리를 찾습니다.** x402 의 이야기는 **프로세서 없는 결제**입니다: 서버가 402 응답으로 가격을 제시하고, 클라이언트가 USDC 승인에 서명하면 끝. 하지만 **검증·정산은 *facilitator* 에게 외주**됐고 — 스펙은 그 역할을 의도적으로 무허가로 둡니다: **프로토콜이 지명하는 당사자가 아니라, 판매자가 설정하는 URL 하나**입니다. **누구나 채울 수 있지만 거의 아무도 직접 운영하고 싶지 않은 빈 자리** — 플랫폼 사업이 찾는 모양이 정확히 이것입니다. Coinbase 는 프로토콜을 만들고, 재단에 기부하고, **기본 facilitator 를 무료로 호스팅합니다.** **프로토콜은 표준이고, facilitator 가 사업입니다.**\n\n**수수료 면제가 단서입니다.** facilitator 들이 지금 0 원 언저리로 가격을 매기는 것 — Coinbase 의 무료 티어, 수수료를 대신 삼키는 PayAI — 은 임베디드 지갑이 시드 문구를 없앤 것과 같은 이유입니다 (**`embedded-wallet-policy`**): **채택 먼저, 권한은 나중에.** facilitator 는 **수수료 줄을 붙일 수 있는 자리에 앉아 있고, 모든 유료 요청을 보고, 정산을 거부할 수 있는 당사자**입니다. 이 중 어느 것도 지연시간 벤치마크에는 나타나지 않습니다 — 이 목록의 반복되는 교훈: **UX 보다 권한을 먼저 재라.** **`bundler-paymaster-dependencies`** 의 결제판 재연입니다 — **\"인프라 불필요\"는 남의 인프라라는 뜻이고, 그 남이 원가 이하로 돌리는 데는 이유가 있습니다.**\n\n**교체 시험이 결론을 냅니다.** Coinbase facilitator 에서 PayAI 나 셀프호스팅으로 옮기는 것이 정말 설정 한 줄이고 다른 아무것도 안 바뀐다면, 이 역할은 범용품으로 남고 병목은 이론에 그칩니다 — 프로토콜의 중립성이 실재하는 겁니다. 반대로 대안들이 체인·환불 표면·컴플라이언스 태세에서 서로 다르다면 — **Stripe 프리뷰는 이미 x402 결제를 PaymentIntents 로 받아 법정화폐 정산과 환불까지 붙입니다** — **\"facilitator\" 는 한 역할이 아니라 한 단어를 나눠 쓰는 서로 다른 사업들**이고, 전환 비용이 되살아나며, 이들을 구별해 주는 것은 클릭 수가 아니라 권한표입니다.\n\n## 동작 방식\n\n### facilitator 가 실제로 하는 일\n\n| 단계 | 누가 | 비고 |\n| --- | --- | --- |\n| 제시 — 402 + 결제 조건 | 판매자 | facilitator 관여 없음 |\n| 결제 페이로드 서명 | 구매자 | EIP-3009 `transferWithAuthorization` — **구매자는 가스를 안 냅니다** |\n| 검증 | **facilitator** | 서명과 잔액을 조건에 대조 |\n| 정산 | **facilitator** | 온체인 제출, 가스 대납, receipt 반환 |\n\nfacilitator 는 **장기 잔액을 보관하지 않습니다** — 하지만 **모든 유료 요청이 그것을 지나가고, 정산은 그것이 동의할 때만 일어납니다.**\n\n### 명단 — 2026-09 기준\n\n| 서비스 | 운영 주체 | 체인 | 현재 가격 | 각도 |\n| --- | --- | --- | --- | --- |\n| CDP facilitator | Coinbase | Base, Solana, Stellar | 무료 티어(월 ~1,000 건) | **기본값 — 프로토콜 저자가 직접 운영** |\n| PayAI | PayAI | Base, Solana, Polygon | 수수료 현재 대납 | **Coinbase 다음으로 큰 facilitator(트랜잭션 ~14%)** |\n| Stripe x402 | Stripe | Base (USDC) | 프라이빗 프리뷰 | **PaymentIntents 로 정산** — 리포팅·환불·법정화폐 정산 |\n| Cloudflare | Cloudflare | — | — | Workers·에이전트용 x402 도구 |\n| thirdweb | thirdweb | EVM | — | SDK 지원 + Nexus(API 키 없는 에이전트) |\n| Crossmint | Crossmint | EVM + Solana | — | 지갑·온램프·facilitator 를 한 플랫폼에 |\n| 셀프호스팅 | 나 | 내가 연결하는 만큼 | 가스 원가 | **비상구 — 그리고 따라오는 운영 청구서** |\n\n### 스펙은 누가 다스리나\n\n| | |\n| --- | --- |\n| x402 재단 | **리눅스 재단 산하**; 창립 참여사에 AWS, Circle, Coinbase, Google, Mastercard, Microsoft, Shopify, Stripe, Visa |\n| Google AP2 | x402 는 **Agent Payments Protocol 의 크립토 확장** |\n\n**거버넌스 명단이 두 번째 단서입니다: 대체하겠다던 그 역할을 표준화하는 기구에, 프로세서와 카드 네트워크가 들어와 앉았습니다.**\n\n### facilitator 마다 권한표가 답해야 할 질문 넷\n\n1. **거부** — 유효한 서명 결제의 정산을 거부할 수 있는가(제재 스크리닝, 약관), 그것은 문서에 있는가 겪어야 아는가?\n2. **가시성** — 요청마다 무엇을 기록하고, 누가 그것을 영장으로 가져갈 수 있는가?\n3. **가격 권한** — 수수료 면제를 누가, 어떤 예고 기간으로 끝낼 수 있는가?\n4. **장애** — 검증과 정산 사이에서 죽으면 재시도는 누구 책임인가? (**`x402-settlement-retry`** — 두 카드는 엔드포인트 하나를 공유합니다.)\n"</script>
+      <h1>중개자는 스펙에서는 선택이고, 현실에서는 표준이다</h1>
+      <p class="lead">x402 의 홍보 문구는 <strong>결제 흐름에 프로세서가 없다</strong>는 것이지만, 유료 요청 하나하나는 여전히 <strong>검증하고 정산해 주는 facilitator</strong> 를 지나갑니다 — <strong>스펙은 이 역할을 무허가로 열어 두었고, 시장은 대부분 Coinbase 에서 빌려 씁니다.</strong> 유료 엔드포인트 하나를 세 facilitator — <strong>Coinbase 호스팅 기본값, 경쟁사 하나, 셀프호스팅 하나</strong> — 에 붙여 보고, 지연시간을 비교하기 전에 <strong>권한 행부터 채웁니다: 누가 정산을 거부할 수 있고, 누가 트래픽을 보고, 수수료 면제가 끝나면 누가 가격을 정하는가.</strong></p>
+      <p class="meta"><strong>아직 범위 미정</strong> — 산출물은 <strong>엔드포인트 하나, facilitator 설정 셋, 채워진 권한표 하나</strong>입니다.
+
+1. <strong>기본값.</strong> API 경로 하나를 x402 미들웨어로 보호하고 <strong>Coinbase CDP facilitator</strong>(Base, USDC)에 연결합니다. 온보딩이 요구한 것(CDP 계정, 인증), 정산 지연시간, 오늘 기준 수수료 줄을 기록합니다.
+2. <strong>교체 시험.</strong> facilitator 설정을 두 번째 호스팅 서비스(PayAI, 또는 승인되면 Stripe 프라이빗 프리뷰)로 바꿉니다. <strong>코드 diff 는 한 줄 안팎이어야 합니다</strong> — 실제로 바뀐 것을 적습니다: 체인, 수수료 체계, 환불·리포팅 표면, 이용약관.
+3. <strong>비상구.</strong> 레퍼런스 facilitator 를 셀프호스팅합니다: 내 RPC, 내 가스 지갑, 내 재시도 큐. <strong>이것과 1 번 사이의 운영 부담 차이를 시간 단위로 재면, 그것이 호스팅 기본값의 가격</strong>입니다.
+4. <strong>권한표.</strong> facilitator 마다 답합니다: <strong>유효한 결제의 정산을 거부할 수 있는가? 요청마다 무엇을 기록하는가? 수수료 면제를 누가, 어떤 예고 기간으로 끝낼 수 있는가?</strong> 그리고 정산 도중에 죽으면 재시도는 누구 책임인가 (<strong><code>x402-settlement-retry</code></strong> 가 그 경로를 다룹니다).
+
+참고: <a href="https://docs.cdp.coinbase.com/x402/core-concepts/facilitator">x402 facilitator 문서</a>, <a href="https://www.x402.org/ecosystem?category=facilitators">x402.org 생태계 — facilitators</a>.</p>
       <h2>왜</h2>
-      <p>UI 는 보통 세션 상태를 &quot;connected&quot; 하나로 뭉갭니다. 그러면 어떤 메서드가 아직 인가되어 있는지가 가려지고, 지갑이 애플리케이션 바깥에서 상태를 바꿀 때 낡은 계정 버그가 생깁니다.</p>
-<p>WalletConnect 세션에는 계정, 체인, 메서드, 이벤트, 만료가 들어 있습니다. 이것을 <code>isConnected</code> 불리언 하나로 다루면, 애플리케이션이 무엇을 요청할 수 있는지와 캐시된 계정이 아직 최신인지 알려 주는 정보가 사라집니다.</p>
+      <p><strong>홍보 문구에서 출발해 빈 자리를 찾습니다.</strong> x402 의 이야기는 <strong>프로세서 없는 결제</strong>입니다: 서버가 402 응답으로 가격을 제시하고, 클라이언트가 USDC 승인에 서명하면 끝. 하지만 <strong>검증·정산은 <em>facilitator</em> 에게 외주</strong>됐고 — 스펙은 그 역할을 의도적으로 무허가로 둡니다: <strong>프로토콜이 지명하는 당사자가 아니라, 판매자가 설정하는 URL 하나</strong>입니다. <strong>누구나 채울 수 있지만 거의 아무도 직접 운영하고 싶지 않은 빈 자리</strong> — 플랫폼 사업이 찾는 모양이 정확히 이것입니다. Coinbase 는 프로토콜을 만들고, 재단에 기부하고, <strong>기본 facilitator 를 무료로 호스팅합니다.</strong> <strong>프로토콜은 표준이고, facilitator 가 사업입니다.</strong></p>
+<p><strong>수수료 면제가 단서입니다.</strong> facilitator 들이 지금 0 원 언저리로 가격을 매기는 것 — Coinbase 의 무료 티어, 수수료를 대신 삼키는 PayAI — 은 임베디드 지갑이 시드 문구를 없앤 것과 같은 이유입니다 (<strong><code>embedded-wallet-policy</code></strong>): <strong>채택 먼저, 권한은 나중에.</strong> facilitator 는 <strong>수수료 줄을 붙일 수 있는 자리에 앉아 있고, 모든 유료 요청을 보고, 정산을 거부할 수 있는 당사자</strong>입니다. 이 중 어느 것도 지연시간 벤치마크에는 나타나지 않습니다 — 이 목록의 반복되는 교훈: <strong>UX 보다 권한을 먼저 재라.</strong> <strong><code>bundler-paymaster-dependencies</code></strong> 의 결제판 재연입니다 — <strong>&quot;인프라 불필요&quot;는 남의 인프라라는 뜻이고, 그 남이 원가 이하로 돌리는 데는 이유가 있습니다.</strong></p>
+<p><strong>교체 시험이 결론을 냅니다.</strong> Coinbase facilitator 에서 PayAI 나 셀프호스팅으로 옮기는 것이 정말 설정 한 줄이고 다른 아무것도 안 바뀐다면, 이 역할은 범용품으로 남고 병목은 이론에 그칩니다 — 프로토콜의 중립성이 실재하는 겁니다. 반대로 대안들이 체인·환불 표면·컴플라이언스 태세에서 서로 다르다면 — <strong>Stripe 프리뷰는 이미 x402 결제를 PaymentIntents 로 받아 법정화폐 정산과 환불까지 붙입니다</strong> — <strong>&quot;facilitator&quot; 는 한 역할이 아니라 한 단어를 나눠 쓰는 서로 다른 사업들</strong>이고, 전환 비용이 되살아나며, 이들을 구별해 주는 것은 클릭 수가 아니라 권한표입니다.</p>
       <h2>동작 방식</h2>
-      <p>가장 작은 메서드 집합으로 연결하고 넓은 기본 제안과 비교한 뒤, 계정 변경, 체인 변경, 세션 갱신, 만료, 릴레이 단절, 명시적 해지를 차례로 실행합니다.</p>
-<h3>PoC</h3>
-<p>WalletConnect Sign client 또는 Reown AppKit 으로 최소 권한 제안과 넓은 권한 제안을 각각 만듭니다. 계정·체인 변경, 세션 갱신, 만료, 릴레이 단절, 재연결, 명시적 연결 해제를 실행합니다. 각 이벤트가 애플리케이션 상태를 올바르게 무효화하거나 좁히는지 확인합니다.</p>
-<h3>무엇을 증명하나</h3>
-<p>연결 UX 는 권한 관리입니다. 안전한 기본값은 최소한의 namespace 와 메서드 집합, 관찰 가능한 세션 상태 머신, 눈에 보이는 해지 경로입니다 — 낡은 상태에서도 살아남는 초록색 점이 아닙니다.</p>
-<p>참고: <a href="https://docs.reown.com/advanced/api/sign/dapp-usage">Reown WalletConnect 세션 사용법</a>.</p>
+      <h3>facilitator 가 실제로 하는 일</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>단계</th>
+<th>누가</th>
+<th>비고</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>제시 — 402 + 결제 조건</td>
+<td>판매자</td>
+<td>facilitator 관여 없음</td>
+</tr>
+<tr>
+<td>결제 페이로드 서명</td>
+<td>구매자</td>
+<td>EIP-3009 <code>transferWithAuthorization</code> — <strong>구매자는 가스를 안 냅니다</strong></td>
+</tr>
+<tr>
+<td>검증</td>
+<td><strong>facilitator</strong></td>
+<td>서명과 잔액을 조건에 대조</td>
+</tr>
+<tr>
+<td>정산</td>
+<td><strong>facilitator</strong></td>
+<td>온체인 제출, 가스 대납, receipt 반환</td>
+</tr>
+</tbody></table></div>
+<p>facilitator 는 <strong>장기 잔액을 보관하지 않습니다</strong> — 하지만 <strong>모든 유료 요청이 그것을 지나가고, 정산은 그것이 동의할 때만 일어납니다.</strong></p>
+<h3>명단 — 2026-09 기준</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>서비스</th>
+<th>운영 주체</th>
+<th>체인</th>
+<th>현재 가격</th>
+<th>각도</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CDP facilitator</td>
+<td>Coinbase</td>
+<td>Base, Solana, Stellar</td>
+<td>무료 티어(월 ~1,000 건)</td>
+<td><strong>기본값 — 프로토콜 저자가 직접 운영</strong></td>
+</tr>
+<tr>
+<td>PayAI</td>
+<td>PayAI</td>
+<td>Base, Solana, Polygon</td>
+<td>수수료 현재 대납</td>
+<td><strong>Coinbase 다음으로 큰 facilitator(트랜잭션 ~14%)</strong></td>
+</tr>
+<tr>
+<td>Stripe x402</td>
+<td>Stripe</td>
+<td>Base (USDC)</td>
+<td>프라이빗 프리뷰</td>
+<td><strong>PaymentIntents 로 정산</strong> — 리포팅·환불·법정화폐 정산</td>
+</tr>
+<tr>
+<td>Cloudflare</td>
+<td>Cloudflare</td>
+<td>—</td>
+<td>—</td>
+<td>Workers·에이전트용 x402 도구</td>
+</tr>
+<tr>
+<td>thirdweb</td>
+<td>thirdweb</td>
+<td>EVM</td>
+<td>—</td>
+<td>SDK 지원 + Nexus(API 키 없는 에이전트)</td>
+</tr>
+<tr>
+<td>Crossmint</td>
+<td>Crossmint</td>
+<td>EVM + Solana</td>
+<td>—</td>
+<td>지갑·온램프·facilitator 를 한 플랫폼에</td>
+</tr>
+<tr>
+<td>셀프호스팅</td>
+<td>나</td>
+<td>내가 연결하는 만큼</td>
+<td>가스 원가</td>
+<td><strong>비상구 — 그리고 따라오는 운영 청구서</strong></td>
+</tr>
+</tbody></table></div>
+<h3>스펙은 누가 다스리나</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>x402 재단</td>
+<td><strong>리눅스 재단 산하</strong>; 창립 참여사에 AWS, Circle, Coinbase, Google, Mastercard, Microsoft, Shopify, Stripe, Visa</td>
+</tr>
+<tr>
+<td>Google AP2</td>
+<td>x402 는 <strong>Agent Payments Protocol 의 크립토 확장</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>거버넌스 명단이 두 번째 단서입니다: 대체하겠다던 그 역할을 표준화하는 기구에, 프로세서와 카드 네트워크가 들어와 앉았습니다.</strong></p>
+<h3>facilitator 마다 권한표가 답해야 할 질문 넷</h3>
+<ol>
+<li><strong>거부</strong> — 유효한 서명 결제의 정산을 거부할 수 있는가(제재 스크리닝, 약관), 그것은 문서에 있는가 겪어야 아는가?</li>
+<li><strong>가시성</strong> — 요청마다 무엇을 기록하고, 누가 그것을 영장으로 가져갈 수 있는가?</li>
+<li><strong>가격 권한</strong> — 수수료 면제를 누가, 어떤 예고 기간으로 끝낼 수 있는가?</li>
+<li><strong>장애</strong> — 검증과 정산 사이에서 죽으면 재시도는 누구 책임인가? (<strong><code>x402-settlement-retry</code></strong> — 두 카드는 엔드포인트 하나를 공유합니다.)</li>
+</ol>
       
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-private-rpc-visibility.html">&larr; 36. Private RPC changes visibility, not settlement</a><a href="pocs-foundry-invariant-reachability.html">38. An invariant test is only as good as the actions it reaches &rarr;</a></div>
+    <div class="pager"><a href="pocs-consortium-owns-the-rail.html">&larr; 44. Twenty-one banks, one issuer — &quot;own it together&quot; becomes a company</a><a href="pocs-merkle-vs-verkle.html">46. Merkle vs Verkle &rarr;</a></div>
   </div>
   </main>
 </div>

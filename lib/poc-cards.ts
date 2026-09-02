@@ -2294,14 +2294,14 @@ export const POC_CARDS: DemoCard[] = [
     // 요지는 프로토콜 변경 자체가 아니라, 앱 코드 곳곳에 적히지 않은 채 박혀 있는 "12초"다.
     key: "quick-slots-10s",
     important: true, // 2026-08-31 (jay) — 배열 위치는 번호 보존용: important 구획 끝에 둔다
-    updated: "2026-08-27",
+    updated: "2026-09-02",
     title: "Ten-second slots — the constant nobody wrote down",
     titleKo: "10초 슬롯 — 아무도 적어두지 않은 상수",
     description:
       "Cutting slot time from 12s to 10s changes no API, which is exactly what makes it dangerous. Every poll interval, confirmation rule, oracle heartbeat and deadline in an application encodes 12 seconds somewhere, and almost none of them say so.",
     descriptionKo:
       "슬롯 시간이 12초에서 10초로 줄어도 API는 하나도 바뀌지 않습니다 — 바로 그 점이 위험합니다. 앱의 폴링 주기·확정 규칙·오라클 하트비트·마감은 어딘가에서 12초를 전제하고 있는데, 그렇다고 적어 둔 자리는 거의 없습니다.",
-    status: "soon",
+    status: "done",
     howTo:
       "Not yet scoped — and the first step is a grep, not a design. Pull every time-valued constant out of the codebase (poll intervals, confirmation counts, signature deadlines, cache TTLs, cron periods) and mark each one: derived from slot time, coincidentally equal to a multiple of it, or genuinely independent. Only the middle bucket is a bug. Source: EIP-8198 Quick Slots, listed S-tier in the 2026-08-26 protocol roundup — confirm the proposal's actual status and target fork at eips.ethereum.org before building anything on it.",
     howToKo:
@@ -2320,14 +2320,14 @@ export const POC_CARDS: DemoCard[] = [
     // 단일 가스 숫자가 감추고 있던 교차보조를 이 프로젝트의 트랜잭션 구성으로 재계산한다.
     key: "l1-data-pricing-dimensions",
     important: true, // 2026-08-31 (jay) — 배열 위치는 번호 보존용: important 구획 끝에 둔다
-    updated: "2026-08-27",
+    updated: "2026-09-02",
     title: "When gas stops being one number — data pricing and bandwidth accounting",
     titleKo: "가스가 더 이상 숫자 하나가 아닐 때 — 데이터 가격과 대역폭 회계",
     description:
       "EIP-8131 and EIP-8279 point at charging separately for the resources a transaction actually consumes. A settlement app that posts a lot of bytes and computes very little has been cross-subsidized by the single gas number — and repricing decides which design stays cheap.",
     descriptionKo:
       "EIP-8131·EIP-8279가 겨냥하는 것은 **트랜잭션이 실제로 쓰는 자원별로 따로 과금**하는 방향입니다. 바이트는 많이 쓰고 연산은 거의 안 하는 정산 앱은 그동안 단일 가스 숫자에 **교차보조**를 받아 왔고, 재가격은 어떤 설계가 계속 싼지를 결정합니다.",
-    status: "soon",
+    status: "done",
     howTo:
       "Not yet scoped — verification before arithmetic. Read both proposals and write one sentence each on what unit they meter and who pays more under it; if that sentence cannot be written, the card stops there. Then take one month of this project's own transactions, split each into data bytes versus execution, and reprice under separate dimensions. If the total moves a few percent it is a note; if it moves a lot it is a design constraint. Source: 2026-08-26 protocol roundup listing EIP-8131 and EIP-8279 as S-tier L1 scaling (data pricing, bandwidth accounting) — contents and status to confirm at eips.ethereum.org.",
     howToKo:
@@ -2340,6 +2340,142 @@ export const POC_CARDS: DemoCard[] = [
       "### One number, five resources\n\n| Resource | Metered today | What separate metering would change | Exposure here |\n|---|---|---|---|\n| **Execution** — opcodes | gas | Little; this is what gas was designed for | **Thin** — settlement logic is small |\n| **Calldata bytes** | gas, at a fixed price per byte | Its own price, moving with demand | **Heavy** — orders and evidence are bytes |\n| **Blob data** | Its own market since EIP-4844 | Nothing — this is the precedent, not the change | Already true |\n| **State growth** | gas, and badly | The hardest to price honestly; the cost is permanent, the fee is one-off | **Registries, position maps** |\n| **Bandwidth / propagation** | not metered at all | A dimension that does not exist yet | **Large-payload transactions** |\n\n### The measurement, and why it is small\n\nOne month of transactions, one split per transaction: bytes versus execution. That produces a single ratio, and the ratio answers the only question that matters before the proposals settle — **is this project a data-heavy user or not.** If it is, then every design choice that trades computation for calldata (posting evidence rather than recomputing it, storing an order rather than deriving it) is a bet on the current price of bytes staying where it is.\n\n### The state-growth footnote worth keeping\n\nOf the five rows, state growth is the one with no honest price anywhere today: **the cost is borne forever by every future node, and the fee is charged once.** Any card in this catalogue that proposes an on-chain registry — `the-record-is-not-the-path`, position maps, resolution records — is quietly on the wrong side of that mismatch, and a repricing that fixes it would be aimed at exactly those designs.",
     howItWorksKo:
       "### 숫자 하나, 자원 다섯\n\n| 자원 | 지금의 계량 | 분리 과금이 바꾸는 것 | 여기서의 노출 |\n|---|---|---|---|\n| **실행** — 옵코드 | 가스 | 거의 없음. 가스가 원래 설계된 대상 | **얇음** — 정산 로직은 작다 |\n| **콜데이터 바이트** | 바이트당 고정가의 가스 | 수요에 따라 움직이는 **자기 가격** | **두꺼움** — 주문·근거가 곧 바이트 |\n| **블롭 데이터** | EIP-4844 이후 자기 시장 | 없음 — 변화가 아니라 **선례** | 이미 해당 |\n| **상태 증가** | 가스, 그것도 엉성하게 | 가장 정직하게 매기기 어려움. 비용은 영구, 수수료는 1회 | **레지스트리·포지션 맵** |\n| **대역폭 · 전파** | 아예 계량되지 않음 | **아직 없는 차원** | **큰 페이로드 트랜잭션** |\n\n### 측정, 그리고 왜 작은 작업인가\n\n한 달치 트랜잭션, 건당 한 번의 분해 — 바이트 대 실행. 여기서 **비율 하나**가 나오고, 그 비율이 제안이 확정되기 전에 답할 수 있는 유일한 질문에 답합니다 — **이 프로젝트는 데이터 과다 사용자인가 아닌가.** 그렇다면 연산 대신 콜데이터를 쓰는 모든 선택(다시 계산하는 대신 근거를 올리기, 유도하는 대신 주문을 저장하기)은 **바이트의 현재 가격이 그대로 있으리라는 베팅**입니다.\n\n### 남겨 둘 상태 증가 각주\n\n다섯 줄 중 **상태 증가는 오늘 어디에도 정직한 가격이 없는 항목**입니다. **비용은 미래의 모든 노드가 영원히 지고, 수수료는 한 번만 받습니다.** 이 카탈로그에서 온체인 레지스트리를 제안하는 카드는 전부 — `the-record-is-not-the-path`, 포지션 맵, 정산 기록 — 조용히 그 불일치의 **잘못된 쪽**에 서 있고, 그 불일치를 고치는 재가격은 정확히 그런 설계를 겨냥하게 됩니다.",
+  },
+  {
+    // 2026-09-02: Codex 세션이 docs/pocs.html 에 직접 써 넣은 카드를 POC_CARDS 로 이식 (jay 요청).
+    // 원문(영문)은 그대로 두고 한국어를 보완했다. done — Codex 가 완료 표시한 상태 유지.
+    // 배열 위치는 번호 보존용: undated done 블록의 끝, l1-data-pricing-dimensions 뒤.
+    key: "rpc-view-not-consensus",
+    title: "An RPC response is a view, not consensus",
+    titleKo: "RPC 응답은 합의가 아니라 하나의 관점이다",
+    description:
+      "A hosted RPC reports what one node currently believes. Availability, correctness, canonicality, and finality are separate properties, yet applications often compress them into \"the chain says.\"",
+    descriptionKo:
+      "호스팅 RPC 는 노드 하나가 지금 믿는 것을 보고합니다. 가용성·정확성·정규성·최종성은 서로 다른 속성인데, 애플리케이션은 이를 곧잘 \"체인이 말한다\" 한마디로 압축합니다.",
+    status: "done",
+    updated: "2026-09-02",
+    howTo:
+      "Run two operationally independent providers side by side (different vendors on different client implementations), poll `latest` / `safe` / `finalized` block number plus hash from each, and put a small proxy in front of one endpoint to inject the four failure cases: timeout, lag, equal-height/different-hash, and a shared stale answer.",
+    howToKo:
+      "운영상 독립적인 프로바이더 둘을 나란히 둡니다(클라이언트 구현이 다른 서로 다른 벤더). 각각에서 `latest` / `safe` / `finalized` 블록 번호와 해시를 폴링하고, 한쪽 엔드포인트 앞에 작은 프록시를 두어 네 가지 실패 — 타임아웃, 지연, 같은 높이·다른 해시, 둘 다 오래된 답 — 를 주입합니다.",
+    purpose:
+      "Multi-provider failover fixes downtime but can amplify disagreement unless responses are compared by block hash and confidence tag. The PoC turns RPC trust into an observable policy.\n\nAn RPC provider exposes one node's present view. It may be unavailable, stale, following a temporary fork, or simply wrong. A second endpoint improves availability, but two URLs are not automatically two independent observations: they may share an operator, cloud, client implementation, or upstream node. The goal is failure independence, not endpoint count.",
+    purposeKo:
+      "멀티 프로바이더 failover 는 다운타임은 고치지만, 응답을 블록 해시와 신뢰도 태그로 비교하지 않으면 불일치를 오히려 증폭시킬 수 있습니다. 이 PoC 는 RPC 신뢰를 관찰 가능한 정책으로 바꿉니다.\n\nRPC 제공자는 한 노드의 현재 관점을 노출합니다. 응답하지 않거나, 뒤처지거나, 일시적 포크를 따라가거나, 그냥 틀릴 수 있습니다. 두 번째 엔드포인트는 가용성을 높이지만, URL 두 개가 자동으로 독립 관점 둘이 되는 것은 아닙니다 — 같은 운영사·클라우드·클라이언트 구현·업스트림 노드를 공유할 수 있기 때문입니다. 목표는 엔드포인트 개수가 아니라 장애 독립성입니다.",
+    howItWorks:
+      "Query two independent providers for latest, safe, and finalized block number plus hash; inject a stale or disagreeing response; and define when the application degrades, retries, or refuses an irreversible action.\n\n### What two providers actually buy\n\nThe useful pattern is not \"always send every request twice.\" It is to match the RPC policy to the business risk.\n\n| Pattern | Behavior | Problem solved |\n| --- | --- | --- |\n| Failover | Use B when A fails | Availability |\n| Hedged request | Ask B when A is slow | Tail latency |\n| Agreement check | Compare A and B by block hash | Disagreement detection |\n\nWith two providers, agreement increases confidence and disagreement tells the application to stop or retry. Two providers cannot decide which answer is correct when they disagree.\n\n### Confidence tags\n\n| Tag | Meaning | Typical use |\n| --- | --- | --- |\n| `latest` | The node's current proposed head; it can change | UI and reversible reads |\n| `safe` | A head with substantially stronger reorg resistance | Higher-confidence processing |\n| `finalized` | The latest finalized block reported by the node | Irreversible, high-value fulfillment |\n\nThe tags are still reported through RPC. They strengthen the requested chain state; they do not make the provider itself a consensus oracle.\n\n### PoC\n\nInject timeout, lag, equal-height/different-hash, and shared-stale-answer cases, and record four separate signals:\n\n| Signal | Question |\n| --- | --- |\n| Availability | Did an endpoint answer? |\n| Freshness | How far behind is its reported head? |\n| Agreement | Do independent nodes report the same block hash? |\n| Confidence | Is the block latest, safe, or finalized? |\n\nAllow low-risk reads to degrade with a stale warning. Pause collateral release, expensive fulfillment, or other irreversible actions when the required confidence or agreement cannot be established. A practical default is primary-plus-fallback for ordinary UI reads and explicit finalized-hash agreement for selected high-value actions.\n\nReference: [Ethereum JSON-RPC API](https://ethereum.org/developers/docs/apis/json-rpc/).",
+    howItWorksKo:
+      "운영상 독립적인 두 제공자에게 latest·safe·finalized 블록 번호와 해시를 요청하고, 오래되거나 불일치하는 응답을 주입한 뒤, 애플리케이션이 언제 성능을 낮추고, 재시도하고, 비가역 작업을 거부하는지 정의합니다.\n\n### 프로바이더 두 개가 실제로 사 주는 것\n\n좋은 패턴은 \"모든 요청을 언제나 두 번 보낸다\"가 아니라 비즈니스 위험도에 RPC 정책을 맞추는 것입니다.\n\n| 패턴 | 동작 | 해결하는 문제 |\n| --- | --- | --- |\n| Failover | A 가 실패하면 B 사용 | 가용성 |\n| Hedged request | A 가 느리면 B 에도 요청 | 긴 꼬리 지연 |\n| Agreement check | A 와 B 의 블록 해시 비교 | 불일치 감지 |\n\n둘이 동의하면 확신이 커지고, 불일치하면 애플리케이션이 멈추거나 재시도할 근거가 생깁니다. 하지만 둘이 다를 때 어느 쪽이 맞는지는 두 개만으로 결정할 수 없습니다.\n\n### 신뢰도 태그\n\n| 태그 | 뜻 | 대표 용도 |\n| --- | --- | --- |\n| `latest` | 노드가 현재 보는 최신 제안 블록이며 바뀔 수 있음 | UI 와 되돌릴 수 있는 읽기 |\n| `safe` | reorg 저항이 훨씬 강한 head | 더 높은 확신이 필요한 처리 |\n| `finalized` | 노드가 보고하는 최신 최종 확정 블록 | 비가역적이고 고가치인 이행 |\n\n이 태그들도 RPC 를 통해 전달됩니다. 요청하는 체인 상태의 강도를 높일 뿐, 제공자 자체를 합의 오라클로 만들지는 않습니다.\n\n### PoC\n\n타임아웃, 지연, 같은 높이의 다른 해시, 두 곳이 함께 오래된 답을 주는 상황을 주입하고 네 신호를 따로 기록합니다.\n\n| 신호 | 질문 |\n| --- | --- |\n| 가용성 | 엔드포인트가 응답했는가? |\n| 신선도 | 보고한 head 가 얼마나 뒤처졌는가? |\n| 일치 | 독립 노드가 같은 블록 해시를 보고하는가? |\n| 신뢰도 | 그 블록은 latest, safe, finalized 중 무엇인가? |\n\n저위험 읽기는 오래된 데이터 경고와 함께 계속할 수 있습니다. 담보 해제, 고가 상품 제공 등 비가역 작업은 필요한 신뢰도나 일치를 확인할 수 없으면 중단합니다. 현실적인 기본값은 일반 UI 읽기에 primary + fallback, 선택된 고가치 작업에만 finalized 해시 일치를 명시적으로 확인하는 것입니다.\n\n참고: [Ethereum JSON-RPC API](https://ethereum.org/developers/docs/apis/json-rpc/).",
+  },
+  {
+    // 2026-09-02: Codex 카드 이식 (jay 요청). jay 지시로 done 처리 (원래 Codex 는 important).
+    // 배열 위치는 번호 보존용: rpc-view-not-consensus 뒤, undated done 블록의 끝.
+    key: "ponder-reorg-indexer",
+    title: "Ponder — the indexer is the reorg handler",
+    titleKo: "Ponder — 인덱서가 리오그 핸들러다",
+    description:
+      "An indexer is not merely a faster RPC cache. It owns rollback, replay, idempotency, and the database state a product shows while the chain can still reorganize.",
+    descriptionKo:
+      "인덱서는 단순히 빠른 RPC 캐시가 아닙니다. rollback·replay·멱등성, 그리고 체인이 아직 재조직될 수 있는 동안 제품이 보여 주는 DB 상태를 소유합니다.",
+    status: "done",
+    updated: "2026-09-02",
+    // 2026-09-02 (jay): 논의 내용을 상세 페이지에 정리 — Review clarification 섹션.
+    discussion:
+      "### The indexer is not a choice\n\nAn RPC node answers \"what is X's balance *now*\"; it cannot answer product questions — \"all transfers for this user, sorted,\" \"top holders,\" \"volume per day.\" Every real application ends up copying chain data into a database, so the question is never *whether* to run an indexer, only *who wrote it*: you, or a library. And whoever maintains that database inherits the rollback and replay rules — that inheritance is the card's thesis.\n\n### Why each PoC step exists\n\n| Step | What it catches |\n| --- | --- |\n| Index the same range twice | Hidden handler state — double-counting is the cheapest determinism smoke test |\n| Replace the tip with a competing hash | The reorg itself — `evm_snapshot` → mine → `evm_revert` → mine makes one on demand, on a laptop |\n| Check *derived* rows, not raw rows | Where reorg bugs actually live — `DELETE WHERE block > N` is easy; `balance += amount` can only be inverted or re-derived |\n| Byte-for-byte vs. a clean replay | The gold standard: the DB is a pure function of the chain — no wall-clock timestamps, no order-dependence, no reorg residue |\n| Schema rebuild | Whether the DB accidentally became a source of truth — a derived DB evolves by wipe-and-reindex, never by hand-patching history |\n\n### The finality boundary\n\nHow much rollback machinery an indexer must keep is exactly the finality lag of its chain: only the unfinalized window can be orphaned, so the undo log lives there and can be dropped once a block is final. An RPC cache never has to think about this; an indexer is defined by it.\n\n### What the card does not say\n\nIt does not say \"Ponder is good.\" The reasoning chain — we cannot avoid an indexer, and the indexer must own reorgs — is the card's setup, but the last step, *therefore Ponder*, is earned by the test, not assumed. Ponder *claims* to own the problem (its pitch against The Graph's subgraphs and Subsquid is local-first TypeScript with reorg handling built in); the PoC exists to verify that claim before a database is bet on it. Pass, and the reorg machinery came for free. One stale row, and what remains is a fast query layer that returns wrong answers.",
+    discussionKo:
+      "### 인덱서는 선택지가 아니다\n\nRPC 노드는 \"X 의 *지금* 잔액\"에는 답하지만, 제품이 던지는 질문 — \"이 사용자의 모든 전송 내역 정렬해서\", \"상위 보유자\", \"일별 거래량\" — 에는 답하지 못합니다. 실제 애플리케이션은 결국 체인 데이터를 DB 로 복사하게 되므로, 질문은 인덱서를 *쓸지 말지*가 아니라 *누가 만들었느냐* — 나냐, 라이브러리냐 — 뿐입니다. 그리고 그 DB 를 유지하는 쪽이 rollback·replay 규칙을 상속받습니다 — 그 상속이 이 카드의 논지입니다.\n\n### PoC 각 단계가 존재하는 이유\n\n| 단계 | 무엇을 잡아내나 |\n| --- | --- |\n| 같은 범위 두 번 인덱싱 | 핸들러의 숨은 상태 — 이중 집계는 결정성을 확인하는 가장 싼 테스트 |\n| 팁을 경쟁 해시로 교체 | 리오그 그 자체 — `evm_snapshot` → 채굴 → `evm_revert` → 채굴이면 노트북 위에서 즉석으로 만든다 |\n| 원본 행이 아니라 *파생* 행 검사 | 리오그 버그가 실제로 사는 곳 — `DELETE WHERE block > N` 은 쉽지만 `balance += amount` 는 역산 또는 재유도로만 되돌릴 수 있다 |\n| 클린 리플레이와 바이트 단위 비교 | 최고 기준: DB 는 체인의 순수 함수 — 벽시계 타임스탬프도, 순서 의존성도, 리오그 잔여물도 없다 |\n| 스키마 재구축 | DB 가 어느새 source of truth 가 되어버렸는지 — 파생 DB 는 히스토리 수작업 패치가 아니라 전체 재인덱싱(wipe-and-reindex)으로 진화한다 |\n\n### 파이널리티 경계\n\n인덱서가 유지해야 할 rollback 장치의 깊이는 정확히 그 체인의 파이널리티 지연입니다: 미확정 구간만 고아가 될 수 있으므로 undo 로그는 그 구간에만 살고, 블록이 확정되면 버려도 됩니다. RPC 캐시는 이걸 고민할 필요가 없지만, 인덱서는 이것으로 정의됩니다.\n\n### 카드가 말하지 않는 것\n\n카드는 \"Ponder 가 좋다\"고 말하지 않습니다. 추론 사슬 — 인덱서는 피할 수 없고, 인덱서가 리오그를 소유해야 한다 — 까지는 카드의 설정이지만, 마지막 걸음인 *그러므로 Ponder* 는 가정이 아니라 테스트가 벌어다 주는 결론입니다. Ponder 는 이 문제를 소유한다고 *주장*합니다(The Graph 서브그래프·Subsquid 에 맞서는 셀링 포인트가 리오그 처리 내장 로컬 우선 TypeScript). PoC 는 DB 를 걸기 전에 그 주장을 검증하려고 존재합니다. 통과하면 리오그 장치를 공짜로 얻은 것이고, 낡은 행이 하나라도 남으면 남는 것은 틀린 답을 빨리 돌려주는 쿼리 계층입니다.",
+    howTo:
+      "Point a Ponder app at one small contract on a local Anvil chain and run the five PoC steps. The reorg comes from Anvil itself: `evm_snapshot` → mine a block with a transfer → `evm_revert` → mine a different block, so the indexer sees a competing tip hash. Export tables with an explicit `ORDER BY` before diffing — dump row order is not deterministic, and an unordered byte-for-byte comparison fails for the wrong reason.",
+    howToKo:
+      "로컬 Anvil 체인의 작은 컨트랙트 하나에 Ponder 앱을 붙이고 PoC 다섯 단계를 실행합니다. 리오그는 Anvil 로 만듭니다: `evm_snapshot` → 전송이 담긴 블록 채굴 → `evm_revert` → 다른 블록 채굴 — 인덱서가 경쟁하는 팁 해시를 보게 됩니다. 표는 diff 전에 반드시 `ORDER BY` 를 붙여 export 합니다 — 덤프의 행 순서는 결정적이지 않아서, 정렬 없는 바이트 비교는 엉뚱한 이유로 실패합니다.",
+    purpose:
+      "The existing replayability card states the invariant; this PoC tests whether a production library actually buys it. A fast query layer that leaves stale rows after a reorg is faster at returning the wrong answer.\n\nAn indexer owns the rollback and replay rules behind the database state an application treats as truth. And how much rollback it must support is exactly the finality lag of the chain: only the unfinalized window can be orphaned, so that window is where the undo machinery lives — an RPC cache never has to think about this; an indexer is defined by it.",
+    purposeKo:
+      "기존 replayability 카드는 불변식을 말로 세워 두었고, 이 PoC 는 프로덕션 라이브러리가 그 불변식을 실제로 사 주는지 시험합니다. 리오그 뒤에 낡은 행을 남기는 빠른 쿼리 계층은, 틀린 답을 더 빨리 돌려줄 뿐입니다.\n\n인덱서는 애플리케이션이 진실로 취급하는 DB 상태 뒤의 rollback·replay 규칙을 소유합니다. 그리고 지원해야 할 rollback 의 깊이는 정확히 체인의 파이널리티 지연입니다: 미확정 구간만 고아가 될 수 있으므로 undo 장치는 그 구간에만 삽니다 — RPC 캐시는 이걸 고민할 필요가 없지만, 인덱서는 이것으로 정의됩니다.",
+    howItWorks:
+      "Index one small contract with Ponder, force a local reorg, and assert that derived rows match a clean replay byte for byte. Measure initial sync, restart recovery, RPC calls, and schema-change rebuild time.\n\n### PoC\n\n1. Index transfers from one small contract with Ponder.\n2. Index the same range twice and verify idempotency.\n3. Replace the final local block with a competing hash.\n4. Verify stale derived rows disappear and the result matches a clean replay byte for byte.\n5. Record initial sync, restart recovery, RPC use, and rebuild time after one schema change.\n\n| Measurement | Question |\n| --- | --- |\n| Replay equality | Can the database be discarded and rebuilt exactly? |\n| Reorg rollback | Do orphaned events leave any derived state? |\n| Schema rebuild | Can the product evolve without hand-patching history? |\n\nReorg bugs live almost exclusively in *derived* state. Deleting orphaned raw events is easy (`DELETE WHERE block > N`); an aggregate updated as `balance += amount` can only be rolled back by inverting it or re-deriving it, which is why the test asserts on derived rows and not on the event log.\n\nReference: [Ponder official documentation](https://ponder.sh/).",
+    howItWorksKo:
+      "Ponder 로 작은 컨트랙트 하나를 인덱싱하고, 로컬 리오그를 강제로 만든 뒤, 파생 행이 처음부터 다시 인덱싱한 결과와 바이트 단위로 같은지 확인합니다. 초기 동기화, 재시작 복구, RPC 호출 수, 스키마 변경 후 재구축 시간을 측정합니다.\n\n### PoC\n\n1. Ponder 로 작은 컨트랙트 하나의 전송을 인덱싱한다.\n2. 같은 범위를 두 번 인덱싱해 멱등성을 확인한다.\n3. 마지막 로컬 블록을 경쟁 해시로 교체한다.\n4. 낡은 파생 행이 사라지고 결과가 클린 리플레이와 바이트 단위로 같은지 검증한다.\n5. 초기 동기화, 재시작 복구, RPC 사용량, 스키마 변경 1회 후 재구축 시간을 기록한다.\n\n| 측정 | 질문 |\n| --- | --- |\n| 리플레이 동등성 | DB 를 버리고 정확히 재구축할 수 있는가? |\n| 리오그 롤백 | 고아가 된 이벤트가 파생 상태를 남기는가? |\n| 스키마 재구축 | 히스토리를 수작업 패치 없이 제품이 진화할 수 있는가? |\n\n리오그 버그는 거의 전부 *파생* 상태에 삽니다. 고아가 된 원본 이벤트 삭제는 쉽지만(`DELETE WHERE block > N`), `balance += amount` 로 증분 갱신된 집계값은 역산하거나 재유도해야만 되돌릴 수 있습니다 — 그래서 테스트는 이벤트 로그가 아니라 파생 행을 검증합니다.\n\n참고: [Ponder 공식 문서](https://ponder.sh/).",
+  },
+  {
+    // 2026-09-02: Codex 카드 이식 — 위 주석 참조.
+    key: "embedded-wallet-policy",
+    title: "The wallet disappeared into the app",
+    titleKo: "지갑이 앱 속으로 사라졌다",
+    description:
+      "Embedded wallets and passkeys remove the seed phrase from onboarding, but the trust question moves into recovery, export, app signers, and transaction policies.",
+    descriptionKo:
+      "임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없애지만, 신뢰 문제는 복구·내보내기·앱 서명자·트랜잭션 정책으로 옮겨 갑니다.",
+    status: "done", // 2026-09-02 jay 지시로 done
+    important: true,
+    updated: "2026-09-02",
+    howTo:
+      "Build one login-to-first-transaction flow with an embedded wallet provider (e.g. Privy), then run the four failure paths — new device, lost authentication factor, key export, scoped app signer — and fill in the authority matrix before comparing click counts.",
+    howToKo:
+      "임베디드 지갑 제공자(예: Privy)로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 네 가지 경로 — 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자 — 를 실행합니다. 클릭 수를 비교하기 전에 권한표부터 채웁니다.",
+    purpose:
+      "The trend is not \"wallets became easy.\" Wallet responsibilities moved into the application. The PoC measures whether the user has an exit and whether the app can act beyond what the UI implies.\n\nEmbedded wallets and passkeys remove the seed phrase from onboarding. They do not remove custody and authorization questions; those questions move into recovery, export, additional signers, and policies controlled through the application stack.",
+    purposeKo:
+      "이 흐름의 본질은 \"지갑이 쉬워졌다\"가 아닙니다. 지갑의 책임이 애플리케이션 안으로 옮겨 간 것입니다. 이 PoC 는 사용자에게 출구가 있는지, 그리고 앱이 UI 가 암시하는 것 이상으로 행동할 수 있는지를 측정합니다.\n\n임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없앱니다. 하지만 수탁과 인가의 문제를 없애지는 않습니다 — 그 문제들은 복구, 내보내기, 추가 서명자, 애플리케이션 스택으로 제어되는 정책 속으로 옮겨 갑니다.",
+    howItWorks:
+      "Build one login-to-first-transaction flow with an embedded wallet, then test device loss, key export, MFA recovery, and a scoped app signer. Draw the authority matrix before judging the UX.\n\n### PoC\n\nBuild login-to-first-transaction with an embedded wallet. Then test four paths: a new device, lost authentication factor, key export, and a scoped application signer. Produce the authority matrix before comparing click counts.\n\n| Actor | Can sign? | Can recover? | Can export? |\n| --- | --- | --- | --- |\n| User | Under configured authentication | Test explicitly | Verify the escape hatch |\n| Application signer | Only within policy — or the policy is cosmetic | No | No |\n| Provider | Depends on custody and key architecture | Document the exact role | Document the exact role |\n\nReference: [Privy embedded-wallet overview](https://docs.privy.io/wallets/overview/embedded).",
+    howItWorksKo:
+      "임베디드 지갑으로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 기기 분실, 키 내보내기, MFA 복구, 범위가 제한된 앱 서명자를 시험합니다. UX 를 평가하기 전에 권한표부터 그립니다.\n\n### PoC\n\n임베디드 지갑으로 로그인→첫 트랜잭션을 만듭니다. 그다음 네 경로를 시험합니다: 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자. 클릭 수를 비교하기 전에 권한표를 만듭니다.\n\n| 행위자 | 서명 가능? | 복구 가능? | 내보내기 가능? |\n| --- | --- | --- | --- |\n| 사용자 | 설정된 인증 아래에서 | 명시적으로 시험할 것 | 탈출구가 실재하는지 확인할 것 |\n| 앱 서명자 | 정책 안에서만 — 아니면 그 정책은 장식 | 불가 | 불가 |\n| 제공자 | 수탁·키 구조에 따라 다름 | 정확한 역할을 문서화할 것 | 정확한 역할을 문서화할 것 |\n\n참고: [Privy 임베디드 지갑 개요](https://docs.privy.io/wallets/overview/embedded).",
+  },
+  {
+    // 2026-09-02: Codex 카드 이식 — 위 주석 참조.
+    key: "x402-settlement-retry",
+    title: "HTTP 402 is the easy part — settlement owns the retry",
+    titleKo: "HTTP 402 는 쉬운 부분이다 — 재시도는 정산의 책임이다",
+    description:
+      "x402 turns payment into HTTP middleware, but the product boundary is what happens when verification succeeds, settlement times out, and the client retries the paid request.",
+    descriptionKo:
+      "x402 는 결제를 HTTP 미들웨어로 만들지만, 제품의 경계는 검증이 성공하고 정산이 타임아웃된 뒤 클라이언트가 이미 결제한 요청을 재시도할 때 드러납니다.",
+    status: "done", // 2026-09-02 jay 지시로 done
+    important: true,
+    updated: "2026-09-02",
+    // 2026-09-02 (jay): 논의 내용을 상세 페이지에 정리 — Review clarification 섹션.
+    discussion:
+      "### The demo ends where the product begins\n\nReturning HTTP 402 with payment requirements is an hour of work; the middleware makes the demo almost free. What the middleware cannot give you is the thing that makes it a product: the moment money moves in one system (the chain) and the good is delivered in another (your API), you have a distributed transaction, and distributed transactions cannot be made atomic. The real work sits exactly where the demo ends — the retry.\n\n### The failure window is between the stages\n\nOne \"paid request\" is four stages — **verify → submit → settle → fulfill** — each crossing a network boundary that can eat the response. That is why the PoC injects a timeout *after* each stage rather than failing the stages: every stage succeeded, only the response was lost, and the client does the only rational thing and retries the identical signed request.\n\n| Window | What is true | What the retry must do |\n| --- | --- | --- |\n| After verify | Nothing settled, no money moved | Re-verify and continue — the cheapest window |\n| After submit | The dangerous one: did the transfer land? | The authorization nonce makes the chain refuse a second settle — so read \"already used\" as **this payment already succeeded**, never as an error to show the user |\n| After settle | Money moved, no product yet | The debt exists only in your database — it must have been recorded durably *before* the crash |\n| After fulfill | Resource exists, delivery lost | Return the *same* resource, never generate again |\n\nMisclassifying the second window is how a paying customer gets an error screen for a payment that worked.\n\n### The two invariants are the whole product\n\nAt most one settled payment per signed request; exactly one durable entitlement per settled payment. Everything else — middleware, facilitator, SDK — is replaceable plumbing. This is exactly the Web2 payments playbook: Stripe's `Idempotency-Key` and a durable state machine (`received → verified → submitted → settled → fulfilled`) keyed by the payment nonce. x402 changes the rail, not the semantics. \"Settlement owns the retry\" means retry handling cannot live in generic HTTP retry logic; a retry is a **lookup about an existing payment first**, and a new attempt only after that lookup says so.\n\n### Vigilance is not the deliverable\n\nYou cannot monitor your way out of a double charge — by the time you see it, the money moved twice. The guarantee has to be structural: assume every response can be lost, treat the retry as the normal path, and ask in design review, for each arrow in the flow, \"what happens if the response after this arrow is lost and the same request arrives again?\" If any arrow answers \"we charge again\" or \"we deliver nothing,\" that arrow is the bug — before any code is written. The reconciliation line at the end is `receipt-is-not-settlement` again: the facilitator saying \"settled\" is one service's claim; the canonical receipt on chain is the authority. And the reason x402 matters at all is agent commerce — pay-per-request with no account and no API key is the rail an AI agent would use.",
+    discussionKo:
+      "### 데모가 끝나는 곳에서 제품이 시작된다\n\nHTTP 402 와 결제 조건을 돌려주는 것은 한 시간짜리 일이고, 미들웨어는 데모를 거의 공짜로 만들어 줍니다. 미들웨어가 못 주는 것이 이것을 제품으로 만드는 부분입니다: 돈이 한 시스템(체인)에서 움직이고 상품이 다른 시스템(내 API)에서 전달되는 순간 분산 트랜잭션이 생기고, 분산 트랜잭션은 원자적으로 만들 수 없습니다. 진짜 일은 정확히 데모가 끝나는 자리 — 재시도 — 에 있습니다.\n\n### 실패의 창은 단계 사이에 있다\n\n\"유료 요청\" 하나는 네 단계 — **verify → submit → settle → fulfill** — 이고, 각 단계 사이의 네트워크 경계가 응답을 삼킬 수 있습니다. 그래서 PoC 는 단계를 실패시키는 게 아니라 각 단계 *직후*에 타임아웃을 주입합니다: 단계는 전부 성공했고 응답만 사라졌으며, 클라이언트는 합리적으로 동일한 서명 요청을 재시도합니다.\n\n| 창 | 무엇이 사실인가 | 재시도가 해야 할 일 |\n| --- | --- | --- |\n| 검증 직후 | 정산 없음, 돈 안 움직임 | 다시 검증하고 진행 — 가장 싼 창 |\n| 제출 직후 | 위험한 창: 전송이 실렸나? | 인가의 논스 덕에 체인이 두 번째 정산을 거부한다 — 그러니 \"already used\" 를 **이 결제는 이미 성공했다**로 읽어야지, 사용자에게 보여줄 에러로 읽으면 안 된다 |\n| 정산 직후 | 돈은 움직였는데 상품이 아직 없음 | 그 부채는 내 DB 에만 존재한다 — 크래시 *전에* 지속성 있게 기록돼 있어야 한다 |\n| 이행 직후 | 리소스는 있는데 전달이 유실됨 | *같은* 리소스를 돌려준다, 절대 다시 생성하지 않는다 |\n\n두 번째 창을 오분류하는 것이, 결제가 성공한 고객이 에러 화면을 보는 경로입니다.\n\n### 두 불변식이 제품의 전부다\n\n서명 요청당 정산은 최대 한 번; 정산된 결제당 지속성 있는 사용 권한 정확히 하나. 나머지 — 미들웨어, facilitator, SDK — 는 교체 가능한 배관입니다. 이것은 정확히 Web2 결제의 교과서입니다: Stripe 의 `Idempotency-Key` 와, 결제 논스를 키로 삼는 지속성 있는 상태 머신(`received → verified → submitted → settled → fulfilled`). x402 가 바꾸는 것은 레일이지 의미론이 아닙니다. \"재시도는 정산의 책임\"이라는 말은 재시도 처리가 일반 HTTP 재시도 로직에 살 수 없다는 뜻입니다 — 재시도는 먼저 **기존 결제에 대한 조회**이고, 그 조회가 허락할 때에만 새 시도입니다.\n\n### 주시가 산출물이 아니다\n\n이중 청구는 지켜봐서 막을 수 없습니다 — 눈에 보였을 때는 이미 돈이 두 번 움직인 뒤입니다. 보장은 구조적이어야 합니다: 모든 응답은 사라질 수 있다고 가정하고, 재시도를 정상 경로로 취급하고, 설계 리뷰에서 플로우의 화살표 하나하나에 \"이 화살표 직후의 응답이 사라지고 같은 요청이 다시 오면 무슨 일이 생기는가?\"를 묻습니다. 어느 화살표든 답이 \"또 청구된다\"거나 \"아무것도 전달 안 된다\"면, 코드를 쓰기 전에 그 화살표가 버그입니다. 마지막의 대사(reconciliation) 줄은 `receipt-is-not-settlement` 의 반복입니다: facilitator 의 \"정산됨\"은 한 서비스의 주장이고, 권위는 체인 위의 정규 receipt 에 있습니다. 그리고 x402 가 애초에 중요한 이유는 에이전트 커머스입니다 — 계정도 API 키도 없는 요청당 결제는 AI 에이전트가 쓸 레일입니다.",
+    howTo:
+      "Protect one idempotent API route with `@x402/express`, inject a timeout after each stage — verification, on-chain submission, settlement, resource generation — then retry the identical signed request and assert the two invariants: at most one settled payment, exactly one durable entitlement per settled payment.",
+    howToKo:
+      "`@x402/express` 로 멱등한 API 경로 하나를 보호하고, 단계마다 — 검증, 온체인 제출, 정산, 리소스 생성 직후 — 타임아웃을 주입합니다. 동일한 서명 요청을 재시도하며 두 불변식을 확인합니다: 정산은 최대 한 번, 정산된 결제 하나에 지속성 있는 사용 권한 하나.",
+    purpose:
+      "The facilitator removes blockchain plumbing from the seller; it does not remove distributed-systems semantics. A paid API needs an idempotency key and a durable payment-to-resource state machine.\n\nx402 makes stablecoin payment look like ordinary HTTP middleware: the server returns payment requirements, the client signs, and a facilitator verifies and settles. The difficult boundary appears when one stage succeeds and the next response is lost.",
+    purposeKo:
+      "Facilitator 는 판매자에게서 블록체인 배관을 없애 주지만, 분산 시스템의 의미론까지 없애 주지는 않습니다. 유료 API 에는 멱등성 키와 결제→리소스의 지속성 있는 상태 머신이 필요합니다.\n\nx402 는 스테이블코인 결제를 평범한 HTTP 미들웨어처럼 보이게 합니다: 서버가 결제 조건을 돌려주고, 클라이언트가 서명하고, facilitator 가 검증하고 정산합니다. 어려운 경계는 한 단계가 성공한 뒤 다음 응답이 사라질 때 나타납니다.",
+    howItWorks:
+      "Put one idempotent API behind `@x402/express`, inject failures between verify, settle, and fulfillment, then prove that one signed payment produces at most one charge and one response entitlement.\n\n### PoC\n\nProtect one idempotent API route with `@x402/express`. Inject a timeout after verification, after on-chain submission, after settlement, and after resource generation. Retry the identical signed request and assert two invariants: at most one payment settles, and one settled payment always maps to one durable entitlement.\n\n### What it proves\n\nA facilitator removes node operation and settlement submission from the seller, but it cannot make a distributed workflow atomic. The application still needs a payment identifier, durable state, replay handling, and reconciliation between facilitator results and canonical receipts.\n\nReferences: [x402 facilitator](https://docs.cdp.coinbase.com/x402/core-concepts/facilitator), [x402 v2 SDK](https://docs.cdp.coinbase.com/x402/migration-guide).",
+    howItWorksKo:
+      "멱등한 API 하나를 `@x402/express` 뒤에 두고, 검증·정산·이행 사이에 실패를 주입한 뒤, 서명된 결제 하나가 최대 한 번의 청구와 하나의 응답 권한만 만든다는 것을 증명합니다.\n\n### PoC\n\n`@x402/express` 로 멱등한 API 경로 하나를 보호합니다. 검증 직후, 온체인 제출 직후, 정산 직후, 리소스 생성 직후에 각각 타임아웃을 주입합니다. 동일한 서명 요청을 다시 보내면서 두 불변식을 확인합니다: 결제는 최대 한 번만 정산되고, 정산된 결제 하나는 항상 지속성 있는 사용 권한 하나에 연결됩니다.\n\n### 무엇을 증명하나\n\nFacilitator 는 판매자가 노드를 운영하고 정산 트랜잭션을 제출하는 일을 없애 주지만, 분산 워크플로를 원자적으로 만들지는 못합니다. 애플리케이션에는 여전히 결제 식별자, 지속성 있는 상태, 재생 처리, facilitator 결과와 정규 체인 receipt 사이의 대사가 필요합니다.\n\n참고: [x402 facilitator](https://docs.cdp.coinbase.com/x402/core-concepts/facilitator), [x402 v2 SDK](https://docs.cdp.coinbase.com/x402/migration-guide).",
+  },
+  {
+    // 2026-09-02: Codex 카드 이식 — 위 주석 참조.
+    key: "safe-module-root-key",
+    title: "A Safe module is a root key with an interface",
+    titleKo: "Safe 모듈은 인터페이스를 가진 루트 키다",
+    description:
+      "Safe modules can execute transactions without the normal owner-signature path, while guards can block execution. Installing either changes the account's real security boundary.",
+    descriptionKo:
+      "Safe 모듈은 일반 소유자 서명 경로 없이 트랜잭션을 실행할 수 있고, 가드는 실행을 막을 수 있습니다. 어느 쪽이든 설치하는 순간 계정의 실제 보안 경계가 바뀝니다.",
+    status: "done", // 2026-09-02 jay 지시로 done
+    important: true,
+    updated: "2026-09-02",
+    howTo:
+      "Deploy a two-owner Safe with an allowance module and a no-delegatecall guard, produce the authority graph, demonstrate the module bypassing the owner threshold, then swap in a guard that rejects everything and exercise the documented recovery path.",
+    howToKo:
+      "소유자 두 명의 Safe 에 allowance 모듈과 no-delegatecall 가드를 배포하고, 권한 그래프를 만들고, 모듈이 소유자 임계값을 우회하는 것을 시연합니다. 그다음 모든 호출을 거절하는 가드로 교체하고 문서화된 복구 경로를 실행합니다.",
+    purpose:
+      "\"Modular wallet\" sounds like application extensibility, but wallet extensions act on assets. The useful deliverable is an authority graph and uninstall/recovery test, not a plugin gallery.\n\nSafe modules extend account behavior and can execute transactions through a path other than the normal owner threshold. Guards inspect transactions and can reject them. Both therefore alter the account's effective authority.",
+    purposeKo:
+      "\"모듈러 지갑\"은 애플리케이션 확장성처럼 들리지만, 지갑 확장은 자산에 작용합니다. 유용한 산출물은 플러그인 갤러리가 아니라 권한 그래프와 제거/복구 테스트입니다.\n\nSafe 모듈은 계정 동작을 확장하고 일반 소유자 임계값과 다른 경로로 트랜잭션을 실행할 수 있습니다. 가드는 트랜잭션을 검사하고 거절할 수 있습니다. 따라서 둘 다 계정의 실질 권한을 바꿉니다.",
+    howItWorks:
+      "Deploy one allowance module and one guard, enumerate every reachable call, demonstrate a module bypassing the normal threshold, then test the recovery path from a guard that rejects everything.\n\n### PoC\n\nDeploy a Safe with a two-owner threshold, an allowance module, and a no-delegatecall guard. Produce an authority graph, demonstrate the module execution path, enumerate the calls the guard does and does not inspect, then replace the guard with one that always reverts and exercise the documented recovery path.\n\n### What it proves\n\nAuditing the Safe core is insufficient once extensions are installed. A module can move assets; a guard can freeze ordinary execution. Installation review must include callable authority, upgradeability, uninstall permissions, and recovery under failure.\n\nReferences: [Safe modules](https://docs.safe.global/advanced/smart-account-modules), [Safe guards](https://docs.safe.global/advanced/smart-account-guards).",
+    howItWorksKo:
+      "allowance 모듈 하나와 가드 하나를 배포하고, 도달 가능한 모든 호출을 열거하고, 모듈이 일반 임계값을 우회하는 것을 시연한 뒤, 모든 것을 거절하는 가드로부터의 복구 경로를 시험합니다.\n\n### PoC\n\n소유자 두 명의 임계값을 가진 Safe 에 allowance 모듈과 no-delegatecall 가드를 배포합니다. 권한 그래프를 만들고, 모듈 실행 경로를 시연하며, 가드가 검사하는 호출과 검사하지 않는 호출을 열거합니다. 이후 모든 호출을 revert 하는 가드로 교체하고 문서화된 복구 경로를 실행합니다.\n\n### 무엇을 증명하나\n\n확장이 설치된 뒤에는 Safe 코어 감사만으로 충분하지 않습니다. 모듈은 자산을 옮길 수 있고 가드는 일반 실행을 동결할 수 있습니다. 설치 검토에는 호출 권한, 업그레이드 가능성, 제거 권한, 장애 시 복구가 포함되어야 합니다.\n\n참고: [Safe modules](https://docs.safe.global/advanced/smart-account-modules), [Safe guards](https://docs.safe.global/advanced/smart-account-guards).",
   },
   {
     // 2026-08-27 병합 (jay 요청): pet-clean-room + confidential-settlement-metadata.
@@ -2387,6 +2523,183 @@ export const POC_CARDS: DemoCard[] = [
       "Not a working demo by necessity: EIP-8141 defines a new transaction type where a single transaction carries a sequence of frames (a VERIFY frame for signature/fee authorization, then one or more EXECUTE frames) instead of one implicit call — but no client or RPC can send this transaction type yet, since it requires execution-layer support the network doesn't have. As of writing it's only \"considered for inclusion\" in a future fork, so this stays a diagram/explainer page rather than a live demo.\n\n### The ACDE readout, and the two kinds of \"no\" (2026-08-28)\n\nThe call was set to conclude between this proposal and EIP-8130, and as of writing no public readout confirms an outcome. What the developer timeline did in that gap is the useful part: **the argument moved off the content and onto the weight.** The recurring sentence was *\"the direction is right, but this is too heavy for the current stage\"* — and that is a **schedule objection, not a technical one**.\n\nThe distinction is worth holding onto because the two look identical from outside and demand opposite responses:\n\n| The objection | What it actually says | What you do next |\n| --- | --- | --- |\n| **\"This is wrong\"** | the design does not achieve the goal | change the design |\n| **\"This is not now\"** | the design is right and too large to land here | **split the scope** |\n\nHearing the second and redesigning is wasted work; hearing the first and merely deferring is worse. **The question to ask in the room is which one you are being given** — and the tell is usually whether the objection survives when you make the proposal smaller.",
     howItWorksKo:
       "구조상 실제 동작하는 데모가 될 수 없습니다: EIP-8141은 트랜잭션 하나가 암묵적 호출 한 번이 아니라 프레임의 시퀀스(서명·수수료 인가를 담당하는 VERIFY 프레임, 이어지는 하나 이상의 EXECUTE 프레임)를 담는 새 트랜잭션 타입을 정의하지만, 아직 어떤 클라이언트나 RPC도 이 타입을 보낼 수 없습니다 — 네트워크에 없는 실행 계층 지원이 필요하기 때문입니다. 이 글을 쓰는 시점 기준 향후 포크에 \"포함 검토 중\"인 단계라, 라이브 데모가 아니라 다이어그램·설명 페이지로 남습니다.\n\n### ACDE 리드아웃, 그리고 두 종류의 \"아니오\" (2026-08-28)\n\n이 제안과 EIP-8130 사이의 결론이 예정돼 있었고, 이 글을 쓰는 시점까지 **공개된 리드아웃은 확인되지 않습니다.** 그 공백에서 개발자 타임라인이 향한 곳이 쓸모 있는 부분입니다 — **논쟁이 내용이 아니라 무게로 옮겨갔습니다.** 반복된 문장은 *\"방향은 맞는데 지금 단계에서 너무 무겁다\"* 였고, 이건 **기술 반대가 아니라 일정 반대**입니다.\n\n이 구분은 붙들 값이 있습니다 — **밖에서 보면 똑같이 생겼는데 요구하는 대응이 정반대**이기 때문입니다:\n\n| 반대 | 실제로 하는 말 | 다음에 할 일 |\n| --- | --- | --- |\n| **\"이건 틀렸다\"** | 설계가 목적을 달성하지 못한다 | **설계를 바꾼다** |\n| **\"이건 지금이 아니다\"** | 설계는 맞고, 여기 넣기엔 크다 | **범위를 쪼갠다** |\n\n**두 번째를 듣고 재설계하면 헛일**이고, **첫 번째를 듣고 미루기만 하면 더 나쁩니다.** **회의실에서 물어야 할 것은 지금 받은 게 어느 쪽인가**이고, 판별법은 대개 **제안을 작게 만들었을 때도 그 반대가 살아남는가**입니다.",
+  },
+  {
+    // 2026-09-02: Codex 세션이 docs/pocs.html 에 직접 써 넣은 카드 10장을 POC_CARDS 로 이식
+    // (jay 요청). 원문(영문·국문)은 그대로 두고 빠진 국문만 보완했다. important — Codex 표시 유지.
+    // 배열 위치는 번호 보존용: important 블록 끝(erc-8141 뒤), 이하 10장은 HTML 의 번호 순서.
+    key: "receipt-is-not-settlement",
+    title: "A successful receipt is not settlement",
+    titleKo: "성공한 receipt 는 정산이 아니다",
+    description:
+      "`status: 1` proves execution in one block; it does not prove that the block will remain canonical. Payment products need included, safe, finalized, and reorged states instead of one `paid` boolean.",
+    descriptionKo:
+      "`status: 1` 은 어느 한 블록 안에서 실행이 성공했다는 증명이지, 그 블록이 정식 체인에 남는다는 증명이 아닙니다. 결제 제품에는 `paid` 불리언 하나가 아니라 included·safe·finalized·reorged 상태가 필요합니다.",
+    status: "soon",
+    important: true,
+    updated: "2026-09-02",
+    howTo:
+      "Implement the `detected → included → safe → finalized` (+ `reorged`) state machine against a local fork, replay a removed receipt, and watch each fulfillment tier react — the reversible tier rolls back, the irreversible tier never starts early.",
+    howToKo:
+      "로컬 포크 위에 `detected → included → safe → finalized` (+ `reorged`) 상태 머신을 구현하고, 제거된 receipt 를 재생하면서 각 이행 단계의 반응을 확인합니다 — 되돌릴 수 있는 단계는 롤백되고, 비가역 단계는 애초에 일찍 시작되지 않아야 합니다.",
+    purpose:
+      "The RPC call succeeds before the business promise is safe. This is where chain finality becomes product policy: cheap reversible goods can accept risk; expensive irreversible delivery cannot.\n\nA payment system that stores only `paid = true` cannot represent a reorg. Product fulfillment and chain confidence must advance separately: a reversible benefit can be granted early, while an irreversible shipment waits.",
+    purposeKo:
+      "RPC 호출은 비즈니스 약속이 안전해지기 전에 성공합니다. 체인 파이널리티가 제품 정책이 되는 지점이 바로 여기입니다: 싸고 되돌릴 수 있는 상품은 위험을 감수할 수 있지만, 비싸고 비가역적인 배송은 그럴 수 없습니다.\n\n`paid = true` 만 저장하는 결제 시스템은 리오그를 표현할 수 없습니다. 제품 이행과 체인 확신은 따로 전진해야 합니다: 되돌릴 수 있는 혜택은 일찍 줄 수 있고, 비가역적인 출고는 기다립니다.",
+    howItWorks:
+      "Build a reorg-aware payment state machine, replay a removed receipt on a local fork, and verify that reversible fulfillment rolls back while irreversible fulfillment waits for the configured confidence level.\n\n### PoC\n\nImplement `detected → included → safe → finalized` plus `reorged`. Replay a removed receipt on a local fork and prove that provisional fulfillment is withdrawn or retried, while high-value fulfillment never starts before its configured threshold.\n\n| Chain state | Product action |\n| --- | --- |\n| Included/latest | Acknowledge and reserve |\n| Safe | Low-risk fulfillment |\n| Finalized | Irreversible settlement |\n| Reorged | Rollback, retry, or request payment |\n\nReference: [Ethereum JSON-RPC block tags](https://ethereum.org/developers/docs/apis/json-rpc/).",
+    howItWorksKo:
+      "리오그를 아는 결제 상태 머신을 만들고, 로컬 포크에서 제거된 receipt 를 재생하며, 되돌릴 수 있는 이행은 롤백되고 비가역 이행은 설정된 신뢰 수준까지 기다리는지 검증합니다.\n\n### PoC\n\n`detected → included → safe → finalized` 에 `reorged` 를 더해 구현합니다. 로컬 포크에서 제거된 receipt 를 재생해, 잠정 이행은 회수되거나 재시도되고 고가치 이행은 설정된 임계값 전에 시작되지 않음을 증명합니다.\n\n| 체인 상태 | 제품 행동 |\n| --- | --- |\n| Included/latest | 접수하고 예약 |\n| Safe | 저위험 이행 |\n| Finalized | 비가역 정산 |\n| Reorged | 롤백, 재시도, 또는 재결제 요청 |\n\n참고: [Ethereum JSON-RPC 블록 태그](https://ethereum.org/developers/docs/apis/json-rpc/).",
+  },
+  {
+    // 2026-09-02: Codex 카드 이식 — 위 주석 참조.
+    key: "l2-finality-three-clocks",
+    title: "L2 finality is three clocks",
+    titleKo: "L2 파이널리티는 시계 세 개다",
+    description:
+      "A sequencer confirmation, publication to L1, and L1 finalization answer different questions. Showing one \"confirmed\" badge collapses three trust boundaries into one word.",
+    descriptionKo:
+      "시퀀서 확인, L1 게시, L1 최종 확정은 서로 다른 질문에 답합니다. \"confirmed\" 배지 하나는 신뢰 경계 세 개를 한 단어로 뭉갭니다.",
+    status: "soon",
+    important: true,
+    updated: "2026-09-02",
+    howTo:
+      "Submit one OP Stack transaction, poll its block through `unsafe` → `safe` → `finalized` and record each timestamp; then repeat with an L2→L1 withdrawal, whose proof or challenge path adds a fourth clock.",
+    howToKo:
+      "OP Stack 트랜잭션 하나를 보내고, 블록이 `unsafe` → `safe` → `finalized` 로 넘어가는 시각을 각각 기록합니다. 그다음 L2→L1 출금으로 반복합니다 — 증명 또는 챌린지 경로가 네 번째 시계를 더합니다.",
+    purpose:
+      "L2s feel instant because the first clock is fast, but bridges and high-value settlement depend on later clocks. The PoC makes the latency/trust trade explicit instead of hiding it behind UX.\n\nAn L2 feels instant because its sequencer answers quickly — and that first answer depends on the sequencer. Publication to L1 makes the transaction derivable without that operator, and L1 finalization gives it Ethereum's economic finality. Withdrawals can introduce another proof or challenge clock.",
+    purposeKo:
+      "L2 가 즉각적으로 느껴지는 것은 첫 번째 시계가 빠르기 때문이지만, 브리지와 고가치 정산은 뒤의 시계들에 달려 있습니다. 이 PoC 는 지연/신뢰의 교환을 UX 뒤에 숨기지 않고 명시적으로 드러냅니다.\n\nL2 가 즉각적인 것은 시퀀서가 빨리 답하기 때문이고 — 그 첫 답은 시퀀서에 의존합니다. L1 게시부터는 그 운영자 없이도 트랜잭션을 재구성할 수 있고, L1 최종 확정에 이르러야 이더리움의 경제적 최종성을 얻습니다. 출금에는 증명 또는 챌린지 시계가 하나 더 붙을 수 있습니다.",
+    howItWorks:
+      "Track an OP Stack transaction from unsafe to safe to finalized, record each timestamp, then repeat for a withdrawal whose challenge or proof path adds a fourth clock.\n\n### PoC\n\nSubmit one OP Stack transaction and record the timestamps at which its block becomes unsafe, safe, and finalized. Display the trust assumption released at each transition, then compare an ordinary transaction with an L2-to-L1 withdrawal.\n\n| Clock | What it establishes |\n| --- | --- |\n| Sequencer inclusion | Fast ordering promise |\n| L1 publication | Data availability and derivability |\n| L1 finalization | Ethereum-backed irreversibility |\n| Withdrawal path | Proof or challenge completion |\n\nReference: [OP Stack transaction finality](https://docs.optimism.io/op-stack/transactions/transaction-finality).",
+    howItWorksKo:
+      "OP Stack 트랜잭션 하나를 unsafe → safe → finalized 로 추적하며 시각을 기록하고, 챌린지·증명 경로가 네 번째 시계를 더하는 출금으로 반복합니다.\n\n### PoC\n\nOP Stack 트랜잭션 하나를 제출하고 그 블록이 unsafe, safe, finalized 가 되는 시각을 기록합니다. 전환마다 풀려나는 신뢰 가정을 표시한 뒤, 일반 트랜잭션과 L2→L1 출금을 비교합니다.\n\n| 시계 | 무엇을 확립하나 |\n| --- | --- |\n| 시퀀서 포함 | 빠른 순서 약속 |\n| L1 게시 | 데이터 가용성과 재구성 가능성 |\n| L1 최종 확정 | 이더리움이 뒷받침하는 비가역성 |\n| 출금 경로 | 증명 또는 챌린지 완료 |\n\n참고: [OP Stack transaction finality](https://docs.optimism.io/op-stack/transactions/transaction-finality).",
+  },
+  {
+    // 2026-09-02: Codex 카드 이식 — 위 주석 참조.
+    key: "simulate-before-sign",
+    title: "Simulation belongs before the wallet prompt",
+    titleKo: "시뮬레이션은 지갑 프롬프트 앞에 놓인다",
+    description:
+      "A wallet prompt tells the user what they are being asked to sign; simulation tells the application what that signed transaction is expected to do.",
+    descriptionKo:
+      "지갑 프롬프트는 사용자에게 무엇을 서명하라고 요청하는지 알려 주고, 시뮬레이션은 애플리케이션에게 그 서명된 트랜잭션이 무엇을 할 것으로 예상되는지 알려 줍니다.",
+    status: "soon",
+    important: true,
+    updated: "2026-09-02",
+    howTo:
+      "Wrap three writes with viem `simulateContract` — one success, one custom-error revert, one that passes simulation but fails after another transaction changes state — and decode the first two before ever requesting a signature.",
+    howToKo:
+      "viem `simulateContract` 로 쓰기 셋을 감쌉니다 — 성공 하나, 커스텀 에러 revert 하나, 시뮬레이션은 통과하지만 다른 트랜잭션이 상태를 바꾼 뒤 실패하는 것 하나. 앞의 둘은 서명을 요청하기 전에 디코드합니다.",
+    purpose:
+      "Most failed writes are knowable before gas or user attention is spent. Simulation cannot guarantee future state, but it turns avoidable failures into application errors rather than wallet surprises.\n\nSimulation removes failures already implied by current state and exposes return data or revert reasons without spending gas. It does not reserve that state, guarantee ordering, or eliminate front-running. The useful product pattern is therefore simulate → explain → sign → monitor, not simulate → promise.",
+    purposeKo:
+      "실패하는 쓰기의 대부분은 가스나 사용자의 주의를 쓰기 전에 알 수 있습니다. 시뮬레이션이 미래 상태를 보장하지는 못하지만, 피할 수 있는 실패를 지갑에서의 놀람이 아니라 애플리케이션 에러로 바꿔 줍니다.\n\n시뮬레이션은 현재 상태가 이미 암시하는 실패를 제거하고, 가스를 쓰지 않고 반환 데이터나 revert 사유를 드러냅니다. 그 상태를 예약해 주지도, 순서를 보장하지도, 프런트러닝을 없애 주지도 않습니다. 그래서 유용한 제품 패턴은 simulate → promise 가 아니라 simulate → explain → sign → monitor 입니다.",
+    howItWorks:
+      "Wrap three writes with viem `simulateContract`: one success, one custom-error revert, and one state-dependent failure. Compare the predicted outcome with the receipt and surface decoded failure before requesting a signature.\n\n### PoC\n\nWrap three writes: a success, a custom-error revert, and a transaction that succeeds in simulation but fails after another transaction changes state. Decode the first two before requesting a signature and use the third to document the boundary of the guarantee.\n\n```ts\nconst { request, result } = await publicClient.simulateContract(args)\n// show decoded effect and warnings\nconst hash = await walletClient.writeContract(request)\n```\n\nReference: [viem simulateContract](https://viem.sh/docs/contract/simulateContract).",
+    howItWorksKo:
+      "viem `simulateContract` 로 쓰기 셋을 감쌉니다: 성공, 커스텀 에러 revert, 상태 의존 실패. 예측 결과를 receipt 와 비교하고, 서명을 요청하기 전에 디코드된 실패를 보여 줍니다.\n\n### PoC\n\n쓰기 셋을 감쌉니다: 성공, 커스텀 에러 revert, 그리고 시뮬레이션은 통과하지만 다른 트랜잭션이 상태를 바꾼 뒤 실패하는 트랜잭션. 앞의 둘은 서명 요청 전에 디코드하고, 셋째는 보장의 경계를 문서화하는 데 씁니다.\n\n```ts\nconst { request, result } = await publicClient.simulateContract(args)\n// show decoded effect and warnings\nconst hash = await walletClient.writeContract(request)\n```\n\n참고: [viem simulateContract](https://viem.sh/docs/contract/simulateContract).",
+  },
+  {
+    // 2026-09-02: Codex 카드 이식 — 위 주석 참조.
+    key: "bundler-paymaster-dependencies",
+    title: "Gasless is two infrastructure services",
+    titleKo: "가스리스는 두 개의 인프라 서비스다",
+    description:
+      "An ERC-4337 user operation can be valid on-chain and still be rejected by a bundler or denied by a paymaster. \"Gasless\" is therefore an availability and policy promise, not a wallet property.",
+    descriptionKo:
+      "ERC-4337 UserOperation 은 온체인에서는 유효해도 번들러에게 거절되거나 페이마스터에게 거부될 수 있습니다. 그러므로 \"가스리스\"는 지갑의 속성이 아니라 가용성과 정책의 약속입니다.",
+    status: "soon",
+    important: true,
+    updated: "2026-09-02",
+    howTo:
+      "Send the same UserOperation through two bundlers under two sponsorship policies, classify every failure separately — RPC compatibility, simulation, reputation policy, quota, expired sponsorship, paymaster deposit, inclusion timeout, execution revert — then retry unsponsored with user funds.",
+    howToKo:
+      "같은 UserOperation 을 두 번들러, 두 스폰서십 정책으로 보내고, 실패를 전부 따로 분류합니다 — RPC 호환성, 시뮬레이션, 평판 정책, 할당량, 만료된 스폰서십, 페이마스터 예치금, 포함 타임아웃, 실행 revert. 그다음 후원 없이 사용자 자금으로 재시도합니다.",
+    purpose:
+      "Bundlers pay gas up front and paymasters remain liable even when execution fails, so both apply local risk controls. The application must expose those service decisions instead of rendering every rejection as \"transaction failed.\"\n\nAn ERC-4337 smart account does not send a normal transaction. A bundler simulates and submits its UserOperation, and a paymaster may decide to sponsor the gas. Both services can reject an operation that the EntryPoint contract would accept.",
+    purposeKo:
+      "번들러는 가스를 선지불하고 페이마스터는 실행이 실패해도 책임을 지므로, 둘 다 자체 리스크 통제를 적용합니다. 애플리케이션은 모든 거절을 \"트랜잭션 실패\"로 뭉뚱그리지 말고 그 서비스들의 결정을 드러내야 합니다.\n\nERC-4337 스마트 계정은 일반 트랜잭션을 보내지 않습니다. 번들러가 UserOperation 을 시뮬레이션하고 제출하며, 페이마스터가 가스비 후원 여부를 결정할 수 있습니다. EntryPoint 컨트랙트가 받아들일 동작도 이 두 서비스가 거절할 수 있습니다.",
+    howItWorks:
+      "Send the same UserOperation through two bundlers and two sponsorship policies; classify simulation, policy, quota, deposit, inclusion, and execution failures; and define a user-funded fallback.\n\n### PoC\n\nSend the same UserOperation to two bundlers under two paymaster policies. Record failures separately for RPC compatibility, simulation, reputation policy, quota, expired sponsorship, insufficient paymaster deposit, inclusion timeout, and execution revert. Then retry without sponsorship using user funds.\n\n### What it proves\n\n\"Gasless\" is an application promise assembled from two off-chain services and one on-chain contract. Portability means more than changing an endpoint: error classification, EntryPoint version, sponsorship data, and fallback funding must also work.\n\nReferences: [ERC-4337 bundlers](https://docs.erc4337.io/bundlers/index.html), [paymaster security](https://docs.erc4337.io/paymasters/security-and-griefing).",
+    howItWorksKo:
+      "같은 UserOperation 을 두 번들러와 두 스폰서십 정책으로 보내고, 시뮬레이션·정책·할당량·예치금·포함·실행 실패를 분류하며, 사용자 자금 fallback 을 정의합니다.\n\n### PoC\n\n같은 UserOperation 을 두 번들러에 보내고 두 가지 페이마스터 정책을 적용합니다. RPC 호환성, 시뮬레이션, 평판 정책, 할당량, 만료된 스폰서십, 부족한 페이마스터 예치금, 포함 타임아웃, 실행 revert 를 서로 다른 실패로 기록합니다. 그다음 후원 없이 사용자 자금으로 재시도합니다.\n\n### 무엇을 증명하나\n\n\"가스리스\"는 두 오프체인 서비스와 하나의 온체인 컨트랙트로 조립된 애플리케이션 약속입니다. 이식성은 엔드포인트만 바꾸는 것이 아닙니다: 오류 분류, EntryPoint 버전, 스폰서십 데이터, 대체 자금 경로까지 함께 동작해야 합니다.\n\n참고: [ERC-4337 bundlers](https://docs.erc4337.io/bundlers/index.html), [paymaster security](https://docs.erc4337.io/paymasters/security-and-griefing).",
+  },
+  {
+    // 2026-09-02: Codex 카드 이식 — 위 주석 참조.
+    key: "private-rpc-visibility",
+    title: "Private RPC changes visibility, not settlement",
+    titleKo: "프라이빗 RPC 가 바꾸는 것은 가시성이지 정산이 아니다",
+    description:
+      "A protected transaction avoids the public mempool, but it can still expire, remain unincluded, or become non-canonical. Privacy changes the monitoring path rather than removing transaction states.",
+    descriptionKo:
+      "보호된 트랜잭션은 공개 멤풀을 피하지만, 여전히 만료되거나, 포함되지 않거나, 정식 체인에서 밀려날 수 있습니다. 프라이버시는 트랜잭션 상태를 없애는 것이 아니라 모니터링 경로를 바꿉니다.",
+    status: "soon",
+    important: true,
+    updated: "2026-09-02",
+    howTo:
+      "Submit equivalent small swaps through a public endpoint and Flashbots Protect, observe both from an unrelated public node, record provider acknowledgement and inclusion latency, test cancellation/replacement, stop waiting at a fixed deadline, and reconcile both flows against canonical receipts.",
+    howToKo:
+      "동일한 소액 스왑을 공개 엔드포인트와 Flashbots Protect 로 각각 제출하고, 무관한 공개 노드에서 둘을 관찰합니다. 공급자 접수와 포함 지연을 기록하고, 취소/대체를 시험하고, 정해진 마감에서 대기를 중단하고, 두 흐름을 정규 receipt 기준으로 대사합니다.",
+    purpose:
+      "Applications often use public-mempool visibility as evidence that a submission exists. Private order flow breaks that assumption and requires provider-specific status plus ordinary chain finality.\n\nMEV-protected RPCs avoid broadcasting a transaction to the public mempool. That may reduce frontrunning, but it also removes the public observation path many applications quietly use to decide that submission worked.",
+    purposeKo:
+      "애플리케이션은 곧잘 공개 멤풀 가시성을 제출이 존재한다는 증거로 씁니다. 프라이빗 주문 흐름은 그 가정을 깨고, 공급자 전용 상태와 일반적인 체인 파이널리티를 함께 요구합니다.\n\nMEV 보호 RPC 는 트랜잭션을 공개 멤풀에 방송하지 않습니다. 프런트러닝은 줄일 수 있지만, 많은 애플리케이션이 제출 성공의 증거로 조용히 쓰던 공개 관찰 경로도 함께 사라집니다.",
+    howItWorks:
+      "Submit equivalent swaps through a public RPC and Flashbots Protect, record where each hash is observable, test cancellation and timeout behavior, and reconcile both against canonical receipts.\n\n### PoC\n\nSubmit equivalent small swaps through a public endpoint and Flashbots Protect. Observe both from an unrelated public node, record provider acknowledgement and inclusion latency, test cancellation or replacement, and stop waiting at a fixed deadline. Reconcile both flows against canonical receipts and finality.\n\n### What it proves\n\nPrivate submission adds a provider-specific state between \"signed\" and \"included.\" It does not eliminate dropped, expired, reverted, or reorged transactions. The UI must distinguish accepted-by-provider from visible-in-mempool and included-on-chain.\n\nReference: [Flashbots Protect documentation](https://docs.flashbots.net/).",
+    howItWorksKo:
+      "동일한 스왑을 공개 RPC 와 Flashbots Protect 로 제출하고, 각 해시가 어디서 관찰되는지 기록하며, 취소와 타임아웃 동작을 시험하고, 둘을 정규 receipt 기준으로 대사합니다.\n\n### PoC\n\n동일한 소액 스왑을 공개 엔드포인트와 Flashbots Protect 로 제출합니다. 무관한 공개 노드에서 둘을 관찰하고, 공급자 접수와 포함 지연을 기록하며, 취소 또는 대체를 시험하고, 정해진 마감에서 대기를 중단합니다. 두 흐름 모두 정규 receipt 와 파이널리티를 기준으로 대사합니다.\n\n### 무엇을 증명하나\n\n프라이빗 제출은 \"서명됨\"과 \"포함됨\" 사이에 공급자 전용 상태를 추가합니다. 드롭, 만료, revert, 리오그 상태를 없애지는 않습니다. UI 는 공급자가 접수함, 멤풀에서 관찰됨, 체인에 포함됨을 구분해야 합니다.\n\n참고: [Flashbots Protect 문서](https://docs.flashbots.net/).",
+  },
+  {
+    // 2026-09-02: Codex 카드 이식 — 위 주석 참조.
+    key: "walletconnect-session-authority",
+    title: "Connect once means authorize a session",
+    titleKo: "한 번 연결한다는 것은 세션을 인가한다는 뜻이다",
+    description:
+      "A WalletConnect connection is not merely an address exchange. Its namespaces, chains, methods, accounts, expiry, and update events describe a standing capability that the application must track.",
+    descriptionKo:
+      "WalletConnect 연결은 단순한 주소 교환이 아닙니다. namespace, 체인, 메서드, 계정, 만료, 갱신 이벤트가 애플리케이션이 추적해야 할 상시 권한을 기술합니다.",
+    status: "soon",
+    important: true,
+    updated: "2026-09-02",
+    howTo:
+      "Create one minimal and one broad session proposal with the WalletConnect Sign client (or Reown AppKit), then exercise account change, chain change, session update, expiry, relay disconnect, reconnect, and explicit revocation — asserting each event narrows or invalidates application state correctly.",
+    howToKo:
+      "WalletConnect Sign client(또는 Reown AppKit)로 최소 권한 제안과 넓은 권한 제안을 하나씩 만들고, 계정 변경, 체인 변경, 세션 갱신, 만료, 릴레이 단절, 재연결, 명시적 해지를 차례로 실행합니다 — 각 이벤트가 애플리케이션 상태를 올바르게 좁히거나 무효화하는지 확인합니다.",
+    purpose:
+      "The UI usually collapses session state to \"connected.\" That hides which methods remain authorized and produces stale-account bugs when the wallet changes state outside the application.\n\nA WalletConnect session contains accounts, chains, methods, events, and expiry. Treating it as a boolean `isConnected` discards the information that says what the application may request and whether its cached account is still current.",
+    purposeKo:
+      "UI 는 보통 세션 상태를 \"connected\" 하나로 뭉갭니다. 그러면 어떤 메서드가 아직 인가되어 있는지가 가려지고, 지갑이 애플리케이션 바깥에서 상태를 바꿀 때 낡은 계정 버그가 생깁니다.\n\nWalletConnect 세션에는 계정, 체인, 메서드, 이벤트, 만료가 들어 있습니다. 이것을 `isConnected` 불리언 하나로 다루면, 애플리케이션이 무엇을 요청할 수 있는지와 캐시된 계정이 아직 최신인지 알려 주는 정보가 사라집니다.",
+    howItWorks:
+      "Connect with the smallest method set, compare it with a broad default proposal, then exercise account change, chain change, session update, expiry, relay disconnect, and explicit revocation.\n\n### PoC\n\nCreate one minimal proposal and one broad proposal using the WalletConnect Sign client or Reown AppKit. Exercise account and chain changes, a session update, expiry, relay loss, reconnect, and explicit disconnect. Assert that each event invalidates or narrows application state correctly.\n\n### What it proves\n\nConnection UX is capability management. The safe default is the smallest requested namespace and method set, an observable session state machine, and a visible revocation path — not a green dot that survives stale state.\n\nReference: [Reown WalletConnect session usage](https://docs.reown.com/advanced/api/sign/dapp-usage).",
+    howItWorksKo:
+      "가장 작은 메서드 집합으로 연결하고 넓은 기본 제안과 비교한 뒤, 계정 변경, 체인 변경, 세션 갱신, 만료, 릴레이 단절, 명시적 해지를 차례로 실행합니다.\n\n### PoC\n\nWalletConnect Sign client 또는 Reown AppKit 으로 최소 권한 제안과 넓은 권한 제안을 각각 만듭니다. 계정·체인 변경, 세션 갱신, 만료, 릴레이 단절, 재연결, 명시적 연결 해제를 실행합니다. 각 이벤트가 애플리케이션 상태를 올바르게 무효화하거나 좁히는지 확인합니다.\n\n### 무엇을 증명하나\n\n연결 UX 는 권한 관리입니다. 안전한 기본값은 최소한의 namespace 와 메서드 집합, 관찰 가능한 세션 상태 머신, 눈에 보이는 해지 경로입니다 — 낡은 상태에서도 살아남는 초록색 점이 아닙니다.\n\n참고: [Reown WalletConnect 세션 사용법](https://docs.reown.com/advanced/api/sign/dapp-usage).",
+  },
+  {
+    // 2026-09-02: Codex 카드 이식 — 위 주석 참조.
+    key: "foundry-invariant-reachability",
+    title: "An invariant test is only as good as the actions it reaches",
+    titleKo: "Invariant 테스트는 도달하는 동작만큼만 좋다",
+    description:
+      "Foundry can assert a property after randomized call sequences, but a green campaign proves little when most calls revert or important states are unreachable.",
+    descriptionKo:
+      "Foundry 는 무작위 호출 순서 뒤에 속성을 검증할 수 있지만, 대부분의 호출이 revert 하거나 중요한 상태에 도달하지 못하면 초록색 캠페인은 거의 아무것도 증명하지 못합니다.",
+    status: "soon",
+    important: true,
+    updated: "2026-09-02",
+    howTo:
+      "Test the same ERC-4626-style vault twice — open targeting first, then handler-based with prepared balances and approvals — track call/revert distributions and ghost-variable accounting, and seed a bug that only a deposit-transfer-withdraw sequence can reach.",
+    howToKo:
+      "같은 ERC-4626 형태의 vault 를 두 번 시험합니다 — 먼저 컨트랙트를 직접 겨냥(open)하고, 다음에는 잔액과 승인을 준비하는 handler 방식으로. 호출/revert 분포와 ghost variable 회계를 추적하고, 입금-전송-출금 순서로만 도달할 수 있는 버그를 심습니다.",
+    purpose:
+      "Stateful fuzzing is becoming standard Solidity tooling, yet its main failure mode is silent: the test passes because the generator never performed meaningful work. Reachability metrics belong beside the assertion.\n\nFoundry checks invariants after randomized sequences of calls. A campaign can remain green while accomplishing almost nothing when generated calls revert before reaching meaningful protocol states.",
+    purposeKo:
+      "상태 있는 퍼징은 표준 Solidity 도구가 되어 가고 있지만, 주된 실패 모드는 조용합니다: 생성기가 의미 있는 일을 한 번도 하지 못했기 때문에 테스트가 통과하는 것. 도달성 지표는 assertion 옆에 나란히 있어야 합니다.\n\nFoundry 는 무작위 호출 순서 뒤에 invariant 를 검사합니다. 생성된 호출이 의미 있는 프로토콜 상태에 도달하기 전에 대부분 revert 하면, 캠페인은 거의 아무것도 하지 않고도 계속 초록색일 수 있습니다.",
+    howItWorks:
+      "Write an open invariant test and a handler-based version for the same vault, compare call/revert distributions, add ghost-variable accounting, and deliberately seed a sequence-only bug.\n\n### PoC\n\nTest the same ERC-4626-style vault twice: first by targeting the contracts directly, then through handlers that prepare balances and approvals. Track calls, reverts, deposits, withdrawals, actors, and reached states with metrics and ghost variables. Seed a bug that requires a deposit-transfer-withdraw sequence.\n\n### What it proves\n\nThe assertion is only half the test. The action distribution must reach the state space where the property could fail. Compare the open and handler-based campaigns by coverage and meaningful transitions, not merely runs and depth.\n\nReference: [Foundry invariant testing](https://getfoundry.sh/forge/invariant-testing).",
+    howItWorksKo:
+      "같은 vault 에 대해 open invariant 테스트와 handler 기반 버전을 작성하고, 호출/revert 분포를 비교하고, ghost variable 회계를 더하고, 순서로만 드러나는 버그를 의도적으로 심습니다.\n\n### PoC\n\n같은 ERC-4626 형태의 vault 를 두 번 시험합니다: 먼저 컨트랙트를 직접 대상으로 삼고, 다음에는 잔액과 승인을 준비하는 handler 를 통해서. 메트릭과 ghost variable 로 호출, revert, 입금, 출금, 행위자, 도달 상태를 추적합니다. 입금-전송-출금 순서가 있어야 드러나는 버그를 심습니다.\n\n### 무엇을 증명하나\n\nAssertion 은 테스트의 절반뿐입니다. 동작 분포가 속성이 깨질 수 있는 상태 공간에 도달해야 합니다. open 방식과 handler 방식의 캠페인을 runs 와 depth 만이 아니라 coverage 와 의미 있는 상태 전이로 비교합니다.\n\n참고: [Foundry invariant testing](https://getfoundry.sh/forge/invariant-testing).",
   },
   {
     // 2026-08-26 X 게시물(@RoundtableSpace) 스크린샷 — Kimi K3 가 2D 도면을 절차적 3D 로
@@ -3318,5 +3631,33 @@ export const POC_CARDS: DemoCard[] = [
       "### From memo to company — what actually changed in eleven months\n\n| | October 2025 | September 2026 |\n| --- | --- | --- |\n| Members | 10 banks | 21 institutions |\n| Verb | \"considering\" a 1:1 reserve-backed digital currency on public chains | incorporating a company, H2 2026 |\n| Product | unspecified | USD stablecoin first; other G7 currencies later, EUR examined first |\n| Date | none | launch target H1 2027 |\n| Still unnamed | everything | the company, the chain, the custodian, the mint policy |\n\n### Who is in — and what the roster says\n\n| Region | Count | Names |\n| --- | --- | --- |\n| North America | 10 | BofA, Capital One, Citi, Fidelity, Goldman Sachs, PNC, Scotiabank, TD, Wells Fargo, WisdomTree |\n| Europe | 8 | Santander, BBVA, Commerzbank, Crédit Agricole, Deutsche Bank, Lloyds, Rabobank, UBS |\n| Asia | 1 | MUFG |\n| Middle East | 1 | Sirius International Holding |\n| Africa | 1 | Standard Bank |\n\nOne Japanese megabank and no Chinese, Korean or Indian institution: the roster is a map of where a bank may currently touch a public-chain dollar, not of where the demand is.\n\n### Consortium precedents — the base rates\n\n| Venture | Shape | Outcome | The variable |\n| --- | --- | --- | --- |\n| Card networks / Zelle | bank-owned utility, narrow product | worked | regulatory perimeter settled **before** launch |\n| Libra / Diem | non-bank consortium, broad product | dissolved | perimeter fought **after** announcement |\n| Fnality | bank consortium, wholesale settlement | live but slow | every parameter is a member vote |\n\nThis venture is deliberately in row one's shape — banks only, compliance first, product narrow — while carrying row three's governance bill.\n\n### The three questions the release does not answer\n\n1. **Desk hours** — does redemption clear 24/7 on-chain, or through correspondent rails that keep banking hours? (`stablecoin-redemption-desk` — this is the whole game.)\n2. **The claim** — in each jurisdiction, is the token a deposit, e-money, a GENIUS payment stablecoin, or a MiCA EMT? \"Where applicable\" concedes the answer differs by geography.\n3. **The perimeter** — who besides the twenty-one may mint, distribute, or run a desk? A coin only members can move is a settlement network, not a stablecoin.",
     howItWorksKo:
       "### 메모에서 법인까지 — 11 개월 동안 실제로 바뀐 것\n\n| | 2025 년 10 월 | 2026 년 9 월 |\n| --- | --- | --- |\n| 회원 | 은행 10 곳 | 기관 21 곳 |\n| 동사 | 퍼블릭 체인 위 1:1 준비금 기반 디지털화폐 \"검토\" | **법인 설립, 2026 하반기** |\n| 제품 | 미정 | **달러 스테이블코인 먼저**; 이후 G7 통화, 유로 우선 검토 |\n| 날짜 | 없음 | **출시 목표 2027 상반기** |\n| 아직 이름 없는 것 | 전부 | **회사, 체인, 수탁기관, 발행 정책** |\n\n### 누가 들어왔나 — 명단이 말해 주는 것\n\n| 지역 | 수 | 이름 |\n| --- | --- | --- |\n| 북미 | 10 | BofA, 캐피털원, 씨티, 피델리티, 골드만삭스, PNC, 스코샤, TD, 웰스파고, 위즈덤트리 |\n| 유럽 | 8 | 산탄데르, BBVA, 코메르츠, 크레디아그리콜, 도이체방크, 로이즈, 라보뱅크, UBS |\n| 아시아 | 1 | MUFG |\n| 중동 | 1 | 시리우스인터내셔널홀딩 |\n| 아프리카 | 1 | 스탠다드뱅크 |\n\n**일본 메가뱅크 하나, 중국·한국·인도 기관 0** — 이 명단은 수요의 지도가 아니라 **은행이 지금 퍼블릭 체인 달러를 만질 수 있는 곳의 지도**입니다.\n\n### 컨소시엄의 선례 — 기저율\n\n| 시도 | 모양 | 결과 | 변수 |\n| --- | --- | --- | --- |\n| 카드 네트워크 / Zelle | 은행 소유 유틸리티, 좁은 제품 | **성공** | 규제 경계가 출시 **전에** 확정 |\n| Libra / Diem | 비은행 컨소시엄, 넓은 제품 | **해산** | 경계를 발표 **후에** 다툼 |\n| Fnality | 은행 컨소시엄, 도매 정산 | 가동 중, 느림 | **모든 매개변수가 회원 투표** |\n\n이번 시도는 의도적으로 **첫째 줄의 모양** — 은행만, 컴플라이언스 먼저, 제품은 좁게 — 이면서 **셋째 줄의 거버넌스 청구서**를 함께 지고 있습니다.\n\n### 발표가 답하지 않는 질문 셋\n\n1. **데스크 영업시간** — 환매가 온체인 24 시간인가, 은행 영업시간을 지키는 코레스 레일 경유인가? (**`stablecoin-redemption-desk`** — 이것이 게임의 전부입니다.)\n2. **청구권** — 법역마다 이 토큰은 예금인가, 전자화폐인가, GENIUS 결제 스테이블코인인가, MiCA EMT 인가? **\"적용 가능한 범위에서\"는 답이 지역마다 다르다는 자백**입니다.\n3. **경계** — 21 곳 외에 누가 발행·유통하고 데스크를 돌릴 수 있는가? **회원만 움직일 수 있는 코인은 스테이블코인이 아니라 정산 네트워크**입니다.",
+  },
+  {
+    // 2026-09-02 (jay): facilitator 카드 — x402 에서 검증·정산을 대신해 주는 역할.
+    // Coinbase 가 프로토콜을 만들고 기본 facilitator 를 무료로 호스팅한다는 구조가 축.
+    // x402-settlement-retry 가 "facilitator 가 있어도 남는 분산 시스템 문제"를 다룬다면,
+    // 이 카드는 facilitator 그 자체 — 누가 운영하고, 무엇을 볼 수 있고, 수수료 면제가
+    // 끝나면 무슨 일이 생기는가 — 를 다룬다. embedded-wallet-policy 와 같은 이동 패턴.
+    key: "x402-facilitator-market",
+    title: "The middleman is optional in the spec — and standard in practice",
+    titleKo: "중개자는 스펙에서는 선택이고, 현실에서는 표준이다",
+    description:
+      "x402's pitch is payment with no processor in the loop, yet every paid request still passes through a facilitator that verifies and settles — a role the spec leaves permissionless and the market mostly rents from Coinbase. Run one paid endpoint against three facilitators — the Coinbase-hosted default, one competitor, one self-hosted — and write the authority row for each before comparing latency: who can refuse to settle, who sees the traffic, and who sets the fee when the waiver ends.",
+    descriptionKo:
+      "x402 의 홍보 문구는 **결제 흐름에 프로세서가 없다**는 것이지만, 유료 요청 하나하나는 여전히 **검증하고 정산해 주는 facilitator** 를 지나갑니다 — **스펙은 이 역할을 무허가로 열어 두었고, 시장은 대부분 Coinbase 에서 빌려 씁니다.** 유료 엔드포인트 하나를 세 facilitator — **Coinbase 호스팅 기본값, 경쟁사 하나, 셀프호스팅 하나** — 에 붙여 보고, 지연시간을 비교하기 전에 **권한 행부터 채웁니다: 누가 정산을 거부할 수 있고, 누가 트래픽을 보고, 수수료 면제가 끝나면 누가 가격을 정하는가.**",
+    status: "soon",
+    updated: "2026-09-02",
+    howTo:
+      "Not yet scoped — the deliverable is one endpoint, three facilitator configs, and a filled authority table.\n\n1. **The default.** Protect one API route with x402 middleware and point it at the Coinbase CDP facilitator (Base, USDC). Record what onboarding demanded (CDP account, verification), the settle latency, and today's fee line.\n2. **The swap test.** Change the facilitator config to a second hosted one (PayAI; or Stripe's private preview if admitted). The code diff should be about one line — write down what *actually* changed: chains, fee schedule, refund and reporting surface, terms of service.\n3. **The exit door.** Self-host the reference facilitator: your own RPC, your own gas wallet, your own retry queue. The ops delta between this and step 1, measured in hours, is the price of the hosted default.\n4. **The matrix.** Per facilitator, answer: can it decline to settle a valid payment? what does it log per request? who can end the fee waiver, with what notice? and when it dies mid-settle, who owns the retry (`x402-settlement-retry` owns that path).\n\nReferences: [x402 facilitator docs](https://docs.cdp.coinbase.com/x402/core-concepts/facilitator), [x402.org ecosystem — facilitators](https://www.x402.org/ecosystem?category=facilitators).",
+    howToKo:
+      "**아직 범위 미정** — 산출물은 **엔드포인트 하나, facilitator 설정 셋, 채워진 권한표 하나**입니다.\n\n1. **기본값.** API 경로 하나를 x402 미들웨어로 보호하고 **Coinbase CDP facilitator**(Base, USDC)에 연결합니다. 온보딩이 요구한 것(CDP 계정, 인증), 정산 지연시간, 오늘 기준 수수료 줄을 기록합니다.\n2. **교체 시험.** facilitator 설정을 두 번째 호스팅 서비스(PayAI, 또는 승인되면 Stripe 프라이빗 프리뷰)로 바꿉니다. **코드 diff 는 한 줄 안팎이어야 합니다** — 실제로 바뀐 것을 적습니다: 체인, 수수료 체계, 환불·리포팅 표면, 이용약관.\n3. **비상구.** 레퍼런스 facilitator 를 셀프호스팅합니다: 내 RPC, 내 가스 지갑, 내 재시도 큐. **이것과 1 번 사이의 운영 부담 차이를 시간 단위로 재면, 그것이 호스팅 기본값의 가격**입니다.\n4. **권한표.** facilitator 마다 답합니다: **유효한 결제의 정산을 거부할 수 있는가? 요청마다 무엇을 기록하는가? 수수료 면제를 누가, 어떤 예고 기간으로 끝낼 수 있는가?** 그리고 정산 도중에 죽으면 재시도는 누구 책임인가 (**`x402-settlement-retry`** 가 그 경로를 다룹니다).\n\n참고: [x402 facilitator 문서](https://docs.cdp.coinbase.com/x402/core-concepts/facilitator), [x402.org 생태계 — facilitators](https://www.x402.org/ecosystem?category=facilitators).",
+    purpose:
+      "**Start from the pitch and find the slot.** x402's story is payment with no processor: the server quotes a price in a 402 response, the client signs a USDC authorization, done. But verify-and-settle was outsourced to a *facilitator* — and the spec deliberately leaves that role permissionless: it is a URL the seller configures, not a party the protocol appoints. An open slot that anyone may fill and almost nobody wants to operate is exactly the shape a platform business looks for. Coinbase wrote the protocol, donated it to a foundation, and hosts the default facilitator free of charge. **The protocol is a standard; the facilitator is the business.**\n\n**The waiver is the tell.** Facilitators price at or near zero today — Coinbase's free tier, PayAI absorbing transaction fees — for the same reason embedded wallets removed the seed phrase (`embedded-wallet-policy`): adoption first, authority later. The facilitator sits where a fee line can be added, sees every paid request, and is the party that can decline to settle. None of that shows up in a latency benchmark, which is this catalogue's recurring lesson: measure the authority before the UX. It is `bundler-paymaster-dependencies` replayed for payments — \"no infrastructure\" means someone else's infrastructure, and the someone is doing it below cost for a reason.\n\n**The swap test settles it.** If moving from Coinbase's facilitator to PayAI's or to your own really is one config line with nothing else changing, the role stays commodity and the chokepoint stays theoretical — the protocol's neutrality is real. If the alternatives differ in chains, refund surfaces, and compliance posture — and Stripe's preview already settles x402 payments into PaymentIntents with fiat settlement and refunds — then \"facilitator\" is not one role but several different businesses wearing one word, switching costs are back, and the authority matrix, not the click count, is what tells them apart.",
+    purposeKo:
+      "**홍보 문구에서 출발해 빈 자리를 찾습니다.** x402 의 이야기는 **프로세서 없는 결제**입니다: 서버가 402 응답으로 가격을 제시하고, 클라이언트가 USDC 승인에 서명하면 끝. 하지만 **검증·정산은 *facilitator* 에게 외주**됐고 — 스펙은 그 역할을 의도적으로 무허가로 둡니다: **프로토콜이 지명하는 당사자가 아니라, 판매자가 설정하는 URL 하나**입니다. **누구나 채울 수 있지만 거의 아무도 직접 운영하고 싶지 않은 빈 자리** — 플랫폼 사업이 찾는 모양이 정확히 이것입니다. Coinbase 는 프로토콜을 만들고, 재단에 기부하고, **기본 facilitator 를 무료로 호스팅합니다.** **프로토콜은 표준이고, facilitator 가 사업입니다.**\n\n**수수료 면제가 단서입니다.** facilitator 들이 지금 0 원 언저리로 가격을 매기는 것 — Coinbase 의 무료 티어, 수수료를 대신 삼키는 PayAI — 은 임베디드 지갑이 시드 문구를 없앤 것과 같은 이유입니다 (**`embedded-wallet-policy`**): **채택 먼저, 권한은 나중에.** facilitator 는 **수수료 줄을 붙일 수 있는 자리에 앉아 있고, 모든 유료 요청을 보고, 정산을 거부할 수 있는 당사자**입니다. 이 중 어느 것도 지연시간 벤치마크에는 나타나지 않습니다 — 이 목록의 반복되는 교훈: **UX 보다 권한을 먼저 재라.** **`bundler-paymaster-dependencies`** 의 결제판 재연입니다 — **\"인프라 불필요\"는 남의 인프라라는 뜻이고, 그 남이 원가 이하로 돌리는 데는 이유가 있습니다.**\n\n**교체 시험이 결론을 냅니다.** Coinbase facilitator 에서 PayAI 나 셀프호스팅으로 옮기는 것이 정말 설정 한 줄이고 다른 아무것도 안 바뀐다면, 이 역할은 범용품으로 남고 병목은 이론에 그칩니다 — 프로토콜의 중립성이 실재하는 겁니다. 반대로 대안들이 체인·환불 표면·컴플라이언스 태세에서 서로 다르다면 — **Stripe 프리뷰는 이미 x402 결제를 PaymentIntents 로 받아 법정화폐 정산과 환불까지 붙입니다** — **\"facilitator\" 는 한 역할이 아니라 한 단어를 나눠 쓰는 서로 다른 사업들**이고, 전환 비용이 되살아나며, 이들을 구별해 주는 것은 클릭 수가 아니라 권한표입니다.",
+    howItWorks:
+      "### What a facilitator actually does\n\n| Step | Who | Notes |\n| --- | --- | --- |\n| Quote — 402 + payment requirements | seller | no facilitator involved |\n| Sign the payment payload | buyer | EIP-3009 `transferWithAuthorization` — the buyer pays no gas |\n| Verify | **facilitator** | checks signature and funds against the requirements |\n| Settle | **facilitator** | submits on-chain, fronts the gas, returns the receipt |\n\nThe facilitator holds no long-lived balance — but every paid request passes through it, and settlement happens only if it agrees.\n\n### The roster, as of 2026-09\n\n| Service | Host | Chains | Pricing today | Angle |\n| --- | --- | --- | --- | --- |\n| CDP facilitator | Coinbase | Base, Solana, Stellar | free tier (~1,000 tx/mo) | the default; written by the protocol's author |\n| PayAI | PayAI | Base, Solana, Polygon | fees currently absorbed | largest facilitator after Coinbase (~14% of transactions) |\n| Stripe x402 | Stripe | Base (USDC) | private preview | settles into PaymentIntents — reporting, refunds, fiat settlement |\n| Cloudflare | Cloudflare | — | — | x402 tooling for Workers and agents |\n| thirdweb | thirdweb | EVM | — | SDK support + Nexus (agents without API keys) |\n| Crossmint | Crossmint | EVM + Solana | — | wallets, onramps, and a facilitator in one platform |\n| Self-hosted | you | whatever you wire | gas at cost | the exit door — and the ops bill that comes with it |\n\n### Who governs the spec\n\n| | |\n| --- | --- |\n| x402 Foundation | now under the Linux Foundation; founding participants include AWS, Circle, Coinbase, Google, Mastercard, Microsoft, Shopify, Stripe, Visa |\n| Google AP2 | x402 is the crypto extension of the Agent Payments Protocol |\n\nThe governance roster is the second tell: processors and card networks joined the body that standardizes the role that was supposed to replace them.\n\n### The four questions the matrix must answer, per facilitator\n\n1. **Refusal** — can it decline to settle a valid signed payment (sanctions screening, terms of service), and is that documented or discovered?\n2. **Visibility** — what does it log per request, and who can subpoena it?\n3. **Pricing authority** — who can end the fee waiver, with what notice period?\n4. **Failure** — when it dies between verify and settle, who owns the retry? (`x402-settlement-retry` — the two cards share one endpoint.)",
+    howItWorksKo:
+      "### facilitator 가 실제로 하는 일\n\n| 단계 | 누가 | 비고 |\n| --- | --- | --- |\n| 제시 — 402 + 결제 조건 | 판매자 | facilitator 관여 없음 |\n| 결제 페이로드 서명 | 구매자 | EIP-3009 `transferWithAuthorization` — **구매자는 가스를 안 냅니다** |\n| 검증 | **facilitator** | 서명과 잔액을 조건에 대조 |\n| 정산 | **facilitator** | 온체인 제출, 가스 대납, receipt 반환 |\n\nfacilitator 는 **장기 잔액을 보관하지 않습니다** — 하지만 **모든 유료 요청이 그것을 지나가고, 정산은 그것이 동의할 때만 일어납니다.**\n\n### 명단 — 2026-09 기준\n\n| 서비스 | 운영 주체 | 체인 | 현재 가격 | 각도 |\n| --- | --- | --- | --- | --- |\n| CDP facilitator | Coinbase | Base, Solana, Stellar | 무료 티어(월 ~1,000 건) | **기본값 — 프로토콜 저자가 직접 운영** |\n| PayAI | PayAI | Base, Solana, Polygon | 수수료 현재 대납 | **Coinbase 다음으로 큰 facilitator(트랜잭션 ~14%)** |\n| Stripe x402 | Stripe | Base (USDC) | 프라이빗 프리뷰 | **PaymentIntents 로 정산** — 리포팅·환불·법정화폐 정산 |\n| Cloudflare | Cloudflare | — | — | Workers·에이전트용 x402 도구 |\n| thirdweb | thirdweb | EVM | — | SDK 지원 + Nexus(API 키 없는 에이전트) |\n| Crossmint | Crossmint | EVM + Solana | — | 지갑·온램프·facilitator 를 한 플랫폼에 |\n| 셀프호스팅 | 나 | 내가 연결하는 만큼 | 가스 원가 | **비상구 — 그리고 따라오는 운영 청구서** |\n\n### 스펙은 누가 다스리나\n\n| | |\n| --- | --- |\n| x402 재단 | **리눅스 재단 산하**; 창립 참여사에 AWS, Circle, Coinbase, Google, Mastercard, Microsoft, Shopify, Stripe, Visa |\n| Google AP2 | x402 는 **Agent Payments Protocol 의 크립토 확장** |\n\n**거버넌스 명단이 두 번째 단서입니다: 대체하겠다던 그 역할을 표준화하는 기구에, 프로세서와 카드 네트워크가 들어와 앉았습니다.**\n\n### facilitator 마다 권한표가 답해야 할 질문 넷\n\n1. **거부** — 유효한 서명 결제의 정산을 거부할 수 있는가(제재 스크리닝, 약관), 그것은 문서에 있는가 겪어야 아는가?\n2. **가시성** — 요청마다 무엇을 기록하고, 누가 그것을 영장으로 가져갈 수 있는가?\n3. **가격 권한** — 수수료 면제를 누가, 어떤 예고 기간으로 끝낼 수 있는가?\n4. **장애** — 검증과 정산 사이에서 죽으면 재시도는 누구 책임인가? (**`x402-settlement-retry`** — 두 카드는 엔드포인트 하나를 공유합니다.)",
   },
 ];
