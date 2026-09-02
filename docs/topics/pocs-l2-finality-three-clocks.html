@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L2 finality is three clocks — PoCs</title>
+<style>body{margin:0;background:#f8fafc;color:#0f172a;font:16px/1.7 system-ui,sans-serif}main{max-width:900px;margin:auto;padding:48px 24px}a{color:#0284c7}.kicker{color:#0284c7;font-weight:700}h1{font-size:2.5rem;line-height:1.15}h2{margin-top:2rem}article{background:white;border:1px solid #e2e8f0;border-radius:18px;padding:32px;margin-top:24px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #e2e8f0;padding:10px;text-align:left}@media(prefers-color-scheme:dark){body{background:#0b1220;color:#e2e8f0}article{background:#111a2b;border-color:#1e293b}th,td{border-color:#334155}}</style></head>
+<body><main><p><a href="../pocs.html#l2-finality-three-clocks">← Blockchain PoCs</a></p><p class="kicker">#85 · IMPORTANT</p>
+<h1>L2 finality is three clocks</h1><p>Sequencer inclusion, L1 data publication, and L1 finalization are different guarantees, even when the UI calls all three “confirmed.”</p>
+<article><h2>Why</h2><p>An L2 feels instant because its sequencer answers quickly. That first answer depends on the sequencer. Publication to L1 makes the transaction derivable without that operator, and L1 finalization gives it Ethereum’s economic finality. Withdrawals can introduce another proof or challenge clock.</p>
+<h2>PoC</h2><p>Submit one OP Stack transaction and record the timestamps at which its block becomes unsafe, safe, and finalized. Display the trust assumption released at each transition, then compare an ordinary transaction with an L2-to-L1 withdrawal.</p>
+<table><tr><th>Clock</th><th>What it establishes</th></tr><tr><td>Sequencer inclusion</td><td>Fast ordering promise</td></tr><tr><td>L1 publication</td><td>Data availability and derivability</td></tr><tr><td>L1 finalization</td><td>Ethereum-backed irreversibility</td></tr><tr><td>Withdrawal path</td><td>Proof or challenge completion</td></tr></table>
+<h2>한국어</h2><p>L2의 “확정”은 하나의 시간이 아닙니다. 시퀀서 포함은 빠른 순서 약속이고, L1 게시부터는 다른 노드가 상태를 재구성할 수 있으며, L1 finalization에 도달해야 Ethereum의 경제적 확정성을 얻습니다. 출금에는 증명 또는 챌린지 시간이 추가될 수 있습니다.</p>
+<p>Reference: <a href="https://docs.optimism.io/op-stack/transactions/transaction-finality">OP Stack transaction finality</a>.</p></article></main></body></html>
