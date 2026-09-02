@@ -31,6 +31,10 @@ export async function GET(req: Request) {
   const env = await delegationEnvOrNull();
   let ownerAccount: { address: string; deployed: boolean; usdc: number | null } | null = null;
   let agentUsdc: number | null = null;
+  // 승인 두 개의 상태 (jay, 2026-09-02). 가장 흔한 400 두 가지("allowance 부족",
+  // "CTF operator 아님")를 실패한 주문이 아니라 이 패널이 먼저 말하게 한다.
+  let allowanceUsdc: number | null = null;
+  let ctfApproved: boolean | null = null;
 
   if (env && verexResult.ok && verexResult.config.usdc) {
     const client = publicClientFor(env.chainId);
@@ -42,6 +46,26 @@ export async function GET(req: Request) {
         .catch(() => null);
 
     agentUsdc = await read(agentAddress());
+
+    if (verexResult.config.exchange) {
+      const exchange = verexResult.config.exchange as Address;
+      allowanceUsdc = await client
+        .readContract({ address: usdcAddr, abi: erc20Abi, functionName: "allowance", args: [agentAddress(), exchange] })
+        .then((v) => Number(v) / 1e6)
+        .catch(() => null);
+      if (verexResult.config.ctf) {
+        ctfApproved = await client
+          .readContract({
+            address: verexResult.config.ctf as Address,
+            abi: [{ name: "isApprovedForAll", type: "function", stateMutability: "view",
+              inputs: [{ name: "account", type: "address" }, { name: "operator", type: "address" }],
+              outputs: [{ type: "bool" }] }] as const,
+            functionName: "isApprovedForAll",
+            args: [agentAddress(), exchange],
+          })
+          .catch(() => null);
+      }
+    }
 
     if (owner) {
       const sa = await ownerSmartAccount(owner);
@@ -61,6 +85,8 @@ export async function GET(req: Request) {
       // 숨기면 데모가 조용히 거짓말을 하므로 화면이 이걸 봐야 한다.
       keyIsPersistent: agentKeyIsPersistent(),
       usdc: agentUsdc,
+      allowanceUsdc,
+      ctfApproved,
     },
     verex: verexResult.ok
       ? {

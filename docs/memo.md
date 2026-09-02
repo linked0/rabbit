@@ -23,7 +23,7 @@ the API warns `Operator mismatch` until `reset.sh` re-seeds; safety now rests on
 ## 2026-09-01 — why approve / seed-news / faucet before a tick
 
 ```bash
-ANVIL_RPC_URL=http://127.0.0.1:8546 pnpm agent:approve
+ANVIL_RPC_URL=http://127.0.0.1:8545 pnpm agent:approve
 pnpm agent:seed-news
 curl -s -X POST -H 'content-type: application/json' -d '{"address":"<AGENT_OR_OWNER_ADDRESS>"}' http://127.0.0.1:4000/faucet
 ```
@@ -50,7 +50,7 @@ Order: ETH → approve → faucet → seed → grant → tick.
 ```bash
 cd /Users/jay/work
 set -a; source rabbit/.env; set +a
-anvil --fork-url "$SEPOLIA_RPC" --fork-block-number 11609470 --chain-id 11155111 --port 8546 --state ./anvil-sepolia-state.json --state-interval 60
+anvil --fork-url "$SEPOLIA_RPC" --fork-block-number 11609470 --chain-id 11155111 --state ./anvil-sepolia-state.json --state-interval 60
 ```
 
 ## 2. verex (API only — root `pnpm dev` also starts web on :3000)
@@ -67,14 +67,14 @@ curl -s http://127.0.0.1:4000/config    # expect chainId 11155111, tradingEnable
 ```bash
 cd /Users/jay/work/rabbit
 pnpm dev                                # :3100
-ANVIL_RPC_URL=http://127.0.0.1:8546 pnpm agent:approve
+ANVIL_RPC_URL=http://127.0.0.1:8545 pnpm agent:approve
 pnpm agent:seed-news
 curl -s -X POST -H 'content-type: application/json' -d '{"address":"<AGENT_OR_OWNER_ADDRESS>"}' http://127.0.0.1:4000/faucet
 ```
 
 ## 4. Test
 
-1. MetaMask → Sepolia, RPC `http://127.0.0.1:8546`, an account that is **not** the agent.
+1. MetaMask → Sepolia, RPC `http://127.0.0.1:8545`, an account that is **not** the agent.
 2. Fund it: faucet (above) + ETH (below).
 3. `http://127.0.0.1:3100/live/agent/console` → Connect → **Grant mandate** → MetaMask's own "up to 10 USDC, 60 min" popup.
 4. Tick `us-federal-stablecoin-law-2026` with a short `cooldownSec` → expect `TRADED … (drawn on-chain 0x…)`.
@@ -83,15 +83,15 @@ curl -s -X POST -H 'content-type: application/json' -d '{"address":"<AGENT_OR_OW
 ## Transfer ETH from a private key to an address
 
 ```bash
-cast send <TO_ADDRESS> --value 10ether --private-key <PRIVATE_KEY> --rpc-url http://127.0.0.1:8546
-cast balance <TO_ADDRESS> --ether --rpc-url http://127.0.0.1:8546
+cast send <TO_ADDRESS> --value 10ether --private-key <PRIVATE_KEY> --rpc-url http://127.0.0.1:8545
+cast balance <TO_ADDRESS> --ether --rpc-url http://127.0.0.1:8545
 ```
 
 Example — anvil #0 (`0xf39F…2266`) → `0xABDB…6d8B`:
 
 ```bash
-cast send 0xABDB93C5642f3342D5195fcf8c1A735e32266d8B --value 10ether --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8546
-cast balance 0xABDB93C5642f3342D5195fcf8c1A735e32266d8B --ether --rpc-url http://127.0.0.1:8546
+cast send 0xABDB93C5642f3342D5195fcf8c1A735e32266d8B --value 10ether --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://127.0.0.1:8545
+cast balance 0xABDB93C5642f3342D5195fcf8c1A735e32266d8B --ether --rpc-url http://127.0.0.1:8545
 ```
 
 # Backup

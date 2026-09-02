@@ -22,6 +22,6 @@ export default function BackLinkClient({
   const params = useSearchParams();
   const fromLive = params.get("from") === "live";
   const target = fromLive ? "/live" : href;
-  const label = fromLive ? pick(lang, "라이브", "Live") : pick(lang, ko, en);
+  const label = fromLive ? pick(lang, "데모", "Demo") : pick(lang, ko, en);
   return <a href={target}>← {label}</a>;
 }

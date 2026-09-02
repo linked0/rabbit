@@ -286,6 +286,35 @@ export const POC_CARDS: DemoCard[] = [
     ],
   },
   {
+    // agent 카드에서 분리 (jay, 2026-09-02). 이야기 페이지(/live/agent)와 조작판은 관객이
+    // 다르다 — 전자는 인프라 없이 읽는 방문자, 후자는 체인을 띄워 둔 운영자. 한 카드가 둘을
+    // 겸하면 조작판이 카드 본문 속 링크로 숨는다. 조작판은 로컬 체인이 떠 있어야 열린다는
+    // 사실을 카드가 스스로 말한다.
+    key: "agent-console",
+    title: "Agent Console — grant, tick, journal",
+    titleKo: "에이전트 조작판 — 위임·틱·저널",
+    description:
+      "The operator console: grant a mandate through MetaMask's ERC-7715 popup, run ticks, and read the journal the chain cannot reconstruct.",
+    descriptionKo:
+      "운영자 조작판 — MetaMask ERC-7715 팝업으로 위임을 부여하고, 틱을 돌리고, 체인이 재구성할 수 없는 저널을 읽습니다.",
+    status: "live",
+    date: "2026-08-31", // 지갑의 7715 팝업으로 부여→상환이 실제로 동작한 날
+    updated: "2026-09-02",
+    href: "/live/agent/console",
+    howTo:
+      "Needs the local stack: a Sepolia-fork anvil plus the verex API on this machine (docs/memo.md has the exact commands). Then: connect MetaMask → Grant mandate (the wallet's own \"up to N USDC, expires in M min\" popup) → tick a market → watch the journal record trades and refusals.",
+    howToKo:
+      "로컬 스택이 필요합니다 — 이 기계에서 Sepolia 포크 anvil 과 verex API 가 떠 있어야 합니다(정확한 명령은 docs/memo.md). 그다음: MetaMask 연결 → 위임 부여(지갑 자체의 \"최대 N USDC, M분 후 만료\" 팝업) → 마켓 틱 → 거래와 거절이 저널에 기록되는 것을 확인.",
+    purpose:
+      "The story page argues; this page is where the argument is exercised. Everything the agent card claims — the cap, the deadline, the six kinds of refusal — is a button or a row here, against a real chain.",
+    purposeKo:
+      "이야기 페이지는 주장하고, 이 페이지는 그 주장을 실제로 굴립니다. agent 카드가 말하는 모든 것 — 상한, 기한, 여섯 갈래 거절 — 이 여기서는 실제 체인을 상대로 한 버튼이고 저널 행입니다.",
+    howItWorks:
+      "Preflight shows the live addresses (click to copy) because the most likely failure is a stale exchange address after a reset. The mandate panel branches on chain id: on 31337 it builds an EIP-712 delegation server-side; on any chain MetaMask supports (11155111 in the table) it calls wallet_requestExecutionPermissions and stores the opaque context the wallet returns. Ticks then draw through the DelegationManager and place signed CTF limit orders on verex; every skip is journalled with the enforcer's own words.",
+    howItWorksKo:
+      "프리플라이트가 살아 있는 주소를 보여 줍니다(클릭하면 복사) — 리셋 뒤의 낡은 exchange 주소가 가장 유력한 실패라서요. 위임 패널은 체인 id 로 갈립니다: 31337 에서는 서버가 EIP-712 위임 구조체를 만들고, MetaMask 가 지원하는 체인(표에 있는 11155111)에서는 wallet_requestExecutionPermissions 를 불러 지갑이 돌려주는 불투명한 context 를 저장합니다. 이후 틱은 DelegationManager 를 통해 자금을 뽑아 verex 에 서명된 CTF 지정가 주문을 냅니다. 모든 스킵은 enforcer 자신의 문장으로 저널에 남습니다.",
+  },
+  {
     // 서비스 탐방 42/113에서 넘어온 카드 (jay, 2026-08-11). 다른 카드와 성격이 다르다 —
     // "이 서비스를 쓸까"가 아니라 "관리형이 죽을 때 무엇이 남는가"를 배우는 항목이고,
     // 마침 agent 카드가 손으로 짜고 있는 배관(논스·가스·재시도)과 정확히 같은 층이다.
