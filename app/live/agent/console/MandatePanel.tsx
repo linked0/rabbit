@@ -48,7 +48,17 @@ type Mandate = {
   delegator: string | null;
 };
 
-export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: string | null) => void; onChanged: () => void }) {
+export default function MandatePanel({
+  onOwner,
+  onChanged,
+  refreshKey,
+}: {
+  onOwner: (a: string | null) => void;
+  onChanged: () => void;
+  /// 스케줄러가 이 탭 몰래 인출을 만든다 (jay, 2026-09-02) — 콘솔의 refreshKey 를 받아
+  /// 저널과 같은 박자로 진행률을 다시 읽는다. 없으면 화면의 0.00 이 조용히 거짓말한다.
+  refreshKey: number;
+}) {
   const { lang } = useLang();
   const t = (ko: string, en: string) => pick(lang, ko, en);
 
@@ -85,7 +95,7 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
 
   useEffect(() => {
     void reload();
-  }, [reload]);
+  }, [reload, refreshKey]);
   useEffect(() => {
     const id = setInterval(() => tickNow((n) => n + 1), 1000);
     return () => clearInterval(id);
@@ -114,7 +124,15 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
     const client = createWalletClient({ transport: custom(window.ethereum as never) }).extend(
       erc7715ProviderActions(),
     );
-    const now = Math.floor(Date.now() / 1000);
+    // startTime 은 벽시계가 아니라 **체인의 시간**으로 (jay, 2026-09-02). 포크의 블록
+    // 시간은 채굴 전까지 벽시계보다 뒤처지고, 지갑의 권한은 ERC20PeriodTransferEnforcer
+    // 로 강제되므로 startTime 이 블록 시간보다 미래면 상환이 전부
+    // "transfer-not-started" 로 거절된다. 체인에 물어보면 갈라질 수 없다.
+    const latest = (await eth().request({
+      method: "eth_getBlockByNumber",
+      params: ["latest", false],
+    })) as { timestamp: string };
+    const now = parseInt(latest.timestamp, 16);
     const granted = await client.requestExecutionPermissions([
       {
         chainId,
@@ -279,12 +297,16 @@ export default function MandatePanel({ onOwner, onChanged }: { onOwner: (a: stri
           <span>{t("만료까지 (분)", "Expires in (min)")}</span>
           <input value={minutes} onChange={(e) => setMinutes(e.target.value)} style={{ width: 90 }} />
         </label>
-        <button onClick={grant} disabled={!owner || busy}>
-          {busy ? "…" : t("위임 부여", "Grant mandate")}
-        </button>
-        {mandate && (
+        {/* 부여와 취소는 동시에 보이지 않는다 (jay, 2026-09-02). 살아 있는 mandate 가
+            있으면 할 일은 취소뿐이고(부여는 어차피 이전 것을 자동 revoke 하므로 두 버튼은
+            같은 자리를 다툰다), 없거나 만료됐으면 취소할 것이 없다. */}
+        {mandate && !mandate.expired ? (
           <button onClick={revoke} disabled={busy} className="trash">
-            {t("취소", "Revoke")}
+            {busy ? "…" : t("취소", "Revoke")}
+          </button>
+        ) : (
+          <button onClick={grant} disabled={!owner || busy}>
+            {busy ? "…" : t("위임 부여", "Grant mandate")}
           </button>
         )}
       </div>

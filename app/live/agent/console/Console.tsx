@@ -15,9 +15,11 @@ import { useLang } from "../../../LangContext";
 import { pick } from "@/lib/i18n";
 import { fetchJson } from "./fetchJson";
 import Preflight from "./Preflight";
+import ParticipantsPanel from "./ParticipantsPanel";
 import MandatePanel from "./MandatePanel";
 import NewsPanel from "./NewsPanel";
 import JournalPanel from "./JournalPanel";
+import SchedulerPanel from "./SchedulerPanel";
 
 type Market = { slug: string; title: string; status: string; outcomes: { label: string }[] };
 
@@ -54,6 +56,8 @@ export default function Console() {
   return (
     <>
       <Preflight owner={owner} refreshKey={refreshKey} />
+
+      <ParticipantsPanel owner={owner} refreshKey={refreshKey} onChanged={bump} />
 
       <div className="panel" style={{ marginTop: 24 }}>
         <strong>{t("마켓과 손잡이", "Market and dials")}</strong>
@@ -111,15 +115,15 @@ export default function Console() {
         </p>
       </div>
 
-      <MandatePanel onOwner={setOwner} onChanged={bump} />
+      <MandatePanel onOwner={setOwner} onChanged={bump} refreshKey={refreshKey} />
       <NewsPanel marketSlug={slug} withinHours={newsWithinHours} onChanged={bump} />
-      <JournalPanel
+      <SchedulerPanel
         marketSlug={slug}
         outcome={outcome}
         settings={{ cooldownSec, edgeThreshold, sizeUsdc, newsWithinHours }}
-        refreshKey={refreshKey}
         onChanged={bump}
       />
+      <JournalPanel refreshKey={refreshKey} />
     </>
   );
 }

@@ -31,6 +31,8 @@ export type VerexConfig = {
   exchange: `0x${string}` | null;
   ctf: `0x${string}` | null;
   usdc: `0x${string}` | null;
+  /// verex 배포자·MM·faucet 서명자. 참여자 패널이 잔고를 보여주는 데 쓴다.
+  operator: `0x${string}` | null;
   tradingEnabled: boolean;
 };
 
