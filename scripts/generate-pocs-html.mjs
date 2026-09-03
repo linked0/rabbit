@@ -220,10 +220,12 @@ function topicPagerHref(card) {
 // 인덱스가 6장만 보여주게 된 뒤로 이 페이지가 "전부 있는 곳"이 됐고, 상단 TOC 하나로는
 // 18개를 훑기 어렵다 — 레일은 어디까지 왔든 목록이 눈앞에 남는다.
 // 레일 점 색 — 칸(tier)은 lib/demo-cards.ts 의 cardTier 가 정하고, 목록 정렬도 같은 함수를
-// 쓴다. 그래서 목록은 위에서부터 검정 → 파랑 → 노랑 → 회색 네 덩어리로 내려간다.
+// 쓴다. 그래서 목록은 위에서부터 초록 → 파랑 → 노랑 → 회색 네 덩어리로 내려간다.
 // 창(NEW_WINDOW_DAYS)도 거기서 온다 — 숫자를 바꿀 곳은 lib/demo-cards.ts 한 곳뿐이다.
 const DOT = [
-  { color: '#111827', label: 'DONE' },
+  // DONE 점은 원래 #111827(거의 검정)이었는데 다크 모드에서 배경에 묻혀 안 보였다
+  // (jay, 2026-09-03) — 초록으로. IMPORTANT 파랑·NEW 노랑·PLANNED 회색과도 겹치지 않는다.
+  { color: '#22c55e', label: 'DONE' },
   { color: '#0284c7', label: 'IMPORTANT' },
   { color: '#eab308', label: 'NEW' },
   { color: '#64748b', label: 'PLANNED' },
