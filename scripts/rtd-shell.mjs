@@ -385,20 +385,23 @@ ${navGroupsHtml}
   </aside>`;
 }
 
-// 목록 페이지를 열면 레일을 첫 important 항목이 가운데 오도록 초기 스크롤한다
-// (jay, 2026-09-02: "the first important items should be shown in the center").
-// done 구간이 길어져 목록 맨 위는 이미 끝난 항목들뿐이라, 처음 보이는 화면이
-// "지금 볼 것"의 경계(done↔important)가 되게 한다. 해시로 특정 항목을 연 경우와
-// important 점이 없는 페이지(일반 문서 레일)에서는 아무것도 하지 않는다.
-// renderRtdPage 에만 싣는다 — 상세 페이지 레일은 현재 항목이 초점이므로 제외.
-const CENTER_FIRST_IMPORTANT_SCRIPT = String.raw`
+// 페이지를 열면 레일을 초기 스크롤한다 (jay, 2026-09-02 + 2026-09-03).
+//  · 상세 페이지: 서버가 active 로 표시한 현재 항목을 가운데로 — "when the detail page
+//    is shown, the left panel should sync" (jay, 2026-09-03). 해시(#ko 언어 앵커 등)와
+//    무관하게 항상 — 레일은 본문과 다른 스크롤 컨테이너라 충돌하지 않는다.
+//  · 목록 페이지(active 없음): 첫 important 항목을 가운데로 — done 구간이 길어져 맨
+//    위는 끝난 항목뿐이라, 첫 화면이 done↔important 경계가 되게 한다. 해시 딥링크가
+//    있으면 그쪽이 우선이므로 건드리지 않는다.
+const RAIL_INIT_SCROLL_SCRIPT = String.raw`
 (function () {
-  if (location.hash) return;
   var nav = document.querySelector('.rail-nav');
   if (!nav) return;
-  var dot = nav.querySelector('.nav-dot[title="IMPORTANT"]');
-  if (!dot) return;
-  var el = dot.closest('a') || dot;
+  var el = nav.querySelector('.nav-link.active');
+  if (!el && !location.hash) {
+    var dot = nav.querySelector('.nav-dot[title="IMPORTANT"]');
+    el = dot && dot.closest('a');
+  }
+  if (!el) return;
   var r = el.getBoundingClientRect();
   var c = nav.getBoundingClientRect();
   nav.scrollTop += (r.top - c.top) - (c.height / 2 - r.height / 2);
@@ -500,6 +503,9 @@ const RAIL_SCRIPT = String.raw`
   // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
   // 고르면 방금 도착한 항목이 켜진다.
   function syncActive() {
+    // 상세 페이지에는 관측할 본문 항목이 없다 — 그때 돌면 서버가 표시한 active 를
+    // 첫 스크롤에 지워 버리므로, 관측 대상이 없으면 아무것도 하지 않는다 (2026-09-03).
+    if (observed.size === 0) return;
     // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
     // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
     // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
@@ -620,7 +626,7 @@ ${o.contentHtml}
     <p class="src">${o.srcLine}</p>
   </main>
 </div>
-<script>${RAIL_SCRIPT}${COPY_SCRIPT}${CENTER_FIRST_IMPORTANT_SCRIPT}</script>
+<script>${RAIL_SCRIPT}${COPY_SCRIPT}${RAIL_INIT_SCROLL_SCRIPT}</script>
 </body>
 </html>
 `;
@@ -653,7 +659,7 @@ ${railHtml(o, navGroupsHtml)}
 ${solo}
   </main>
 </div>
-<script>${RAIL_SCRIPT}${COPY_SCRIPT}</script>`
+<script>${RAIL_SCRIPT}${COPY_SCRIPT}${RAIL_INIT_SCROLL_SCRIPT}</script>`
     : `<div class="solo">
   <p class="crumb">${o.crumbHtml}</p>
 ${o.bodyHtml}
