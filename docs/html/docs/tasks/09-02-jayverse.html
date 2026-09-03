@@ -266,6 +266,38 @@ viem clients) that every app imports — plumbing, not a product.</li>
 <li><strong>데이터 과학</strong>(온체인 데이터 분석·pandas/numpy·Dune/The Graph)</li>
 <li>PoCs items</li>
 </ul>
+<h3>보안 취약점 연구 (Security-hole research)</h3>
+<ul>
+<li><strong>What</strong>: the offensive-security muscle of Jayverse — study the exploit classes that actually
+drain protocols (reentrancy, price-oracle manipulation, access-control gaps, signature/permit
+replay, bridge message-validation bugs, proxy/upgradeability pitfalls, and the new one we
+ourselves ship: 7702/7715 session-key scope abuse) and run them against <strong>our own contracts
+on a local fork before anyone else does</strong>.</li>
+<li><strong>Why dark horse</strong>: it compounds across every other service — verex order caps, the Bridge&#39;s
+1:1 vault invariant, the Wallet&#39;s session keys, the agent&#39;s mandate enforcers are all
+security surfaces; and it pairs with <strong>데이터 과학</strong> (exploit detection is on-chain data
+analysis: Dune queries over drained-pool patterns).</li>
+<li><strong>Skills</strong>: Foundry fuzz/invariant testing, Slither/Aderyn static analysis, Echidna,
+fork-based exploit reproduction (anvil — we already run Sepolia forks daily), reading
+postmortems (rekt.news, Immunefi reports); later Halmos/Certora formal verification.</li>
+<li><strong>Steps</strong>: 1) reproduce 3 classic hacks end-to-end on a local fork (one reentrancy, one
+oracle manipulation, one bridge bug) with a write-up each; 2) build an invariant suite for
+verex (collateral conservation, cap enforcement, no order without allowance — the
+<code>checkExternalFunds</code> read-and-refuse path); 3) attack our highest-authority component first:
+the agent&#39;s 7715 mandate (can a draw exceed the cap? survive expiry? replay a context?);<ol start="4">
+<li>enter one audit contest (Code4rena/Sherlock) to calibrate against the field.</li>
+</ol>
+</li>
+<li><strong>Subtasks</strong>: exploit-reproduction notes repo; per-service invariant list (verex, bridge,
+wallet); severity/triage rubric; responsible-disclosure policy for anything found outside.</li>
+<li><strong>Risk (dual-use)</strong>: exploits live on local forks only, never against live third-party
+systems; external findings go through responsible disclosure, always.</li>
+<li><strong>Ties</strong>: Authority Auditor (#9) is the defensive/product half — this research feeds its
+rules engine; Bridge (#7) is &quot;where double-spend bugs would live&quot;, so its invariant tests
+come from here.</li>
+<li><strong>PoC links</strong>: <code>third-party-blast-radius</code>, <code>safe-module-root-key</code>, <code>simulate-before-sign</code>,
+<code>agentic-intent-veto</code>; reproduced hacks can each become a new PoC card (Planned by default).</li>
+</ul>
 
   </article>
 </div>

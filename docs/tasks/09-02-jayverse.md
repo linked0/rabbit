@@ -148,3 +148,32 @@
 ## 10.Dark Horse
 - **데이터 과학**(온체인 데이터 분석·pandas/numpy·Dune/The Graph)
 - PoCs items
+
+### 보안 취약점 연구 (Security-hole research)
+- **What**: the offensive-security muscle of Jayverse — study the exploit classes that actually
+  drain protocols (reentrancy, price-oracle manipulation, access-control gaps, signature/permit
+  replay, bridge message-validation bugs, proxy/upgradeability pitfalls, and the new one we
+  ourselves ship: 7702/7715 session-key scope abuse) and run them against **our own contracts
+  on a local fork before anyone else does**.
+- **Why dark horse**: it compounds across every other service — verex order caps, the Bridge's
+  1:1 vault invariant, the Wallet's session keys, the agent's mandate enforcers are all
+  security surfaces; and it pairs with **데이터 과학** (exploit detection is on-chain data
+  analysis: Dune queries over drained-pool patterns).
+- **Skills**: Foundry fuzz/invariant testing, Slither/Aderyn static analysis, Echidna,
+  fork-based exploit reproduction (anvil — we already run Sepolia forks daily), reading
+  postmortems (rekt.news, Immunefi reports); later Halmos/Certora formal verification.
+- **Steps**: 1) reproduce 3 classic hacks end-to-end on a local fork (one reentrancy, one
+  oracle manipulation, one bridge bug) with a write-up each; 2) build an invariant suite for
+  verex (collateral conservation, cap enforcement, no order without allowance — the
+  `checkExternalFunds` read-and-refuse path); 3) attack our highest-authority component first:
+  the agent's 7715 mandate (can a draw exceed the cap? survive expiry? replay a context?);
+  4) enter one audit contest (Code4rena/Sherlock) to calibrate against the field.
+- **Subtasks**: exploit-reproduction notes repo; per-service invariant list (verex, bridge,
+  wallet); severity/triage rubric; responsible-disclosure policy for anything found outside.
+- **Risk (dual-use)**: exploits live on local forks only, never against live third-party
+  systems; external findings go through responsible disclosure, always.
+- **Ties**: Authority Auditor (#9) is the defensive/product half — this research feeds its
+  rules engine; Bridge (#7) is "where double-spend bugs would live", so its invariant tests
+  come from here.
+- **PoC links**: `third-party-blast-radius`, `safe-module-root-key`, `simulate-before-sign`,
+  `agentic-intent-veto`; reproduced hacks can each become a new PoC card (Planned by default).
