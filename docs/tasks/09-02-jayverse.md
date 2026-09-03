@@ -144,3 +144,7 @@
 - **Subtasks**: matrix schema (actions × actors × evidence); provider config parsers; severity labels; "verified by test, not docs" badge for cells actually exercised.
 - **Risk**: wrong cells are worse than no cells — every claim needs an evidence link or a "not verified" mark.
 - **PoC links**: `embedded-wallet-policy`, `safe-module-root-key`, `third-party-blast-radius`.
+
+## 10.Dark Horse
+- **데이터 과학**(온체인 데이터 분석·pandas/numpy·Dune/The Graph)
+- PoCs items
