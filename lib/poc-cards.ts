@@ -3980,4 +3980,30 @@ export const POC_CARDS: DemoCard[] = [
     howItWorksKo:
       "### 특허가 덮는 것 대 한나절이 덮는 것\n\n| 층 | 무엇인가 | 누가 만들 수 있나 |\n| --- | --- | --- |\n| 공식 | 거래량 가중 평균, 또는 구간 중앙값 | 누구나, 한나절에 |\n| 파이프라인 | 복수 거래소 수집, 심볼·타임스탬프 표준화 | 어느 데이터 팀이든 |\n| 판정 | 품질 규칙: 이상치, 신선도, 거래소 정족수 | **특허는 여기서 시작** |\n| 책임 | 산출 이력, 이상 로그, 장애 대응, 리플레이 가능성 | **이것이 제품** |\n\n### 세 가지 공격과 살아남는 규칙\n\n| 주입한 실패 | 순진한 평균 | ETF 급 지수 |\n| --- | --- | --- |\n| 한 거래소의 팻핑거 심지 | 심지를 따라 NAV 로 들어감 | 사전 공표된 이상치 규칙이 제외하고, 제외를 기록 |\n| 마지막 가격을 반복하는 멈춘 피드 | 죽은 숫자를 조용히 평균 | N 초 후 신선도 컷오프가 거래소를 떨굼 |\n| 거래소 장애 | 구성이 조용히 바뀜 | 정족수 규칙 + 공표된 폴백(예: 잔여 거래소 중앙값) |\n\n### 벤치마크 계보\n\n| 벤치마크 | 교훈 |\n| --- | --- |\n| LIBOR | 부패 가능한 운영이 충분히 맞던 공식을 죽였다 |\n| SOFR / IOSCO 원칙 / EU BMR | 수정은 새 수학이 아니라 거버넌스와 거래 증빙이었다 |\n| CME CF BRR (미 현물 ETF) | 거래량 가중 구간 중앙값 + 거래소 적격성 + 공개 방법론 |\n| 이번 특허 | 같은 스택을, 아직 존재하지 않는 한국 ETF 시장용으로 포장 |\n\n### 지수가 ETF 급인지 결정하는 질문\n\n1. 이상치·신선도·폴백 규칙집이 **첫 사고 전에** 공표되어 있는가?\n2. 제3자가 기록된 입력으로 발표 숫자를 바이트 단위로 리플레이할 수 있는가?\n3. 규칙 변경은 누가 감독하며, 운영자가 사고 도중에 바꿀 수 있는가?\n4. 거래소 적격 기준은 무엇이고 — 누가, 언제, 어떤 트리거로 제거되는가?",
   },
+  {
+    // 책 카드 (jay, 2026-09-03) — 블록체인 항목이 아니라 책이므로 Future/Etc 로.
+    // Jayverse §10 Dark Horse(데이터 과학·보안 연구)의 수학 기초를 맡는다.
+    key: "essential-math-data-science",
+    group: "future",
+    title: "Essential Math for Data Science (book)",
+    titleKo: "Essential Math for Data Science (책)",
+    description:
+      "Thomas Nield's O'Reilly book — linear algebra, calculus, probability, and statistics rebuilt from scratch in plain Python (numpy/sympy), ending at linear/logistic regression and a from-scratch neural network. The math floor under the data-science dark horse: every Dune query, index-quality rule, and anomaly detector in that track leans on exactly these four subjects.",
+    descriptionKo:
+      "Thomas Nield 의 O'Reilly 책 — 선형대수·미적분·확률·통계를 순수 Python(numpy/sympy)으로 바닥부터 다시 쌓아, 선형/로지스틱 회귀와 손으로 만든 신경망까지 갑니다. **데이터 과학 다크호스의 수학 바닥**입니다: 그 트랙의 모든 Dune 쿼리, 지수 품질 규칙, 이상 탐지기가 정확히 이 네 과목 위에 서 있습니다.",
+    status: "soon",
+    updated: "2026-09-03",
+    howTo:
+      "Read it the way the book is built — code first, proofs never. One chapter at a time, and after each chapter replace its toy dataset with an on-chain one: probability on MEV bundle inclusion, descriptive statistics and outlier rules on a BTC/KRW multi-exchange feed (the index-operations card's attack set), linear regression on gas price vs. block fullness, logistic regression on \"did this market resolve Yes\". The book's own tools (numpy, sympy, scikit-learn) are already the Dark Horse stack — no new toolchain, just new data. Finish line: the closing neural-network chapter re-implemented against one Verex order-flow dataset.",
+    howToKo:
+      "책이 만들어진 방식 그대로 읽습니다 — **코드 먼저, 증명은 안 함.** 한 장씩 읽고, 각 장의 장난감 데이터셋을 온체인 데이터로 바꿉니다: MEV 번들 포함 여부에 확률을, BTC/KRW 복수 거래소 피드에 기술통계와 이상치 규칙을(지수 운영 카드의 공격 세트), 가스 가격 대 블록 점유율에 선형회귀를, \"이 마켓이 Yes 로 끝났는가\"에 로지스틱 회귀를. 책의 도구(numpy, sympy, scikit-learn)가 이미 다크호스 스택이라 **새 툴체인 없이 데이터만 바꾸면 됩니다.** 결승선: 마지막 신경망 장을 Verex 주문 흐름 데이터셋 하나로 재구현.",
+    purpose:
+      "The Jayverse plan's §10 names 데이터 과학 (pandas/numpy, Dune/The Graph) as a dark-horse track, and the honest gap is not tooling but the math underneath it — a trimmed mean, a staleness cutoff, or a manipulation-cost curve is a statistics decision before it is a line of code. This book is the shortest respectable path through that gap: four subjects, one notebook language, no measure theory. It also feeds the Math curriculum (the 50-item list) with worked, code-backed examples rather than definitions.",
+    purposeKo:
+      "Jayverse 계획 §10 이 데이터 과학(pandas/numpy, Dune/The Graph)을 다크호스 트랙으로 지목했는데, **정직한 공백은 도구가 아니라 그 밑의 수학**입니다 — 절사 평균, 신선도 컷오프, 조작 비용 곡선은 코드 한 줄이기 전에 통계 결정입니다. 이 책은 그 공백을 지나는 가장 짧고 점잖은 길입니다: 네 과목, 노트북 언어 하나, 측도론 없음. Math 커리큘럼(50개 목록)에도 정의 대신 **코드로 뒷받침된 실전 예제**를 공급합니다.",
+    howItWorks:
+      "### Chapter map — book subject → on-chain use\n\n| Book subject | Where it lands in this workspace |\n| --- | --- |\n| Probability (incl. Bayes) | MEV bundle inclusion; \"how likely is this market to resolve Yes\" priors |\n| Descriptive stats & distributions | Multi-exchange feed quality: outlier wicks, staleness, trimmed means |\n| Linear algebra | Portfolio/exposure math; the matrix under every regression below |\n| Calculus & gradient descent | Manipulation-cost curves; fitting anything by hand once |\n| Linear & logistic regression | Gas price vs. block fullness; resolution prediction on Verex markets |\n| Neural network (from scratch) | The capstone — one small net on Verex order flow, no framework |\n\n### Why this book and not a course\n\nEvery construct is built in numpy/sympy in front of you — the same stack the Dark Horse track already names — so \"finished the chapter\" and \"have working code for the track\" are the same event.",
+    howItWorksKo:
+      "### 장별 지도 — 책 과목 → 온체인 쓰임새\n\n| 책 과목 | 이 워크스페이스에서의 자리 |\n| --- | --- |\n| 확률 (베이즈 포함) | MEV 번들 포함 확률; \"이 마켓이 Yes 로 끝날 확률\" 사전 분포 |\n| 기술통계·분포 | 복수 거래소 피드 품질: 이상치 심지, 신선도, 절사 평균 |\n| 선형대수 | 포트폴리오/익스포저 계산; 아래 모든 회귀 밑의 행렬 |\n| 미적분·경사하강 | 조작 비용 곡선; 무엇이든 한 번은 손으로 적합 |\n| 선형·로지스틱 회귀 | 가스 가격 대 블록 점유율; Verex 마켓 결과 예측 |\n| 신경망 (바닥부터) | 마무리 — Verex 주문 흐름에 프레임워크 없는 작은 신경망 |\n\n### 왜 강의가 아니라 이 책인가\n\n모든 개념을 눈앞에서 numpy/sympy 로 직접 짓습니다 — 다크호스 트랙이 이미 지목한 그 스택이라, **\"장을 끝냈다\"와 \"트랙에 쓸 작동 코드가 있다\"가 같은 사건**이 됩니다.",
+  },
 ];
