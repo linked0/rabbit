@@ -2490,7 +2490,7 @@ export const POC_CARDS: DemoCard[] = [
       "Confidential settlement encrypts the invoice value and publishes who paid whom and when. That second half is offered as the harmless one, and for a supply chain it may be the half worth hiding — while the opposite tool, computing over data that never becomes readable, solves the problem a blockchain structurally cannot.",
     descriptionKo:
       "기밀 정산은 **송장 금액을 암호화하고 누가 누구에게 언제 냈는지는 공개**합니다. 그 후반부가 **무해한 절반**으로 제시되는데, 공급망에서는 **가려야 할 쪽이 그쪽일 수 있습니다** — 반대편 도구, 즉 **끝내 읽히지 않는 데이터 위에서 계산하기**는 **블록체인이 구조적으로 풀 수 없는 문제**를 풉니다.",
-    status: "soon",
+    status: "done",
     howTo:
       "Two experiments, both runnable without a counterparty. First, the leak: synthesise a B2B payment graph with realistic structure — supplier tiers, net-30 cadence, seasonal variance, occasional onboarding and churn, a few relationships that quietly slip late — then publish only sender, receiver and timestamp, with no amounts at all, not even ranges. Then attack it and report what share of the commercially sensitive inferences is recoverable, at what accuracy, with zero value data. Second, the tool: take one FHE library, run a single aggregate — a sum or a count over encrypted inputs — end to end, and measure latency and ciphertext size, the two numbers that decide whether any of it is usable. Sources: Mysten Labs' Tessera announcement, 2026-08-10, and Sui's Confidential Transfers (public testing since 2026-06).",
     howToKo:
@@ -2512,7 +2512,7 @@ export const POC_CARDS: DemoCard[] = [
     titleKo: "ERC-8141",
     description: "Native account-abstraction explainer — Ethereum's protocol-level Frame Transactions.",
     descriptionKo: "네이티브 계정 추상화 설명 페이지 — 이더리움 프로토콜 레벨 Frame Transactions.",
-    status: "soon",
+    status: "done",
     // 2026-09-03 (jay): 튜터링 논의를 상세 페이지에 정리 — 기본 개념부터 코드 3세대,
     // 수혜자, 개선 상황, "그럼 4337 은 일몰?" 질문까지. Review clarification 섹션으로 렌더.
     discussion:
@@ -2541,7 +2541,7 @@ export const POC_CARDS: DemoCard[] = [
       "`status: 1` proves execution in one block; it does not prove that the block will remain canonical. Payment products need included, safe, finalized, and reorged states instead of one `paid` boolean.",
     descriptionKo:
       "`status: 1` 은 어느 한 블록 안에서 실행이 성공했다는 증명이지, 그 블록이 정식 체인에 남는다는 증명이 아닙니다. 결제 제품에는 `paid` 불리언 하나가 아니라 included·safe·finalized·reorged 상태가 필요합니다.",
-    status: "soon",
+    status: "done",
     important: true,
     updated: "2026-09-02",
     howTo:
@@ -2566,7 +2566,7 @@ export const POC_CARDS: DemoCard[] = [
       "A sequencer confirmation, publication to L1, and L1 finalization answer different questions. Showing one \"confirmed\" badge collapses three trust boundaries into one word.",
     descriptionKo:
       "시퀀서 확인, L1 게시, L1 최종 확정은 서로 다른 질문에 답합니다. \"confirmed\" 배지 하나는 신뢰 경계 세 개를 한 단어로 뭉갭니다.",
-    status: "soon",
+    status: "done",
     important: true,
     updated: "2026-09-02",
     // 2026-09-03 (jay): 튜터링 논의를 상세 페이지에 정리 — 2초 confirmed 의 실체, 시계 셋의
@@ -2598,7 +2598,7 @@ export const POC_CARDS: DemoCard[] = [
       "A wallet prompt tells the user what they are being asked to sign; simulation tells the application what that signed transaction is expected to do.",
     descriptionKo:
       "지갑 프롬프트는 사용자에게 무엇을 서명하라고 요청하는지 알려 주고, 시뮬레이션은 애플리케이션에게 그 서명된 트랜잭션이 무엇을 할 것으로 예상되는지 알려 줍니다.",
-    status: "soon",
+    status: "done",
     important: true,
     updated: "2026-09-02",
     howTo:
