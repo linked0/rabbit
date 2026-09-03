@@ -4,6 +4,7 @@
 // links between docs resolve correctly. Source .md files are left untouched.
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 import { marked } from 'marked';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..');
@@ -171,6 +172,57 @@ ${bodyHtml}
 `;
 }
 
+// docs/html/docs/tasks/index.html — tasks 폴더의 자동 색인 (jay, 2026-09-03).
+// summary.md 는 손으로 쓰는 목록이라 새 파일이 생겨도 스스로 갱신되지 않았다 —
+// 09-02-jayverse.md 가 빠진 채로 "All Tasks" 를 자칭한 사례. 색인을 생성 시점의
+// 폴더 내용에서 만들면 목록과 폴더가 어긋날 방법 자체가 없다. 파일 인자 유무와
+// 무관하게 매 실행마다 다시 만든다 — 파일 하나라 비용이 없다.
+// 정렬은 git 마지막 커밋 시각(최신 먼저) — mtime 은 clone/checkout 시점으로
+// 초기화되어 머신을 옮기면 뒤섞인다. 커밋된 적 없는 새 파일은 mtime 으로 맨 위에 온다.
+function generateTasksIndex() {
+  const TASKS_DIR = path.join(REPO_ROOT, 'docs', 'tasks');
+  const outAbs = path.join(OUT_ROOT, 'docs', 'tasks', 'index.html');
+  const entries = [];
+  for (const e of fs.readdirSync(TASKS_DIR, { withFileTypes: true })) {
+    if (!e.isFile() || !/\.md$/i.test(e.name)) continue;
+    const abs = path.join(TASKS_DIR, e.name);
+    const raw = fs.readFileSync(abs, 'utf8');
+    const h1 = raw.match(/^#\s+(.+)$/m);
+    let ts = 0;
+    try {
+      const out = execSync('git log -1 --format=%ct -- ' + JSON.stringify(path.relative(REPO_ROOT, abs)), {
+        cwd: REPO_ROOT, encoding: 'utf8',
+      }).trim();
+      ts = out ? Number(out) * 1000 : 0;
+    } catch { /* git 없음/실패 → mtime 폴백 */ }
+    if (!ts) ts = fs.statSync(abs).mtimeMs;
+    entries.push({ name: e.name, title: h1 ? h1[1].trim() : e.name.replace(/\.md$/i, ''), ts });
+  }
+  entries.sort((a, b) => b.ts - a.ts);
+  const items = entries
+    .map(({ name, title, ts }) => {
+      const href = name.replace(/\.md$/i, '.html');
+      const date = new Date(ts).toISOString().slice(0, 10);
+      return `<li><a href="${escapeHtml(href)}">${escapeHtml(title)}</a> <code>${escapeHtml(name)}</code> <small>${date}</small></li>`;
+    })
+    .join('\n');
+  const bodyHtml = `<h1>Rabbit — All Tasks</h1>
+<blockquote><p>Every <code>docs/tasks/*.md</code>, newest first (by last commit). This page is rebuilt from the folder on every docs generation — it cannot go stale the way a hand-written list can.</p></blockquote>
+<ul>
+${items}
+</ul>
+`;
+  fs.mkdirSync(path.dirname(outAbs), { recursive: true });
+  fs.writeFileSync(outAbs, renderPage({
+    title: 'Rabbit — All Tasks',
+    sourceRel: 'docs/tasks/ (folder listing, auto-generated)',
+    bodyHtml,
+    backHref: path.relative(path.dirname(outAbs), INDEX_HTML),
+    backLabel: 'Index',
+  }), 'utf8');
+  return entries.length;
+}
+
 function main() {
   // With file args, only convert those (used by the pre-commit hook for changed files).
   // With no args, do a full scan (used by `pnpm docs:html`).
@@ -223,7 +275,8 @@ function main() {
     verbatim++;
   }
 
-  console.log(`Converted ${converted} markdown files (+ ${verbatim} verbatim) to ${path.relative(REPO_ROOT, OUT_ROOT)}/`);
+  const taskCount = generateTasksIndex();
+  console.log(`Converted ${converted} markdown files (+ ${verbatim} verbatim, tasks index: ${taskCount} entries) to ${path.relative(REPO_ROOT, OUT_ROOT)}/`);
   if (conflicts.length) {
     console.log(`WARNING: ${conflicts.length} output path conflicts (later file skipped):`);
     for (const [a, b] of conflicts) console.log(`  ${a}  <->  ${b}`);
