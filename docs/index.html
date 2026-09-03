@@ -256,9 +256,14 @@
                         <span class="card-title">Rabbit &mdash; Feature Designs</span>
                         <span class="card-path" title="docs/features/README.md">docs/features/README.md</span>
                     </a>
-                    <a href="html/docs/tasks/current-plan.html" class="card" style="border-left: 4px solid #16a34a;">
+                    <!-- Current Plan 카드는 tasks 폴더 전체로 간다 (jay, 2026-09-03) —
+                         current-plan.md 한 장을 고정으로 걸면 그 문서가 낡는 순간 카드도 낡는다
+                         (Jayverse 계획처럼 최신 작업이 다른 파일로 시작되는 경우). 폴더 색인이면
+                         새 문서가 저절로 보인다. html/docs/tasks/ 에는 index.html 이 없으므로
+                         rabbit 쪽 색인은 summary.html 이 맡는다. -->
+                    <a href="html/docs/tasks/summary.html" class="card" style="border-left: 4px solid #16a34a;">
                         <span class="card-title">Rabbit &mdash; Current Plan</span>
-                        <span class="card-path" title="docs/tasks/current-plan.md">docs/tasks/current-plan.md</span>
+                        <span class="card-path" title="docs/tasks/">docs/tasks/</span>
                     </a>
                     <a href="logs.html" class="card" style="border-left: 4px solid #d97706;">
                         <span class="card-title">Rabbit &mdash; Logs</span>
@@ -272,9 +277,9 @@
                         <span class="card-title">Verex &mdash; Feature Designs</span>
                         <span class="card-path" title="linked0.github.io/verex/features/">linked0.github.io/verex/features/</span>
                     </a>
-                    <a href="https://linked0.github.io/verex/tasks/current-plan.html" target="_blank" rel="noopener noreferrer" class="card" style="border-left: 4px solid #16a34a;">
+                    <a href="https://linked0.github.io/verex/tasks/" target="_blank" rel="noopener noreferrer" class="card" style="border-left: 4px solid #16a34a;">
                         <span class="card-title">Verex &mdash; Current Plan</span>
-                        <span class="card-path" title="linked0.github.io/verex/tasks/current-plan.html">linked0.github.io/verex/tasks/current-plan.html</span>
+                        <span class="card-path" title="linked0.github.io/verex/tasks/">linked0.github.io/verex/tasks/</span>
                     </a>
                     <a href="https://linked0.github.io/verex/history/" target="_blank" rel="noopener noreferrer" class="card" style="border-left: 4px solid #d97706;">
                         <span class="card-title">Verex &mdash; Logs</span>
