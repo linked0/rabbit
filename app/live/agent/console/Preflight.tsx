@@ -13,7 +13,9 @@ import { pick } from "@/lib/i18n";
 import { fetchJson } from "./fetchJson";
 
 export type PreflightData = {
-  agent: { address: string; keyIsPersistent: boolean; usdc: number | null; allowanceUsdc: number | null; ctfApproved: boolean | null };
+  // 배포 사이트(로컬 전용 콘솔을 prod 에서 연 경우) 서버가 이 플래그로 답한다.
+  localOnly?: boolean;
+  agent: { address: string | null; keyIsPersistent: boolean; usdc: number | null; allowanceUsdc: number | null; ctfApproved: boolean | null };
   verex:
     | { reachable: true; chainId: number; exchange: string | null; usdc: string | null; ctf: string | null; tradingEnabled: boolean }
     | { reachable: false; error: string };
@@ -106,6 +108,20 @@ export default function Preflight({ owner, refreshKey }: { owner: string | null;
 
   if (err) return <div className="panel err">preflight: {err}</div>;
   if (!data) return <div className="panel sub">preflight…</div>;
+  // 로컬 전용: 배포 사이트에서는 에이전트 키·anvil·verex 가 없어 아무 패널도 의미가
+  // 없다. 날 500 대신 왜 그런지 한 줄로 설명한다 (jay, 2026-09-04).
+  if (data.localOnly)
+    return (
+      <div className="panel">
+        <strong>{t("프리플라이트", "Preflight")}</strong>
+        <p className="sub" style={{ marginTop: 8, fontSize: 13 }}>
+          {t(
+            "이 콘솔은 로컬 전용입니다 — 배포된 사이트에는 에이전트 키도, anvil 도, verex API 도 없어 프리플라이트가 확인할 대상이 없습니다. 로컬에서 실행하세요: anvil + verex API + node scripts/deploy-delegation.mjs. 화면 구성만 보려면 위의 목업 페이지를 쓰세요.",
+            "This console is local-only — the deployed site has no agent key, no anvil, and no verex API, so preflight has nothing to check. Run it locally: anvil + the verex API + node scripts/deploy-delegation.mjs. To just see the layout, use the mock page above.",
+          )}
+        </p>
+      </div>
+    );
 
   const v = data.verex;
   const d = data.delegation;

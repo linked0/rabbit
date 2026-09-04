@@ -60,3 +60,14 @@ export function agentAddress(): `0x${string}` {
 export function agentKeyIsPersistent(): boolean {
   return Boolean(process.env.AGENT_PRIVATE_KEY);
 }
+
+/// throw 하지 않는 주소 조회. 배포 사이트(로컬 전용 콘솔을 prod 에서 연 경우)처럼
+/// 키가 없을 때 `agentAddress()` 는 500 을 던지지만, 프리플라이트는 그 상황 자체를
+/// **패널에 보여줘야** 하므로 null 로 받아 우아하게 처리한다 (jay, 2026-09-04).
+export function agentAddressOrNull(): `0x${string}` | null {
+  try {
+    return load().address;
+  } catch {
+    return null;
+  }
+}
