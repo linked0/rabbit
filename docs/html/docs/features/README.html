@@ -121,9 +121,9 @@ their rows below are now the live status. The PoCs hub they all plug into is tra
 </tr>
 <tr>
 <td><em>Agentic AA — autonomy loop</em></td>
-<td><code>/live/agent</code> (mock only)</td>
-<td><a href="#b1">Backlog → B1</a> · design in the <a href="../tasks/archive/2026-08-21-current-plan-agentic-aa.html">archived plan</a></td>
-<td>⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes <code>lib/agent-scenarios.ts</code>&#39;s <code>scheduled-operator</code> actually run. <strong>Route exists but is a mock</strong> — <code>app/live/agent/AgentJournalMock.tsx</code>, a 7-tick script walked by a button; no store, no scheduler, no chain. Blocked on <strong>D2</strong> (session-key custody)</td>
+<td><code>/live/agent</code> (public overview + mock) · <code>/live/agent/console</code> (the real thing, owner-only)</td>
+<td><a href="#b1">Backlog → B1</a> · plan: <a href="../tasks/current-plan.html">current-plan.md</a></td>
+<td>🟡 <strong>Built through R-F, 2026-09-02</strong> — J2: on-chain amount+expiry mandate (MetaMask ERC-7715 on a Sepolia-fork chain), news store, LLM estimate, tick, journal, and a <strong>server scheduler</strong>; the first scheduled, wallet-granted, on-chain-drawn trade landed 2026-09-02. <code>/live/agent</code> itself stays the scripted mock on purpose. Remaining: R-G/R-H + the unattended-day soak. D2 answered</td>
 </tr>
 <tr>
 <td><em>Agentic AA — Unity visualization</em></td>
@@ -217,9 +217,13 @@ this is the status surface, and it is what the next plan will draw from.</p>
 </blockquote>
 <h3>B1 — Agentic AA: the autonomy loop (<code>/live/agent</code>) <a id="b1"></a></h3>
 <blockquote>
-<p><strong>Partly built, 2026-08-26.</strong> The loop exists as J2 — mandate, news store, LLM estimate, tick and
-journal — driveable by hand at <code>/live/agent/console</code>. What B1 still owes is the <strong>scheduler</strong>.
-As-built description: <a href="autonomous-trading-agent.html">autonomous-trading-agent.md</a>. Plan:
+<p><strong>Built through the scheduler, 2026-09-02</strong> (first pass 2026-08-26). The loop exists as J2 —
+mandate, news store, LLM estimate, tick, journal, <strong>and a server-side scheduler</strong> — at
+<code>/live/agent/console</code>, on an anvil <strong>fork of Sepolia</strong> so the mandate is granted by MetaMask&#39;s
+real ERC-7715 popup and drawn through the canonical DelegationManager. What B1 still owes:
+<strong>M5/R-H</strong> (the expiry run), R-G (resolution watch + self-redeem, tracked in the plan), and the
+full unattended-day soak. As-built description:
+<a href="autonomous-trading-agent.html">autonomous-trading-agent.md</a>. Plan:
 <a href="../tasks/current-plan.html">docs/tasks/current-plan.md</a>.</p>
 </blockquote>
 <p>The claim it would demonstrate: <strong>the safety of an unattended agent is arithmetic, not trust</strong> —
@@ -239,36 +243,36 @@ against the code on <code>main</code>, not the commit log.</p>
 <tbody><tr>
 <td><strong>M1</strong></td>
 <td>Agent identity + mandate</td>
-<td>⬜ not started</td>
-<td>no server-held session account, no grant/revoke flow; <strong>blocked by D2</strong></td>
-<td>1d</td>
+<td>✅ done 2026-08-26</td>
+<td><code>lib/agent-wallet.ts</code> + <code>app/api/agent/mandate</code> — cap and expiry enforced <strong>on-chain</strong>; D2 answered (server-held key, address-only to the browser)</td>
+<td>—</td>
 </tr>
 <tr>
 <td><strong>M2</strong></td>
 <td>The tick, callable by hand</td>
-<td>⬜ not started</td>
-<td>no <code>POST /api/agent/tick</code> — <code>app/api/</code> has no <code>agent</code> route at all</td>
-<td>1d</td>
+<td>✅ done 2026-08-26</td>
+<td><code>POST /api/agent/tick</code>; body extracted to <code>lib/agent-tick.ts</code> 2026-09-02 so route and scheduler share one function</td>
+<td>—</td>
 </tr>
 <tr>
 <td><strong>M3</strong></td>
 <td>Journal + persistence</td>
-<td>🟡 mock only</td>
-<td><code>/live/agent</code> renders <code>app/live/agent/AgentJournalMock.tsx</code>, a hand-written 7-tick script walked by a button — no store, no read API, no real ticks</td>
-<td>1d</td>
+<td>✅ done 2026-08-26</td>
+<td><code>AgentTick</code> + <code>NewsItem</code> in Postgres, journal panel resolving cited evidence; the <code>/live/agent</code> mock is retained as the public overview, not the record</td>
+<td>—</td>
 </tr>
 <tr>
 <td><strong>M4</strong></td>
 <td>Actually unattended</td>
-<td>⬜ not started</td>
-<td>no scheduler wired. <strong>This is the milestone that earns the word &quot;agentic&quot;</strong> — M1–M3 without it is still a button</td>
-<td>0.5d</td>
+<td>✅ built 2026-09-02</td>
+<td><code>lib/agent-scheduler.ts</code> + <code>/api/agent/scheduler</code> + console panel; ticks nobody triggered are in the journal. <strong>The full unattended-day soak is still owed</strong></td>
+<td>—</td>
 </tr>
 <tr>
 <td><strong>M5</strong></td>
 <td>Expiry run <em>(evidence, not code)</em></td>
-<td>⬜ not started</td>
-<td>blocked on M4; nothing to capture until the loop runs unattended</td>
+<td>⬜ unblocked</td>
+<td>M4 is built, so this is runnable now — let a mandate lapse with the scheduler live, capture the refusals (= R-H in the plan)</td>
 <td>0.5d</td>
 </tr>
 </tbody></table>
@@ -290,17 +294,17 @@ against the code on <code>main</code>, not the commit log.</p>
 <tr>
 <td><strong>D2</strong></td>
 <td>Where does the session key live?</td>
-<td>⛔ <strong>open, blocks M1</strong> — proposal on the table is server-side generation with only the address exposed to the browser, testnet-grade custody labelled as such. Needs jay&#39;s explicit yes/no</td>
+<td>✅ <strong>answered by J2</strong> — server-side generation, address-only to the browser, testnet-grade custody labelled on the page; and the cap/expiry moved <strong>on-chain</strong> (jay chose option (c)), so custody of the agent key is not custody of the bound</td>
 </tr>
 <tr>
 <td><strong>D3</strong></td>
 <td>Scheduler host — Cloud Scheduler · GitHub Actions cron · hosted cron</td>
-<td>⬜ open (note: <code>.github/workflows/</code> still does not exist in this repo)</td>
+<td>◐ answered for the local PoC (2026-09-02): an in-process Next server timer. Reopens if this ever deploys — an in-process timer dies with its instance (<code>.github/workflows/</code> still does not exist)</td>
 </tr>
 <tr>
 <td><strong>D4</strong></td>
 <td>Journal storage — Postgres/Prisma · JSON file · reconstruct from chain</td>
-<td>⬜ open, leaning Postgres. Chain-only cannot record <strong>skips</strong>, and skips are the point of the demo</td>
+<td>✅ decided and built — Postgres/Prisma (<code>AgentTick</code>). Chain-only could not record <strong>skips</strong>, and skips are the point of the demo</td>
 </tr>
 <tr>
 <td><strong>D5</strong></td>
