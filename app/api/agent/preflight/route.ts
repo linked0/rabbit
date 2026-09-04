@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { erc20Abi, type Address } from "viem";
-import { agentAddress, agentKeyIsPersistent } from "@/lib/agent-wallet";
+import { agentAddress, agentAddressOrNull, agentKeyIsPersistent } from "@/lib/agent-wallet";
 import { delegationEnvOrNull, publicClientFor, ownerSmartAccount } from "@/lib/delegation";
 import { verex } from "@/lib/verex-client";
 
@@ -20,6 +20,20 @@ export async function GET(req: Request) {
   if (!session?.user?.email) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const owner = new URL(req.url).searchParams.get("owner") as Address | null;
+
+  // 로컬 전용 콘솔을 배포 사이트에서 연 경우: 에이전트 키가 없어 agentAddress() 가
+  // throw 한다. 그걸 500(빈 바디)으로 흘리지 않고, "이 페이지는 로컬 전용"이라는
+  // 사실을 패널이 읽을 수 있는 JSON 으로 돌려준다 (jay, 2026-09-04).
+  const agentAddr = agentAddressOrNull();
+  if (!agentAddr) {
+    return NextResponse.json({
+      localOnly: true,
+      agent: { address: null, keyIsPersistent: false, usdc: null, allowanceUsdc: null, ctfApproved: null },
+      verex: { reachable: false, error: "this console is local-only — no agent key on the deployed site" },
+      delegation: { deployed: false, hint: "run the console locally: anvil + verex API + node scripts/deploy-delegation.mjs" },
+      ownerAccount: null,
+    });
+  }
 
   // verex 와 delegation 은 **서로 독립적으로** 실패할 수 있고, 각각이 무엇을
   // 막는지 다르다. 하나의 "준비됨" 불빛으로 합치면 무엇을 고쳐야 하는지 사라진다.
@@ -45,12 +59,12 @@ export async function GET(req: Request) {
         .then((v) => Number(v) / 1e6)
         .catch(() => null);
 
-    agentUsdc = await read(agentAddress());
+    agentUsdc = await read(agentAddr);
 
     if (verexResult.config.exchange) {
       const exchange = verexResult.config.exchange as Address;
       allowanceUsdc = await client
-        .readContract({ address: usdcAddr, abi: erc20Abi, functionName: "allowance", args: [agentAddress(), exchange] })
+        .readContract({ address: usdcAddr, abi: erc20Abi, functionName: "allowance", args: [agentAddr, exchange] })
         .then((v) => Number(v) / 1e6)
         .catch(() => null);
       if (verexResult.config.ctf) {
@@ -61,7 +75,7 @@ export async function GET(req: Request) {
               inputs: [{ name: "account", type: "address" }, { name: "operator", type: "address" }],
               outputs: [{ type: "bool" }] }] as const,
             functionName: "isApprovedForAll",
-            args: [agentAddress(), exchange],
+            args: [agentAddr, exchange],
           })
           .catch(() => null);
       }
@@ -80,7 +94,7 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     agent: {
-      address: agentAddress(),
+      address: agentAddr,
       // 키가 휘발성이면 이미 부여된 mandate 가 재시작과 함께 고아가 된다.
       // 숨기면 데모가 조용히 거짓말을 하므로 화면이 이걸 봐야 한다.
       keyIsPersistent: agentKeyIsPersistent(),
