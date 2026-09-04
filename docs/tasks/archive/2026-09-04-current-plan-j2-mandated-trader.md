@@ -1,5 +1,14 @@
 # Rabbit ⇄ Verex — Cross-repo Plan (rolling)
 
+> **Archived 2026-09-04 (KST) as a snapshot, mid-flight.** `current-plan.md` is being handed over
+> to the **Jayverse implementation plan** ([../09-02-jayverse.md](../09-02-jayverse.md)), so the
+> J2 plan is frozen here exactly as it stood — Phases 1–3 done (scheduler built 2026-09-02, the
+> first scheduled wallet-granted on-chain-drawn trade landed), Phases 4–6 (R-G/R-H, MCP, W1 +
+> staging) still open. If J2 resumes, resume from this file's [§0](#s0) and Build order; the
+> in-repo links below were written for `docs/tasks/`, so from `archive/` some resolve one level
+> off — read them as paths, they are kept verbatim.
+
+
 > **Active track: J2 — the mandated trader.** An agent that runs unattended in **rabbit**, forms
 > its own view of a **verex** prediction market, trades on it, and settles — where the worst it
 > can ever cost is a number the owner set in advance and the chain enforces, not a number the
