@@ -33,7 +33,7 @@ their rows below are now the live status. The PoCs hub they all plug into is tra
 | _UI/UX_ | — | [ui-ux.md](ui-ux.md) — 디자인 접근법: frontend-design 스킬 + UI/UX Pro Max + 6단계 빌드 워크플로 | 🔄 Ongoing — applied per-feature, not a single deliverable |
 | _Cross-cutting_ | — | [common.md](common.md) — navigation/top-menu (Common #1) + CI/CD (Common #2) | 🟡 Partial — Nav restructure done (`app/Nav.tsx`, owner/public gating); **CI/CD not found** — no `.github/workflows/` directory exists in the repo despite `common.md` describing a `deploy.yml` |
 | _Agentic AA — building blocks_ | `/live/aa` | [agentic-aa.md](agentic-aa.md) — session key · paymaster · atomic batch · ERC-8004 KYA · + ERC-8021 attribution suffix | 🟡 Built — ① session key (ERC-7715/7710) + ②③ sponsored/batch tx (thirdweb 4337) live; ④ KYA stayed an explainer card (ERC-8004 testnet registry unverified). All human-triggered — that gap is what the row below addresses |
-| _Agentic AA — autonomy loop_ | `/live/agent` (mock only) | [Backlog → B1](#b1) · design in the [archived plan](../tasks/archive/2026-08-21-current-plan-agentic-aa.md) | ⬜ To do — agent that observes, decides, and pays unattended under an amount+expiry mandate; makes `lib/agent-scenarios.ts`'s `scheduled-operator` actually run. **Route exists but is a mock** — `app/live/agent/AgentJournalMock.tsx`, a 7-tick script walked by a button; no store, no scheduler, no chain. Blocked on **D2** (session-key custody) |
+| _Agentic AA — autonomy loop_ | `/live/agent` (public overview + mock) · `/live/agent/console` (the real thing, owner-only) | [Backlog → B1](#b1) · plan: [current-plan.md](../tasks/current-plan.md) | 🟡 **Built through R-F, 2026-09-02** — J2: on-chain amount+expiry mandate (MetaMask ERC-7715 on a Sepolia-fork chain), news store, LLM estimate, tick, journal, and a **server scheduler**; the first scheduled, wallet-granted, on-chain-drawn trade landed 2026-09-02. `/live/agent` itself stays the scripted mock on purpose. Remaining: R-G/R-H + the unattended-day soak. D2 answered |
 | _Agentic AA — Unity visualization_ | `/live/agent` toggle (planned) | [Backlog → B2](#b2) · [game.md](game.md) | ⬜ Deferred, not dropped — side-quest, explicitly off the critical path; blocked on **U1** (submodule strategy) and sequenced after the loop actually runs |
 | _EIP-7702 inspector_ | `/live/7702` | [erc-8141.md](erc-8141.md) is the *native*-AA sibling study; this page is the app-layer inspector | ✅ Done — read-only `eth_getCode` account inspector (plain EOA / 7702-delegated / contract), no wallet required |
 | _Toss Payments_ | `/live/toss` | [toss-payments.md](toss-payments.md) — KRW settlement example, counterpart to the AP2 Stripe example | ✅ Done — standalone page (not an `/ap2` extension); test-mode client/secret keys. Detail in the [archived plan §7](../tasks/archive/2026-08-06-current-plan-ap2-toss-aa.md#s7) |
@@ -79,9 +79,13 @@ the Hyperliquid testnet integration lands cleanly.
 
 ### B1 — Agentic AA: the autonomy loop (`/live/agent`) <a id="b1"></a>
 
-> **Partly built, 2026-08-26.** The loop exists as J2 — mandate, news store, LLM estimate, tick and
-> journal — driveable by hand at `/live/agent/console`. What B1 still owes is the **scheduler**.
-> As-built description: [autonomous-trading-agent.md](autonomous-trading-agent.md). Plan:
+> **Built through the scheduler, 2026-09-02** (first pass 2026-08-26). The loop exists as J2 —
+> mandate, news store, LLM estimate, tick, journal, **and a server-side scheduler** — at
+> `/live/agent/console`, on an anvil **fork of Sepolia** so the mandate is granted by MetaMask's
+> real ERC-7715 popup and drawn through the canonical DelegationManager. What B1 still owes:
+> **M5/R-H** (the expiry run), R-G (resolution watch + self-redeem, tracked in the plan), and the
+> full unattended-day soak. As-built description:
+> [autonomous-trading-agent.md](autonomous-trading-agent.md). Plan:
 > [docs/tasks/current-plan.md](../tasks/current-plan.md).
 
 The claim it would demonstrate: **the safety of an unattended agent is arithmetic, not trust** —
@@ -91,11 +95,11 @@ against the code on `main`, not the commit log.
 
 | M | Milestone | Status | Evidence / gap | Est. |
 |---|-----------|--------|----------------|------|
-| **M1** | Agent identity + mandate | ⬜ not started | no server-held session account, no grant/revoke flow; **blocked by D2** | 1d |
-| **M2** | The tick, callable by hand | ⬜ not started | no `POST /api/agent/tick` — `app/api/` has no `agent` route at all | 1d |
-| **M3** | Journal + persistence | 🟡 mock only | `/live/agent` renders `app/live/agent/AgentJournalMock.tsx`, a hand-written 7-tick script walked by a button — no store, no read API, no real ticks | 1d |
-| **M4** | Actually unattended | ⬜ not started | no scheduler wired. **This is the milestone that earns the word "agentic"** — M1–M3 without it is still a button | 0.5d |
-| **M5** | Expiry run *(evidence, not code)* | ⬜ not started | blocked on M4; nothing to capture until the loop runs unattended | 0.5d |
+| **M1** | Agent identity + mandate | ✅ done 2026-08-26 | `lib/agent-wallet.ts` + `app/api/agent/mandate` — cap and expiry enforced **on-chain**; D2 answered (server-held key, address-only to the browser) | — |
+| **M2** | The tick, callable by hand | ✅ done 2026-08-26 | `POST /api/agent/tick`; body extracted to `lib/agent-tick.ts` 2026-09-02 so route and scheduler share one function | — |
+| **M3** | Journal + persistence | ✅ done 2026-08-26 | `AgentTick` + `NewsItem` in Postgres, journal panel resolving cited evidence; the `/live/agent` mock is retained as the public overview, not the record | — |
+| **M4** | Actually unattended | ✅ built 2026-09-02 | `lib/agent-scheduler.ts` + `/api/agent/scheduler` + console panel; ticks nobody triggered are in the journal. **The full unattended-day soak is still owed** | — |
+| **M5** | Expiry run *(evidence, not code)* | ⬜ unblocked | M4 is built, so this is runnable now — let a mandate lapse with the scheduler live, capture the refusals (= R-H in the plan) | 0.5d |
 
 **Open decisions — D2 is the blocker.** Full reasoning in the
 [archived plan §4](../tasks/archive/2026-08-21-current-plan-agentic-aa.md#s4).
@@ -103,9 +107,9 @@ against the code on `main`, not the commit log.
 | D | Question | State |
 |---|----------|-------|
 | **D1** | Gas: pre-fund the session account, or move to a 4337 account with a paymaster? | ✅ decided — keep 7715/7710 and pre-fund once; "agent ran out of gas" stays an honest journal failure mode |
-| **D2** | Where does the session key live? | ⛔ **open, blocks M1** — proposal on the table is server-side generation with only the address exposed to the browser, testnet-grade custody labelled as such. Needs jay's explicit yes/no |
-| **D3** | Scheduler host — Cloud Scheduler · GitHub Actions cron · hosted cron | ⬜ open (note: `.github/workflows/` still does not exist in this repo) |
-| **D4** | Journal storage — Postgres/Prisma · JSON file · reconstruct from chain | ⬜ open, leaning Postgres. Chain-only cannot record **skips**, and skips are the point of the demo |
+| **D2** | Where does the session key live? | ✅ **answered by J2** — server-side generation, address-only to the browser, testnet-grade custody labelled on the page; and the cap/expiry moved **on-chain** (jay chose option (c)), so custody of the agent key is not custody of the bound |
+| **D3** | Scheduler host — Cloud Scheduler · GitHub Actions cron · hosted cron | ◐ answered for the local PoC (2026-09-02): an in-process Next server timer. Reopens if this ever deploys — an in-process timer dies with its instance (`.github/workflows/` still does not exist) |
+| **D4** | Journal storage — Postgres/Prisma · JSON file · reconstruct from chain | ✅ decided and built — Postgres/Prisma (`AgentTick`). Chain-only could not record **skips**, and skips are the point of the demo |
 | **D5** | Deterministic rule or LLM decision? | ✅ decided — deterministic. The interesting property is that the bound holds regardless of how the agent decides |
 
 **What the PoC card says, and why it does not contradict this.** The `agent` card in

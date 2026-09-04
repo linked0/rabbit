@@ -60,10 +60,19 @@
 - **Risk**: the agent is the highest-authority component — the Authority Auditor should audit Rabbit first.
 - **Rails**: the Agent Commerce Layer settles x402 payments in USDC over the shared rails; a cross-chain payment rides CCIP — never a custom transfer path.
 - **PoC links**: `x402-facilitator-market`, `agentic-intent-veto`, `walletconnect-session-authority`.
+- **Remaining (J2)** — detail in the [archived J2 plan → Build order](archive/2026-09-04-current-plan-j2-mandated-trader.md#order):
+  - **R-F soak** — the scheduler is built; run it a full unattended day, journal showing ticks nobody triggered.
+  - **R-G resolution watch + self-redeem** — poll for resolution; when a held position wins, redeem it and record realised P&L (poll, never await inline).
+  - **R-H expiry run** — let a mandate lapse with the scheduler live; capture the journal filling with harmless refusals.
+- **Remaining (beyond J2)** — from [../features/README.md](../features/README.md):
+  - **Jay Chat gating + KB-RAG** — auth/BYO-key gating and the knowledge-base-via-MCP+RAG half of ai-chat.md; public chat surface is done, this part never started.
+  - **Market (`/market`) Hyperliquid trading** — in progress; the Portfolio half is done.
+  - **CI/CD** — `.github/workflows/` does not exist at all; no PR is type-checked.
 
 ## 2. Verex as Prediction Market
 - **What**: the flagship — prediction market, upgraded per the diagram with AA (ERC-4337), a UMA-style optimistic oracle for resolution, and an MCP server so agents can trade it.
 - **Repo**: existing `verex` repo; market contracts stay in `verex` beside the app (one repo per service).
+- **Docs**: [current-plan](https://linked0.github.io/verex/tasks/current-plan.html) · [features README + status table](https://linked0.github.io/verex/features/) · [archived J2 snapshot (sep-04-plan)](https://linked0.github.io/verex/tasks/sep-04-plan.html) — GitHub Pages links, since verex is a separate repo (shows what's pushed to `main`).
 - **Skills**: existing verex stack (have), ERC-4337 bundler/paymaster flow, UMA optimistic-oracle assertion/dispute pattern, MCP server authoring (stateless 2026-07-28 spec).
 - **Depends on**: Settlement Rails (collateral), Wallet (user smart accounts), Oracle choice.
 - **Steps**: 1) wrap market entry in a 4337 smart account so users get gasless one-click bets; 2) replace admin resolution with an optimistic oracle + dispute window; 3) expose `verex-mcp` (list markets, quote, bet) consumed by Rabbit's agent; 4) meta-market: "which Jayverse service ships next".
@@ -71,6 +80,17 @@
 - **Risk**: oracle disputes are the product's trust core — design the dispute path before the happy path.
 - **Rails**: collateral is USDC on the home chain; cross-chain market entry (if ever) comes via a CCIP lane, not a Verex-owned bridge.
 - **PoC links**: `decision-market-uncontrollability`, `bundler-paymaster-dependencies`, `mcp-three-sides`.
+- **Remaining (J2)** — detail in the [archived J2 snapshot → queue](https://linked0.github.io/verex/tasks/sep-04-plan.html) (verex `docs/tasks/sep-04-plan.md`):
+  - **W6.5 match-time funds re-check** — funds are verified only at placement; an external maker can rest an order then withdraw. Re-check at match (or let W5 catch it).
+  - **W7 `packages/mcp-server`** — thin MCP wrapper over the existing REST endpoints (list_markets, get_book, place_order, get_position, redeem).
+  - **W1 live UMA + first staging run** — resolve one market end-to-end through the real oracle and close A5; run the W0 smoke probe early (one `initialize` with Sepolia WETH).
+  - Menu, not committed — **W2** `ci.yml` · **W3** market group types · **W4** OTel on the worker · **W5** DB⇄chain consistency checker.
+- **Remaining (beyond J2)** — from the verex [features README status column](https://linked0.github.io/verex/features/) (2026-09-04):
+  - **V1.3 first confirmed CD run** — `deploy-staging.yml` is on `main` but has never performed a deploy.
+  - **Negative-risk markets** — design only; no NegRisk adapter in `packages/contracts`.
+  - **Zod runtime validation** — not started; no `zod` imports under `packages/*/src`.
+  - **S7–S8 AA / cross-chain, S8–S9 Stripe onboarding** — roadmap steps with no code; designs exist.
+  - Exploratory designs only — markets-as-tokens · CCIP market results · Thirdweb decision.
 
 ## 3. DeFi
 - **What**: yield/restaking corner of the diagram (EtherFi node) — start as a read-only dashboard over restaking positions, only later custody anything.
@@ -146,8 +166,10 @@
 - **PoC links**: `embedded-wallet-policy`, `safe-module-root-key`, `third-party-blast-radius`.
 
 ## 10.Dark Horse
+- This will be tackled later after some of the previous services are built
 - **데이터 과학**(온체인 데이터 분석·pandas/numpy·Dune/The Graph)
 - PoCs items
+- Research security vulnerabilities PoC links and any other resources
 
 ### 보안 취약점 연구 (Security-hole research)
 - **What**: the offensive-security muscle of Jayverse — study the exploit classes that actually
