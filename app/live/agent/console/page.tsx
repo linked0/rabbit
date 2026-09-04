@@ -3,6 +3,7 @@ import BackLink from "../../../BackLink";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 import Console from "./Console";
+import { appMode } from "@/lib/mode";
 
 // J2 — 자율 거래 에이전트 조작판 (R-A · R-I · R-E).
 //
@@ -14,6 +15,11 @@ import Console from "./Console";
 export default function AgentConsolePage() {
   const lang = getLang();
   const t = (ko: string, en: string) => pick(lang, ko, en);
+  // 배포 사이트에서는 조작판을 아예 렌더하지 않는다 (jay, 2026-09-04). 패널마다
+  // 로컬 체인(anvil)·verex API 를 부르므로 cloud 에서는 전부 실패한다 — 죽은
+  // 컨트롤을 여섯 개 띄우느니 "로컬에서 실행하라"는 안내 한 장으로 대신한다.
+  // 설명 배너(무엇을 보아야 하나 / 증명하지 않는 것)는 문서로서 그대로 둔다.
+  const isCloud = appMode() === "cloud";
 
   return (
     <>
@@ -37,8 +43,12 @@ export default function AgentConsolePage() {
           </strong>
           <p className="sub" style={{ marginTop: 4, fontSize: 13 }}>
             {t(
-              "anvil, verex API(:4000), 그리고 배포된 위임 프레임워크가 필요합니다. 아래 프리플라이트가 셋 중 무엇이 빠졌는지 말해 줍니다. 화면의 모양을 두고 이야기하려는 것이라면 ",
-              "It needs anvil, the verex API on :4000, and the deployed delegation framework. The preflight below tells you which of the three is missing. If you came to argue about the shape of the screen, the ",
+              isCloud
+                ? "anvil, verex API(:4000), 그리고 배포된 위임 프레임워크가 필요합니다 — 배포된 사이트에는 없으므로 아래 조작판은 숨겨져 있습니다. 화면의 모양을 두고 이야기하려는 것이라면 "
+                : "anvil, verex API(:4000), 그리고 배포된 위임 프레임워크가 필요합니다. 아래 프리플라이트가 셋 중 무엇이 빠졌는지 말해 줍니다. 화면의 모양을 두고 이야기하려는 것이라면 ",
+              isCloud
+                ? "It needs anvil, the verex API on :4000, and the deployed delegation framework — none of which exist on the deployed site, so the console below is hidden. If you came to argue about the shape of the screen, the "
+                : "It needs anvil, the verex API on :4000, and the deployed delegation framework. The preflight below tells you which of the three is missing. If you came to argue about the shape of the screen, the ",
             )}
             <a href="/live/agent">{t("목업 페이지", "mock page")}</a>
             {t("가 그 용도입니다.", " is the one for that.")}
@@ -75,7 +85,21 @@ export default function AgentConsolePage() {
           </ol>
         </div>
 
-        <Console />
+        {isCloud ? (
+          <div className="panel" style={{ marginTop: 16 }}>
+            <strong>{t("조작판은 로컬에서만", "The console runs locally only")}</strong>
+            <p className="sub" style={{ marginTop: 4, fontSize: 13 }}>
+              {t(
+                "이 배포된 사이트에는 anvil(로컬 체인)도 verex API 도 없어 모든 패널이 연결 오류를 냅니다. 그래서 여기서는 조작판을 숨깁니다. 실제로 돌리려면 이 저장소를 로컬에서 실행하세요: anvil + verex API + node scripts/deploy-delegation.mjs. 화면의 흐름만 보려면 위의 ",
+                "This deployed site has no anvil (local chain) and no verex API, so every panel would fail with a connection error — the console is hidden here. To actually run it, start this repo locally: anvil + the verex API + node scripts/deploy-delegation.mjs. To see the flow, the ",
+              )}
+              <a href="/live/agent">{t("목업 페이지", "mock page")}</a>
+              {t("를 쓰세요.", " walks through it.")}
+            </p>
+          </div>
+        ) : (
+          <Console />
+        )}
 
         <div className="panel" style={{ marginTop: 24 }}>
           <strong>{t("이 조작판이 증명하지 않는 것", "What this console does not prove")}</strong>
