@@ -174,7 +174,11 @@
 - **데이터 과학**(온체인 데이터 분석·pandas/numpy·Dune/The Graph)
 - PoCs items
 - Research security vulnerabilities PoC links and any other resources
+- **NEW**
+    - Zero Day Issues
+    - Include various services, libraries, platforms.
 
+## ETC
 ### 보안 취약점 연구 (Security-hole research)
 - **What**: the offensive-security muscle of Jayverse — study the exploit classes that actually
   drain protocols (reentrancy, price-oracle manipulation, access-control gaps, signature/permit
