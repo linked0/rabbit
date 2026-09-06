@@ -226,7 +226,9 @@ const DOT = [
   // DONE 점은 원래 #111827(거의 검정)이었는데 다크 모드에서 배경에 묻혀 안 보였다
   // (jay, 2026-09-03) — 초록으로. IMPORTANT 파랑·NEW 노랑·PLANNED 회색과도 겹치지 않는다.
   { color: '#22c55e', label: 'DONE' },
-  { color: '#0284c7', label: 'IMPORTANT' },
+  // IMPORTANT 는 파랑(#0284c7)이었는데 빨강으로 (jay, 2026-09-06) — "중요"가 색으로도
+  // 급해 보이게. DONE 초록·NEW 노랑·PLANNED 회색과 겹치지 않고 다크 모드에서도 선다.
+  { color: '#ef4444', label: 'IMPORTANT' },
   { color: '#eab308', label: 'NEW' },
   { color: '#64748b', label: 'PLANNED' },
 ];
