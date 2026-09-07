@@ -61,6 +61,66 @@ the <em>owner</em>?&quot;. Rental price and duration are set per persona; paymen
 listing, and <strong>x402-priced chat</strong> (pay-per-message) as the recurring revenue rail. Kept out of
 the MVP so the first build stays &quot;mint one, gate it, chat.&quot;</p>
 <hr>
+<h2>Why an NFT — the demand, and why on-chain</h2>
+<p><em>Added 2026-09-07 (jay&#39;s questions: why buy or rent a persona at all, and why must it be an NFT?).</em></p>
+<p><strong>The root demand — access to a mind you couldn&#39;t otherwise reach.</strong> People don&#39;t want an NFT; they
+want to talk to a specific, curated, knowledgeable mind. That pull is real and proven (Character.AI,
+celebrity chatbots) and it&#39;s three instincts: <strong>mentorship / expertise-on-demand</strong> (ask a VC, a
+founder, a domain expert — exactly openclone&#39;s categories), <strong>parasocial / fandom</strong> (talk to someone
+you admire but can&#39;t meet), and <strong>curiosity / play</strong>. Everything else rests on this: nobody collects
+or invests in a persona no one wants to talk to.</p>
+<p><strong>Three tiers of that one need — the tier <em>is</em> the product:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Primitive</th>
+<th>The need</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pay-per-message</td>
+<td>x402</td>
+<td>cheapest access, zero commitment — &quot;just ask once&quot;</td>
+</tr>
+<tr>
+<td>Rent a day</td>
+<td>ERC-4907</td>
+<td>heavy but temporary use, without owning</td>
+</tr>
+<tr>
+<td>Own (mint)</td>
+<td><code>Persona721</code></td>
+<td>access <strong>+ the right to earn from others&#39; access + control + resale</strong></td>
+</tr>
+</tbody></table>
+<p>So <strong>owning is the <em>investment/control</em> form of access, not the <em>consumption</em> form.</strong> A pure chatter
+should rent or pay-per-message. Someone <em>buys</em> for <strong>income</strong> (collect chat + rental revenue whenever
+anyone else uses the persona — a cash-flowing asset, like a rentable apartment), <strong>cost</strong> (heavy
+personal use is cheaper owned), <strong>control</strong> (extend/curate the persona, set prices), or <strong>resale</strong> (a
+persona that gains a following appreciates). Picture the NFT as a <strong>publicly visible ticket you can
+also resell, sublet, and collect income from</strong> — a season pass that pays you rent, not a one-time stub.</p>
+<p><strong>Why an NFT and not just a chatbot service.</strong> For pure chat you don&#39;t need one — a Web2 chatbot is
+simpler. The NFT earns its place only because the persona is an <strong>asset in an open market</strong>:</p>
+<ul>
+<li><strong>Ownership + resale</strong> — token #7 is genuinely yours and tradable; a database row isn&#39;t.</li>
+<li><strong>Trustless access rights</strong> — the token-gate and the ERC-4907 rental (auto-expiry) are enforced by
+the chain, not a company&#39;s server deciding who&#39;s in.</li>
+<li><strong>Disintermediated revenue</strong> — x402 + ERC-2981 royalties flow directly to owner/creator, no
+platform taking a cut and controlling payouts.</li>
+<li><strong>Composability (the Jayverse reason)</strong> — because the persona is an open on-chain object with an
+open payment rail, <strong>any service or agent can consume it permissionlessly</strong>: Rabbit&#39;s agent rents
+Astra via the <em>same</em> x402 path a human uses, the Unity street can show your persona as a companion,
+the Auditor reads its ownership. That cross-service reuse is impossible with ownership trapped in
+one app&#39;s database.</li>
+<li><strong>Provenance</strong> — on-chain proof of who authored a persona (matters for expert/celebrity clones).</li>
+</ul>
+<p><strong>Honest caveat:</strong> the NFT is overhead if the market layer doesn&#39;t matter; it&#39;s the right primitive
+precisely when creators monetize, buyers invest, and other agents consume — which is the whole point
+of Jayverse. Portability note: the token carries <em>rights</em> across services, while shared
+<strong>jayverse-rails</strong> (addresses) + a shared <strong>openclone runtime</strong> carry <em>behavior</em>, so &quot;chat with #7&quot;
+means the same thing everywhere.</p>
+<hr>
 <h2>2. User scenario</h2>
 <p><strong>Nova (creator).</strong> Nova has built an openclone persona — &quot;Astra, a synthwave music historian&quot; —
 with a few ingested articles as its knowledge. In the web app she clicks <strong>Create persona</strong>,
@@ -68,11 +128,14 @@ picks her local openclone bundle, sets a name, avatar, a one-line pitch, a mint 
 and a per-message chat price (0.02 USDC). The app pins the persona metadata + knowledge manifest
 to IPFS, she signs one transaction, and <code>Persona721</code> mints token #7 to her wallet. Astra now
 appears on the marketplace grid as &quot;by Nova&quot;.</p>
-<p><strong>Kai (buyer).</strong> Kai browses the grid, opens Astra&#39;s detail page, reads the pitch and a few
-free sample lines, and clicks <strong>Mint</strong> — 25 USDC over the shared rails, one signature. He now
-holds token #7. He clicks <strong>Chat</strong>, signs the SIWE prompt (no gas, just a signature), the
-backend confirms he owns #7, and a chat window opens. Kai talks to Astra; each message is
-metered and paid at 0.02 USDC via x402, streamed to Nova as royalty-split revenue.</p>
+<p><strong>Kai (buyer — for the asset, not just the chat).</strong> Kai isn&#39;t buying only to talk once; for that
+he&#39;d pay-per-message or rent (see &quot;Why an NFT&quot; above). He mints because he thinks Astra will get
+<em>used</em>: he pays the 25 USDC mint over the shared rails, one signature, and now holds token #7 as an
+income asset. He can still chat (SIWE prompt → backend confirms he holds #7 → chat opens), but the
+point of owning is what comes next — whenever <strong>anyone else</strong> talks to Astra (Ren&#39;s rental, the
+agent&#39;s consult, other buyers&#39; chats), the rental fees and per-message x402 revenue flow to <strong>Kai
+as the owner</strong>, with a creator-royalty slice to Nova (ERC-2981). If Astra&#39;s following grows, Kai can
+resell #7. Ownership is the <em>investment/control</em> form of access; the two tiers below are consumption.</p>
 <p><strong>Ren (renter).</strong> Ren doesn&#39;t want to own Astra, just to use her for a day. On the detail page
 he clicks <strong>Rent 1 day</strong> (3 USDC). The contract&#39;s <code>setUser(7, ren, now+24h)</code> records him as the
 temporary user. For 24h Ren passes the token-gate exactly like an owner and can chat; after
