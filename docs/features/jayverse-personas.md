@@ -34,6 +34,55 @@ the MVP so the first build stays "mint one, gate it, chat."
 
 ---
 
+## Why an NFT — the demand, and why on-chain
+
+*Added 2026-09-07 (jay's questions: why buy or rent a persona at all, and why must it be an NFT?).*
+
+**The root demand — access to a mind you couldn't otherwise reach.** People don't want an NFT; they
+want to talk to a specific, curated, knowledgeable mind. That pull is real and proven (Character.AI,
+celebrity chatbots) and it's three instincts: **mentorship / expertise-on-demand** (ask a VC, a
+founder, a domain expert — exactly openclone's categories), **parasocial / fandom** (talk to someone
+you admire but can't meet), and **curiosity / play**. Everything else rests on this: nobody collects
+or invests in a persona no one wants to talk to.
+
+**Three tiers of that one need — the tier *is* the product:**
+
+| Tier | Primitive | The need |
+|---|---|---|
+| Pay-per-message | x402 | cheapest access, zero commitment — "just ask once" |
+| Rent a day | ERC-4907 | heavy but temporary use, without owning |
+| Own (mint) | `Persona721` | access **+ the right to earn from others' access + control + resale** |
+
+So **owning is the *investment/control* form of access, not the *consumption* form.** A pure chatter
+should rent or pay-per-message. Someone *buys* for **income** (collect chat + rental revenue whenever
+anyone else uses the persona — a cash-flowing asset, like a rentable apartment), **cost** (heavy
+personal use is cheaper owned), **control** (extend/curate the persona, set prices), or **resale** (a
+persona that gains a following appreciates). Picture the NFT as a **publicly visible ticket you can
+also resell, sublet, and collect income from** — a season pass that pays you rent, not a one-time stub.
+
+**Why an NFT and not just a chatbot service.** For pure chat you don't need one — a Web2 chatbot is
+simpler. The NFT earns its place only because the persona is an **asset in an open market**:
+
+- **Ownership + resale** — token #7 is genuinely yours and tradable; a database row isn't.
+- **Trustless access rights** — the token-gate and the ERC-4907 rental (auto-expiry) are enforced by
+  the chain, not a company's server deciding who's in.
+- **Disintermediated revenue** — x402 + ERC-2981 royalties flow directly to owner/creator, no
+  platform taking a cut and controlling payouts.
+- **Composability (the Jayverse reason)** — because the persona is an open on-chain object with an
+  open payment rail, **any service or agent can consume it permissionlessly**: Rabbit's agent rents
+  Astra via the *same* x402 path a human uses, the Unity street can show your persona as a companion,
+  the Auditor reads its ownership. That cross-service reuse is impossible with ownership trapped in
+  one app's database.
+- **Provenance** — on-chain proof of who authored a persona (matters for expert/celebrity clones).
+
+**Honest caveat:** the NFT is overhead if the market layer doesn't matter; it's the right primitive
+precisely when creators monetize, buyers invest, and other agents consume — which is the whole point
+of Jayverse. Portability note: the token carries *rights* across services, while shared
+**jayverse-rails** (addresses) + a shared **openclone runtime** carry *behavior*, so "chat with #7"
+means the same thing everywhere.
+
+---
+
 ## 2. User scenario
 
 **Nova (creator).** Nova has built an openclone persona — "Astra, a synthwave music historian" —
@@ -43,11 +92,14 @@ and a per-message chat price (0.02 USDC). The app pins the persona metadata + kn
 to IPFS, she signs one transaction, and `Persona721` mints token #7 to her wallet. Astra now
 appears on the marketplace grid as "by Nova".
 
-**Kai (buyer).** Kai browses the grid, opens Astra's detail page, reads the pitch and a few
-free sample lines, and clicks **Mint** — 25 USDC over the shared rails, one signature. He now
-holds token #7. He clicks **Chat**, signs the SIWE prompt (no gas, just a signature), the
-backend confirms he owns #7, and a chat window opens. Kai talks to Astra; each message is
-metered and paid at 0.02 USDC via x402, streamed to Nova as royalty-split revenue.
+**Kai (buyer — for the asset, not just the chat).** Kai isn't buying only to talk once; for that
+he'd pay-per-message or rent (see "Why an NFT" above). He mints because he thinks Astra will get
+*used*: he pays the 25 USDC mint over the shared rails, one signature, and now holds token #7 as an
+income asset. He can still chat (SIWE prompt → backend confirms he holds #7 → chat opens), but the
+point of owning is what comes next — whenever **anyone else** talks to Astra (Ren's rental, the
+agent's consult, other buyers' chats), the rental fees and per-message x402 revenue flow to **Kai
+as the owner**, with a creator-royalty slice to Nova (ERC-2981). If Astra's following grows, Kai can
+resell #7. Ownership is the *investment/control* form of access; the two tiers below are consumption.
 
 **Ren (renter).** Ren doesn't want to own Astra, just to use her for a day. On the detail page
 he clicks **Rent 1 day** (3 USDC). The contract's `setUser(7, ren, now+24h)` records him as the
