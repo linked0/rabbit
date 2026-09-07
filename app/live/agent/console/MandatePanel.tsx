@@ -71,6 +71,10 @@ export default function MandatePanel({
   const [minutes, setMinutes] = useState("60");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  /// 로드 실패는 클릭 에러와 **다른 칸**에 산다 (jay, 2026-09-07). 예전에는 reload 실패가
+  /// err 에 들어갔다가 grant() 첫 줄의 setErr(null) 에 지워졌고, 그 자리를 뒤이은
+  /// "agent address is not loaded yet" 가 차지해 진짜 원인(GET 500 등)이 화면에서 사라졌다.
+  const [loadErr, setLoadErr] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [probe, setProbe] = useState<string | null>(null);
   // 만료가 **눈앞에서** 닫히는 걸 보여주려면 초 단위로 다시 그려야 한다.
@@ -83,13 +87,17 @@ export default function MandatePanel({
         agentAddress: string;
         usdc: string | null;
         mandate: Mandate | null;
+        mandateError?: string | null;
       }>("/api/agent/mandate");
-      if (r.error) return setErr(r.error);
+      if (r.error) return setLoadErr(r.error);
       setAgent(r.agentAddress);
       setUsdc(r.usdc);
       setMandate(r.mandate);
+      // DB 만 죽은 경우 라우트는 주소·USDC 는 주고 mandateError 로 사정을 말한다 —
+      // 화면도 같은 만큼만 죽어야 한다: 부여는 되게 두고, 왜 진행률이 안 보이는지만 밝힌다.
+      setLoadErr(r.mandateError ?? null);
     } catch (e) {
-      setErr(String(e instanceof Error ? e.message : e));
+      setLoadErr(String(e instanceof Error ? e.message : e));
     }
   }, []);
 
@@ -118,8 +126,30 @@ export default function MandatePanel({
   /// 알려주는** DelegationManager 주소다. 우리 코드에 그 주소가 없다는 점이
   /// 이 경로의 요점이다.
   async function grantVia7715(chainId: number, expiresAt: string) {
-    if (!agent) throw new Error("agent address is not loaded yet");
-    if (!usdc) throw new Error("no USDC address from verex — is the market API up?");
+    // 클릭이 첫 로드보다 빠르거나(레이스) 첫 로드가 실패했을 수 있다 (jay, 2026-09-07:
+    // 참여자 표에는 에이전트 주소가 있는데 여기만 "not loaded yet"). 상태에 없으면 지금
+    // 한 번 직접 읽는다 — 그래도 없으면 막연한 문장 대신 GET 이 말한 이유를 그대로 던진다.
+    let agentAddr = agent;
+    let usdcAddr = usdc;
+    if (!agentAddr || !usdcAddr) {
+      const r = await fetchJson<{ error?: string; agentAddress?: string; usdc?: string | null }>(
+        "/api/agent/mandate",
+      );
+      if (r.error) {
+        throw new Error(
+          t(`에이전트 상태를 읽지 못했습니다 — ${r.error}`, `couldn't load agent state — ${r.error}`),
+        );
+      }
+      agentAddr = r.agentAddress ?? null;
+      usdcAddr = r.usdc ?? null;
+      if (agentAddr) setAgent(agentAddr);
+      if (usdcAddr) setUsdc(usdcAddr);
+    }
+    if (!agentAddr)
+      throw new Error(
+        "agent address missing from /api/agent/mandate — is AGENT_PRIVATE_KEY set on the server?",
+      );
+    if (!usdcAddr) throw new Error("no USDC address from verex — is the market API up?");
 
     const client = createWalletClient({ transport: custom(window.ethereum as never) }).extend(
       erc7715ProviderActions(),
@@ -137,11 +167,11 @@ export default function MandatePanel({
       {
         chainId,
         expiry: Math.floor(new Date(expiresAt).getTime() / 1000),
-        to: agent as `0x${string}`,
+        to: agentAddr as `0x${string}`,
         permission: {
           type: "erc20-token-allowance",
           data: {
-            tokenAddress: usdc as `0x${string}`,
+            tokenAddress: usdcAddr as `0x${string}`,
             allowanceAmount: BigInt(Math.round(Number(cap) * 1e6)),
             startTime: now,
             justification: `rabbit agent mandate — up to ${cap} USDC until ${expiresAt}`,
@@ -358,6 +388,13 @@ export default function MandatePanel({
       )}
 
       {note && <p className="sub" style={{ marginTop: 10, fontSize: 13 }}>{note}</p>}
+      {/* 로드 실패는 클릭과 무관하게 계속 보인다 — 클릭 에러가 원인을 덮어쓰던 것이
+          2026-09-07 의 버그였다. 두 줄이 같이 뜨면 위가 원인, 아래가 증상이다. */}
+      {loadErr && (
+        <p className="err" style={{ marginTop: 10 }}>
+          {t("에이전트 상태 로드 실패", "agent state failed to load")} — {loadErr}
+        </p>
+      )}
       {err && <p className="err" style={{ marginTop: 10 }}>{err}</p>}
 
       <details style={{ marginTop: 14 }}>
