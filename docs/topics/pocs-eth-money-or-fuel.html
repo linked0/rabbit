@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When nobody needs to hold ETH, is ETH money or fuel? — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 제목과 배지를 한 줄에 — .rail-title 이 block 이라 그냥 두면 배지가 아래로 떨어진다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-left:8px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-done { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
+
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  /* 목록 행 안에서는 링크들과 한 줄에 서야 하므로 더 작고 납작하게 (jay, 2026-08-28). */
+  .copy-inline { font-size:0.72rem; padding:2px 9px; margin-left:6px; vertical-align:baseline; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-blockchain" title="Blockchain &mdash; done (39) / all (111)">Blockchain<b><span class="count-done">39</span><span class="count-all">/111</span></b></a><a href="../pocs.html#sec-economics" title="Economics/DataScience &mdash; done (0) / all (33)">Economics/DataScience<b><span class="count-done">0</span><span class="count-all">/33</span></b></a><a href="../pocs.html#sec-future" title="Robot/Security &mdash; done (0) / all (66)">Robot/Security<b><span class="count-done">0</span><span class="count-all">/66</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; done (3) / all (100)">Algorithms<b><span class="count-done">3</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; done (3) / all (52)">Math<b><span class="count-done">3</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-economics" data-group>
+        <p class="nav-group-label">Economics/DataScience (33)</p>
+        <ul>
+        <li><a class="nav-link" href="pocs-indicators-add-a-decision.html" data-key="indicators-add-a-decision"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">112</span>An indicator adds no information — it adds a decision</span></a></li>
+        <li><a class="nav-link" href="pocs-two-channels-of-a-war.html" data-key="two-channels-of-a-war"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">113</span>War headlines, falling gold — a geopolitical shock arrives on two wires</span></a></li>
+        <li><a class="nav-link" href="pocs-eighty-percent-is-sports.html" data-key="eighty-percent-is-sports"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">114</span>Kalshi passes Polymarket — and 80% of the win is sports</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-regression-ols.html" data-key="ds-regression-ols"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">115</span>OLS regression — the line that assumes it caused something</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-time-series-arima.html" data-key="ds-time-series-arima"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">116</span>Time-series forecasting — ARIMA and why most series are not stationary</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-bayesian-inference.html" data-key="ds-bayesian-inference"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">117</span>Bayesian inference — a prior is an assumption you have to write down</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-monte-carlo.html" data-key="ds-monte-carlo"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">118</span>Monte Carlo — simulating the distribution you cannot solve for</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-ab-testing.html" data-key="ds-ab-testing"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">119</span>A/B testing — the p-value that a peeked experiment inflates</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-causal-inference.html" data-key="ds-causal-inference"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">120</span>Causal inference — DiD, IV, and RDD when you cannot randomize</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-clustering.html" data-key="ds-clustering"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">121</span>Clustering — k-means finds groups even when there are none</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-dimensionality-pca.html" data-key="ds-dimensionality-pca"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">122</span>PCA — compressing dimensions and the meaning that leaks out</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-gradient-boosting.html" data-key="ds-gradient-boosting"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">123</span>Gradient boosting — XGBoost wins the leaderboard and hides the reason</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-cross-validation.html" data-key="ds-cross-validation"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">124</span>Cross-validation — the honest way to fail before you ship</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-anomaly-detection.html" data-key="ds-anomaly-detection"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">125</span>Anomaly detection — the alert that fires on everything or nothing</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-survival-analysis.html" data-key="ds-survival-analysis"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">126</span>Survival analysis — churn is a time-to-event, not a yes/no</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-cohort-analysis.html" data-key="ds-cohort-analysis"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">127</span>Cohort analysis — the retention curve a single average hides</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-var-cointegration.html" data-key="ds-var-cointegration"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">128</span>Cointegration — two prices that wander together are a trade</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-extreme-value.html" data-key="ds-extreme-value"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">129</span>Extreme value theory — the tail is a different distribution</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-dune-analytics.html" data-key="ds-dune-analytics"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">130</span>Dune — on-chain analytics is SQL over a decoded ledger</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-the-graph-subgraph.html" data-key="ds-the-graph-subgraph"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">131</span>The Graph — a subgraph is an index you have to design</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-onchain-labels.html" data-key="ds-onchain-labels"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">132</span>Address labeling — analytics is only as good as its entity map</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-flipside-dbt.html" data-key="ds-flipside-dbt"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">133</span>Flipside and dbt — modeling on-chain data like a warehouse</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-feature-engineering.html" data-key="ds-feature-engineering"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">134</span>Feature engineering — the model is mostly the features</span></a></li>
+        <li><a class="nav-link" href="pocs-revision-is-the-fourth-column.html" data-key="revision-is-the-fourth-column"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">135</span>The fourth column: the −23,000 that a dozen notes cited never existed</span></a></li>
+        <li><a class="nav-link" href="pocs-chain-becomes-a-token.html" data-key="chain-becomes-a-token"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">136</span>When a chain can't defend itself, it becomes a token on one that can</span></a></li>
+        <li><a class="nav-link active" href="pocs-eth-money-or-fuel.html" data-key="eth-money-or-fuel"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">137</span>When nobody needs to hold ETH, is ETH money or fuel?</span></a></li>
+        <li><a class="nav-link" href="pocs-a-good-bet-that-lost.html" data-key="a-good-bet-that-lost"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">138</span>A good bet that lost looks exactly like a bad bet that lost</span></a></li>
+        <li><a class="nav-link" href="pocs-where-yield-comes-from.html" data-key="where-yield-comes-from"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">139</span>Every yield is somebody's cost — the three places it can come from</span></a></li>
+        <li><a class="nav-link" href="pocs-gross-over-net.html" data-key="gross-over-net"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">140</span>Gross over net — the recycling multiple</span></a></li>
+        <li><a class="nav-link" href="pocs-risk-free-rate-is-the-floor.html" data-key="risk-free-rate-is-the-floor"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">141</span>The risk-free rate is the floor under every yield</span></a></li>
+        <li><a class="nav-link" href="pocs-m2-and-the-dollar.html" data-key="m2-and-the-dollar"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">142</span>M2, the dollar, and why crypto is a liquidity trade</span></a></li>
+        <li><a class="nav-link" href="pocs-lp-is-a-short-volatility-position.html" data-key="lp-is-a-short-volatility-position"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">143</span>Providing liquidity is selling volatility, and the loss is not impermanent</span></a></li>
+        <li><a class="nav-link" href="pocs-fees-over-security-budget.html" data-key="fees-over-security-budget"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">144</span>Does a chain pay for its own security?</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; When nobody needs to hold ETH, is ETH money or fuel?</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#137</span><span>PoC</span></p>
+      <h1>When nobody needs to hold ETH, is ETH money or fuel?</h1>
+      <p class="lead">David Hoffman&#39;s bull case for EIP-8141 (Frames): every token becomes a way to buy ETH-denominated blockspace, so the hardest onboarding step — needing ETH to spend USDC — goes away, which he reads as &quot;ETH is Money&quot; and &quot;strictly bullish&quot;: more commerce, higher dominance, more ETH bought and burnt. The claim fuses two different ETH demands — ETH consumed as fuel (burn) and ETH held as money — and the very abstraction that removes the need to <em>hold</em> ETH is what could weaken the second even as it raises the first.</p>
+      <p class="meta">Not yet scoped — a decomposition, not a build. Split ETH demand into two accounts and model what 8141 does to each. (1) <strong>Flow demand</strong>: ETH bought-and-burned per unit of commerce; frictionless gas-in-any-token means more transactions clear, so this goes up. (2) <strong>Stock demand</strong>: ETH held as a reserve by users and treasuries; if you can transact holding only USDC and converting at the edge, this is exactly the demand 8141 removes. The bull case counts only (1). The exercise is to estimate both and then ask the follow-through question the thread skips: <em>somebody</em> still has to hold ETH to be the counterparty for every &quot;pay gas in USDC&quot; conversion — the paymaster / relayer / converter that fronts ETH and takes the token. So does holding demand vanish, or migrate from many sticky retail holders to a few thin professional inventories, and does that net to more ETH held or less? Deliverable: incremental burn from added commerce vs lost monetary premium from removed holding demand, both as ranges. Facts: David Hoffman (Bankless) on X, quoting Vitalik on EIP-8141 progress, seen 2026-09-08 — an ETH-aligned commentator&#39;s bull framing (&quot;strictly bullish&quot;); weight it as advocacy and confirm 8141&#39;s gas mechanics against the EIP.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# When nobody needs to hold ETH, is ETH money or fuel?\n\nDavid Hoffman's bull case for EIP-8141 (Frames): every token becomes a way to buy ETH-denominated blockspace, so the hardest onboarding step — needing ETH to spend USDC — goes away, which he reads as \"ETH is Money\" and \"strictly bullish\": more commerce, higher dominance, more ETH bought and burnt. The claim fuses two different ETH demands — ETH consumed as fuel (burn) and ETH held as money — and the very abstraction that removes the need to *hold* ETH is what could weaken the second even as it raises the first.\n\nNot yet scoped — a decomposition, not a build. Split ETH demand into two accounts and model what 8141 does to each. (1) **Flow demand**: ETH bought-and-burned per unit of commerce; frictionless gas-in-any-token means more transactions clear, so this goes up. (2) **Stock demand**: ETH held as a reserve by users and treasuries; if you can transact holding only USDC and converting at the edge, this is exactly the demand 8141 removes. The bull case counts only (1). The exercise is to estimate both and then ask the follow-through question the thread skips: *somebody* still has to hold ETH to be the counterparty for every \"pay gas in USDC\" conversion — the paymaster / relayer / converter that fronts ETH and takes the token. So does holding demand vanish, or migrate from many sticky retail holders to a few thin professional inventories, and does that net to more ETH held or less? Deliverable: incremental burn from added commerce vs lost monetary premium from removed holding demand, both as ranges. Facts: David Hoffman (Bankless) on X, quoting Vitalik on EIP-8141 progress, seen 2026-09-08 — an ETH-aligned commentator's bull framing (\"strictly bullish\"); weight it as advocacy and confirm 8141's gas mechanics against the EIP.\n\n## Why\n\n**The bull case does a real sleight-of-hand, and naming it is the card.** \"ETH is Money\" is a claim about ETH being *held* — a store of value with a monetary premium. The mechanism Hoffman cites — every token transaction still buys ETH-denominated blockspace, so more commerce means more ETH bought and burnt — is a claim about ETH being *consumed*. Those are two different demands, and 8141 pushes them in opposite directions: removing the requirement to hold ETH to transact *raises* consumption demand (frictionless commerce, more burn) while directly *attacking* holding demand (nobody has to keep any ETH). The argument is not wrong; it is under-specified, because it counts the burn it creates and ignores the held-float it removes.\n\n**Follow the ETH and the holding demand does not vanish — it migrates, and thins.** Even when a user pays gas in USDC, some counterparty fronts the ETH and takes the token: the paymaster, relayer, or converter of `bundler-paymaster-dependencies`. So the question is not \"does ETH demand disappear\" but \"who holds it now, and how much.\" Broad, sticky retail balances become a few professional inventories that hold the minimum working float and turn it over — which is `float-not-the-paperwork` and `arb-bots-are-the-peg` exactly: the price is set by the marginal holder, and the marginal holder is now a bot carrying as little ETH as it can. Burn up, held-float down, price set by thinner inventory. Whether that nets bullish is an empirical question, not a slogan.\n\n**So the honest verdict is one comparison, and it connects to the catalogue's value cards.** Incremental burn from added commerce versus lost monetary premium from removed holding demand — both estimable, neither settled by \"strictly bullish.\" This is the same \"where does the value actually come from\" discipline as `where-yield-comes-from` and `fees-over-security-budget`, turned on ETH itself, and it is the mirror of `chain-becomes-a-token`: that card is a chain deciding its token is worth more secured elsewhere; this one asks whether ETH's *moneyness* survives being abstracted into a UX detail nobody has to think about. \"Strictly bullish\" is the tell — a real answer prices both demands, and an argument that only counts the one that goes up has not been finished.\n\n## How it works\n\n### Two ETH demands the slogan fuses\n\n| | Flow demand (fuel) | Stock demand (money) |\n| --- | --- | --- |\n| What it is | ETH bought & burned to buy blockspace | ETH held as a reserve / store of value |\n| \"ETH is Money\" is about | — | **this one** |\n| Hoffman's mechanism supports | **this one** | — |\n| What 8141 does to it | **up** — frictionless commerce, more burn | **down** — nobody must hold ETH to transact |\n\nThe bull case counts the left column and calls it a claim about the right one.\n\n### Where holding demand goes (it migrates, it doesn't vanish)\n\n| Before 8141 | After 8141 |\n| --- | --- |\n| many users each hold some ETH for gas | users hold USDC; convert at the edge |\n| broad, sticky float | a few paymaster/converter inventories |\n| — | those hold **minimum working float** and turn it over |\n| price set by dispersed holders | **price set by the marginal bot's thin inventory** |\n\n### The verdict is one comparison\n\n| Estimate | Direction |\n| --- | --- |\n| Incremental burn from added commerce | + |\n| Lost monetary premium from removed holding | − |\n| **Net** | **the actual question — not \"strictly bullish\"** |\n\n### Related cards\n\n`erc-8141` and `aa-standard-execution-split` (the proposal and its execution-model fight), `bundler-paymaster-dependencies` (who fronts the ETH when you pay in USDC), `float-not-the-paperwork` and `arb-bots-are-the-peg` (the marginal holder sets the price on a thin float), `where-yield-comes-from` and `fees-over-security-budget` (where value actually comes from), `chain-becomes-a-token` (the mirror question about a token's worth).\n"</script>
+      <h2>Why</h2>
+      <p><strong>The bull case does a real sleight-of-hand, and naming it is the card.</strong> &quot;ETH is Money&quot; is a claim about ETH being <em>held</em> — a store of value with a monetary premium. The mechanism Hoffman cites — every token transaction still buys ETH-denominated blockspace, so more commerce means more ETH bought and burnt — is a claim about ETH being <em>consumed</em>. Those are two different demands, and 8141 pushes them in opposite directions: removing the requirement to hold ETH to transact <em>raises</em> consumption demand (frictionless commerce, more burn) while directly <em>attacking</em> holding demand (nobody has to keep any ETH). The argument is not wrong; it is under-specified, because it counts the burn it creates and ignores the held-float it removes.</p>
+<p><strong>Follow the ETH and the holding demand does not vanish — it migrates, and thins.</strong> Even when a user pays gas in USDC, some counterparty fronts the ETH and takes the token: the paymaster, relayer, or converter of <code>bundler-paymaster-dependencies</code>. So the question is not &quot;does ETH demand disappear&quot; but &quot;who holds it now, and how much.&quot; Broad, sticky retail balances become a few professional inventories that hold the minimum working float and turn it over — which is <code>float-not-the-paperwork</code> and <code>arb-bots-are-the-peg</code> exactly: the price is set by the marginal holder, and the marginal holder is now a bot carrying as little ETH as it can. Burn up, held-float down, price set by thinner inventory. Whether that nets bullish is an empirical question, not a slogan.</p>
+<p><strong>So the honest verdict is one comparison, and it connects to the catalogue&#39;s value cards.</strong> Incremental burn from added commerce versus lost monetary premium from removed holding demand — both estimable, neither settled by &quot;strictly bullish.&quot; This is the same &quot;where does the value actually come from&quot; discipline as <code>where-yield-comes-from</code> and <code>fees-over-security-budget</code>, turned on ETH itself, and it is the mirror of <code>chain-becomes-a-token</code>: that card is a chain deciding its token is worth more secured elsewhere; this one asks whether ETH&#39;s <em>moneyness</em> survives being abstracted into a UX detail nobody has to think about. &quot;Strictly bullish&quot; is the tell — a real answer prices both demands, and an argument that only counts the one that goes up has not been finished.</p>
+      <h2>How it works</h2>
+      <h3>Two ETH demands the slogan fuses</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Flow demand (fuel)</th>
+<th>Stock demand (money)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>What it is</td>
+<td>ETH bought &amp; burned to buy blockspace</td>
+<td>ETH held as a reserve / store of value</td>
+</tr>
+<tr>
+<td>&quot;ETH is Money&quot; is about</td>
+<td>—</td>
+<td><strong>this one</strong></td>
+</tr>
+<tr>
+<td>Hoffman&#39;s mechanism supports</td>
+<td><strong>this one</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>What 8141 does to it</td>
+<td><strong>up</strong> — frictionless commerce, more burn</td>
+<td><strong>down</strong> — nobody must hold ETH to transact</td>
+</tr>
+</tbody></table></div>
+<p>The bull case counts the left column and calls it a claim about the right one.</p>
+<h3>Where holding demand goes (it migrates, it doesn&#39;t vanish)</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Before 8141</th>
+<th>After 8141</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>many users each hold some ETH for gas</td>
+<td>users hold USDC; convert at the edge</td>
+</tr>
+<tr>
+<td>broad, sticky float</td>
+<td>a few paymaster/converter inventories</td>
+</tr>
+<tr>
+<td>—</td>
+<td>those hold <strong>minimum working float</strong> and turn it over</td>
+</tr>
+<tr>
+<td>price set by dispersed holders</td>
+<td><strong>price set by the marginal bot&#39;s thin inventory</strong></td>
+</tr>
+</tbody></table></div>
+<h3>The verdict is one comparison</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Estimate</th>
+<th>Direction</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Incremental burn from added commerce</td>
+<td>+</td>
+</tr>
+<tr>
+<td>Lost monetary premium from removed holding</td>
+<td>−</td>
+</tr>
+<tr>
+<td><strong>Net</strong></td>
+<td><strong>the actual question — not &quot;strictly bullish&quot;</strong></td>
+</tr>
+</tbody></table></div>
+<h3>Related cards</h3>
+<p><code>erc-8141</code> and <code>aa-standard-execution-split</code> (the proposal and its execution-model fight), <code>bundler-paymaster-dependencies</code> (who fronts the ETH when you pay in USDC), <code>float-not-the-paperwork</code> and <code>arb-bots-are-the-peg</code> (the marginal holder sets the price on a thin float), <code>where-yield-comes-from</code> and <code>fees-over-security-budget</code> (where value actually comes from), <code>chain-becomes-a-token</code> (the mirror question about a token&#39;s worth).</p>
+      
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# 아무도 ETH 를 쥘 필요가 없을 때, ETH 는 돈인가 연료인가\n\nDavid Hoffman 의 EIP-8141(Frames) 강세론: 모든 토큰이 ETH 로 값 매겨진 블록스페이스를 사는 수단이 되어, 가장 어려운 온보딩 단계 — USDC 를 쓰려면 ETH 가 필요하다 — 가 사라지고, 그는 이를 \"ETH is Money\"와 \"명백한 강세\"로 읽습니다: 더 많은 상거래, 더 높은 지배력, 더 많은 ETH 매수·소각. 이 주장은 서로 다른 두 ETH 수요 — **연료로 소비되는 ETH(소각)**와 **돈으로 보유되는 ETH** — 를 뭉치고, **ETH 를 *쥘* 필요를 없애는 바로 그 추상화가 후자를 약화**시킬 수 있습니다 — 전자를 올리는 그 순간에.\n\n아직 범위 미정 — 빌드가 아니라 **분해**입니다. ETH 수요를 두 계정으로 나누고 8141 이 각각에 하는 일을 모델링합니다. (1) **플로우 수요**: 상거래 단위당 매수·소각되는 ETH; 마찰 없는 gas-in-any-token 은 더 많은 트랜잭션을 체결시키므로 올라갑니다. (2) **스톡 수요**: 사용자·트레저리가 준비금으로 보유하는 ETH; USDC 만 쥐고 가장자리에서 변환해 거래할 수 있으면, 이것이 바로 8141 이 없애는 수요입니다. 강세론은 (1) 만 셉니다. 연습은 둘 다 추정하고, 스레드가 건너뛴 후속 질문을 던지는 것입니다 — 모든 \"USDC 로 가스 지불\" 변환의 상대방이 되려면 *누군가*는 여전히 ETH 를 쥐어야 합니다(ETH 를 선대하고 토큰을 받는 페이마스터/릴레이어/변환자). 그러니 보유 수요가 사라지는가, 아니면 다수의 끈적한 리테일 보유자에게서 소수의 얇은 전문 재고로 이전되는가, 그리고 그 순액은 보유 ETH 가 더 많은가 적은가? 산출물: 늘어난 상거래의 추가 소각 대 없어진 보유 수요의 사라진 화폐 프리미엄, 둘 다 범위로. 사실: David Hoffman(Bankless), Vitalik 의 EIP-8141 진척 인용, 2026-09-08 확인 — ETH 편향 논평자의 강세 프레이밍(\"strictly bullish\"); 옹호로 가중하고 8141 가스 메커니즘은 EIP 로 확인할 것.\n\n## 왜\n\n**강세론은 진짜 손바꿈을 하고, 그것을 이름 붙이는 게 이 카드입니다.** \"ETH is Money\"는 ETH 가 *보유*된다는 주장입니다 — 화폐 프리미엄을 가진 가치 저장 수단. Hoffman 이 드는 메커니즘 — 모든 토큰 거래가 여전히 ETH 로 값 매겨진 블록스페이스를 사므로 상거래가 늘면 ETH 매수·소각이 는다 — 은 ETH 가 *소비*된다는 주장입니다. 둘은 다른 수요이고, 8141 은 이를 반대 방향으로 밉니다 — 거래에 ETH 보유를 요구하지 않으면 소비 수요는 *올라가고*(마찰 없는 상거래, 더 많은 소각) 보유 수요는 직접 *공격*받습니다(아무도 ETH 를 둘 필요가 없음). 주장은 틀리지 않았고, **불충분하게 명시**됐습니다 — 자신이 만드는 소각은 세고, 자신이 없애는 보유 유통량은 무시하니까요.\n\n**ETH 를 따라가면 보유 수요는 사라지지 않고 이전되며, 얇아집니다.** 사용자가 USDC 로 가스를 내도, 어떤 상대방이 ETH 를 선대하고 토큰을 받습니다 — `bundler-paymaster-dependencies` 의 페이마스터·릴레이어·변환자. 그러니 질문은 \"ETH 수요가 사라지나\"가 아니라 \"이제 누가, 얼마나 쥐나\"입니다. 넓고 끈적한 리테일 잔고가 최소 운전 유통량만 쥐고 회전시키는 소수의 전문 재고로 바뀝니다 — 정확히 `float-not-the-paperwork`·`arb-bots-are-the-peg` 입니다: 가격은 한계 보유자가 정하고, 한계 보유자는 이제 가능한 한 적은 ETH 를 든 봇입니다. 소각↑, 보유 유통량↓, 더 얇은 재고가 정하는 가격. 그게 순강세인지는 슬로건이 아니라 실증 질문입니다.\n\n**그래서 정직한 결론은 한 비교이고, 목록의 가치 카드들과 이어집니다.** 늘어난 상거래의 추가 소각 대 없어진 보유 수요의 사라진 화폐 프리미엄 — 둘 다 추정 가능하고, \"strictly bullish\"로 정리되지 않습니다. `where-yield-comes-from`·`fees-over-security-budget` 의 \"가치는 실제로 어디서 오나\" 규율을 ETH 자신에게 돌린 것이고, `chain-becomes-a-token` 의 거울입니다 — 그 카드는 자기 토큰이 다른 곳에서 지켜질 때 더 가치 있다고 정하는 체인이고, 이 카드는 ETH 의 *화폐성*이 아무도 신경 안 써도 되는 UX 세부로 추상화되고도 살아남는지 묻습니다. \"strictly bullish\"가 단서입니다 — 진짜 답은 두 수요를 다 값 매기고, 올라가는 하나만 세는 논증은 끝나지 않았습니다.\n\n## 동작 방식\n\n### 슬로건이 뭉치는 두 ETH 수요\n\n| | 플로우 수요(연료) | 스톡 수요(돈) |\n| --- | --- | --- |\n| 무엇인가 | 블록스페이스를 사려 매수·소각되는 ETH | 준비금·가치 저장으로 보유되는 ETH |\n| \"ETH is Money\"가 말하는 것 | — | **이쪽** |\n| Hoffman 의 메커니즘이 지지하는 것 | **이쪽** | — |\n| 8141 이 그것에 하는 일 | **↑** — 마찰 없는 상거래, 더 많은 소각 | **↓** — 거래에 ETH 보유 불필요 |\n\n강세론은 왼쪽 열을 세고 그것을 오른쪽 열에 대한 주장이라 부릅니다.\n\n### 보유 수요는 어디로 가나 (사라지지 않고 이전)\n\n| 8141 이전 | 8141 이후 |\n| --- | --- |\n| 다수 사용자가 각자 가스용 ETH 를 조금씩 보유 | 사용자는 USDC 보유; 가장자리에서 변환 |\n| 넓고 끈적한 유통량 | 소수의 페이마스터/변환자 재고 |\n| — | 그들은 **최소 운전 유통량**만 쥐고 회전 |\n| 분산된 보유자가 정하는 가격 | **한계 봇의 얇은 재고가 정하는 가격** |\n\n### 결론은 한 비교\n\n| 추정 | 방향 |\n| --- | --- |\n| 늘어난 상거래의 추가 소각 | + |\n| 없어진 보유의 사라진 화폐 프리미엄 | − |\n| **순액** | **진짜 질문 — \"strictly bullish\"가 아니라** |\n\n### 관련 카드\n\n`erc-8141`·`aa-standard-execution-split`(제안과 그 실행 모델 다툼), `bundler-paymaster-dependencies`(USDC 로 낼 때 누가 ETH 를 선대하나), `float-not-the-paperwork`·`arb-bots-are-the-peg`(얇은 유통량 위 한계 보유자가 가격을 정함), `where-yield-comes-from`·`fees-over-security-budget`(가치는 실제로 어디서 오나), `chain-becomes-a-token`(토큰 가치에 대한 거울 질문).\n"</script>
+      <h1>아무도 ETH 를 쥘 필요가 없을 때, ETH 는 돈인가 연료인가</h1>
+      <p class="lead">David Hoffman 의 EIP-8141(Frames) 강세론: 모든 토큰이 ETH 로 값 매겨진 블록스페이스를 사는 수단이 되어, 가장 어려운 온보딩 단계 — USDC 를 쓰려면 ETH 가 필요하다 — 가 사라지고, 그는 이를 &quot;ETH is Money&quot;와 &quot;명백한 강세&quot;로 읽습니다: 더 많은 상거래, 더 높은 지배력, 더 많은 ETH 매수·소각. 이 주장은 서로 다른 두 ETH 수요 — <strong>연료로 소비되는 ETH(소각)</strong>와 <strong>돈으로 보유되는 ETH</strong> — 를 뭉치고, <strong>ETH 를 <em>쥘</em> 필요를 없애는 바로 그 추상화가 후자를 약화</strong>시킬 수 있습니다 — 전자를 올리는 그 순간에.</p>
+      <p class="meta">아직 범위 미정 — 빌드가 아니라 <strong>분해</strong>입니다. ETH 수요를 두 계정으로 나누고 8141 이 각각에 하는 일을 모델링합니다. (1) <strong>플로우 수요</strong>: 상거래 단위당 매수·소각되는 ETH; 마찰 없는 gas-in-any-token 은 더 많은 트랜잭션을 체결시키므로 올라갑니다. (2) <strong>스톡 수요</strong>: 사용자·트레저리가 준비금으로 보유하는 ETH; USDC 만 쥐고 가장자리에서 변환해 거래할 수 있으면, 이것이 바로 8141 이 없애는 수요입니다. 강세론은 (1) 만 셉니다. 연습은 둘 다 추정하고, 스레드가 건너뛴 후속 질문을 던지는 것입니다 — 모든 &quot;USDC 로 가스 지불&quot; 변환의 상대방이 되려면 <em>누군가</em>는 여전히 ETH 를 쥐어야 합니다(ETH 를 선대하고 토큰을 받는 페이마스터/릴레이어/변환자). 그러니 보유 수요가 사라지는가, 아니면 다수의 끈적한 리테일 보유자에게서 소수의 얇은 전문 재고로 이전되는가, 그리고 그 순액은 보유 ETH 가 더 많은가 적은가? 산출물: 늘어난 상거래의 추가 소각 대 없어진 보유 수요의 사라진 화폐 프리미엄, 둘 다 범위로. 사실: David Hoffman(Bankless), Vitalik 의 EIP-8141 진척 인용, 2026-09-08 확인 — ETH 편향 논평자의 강세 프레이밍(&quot;strictly bullish&quot;); 옹호로 가중하고 8141 가스 메커니즘은 EIP 로 확인할 것.</p>
+      <h2>왜</h2>
+      <p><strong>강세론은 진짜 손바꿈을 하고, 그것을 이름 붙이는 게 이 카드입니다.</strong> &quot;ETH is Money&quot;는 ETH 가 <em>보유</em>된다는 주장입니다 — 화폐 프리미엄을 가진 가치 저장 수단. Hoffman 이 드는 메커니즘 — 모든 토큰 거래가 여전히 ETH 로 값 매겨진 블록스페이스를 사므로 상거래가 늘면 ETH 매수·소각이 는다 — 은 ETH 가 <em>소비</em>된다는 주장입니다. 둘은 다른 수요이고, 8141 은 이를 반대 방향으로 밉니다 — 거래에 ETH 보유를 요구하지 않으면 소비 수요는 <em>올라가고</em>(마찰 없는 상거래, 더 많은 소각) 보유 수요는 직접 <em>공격</em>받습니다(아무도 ETH 를 둘 필요가 없음). 주장은 틀리지 않았고, <strong>불충분하게 명시</strong>됐습니다 — 자신이 만드는 소각은 세고, 자신이 없애는 보유 유통량은 무시하니까요.</p>
+<p><strong>ETH 를 따라가면 보유 수요는 사라지지 않고 이전되며, 얇아집니다.</strong> 사용자가 USDC 로 가스를 내도, 어떤 상대방이 ETH 를 선대하고 토큰을 받습니다 — <code>bundler-paymaster-dependencies</code> 의 페이마스터·릴레이어·변환자. 그러니 질문은 &quot;ETH 수요가 사라지나&quot;가 아니라 &quot;이제 누가, 얼마나 쥐나&quot;입니다. 넓고 끈적한 리테일 잔고가 최소 운전 유통량만 쥐고 회전시키는 소수의 전문 재고로 바뀝니다 — 정확히 <code>float-not-the-paperwork</code>·<code>arb-bots-are-the-peg</code> 입니다: 가격은 한계 보유자가 정하고, 한계 보유자는 이제 가능한 한 적은 ETH 를 든 봇입니다. 소각↑, 보유 유통량↓, 더 얇은 재고가 정하는 가격. 그게 순강세인지는 슬로건이 아니라 실증 질문입니다.</p>
+<p><strong>그래서 정직한 결론은 한 비교이고, 목록의 가치 카드들과 이어집니다.</strong> 늘어난 상거래의 추가 소각 대 없어진 보유 수요의 사라진 화폐 프리미엄 — 둘 다 추정 가능하고, &quot;strictly bullish&quot;로 정리되지 않습니다. <code>where-yield-comes-from</code>·<code>fees-over-security-budget</code> 의 &quot;가치는 실제로 어디서 오나&quot; 규율을 ETH 자신에게 돌린 것이고, <code>chain-becomes-a-token</code> 의 거울입니다 — 그 카드는 자기 토큰이 다른 곳에서 지켜질 때 더 가치 있다고 정하는 체인이고, 이 카드는 ETH 의 <em>화폐성</em>이 아무도 신경 안 써도 되는 UX 세부로 추상화되고도 살아남는지 묻습니다. &quot;strictly bullish&quot;가 단서입니다 — 진짜 답은 두 수요를 다 값 매기고, 올라가는 하나만 세는 논증은 끝나지 않았습니다.</p>
+      <h2>동작 방식</h2>
+      <h3>슬로건이 뭉치는 두 ETH 수요</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>플로우 수요(연료)</th>
+<th>스톡 수요(돈)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>무엇인가</td>
+<td>블록스페이스를 사려 매수·소각되는 ETH</td>
+<td>준비금·가치 저장으로 보유되는 ETH</td>
+</tr>
+<tr>
+<td>&quot;ETH is Money&quot;가 말하는 것</td>
+<td>—</td>
+<td><strong>이쪽</strong></td>
+</tr>
+<tr>
+<td>Hoffman 의 메커니즘이 지지하는 것</td>
+<td><strong>이쪽</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>8141 이 그것에 하는 일</td>
+<td><strong>↑</strong> — 마찰 없는 상거래, 더 많은 소각</td>
+<td><strong>↓</strong> — 거래에 ETH 보유 불필요</td>
+</tr>
+</tbody></table></div>
+<p>강세론은 왼쪽 열을 세고 그것을 오른쪽 열에 대한 주장이라 부릅니다.</p>
+<h3>보유 수요는 어디로 가나 (사라지지 않고 이전)</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>8141 이전</th>
+<th>8141 이후</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>다수 사용자가 각자 가스용 ETH 를 조금씩 보유</td>
+<td>사용자는 USDC 보유; 가장자리에서 변환</td>
+</tr>
+<tr>
+<td>넓고 끈적한 유통량</td>
+<td>소수의 페이마스터/변환자 재고</td>
+</tr>
+<tr>
+<td>—</td>
+<td>그들은 <strong>최소 운전 유통량</strong>만 쥐고 회전</td>
+</tr>
+<tr>
+<td>분산된 보유자가 정하는 가격</td>
+<td><strong>한계 봇의 얇은 재고가 정하는 가격</strong></td>
+</tr>
+</tbody></table></div>
+<h3>결론은 한 비교</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>추정</th>
+<th>방향</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>늘어난 상거래의 추가 소각</td>
+<td>+</td>
+</tr>
+<tr>
+<td>없어진 보유의 사라진 화폐 프리미엄</td>
+<td>−</td>
+</tr>
+<tr>
+<td><strong>순액</strong></td>
+<td><strong>진짜 질문 — &quot;strictly bullish&quot;가 아니라</strong></td>
+</tr>
+</tbody></table></div>
+<h3>관련 카드</h3>
+<p><code>erc-8141</code>·<code>aa-standard-execution-split</code>(제안과 그 실행 모델 다툼), <code>bundler-paymaster-dependencies</code>(USDC 로 낼 때 누가 ETH 를 선대하나), <code>float-not-the-paperwork</code>·<code>arb-bots-are-the-peg</code>(얇은 유통량 위 한계 보유자가 가격을 정함), <code>where-yield-comes-from</code>·<code>fees-over-security-budget</code>(가치는 실제로 어디서 오나), <code>chain-becomes-a-token</code>(토큰 가치에 대한 거울 질문).</p>
+      
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-chain-becomes-a-token.html">&larr; 136. When a chain can't defend itself, it becomes a token on one that can</a><a href="pocs-a-good-bet-that-lost.html">138. A good bet that lost looks exactly like a bad bet that lost &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = !q || a.textContent.toLowerCase().includes(q);
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  });
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const observed = new Map();
+  let revealTimer;
+  // 밴드에 걸친 항목 중 "문서 순서로 첫 번째"를 고르면 언제나 한 칸 앞이 켜진다
+  // (jay, 2026-08-27: "the left pane should sync with right pane in the item's position").
+  // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
+  // 고르면 방금 도착한 항목이 켜진다.
+  function syncActive() {
+    // 상세 페이지에는 관측할 본문 항목이 없다 — 그때 돌면 서버가 표시한 active 를
+    // 첫 스크롤에 지워 버리므로, 관측 대상이 없으면 아무것도 하지 않는다 (2026-09-03).
+    if (observed.size === 0) return;
+    // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
+    // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
+    // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
+    const line = window.innerHeight * 0.1;
+    let first = null;
+    let started = -Infinity;
+    let upcoming = Infinity;
+    let firstUpcoming = null;
+    for (const k of seen) {
+      const el = observed.get(k);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top <= line) {
+        if (top > started) {
+          started = top;
+          first = k;
+        }
+      } else if (top < upcoming) {
+        upcoming = top;
+        firstUpcoming = k;
+      }
+    }
+    if (first === null) first = firstUpcoming;
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    // 사용자가 실제로 스크롤하기 전에는 끌어오지 않는다 (jay, 2026-09-02) — 로드 직후
+    // 관측자의 첫 콜백이 1번 항목으로 레일을 되감아, 초기 스크롤(첫 important 가운데
+    // 정렬)을 덮어쓰는 것을 막는다. 해시 딥링크는 브라우저 앵커 스크롤이 scroll 이벤트를
+    // 내므로 여전히 첫 프레임부터 동기화된다.
+    clearTimeout(revealTimer);
+    if (userScrolled) revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }
+
+  // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
+  // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
+  let ticking = false;
+  // 해시 딥링크는 스크롤 이벤트가 리스너 등록 전에 끝날 수 있으므로 처음부터 켠다 —
+  // 특정 항목을 열었다는 것 자체가 "그 항목을 보라"는 의도다.
+  let userScrolled = !!location.hash;
+  addEventListener(
+    'scroll',
+    () => {
+      userScrolled = true;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncActive();
+      });
+    },
+    { passive: true }
+  );
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    syncActive();
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) {
+      observed.set(key, el);
+      io.observe(el);
+    }
+  }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
+
+(function () {
+  var nav = document.querySelector('.rail-nav');
+  if (!nav) return;
+  var el = nav.querySelector('.nav-link.active');
+  if (!el && !location.hash) {
+    var dot = nav.querySelector('.nav-dot[title="IMPORTANT"]');
+    el = dot && dot.closest('a');
+  }
+  if (!el) return;
+  var r = el.getBoundingClientRect();
+  var c = nav.getBoundingClientRect();
+  nav.scrollTop += (r.top - c.top) - (c.height / 2 - r.height / 2);
+})();
+</script>
+</body>
+</html>
