@@ -187,3 +187,105 @@ export async function placeSignedLimitOrder(args: {
     }),
   });
 }
+
+// ── Jayverse AA (docs/features/jayverse-aa.md §6) — /markets 의 견적 + 배치 콜 인코딩 ──
+//
+// 문서의 lib/verex.ts 항목이 여기 있는 이유: "이미 동등한 클라이언트가 있으면 확장"
+// — 이 파일이 콘솔이 쓰는 verex REST 클라이언트라서 목록/호가는 위의 `verex` 를
+// 그대로 쓰고, 아래는 /markets 전용의 견적 계산과 calldata 인코딩만 더한다.
+// (lib/verex.ts 는 verexUrl() 링크 헬퍼라 이름만 겹치는 다른 파일이다.)
+
+import { encodeFunctionData } from "viem";
+import { CTFExchangeAbi, MockUSDCAbi } from "@verex/sdk";
+import type { EncodedCall } from "./aa-bet";
+
+export type VerexQuote = {
+  slug: string;
+  outcome: string;
+  tokenId: string;
+  /// USDC per share, 시장가 스냅샷 (book mid 우선, 없으면 outcome price)
+  price: number;
+  /// 사용자가 태우는 USDC (human units)
+  usdc: number;
+  /// usdc / price — 받게 될 outcome tokens (human units)
+  shares: number;
+};
+
+/// 베팅 견적 — 마켓의 outcome 가격(호가 mid 우선)으로 USDC → shares 를 계산한다.
+/// v1 은 스냅샷 견적이다: 체결 시점의 슬리피지 경계는 open question 3 과 함께 온다.
+export async function quoteBet(slug: string, outcome: string, usdc: number): Promise<VerexQuote> {
+  const market = await verex.market(slug);
+  const o = market.outcomes.find((x) => x.label.toLowerCase() === outcome.toLowerCase());
+  if (!o) throw new Error(`market ${slug} has no outcome "${outcome}"`);
+  let price = o.price;
+  try {
+    const book = await verex.book(slug, o.label);
+    if (book.mid != null && book.mid > 0) price = book.mid;
+  } catch {
+    // 호가가 없으면 outcome price 로 견적 — 견적 실패가 베팅 자체를 막을 이유는 없다.
+  }
+  if (!(price > 0 && price < 1)) throw new Error(`no usable price for ${slug}/${outcome}`);
+  return { slug, outcome: o.label, tokenId: o.tokenId, price, usdc, shares: usdc / price };
+}
+
+/// executeBatch 의 두 콜을 인코딩한다: [approve(USDC→exchange, 정확히 cost), placeOrder].
+///
+/// approve 는 **정확한 금액**이다 (open question 4 의 v1 답: 매번 배치에 exact approve —
+/// 원자적이고 blast radius 가 없다; 무한 allowance 는 나중 문제).
+///
+/// placeOrder 레그의 실상 (open question 3, 2026-09-07 verex 소스로 확인): CTFExchange 에는
+/// placeOrder 가 없다. verex 는 EIP-712 서명 주문을 POST /orders 로 받아 오퍼레이터가
+/// matchOrders 로 체결한다 — 트레이더 쪽에서 부를 수 있는 온체인 주문 함수가 없다.
+/// 그래서 v1 은 문서 §4 의 "CLOB fill" 형태인 fillOrder(order, fillAmount) 를 스마트
+/// 계정의 BUY 주문 구조체(서명 자리는 컨트랙트 서명용 placeholder)로 인코딩한다.
+/// 실제 거래소에서는 이 레그가 revert 하고 — 배치가 원자적이라 approve 도 함께
+/// 되돌아간다(§3 error 상태의 "nothing was spent"). 체결까지 가려면 verex 가
+/// EIP-1271(POLY_GNOSIS_SAFE) 주문 접수 또는 체결 가능한 서명 주문 노출로 답해야 한다.
+export function encodeBetCalls(args: {
+  cfg: VerexConfig;
+  quote: VerexQuote;
+  /// 스마트 계정 주소 — maker/signer 로 들어간다
+  account: `0x${string}`;
+}): { approve: EncodedCall; placeOrder: EncodedCall } {
+  const { cfg, quote, account } = args;
+  if (!cfg.exchange || !cfg.usdc) throw new Error("verex config has no exchange/usdc address");
+
+  const usdcE6 = parseUnits(quote.usdc.toFixed(6), 6);
+  const priceE6 = parseUnits(quote.price.toFixed(6), 6);
+  // BUY 올림 — 위 signLimitOrder 의 반올림 규약과 동일해야 한다.
+  const sharesE6 = (usdcE6 * 1_000_000n) / priceE6;
+
+  const approve: EncodedCall = {
+    to: cfg.usdc,
+    data: encodeFunctionData({
+      abi: MockUSDCAbi,
+      functionName: "approve",
+      args: [cfg.exchange, usdcE6],
+    }),
+  };
+
+  const order = {
+    salt: randomSalt(),
+    maker: account,
+    signer: account,
+    taker: "0x0000000000000000000000000000000000000000" as const,
+    tokenId: BigInt(quote.tokenId),
+    makerAmount: usdcE6,
+    takerAmount: sharesE6,
+    expiration: 0n,
+    nonce: 0n,
+    feeRateBps: 0n,
+    side: Side.BUY,
+    signatureType: SignatureType.POLY_GNOSIS_SAFE, // 컨트랙트 계정 서명 (EIP-1271)
+    signature: "0x" as const,
+  };
+  const placeOrder: EncodedCall = {
+    to: cfg.exchange,
+    data: encodeFunctionData({
+      abi: CTFExchangeAbi,
+      functionName: "fillOrder",
+      args: [order, usdcE6],
+    }),
+  };
+  return { approve, placeOrder };
+}

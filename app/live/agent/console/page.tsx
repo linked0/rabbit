@@ -15,11 +15,13 @@ import { appMode } from "@/lib/mode";
 export default function AgentConsolePage() {
   const lang = getLang();
   const t = (ko: string, en: string) => pick(lang, ko, en);
-  // 배포 사이트에서는 조작판을 아예 렌더하지 않는다 (jay, 2026-09-04). 패널마다
-  // 로컬 체인(anvil)·verex API 를 부르므로 cloud 에서는 전부 실패한다 — 죽은
-  // 컨트롤을 여섯 개 띄우느니 "로컬에서 실행하라"는 안내 한 장으로 대신한다.
+  // cloud 에서는 백엔드가 설정된 경우에만 조작판을 렌더한다 (jay, 2026-09-04).
+  // VEREX_API_URL 이 있으면 라이브 콘솔이다: verex prod API + 진짜 Sepolia RPC +
+  // Secret Manager 의 에이전트 키로 동작한다. 없으면 예전처럼 안내 한 장으로 대신한다.
   // 설명 배너(무엇을 보아야 하나 / 증명하지 않는 것)는 문서로서 그대로 둔다.
   const isCloud = appMode() === "cloud";
+  const liveBackend = Boolean(process.env.VEREX_API_URL);
+  const showConsole = !isCloud || liveBackend;
 
   return (
     <>
@@ -43,12 +45,16 @@ export default function AgentConsolePage() {
           </strong>
           <p className="sub" style={{ marginTop: 4, fontSize: 13 }}>
             {t(
-              isCloud
-                ? "anvil, verex API(:4000), 그리고 배포된 위임 프레임워크가 필요합니다 — 배포된 사이트에는 없으므로 아래 조작판은 숨겨져 있습니다. 화면의 모양을 두고 이야기하려는 것이라면 "
-                : "anvil, verex API(:4000), 그리고 배포된 위임 프레임워크가 필요합니다. 아래 프리플라이트가 셋 중 무엇이 빠졌는지 말해 줍니다. 화면의 모양을 두고 이야기하려는 것이라면 ",
-              isCloud
-                ? "It needs anvil, the verex API on :4000, and the deployed delegation framework — none of which exist on the deployed site, so the console below is hidden. If you came to argue about the shape of the screen, the "
-                : "It needs anvil, the verex API on :4000, and the deployed delegation framework. The preflight below tells you which of the three is missing. If you came to argue about the shape of the screen, the ",
+              !isCloud
+                ? "anvil, verex API(:4000), 그리고 배포된 위임 프레임워크가 필요합니다. 아래 프리플라이트가 셋 중 무엇이 빠졌는지 말해 줍니다. 화면의 모양을 두고 이야기하려는 것이라면 "
+                : liveBackend
+                  ? "이 배포본은 verex prod API 와 진짜 Sepolia 를 바라봅니다 — 위임은 MetaMask 의 정본 프레임워크, 거래는 verex prod 오더북입니다. 한 가지 한계: 스케줄러는 요청이 없으면 CPU 가 잠드는 Cloud Run 특성상 탭을 닫으면 멈출 수 있습니다. 화면의 모양을 두고 이야기하려는 것이라면 "
+                  : "anvil, verex API(:4000), 그리고 배포된 위임 프레임워크가 필요합니다 — 이 배포본에는 설정돼 있지 않아 아래 조작판은 숨겨져 있습니다. 화면의 모양을 두고 이야기하려는 것이라면 ",
+              !isCloud
+                ? "It needs anvil, the verex API on :4000, and the deployed delegation framework. The preflight below tells you which of the three is missing. If you came to argue about the shape of the screen, the "
+                : liveBackend
+                  ? "This deployment talks to the verex prod API and real Sepolia — the mandate uses MetaMask's canonical framework, trades hit the verex prod book. One limit: Cloud Run throttles CPU between requests, so the scheduler can stall once every tab is closed. If you came to argue about the shape of the screen, the "
+                  : "It needs anvil, the verex API on :4000, and the deployed delegation framework — not configured on this deployment, so the console below is hidden. If you came to argue about the shape of the screen, the ",
             )}
             <a href="/live/agent">{t("목업 페이지", "mock page")}</a>
             {t("가 그 용도입니다.", " is the one for that.")}
@@ -85,7 +91,7 @@ export default function AgentConsolePage() {
           </ol>
         </div>
 
-        {isCloud ? (
+        {!showConsole ? (
           <div className="panel" style={{ marginTop: 16 }}>
             <strong>{t("조작판은 로컬에서만", "The console runs locally only")}</strong>
             <p className="sub" style={{ marginTop: 4, fontSize: 13 }}>

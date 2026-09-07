@@ -26,10 +26,20 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.email) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const mandate = await prisma.mandate.findFirst({
-    where: { agent: agentAddress(), revokedAt: null },
-    orderBy: { createdAt: "desc" },
-  });
+  // DB 가 죽어도 라우트 전체를 500 으로 만들지 않는다 (jay, 2026-09-07). 예전에는 이
+  // 호출이 던지면 응답이 통째로 사라져서, 패널은 에이전트 주소까지 잃고 "agent address
+  // is not loaded yet" 만 남았다 — 참여자 표(다른 라우트)는 멀쩡한데. 주소·USDC 는
+  // env/verex 소관이므로 그대로 주고, 무엇이 빠졌는지는 mandateError 로 말한다.
+  let mandate: Awaited<ReturnType<typeof prisma.mandate.findFirst>> = null;
+  let mandateError: string | null = null;
+  try {
+    mandate = await prisma.mandate.findFirst({
+      where: { agent: agentAddress(), revokedAt: null },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (e) {
+    mandateError = `mandate DB unavailable — ${e instanceof Error ? e.message.split("\n")[0] : String(e)}`;
+  }
 
   const env = await delegationEnvOrNull();
   // ERC-7715 권한은 **어느 토큰**에 대한 상한인지 지갑에 알려줘야 한다. 그 주소의
@@ -44,6 +54,7 @@ export async function GET() {
     agentAddress: agentAddress(),
     agentKeyIsPersistent: agentKeyIsPersistent(),
     delegationDeployed: Boolean(env),
+    mandateError,
     mandate: mandate
       ? {
           id: mandate.id,

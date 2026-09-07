@@ -1,0 +1,194 @@
+# Jayverse — Persona market (NFT)
+
+**Purpose:** an NFT marketplace whose first asset is real utility — mint, rent, and chat with
+**openclone** (`~/.claude/skills/openclone`) AI personas; the NFT is the access token to a token-gated chat, and
+per-message x402 payments turn "owning a persona" into ongoing creator revenue.
+
+*Source: [09-02-jayverse.md](../tasks/09-02-jayverse.md) "## 4. Persona market as NFT market"
+(jay's comment: "Show me the user scenario and what web app shows and the flow…"). Repo:
+`jayverse-personas` (app + contracts together). Hub: [README-Jayverse.md](README-Jayverse.md).
+DESIGN DRAFT for review — nothing here is built yet.*
+
+---
+
+## 1. What we build (basic feature)
+
+Ship in two thin slices, smallest first.
+
+**Slice A — mint + token-gated chat (the MVP).**
+One `Persona721` ERC-721 collection. A creator mints a persona NFT that points (via IPFS
+metadata) to an openclone persona bundle. Whoever holds `tokenId` — and *only* the holder —
+can open a chat window and talk to that persona. Access is proven with **Sign-In-with-Ethereum
+(SIWE / EIP-4361)**: sign a nonce, backend checks `ownerOf(tokenId) == signer`, issues a short
+session. No holder, no chat. This is the whole first milestone — one contract, one gate, one
+chat window.
+
+**Slice B — day rentals (ERC-4907).**
+Add the ERC-4907 `user`/`expires` layer so the owner can rent chat access for a day without
+transferring ownership. The token-gate check becomes "are you the current *user* (rental) OR
+the *owner*?". Rental price and duration are set per persona; payment settles in USDC.
+
+**Later (noted, not first):** creator onboarding straight from openclone's `new`, public market
+listing, and **x402-priced chat** (pay-per-message) as the recurring revenue rail. Kept out of
+the MVP so the first build stays "mint one, gate it, chat."
+
+---
+
+## 2. User scenario
+
+**Nova (creator).** Nova has built an openclone persona — "Astra, a synthwave music historian" —
+with a few ingested articles as its knowledge. In the web app she clicks **Create persona**,
+picks her local openclone bundle, sets a name, avatar, a one-line pitch, a mint price (25 USDC),
+and a per-message chat price (0.02 USDC). The app pins the persona metadata + knowledge manifest
+to IPFS, she signs one transaction, and `Persona721` mints token #7 to her wallet. Astra now
+appears on the marketplace grid as "by Nova".
+
+**Kai (buyer).** Kai browses the grid, opens Astra's detail page, reads the pitch and a few
+free sample lines, and clicks **Mint** — 25 USDC over the shared rails, one signature. He now
+holds token #7. He clicks **Chat**, signs the SIWE prompt (no gas, just a signature), the
+backend confirms he owns #7, and a chat window opens. Kai talks to Astra; each message is
+metered and paid at 0.02 USDC via x402, streamed to Nova as royalty-split revenue.
+
+**Ren (renter).** Ren doesn't want to own Astra, just to use her for a day. On the detail page
+he clicks **Rent 1 day** (3 USDC). The contract's `setUser(7, ren, now+24h)` records him as the
+temporary user. For 24h Ren passes the token-gate exactly like an owner and can chat; after
+`expires`, the gate closes automatically and access reverts to Nova.
+
+**Agent (optional buyer).** Rabbit's Agentic-AI, holding a scoped session key, can itself rent a
+persona to consult it — e.g. rent "Astra" to answer a music question — paying via the same x402
+path a human uses. The persona market is thus also a service the agent consumes.
+
+---
+
+## 3. What the web app shows
+
+Next.js app in `jayverse-personas`, imported/linked by the Rabbit portal.
+
+**(a) Marketplace grid — `/personas`**
+Card grid of personas: avatar, name, creator handle, category tag, mint price, "rentable"
+badge, and a live status chip (Owned / Rentable / Rented-until). Filters by category
+(vc / tech / founder / expert / …, reusing openclone's categories) and sort by newest / price.
+
+**(b) Persona detail — `/personas/[tokenId]`**
+- Header: avatar, name, creator, current holder (or "rented by … until …").
+- Pitch + knowledge summary (what the persona knows, source count — not the raw content).
+- **Free sample**: 2–3 canned exchange lines so a buyer can judge voice before paying.
+- Action buttons, state-aware:
+  - not owned → **Mint** (price) and **Rent 1 day** (price).
+  - owned/rented by you → **Chat** (primary).
+  - you are the owner → **Manage** (set rent price/availability, view earnings).
+- Provenance/utility panel: contract address, tokenId, IPFS metadata link, royalty %, and a
+  plain-language "what you get" note (chat access, not IP ownership).
+
+**(c) Token-gated chat window — `/personas/[tokenId]/chat`**
+Opens only after the SIWE gate passes. Standard chat UI (message list, input, streaming
+responses) driven by the openclone runtime. A small meter shows per-message cost and running
+spend; a header badge shows access basis ("Owner" / "Rented — 6h left"). If access lapses
+mid-session (rental expiry), the input disables with a "rental ended — renew?" prompt.
+
+**(d) Creator flow — `/personas/create`**
+Step form: pick openclone bundle → name/avatar/pitch/category → set mint price, chat price,
+rent price + duration, royalty % → review IPFS manifest → **Mint**. After mint, redirect to
+the new detail page. An **earnings** tab shows mint proceeds, rent income, and x402 chat
+revenue per persona.
+
+---
+
+## 4. The flow
+
+```
+CREATE / MINT (ERC-721)
+  creator: pick openclone bundle
+    → pin persona metadata + knowledge manifest to IPFS  → tokenURI = ipfs://…
+    → Persona721.mint(to, tokenURI)   [creator mint]  OR  buyer pays mintPrice (USDC) → mint(to)
+    → token #N now held by owner
+
+TOKEN-GATE CHECK (SIWE / EIP-4361)
+  user clicks Chat
+    → frontend requests nonce  → wallet signs SIWE message (no gas)
+    → backend verifies signature recovers `addr`
+    → access = (Persona721.ownerOf(N) == addr) || (isRenter(N, addr))
+    → on pass: issue short-lived session (JWT/cookie) scoped to tokenId N
+
+CHAT (openclone runtime)
+  gated session → backend loads persona bundle for #N → openclone answers as the persona
+    → each message metered; x402 charges chatPrice in USDC (see below)
+
+RENTAL (ERC-4907)
+  renter clicks Rent 1 day
+    → pay rentPrice (USDC over rails)
+    → Persona721.setUser(N, renter, expires = now + 1 day)
+    → gate's isRenter(N, addr) == (userOf(N)==addr && userExpires(N) > now)
+    → at expiry, userOf() falls back to address(0); access auto-reverts to owner
+
+X402-PRICED CHAT (ongoing revenue)
+  per message (or per session bucket):
+    → backend returns 402 Payment Required with price + pay-to (persona payout splitter)
+    → wallet/agent pays via x402 facilitator (same path as Agent Commerce Layer)
+    → on payment proof, message is answered; revenue split creator/marketplace by royalty policy
+```
+
+---
+
+## 5. Cooperate with existing services
+
+- **openclone runtime** (`~/.claude/skills/openclone`) — the persona engine. A minted NFT's
+  metadata references an openclone persona bundle (persona card + knowledge manifest); the chat
+  backend runs that bundle to answer as the persona. Creator flow reuses openclone `new` /
+  `ingest`. This is the "real utility" the NFT unlocks — reused, not rebuilt.
+- **Settlement Rails / USDC** — every payment (mint, rent, x402 chat) settles in USDC on the
+  home chain via `jayverse-rails`; cross-chain, if ever, rides CCIP. No persona-specific
+  payment path.
+- **Wallet service** (`jayverse-wallet`) — supplies connect + embedded-wallet UX and
+  simulate-before-sign for mint/rent transactions, so a buyer previews "you will pay 25 USDC,
+  receive token #7" before signing. SIWE signing uses the same wallet.
+- **Rabbit portal + Agentic-AI** — Rabbit imports the persona market UI and lists it in the
+  Jayverse portal. The agent, with a scoped session key, can **rent/consult a persona as a
+  buyer**, paying via x402 exactly like a human — persona market as an agent-consumable service.
+
+---
+
+## 6. Implementation sketch
+
+**Contracts (`jayverse-personas/contracts`)**
+- `Persona721` — ERC-721 + **ERC-4907** (`setUser`/`userOf`/`userExpires`) + ERC-2981 royalties.
+  `tokenURI` → IPFS. Optional `mintPrice`/`rentPrice` per-token or per-collection.
+- A tiny **payout splitter** (creator / marketplace share) as the x402 pay-to target; or reuse a
+  standard splitter. Keep custody minimal.
+
+**Token-gate middleware (new, small)**
+- `/api/siwe/nonce`, `/api/siwe/verify` → recover signer, check `ownerOf || renter`, mint a
+  short session bound to `tokenId`. Middleware on chat routes re-checks expiry on each request
+  (cheap `userOf`/`ownerOf` read via viem, cached briefly). Rental lapse = session invalidated.
+
+**IPFS metadata**
+- Standard ERC-721 metadata JSON (name, description, image, attributes: category, chatPrice) +
+  a `knowledge` manifest (content hashes/pointers, not raw text inline). Pin via a pinning
+  service; store CID in `tokenURI`. Metadata is public — knowledge *access* stays gated.
+
+**x402 chat metering**
+- Chat endpoint returns `402` with price + pay-to per message (or per N-message bucket to cut
+  overhead); client/agent pays via the shared x402 facilitator; on proof, answer streams.
+  Revenue split by ERC-2981/ splitter policy. Reuses the Agent Commerce Layer path — not new.
+
+**What's new vs reused**
+- *New:* `Persona721` (721+4907+2981), SIWE token-gate middleware, IPFS manifest packer, x402
+  chat meter, the marketplace/detail/chat/create UI.
+- *Reused:* openclone runtime (persona brain), rails/USDC + x402 facilitator, wallet connect +
+  simulate-before-sign, openclone categories.
+
+**Risk — IP / likeness**
+- Cloning a real person's voice/likeness is the core legal risk. **Policy: market only original
+  or clearly-parody personas.** Creator flow requires an attestation ("original or parody, not
+  impersonation"); listings carry a parody label where relevant; a takedown path removes a
+  persona from the market (NFT stays on-chain, but chat backend + listing are disabled).
+  Knowledge licensing (who owns ingested content) needs its own note — see open questions.
+
+**Open questions**
+- Knowledge licensing: if a creator ingests third-party articles, what rights transfer to a
+  renter? (Likely: access to *answers*, never redistribution of source.)
+- x402 granularity: per-message vs per-session bucket vs prepaid credits — UX vs on-chain cost.
+- Where the persona bundle + knowledge actually run at chat time (Rabbit cloud backend vs
+  a per-persona sandbox) and how gating maps to that runtime.
+- Rental during an active chat session: hard cut at expiry vs grace period.
+- Royalty enforcement on secondary sales (ERC-2981 is a hint, not enforced by all markets).

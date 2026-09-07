@@ -63,7 +63,12 @@ upsert_secret rabbit-google-id     "${AUTH_GOOGLE_ID:-}"
 upsert_secret rabbit-google-secret "${AUTH_GOOGLE_SECRET:-}"
 upsert_secret rabbit-ai-key        "${AI_API_KEY:-}"
 upsert_secret rabbit-market-key    "${MARKET_API_KEY:-}"
-upsert_secret rabbit-database-url  "${DATABASE_URL:-}"
+# 라이브 콘솔 (jay, 2026-09-04): 클라우드 전용 값은 CLOUD_ 접두어로 로컬 값과 분리.
+# DATABASE_URL 은 CLOUD_DATABASE_URL 이 있으면 그것을 올린다 — 로컬 .env 의
+# localhost URL 이 운영 시크릿을 덮어쓰는 사고를 막는다.
+upsert_secret rabbit-database-url  "${CLOUD_DATABASE_URL:-${DATABASE_URL:-}}"
+upsert_secret rabbit-agent-key     "${CLOUD_AGENT_PRIVATE_KEY:-}"
+upsert_secret rabbit-sepolia-rpc   "${CLOUD_AGENT_RPC_URL:-}"
 # Jay Chat 전용 키(rabbit-jay-chat-key)는 폐지 (jay, 2026-08-12) — 오너 전용 챗 삭제로
 # AI_API_KEY(rabbit-ai-key, 값은 DashScope 키)가 Jay Chat 의 유일한 키가 됐다.
 upsert_secret rabbit-telegram-bot-token "${TELEGRAM_BOT_TOKEN:-}"
@@ -74,7 +79,9 @@ upsert_secret rabbit-toss-secret   "${TOSS_SECRET_KEY:-}"
 echo "▶ Cloud Run 배포"
 # 시크릿 목록 — DATABASE_URL은 설정됐을 때만 추가 (Task 1 DB)
 SECRETS="AUTH_SECRET=rabbit-auth-secret:latest,AUTH_GOOGLE_ID=rabbit-google-id:latest,AUTH_GOOGLE_SECRET=rabbit-google-secret:latest,AI_API_KEY=rabbit-ai-key:latest,MARKET_API_KEY=rabbit-market-key:latest"
-[ -n "${DATABASE_URL:-}" ] && SECRETS="$SECRETS,DATABASE_URL=rabbit-database-url:latest"
+[ -n "${CLOUD_DATABASE_URL:-${DATABASE_URL:-}}" ] && SECRETS="$SECRETS,DATABASE_URL=rabbit-database-url:latest"
+[ -n "${CLOUD_AGENT_PRIVATE_KEY:-}" ] && SECRETS="$SECRETS,AGENT_PRIVATE_KEY=rabbit-agent-key:latest"
+[ -n "${CLOUD_AGENT_RPC_URL:-}" ] && SECRETS="$SECRETS,ANVIL_RPC_URL=rabbit-sepolia-rpc:latest"
 [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && SECRETS="$SECRETS,TELEGRAM_BOT_TOKEN=rabbit-telegram-bot-token:latest"
 [ -n "${STRIPE_SECRET_KEY:-}" ] && SECRETS="$SECRETS,STRIPE_SECRET_KEY=rabbit-stripe-secret:latest"
 [ -n "${TOSS_SECRET_KEY:-}" ] && SECRETS="$SECRETS,TOSS_SECRET_KEY=rabbit-toss-secret:latest"
@@ -84,6 +91,8 @@ SECRETS="AUTH_SECRET=rabbit-auth-secret:latest,AUTH_GOOGLE_ID=rabbit-google-id:l
 # 빌드하고 .env 을 이미지에 넣지 않으므로 운영에서 빈 값으로 굳는다. 서버가 런타임에 읽어
 # 클라이언트 컴포넌트에 prop 으로 내려보낸다 (2026-08-05).
 PUBLIC_ENV=""
+# 라이브 콘솔이 붙을 verex API (공개 URL, 비밀 아님) — 설정 시 콘솔이 cloud 에서 열린다.
+[ -n "${CLOUD_VEREX_API_URL:-}" ] && PUBLIC_ENV="${PUBLIC_ENV},VEREX_API_URL=${CLOUD_VEREX_API_URL}"
 [ -n "${NEXT_PUBLIC_TOSS_CLIENT_KEY:-}" ] && PUBLIC_ENV="${PUBLIC_ENV},TOSS_CLIENT_KEY=${NEXT_PUBLIC_TOSS_CLIENT_KEY}"
 [ -n "${NEXT_PUBLIC_THIRDWEB_CLIENT_ID:-}" ] && PUBLIC_ENV="${PUBLIC_ENV},THIRDWEB_CLIENT_ID=${NEXT_PUBLIC_THIRDWEB_CLIENT_ID}"
 
@@ -94,6 +103,14 @@ PUBLIC_ENV=""
 # Jay Chat 이 401 로 죽는다. 셋은 언제나 함께 움직여야 한다.
 # 비워 두면 코드 기본값(DashScope + qwen-flash)이라 예전과 같다.
 AI_ENV=",AI_API_ENDPOINT=${AI_API_ENDPOINT:-},AI_API_MODEL=${AI_API_MODEL:-}"
+
+# Prisma 엔진 강제 (jay, 2026-09-04, 라이브 콘솔). buildpack 런 이미지는 openssl 3 인데
+# Prisma 가 감지에 실패해 1.1.x 엔진을 고르고 libssl.so.1.1 이 없어 죽는다. binaryTargets
+# 로 3.0.x 엔진은 이미 번들되므로, 런타임이 그걸 직접 쓰도록 경로를 못박는다.
+PRISMA_ENV=""
+if [ -n "${CLOUD_DATABASE_URL:-${DATABASE_URL:-}}" ]; then
+  PRISMA_ENV=",PRISMA_QUERY_ENGINE_LIBRARY=/app/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/.prisma/client/libquery_engine-debian-openssl-3.0.x.so.node"
+fi
 
 # 메뉴 표시 플래그(ALLOW_*)를 .env 에서 읽어 Cloud Run env 로 전달한다.
 # 클라우드는 기본 "숨김"이라 전달하지 않으면 모든 메뉴가 사라진다. 나중에 추가한 ALLOW_* 도 자동 포함.
@@ -113,7 +130,7 @@ gcloud run deploy "$SERVICE" \
   --region "$REGION" \
   --allow-unauthenticated \
   --max-instances 1 \
-  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-},TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-},JAY_CHAT_HOURLY_TOKEN_BUDGET=${JAY_CHAT_HOURLY_TOKEN_BUDGET:-450000}${AI_ENV}${MENU_ENV}${PUBLIC_ENV}" \
+  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-},TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-},JAY_CHAT_HOURLY_TOKEN_BUDGET=${JAY_CHAT_HOURLY_TOKEN_BUDGET:-450000}${AI_ENV}${PRISMA_ENV}${MENU_ENV}${PUBLIC_ENV}" \
   --set-secrets "$SECRETS"
 
 # Cloud SQL 연결 — deploy.env에 CLOUDSQL_INSTANCE=프로젝트:리전:인스턴스 설정 시
