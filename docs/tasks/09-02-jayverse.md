@@ -21,6 +21,10 @@
   the implementation never moves into rabbit.
 - Shared infra to decide once, early: chain (Base + local supersim), wallet SDK, indexer
   (Ponder), and a single `addresses.json` published from the `jayverse-rails` config package.
+- My comment: For web application, all the apps will be run on Rabbit as a portal web app. If all the apps in the rabbit cloud, the instance could have much burdens. Is it good to seperate web app and api server between rabbit and verex? create a new md file called README-Jayverse.md in features folder and answer it.
+- My comment: you can create following related files for desiging the features with each starting the name jayverse. You can add the file links to the following table and also add the README-Jayverse.md file's link. Before that, what is the best beween Jayverse-README.md and README-Jayvers.md. You can choose at your will.
+  - **Answered (2026-09-07):** hub created at [../features/README-Jayverse.md](../features/README-Jayverse.md) (name chosen: `README-Jayverse.md`); it holds the web/API-separation answer and links every per-service `jayverse-*.md` design doc. Per-service doc links are added under each service section below.
+
 
 ## Repo / agent / cloud map
 
@@ -68,7 +72,8 @@
   - **Jay Chat gating + KB-RAG** — auth/BYO-key gating and the knowledge-base-via-MCP+RAG half of ai-chat.md; public chat surface is done, this part never started.
   - **Market (`/market`) Hyperliquid trading** — in progress; the Portfolio half is done.
   - **CI/CD** — `.github/workflows/` does not exist at all; no PR is type-checked.
-- **Jay's Comment**: We start with AA and Hyperliquid related features which is remaining.
+- My Comment: We start with AA which is ERC 4337. Show me the user scenario of AA here like what web app shows and the flow. You can imagine some basic feature. It would be great to cooperate with my existing services.
+  - **Design doc:** [../features/jayverse-aa.md](../features/jayverse-aa.md)
 
 ## 2. Verex as Prediction Market
 - **What**: the flagship — prediction market, upgraded per the diagram with AA (ERC-4337), a UMA-style optimistic oracle for resolution, and an MCP server so agents can trade it.
@@ -92,7 +97,8 @@
   - **Zod runtime validation** — not started; no `zod` imports under `packages/*/src`.
   - **S7–S8 AA / cross-chain, S8–S9 Stripe onboarding** — roadmap steps with no code; designs exist.
   - Exploratory designs only — markets-as-tokens · CCIP market results · Thirdweb decision.
-- **Jay's Comment**: We can start with Market Maker, UMA, MCP features.
+- My Comment: We start to implement Stripe onboarding and Market Maker. Show me the user scenario of AA in a new md file in features folder like what web app shows and the flow. You can imagine some basic feature. It would be great to cooperate with my existing services.
+  - **Design doc:** [../features/jayverse-onboarding-mm.md](../features/jayverse-onboarding-mm.md)
 
 ## 3. DeFi
 - **What**: yield/restaking corner of the diagram (EtherFi node) — start as a read-only dashboard over restaking positions, only later custody anything.
@@ -103,7 +109,8 @@
 - **Subtasks**: yield-source table per protocol; risk labels (slashing, depeg, exit queue); position indexer; decision memo "aggregate vs originate".
 - **Risk**: custody of user funds is a different business than everything else here — keep read-only as long as possible.
 - **PoC links**: `where-yield-comes-from`, `lp-is-a-short-volatility-position`, `risk-free-rate-is-the-floor`.
-- **Jay's Comment**: I want to the algorithm and method how EtherFi run their system about yield and points and liquid token with users and other related service. First, I want the same system like EtherFi run. But Jayverse will run on other chain not on Ethereum. The method about yield, token and point distribution will be same. Start with simple basic feature and go with some special and advanced feature.
+- My Comment: I will implement basic EtherFi features so please describe what you will do a new md file in features folder.
+  - **Design doc:** [../features/jayverse-defi.md](../features/jayverse-defi.md)
 
 ## 4. Persona market as NFT market
 - **What**: NFT marketplace whose first asset is real utility — openclone AI personas, mintable/rentable, talkable.
@@ -115,7 +122,8 @@
 - **Risk**: IP/likeness of real-person clones — market only original or clearly-parody personas.
 - **Rails**: mint/rent payments settle in USDC over the shared rails; x402 chat revenue uses the same path as the Agent Commerce Layer.
 - **PoC links**: `st-self-distribution`, `the-only-commitment-is-the-issuer` (utility claim framing).
-- **Jay's Comment**: Basic related features will be done. We can improve it later.
+- My Comment: Show me the user scenario and what web app shows and the flow. You can imagine some basic feature. so please describe what you will do a new md file in features folder.
+  - **Design doc:** [../features/jayverse-personas.md](../features/jayverse-personas.md)
 
 ## 5. Unity
 - **What**: blockchain-connected Unity game, wired to Verex via the **Game ↔ Market bridge** — match outcomes and drop rates become markets; items settle on our rails.
@@ -127,6 +135,8 @@
 - **Risk**: game dev is a time sink with different muscles — timebox the first playable to weeks, not months.
 - **Rails**: items and purchases settle on the shared rails (home chain first); no game-specific payment path.
 - **PoC links**: `simulate-before-sign` (item trades), `arb-bots-are-the-peg` (in-game economy pricing).
+- My Comment: I want some 3D game to wander around to find some verex market and trade it. How can I do this? describe what you will do a new md file in features folder. I could show some board in the street that shows a market's currnet status like asks and bid. We start this. Please show me your imaginary feature and the basic user scenario, and the user journey. And how to implement it. I just want to show the 3D game in the brower.
+  - **Design doc:** [../features/jayverse-game.md](../features/jayverse-game.md)
 
 ## 6. Wallet & Simulation-before-sign as a service
 - **What**: the shared glue — embedded-wallet UX for every Jayverse app plus a simulation API/widget that decodes any transaction's effect before the prompt.
@@ -137,6 +147,8 @@
 - **Subtasks**: provider decision memo; simulation API with fork-backed state; warning taxonomy (revert, approval widening, value drain); per-app session-key policy templates.
 - **Risk**: our config choices become every user's custody reality — the embedded-wallet card's lesson applies to us now.
 - **PoC links**: `embedded-wallet-policy`, `simulate-before-sign`, `pick-a-signer-not-a-brand`.
+- My Comment: Show me the user scenario and what web app shows and the flow. You can imagine some basic feature. so please describe what you will do a new md file in features folder.
+  - **Design doc:** [../features/jayverse-wallet.md](../features/jayverse-wallet.md)
 
 ## 7. Intra Jayverse Bridge
 - **What**: internal value movement between services — Verex winnings buy a persona, game items collateralize a bet — one ledger view across the umbrella.
@@ -148,6 +160,8 @@
 - **Risk**: this is where double-spend bugs would live — invariant tests before features, always.
 - **Rails**: transport for any cross-chain leg is CCIP; we implement only the ledger, earmarking, and reconciliation on top.
 - **PoC links**: `x402-settlement-retry` (retry semantics), `the-bridge-is-inside-the-token`, `rwa-multichain`.
+- My Comment: We can create an ERC coin used in our ecosystem like JVRS or JVS. I should be bridged between some chains in my Anvil chain and Sepolia. Show me some imaginary scenario in a new file that I will check.
+  - **Design doc:** [../features/jayverse-token-bridge.md](../features/jayverse-token-bridge.md)
 
 ## 8. L2
 - **What**: our own chain ambition — explicitly marked **start at last** in the diagram, with **supersim** as the local on-ramp.
@@ -168,15 +182,12 @@
 - **Subtasks**: matrix schema (actions × actors × evidence); provider config parsers; severity labels; "verified by test, not docs" badge for cells actually exercised.
 - **Risk**: wrong cells are worse than no cells — every claim needs an evidence link or a "not verified" mark.
 - **PoC links**: `embedded-wallet-policy`, `safe-module-root-key`, `third-party-blast-radius`.
+- My Comment: Show me the user scenario and what web app shows and the flow. You can imagine some basic feature. so please describe what you will do a new md file in features folder.
+  - **Design doc:** [../features/jayverse-auditor.md](../features/jayverse-auditor.md)
 
 ## 10.Dark Horse
 - This will be tackled later after some of the previous services are built
-- **데이터 과학**(온체인 데이터 분석·pandas/numpy·Dune/The Graph)
 - PoCs items
-- Research security vulnerabilities PoC links and any other resources
-- **NEW**
-    - Zero Day Issues
-    - Include various services, libraries, platforms.
 
 ## ETC
 ### 보안 취약점 연구 (Security-hole research)

@@ -60,6 +60,11 @@ beside their service, not in a shared monorepo.</li>
 the implementation never moves into rabbit.</li>
 <li>Shared infra to decide once, early: chain (Base + local supersim), wallet SDK, indexer
 (Ponder), and a single <code>addresses.json</code> published from the <code>jayverse-rails</code> config package.</li>
+<li>My comment: For web application, all the apps will be run on Rabbit as a portal web app. If all the apps in the rabbit cloud, the instance could have much burdens. Is it good to seperate web app and api server between rabbit and verex? create a new md file called README-Jayverse.md in features folder and answer it.</li>
+<li>My comment: you can create following related files for desiging the features with each starting the name jayverse. You can add the file links to the following table and also add the README-Jayverse.md file&#39;s link. Before that, what is the best beween Jayverse-README.md and README-Jayvers.md. You can choose at your will.<ul>
+<li><strong>Answered (2026-09-07):</strong> hub created at <a href="../features/README-Jayverse.html">../features/README-Jayverse.md</a> (name chosen: <code>README-Jayverse.md</code>); it holds the web/API-separation answer and links every per-service <code>jayverse-*.md</code> design doc. Per-service doc links are added under each service section below.</li>
+</ul>
+</li>
 </ul>
 <h2>Repo / agent / cloud map</h2>
 <table>
@@ -180,7 +185,10 @@ viem clients) that every app imports — plumbing, not a product.</li>
 <li><strong>CI/CD</strong> — <code>.github/workflows/</code> does not exist at all; no PR is type-checked.</li>
 </ul>
 </li>
-<li><strong>Jay&#39;s Comment</strong>: We start with AA and Hyperliquid related features which is remaining.</li>
+<li>My Comment: We start with AA which is ERC 4337. Show me the user scenario of AA here like what web app shows and the flow. You can imagine some basic feature. It would be great to cooperate with my existing services.<ul>
+<li><strong>Design doc:</strong> <a href="../features/jayverse-aa.html">../features/jayverse-aa.md</a></li>
+</ul>
+</li>
 </ul>
 <h2>2. Verex as Prediction Market</h2>
 <ul>
@@ -209,7 +217,10 @@ viem clients) that every app imports — plumbing, not a product.</li>
 <li>Exploratory designs only — markets-as-tokens · CCIP market results · Thirdweb decision.</li>
 </ul>
 </li>
-<li><strong>Jay&#39;s Comment</strong>: We can start with Market Maker, UMA, MCP features.</li>
+<li>My Comment: We start to implement Stripe onboarding and Market Maker. Show me the user scenario of AA in a new md file in features folder like what web app shows and the flow. You can imagine some basic feature. It would be great to cooperate with my existing services.<ul>
+<li><strong>Design doc:</strong> <a href="../features/jayverse-onboarding-mm.html">../features/jayverse-onboarding-mm.md</a></li>
+</ul>
+</li>
 </ul>
 <h2>3. DeFi</h2>
 <ul>
@@ -221,7 +232,10 @@ viem clients) that every app imports — plumbing, not a product.</li>
 <li><strong>Subtasks</strong>: yield-source table per protocol; risk labels (slashing, depeg, exit queue); position indexer; decision memo &quot;aggregate vs originate&quot;.</li>
 <li><strong>Risk</strong>: custody of user funds is a different business than everything else here — keep read-only as long as possible.</li>
 <li><strong>PoC links</strong>: <code>where-yield-comes-from</code>, <code>lp-is-a-short-volatility-position</code>, <code>risk-free-rate-is-the-floor</code>.</li>
-<li><strong>Jay&#39;s Comment</strong>: I want to the algorithm and method how EtherFi run their system about yield and points and liquid token with users and other related service. First, I want the same system like EtherFi run. But Jayverse will run on other chain not on Ethereum. The method about yield, token and point distribution will be same. Start with simple basic feature and go with some special and advanced feature.</li>
+<li>My Comment: I will implement basic EtherFi features so please describe what you will do a new md file in features folder.<ul>
+<li><strong>Design doc:</strong> <a href="../features/jayverse-defi.html">../features/jayverse-defi.md</a></li>
+</ul>
+</li>
 </ul>
 <h2>4. Persona market as NFT market</h2>
 <ul>
@@ -234,7 +248,10 @@ viem clients) that every app imports — plumbing, not a product.</li>
 <li><strong>Risk</strong>: IP/likeness of real-person clones — market only original or clearly-parody personas.</li>
 <li><strong>Rails</strong>: mint/rent payments settle in USDC over the shared rails; x402 chat revenue uses the same path as the Agent Commerce Layer.</li>
 <li><strong>PoC links</strong>: <code>st-self-distribution</code>, <code>the-only-commitment-is-the-issuer</code> (utility claim framing).</li>
-<li><strong>Jay&#39;s Comment</strong>: Basic related features will be done. We can improve it later.</li>
+<li>My Comment: Show me the user scenario and what web app shows and the flow. You can imagine some basic feature. so please describe what you will do a new md file in features folder.<ul>
+<li><strong>Design doc:</strong> <a href="../features/jayverse-personas.html">../features/jayverse-personas.md</a></li>
+</ul>
+</li>
 </ul>
 <h2>5. Unity</h2>
 <ul>
@@ -247,6 +264,10 @@ viem clients) that every app imports — plumbing, not a product.</li>
 <li><strong>Risk</strong>: game dev is a time sink with different muscles — timebox the first playable to weeks, not months.</li>
 <li><strong>Rails</strong>: items and purchases settle on the shared rails (home chain first); no game-specific payment path.</li>
 <li><strong>PoC links</strong>: <code>simulate-before-sign</code> (item trades), <code>arb-bots-are-the-peg</code> (in-game economy pricing).</li>
+<li>My Comment: I want some 3D game to wander around to find some verex market and trade it. How can I do this? describe what you will do a new md file in features folder. I could show some board in the street that shows a market&#39;s currnet status like asks and bid. We start this. Please show me your imaginary feature and the basic user scenario, and the user journey. And how to implement it. I just want to show the 3D game in the brower.<ul>
+<li><strong>Design doc:</strong> <a href="../features/jayverse-game.html">../features/jayverse-game.md</a></li>
+</ul>
+</li>
 </ul>
 <h2>6. Wallet &amp; Simulation-before-sign as a service</h2>
 <ul>
@@ -258,6 +279,10 @@ viem clients) that every app imports — plumbing, not a product.</li>
 <li><strong>Subtasks</strong>: provider decision memo; simulation API with fork-backed state; warning taxonomy (revert, approval widening, value drain); per-app session-key policy templates.</li>
 <li><strong>Risk</strong>: our config choices become every user&#39;s custody reality — the embedded-wallet card&#39;s lesson applies to us now.</li>
 <li><strong>PoC links</strong>: <code>embedded-wallet-policy</code>, <code>simulate-before-sign</code>, <code>pick-a-signer-not-a-brand</code>.</li>
+<li>My Comment: Show me the user scenario and what web app shows and the flow. You can imagine some basic feature. so please describe what you will do a new md file in features folder.<ul>
+<li><strong>Design doc:</strong> <a href="../features/jayverse-wallet.html">../features/jayverse-wallet.md</a></li>
+</ul>
+</li>
 </ul>
 <h2>7. Intra Jayverse Bridge</h2>
 <ul>
@@ -270,6 +295,10 @@ viem clients) that every app imports — plumbing, not a product.</li>
 <li><strong>Risk</strong>: this is where double-spend bugs would live — invariant tests before features, always.</li>
 <li><strong>Rails</strong>: transport for any cross-chain leg is CCIP; we implement only the ledger, earmarking, and reconciliation on top.</li>
 <li><strong>PoC links</strong>: <code>x402-settlement-retry</code> (retry semantics), <code>the-bridge-is-inside-the-token</code>, <code>rwa-multichain</code>.</li>
+<li>My Comment: We can create an ERC coin used in our ecosystem like JVRS or JVS. I should be bridged between some chains in my Anvil chain and Sepolia. Show me some imaginary scenario in a new file that I will check.<ul>
+<li><strong>Design doc:</strong> <a href="../features/jayverse-token-bridge.html">../features/jayverse-token-bridge.md</a></li>
+</ul>
+</li>
 </ul>
 <h2>8. L2</h2>
 <ul>
@@ -292,18 +321,15 @@ viem clients) that every app imports — plumbing, not a product.</li>
 <li><strong>Subtasks</strong>: matrix schema (actions × actors × evidence); provider config parsers; severity labels; &quot;verified by test, not docs&quot; badge for cells actually exercised.</li>
 <li><strong>Risk</strong>: wrong cells are worse than no cells — every claim needs an evidence link or a &quot;not verified&quot; mark.</li>
 <li><strong>PoC links</strong>: <code>embedded-wallet-policy</code>, <code>safe-module-root-key</code>, <code>third-party-blast-radius</code>.</li>
+<li>My Comment: Show me the user scenario and what web app shows and the flow. You can imagine some basic feature. so please describe what you will do a new md file in features folder.<ul>
+<li><strong>Design doc:</strong> <a href="../features/jayverse-auditor.html">../features/jayverse-auditor.md</a></li>
+</ul>
+</li>
 </ul>
 <h2>10.Dark Horse</h2>
 <ul>
 <li>This will be tackled later after some of the previous services are built</li>
-<li><strong>데이터 과학</strong>(온체인 데이터 분석·pandas/numpy·Dune/The Graph)</li>
 <li>PoCs items</li>
-<li>Research security vulnerabilities PoC links and any other resources</li>
-<li><strong>NEW</strong><ul>
-<li>Zero Day Issues</li>
-<li>Include various services, libraries, platforms.</li>
-</ul>
-</li>
 </ul>
 <h2>ETC</h2>
 <h3>보안 취약점 연구 (Security-hole research)</h3>
