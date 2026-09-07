@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The property that makes a market work is the one that makes it gambling — PoCs</title>
+<title>A bridge's rate limit is not the loss cap — its refill speed is — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -365,7 +365,7 @@
         <li><a class="nav-link" href="pocs-what-needs-a-stablecoin.html" data-key="what-needs-a-stablecoin"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">11</span>Not what a stablecoin can do — what needs one</span></a></li>
         <li><a class="nav-link" href="pocs-monad-last-general-purpose-l1.html" data-key="monad-last-general-purpose-l1"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">12</span>Monad — the last general-purpose L1, and the number nobody adjusts for</span></a></li>
         <li><a class="nav-link" href="pocs-the-bridge-is-inside-the-token.html" data-key="the-bridge-is-inside-the-token"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">13</span>The bridge is not beside the token any more — it is inside it</span></a></li>
-        <li><a class="nav-link active" href="pocs-decision-market-uncontrollability.html" data-key="decision-market-uncontrollability"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">14</span>The property that makes a market work is the one that makes it gambling</span></a></li>
+        <li><a class="nav-link" href="pocs-decision-market-uncontrollability.html" data-key="decision-market-uncontrollability"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">14</span>The property that makes a market work is the one that makes it gambling</span></a></li>
         <li><a class="nav-link" href="pocs-stake-concentration.html" data-key="stake-concentration"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">15</span>Stake concentration risk</span></a></li>
         <li><a class="nav-link" href="pocs-the-settlement-instant.html" data-key="the-settlement-instant"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">16</span>A price at a moment — the instant, the window, and who can move it</span></a></li>
         <li><a class="nav-link" href="pocs-stablecoin-redemption-desk.html" data-key="stablecoin-redemption-desk"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">17</span>The redemption desk — what actually makes a stablecoin's denominator</span></a></li>
@@ -398,7 +398,7 @@
         <li><a class="nav-link" href="pocs-who-prices-samsung-on-sunday.html" data-key="who-prices-samsung-on-sunday"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">44</span>Who prices Samsung on a Sunday? — the hours column is the oracle's real product</span></a></li>
         <li><a class="nav-link" href="pocs-the-growth-formula-ran-backwards.html" data-key="the-growth-formula-ran-backwards"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">45</span>Robinhood Chain — the growth formula runs backwards when you launch with the asset</span></a></li>
         <li><a class="nav-link" href="pocs-can-you-leave-by-2030.html" data-key="can-you-leave-by-2030"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">46</span>The 2027 question is easy — the 2030 question is whether you can leave</span></a></li>
-        <li><a class="nav-link" href="pocs-refill-rate-is-the-real-cap.html" data-key="refill-rate-is-the-real-cap"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">47</span>A bridge's rate limit is not the loss cap — its refill speed is</span></a></li>
+        <li><a class="nav-link active" href="pocs-refill-rate-is-the-real-cap.html" data-key="refill-rate-is-the-real-cap"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">47</span>A bridge's rate limit is not the loss cap — its refill speed is</span></a></li>
         <li><a class="nav-link" href="pocs-merkle-vs-verkle.html" data-key="merkle-vs-verkle"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">48</span>Merkle vs Verkle</span></a></li>
         <li><a class="nav-link" href="pocs-encrypted-mempool.html" data-key="encrypted-mempool"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">49</span>What encryption does not hide</span></a></li>
         <li><a class="nav-link" href="pocs-storage-collision-admin-takeover.html" data-key="storage-collision-admin-takeover"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">50</span>The code was right and the layout was wrong</span></a></li>
@@ -469,212 +469,200 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The property that makes a market work is the one that makes it gambling</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; A bridge's rate limit is not the loss cap — its refill speed is</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#14</span><span>PoC</span></p>
-      <h1>The property that makes a market work is the one that makes it gambling</h1>
-      <p class="lead">Umia routes corporate decisions through markets and enforces them with a Cayman entity. The same essay argues a prediction market only works if participants cannot change the outcome — which is the exact property Korea&#39;s regulator cited when it called prediction markets gambling. Decision markets cross that line on purpose.</p>
-      <p class="meta">Not yet scoped — and the deliverable is one formula, not a build. For a conditional AMM of depth D, a TWAP window of length W and an execution threshold T over the No-Op market, compute the capital required to hold the price above the threshold for the whole window against arbitrageurs taking the other side. That number is the price of a corporate decision. Compute it twice: at the liquidity a young market actually has, and at the liquidity it would need for the cost to exceed the value of the decision being bought. Source: Four Pillars, Steve, &quot;Umia: A New Way to Build Crypto Projects&quot;, 2026-08-26 — TWAP settlement, a No-Op status-quo market, a threshold above it, Uniswap v4 CCA auctions, a MetaLeX BORG Cayman SPC wrapper, first $UMIA auction at the end of August. Confirm against the primer before relying on any mechanism detail.</p>
+      <p class="topic-kicker"><span class="topic-no">#47</span><span>PoC</span></p>
+      <h1>A bridge's rate limit is not the loss cap — its refill speed is</h1>
+      <p class="lead">xERC20 (ERC-7281) puts a per-bridge mint/burn rate limit on-chain, and the limit refills over time. That refill is the part that decides the real exposure: a 1M limit that refills in an hour lets an attacker drain it 24 times a day, so the true loss cap is not the limit but limit × (time-to-detect ÷ refill period). The number most designs quote is the least binding one.</p>
+      <p class="meta">Not a build — one calculation per bridge, then a table. List every bridge you would attach and read three numbers from each: the rate limit, the refill period (how long a fully-consumed limit takes to return), and your own realistic time-to-detect-and-halt. Compute max loss = limit × (time-to-detect ÷ refill period), rounded up to whole refills. Assume a 30-minute detection-and-stop and see which bridges still clear a loss you can survive; that number, not the headline limit, is the cap. Then flip it: for a loss you can survive, solve for the refill period the bridge would need, and notice that slowing refill blocks honest users (bridge queues). Source: xERC20 / ERC-7281 rate-limit design (per-bridge mint &amp; burn limits, time-based refill); confirm the refill mechanics of each specific bridge against its own docs — implementations differ.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# The property that makes a market work is the one that makes it gambling\n\nUmia routes corporate decisions through markets and enforces them with a Cayman entity. The same essay argues a prediction market only works if participants cannot change the outcome — which is the exact property Korea's regulator cited when it called prediction markets gambling. Decision markets cross that line on purpose.\n\nNot yet scoped — and the deliverable is one formula, not a build. For a conditional AMM of depth D, a TWAP window of length W and an execution threshold T over the No-Op market, compute the capital required to hold the price above the threshold for the whole window against arbitrageurs taking the other side. That number is the price of a corporate decision. Compute it twice: at the liquidity a young market actually has, and at the liquidity it would need for the cost to exceed the value of the decision being bought. Source: Four Pillars, Steve, \"Umia: A New Way to Build Crypto Projects\", 2026-08-26 — TWAP settlement, a No-Op status-quo market, a threshold above it, Uniswap v4 CCA auctions, a MetaLeX BORG Cayman SPC wrapper, first $UMIA auction at the end of August. Confirm against the primer before relying on any mechanism detail.\n\n## Why\n\n**Put two documents side by side and they draw the same line for opposite reasons.** The essay's own earlier critique of prediction markets is that a market only discovers an outcome if participants **cannot change** it — once they can, the market stops predicting and starts manufacturing. Korea's communications standards commission cited **an event the user cannot control** among its grounds for treating prediction markets as criminal gambling (`jurisdiction-decides-the-category`). So uncontrollability is simultaneously **what makes the price mean anything** and **what makes the product illegal in one jurisdiction.**\n\n**That is a trap, not a coincidence, and it is worth naming before designing around it.** Move the product toward events the user influences — skill, own action, own performance — and the legal ground weakens while the epistemic one collapses, because participants now have a position in the outcome they are pricing. Move it toward pure exogenous events and the price is meaningful and the regulator's first ground is fully met. **There is no configuration that is comfortable on both axes**, which means the choice is a real one rather than a matter of finding the clever framing.\n\n**A decision market is what it looks like to cross that line deliberately.** Participants are not predicting whether a treasury spend would be good; the price *causes* the spend. Umia does not pretend otherwise — it accepts that manipulation is possible and tries to make it **expensive**: settle on a TWAP rather than a closing price, run a No-Op market representing the status quo, and execute only when the proposal beats No-Op by a margin. Note the direction of that last rule: **change is not the default**, and silence means nothing happens. That is a governance stance, not a market mechanism.\n\n**Which turns the whole design into one number.** If manipulation is merely expensive, the honest question is *how expensive, at what depth* — and the essay concedes the weak point itself: before the ecosystem reaches scale, the cost of moving prices enough to influence an admission decision may stay low. That is the same computation `governance-capture-cost` performs for token voting, transplanted into a market, and it decides whether decision markets are governance or theatre.\n\n## How it works\n\n### The same property, read by two authorities\n\n| | Criterion | Verdict when the user **cannot** influence the outcome |\n|---|---|---|\n| **Market designer** (this essay) | Participants must predict, not create | **Sound** — the price means something |\n| **Korean regulator** (방심위) | An event the user cannot control | **Gambling** — cited as grounds for the block |\n| **A decision market** | The price executes the decision | Deliberately on the wrong side of both, and honest about it |\n\n### What Umia does about it, and what each defence costs\n\n| Defence | What it stops | What it costs |\n|---|---|---|\n| **TWAP settlement** | A push in the last blocks before close | Responsiveness — the market reacts slower to real news |\n| **No-Op market** | Comparing a proposal to nothing | A second market to seed and keep liquid |\n| **Execution threshold** | Acting on noise | Genuine improvements below the margin never happen |\n| **Cayman SPC / BORG** | A team ignoring the outcome | A shared legal wrapper, and a curated rather than permissionless track |\n\nRead the first row against `the-settlement-instant`: that card settles at an instant, which is exactly what TWAP is defending against here. **The two designs sit at opposite ends of the same trade-off**, and seeing the cost written down on both sides is worth more than either design alone.\n\n### The number, and why it transfers\n\n**Capital required to hold a TWAP above threshold T for window W against arbitrage, at pool depth D.** Compute it at today's depth and at the depth where it exceeds the value of the decision. That single curve answers whether a given decision is genuinely market-governed or merely priced, and it applies unchanged to any resolution mechanism that reads a price — including the settlement path in this project. **Manipulation cost is not a property of the mechanism; it is a property of the mechanism at a given liquidity**, and mechanisms are usually described without one.\n\n### What the August auction actually tests\n\nUmia is selling $UMIA through its own platform, so the auction is the product's first public run rather than a fundraise: whether seven days of CCA price discovery behaves as described, whether liquidity exists immediately afterwards, and whether the promised high initial float materializes instead of the low-float pattern it criticizes. **A capital-formation model that cannot form its own capital has answered the question early**, which is a rare case of a project being genuinely falsifiable on day one.\n\n### Update (2026-09-07) — four verdicts, one price, one week\n\nCPI (9/11), a Clarity-bill cloture (9/15), the FOMC (9/15–16) and an options expiry (9/18) land within days of each other. They reprice four different axes — inflation, jurisdiction, monetary, derivatives — but the market prints **one number**, so any single-cause story about that week's move is probably wrong. The measurement discipline is the transferable part: record a **probability snapshot immediately before and after each event, separately**. That is the only way to reconstruct afterward which verdict actually moved the price — and it is the same move as this card's core number, which insists a mechanism means nothing without the state (here, the event) attached to the reading. Max-pain ($78,000 on the 9/18 expiry) is a coordinate, not a signal; expiry-week volatility compression is a tendency, not a law, and this week stacks three verdicts on top of it.\n\n## Review clarification\n\n### What the mechanism is\n\nA **decision market** is the conditional-market tool; **futarchy** is a governance system that uses it to choose and execute policy. Umia did not invent either concept. Its distinctive move is to package paired markets, an on-chain treasury and a legal wrapper so the result can bind a token-native organisation.\n\n| Market | Counterfactual question |\n|---|---|\n| **Proposal** | What is the token worth if the proposal executes? |\n| **No-Op** | What is it worth if this proposal does not execute? |\n\nOne price is insufficient: Proposal at 120 is favourable if No-Op is 100 and harmful if No-Op is 150. No-Op means *this proposal is not executed*, not that nothing else ever changes.\n\n### Participation and manipulation\n\nThe pair creates a comparison; it does not create informed traders. Thin participation can leave a large treasury dependent on one trader, and incentives can add volume without information. A credible rule therefore needs minimum liquidity and independent participation as well as a TWAP spread.\n\n`expected net manipulation cost \u003c external value of the decision` is a general attack test, not an official Umia formula. It matters because a trader may lose in the market yet profit from a grant, contract or strategic benefit produced by the decision. D, T and W alone are insufficient: the AMM curve, fees, external fair price, arbitrage capacity and speed, order flow and recoverable position value also matter. Likewise, uncontrollability may be one legal factor in gambling analysis; this card does not establish it as a sufficient condition by itself.\n"</script>
+      <script type="application/json" id="copy-en">"# A bridge's rate limit is not the loss cap — its refill speed is\n\nxERC20 (ERC-7281) puts a per-bridge mint/burn rate limit on-chain, and the limit refills over time. That refill is the part that decides the real exposure: a 1M limit that refills in an hour lets an attacker drain it 24 times a day, so the true loss cap is not the limit but limit × (time-to-detect ÷ refill period). The number most designs quote is the least binding one.\n\nNot a build — one calculation per bridge, then a table. List every bridge you would attach and read three numbers from each: the rate limit, the refill period (how long a fully-consumed limit takes to return), and your own realistic time-to-detect-and-halt. Compute max loss = limit × (time-to-detect ÷ refill period), rounded up to whole refills. Assume a 30-minute detection-and-stop and see which bridges still clear a loss you can survive; that number, not the headline limit, is the cap. Then flip it: for a loss you can survive, solve for the refill period the bridge would need, and notice that slowing refill blocks honest users (bridge queues). Source: xERC20 / ERC-7281 rate-limit design (per-bridge mint & burn limits, time-based refill); confirm the refill mechanics of each specific bridge against its own docs — implementations differ.\n\n## Why\n\n**A rate limit reads like a loss cap, and it is not one.** \"This bridge can mint at most 1M\" sounds like the most it can lose is 1M. But the limit is not a lifetime budget — it refills, because a limit that did not refill would throttle the bridge to uselessness within a day of normal traffic. The moment it refills, the ceiling stops being 1M and becomes 1M *per refill period*, and an attacker who has compromised the mint path spends it on every refill until someone notices and halts. The loss is therefore governed by two numbers the limit never mentions: how fast the limit comes back, and how fast you can stop it.\n\n**So the honest exposure is a rate, not a level: limit × (time-to-detect ÷ refill period).** A 1M limit refilling hourly, against a 6-hour detection lag, is a 6M exposure, not a 1M one. This is the operational floor under `the-bridge-is-inside-the-token` — that card asks *who* can halt minting when supply and custody disagree; this one asks *how much* is gone before they do. And it is the same shape as `governance-capture-cost` and the manipulation-cost number in the decision-market card: a safety property is not a property of the mechanism, it is a property of the mechanism at a given speed, and mechanisms are usually described without the speed.\n\n**The refill period is a safety/availability trade, and there is no setting that is comfortable on both sides.** Slow the refill and the loss cap drops — but honest users hit the limit and wait in a queue, which is `who-holds-the-mint` and `third-party-blast-radius` felt as latency instead of risk. Speed it up and the bridge is smooth and the cap is effectively the whole reserve. The right answer is not a default; it scales with the size of what sits behind the bridge, and the only way to choose it is to compute the loss at your real detection time and read the queue it implies. A rate limit quoted without its refill period has quoted the least binding half.\n\n## How it works\n\n### The limit is not the cap\n\n| Quantity | What it says | Binding? |\n| --- | --- | --- |\n| **Rate limit** (e.g. 1M) | Most that can mint before the limit is exhausted | Least — it refills |\n| **Refill period** | How long a spent limit takes to return | Sets how often the limit can be re-spent |\n| **Time-to-detect-and-halt** | Your own operational reality | The number nobody publishes |\n| **Max loss** | limit × ⌈detect ÷ refill⌉ | **The actual cap** |\n\n### Same limit, three refill speeds, 6-hour detection\n\n| Rate limit | Refill period | Max loss @ 6h detect |\n| --- | --- | --- |\n| 1M | 24h (once/day) | ~1M |\n| 1M | 6h | ~1M–2M |\n| 1M | 1h | **~6M** |\n\nThe headline \"1M limit\" is identical across all three; the exposure spans 6×.\n\n### The trade you cannot escape\n\n| Refill | Loss cap | Honest users |\n| --- | --- | --- |\n| Slow | Low | Blocked — bridge queues |\n| Fast | ≈ whole reserve | Smooth |\n\nThere is no setting that is safe and frictionless; the right point scales with the value behind the bridge.\n\n### Related cards\n\n`the-bridge-is-inside-the-token` (who can halt minting), `who-holds-the-mint` (mint authority), `third-party-blast-radius` (correlated failure), `erc-8141` (native-issuance mechanics).\n"</script>
       <h2>Why</h2>
-      <p><strong>Put two documents side by side and they draw the same line for opposite reasons.</strong> The essay&#39;s own earlier critique of prediction markets is that a market only discovers an outcome if participants <strong>cannot change</strong> it — once they can, the market stops predicting and starts manufacturing. Korea&#39;s communications standards commission cited <strong>an event the user cannot control</strong> among its grounds for treating prediction markets as criminal gambling (<code>jurisdiction-decides-the-category</code>). So uncontrollability is simultaneously <strong>what makes the price mean anything</strong> and <strong>what makes the product illegal in one jurisdiction.</strong></p>
-<p><strong>That is a trap, not a coincidence, and it is worth naming before designing around it.</strong> Move the product toward events the user influences — skill, own action, own performance — and the legal ground weakens while the epistemic one collapses, because participants now have a position in the outcome they are pricing. Move it toward pure exogenous events and the price is meaningful and the regulator&#39;s first ground is fully met. <strong>There is no configuration that is comfortable on both axes</strong>, which means the choice is a real one rather than a matter of finding the clever framing.</p>
-<p><strong>A decision market is what it looks like to cross that line deliberately.</strong> Participants are not predicting whether a treasury spend would be good; the price <em>causes</em> the spend. Umia does not pretend otherwise — it accepts that manipulation is possible and tries to make it <strong>expensive</strong>: settle on a TWAP rather than a closing price, run a No-Op market representing the status quo, and execute only when the proposal beats No-Op by a margin. Note the direction of that last rule: <strong>change is not the default</strong>, and silence means nothing happens. That is a governance stance, not a market mechanism.</p>
-<p><strong>Which turns the whole design into one number.</strong> If manipulation is merely expensive, the honest question is <em>how expensive, at what depth</em> — and the essay concedes the weak point itself: before the ecosystem reaches scale, the cost of moving prices enough to influence an admission decision may stay low. That is the same computation <code>governance-capture-cost</code> performs for token voting, transplanted into a market, and it decides whether decision markets are governance or theatre.</p>
+      <p><strong>A rate limit reads like a loss cap, and it is not one.</strong> &quot;This bridge can mint at most 1M&quot; sounds like the most it can lose is 1M. But the limit is not a lifetime budget — it refills, because a limit that did not refill would throttle the bridge to uselessness within a day of normal traffic. The moment it refills, the ceiling stops being 1M and becomes 1M <em>per refill period</em>, and an attacker who has compromised the mint path spends it on every refill until someone notices and halts. The loss is therefore governed by two numbers the limit never mentions: how fast the limit comes back, and how fast you can stop it.</p>
+<p><strong>So the honest exposure is a rate, not a level: limit × (time-to-detect ÷ refill period).</strong> A 1M limit refilling hourly, against a 6-hour detection lag, is a 6M exposure, not a 1M one. This is the operational floor under <code>the-bridge-is-inside-the-token</code> — that card asks <em>who</em> can halt minting when supply and custody disagree; this one asks <em>how much</em> is gone before they do. And it is the same shape as <code>governance-capture-cost</code> and the manipulation-cost number in the decision-market card: a safety property is not a property of the mechanism, it is a property of the mechanism at a given speed, and mechanisms are usually described without the speed.</p>
+<p><strong>The refill period is a safety/availability trade, and there is no setting that is comfortable on both sides.</strong> Slow the refill and the loss cap drops — but honest users hit the limit and wait in a queue, which is <code>who-holds-the-mint</code> and <code>third-party-blast-radius</code> felt as latency instead of risk. Speed it up and the bridge is smooth and the cap is effectively the whole reserve. The right answer is not a default; it scales with the size of what sits behind the bridge, and the only way to choose it is to compute the loss at your real detection time and read the queue it implies. A rate limit quoted without its refill period has quoted the least binding half.</p>
       <h2>How it works</h2>
-      <h3>The same property, read by two authorities</h3>
+      <h3>The limit is not the cap</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th></th>
-<th>Criterion</th>
-<th>Verdict when the user <strong>cannot</strong> influence the outcome</th>
+<th>Quantity</th>
+<th>What it says</th>
+<th>Binding?</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Market designer</strong> (this essay)</td>
-<td>Participants must predict, not create</td>
-<td><strong>Sound</strong> — the price means something</td>
+<td><strong>Rate limit</strong> (e.g. 1M)</td>
+<td>Most that can mint before the limit is exhausted</td>
+<td>Least — it refills</td>
 </tr>
 <tr>
-<td><strong>Korean regulator</strong> (방심위)</td>
-<td>An event the user cannot control</td>
-<td><strong>Gambling</strong> — cited as grounds for the block</td>
+<td><strong>Refill period</strong></td>
+<td>How long a spent limit takes to return</td>
+<td>Sets how often the limit can be re-spent</td>
 </tr>
 <tr>
-<td><strong>A decision market</strong></td>
-<td>The price executes the decision</td>
-<td>Deliberately on the wrong side of both, and honest about it</td>
+<td><strong>Time-to-detect-and-halt</strong></td>
+<td>Your own operational reality</td>
+<td>The number nobody publishes</td>
+</tr>
+<tr>
+<td><strong>Max loss</strong></td>
+<td>limit × ⌈detect ÷ refill⌉</td>
+<td><strong>The actual cap</strong></td>
 </tr>
 </tbody></table></div>
-<h3>What Umia does about it, and what each defence costs</h3>
+<h3>Same limit, three refill speeds, 6-hour detection</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Defence</th>
-<th>What it stops</th>
-<th>What it costs</th>
+<th>Rate limit</th>
+<th>Refill period</th>
+<th>Max loss @ 6h detect</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>TWAP settlement</strong></td>
-<td>A push in the last blocks before close</td>
-<td>Responsiveness — the market reacts slower to real news</td>
+<td>1M</td>
+<td>24h (once/day)</td>
+<td>~1M</td>
 </tr>
 <tr>
-<td><strong>No-Op market</strong></td>
-<td>Comparing a proposal to nothing</td>
-<td>A second market to seed and keep liquid</td>
+<td>1M</td>
+<td>6h</td>
+<td>~1M–2M</td>
 </tr>
 <tr>
-<td><strong>Execution threshold</strong></td>
-<td>Acting on noise</td>
-<td>Genuine improvements below the margin never happen</td>
-</tr>
-<tr>
-<td><strong>Cayman SPC / BORG</strong></td>
-<td>A team ignoring the outcome</td>
-<td>A shared legal wrapper, and a curated rather than permissionless track</td>
+<td>1M</td>
+<td>1h</td>
+<td><strong>~6M</strong></td>
 </tr>
 </tbody></table></div>
-<p>Read the first row against <code>the-settlement-instant</code>: that card settles at an instant, which is exactly what TWAP is defending against here. <strong>The two designs sit at opposite ends of the same trade-off</strong>, and seeing the cost written down on both sides is worth more than either design alone.</p>
-<h3>The number, and why it transfers</h3>
-<p><strong>Capital required to hold a TWAP above threshold T for window W against arbitrage, at pool depth D.</strong> Compute it at today&#39;s depth and at the depth where it exceeds the value of the decision. That single curve answers whether a given decision is genuinely market-governed or merely priced, and it applies unchanged to any resolution mechanism that reads a price — including the settlement path in this project. <strong>Manipulation cost is not a property of the mechanism; it is a property of the mechanism at a given liquidity</strong>, and mechanisms are usually described without one.</p>
-<h3>What the August auction actually tests</h3>
-<p>Umia is selling $UMIA through its own platform, so the auction is the product&#39;s first public run rather than a fundraise: whether seven days of CCA price discovery behaves as described, whether liquidity exists immediately afterwards, and whether the promised high initial float materializes instead of the low-float pattern it criticizes. <strong>A capital-formation model that cannot form its own capital has answered the question early</strong>, which is a rare case of a project being genuinely falsifiable on day one.</p>
-<h3>Update (2026-09-07) — four verdicts, one price, one week</h3>
-<p>CPI (9/11), a Clarity-bill cloture (9/15), the FOMC (9/15–16) and an options expiry (9/18) land within days of each other. They reprice four different axes — inflation, jurisdiction, monetary, derivatives — but the market prints <strong>one number</strong>, so any single-cause story about that week&#39;s move is probably wrong. The measurement discipline is the transferable part: record a <strong>probability snapshot immediately before and after each event, separately</strong>. That is the only way to reconstruct afterward which verdict actually moved the price — and it is the same move as this card&#39;s core number, which insists a mechanism means nothing without the state (here, the event) attached to the reading. Max-pain ($78,000 on the 9/18 expiry) is a coordinate, not a signal; expiry-week volatility compression is a tendency, not a law, and this week stacks three verdicts on top of it.</p>
-      <h2>Review clarification</h2>
-      <h3>What the mechanism is</h3>
-<p>A <strong>decision market</strong> is the conditional-market tool; <strong>futarchy</strong> is a governance system that uses it to choose and execute policy. Umia did not invent either concept. Its distinctive move is to package paired markets, an on-chain treasury and a legal wrapper so the result can bind a token-native organisation.</p>
+<p>The headline &quot;1M limit&quot; is identical across all three; the exposure spans 6×.</p>
+<h3>The trade you cannot escape</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Market</th>
-<th>Counterfactual question</th>
+<th>Refill</th>
+<th>Loss cap</th>
+<th>Honest users</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Proposal</strong></td>
-<td>What is the token worth if the proposal executes?</td>
+<td>Slow</td>
+<td>Low</td>
+<td>Blocked — bridge queues</td>
 </tr>
 <tr>
-<td><strong>No-Op</strong></td>
-<td>What is it worth if this proposal does not execute?</td>
+<td>Fast</td>
+<td>≈ whole reserve</td>
+<td>Smooth</td>
 </tr>
 </tbody></table></div>
-<p>One price is insufficient: Proposal at 120 is favourable if No-Op is 100 and harmful if No-Op is 150. No-Op means <em>this proposal is not executed</em>, not that nothing else ever changes.</p>
-<h3>Participation and manipulation</h3>
-<p>The pair creates a comparison; it does not create informed traders. Thin participation can leave a large treasury dependent on one trader, and incentives can add volume without information. A credible rule therefore needs minimum liquidity and independent participation as well as a TWAP spread.</p>
-<p><code>expected net manipulation cost &amp;lt; external value of the decision</code> is a general attack test, not an official Umia formula. It matters because a trader may lose in the market yet profit from a grant, contract or strategic benefit produced by the decision. D, T and W alone are insufficient: the AMM curve, fees, external fair price, arbitrage capacity and speed, order flow and recoverable position value also matter. Likewise, uncontrollability may be one legal factor in gambling analysis; this card does not establish it as a sufficient condition by itself.</p>
+<p>There is no setting that is safe and frictionless; the right point scales with the value behind the bridge.</p>
+<h3>Related cards</h3>
+<p><code>the-bridge-is-inside-the-token</code> (who can halt minting), <code>who-holds-the-mint</code> (mint authority), <code>third-party-blast-radius</code> (correlated failure), <code>erc-8141</code> (native-issuance mechanics).</p>
+      
       <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 시장을 작동하게 하는 속성이, 그것을 도박으로 만든다\n\nUmia는 기업 의사결정을 시장에 태우고 케이맨 법인으로 강제합니다. 그런데 같은 글이 예측시장의 성립 조건으로 **참여자가 결과를 바꿀 수 없어야 한다**를 듭니다 — 방심위가 예측시장을 도박이라 부를 때 든 **바로 그 속성**입니다. **결정시장은 그 선을 의도적으로 넘습니다.**\n\n아직 범위 미정 — 산출물은 만들기가 아니라 **식 하나**입니다. 깊이 D의 조건부 AMM, 길이 W의 TWAP 창, No-Op 시장 대비 실행 임계값 T가 주어졌을 때, **반대편을 잡는 차익거래자를 상대로 창 전체 동안 가격을 임계값 위에 붙들어 두는 데 드는 자본**을 계산합니다. **그 숫자가 기업 의사결정 한 건의 가격입니다.** 두 번 계산합니다 — 초기 시장이 실제로 갖는 유동성에서, 그리고 **그 비용이 사려는 결정의 가치를 넘어서려면** 필요한 유동성에서. 출처: Four Pillars, Steve, \"Umia: A New Way to Build Crypto Projects\", 2026-08-26 — TWAP 정산, 현상유지 No-Op 시장, 그 위의 임계값, Uniswap v4 CCA 경매, MetaLeX BORG 케이맨 SPC 래퍼, 8월 말 첫 $UMIA 경매. 메커니즘 세부는 프라이머로 확인할 것.\n\n## 왜\n\n**두 문서를 나란히 놓으면, 정반대 이유로 같은 선을 긋습니다.** 이 글이 앞서 예측시장에 가한 비판의 핵심은 **참여자가 결과를 바꿀 수 없어야** 시장이 결과를 발견한다는 것입니다 — 바꿀 수 있게 되는 순간 시장은 예측을 멈추고 **결과를 제조**하기 시작합니다. 방심위는 예측시장을 형법상 도박으로 볼 근거 중 하나로 **이용자가 통제할 수 없는 사건**을 들었습니다(`jurisdiction-decides-the-category`). 즉 **통제 불가능성은 가격에 의미를 주는 것이면서 동시에 한 법역에서 그 상품을 불법으로 만드는 것**입니다.\n\n**이건 우연이 아니라 함정이고, 설계 전에 이름을 붙여 둘 값이 있습니다.** 상품을 이용자가 영향을 주는 사건 쪽으로 — 역량, 본인의 행위, 본인의 성과 — 옮기면 법적 근거는 약해지지만 **인식론적 근거는 무너집니다.** 참여자가 자기가 값을 매기는 결과에 **포지션**을 갖게 되니까요. 순수 외생 사건 쪽으로 옮기면 가격은 의미를 얻고, 규제기관의 첫 번째 논거는 **완전히 충족됩니다.** **두 축 모두에서 편안한 설정은 없습니다.** 영리한 프레이밍을 찾을 문제가 아니라 **진짜 선택**이라는 뜻입니다.\n\n**결정시장은 그 선을 의도적으로 넘으면 어떻게 되는지의 모습입니다.** 참여자는 트레저리 지출이 좋을지를 예측하는 게 아닙니다 — **가격이 그 지출을 일으킵니다.** Umia는 아닌 척하지 않습니다. **조작이 가능하다는 것을 받아들이고 비싸게 만들려** 합니다: 종가가 아니라 TWAP로 정산하고, 현상유지를 나타내는 No-Op 시장을 두고, 제안이 No-Op를 **일정 폭 이상으로** 이겨야 실행합니다. 마지막 규칙의 방향을 보세요 — **변화가 기본값이 아니고**, 침묵은 아무 일도 일어나지 않음을 뜻합니다. 이건 시장 메커니즘이 아니라 **거버넌스 입장**입니다.\n\n**그래서 설계 전체가 숫자 하나로 수렴합니다.** 조작이 단지 비쌀 뿐이라면, 정직한 질문은 ***얼마나 비싼가, 어느 깊이에서*** 이고 — 글 자신이 약점을 인정합니다: 생태계가 규모에 이르기 전에는 프로젝트 편입 결정을 좌우할 만큼 가격을 움직이는 비용이 **낮게 유지될 수 있다**는 것입니다. `governance-capture-cost` 가 토큰 투표에 대해 하는 바로 그 계산을 **시장으로 옮긴 것**이고, **결정시장이 거버넌스인지 연극인지를 그 숫자가 정합니다.**\n\n## 동작 방식\n\n### 같은 속성, 두 권위의 독법\n\n| | 기준 | 이용자가 결과에 **영향을 줄 수 없을 때**의 판정 |\n|---|---|---|\n| **시장 설계자**(이 글) | 참여자는 예측해야지 제조하면 안 된다 | **건전함** — 가격이 의미를 가짐 |\n| **한국 규제기관**(방심위) | 이용자가 통제할 수 없는 사건 | **도박** — 차단 근거로 적시 |\n| **결정시장** | **가격이 결정을 실행한다** | 양쪽 모두에서 의도적으로 반대편, 그리고 그걸 숨기지 않음 |\n\n### Umia의 대응, 그리고 각 방어의 대가\n\n| 방어 | 막는 것 | 대가 |\n|---|---|---|\n| **TWAP 정산** | 마감 직전 몇 블록의 밀어올리기 | **반응성** — 진짜 뉴스에도 느리게 반응 |\n| **No-Op 시장** | 제안을 아무것도 아닌 것과 비교하는 일 | 씨앗 유동성을 대고 유지할 **두 번째 시장** |\n| **실행 임계값** | 잡음에 반응해 실행하는 일 | 임계 아래의 **진짜 개선은 영원히 실행되지 않음** |\n| **케이맨 SPC · BORG** | 팀이 결과를 무시하는 일 | 공용 법적 래퍼, 그리고 퍼미션리스가 아닌 **큐레이티드** 트랙 |\n\n첫 줄을 `the-settlement-instant` 에 대고 읽으세요 — 그 카드는 **한 시점**에 정산하고, TWAP가 여기서 막으려는 것이 정확히 그것입니다. **두 설계는 같은 트레이드오프의 양 끝에 있고**, 양쪽의 대가가 적혀 있는 것이 어느 한쪽 설계보다 값집니다.\n\n### 그 숫자, 그리고 왜 옮겨 쓸 수 있는가\n\n**풀 깊이 D에서, 차익거래를 상대로 창 W 동안 TWAP를 임계 T 위에 붙들어 두는 데 필요한 자본.** 오늘의 깊이에서 한 번, 그 비용이 **사려는 결정의 가치를 넘는** 깊이에서 한 번 계산합니다. 그 곡선 하나가 **어떤 결정이 진짜로 시장에 의해 통치되는지 아니면 그냥 값이 매겨질 뿐인지**에 답하고, **가격을 읽는 모든 정산 메커니즘에 그대로 적용됩니다** — 이 프로젝트의 정산 경로를 포함해서. **조작 비용은 메커니즘의 속성이 아니라 특정 유동성에서의 메커니즘의 속성**인데, 메커니즘은 보통 그 유동성 없이 서술됩니다.\n\n### 8월 경매가 실제로 시험하는 것\n\nUmia는 자기 플랫폼으로 $UMIA를 팝니다. 그러니 이 경매는 자금 조달이 아니라 **제품의 첫 공개 실행**입니다 — 7일간의 CCA 가격 발견이 설명대로 도는지, 직후에 유동성이 실재하는지, 그리고 스스로 비판한 저유통·고FDV 대신 약속한 **높은 초기 유통량이 실제로 나오는지**. **자기 자본을 형성하지 못하는 자본형성 모델은 질문에 일찍 답한 것**이고, 프로젝트가 **첫날부터 반증 가능한** 드문 경우입니다.\n\n### 업데이트 (2026-09-07) — 판정 넷, 가격 하나, 일주일\n\nCPI(9/11), Clarity 법안 클로처(9/15), FOMC(9/15–16), 옵션 만기(9/18)가 사흘 안에 겹칩니다. 서로 다른 네 축 — 물가, 법역, 통화, 파생 — 을 재가격하지만 시장은 **가격 하나**로 나옵니다. 그래서 그 주의 움직임을 하나의 원인으로 설명하려는 시도는 대부분 틀립니다. 옮겨 쓸 수 있는 부분은 측정 규율입니다 — 각 이벤트 **직전·직후의 확률 스냅샷을 따로** 기록할 것. 사후에 **어느 판정이 실제로 가격을 움직였는지** 복원하는 유일한 방법이고, 이 카드의 핵심 숫자와 같은 동작입니다(메커니즘은 읽는 시점의 상태 — 여기서는 이벤트 — 를 붙이지 않으면 아무 뜻도 없다). 맥스페인($78,000, 9/18 만기)은 좌표이지 신호가 아니며, 만기 주간의 변동성 압축은 경향이지 법칙이 아니고, 이번 주는 그 위에 판정 셋을 얹습니다.\n\n## 검토 후 보완\n\n### 메커니즘의 정체\n\n**결정시장**은 조건부 시장이라는 도구이고, **퓨타키**는 그것으로 정책을 선택하고 실행하는 지배구조입니다. Umia가 둘 중 어느 개념도 발명한 것은 아닙니다. Umia의 특징은 시장 쌍, 온체인 재무금고, 법적 래퍼를 묶어 결과가 토큰 기반 조직을 구속하게 하는 데 있습니다.\n\n| 시장 | 반사실 질문 |\n|---|---|\n| **Proposal** | 제안을 실행하면 토큰 가치는 얼마인가? |\n| **No-Op** | 이 제안을 실행하지 않으면 얼마인가? |\n\n가격 하나로는 부족합니다. Proposal 120은 No-Op가 100이면 유리하지만 150이면 해롭습니다. No-Op는 *이 제안을 실행하지 않음*이지 앞으로 아무 변화도 없다는 뜻이 아닙니다.\n\n### 참여와 조작\n\n시장 쌍은 비교를 만들지만 정보력 있는 거래자를 만들지는 않습니다. 참여가 얕으면 큰 재무금고가 한 거래자에게 의존할 수 있고, 보상은 정보 없이 거래량만 늘릴 수 있습니다. 따라서 신뢰할 수 있는 규칙에는 TWAP 차이뿐 아니라 최소 유동성과 독립 참여가 필요합니다.\n\n`조작의 기대 순비용 \u003c 결정의 외부 가치`는 Umia의 공식이 아니라 일반적인 공격 평가식입니다. 공격자는 시장에서 손해를 보더라도 결정이 만든 보조금, 계약, 전략적 이익으로 수익을 낼 수 있습니다. D, T, W만으로는 부족하고 AMM 곡선, 수수료, 외부 공정가격, 차익거래의 규모와 속도, 주문 흐름, 회수 가능한 포지션까지 필요합니다. 통제 불가능성도 도박 판단 요소 중 하나일 수 있지만, 이 카드만으로 단독 충분조건이라고 확정할 수는 없습니다.\n"</script>
-      <h1>시장을 작동하게 하는 속성이, 그것을 도박으로 만든다</h1>
-      <p class="lead">Umia는 기업 의사결정을 시장에 태우고 케이맨 법인으로 강제합니다. 그런데 같은 글이 예측시장의 성립 조건으로 <strong>참여자가 결과를 바꿀 수 없어야 한다</strong>를 듭니다 — 방심위가 예측시장을 도박이라 부를 때 든 <strong>바로 그 속성</strong>입니다. <strong>결정시장은 그 선을 의도적으로 넘습니다.</strong></p>
-      <p class="meta">아직 범위 미정 — 산출물은 만들기가 아니라 <strong>식 하나</strong>입니다. 깊이 D의 조건부 AMM, 길이 W의 TWAP 창, No-Op 시장 대비 실행 임계값 T가 주어졌을 때, <strong>반대편을 잡는 차익거래자를 상대로 창 전체 동안 가격을 임계값 위에 붙들어 두는 데 드는 자본</strong>을 계산합니다. <strong>그 숫자가 기업 의사결정 한 건의 가격입니다.</strong> 두 번 계산합니다 — 초기 시장이 실제로 갖는 유동성에서, 그리고 <strong>그 비용이 사려는 결정의 가치를 넘어서려면</strong> 필요한 유동성에서. 출처: Four Pillars, Steve, &quot;Umia: A New Way to Build Crypto Projects&quot;, 2026-08-26 — TWAP 정산, 현상유지 No-Op 시장, 그 위의 임계값, Uniswap v4 CCA 경매, MetaLeX BORG 케이맨 SPC 래퍼, 8월 말 첫 $UMIA 경매. 메커니즘 세부는 프라이머로 확인할 것.</p>
+      <script type="application/json" id="copy-ko">"# 브리지의 한도는 손실 상한이 아니다 — 회복 속도가 상한이다\n\nxERC20(ERC-7281)은 **브리지별 발행·소각 한도(rate limit)**를 온체인에 두고, 그 **한도는 시간에 따라 회복(refill)**됩니다. 실제 노출을 결정하는 것이 바로 그 회복입니다 — **1시간에 회복되는 100만 한도는 공격자가 하루 24번 소진**할 수 있으므로, 진짜 손실 상한은 한도가 아니라 **한도 × (탐지까지 시간 ÷ 회복 주기)**입니다. 대부분의 설계가 인용하는 숫자가 가장 덜 구속력 있는 숫자입니다.\n\n만드는 일이 아니라 **브리지당 계산 한 번, 그리고 표**입니다. 붙일 모든 브리지를 나열하고 각각에서 세 숫자를 읽습니다 — **한도(rate limit)**, **회복 주기**(완전히 소진된 한도가 돌아오는 데 걸리는 시간), 그리고 **본인의 현실적인 탐지·정지 시간**. **최대 손실 = 한도 × (탐지까지 시간 ÷ 회복 주기)**를 회복 횟수 올림으로 계산합니다. **30분 탐지·정지**를 가정하고 감당 가능한 손실을 통과하는 브리지가 어느 것인지 봅니다 — 그 숫자가, 헤드라인 한도가 아니라, 상한입니다. 그다음 뒤집습니다 — 감당 가능한 손실에 대해 브리지가 가져야 할 회복 주기를 역산하고, **회복을 느리게 하면 정상 사용자가 막힌다(브리지 대기)**는 것을 확인합니다. 출처: xERC20 / ERC-7281 한도 설계(브리지별 발행·소각 한도, 시간 기반 회복); 각 브리지의 회복 메커니즘은 구현이 다르므로 해당 문서로 확인.\n\n## 왜\n\n**한도는 손실 상한처럼 읽히지만 상한이 아닙니다.** \"이 브리지는 최대 100만까지 발행\"은 최대 손실이 100만처럼 들립니다. 하지만 한도는 **평생 예산이 아니라 회복됩니다** — 회복 안 되는 한도는 정상 트래픽 하루 만에 브리지를 무용지물로 조이니까요. 회복되는 순간 천장은 100만이 아니라 **회복 주기당 100만**이 되고, 발행 경로를 탈취한 공격자는 **누군가 알아채고 멈출 때까지 매 회복마다** 그것을 씁니다. 그래서 손실은 한도가 언급조차 않는 두 숫자가 지배합니다 — **한도가 얼마나 빨리 돌아오는가**, 그리고 **당신이 얼마나 빨리 멈출 수 있는가**.\n\n**따라서 정직한 노출은 수준이 아니라 속도입니다 — 한도 × (탐지까지 시간 ÷ 회복 주기).** 6시간 탐지 지연에 대해 1시간마다 회복되는 100만 한도는 100만이 아니라 **600만 노출**입니다. 이것은 `the-bridge-is-inside-the-token`의 운영 하부 바닥입니다 — 그 카드는 공급과 커스터디가 어긋날 때 **누가** 발행을 멈추냐고 묻고, 이 카드는 그 전에 **얼마가** 사라지냐고 묻습니다. 그리고 `governance-capture-cost`, 결정시장 카드의 조작비용 숫자와 **같은 모양**입니다 — 안전 속성은 메커니즘의 속성이 아니라 **특정 속도에서의 메커니즘의 속성**이고, 메커니즘은 보통 그 속도 없이 서술됩니다.\n\n**회복 주기는 안전 대 가용성의 교환이고, 양쪽 모두에서 편안한 설정은 없습니다.** 회복을 느리게 하면 손실 상한은 내려가지만 — 정상 사용자가 한도에 걸려 대기 줄에 섭니다. 이것이 위험 대신 **지연으로 체감되는** `who-holds-the-mint`와 `third-party-blast-radius`입니다. 빠르게 하면 브리지는 매끄럽고 상한은 사실상 준비금 전체가 됩니다. 정답은 기본값이 아니라 **브리지 뒤에 있는 것의 크기에 따라 달라지고**, 고르는 유일한 방법은 **본인의 실제 탐지 시간에서 손실을 계산하고 그것이 함의하는 대기 줄을 읽는 것**입니다. 회복 주기 없이 인용된 한도는 **가장 덜 구속력 있는 절반**만 인용한 것입니다.\n\n## 동작 방식\n\n### 한도는 상한이 아니다\n\n| 양 | 말하는 것 | 구속력 |\n| --- | --- | --- |\n| **한도(rate limit)** (예: 100만) | 한도가 소진되기 전 발행 최대치 | 가장 약함 — 회복됨 |\n| **회복 주기** | 소진된 한도가 돌아오는 시간 | 한도를 다시 쓸 수 있는 빈도를 정함 |\n| **탐지·정지 시간** | 본인의 운영 현실 | 아무도 공표 않는 숫자 |\n| **최대 손실** | 한도 × ⌈탐지 ÷ 회복⌉ | **실제 상한** |\n\n### 같은 한도, 세 회복 속도, 6시간 탐지\n\n| 한도 | 회복 주기 | 최대 손실 @6h 탐지 |\n| --- | --- | --- |\n| 100만 | 24h (하루 1회) | ~100만 |\n| 100만 | 6h | ~100만–200만 |\n| 100만 | 1h | **~600만** |\n\n**헤드라인 \"100만 한도\"는 셋 다 똑같지만**, 노출은 6배까지 벌어집니다.\n\n### 피할 수 없는 교환\n\n| 회복 | 손실 상한 | 정상 사용자 |\n| --- | --- | --- |\n| 느림 | 낮음 | 막힘 — 브리지 대기 |\n| 빠름 | ≈ 준비금 전체 | 매끄러움 |\n\n**안전하면서 마찰 없는 설정은 없습니다.** 옳은 지점은 브리지 뒤에 있는 가치에 따라 커집니다.\n\n### 관련 카드\n\n`the-bridge-is-inside-the-token`(누가 발행을 멈추나), `who-holds-the-mint`(발행 권한), `third-party-blast-radius`(상관 장애), `erc-8141`(네이티브 발행 메커니즘).\n"</script>
+      <h1>브리지의 한도는 손실 상한이 아니다 — 회복 속도가 상한이다</h1>
+      <p class="lead">xERC20(ERC-7281)은 <strong>브리지별 발행·소각 한도(rate limit)</strong>를 온체인에 두고, 그 <strong>한도는 시간에 따라 회복(refill)</strong>됩니다. 실제 노출을 결정하는 것이 바로 그 회복입니다 — <strong>1시간에 회복되는 100만 한도는 공격자가 하루 24번 소진</strong>할 수 있으므로, 진짜 손실 상한은 한도가 아니라 <strong>한도 × (탐지까지 시간 ÷ 회복 주기)</strong>입니다. 대부분의 설계가 인용하는 숫자가 가장 덜 구속력 있는 숫자입니다.</p>
+      <p class="meta">만드는 일이 아니라 <strong>브리지당 계산 한 번, 그리고 표</strong>입니다. 붙일 모든 브리지를 나열하고 각각에서 세 숫자를 읽습니다 — <strong>한도(rate limit)</strong>, <strong>회복 주기</strong>(완전히 소진된 한도가 돌아오는 데 걸리는 시간), 그리고 <strong>본인의 현실적인 탐지·정지 시간</strong>. <strong>최대 손실 = 한도 × (탐지까지 시간 ÷ 회복 주기)</strong>를 회복 횟수 올림으로 계산합니다. <strong>30분 탐지·정지</strong>를 가정하고 감당 가능한 손실을 통과하는 브리지가 어느 것인지 봅니다 — 그 숫자가, 헤드라인 한도가 아니라, 상한입니다. 그다음 뒤집습니다 — 감당 가능한 손실에 대해 브리지가 가져야 할 회복 주기를 역산하고, <strong>회복을 느리게 하면 정상 사용자가 막힌다(브리지 대기)</strong>는 것을 확인합니다. 출처: xERC20 / ERC-7281 한도 설계(브리지별 발행·소각 한도, 시간 기반 회복); 각 브리지의 회복 메커니즘은 구현이 다르므로 해당 문서로 확인.</p>
       <h2>왜</h2>
-      <p><strong>두 문서를 나란히 놓으면, 정반대 이유로 같은 선을 긋습니다.</strong> 이 글이 앞서 예측시장에 가한 비판의 핵심은 <strong>참여자가 결과를 바꿀 수 없어야</strong> 시장이 결과를 발견한다는 것입니다 — 바꿀 수 있게 되는 순간 시장은 예측을 멈추고 <strong>결과를 제조</strong>하기 시작합니다. 방심위는 예측시장을 형법상 도박으로 볼 근거 중 하나로 <strong>이용자가 통제할 수 없는 사건</strong>을 들었습니다(<code>jurisdiction-decides-the-category</code>). 즉 <strong>통제 불가능성은 가격에 의미를 주는 것이면서 동시에 한 법역에서 그 상품을 불법으로 만드는 것</strong>입니다.</p>
-<p><strong>이건 우연이 아니라 함정이고, 설계 전에 이름을 붙여 둘 값이 있습니다.</strong> 상품을 이용자가 영향을 주는 사건 쪽으로 — 역량, 본인의 행위, 본인의 성과 — 옮기면 법적 근거는 약해지지만 <strong>인식론적 근거는 무너집니다.</strong> 참여자가 자기가 값을 매기는 결과에 <strong>포지션</strong>을 갖게 되니까요. 순수 외생 사건 쪽으로 옮기면 가격은 의미를 얻고, 규제기관의 첫 번째 논거는 <strong>완전히 충족됩니다.</strong> <strong>두 축 모두에서 편안한 설정은 없습니다.</strong> 영리한 프레이밍을 찾을 문제가 아니라 <strong>진짜 선택</strong>이라는 뜻입니다.</p>
-<p><strong>결정시장은 그 선을 의도적으로 넘으면 어떻게 되는지의 모습입니다.</strong> 참여자는 트레저리 지출이 좋을지를 예측하는 게 아닙니다 — <strong>가격이 그 지출을 일으킵니다.</strong> Umia는 아닌 척하지 않습니다. <strong>조작이 가능하다는 것을 받아들이고 비싸게 만들려</strong> 합니다: 종가가 아니라 TWAP로 정산하고, 현상유지를 나타내는 No-Op 시장을 두고, 제안이 No-Op를 <strong>일정 폭 이상으로</strong> 이겨야 실행합니다. 마지막 규칙의 방향을 보세요 — <strong>변화가 기본값이 아니고</strong>, 침묵은 아무 일도 일어나지 않음을 뜻합니다. 이건 시장 메커니즘이 아니라 <strong>거버넌스 입장</strong>입니다.</p>
-<p><strong>그래서 설계 전체가 숫자 하나로 수렴합니다.</strong> 조작이 단지 비쌀 뿐이라면, 정직한 질문은 <strong><em>얼마나 비싼가, 어느 깊이에서</em></strong> 이고 — 글 자신이 약점을 인정합니다: 생태계가 규모에 이르기 전에는 프로젝트 편입 결정을 좌우할 만큼 가격을 움직이는 비용이 <strong>낮게 유지될 수 있다</strong>는 것입니다. <code>governance-capture-cost</code> 가 토큰 투표에 대해 하는 바로 그 계산을 <strong>시장으로 옮긴 것</strong>이고, <strong>결정시장이 거버넌스인지 연극인지를 그 숫자가 정합니다.</strong></p>
+      <p><strong>한도는 손실 상한처럼 읽히지만 상한이 아닙니다.</strong> &quot;이 브리지는 최대 100만까지 발행&quot;은 최대 손실이 100만처럼 들립니다. 하지만 한도는 <strong>평생 예산이 아니라 회복됩니다</strong> — 회복 안 되는 한도는 정상 트래픽 하루 만에 브리지를 무용지물로 조이니까요. 회복되는 순간 천장은 100만이 아니라 <strong>회복 주기당 100만</strong>이 되고, 발행 경로를 탈취한 공격자는 <strong>누군가 알아채고 멈출 때까지 매 회복마다</strong> 그것을 씁니다. 그래서 손실은 한도가 언급조차 않는 두 숫자가 지배합니다 — <strong>한도가 얼마나 빨리 돌아오는가</strong>, 그리고 <strong>당신이 얼마나 빨리 멈출 수 있는가</strong>.</p>
+<p><strong>따라서 정직한 노출은 수준이 아니라 속도입니다 — 한도 × (탐지까지 시간 ÷ 회복 주기).</strong> 6시간 탐지 지연에 대해 1시간마다 회복되는 100만 한도는 100만이 아니라 <strong>600만 노출</strong>입니다. 이것은 <code>the-bridge-is-inside-the-token</code>의 운영 하부 바닥입니다 — 그 카드는 공급과 커스터디가 어긋날 때 <strong>누가</strong> 발행을 멈추냐고 묻고, 이 카드는 그 전에 <strong>얼마가</strong> 사라지냐고 묻습니다. 그리고 <code>governance-capture-cost</code>, 결정시장 카드의 조작비용 숫자와 <strong>같은 모양</strong>입니다 — 안전 속성은 메커니즘의 속성이 아니라 <strong>특정 속도에서의 메커니즘의 속성</strong>이고, 메커니즘은 보통 그 속도 없이 서술됩니다.</p>
+<p><strong>회복 주기는 안전 대 가용성의 교환이고, 양쪽 모두에서 편안한 설정은 없습니다.</strong> 회복을 느리게 하면 손실 상한은 내려가지만 — 정상 사용자가 한도에 걸려 대기 줄에 섭니다. 이것이 위험 대신 <strong>지연으로 체감되는</strong> <code>who-holds-the-mint</code>와 <code>third-party-blast-radius</code>입니다. 빠르게 하면 브리지는 매끄럽고 상한은 사실상 준비금 전체가 됩니다. 정답은 기본값이 아니라 <strong>브리지 뒤에 있는 것의 크기에 따라 달라지고</strong>, 고르는 유일한 방법은 <strong>본인의 실제 탐지 시간에서 손실을 계산하고 그것이 함의하는 대기 줄을 읽는 것</strong>입니다. 회복 주기 없이 인용된 한도는 <strong>가장 덜 구속력 있는 절반</strong>만 인용한 것입니다.</p>
       <h2>동작 방식</h2>
-      <h3>같은 속성, 두 권위의 독법</h3>
+      <h3>한도는 상한이 아니다</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th></th>
-<th>기준</th>
-<th>이용자가 결과에 <strong>영향을 줄 수 없을 때</strong>의 판정</th>
+<th>양</th>
+<th>말하는 것</th>
+<th>구속력</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>시장 설계자</strong>(이 글)</td>
-<td>참여자는 예측해야지 제조하면 안 된다</td>
-<td><strong>건전함</strong> — 가격이 의미를 가짐</td>
+<td><strong>한도(rate limit)</strong> (예: 100만)</td>
+<td>한도가 소진되기 전 발행 최대치</td>
+<td>가장 약함 — 회복됨</td>
 </tr>
 <tr>
-<td><strong>한국 규제기관</strong>(방심위)</td>
-<td>이용자가 통제할 수 없는 사건</td>
-<td><strong>도박</strong> — 차단 근거로 적시</td>
+<td><strong>회복 주기</strong></td>
+<td>소진된 한도가 돌아오는 시간</td>
+<td>한도를 다시 쓸 수 있는 빈도를 정함</td>
 </tr>
 <tr>
-<td><strong>결정시장</strong></td>
-<td><strong>가격이 결정을 실행한다</strong></td>
-<td>양쪽 모두에서 의도적으로 반대편, 그리고 그걸 숨기지 않음</td>
+<td><strong>탐지·정지 시간</strong></td>
+<td>본인의 운영 현실</td>
+<td>아무도 공표 않는 숫자</td>
+</tr>
+<tr>
+<td><strong>최대 손실</strong></td>
+<td>한도 × ⌈탐지 ÷ 회복⌉</td>
+<td><strong>실제 상한</strong></td>
 </tr>
 </tbody></table></div>
-<h3>Umia의 대응, 그리고 각 방어의 대가</h3>
+<h3>같은 한도, 세 회복 속도, 6시간 탐지</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>방어</th>
-<th>막는 것</th>
-<th>대가</th>
+<th>한도</th>
+<th>회복 주기</th>
+<th>최대 손실 @6h 탐지</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>TWAP 정산</strong></td>
-<td>마감 직전 몇 블록의 밀어올리기</td>
-<td><strong>반응성</strong> — 진짜 뉴스에도 느리게 반응</td>
+<td>100만</td>
+<td>24h (하루 1회)</td>
+<td>~100만</td>
 </tr>
 <tr>
-<td><strong>No-Op 시장</strong></td>
-<td>제안을 아무것도 아닌 것과 비교하는 일</td>
-<td>씨앗 유동성을 대고 유지할 <strong>두 번째 시장</strong></td>
+<td>100만</td>
+<td>6h</td>
+<td>~100만–200만</td>
 </tr>
 <tr>
-<td><strong>실행 임계값</strong></td>
-<td>잡음에 반응해 실행하는 일</td>
-<td>임계 아래의 <strong>진짜 개선은 영원히 실행되지 않음</strong></td>
-</tr>
-<tr>
-<td><strong>케이맨 SPC · BORG</strong></td>
-<td>팀이 결과를 무시하는 일</td>
-<td>공용 법적 래퍼, 그리고 퍼미션리스가 아닌 <strong>큐레이티드</strong> 트랙</td>
+<td>100만</td>
+<td>1h</td>
+<td><strong>~600만</strong></td>
 </tr>
 </tbody></table></div>
-<p>첫 줄을 <code>the-settlement-instant</code> 에 대고 읽으세요 — 그 카드는 <strong>한 시점</strong>에 정산하고, TWAP가 여기서 막으려는 것이 정확히 그것입니다. <strong>두 설계는 같은 트레이드오프의 양 끝에 있고</strong>, 양쪽의 대가가 적혀 있는 것이 어느 한쪽 설계보다 값집니다.</p>
-<h3>그 숫자, 그리고 왜 옮겨 쓸 수 있는가</h3>
-<p><strong>풀 깊이 D에서, 차익거래를 상대로 창 W 동안 TWAP를 임계 T 위에 붙들어 두는 데 필요한 자본.</strong> 오늘의 깊이에서 한 번, 그 비용이 <strong>사려는 결정의 가치를 넘는</strong> 깊이에서 한 번 계산합니다. 그 곡선 하나가 <strong>어떤 결정이 진짜로 시장에 의해 통치되는지 아니면 그냥 값이 매겨질 뿐인지</strong>에 답하고, <strong>가격을 읽는 모든 정산 메커니즘에 그대로 적용됩니다</strong> — 이 프로젝트의 정산 경로를 포함해서. <strong>조작 비용은 메커니즘의 속성이 아니라 특정 유동성에서의 메커니즘의 속성</strong>인데, 메커니즘은 보통 그 유동성 없이 서술됩니다.</p>
-<h3>8월 경매가 실제로 시험하는 것</h3>
-<p>Umia는 자기 플랫폼으로 $UMIA를 팝니다. 그러니 이 경매는 자금 조달이 아니라 <strong>제품의 첫 공개 실행</strong>입니다 — 7일간의 CCA 가격 발견이 설명대로 도는지, 직후에 유동성이 실재하는지, 그리고 스스로 비판한 저유통·고FDV 대신 약속한 <strong>높은 초기 유통량이 실제로 나오는지</strong>. <strong>자기 자본을 형성하지 못하는 자본형성 모델은 질문에 일찍 답한 것</strong>이고, 프로젝트가 <strong>첫날부터 반증 가능한</strong> 드문 경우입니다.</p>
-<h3>업데이트 (2026-09-07) — 판정 넷, 가격 하나, 일주일</h3>
-<p>CPI(9/11), Clarity 법안 클로처(9/15), FOMC(9/15–16), 옵션 만기(9/18)가 사흘 안에 겹칩니다. 서로 다른 네 축 — 물가, 법역, 통화, 파생 — 을 재가격하지만 시장은 <strong>가격 하나</strong>로 나옵니다. 그래서 그 주의 움직임을 하나의 원인으로 설명하려는 시도는 대부분 틀립니다. 옮겨 쓸 수 있는 부분은 측정 규율입니다 — 각 이벤트 <strong>직전·직후의 확률 스냅샷을 따로</strong> 기록할 것. 사후에 <strong>어느 판정이 실제로 가격을 움직였는지</strong> 복원하는 유일한 방법이고, 이 카드의 핵심 숫자와 같은 동작입니다(메커니즘은 읽는 시점의 상태 — 여기서는 이벤트 — 를 붙이지 않으면 아무 뜻도 없다). 맥스페인($78,000, 9/18 만기)은 좌표이지 신호가 아니며, 만기 주간의 변동성 압축은 경향이지 법칙이 아니고, 이번 주는 그 위에 판정 셋을 얹습니다.</p>
-      <h2>검토 후 보완</h2>
-      <h3>메커니즘의 정체</h3>
-<p><strong>결정시장</strong>은 조건부 시장이라는 도구이고, <strong>퓨타키</strong>는 그것으로 정책을 선택하고 실행하는 지배구조입니다. Umia가 둘 중 어느 개념도 발명한 것은 아닙니다. Umia의 특징은 시장 쌍, 온체인 재무금고, 법적 래퍼를 묶어 결과가 토큰 기반 조직을 구속하게 하는 데 있습니다.</p>
+<p><strong>헤드라인 &quot;100만 한도&quot;는 셋 다 똑같지만</strong>, 노출은 6배까지 벌어집니다.</p>
+<h3>피할 수 없는 교환</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>시장</th>
-<th>반사실 질문</th>
+<th>회복</th>
+<th>손실 상한</th>
+<th>정상 사용자</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Proposal</strong></td>
-<td>제안을 실행하면 토큰 가치는 얼마인가?</td>
+<td>느림</td>
+<td>낮음</td>
+<td>막힘 — 브리지 대기</td>
 </tr>
 <tr>
-<td><strong>No-Op</strong></td>
-<td>이 제안을 실행하지 않으면 얼마인가?</td>
+<td>빠름</td>
+<td>≈ 준비금 전체</td>
+<td>매끄러움</td>
 </tr>
 </tbody></table></div>
-<p>가격 하나로는 부족합니다. Proposal 120은 No-Op가 100이면 유리하지만 150이면 해롭습니다. No-Op는 <em>이 제안을 실행하지 않음</em>이지 앞으로 아무 변화도 없다는 뜻이 아닙니다.</p>
-<h3>참여와 조작</h3>
-<p>시장 쌍은 비교를 만들지만 정보력 있는 거래자를 만들지는 않습니다. 참여가 얕으면 큰 재무금고가 한 거래자에게 의존할 수 있고, 보상은 정보 없이 거래량만 늘릴 수 있습니다. 따라서 신뢰할 수 있는 규칙에는 TWAP 차이뿐 아니라 최소 유동성과 독립 참여가 필요합니다.</p>
-<p><code>조작의 기대 순비용 &amp;lt; 결정의 외부 가치</code>는 Umia의 공식이 아니라 일반적인 공격 평가식입니다. 공격자는 시장에서 손해를 보더라도 결정이 만든 보조금, 계약, 전략적 이익으로 수익을 낼 수 있습니다. D, T, W만으로는 부족하고 AMM 곡선, 수수료, 외부 공정가격, 차익거래의 규모와 속도, 주문 흐름, 회수 가능한 포지션까지 필요합니다. 통제 불가능성도 도박 판단 요소 중 하나일 수 있지만, 이 카드만으로 단독 충분조건이라고 확정할 수는 없습니다.</p>
+<p><strong>안전하면서 마찰 없는 설정은 없습니다.</strong> 옳은 지점은 브리지 뒤에 있는 가치에 따라 커집니다.</p>
+<h3>관련 카드</h3>
+<p><code>the-bridge-is-inside-the-token</code>(누가 발행을 멈추나), <code>who-holds-the-mint</code>(발행 권한), <code>third-party-blast-radius</code>(상관 장애), <code>erc-8141</code>(네이티브 발행 메커니즘).</p>
+      
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-the-bridge-is-inside-the-token.html">&larr; 13. The bridge is not beside the token any more — it is inside it</a><a href="pocs-stake-concentration.html">15. Stake concentration risk &rarr;</a></div>
+    <div class="pager"><a href="pocs-can-you-leave-by-2030.html">&larr; 46. The 2027 question is easy — the 2030 question is whether you can leave</a><a href="pocs-merkle-vs-verkle.html">48. Merkle vs Verkle &rarr;</a></div>
   </div>
   </main>
 </div>

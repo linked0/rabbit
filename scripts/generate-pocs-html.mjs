@@ -144,13 +144,16 @@ const CARD_GROUPS = [
   },
   {
     id: 'economics',
-    title: 'Economics',
-    lead: 'The money logic underneath all of it &mdash; where a yield actually comes from, what a headline number is really counting, and the handful of macro facts that move every price on this list.',
+    // 2026-09-07 (jay): Economics -> "Economics/DataScience". id 는 'economics' 로 두므로
+    // 카드의 group 값과 #sec-economics 앵커는 그대로다 — 바뀐 것은 표시 이름과 범위뿐.
+    title: 'Economics/DataScience',
+    lead: 'The money logic underneath all of it &mdash; where a yield actually comes from, what a headline number is really counting &mdash; plus the data-science toolbox that turns those numbers into defensible claims.',
   },
   {
     id: 'future',
-    title: 'Future/Etc',
-    lead: 'Robotics, embodied AI and data-science method, plus anything that does not belong to a section above &mdash; the catch-all, kept honest about what is a demo and what is a cost curve.',
+    // 2026-09-07 (jay): Future/Etc -> "Robot/Security". id 는 'future' 로 유지 (앵커·group 불변).
+    title: 'Robot/Security',
+    lead: 'Robotics and embodied AI, the security incidents worth learning from one at a time, and the LLM techniques underneath the agents &mdash; still the honest catch-all for what fits nowhere else.',
   },
 ];
 // group 을 안 붙인 카드가 전부 Blockchain 으로 온다 (2026-08-29 에 Protocol+Applied 를

@@ -1915,7 +1915,7 @@ export const POC_CARDS: DemoCard[] = [
     // 사건"과 정확히 같은 속성이다. 그리고 결정시장은 그 선을 의도적으로 넘은 설계다.
     key: "decision-market-uncontrollability",
     important: true,
-    updated: "2026-09-01",
+    updated: "2026-09-07",
     title: "The property that makes a market work is the one that makes it gambling",
     titleKo: "시장을 작동하게 하는 속성이, 그것을 도박으로 만든다",
     description:
@@ -1936,9 +1936,9 @@ export const POC_CARDS: DemoCard[] = [
     purposeKo:
       "**두 문서를 나란히 놓으면, 정반대 이유로 같은 선을 긋습니다.** 이 글이 앞서 예측시장에 가한 비판의 핵심은 **참여자가 결과를 바꿀 수 없어야** 시장이 결과를 발견한다는 것입니다 — 바꿀 수 있게 되는 순간 시장은 예측을 멈추고 **결과를 제조**하기 시작합니다. 방심위는 예측시장을 형법상 도박으로 볼 근거 중 하나로 **이용자가 통제할 수 없는 사건**을 들었습니다(`jurisdiction-decides-the-category`). 즉 **통제 불가능성은 가격에 의미를 주는 것이면서 동시에 한 법역에서 그 상품을 불법으로 만드는 것**입니다.\n\n**이건 우연이 아니라 함정이고, 설계 전에 이름을 붙여 둘 값이 있습니다.** 상품을 이용자가 영향을 주는 사건 쪽으로 — 역량, 본인의 행위, 본인의 성과 — 옮기면 법적 근거는 약해지지만 **인식론적 근거는 무너집니다.** 참여자가 자기가 값을 매기는 결과에 **포지션**을 갖게 되니까요. 순수 외생 사건 쪽으로 옮기면 가격은 의미를 얻고, 규제기관의 첫 번째 논거는 **완전히 충족됩니다.** **두 축 모두에서 편안한 설정은 없습니다.** 영리한 프레이밍을 찾을 문제가 아니라 **진짜 선택**이라는 뜻입니다.\n\n**결정시장은 그 선을 의도적으로 넘으면 어떻게 되는지의 모습입니다.** 참여자는 트레저리 지출이 좋을지를 예측하는 게 아닙니다 — **가격이 그 지출을 일으킵니다.** Umia는 아닌 척하지 않습니다. **조작이 가능하다는 것을 받아들이고 비싸게 만들려** 합니다: 종가가 아니라 TWAP로 정산하고, 현상유지를 나타내는 No-Op 시장을 두고, 제안이 No-Op를 **일정 폭 이상으로** 이겨야 실행합니다. 마지막 규칙의 방향을 보세요 — **변화가 기본값이 아니고**, 침묵은 아무 일도 일어나지 않음을 뜻합니다. 이건 시장 메커니즘이 아니라 **거버넌스 입장**입니다.\n\n**그래서 설계 전체가 숫자 하나로 수렴합니다.** 조작이 단지 비쌀 뿐이라면, 정직한 질문은 ***얼마나 비싼가, 어느 깊이에서*** 이고 — 글 자신이 약점을 인정합니다: 생태계가 규모에 이르기 전에는 프로젝트 편입 결정을 좌우할 만큼 가격을 움직이는 비용이 **낮게 유지될 수 있다**는 것입니다. `governance-capture-cost` 가 토큰 투표에 대해 하는 바로 그 계산을 **시장으로 옮긴 것**이고, **결정시장이 거버넌스인지 연극인지를 그 숫자가 정합니다.**",
     howItWorks:
-      "### The same property, read by two authorities\n\n| | Criterion | Verdict when the user **cannot** influence the outcome |\n|---|---|---|\n| **Market designer** (this essay) | Participants must predict, not create | **Sound** — the price means something |\n| **Korean regulator** (방심위) | An event the user cannot control | **Gambling** — cited as grounds for the block |\n| **A decision market** | The price executes the decision | Deliberately on the wrong side of both, and honest about it |\n\n### What Umia does about it, and what each defence costs\n\n| Defence | What it stops | What it costs |\n|---|---|---|\n| **TWAP settlement** | A push in the last blocks before close | Responsiveness — the market reacts slower to real news |\n| **No-Op market** | Comparing a proposal to nothing | A second market to seed and keep liquid |\n| **Execution threshold** | Acting on noise | Genuine improvements below the margin never happen |\n| **Cayman SPC / BORG** | A team ignoring the outcome | A shared legal wrapper, and a curated rather than permissionless track |\n\nRead the first row against `the-settlement-instant`: that card settles at an instant, which is exactly what TWAP is defending against here. **The two designs sit at opposite ends of the same trade-off**, and seeing the cost written down on both sides is worth more than either design alone.\n\n### The number, and why it transfers\n\n**Capital required to hold a TWAP above threshold T for window W against arbitrage, at pool depth D.** Compute it at today's depth and at the depth where it exceeds the value of the decision. That single curve answers whether a given decision is genuinely market-governed or merely priced, and it applies unchanged to any resolution mechanism that reads a price — including the settlement path in this project. **Manipulation cost is not a property of the mechanism; it is a property of the mechanism at a given liquidity**, and mechanisms are usually described without one.\n\n### What the August auction actually tests\n\nUmia is selling $UMIA through its own platform, so the auction is the product's first public run rather than a fundraise: whether seven days of CCA price discovery behaves as described, whether liquidity exists immediately afterwards, and whether the promised high initial float materializes instead of the low-float pattern it criticizes. **A capital-formation model that cannot form its own capital has answered the question early**, which is a rare case of a project being genuinely falsifiable on day one.",
+      "### The same property, read by two authorities\n\n| | Criterion | Verdict when the user **cannot** influence the outcome |\n|---|---|---|\n| **Market designer** (this essay) | Participants must predict, not create | **Sound** — the price means something |\n| **Korean regulator** (방심위) | An event the user cannot control | **Gambling** — cited as grounds for the block |\n| **A decision market** | The price executes the decision | Deliberately on the wrong side of both, and honest about it |\n\n### What Umia does about it, and what each defence costs\n\n| Defence | What it stops | What it costs |\n|---|---|---|\n| **TWAP settlement** | A push in the last blocks before close | Responsiveness — the market reacts slower to real news |\n| **No-Op market** | Comparing a proposal to nothing | A second market to seed and keep liquid |\n| **Execution threshold** | Acting on noise | Genuine improvements below the margin never happen |\n| **Cayman SPC / BORG** | A team ignoring the outcome | A shared legal wrapper, and a curated rather than permissionless track |\n\nRead the first row against `the-settlement-instant`: that card settles at an instant, which is exactly what TWAP is defending against here. **The two designs sit at opposite ends of the same trade-off**, and seeing the cost written down on both sides is worth more than either design alone.\n\n### The number, and why it transfers\n\n**Capital required to hold a TWAP above threshold T for window W against arbitrage, at pool depth D.** Compute it at today's depth and at the depth where it exceeds the value of the decision. That single curve answers whether a given decision is genuinely market-governed or merely priced, and it applies unchanged to any resolution mechanism that reads a price — including the settlement path in this project. **Manipulation cost is not a property of the mechanism; it is a property of the mechanism at a given liquidity**, and mechanisms are usually described without one.\n\n### What the August auction actually tests\n\nUmia is selling $UMIA through its own platform, so the auction is the product's first public run rather than a fundraise: whether seven days of CCA price discovery behaves as described, whether liquidity exists immediately afterwards, and whether the promised high initial float materializes instead of the low-float pattern it criticizes. **A capital-formation model that cannot form its own capital has answered the question early**, which is a rare case of a project being genuinely falsifiable on day one.\n\n### Update (2026-09-07) — four verdicts, one price, one week\n\nCPI (9/11), a Clarity-bill cloture (9/15), the FOMC (9/15–16) and an options expiry (9/18) land within days of each other. They reprice four different axes — inflation, jurisdiction, monetary, derivatives — but the market prints **one number**, so any single-cause story about that week's move is probably wrong. The measurement discipline is the transferable part: record a **probability snapshot immediately before and after each event, separately**. That is the only way to reconstruct afterward which verdict actually moved the price — and it is the same move as this card's core number, which insists a mechanism means nothing without the state (here, the event) attached to the reading. Max-pain ($78,000 on the 9/18 expiry) is a coordinate, not a signal; expiry-week volatility compression is a tendency, not a law, and this week stacks three verdicts on top of it.",
     howItWorksKo:
-      "### 같은 속성, 두 권위의 독법\n\n| | 기준 | 이용자가 결과에 **영향을 줄 수 없을 때**의 판정 |\n|---|---|---|\n| **시장 설계자**(이 글) | 참여자는 예측해야지 제조하면 안 된다 | **건전함** — 가격이 의미를 가짐 |\n| **한국 규제기관**(방심위) | 이용자가 통제할 수 없는 사건 | **도박** — 차단 근거로 적시 |\n| **결정시장** | **가격이 결정을 실행한다** | 양쪽 모두에서 의도적으로 반대편, 그리고 그걸 숨기지 않음 |\n\n### Umia의 대응, 그리고 각 방어의 대가\n\n| 방어 | 막는 것 | 대가 |\n|---|---|---|\n| **TWAP 정산** | 마감 직전 몇 블록의 밀어올리기 | **반응성** — 진짜 뉴스에도 느리게 반응 |\n| **No-Op 시장** | 제안을 아무것도 아닌 것과 비교하는 일 | 씨앗 유동성을 대고 유지할 **두 번째 시장** |\n| **실행 임계값** | 잡음에 반응해 실행하는 일 | 임계 아래의 **진짜 개선은 영원히 실행되지 않음** |\n| **케이맨 SPC · BORG** | 팀이 결과를 무시하는 일 | 공용 법적 래퍼, 그리고 퍼미션리스가 아닌 **큐레이티드** 트랙 |\n\n첫 줄을 `the-settlement-instant` 에 대고 읽으세요 — 그 카드는 **한 시점**에 정산하고, TWAP가 여기서 막으려는 것이 정확히 그것입니다. **두 설계는 같은 트레이드오프의 양 끝에 있고**, 양쪽의 대가가 적혀 있는 것이 어느 한쪽 설계보다 값집니다.\n\n### 그 숫자, 그리고 왜 옮겨 쓸 수 있는가\n\n**풀 깊이 D에서, 차익거래를 상대로 창 W 동안 TWAP를 임계 T 위에 붙들어 두는 데 필요한 자본.** 오늘의 깊이에서 한 번, 그 비용이 **사려는 결정의 가치를 넘는** 깊이에서 한 번 계산합니다. 그 곡선 하나가 **어떤 결정이 진짜로 시장에 의해 통치되는지 아니면 그냥 값이 매겨질 뿐인지**에 답하고, **가격을 읽는 모든 정산 메커니즘에 그대로 적용됩니다** — 이 프로젝트의 정산 경로를 포함해서. **조작 비용은 메커니즘의 속성이 아니라 특정 유동성에서의 메커니즘의 속성**인데, 메커니즘은 보통 그 유동성 없이 서술됩니다.\n\n### 8월 경매가 실제로 시험하는 것\n\nUmia는 자기 플랫폼으로 $UMIA를 팝니다. 그러니 이 경매는 자금 조달이 아니라 **제품의 첫 공개 실행**입니다 — 7일간의 CCA 가격 발견이 설명대로 도는지, 직후에 유동성이 실재하는지, 그리고 스스로 비판한 저유통·고FDV 대신 약속한 **높은 초기 유통량이 실제로 나오는지**. **자기 자본을 형성하지 못하는 자본형성 모델은 질문에 일찍 답한 것**이고, 프로젝트가 **첫날부터 반증 가능한** 드문 경우입니다.",
+      "### 같은 속성, 두 권위의 독법\n\n| | 기준 | 이용자가 결과에 **영향을 줄 수 없을 때**의 판정 |\n|---|---|---|\n| **시장 설계자**(이 글) | 참여자는 예측해야지 제조하면 안 된다 | **건전함** — 가격이 의미를 가짐 |\n| **한국 규제기관**(방심위) | 이용자가 통제할 수 없는 사건 | **도박** — 차단 근거로 적시 |\n| **결정시장** | **가격이 결정을 실행한다** | 양쪽 모두에서 의도적으로 반대편, 그리고 그걸 숨기지 않음 |\n\n### Umia의 대응, 그리고 각 방어의 대가\n\n| 방어 | 막는 것 | 대가 |\n|---|---|---|\n| **TWAP 정산** | 마감 직전 몇 블록의 밀어올리기 | **반응성** — 진짜 뉴스에도 느리게 반응 |\n| **No-Op 시장** | 제안을 아무것도 아닌 것과 비교하는 일 | 씨앗 유동성을 대고 유지할 **두 번째 시장** |\n| **실행 임계값** | 잡음에 반응해 실행하는 일 | 임계 아래의 **진짜 개선은 영원히 실행되지 않음** |\n| **케이맨 SPC · BORG** | 팀이 결과를 무시하는 일 | 공용 법적 래퍼, 그리고 퍼미션리스가 아닌 **큐레이티드** 트랙 |\n\n첫 줄을 `the-settlement-instant` 에 대고 읽으세요 — 그 카드는 **한 시점**에 정산하고, TWAP가 여기서 막으려는 것이 정확히 그것입니다. **두 설계는 같은 트레이드오프의 양 끝에 있고**, 양쪽의 대가가 적혀 있는 것이 어느 한쪽 설계보다 값집니다.\n\n### 그 숫자, 그리고 왜 옮겨 쓸 수 있는가\n\n**풀 깊이 D에서, 차익거래를 상대로 창 W 동안 TWAP를 임계 T 위에 붙들어 두는 데 필요한 자본.** 오늘의 깊이에서 한 번, 그 비용이 **사려는 결정의 가치를 넘는** 깊이에서 한 번 계산합니다. 그 곡선 하나가 **어떤 결정이 진짜로 시장에 의해 통치되는지 아니면 그냥 값이 매겨질 뿐인지**에 답하고, **가격을 읽는 모든 정산 메커니즘에 그대로 적용됩니다** — 이 프로젝트의 정산 경로를 포함해서. **조작 비용은 메커니즘의 속성이 아니라 특정 유동성에서의 메커니즘의 속성**인데, 메커니즘은 보통 그 유동성 없이 서술됩니다.\n\n### 8월 경매가 실제로 시험하는 것\n\nUmia는 자기 플랫폼으로 $UMIA를 팝니다. 그러니 이 경매는 자금 조달이 아니라 **제품의 첫 공개 실행**입니다 — 7일간의 CCA 가격 발견이 설명대로 도는지, 직후에 유동성이 실재하는지, 그리고 스스로 비판한 저유통·고FDV 대신 약속한 **높은 초기 유통량이 실제로 나오는지**. **자기 자본을 형성하지 못하는 자본형성 모델은 질문에 일찍 답한 것**이고, 프로젝트가 **첫날부터 반증 가능한** 드문 경우입니다.\n\n### 업데이트 (2026-09-07) — 판정 넷, 가격 하나, 일주일\n\nCPI(9/11), Clarity 법안 클로처(9/15), FOMC(9/15–16), 옵션 만기(9/18)가 사흘 안에 겹칩니다. 서로 다른 네 축 — 물가, 법역, 통화, 파생 — 을 재가격하지만 시장은 **가격 하나**로 나옵니다. 그래서 그 주의 움직임을 하나의 원인으로 설명하려는 시도는 대부분 틀립니다. 옮겨 쓸 수 있는 부분은 측정 규율입니다 — 각 이벤트 **직전·직후의 확률 스냅샷을 따로** 기록할 것. 사후에 **어느 판정이 실제로 가격을 움직였는지** 복원하는 유일한 방법이고, 이 카드의 핵심 숫자와 같은 동작입니다(메커니즘은 읽는 시점의 상태 — 여기서는 이벤트 — 를 붙이지 않으면 아무 뜻도 없다). 맥스페인($78,000, 9/18 만기)은 좌표이지 신호가 아니며, 만기 주간의 변동성 압축은 경향이지 법칙이 아니고, 이번 주는 그 위에 판정 셋을 얹습니다.",
   },
   {
     key: "stake-concentration",
@@ -2320,7 +2320,7 @@ export const POC_CARDS: DemoCard[] = [
     // 단일 가스 숫자가 감추고 있던 교차보조를 이 프로젝트의 트랜잭션 구성으로 재계산한다.
     key: "l1-data-pricing-dimensions",
     important: true, // 2026-08-31 (jay) — 배열 위치는 번호 보존용: important 구획 끝에 둔다
-    updated: "2026-09-02",
+    updated: "2026-09-07",
     title: "When gas stops being one number — data pricing and bandwidth accounting",
     titleKo: "가스가 더 이상 숫자 하나가 아닐 때 — 데이터 가격과 대역폭 회계",
     description:
@@ -2337,9 +2337,9 @@ export const POC_CARDS: DemoCard[] = [
     purposeKo:
       "**여러 자원에 가격 하나를 매기면 언제나 교차보조가 생기고, 보조금은 네트워크가 확장하기 가장 어려워하는 쪽으로 흐릅니다.** 가스 숫자 하나가 연산·상태 증가·대역폭을 한꺼번에 덮으니 누군가는 더 내고 누군가는 덜 냅니다 — 그리고 덜 내는 쪽은 구조적으로 **네트워크가 가장 억제하고 싶은 사용 패턴**입니다. 자원별 분리 과금은 수수료 손질이 아니라, **네트워크가 실제로 쓰는 것에 비로소 값을 매기는 일**입니다.\n\n**이미 한 번 일어난 일이라 이 카드는 추측이 아닙니다.** EIP-4844가 블롭 데이터에 자기 시장을 주자마자 롤업의 비용 구조가 바뀌었고, 그때까지 최적이던 설계가 최적이 아니게 됐습니다. 아무도 논증으로 설득될 필요가 없었습니다 — **청구서가 바뀌었으니까요.** 이번 라운드업의 제안들은 콜데이터와 전파에 대해 같은 방향을 가리킵니다.\n\n**왜 하필 이 프로젝트에 중요한가.** 이벤트·정산 시장의 온체인 자국은 대부분 **데이터**입니다 — 주문, 어테스테이션, 정산 근거 — 반면 연산은 적습니다. 데이터에 값이 붙는 세계가 정확히 다시 매기는 프로필이자, **지금 가장 싸 보이는 프로필**입니다. 정직한 산출물은 아무도 만들 수 없는 가스 가격 예측이 아니라 **탄력성**입니다 — 이 프로젝트 온체인 비용 중 바이트가 차지하는 비중. 그 숫자는 **지금 알 수 있고**, 제안들에 얼마나 주의를 줄지를 그 숫자가 결정합니다.",
     howItWorks:
-      "### One number, five resources\n\n| Resource | Metered today | What separate metering would change | Exposure here |\n|---|---|---|---|\n| **Execution** — opcodes | gas | Little; this is what gas was designed for | **Thin** — settlement logic is small |\n| **Calldata bytes** | gas, at a fixed price per byte | Its own price, moving with demand | **Heavy** — orders and evidence are bytes |\n| **Blob data** | Its own market since EIP-4844 | Nothing — this is the precedent, not the change | Already true |\n| **State growth** | gas, and badly | The hardest to price honestly; the cost is permanent, the fee is one-off | **Registries, position maps** |\n| **Bandwidth / propagation** | not metered at all | A dimension that does not exist yet | **Large-payload transactions** |\n\n### The measurement, and why it is small\n\nOne month of transactions, one split per transaction: bytes versus execution. That produces a single ratio, and the ratio answers the only question that matters before the proposals settle — **is this project a data-heavy user or not.** If it is, then every design choice that trades computation for calldata (posting evidence rather than recomputing it, storing an order rather than deriving it) is a bet on the current price of bytes staying where it is.\n\n### The state-growth footnote worth keeping\n\nOf the five rows, state growth is the one with no honest price anywhere today: **the cost is borne forever by every future node, and the fee is charged once.** Any card in this catalogue that proposes an on-chain registry — `the-record-is-not-the-path`, position maps, resolution records — is quietly on the wrong side of that mismatch, and a repricing that fixes it would be aimed at exactly those designs.",
+      "### One number, five resources\n\n| Resource | Metered today | What separate metering would change | Exposure here |\n|---|---|---|---|\n| **Execution** — opcodes | gas | Little; this is what gas was designed for | **Thin** — settlement logic is small |\n| **Calldata bytes** | gas, at a fixed price per byte | Its own price, moving with demand | **Heavy** — orders and evidence are bytes |\n| **Blob data** | Its own market since EIP-4844 | Nothing — this is the precedent, not the change | Already true |\n| **State growth** | gas, and badly | The hardest to price honestly; the cost is permanent, the fee is one-off | **Registries, position maps** |\n| **Bandwidth / propagation** | not metered at all | A dimension that does not exist yet | **Large-payload transactions** |\n\n### The measurement, and why it is small\n\nOne month of transactions, one split per transaction: bytes versus execution. That produces a single ratio, and the ratio answers the only question that matters before the proposals settle — **is this project a data-heavy user or not.** If it is, then every design choice that trades computation for calldata (posting evidence rather than recomputing it, storing an order rather than deriving it) is a bet on the current price of bytes staying where it is.\n\n### The state-growth footnote worth keeping\n\nOf the five rows, state growth is the one with no honest price anywhere today: **the cost is borne forever by every future node, and the fee is charged once.** Any card in this catalogue that proposes an on-chain registry — `the-record-is-not-the-path`, position maps, resolution records — is quietly on the wrong side of that mismatch, and a repricing that fixes it would be aimed at exactly those designs.\n\n### Update (2026-09-07) — the blob target is the same decision, upstream\n\nBlobs hit record usage on 2026-09-03 (~6.7 per block, 3-day average 5.9), and the 9/10 inclusion list closes with a quiet line under the FOCIL / 8141-vs-8130 headliners: whether to **raise the blob target**. Blob fees sit near zero below target and rise exponentially above it, so the two cheap years of data were not protocol generosity — they were demand shortfall. Raising the target is one parameter, but the content is a distribution decision: **cheaper rollups, costlier nodes**. It is the fourth row of the table above — bandwidth/propagation — finally being priced, and the honest thing to watch on the 9/10 list is not the headliner but **how many teams put a blob-parameter proposal near the top**. That count reads out rollup unit cost more precisely than any roadmap does.",
     howItWorksKo:
-      "### 숫자 하나, 자원 다섯\n\n| 자원 | 지금의 계량 | 분리 과금이 바꾸는 것 | 여기서의 노출 |\n|---|---|---|---|\n| **실행** — 옵코드 | 가스 | 거의 없음. 가스가 원래 설계된 대상 | **얇음** — 정산 로직은 작다 |\n| **콜데이터 바이트** | 바이트당 고정가의 가스 | 수요에 따라 움직이는 **자기 가격** | **두꺼움** — 주문·근거가 곧 바이트 |\n| **블롭 데이터** | EIP-4844 이후 자기 시장 | 없음 — 변화가 아니라 **선례** | 이미 해당 |\n| **상태 증가** | 가스, 그것도 엉성하게 | 가장 정직하게 매기기 어려움. 비용은 영구, 수수료는 1회 | **레지스트리·포지션 맵** |\n| **대역폭 · 전파** | 아예 계량되지 않음 | **아직 없는 차원** | **큰 페이로드 트랜잭션** |\n\n### 측정, 그리고 왜 작은 작업인가\n\n한 달치 트랜잭션, 건당 한 번의 분해 — 바이트 대 실행. 여기서 **비율 하나**가 나오고, 그 비율이 제안이 확정되기 전에 답할 수 있는 유일한 질문에 답합니다 — **이 프로젝트는 데이터 과다 사용자인가 아닌가.** 그렇다면 연산 대신 콜데이터를 쓰는 모든 선택(다시 계산하는 대신 근거를 올리기, 유도하는 대신 주문을 저장하기)은 **바이트의 현재 가격이 그대로 있으리라는 베팅**입니다.\n\n### 남겨 둘 상태 증가 각주\n\n다섯 줄 중 **상태 증가는 오늘 어디에도 정직한 가격이 없는 항목**입니다. **비용은 미래의 모든 노드가 영원히 지고, 수수료는 한 번만 받습니다.** 이 카탈로그에서 온체인 레지스트리를 제안하는 카드는 전부 — `the-record-is-not-the-path`, 포지션 맵, 정산 기록 — 조용히 그 불일치의 **잘못된 쪽**에 서 있고, 그 불일치를 고치는 재가격은 정확히 그런 설계를 겨냥하게 됩니다.",
+      "### 숫자 하나, 자원 다섯\n\n| 자원 | 지금의 계량 | 분리 과금이 바꾸는 것 | 여기서의 노출 |\n|---|---|---|---|\n| **실행** — 옵코드 | 가스 | 거의 없음. 가스가 원래 설계된 대상 | **얇음** — 정산 로직은 작다 |\n| **콜데이터 바이트** | 바이트당 고정가의 가스 | 수요에 따라 움직이는 **자기 가격** | **두꺼움** — 주문·근거가 곧 바이트 |\n| **블롭 데이터** | EIP-4844 이후 자기 시장 | 없음 — 변화가 아니라 **선례** | 이미 해당 |\n| **상태 증가** | 가스, 그것도 엉성하게 | 가장 정직하게 매기기 어려움. 비용은 영구, 수수료는 1회 | **레지스트리·포지션 맵** |\n| **대역폭 · 전파** | 아예 계량되지 않음 | **아직 없는 차원** | **큰 페이로드 트랜잭션** |\n\n### 측정, 그리고 왜 작은 작업인가\n\n한 달치 트랜잭션, 건당 한 번의 분해 — 바이트 대 실행. 여기서 **비율 하나**가 나오고, 그 비율이 제안이 확정되기 전에 답할 수 있는 유일한 질문에 답합니다 — **이 프로젝트는 데이터 과다 사용자인가 아닌가.** 그렇다면 연산 대신 콜데이터를 쓰는 모든 선택(다시 계산하는 대신 근거를 올리기, 유도하는 대신 주문을 저장하기)은 **바이트의 현재 가격이 그대로 있으리라는 베팅**입니다.\n\n### 남겨 둘 상태 증가 각주\n\n다섯 줄 중 **상태 증가는 오늘 어디에도 정직한 가격이 없는 항목**입니다. **비용은 미래의 모든 노드가 영원히 지고, 수수료는 한 번만 받습니다.** 이 카탈로그에서 온체인 레지스트리를 제안하는 카드는 전부 — `the-record-is-not-the-path`, 포지션 맵, 정산 기록 — 조용히 그 불일치의 **잘못된 쪽**에 서 있고, 그 불일치를 고치는 재가격은 정확히 그런 설계를 겨냥하게 됩니다.\n\n### 업데이트 (2026-09-07) — 블롭 목표치도 상류의 같은 결정이다\n\n블롭 사용량이 2026-09-03 사상 최고를 찍었고(블록당 ~6.7, 3일 이평 5.9), 9/10 선호목록에는 FOCIL·8141 대 8130 헤드라이너 아래 조용한 줄이 있습니다 — **블롭 목표치를 올릴 것인가**. 블롭 수수료는 목표치 아래에서 0에 수렴하고 위에서는 지수로 오릅니다. 그러니 지난 2년의 싼 데이터는 프로토콜의 선의가 아니라 **수요 부족**이었습니다. 목표치 상향은 파라미터 한 줄이지만 내용은 분배 결정입니다 — **롤업은 싸지고 노드는 비싸집니다**. 위 표의 네 번째 줄 — 대역폭·전파 — 이 비로소 값이 매겨지는 것이고, 9/10 목록에서 볼 정직한 것은 헤드라이너가 아니라 **몇 팀이 블롭 파라미터 제안을 상위에 올렸는지**입니다. 그 수가 어떤 로드맵보다 롤업 원가를 정확히 읽어 줍니다.",
   },
   {
     // 2026-09-02: Codex 세션이 docs/pocs.html 에 직접 써 넣은 카드를 POC_CARDS 로 이식 (jay 요청).
@@ -3539,7 +3539,7 @@ export const POC_CARDS: DemoCard[] = [
     // arb-bots-are-the-peg 과 직접 이어지고, 볼린저는 lp-is-a-short-volatility-position 의
     // 같은 σ 를 화면에 그린 것이다. 지표 파라미터 관례(20, 2σ, 14, 200일)는 널리 쓰이는 값.
     key: "indicators-add-a-decision",
-    updated: "2026-08-27",
+    updated: "2026-09-07",
     title: "An indicator adds no information — it adds a decision",
     titleKo: "지표는 정보를 더하지 않는다 — 결정을 더한다",
     group: "economics",
@@ -3557,9 +3557,9 @@ export const POC_CARDS: DemoCard[] = [
     purposeKo:
       "**가격에서 파생된 지표는 전부 한 열(column)의 변환이므로 정보를 더할 수 없습니다.** SMA 는 **창 길이의 약 절반만큼 지연되는 저역통과 필터**이고, EMA 는 그 지연을 일부 되사면서 **잡음으로 값을 치릅니다.** MACD 는 EMA 두 개의 차이라 **추세의 변화**에 대한 진술이고, RSI 는 **경계가 있는 모멘텀 비율**입니다. **볼린저 밴드가 가장 선명한 예**인데, 산수가 대놓고 드러나기 때문입니다 — **같은 창에서의 평균 ± k·σ.** 그래서 **밴드 폭은 변동성 계기판이고 그 이상이 아닙니다.** 이것은 **`lp-is-a-short-volatility-position` 의 바로 그 σ** 가 풀에 가격으로 박히는 대신 화면에 그려진 것입니다. **스퀴즈는 변동성이 낮고 평균회귀 중이라는 말**입니다 — **무언가 일어날 가능성이 높다**고 말할 뿐 **어느 방향인지는 한마디도 하지 않습니다.** 거기서 방향을 읽어내는 것이 이 주제 전체에서 가장 흔한 오류입니다.\n\n**따름정리가 챙겨 둘 부분입니다.** 어떤 계열이 **가격의 함수가 아니라면** 그것은 **진짜로 정보를 더합니다** — **거래량**, **미결제약정**, 그리고 무기한물의 **펀딩 비율**. 셋 중 펀딩이 가장 강합니다. **누군가 실제로 지불하기 때문**입니다 — **진짜 돈이 경쟁해서 정해지는 가격**이고, 이는 **`arb-bots-are-the-peg`** 의 논지 그대로입니다(관측된 베이시스는 가장 싼 차익거래자의 비용 하한을 읽는 계기판). **펀딩 비율은 증거이고, 200일 이동평균은 산수입니다.**\n\n**그럼에도 널리 쓰이는 지표는 중요합니다 — 순수주의자가 놓치는 이유에서.** **많은 사람이 보는 수준은 많은 자본이 거기서 행동하도록 지시받은 수준**이고, 그래서 **예측보다 셸링 포인트(Schelling point)에 가깝습니다** — 예언이 아니라 **조율(coordination)** 입니다. 이건 양날입니다 — **뻔한 수준을 알아 둘 값이 있는 이유**이자, **모두가 보는 수준은 모두가 쓸려 나갈 수 있는 수준**인 이유입니다. **고장 나는 곳은 지표가 아니라 회계입니다.** 차트를 본 뒤에 고른 파라미터, **승률만 적고 손익비를 옆에 안 적은 기록**, **수수료 전(gross) 으로 인용한 백테스트** — 마지막은 **`gross-over-net`**, 가운데는 **`priced-by-the-wrong-thing`**(아무도 묻지 않은 질문에 답하는 진짜 숫자)입니다.",
     howItWorks:
-      "### What each one actually computes\n\n| Indicator | The arithmetic | What it is a statement about |\n| --- | --- | --- |\n| **SMA(n)** | mean of the last n closes | trend, lagging by about n/2 |\n| **EMA(n)** | exponentially weighted mean | same, less lag, more noise |\n| **Bollinger(n, k)** | SMA(n) ± k·σ(n) — usually 20, 2 | **volatility** — the width is the whole reading |\n| **RSI(n)** | up-move / total-move ratio, scaled 0–100 | momentum, bounded |\n| **MACD** | EMA(fast) − EMA(slow) | change in trend |\n\nAll five can be computed from the same close column. None of them can know anything that column did not.\n\n### The line that matters: derived vs. independent\n\n| Series | A function of price? | Adds information? |\n| --- | --- | --- |\n| MA · Bollinger · RSI · MACD | **yes** | no — it restates price |\n| Volume | no | yes |\n| Open interest | no | yes — positioning |\n| **Funding rate** (perps) | no | **yes — somebody pays it** |\n\n### What a Bollinger squeeze does and does not say\n\n- **Says:** σ is low, and σ mean-reverts, so a larger move is more likely than usual.\n- **Does not say:** which direction. The bands are symmetric by construction.\n- **Therefore:** a squeeze is a sizing and timing input, never an entry direction.\n\n### The discipline, in order\n\n1. Write the rule **before** opening the chart — entry, exit, stop, size.\n2. Fix the parameters **before** choosing the test window.\n3. Test **out-of-sample**, on bars you have not read.\n4. Record **two** numbers: hit rate **and** average win ÷ average loss.\n5. Subtract fees, spread, and funding — then compare.\n6. Compare against **holding the asset** over the same window. If it does not beat that, the rule is a hobby.",
+      "### What each one actually computes\n\n| Indicator | The arithmetic | What it is a statement about |\n| --- | --- | --- |\n| **SMA(n)** | mean of the last n closes | trend, lagging by about n/2 |\n| **EMA(n)** | exponentially weighted mean | same, less lag, more noise |\n| **Bollinger(n, k)** | SMA(n) ± k·σ(n) — usually 20, 2 | **volatility** — the width is the whole reading |\n| **RSI(n)** | up-move / total-move ratio, scaled 0–100 | momentum, bounded |\n| **MACD** | EMA(fast) − EMA(slow) | change in trend |\n\nAll five can be computed from the same close column. None of them can know anything that column did not.\n\n### The line that matters: derived vs. independent\n\n| Series | A function of price? | Adds information? |\n| --- | --- | --- |\n| MA · Bollinger · RSI · MACD | **yes** | no — it restates price |\n| Volume | no | yes |\n| Open interest | no | yes — positioning |\n| **Funding rate** (perps) | no | **yes — somebody pays it** |\n\n### What a Bollinger squeeze does and does not say\n\n- **Says:** σ is low, and σ mean-reverts, so a larger move is more likely than usual.\n- **Does not say:** which direction. The bands are symmetric by construction.\n- **Therefore:** a squeeze is a sizing and timing input, never an entry direction.\n\n### The discipline, in order\n\n1. Write the rule **before** opening the chart — entry, exit, stop, size.\n2. Fix the parameters **before** choosing the test window.\n3. Test **out-of-sample**, on bars you have not read.\n4. Record **two** numbers: hit rate **and** average win ÷ average loss.\n5. Subtract fees, spread, and funding — then compare.\n6. Compare against **holding the asset** over the same window. If it does not beat that, the rule is a hobby.\n\n### Update (2026-09-07) — a non-price series in the wild\n\nOn a hawkish jobs print (August +162,000, ~3× consensus, rate-hike bets rebuilding), BTC still held ~$80,347 while spot-BTC ETFs took **$730M — a 9-month high**. Read it against the funding-rate row above: the ETF inflow is the *independent* series, the one somebody actually pays, so the flat price against a strong inflow is the reading — supply met the demand instead of chasing it. But the discipline still bites: this is **one day, one sample**, a data point and not a regime. The confirmation is the 9/11 CPI print, not this candle — declaring a trend from a single non-price observation is the same error as fitting a parameter to one chart.",
     howItWorksKo:
-      "### 각각이 실제로 계산하는 것\n\n| 지표 | 산수 | 무엇에 대한 진술인가 |\n| --- | --- | --- |\n| **SMA(n)** | 최근 n 종가의 평균 | 추세, 약 n/2 만큼 지연 |\n| **EMA(n)** | 지수가중 평균 | 같음, 지연 적고 잡음 많음 |\n| **볼린저(n, k)** | SMA(n) ± k·σ(n) — 보통 20, 2 | **변동성** — 폭이 곧 전부 |\n| **RSI(n)** | 상승폭 / 전체폭 비율, 0–100 | 모멘텀, 경계 있음 |\n| **MACD** | EMA(빠름) − EMA(느림) | 추세의 변화 |\n\n**다섯 개 전부 같은 종가 열에서 계산됩니다.** 그 열이 모르는 것을 알 수 있는 지표는 하나도 없습니다.\n\n### 진짜 경계선: 파생이냐 독립이냐\n\n| 계열 | 가격의 함수인가 | 정보를 더하는가 |\n| --- | --- | --- |\n| MA · 볼린저 · RSI · MACD | **그렇다** | 아니다 — 가격을 다시 말할 뿐 |\n| 거래량 | 아니다 | 그렇다 |\n| 미결제약정 | 아니다 | 그렇다 — 포지셔닝 |\n| **펀딩 비율**(무기한물) | 아니다 | **그렇다 — 누군가 지불한다** |\n\n### 볼린저 스퀴즈가 말하는 것과 말하지 않는 것\n\n- **말한다:** σ 가 낮고, σ 는 평균회귀하므로 **평소보다 큰 움직임이 나올 확률이 높다.**\n- **말하지 않는다:** **어느 방향인지.** 밴드는 **구조상 대칭**입니다.\n- **따라서:** 스퀴즈는 **크기·타이밍의 입력**이지 **진입 방향이 아닙니다.**\n\n### 규율, 순서대로\n\n1. **차트를 열기 전에** 규칙을 적는다 — 진입·청산·손절·크기.\n2. **테스트 구간을 고르기 전에** 파라미터를 고정한다.\n3. **읽지 않은 구간**에서 검증한다(out-of-sample).\n4. **두 숫자**를 적는다 — **승률**과 **평균이익 ÷ 평균손실.**\n5. **수수료·스프레드·펀딩을 뺀 뒤** 비교한다.\n6. **같은 구간을 그냥 보유한 것**과 비교한다. **그걸 못 이기면 그 규칙은 취미입니다.**",
+      "### 각각이 실제로 계산하는 것\n\n| 지표 | 산수 | 무엇에 대한 진술인가 |\n| --- | --- | --- |\n| **SMA(n)** | 최근 n 종가의 평균 | 추세, 약 n/2 만큼 지연 |\n| **EMA(n)** | 지수가중 평균 | 같음, 지연 적고 잡음 많음 |\n| **볼린저(n, k)** | SMA(n) ± k·σ(n) — 보통 20, 2 | **변동성** — 폭이 곧 전부 |\n| **RSI(n)** | 상승폭 / 전체폭 비율, 0–100 | 모멘텀, 경계 있음 |\n| **MACD** | EMA(빠름) − EMA(느림) | 추세의 변화 |\n\n**다섯 개 전부 같은 종가 열에서 계산됩니다.** 그 열이 모르는 것을 알 수 있는 지표는 하나도 없습니다.\n\n### 진짜 경계선: 파생이냐 독립이냐\n\n| 계열 | 가격의 함수인가 | 정보를 더하는가 |\n| --- | --- | --- |\n| MA · 볼린저 · RSI · MACD | **그렇다** | 아니다 — 가격을 다시 말할 뿐 |\n| 거래량 | 아니다 | 그렇다 |\n| 미결제약정 | 아니다 | 그렇다 — 포지셔닝 |\n| **펀딩 비율**(무기한물) | 아니다 | **그렇다 — 누군가 지불한다** |\n\n### 볼린저 스퀴즈가 말하는 것과 말하지 않는 것\n\n- **말한다:** σ 가 낮고, σ 는 평균회귀하므로 **평소보다 큰 움직임이 나올 확률이 높다.**\n- **말하지 않는다:** **어느 방향인지.** 밴드는 **구조상 대칭**입니다.\n- **따라서:** 스퀴즈는 **크기·타이밍의 입력**이지 **진입 방향이 아닙니다.**\n\n### 규율, 순서대로\n\n1. **차트를 열기 전에** 규칙을 적는다 — 진입·청산·손절·크기.\n2. **테스트 구간을 고르기 전에** 파라미터를 고정한다.\n3. **읽지 않은 구간**에서 검증한다(out-of-sample).\n4. **두 숫자**를 적는다 — **승률**과 **평균이익 ÷ 평균손실.**\n5. **수수료·스프레드·펀딩을 뺀 뒤** 비교한다.\n6. **같은 구간을 그냥 보유한 것**과 비교한다. **그걸 못 이기면 그 규칙은 취미입니다.**\n\n### 업데이트 (2026-09-07) — 야생의 비(非)가격 계열\n\n매파적 고용 발표(8월 +162,000, 컨센의 약 3배, 인상 베팅 재점화)에도 BTC는 ~$80,347을 지켰고, 현물 BTC ETF는 **$730M — 9개월 만의 최대**를 받았습니다. 위의 펀딩 비율 줄에 대고 읽으세요 — ETF 유입은 **독립 계열**, 누군가 실제로 지불하는 계열이고, 강한 유입에 대한 평탄한 가격이 곧 독법입니다 — **공급이 수요를 좇은 게 아니라 받아낸 것**. 다만 규율은 여전히 물립니다 — 이것은 **하루, 표본 하나**, 레짐이 아니라 데이터 포인트입니다. 확증은 이 캔들이 아니라 **9/11 CPI** 발표이고 — 비가격 관측 하나로 추세를 선언하는 것은 **차트 하나에 파라미터를 맞추는 것과 같은 오류**입니다.",
   },
   {
     // 2026-08-27. Monad 정리의 "체인별 수수료 ÷ 보안 예산 — 아무도 발표 안 함" 을 카드로.
@@ -4312,5 +4312,1388 @@ export const POC_CARDS: DemoCard[] = [
       "### What the demo is actually made of\n\n| Pile | Contents | Who made it | Share of the wow |\n| --- | --- | --- | --- |\n| Dataset | 2,234 meshes (BodyParts3D) | Anatomists, years ago | Most of it |\n| Ontology | FMA IDs on every mesh (e.g. FMA13403) → search, isolate, system toggles | Standards community | The navigability |\n| Glue | Loader, camera, explode slider, panels | The agent, in days | The packaging |\n\n### The interface premium, before and after\n\n| | Before agents | After |\n| --- | --- | --- |\n| Product-grade explorer over open data | Funded team, months | A prompt-driven weekend |\n| Moat of \"nice UI over open data\" | Real | Gone |\n| Where value defends | UI polish | Dataset, ontology, distribution, guarantees |\n\n### The checklist for any \"agent built X\" headline\n\n1. What dataset is underneath, and who curated it?\n2. What ontology/standard makes the data navigable — and is it doing the search's work?\n3. What did the agent actually author — and how long would that glue take a second agent?\n4. What in the product could NOT be conjured by the next person with the same prompt? That remainder is the business.\n\n### Related cards\n\n`preview-means-no-promise` (the data was always public), `the-moat-has-a-fork-date` (moat erosion, faster clock), `the-index-is-an-ops-manual` (guarantees as the durable layer), `three-thousand-lanterns-nobody-asked-for` (the same agents, aimed at a spec instead of a market).",
     howItWorksKo:
       "### 데모의 실제 구성\n\n| 무더기 | 내용 | 만든 이 | 감탄에서의 몫 |\n| --- | --- | --- | --- |\n| 데이터셋 | 메시 2,234개 (BodyParts3D) | 해부학자들, 수년 전 | 대부분 |\n| 온톨로지 | 모든 메시의 FMA ID (예: FMA13403) → 검색·격리·계통 토글 | 표준 커뮤니티 | 항해 가능성 |\n| 접착제 | 로더, 카메라, 분해 슬라이더, 패널 | 에이전트, 며칠 | 포장 |\n\n### 인터페이스 프리미엄, 전과 후\n\n| | 에이전트 이전 | 이후 |\n| --- | --- | --- |\n| 공개 데이터 위 제품급 탐색기 | 투자받은 팀, 몇 달 | 프롬프트로 모는 주말 |\n| \"공개 데이터 위 좋은 UI\"의 해자 | 실재 | 소멸 |\n| 가치가 방어되는 곳 | UI 광택 | 데이터셋, 온톨로지, 유통, 보증 |\n\n### 모든 \"에이전트가 X 를 만들었다\" 헤드라인용 체크리스트\n\n1. 밑에 어떤 데이터셋이 있고, 누가 큐레이션했나?\n2. 어떤 온톨로지/표준이 데이터를 항해 가능하게 하나 — 검색의 일을 그것이 하고 있나?\n3. 에이전트가 실제로 저작한 것은 무엇이고 — 두 번째 에이전트라면 그 접착제에 얼마나 걸리나?\n4. **같은 프롬프트를 가진 다음 사람이 소환할 수 없는 것은 무엇인가? 그 나머지가 사업이다.**\n\n### 관련 카드\n\n`preview-means-no-promise`(데이터는 원래 공개였다), `the-moat-has-a-fork-date`(더 빠른 시계의 해자 침식), `the-index-is-an-ops-manual`(지속층으로서의 보증), `three-thousand-lanterns-nobody-asked-for`(같은 에이전트, 시장 대신 명세를 겨냥).",
+  },
+  {
+    key: "ds-regression-ols",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "OLS regression — the line that assumes it caused something",
+    titleKo: "OLS 회귀 — 무언가를 야기했다고 가정하는 직선",
+    description:
+      "Least-squares regression is the workhorse everyone reaches for first; the danger is that a fitted coefficient reads like a cause when it is only a correlation under stated assumptions.",
+    descriptionKo:
+      "최소제곱 회귀는 누구나 가장 먼저 손대는 주력 도구이고, 위험은 적합된 계수가 사실은 명시된 가정 아래의 상관일 뿐인데 원인처럼 읽힌다는 점입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The point is not the fit but the assumptions behind it — linearity, independent errors, no omitted variable — and the PoC would show the same dataset giving opposite conclusions when one assumption is quietly violated.",
+    purposeKo:
+      "핵심은 적합이 아니라 그 뒤의 가정 — 선형성, 독립 오차, 누락 변수 없음 — 이고, 이 PoC는 가정 하나가 조용히 깨질 때 같은 데이터가 정반대 결론을 주는 것을 보여줄 것입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-time-series-arima",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Time-series forecasting — ARIMA and why most series are not stationary",
+    titleKo: "시계열 예측 — ARIMA, 그리고 대부분의 시계열이 정상적이지 않은 이유",
+    description:
+      "ARIMA and its relatives forecast a series from its own past, but the whole method rests on stationarity — a property financial and on-chain series almost never have without differencing.",
+    descriptionKo:
+      "ARIMA와 그 친척들은 시계열을 자기 과거로 예측하지만, 방법 전체가 정상성(stationarity)에 기대고 있고, 금융·온체인 시계열은 차분 없이는 거의 그 성질을 갖지 않습니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The lesson is diagnostic before predictive: test for stationarity, difference until it holds, and see how a naive forecast on a trending series manufactures confidence it has not earned.",
+    purposeKo:
+      "교훈은 예측 이전에 진단입니다: 정상성을 검정하고, 성립할 때까지 차분하고, 추세가 있는 시계열에 대한 순진한 예측이 얻지 못한 확신을 만들어 내는 것을 봅니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-bayesian-inference",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Bayesian inference — a prior is an assumption you have to write down",
+    titleKo: "베이지안 추론 — 사전분포는 적어 두어야 하는 가정이다",
+    description:
+      "Bayesian methods turn belief-plus-evidence into a posterior distribution; their honesty is that the prior is explicit, and their trap is that a confident prior can survive weak data.",
+    descriptionKo:
+      "베이지안 방법은 믿음+증거를 사후분포로 바꾸고, 그 정직함은 사전분포가 명시적이라는 것이며, 함정은 강한 사전분포가 약한 데이터를 이겨 버릴 수 있다는 점입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC would show the same likelihood yielding different conclusions under a flat versus an opinionated prior — making the modeler's assumption visible instead of hiding it in a point estimate.",
+    purposeKo:
+      "이 PoC는 같은 우도가 무정보 사전분포와 편향된 사전분포 아래 다른 결론을 내는 것을 보여, 모델러의 가정을 점추정 뒤에 숨기지 않고 드러냅니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-monte-carlo",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Monte Carlo — simulating the distribution you cannot solve for",
+    titleKo: "몬테카를로 — 풀 수 없는 분포를 시뮬레이션하기",
+    description:
+      "When a payoff has no closed form, Monte Carlo samples thousands of random paths and reads the answer off the distribution; the quality of the answer is exactly the quality of the assumed randomness.",
+    descriptionKo:
+      "수익 구조에 닫힌 해가 없을 때 몬테카를로는 수천 개의 무작위 경로를 표집해 분포에서 답을 읽습니다. 답의 품질은 정확히 가정된 무작위성의 품질입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The instructive case is tail risk: a simulation with thin-tailed inputs will systematically underprice the disaster, so the PoC pairs a Gaussian and a fat-tailed generator on the same portfolio.",
+    purposeKo:
+      "교훈적인 사례는 꼬리 위험입니다: 얇은 꼬리 입력을 쓴 시뮬레이션은 재난을 체계적으로 과소평가하므로, 이 PoC는 같은 포트폴리오에 가우시안과 두꺼운 꼬리 생성기를 나란히 놓습니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-ab-testing",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "A/B testing — the p-value that a peeked experiment inflates",
+    titleKo: "A/B 테스트 — 훔쳐본 실험이 부풀리는 p-값",
+    description:
+      "A/B tests promise a clean causal read from randomization, but stopping early when the result looks good — peeking — silently multiplies the false-positive rate the test claims to control.",
+    descriptionKo:
+      "A/B 테스트는 무작위화로 깨끗한 인과 해석을 약속하지만, 결과가 좋아 보일 때 일찍 멈추는 것 — 훔쳐보기 — 은 검정이 통제한다고 주장하는 거짓양성률을 조용히 배가시킵니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC replays a null experiment with daily peeking and shows how often it 'wins', then contrasts fixed-horizon and sequential designs that actually hold the error rate.",
+    purposeKo:
+      "이 PoC는 매일 훔쳐보는 귀무 실험을 재현해 얼마나 자주 '이기는지' 보이고, 오류율을 실제로 지키는 고정 지평·순차 설계와 대조합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-causal-inference",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Causal inference — DiD, IV, and RDD when you cannot randomize",
+    titleKo: "인과추론 — 무작위화가 불가능할 때의 DiD·IV·RDD",
+    description:
+      "Difference-in-differences, instrumental variables, and regression discontinuity recover causal effects from observational data, each buying identification with an assumption that is untestable and load-bearing.",
+    descriptionKo:
+      "이중차분(DiD), 도구변수(IV), 회귀불연속(RDD)은 관측 데이터에서 인과 효과를 복원하며, 각각 검정 불가능하고 하중을 받는 가정 하나로 식별을 사는 방식입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The value is knowing which assumption each method rests on — parallel trends, exclusion, continuity — so a policy claim can be graded by whether its assumption is plausible, not by its p-value.",
+    purposeKo:
+      "가치는 각 방법이 어떤 가정 — 평행 추세, 배제, 연속성 — 에 기대는지 아는 것이고, 그래야 정책 주장을 p-값이 아니라 가정의 개연성으로 채점할 수 있습니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-clustering",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Clustering — k-means finds groups even when there are none",
+    titleKo: "군집화 — k-평균은 없는 집단도 찾아낸다",
+    description:
+      "k-means and friends partition data into groups, but they will always return groups, whether or not the data has any — so the hard part is validating that a cluster means something.",
+    descriptionKo:
+      "k-평균과 그 친구들은 데이터를 집단으로 나누지만, 데이터에 집단이 있든 없든 항상 집단을 돌려줍니다 — 그래서 어려운 부분은 군집이 무언가를 뜻한다는 것을 검증하는 일입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC clusters random noise to show spurious structure, then uses silhouette and stability checks to separate a real segmentation from an artifact of the chosen k.",
+    purposeKo:
+      "이 PoC는 무작위 잡음을 군집화해 허구적 구조를 보인 뒤, 실루엣과 안정성 점검으로 실제 세분화를 선택한 k의 산물과 구분합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-dimensionality-pca",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "PCA — compressing dimensions and the meaning that leaks out",
+    titleKo: "PCA — 차원 압축과 새어 나가는 의미",
+    description:
+      "Principal component analysis rotates many correlated variables into a few uncorrelated ones, trading interpretability for compactness — the components explain variance but rarely name anything you can act on.",
+    descriptionKo:
+      "주성분분석은 상관된 여러 변수를 몇 개의 무상관 변수로 회전시켜, 해석 가능성을 간결함과 맞바꿉니다 — 성분은 분산을 설명하지만 행동으로 옮길 만한 무언가를 이름 붙이는 경우는 드뭅니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC would show PCA on a market factor set, then ask the harder question the technique cannot answer alone: whether a top component is a risk factor or just the scaling of the inputs.",
+    purposeKo:
+      "이 PoC는 시장 팩터 집합에 PCA를 적용한 뒤, 기법 혼자서는 답할 수 없는 더 어려운 질문을 던집니다: 상위 성분이 리스크 팩터인지, 아니면 그저 입력의 스케일링인지.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-gradient-boosting",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Gradient boosting — XGBoost wins the leaderboard and hides the reason",
+    titleKo: "그래디언트 부스팅 — XGBoost는 리더보드를 이기고 이유를 숨긴다",
+    description:
+      "Boosted trees are the default winner on tabular data, but their accuracy comes wrapped in opacity — a strong model whose decisions need a second tool (SHAP) just to be explained.",
+    descriptionKo:
+      "부스팅 트리는 표 형식 데이터의 기본 승자이지만, 그 정확도는 불투명성에 싸여 옵니다 — 결정을 설명하려면 두 번째 도구(SHAP)가 필요한 강한 모델입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC pairs an XGBoost model with SHAP attributions on a credit-style dataset, and treats the gap between accuracy and explainability as the real deliverable.",
+    purposeKo:
+      "이 PoC는 신용 스타일 데이터셋에서 XGBoost 모델과 SHAP 기여도를 짝지어, 정확도와 설명가능성 사이의 격차를 진짜 산출물로 다룹니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-cross-validation",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Cross-validation — the honest way to fail before you ship",
+    titleKo: "교차검증 — 배포 전에 정직하게 실패하는 법",
+    description:
+      "Cross-validation estimates out-of-sample error before deployment, but time-series and grouped data break the i.i.d. assumption behind vanilla k-fold, leaking the future into the past.",
+    descriptionKo:
+      "교차검증은 배포 전에 표본 외 오차를 추정하지만, 시계열과 그룹 데이터는 기본 k-겹 뒤의 i.i.d. 가정을 깨뜨려 미래를 과거로 새게 합니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC contrasts random k-fold with time-aware splitting on the same forecasting task and shows the optimism that leakage manufactures.",
+    purposeKo:
+      "이 PoC는 같은 예측 과제에서 무작위 k-겹과 시간 인지 분할을 대조해, 누수가 만들어 내는 낙관을 보입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-anomaly-detection",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Anomaly detection — the alert that fires on everything or nothing",
+    titleKo: "이상 탐지 — 전부에 울리거나 아무것에도 안 울리는 경보",
+    description:
+      "Anomaly detectors flag points that do not fit a learned normal, and the entire product is the threshold: too tight and it is noise, too loose and it misses the one event that mattered.",
+    descriptionKo:
+      "이상 탐지기는 학습된 정상에 맞지 않는 점을 표시하며, 제품의 전부는 임계값입니다: 너무 좁으면 잡음, 너무 넓으면 정작 중요한 그 한 사건을 놓칩니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC runs isolation-forest and statistical detectors on transaction data and reports precision/recall at several thresholds, because the ROC curve is the honest deliverable.",
+    purposeKo:
+      "이 PoC는 거래 데이터에 격리 숲과 통계적 탐지기를 돌려 여러 임계값에서 정밀도/재현율을 보고합니다. ROC 곡선이 정직한 산출물이기 때문입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-survival-analysis",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Survival analysis — churn is a time-to-event, not a yes/no",
+    titleKo: "생존분석 — 이탈은 예/아니오가 아니라 사건까지의 시간이다",
+    description:
+      "Survival models estimate when an event happens, correctly handling subjects who have not churned yet (censoring) — the thing a plain classifier throws away and biases itself by discarding.",
+    descriptionKo:
+      "생존 모델은 사건이 언제 일어나는지 추정하며, 아직 이탈하지 않은 대상(중도절단)을 올바르게 다룹니다 — 평범한 분류기가 버리고 그로 인해 편향되는 바로 그것입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC fits a Kaplan-Meier curve and a Cox model to a subscription or wallet-activity dataset and shows why censoring makes the naive churn rate wrong.",
+    purposeKo:
+      "이 PoC는 구독 또는 지갑 활동 데이터셋에 카플란-마이어 곡선과 콕스 모델을 적합해, 중도절단이 순진한 이탈률을 틀리게 만드는 이유를 보입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-cohort-analysis",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Cohort analysis — the retention curve a single average hides",
+    titleKo: "코호트 분석 — 하나의 평균이 감추는 리텐션 곡선",
+    description:
+      "Cohort analysis groups users by join period and tracks each group over time, revealing decay and improvement that a blended metric averages into a flat, misleading line.",
+    descriptionKo:
+      "코호트 분석은 사용자를 가입 시기로 묶어 각 집단을 시간에 걸쳐 추적하며, 혼합 지표가 평평하고 오해를 낳는 선으로 뭉개는 감쇠와 개선을 드러냅니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC builds a retention triangle from event data and shows how a rising blended number can hide worsening new-cohort retention.",
+    purposeKo:
+      "이 PoC는 이벤트 데이터로 리텐션 삼각형을 만들어, 상승하는 혼합 수치가 악화되는 신규 코호트 리텐션을 감출 수 있음을 보입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-var-cointegration",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Cointegration — two prices that wander together are a trade",
+    titleKo: "공적분 — 함께 방황하는 두 가격은 하나의 거래다",
+    description:
+      "Vector autoregression and cointegration test whether two non-stationary series share a long-run equilibrium, which is the statistical basis of pairs trading and a common false-positive under spurious regression.",
+    descriptionKo:
+      "벡터자기회귀(VAR)와 공적분은 두 비정상 시계열이 장기 균형을 공유하는지 검정하며, 이는 페어 트레이딩의 통계적 기반이자 허구적 회귀 아래 흔한 거짓양성입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC runs an Engle-Granger test on a real pair and a random pair, showing how spurious regression fakes a relationship that a cointegration test correctly rejects.",
+    purposeKo:
+      "이 PoC는 실제 페어와 무작위 페어에 엥글-그레인저 검정을 돌려, 허구적 회귀가 관계를 위조하고 공적분 검정이 이를 올바르게 기각하는 것을 보입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-extreme-value",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Extreme value theory — the tail is a different distribution",
+    titleKo: "극단값 이론 — 꼬리는 다른 분포다",
+    description:
+      "Extreme value theory models the maxima and tails directly instead of assuming a bell curve, which is why VaR built on a normal distribution understates exactly the losses that end firms.",
+    descriptionKo:
+      "극단값 이론은 종형 곡선을 가정하는 대신 최댓값과 꼬리를 직접 모델링하며, 그래서 정규분포 위에 세운 VaR가 정확히 회사를 끝장내는 손실을 과소평가합니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC fits a generalized Pareto tail to loss data and compares its 99.9% quantile against a Gaussian VaR to size the gap the normal assumption creates.",
+    purposeKo:
+      "이 PoC는 손실 데이터에 일반화 파레토 꼬리를 적합해 그 99.9% 분위수를 가우시안 VaR와 비교함으로써, 정규 가정이 만드는 격차를 잽니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-dune-analytics",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Dune — on-chain analytics is SQL over a decoded ledger",
+    titleKo: "Dune — 온체인 분석은 디코딩된 원장 위의 SQL이다",
+    description:
+      "Dune turns raw chain data into SQL-queryable tables and shareable dashboards, and the real skill is not the query but knowing which decoded table answers the question without double-counting.",
+    descriptionKo:
+      "Dune은 원시 체인 데이터를 SQL로 조회 가능한 테이블과 공유 대시보드로 바꾸며, 진짜 기술은 쿼리가 아니라 어느 디코딩된 테이블이 이중 계산 없이 질문에 답하는지 아는 것입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC builds one dashboard — protocol volume, unique users, fee revenue — and documents the join and dedup decisions that separate a correct metric from a plausible-looking wrong one.",
+    purposeKo:
+      "이 PoC는 대시보드 하나 — 프로토콜 볼륨, 순 사용자, 수수료 수익 — 를 만들고, 올바른 지표를 그럴듯해 보이는 틀린 지표와 가르는 조인·중복제거 결정을 문서화합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-the-graph-subgraph",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "The Graph — a subgraph is an index you have to design",
+    titleKo: "The Graph — 서브그래프는 설계해야 하는 인덱스다",
+    description:
+      "The Graph indexes chain events into a GraphQL API via a subgraph, moving the modeling work upstream: what you fail to index at deploy time you cannot query later without a re-sync.",
+    descriptionKo:
+      "The Graph는 서브그래프를 통해 체인 이벤트를 GraphQL API로 인덱싱하며, 모델링 작업을 상류로 옮깁니다: 배포 시점에 인덱싱하지 못한 것은 재동기화 없이는 나중에 조회할 수 없습니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC writes and deploys one subgraph for a sample contract and contrasts its query ergonomics with raw RPC, making the index-design tradeoff explicit.",
+    purposeKo:
+      "이 PoC는 샘플 컨트랙트용 서브그래프 하나를 작성·배포하고 그 조회 편의성을 원시 RPC와 대조해, 인덱스 설계의 트레이드오프를 드러냅니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-onchain-labels",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Address labeling — analytics is only as good as its entity map",
+    titleKo: "주소 라벨링 — 분석은 그 엔티티 지도만큼만 정확하다",
+    description:
+      "Nansen and Arkham turn anonymous addresses into named entities, and every on-chain metric downstream inherits the accuracy — and the mistakes — of that labeling layer.",
+    descriptionKo:
+      "Nansen과 Arkham은 익명 주소를 이름 붙은 엔티티로 바꾸며, 하류의 모든 온체인 지표는 그 라벨링 계층의 정확도 — 그리고 실수 — 를 물려받습니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC clusters addresses by heuristics (funding source, interaction graph) and measures how a wrong label propagates into a wrong 'whale accumulation' conclusion.",
+    purposeKo:
+      "이 PoC는 휴리스틱(자금 출처, 상호작용 그래프)으로 주소를 군집화하고, 틀린 라벨이 어떻게 틀린 '고래 축적' 결론으로 전파되는지 측정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-flipside-dbt",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Flipside and dbt — modeling on-chain data like a warehouse",
+    titleKo: "Flipside와 dbt — 온체인 데이터를 웨어하우스처럼 모델링하기",
+    description:
+      "Flipside exposes curated chain tables and dbt turns ad-hoc queries into versioned, tested data models — the difference between a one-off chart and a metric a team can trust twice.",
+    descriptionKo:
+      "Flipside는 큐레이션된 체인 테이블을 제공하고 dbt는 즉석 쿼리를 버전 관리·테스트되는 데이터 모델로 바꿉니다 — 일회성 차트와 팀이 두 번 신뢰할 수 있는 지표의 차이입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC builds a small dbt project (staging → marts) over on-chain data with tests on row counts and uniqueness, treating reproducibility as the deliverable.",
+    purposeKo:
+      "이 PoC는 온체인 데이터 위에 작은 dbt 프로젝트(staging → marts)를 행 수·유일성 테스트와 함께 만들어, 재현성을 산출물로 다룹니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "ds-feature-engineering",
+    updated: "2026-09-07",
+    group: "economics",
+    title: "Feature engineering — the model is mostly the features",
+    titleKo: "피처 엔지니어링 — 모델의 대부분은 피처다",
+    description:
+      "Most of a model's performance comes from the features fed to it, not the algorithm, and a feature store exists to stop the same feature being computed three inconsistent ways across a team.",
+    descriptionKo:
+      "모델 성능의 대부분은 알고리즘이 아니라 그것에 넣는 피처에서 나오며, 피처 스토어는 같은 피처가 팀 전반에서 서로 다른 세 방식으로 계산되는 것을 막기 위해 존재합니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC builds a handful of engineered features (rolling windows, ratios, lags) for one prediction task and shows the accuracy delta from feature work versus model swaps.",
+    purposeKo:
+      "이 PoC는 한 예측 과제를 위해 가공 피처 몇 개(이동 창, 비율, 시차)를 만들고, 피처 작업과 모델 교체 각각에서 오는 정확도 변화를 보입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-reentrancy",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Reentrancy — the withdraw that calls back before the balance drops",
+    titleKo: "재진입 — 잔액이 줄기 전에 되돌아오는 인출",
+    description:
+      "Reentrancy lets a callee re-enter the caller before its state updates, the class that drained The DAO in 2016; the fix (checks-effects-interactions) is old, and the bug still ships.",
+    descriptionKo:
+      "재진입은 호출된 쪽이 호출자의 상태 갱신 전에 다시 진입하게 하며, 2016년 The DAO를 털어낸 계급입니다. 해법(검사-효과-상호작용)은 오래됐지만 이 버그는 여전히 배포됩니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC reproduces a minimal reentrancy exploit on a local fork, then shows the one-line ordering change and a reentrancy guard closing it — the canonical first lesson in smart-contract security.",
+    purposeKo:
+      "이 PoC는 로컬 포크에서 최소 재진입 익스플로잇을 재현한 뒤, 한 줄 순서 변경과 재진입 가드가 그것을 막는 것을 보입니다 — 스마트 컨트랙트 보안의 정전급 첫 수업입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-integer-overflow",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Integer overflow — arithmetic that wraps past zero",
+    titleKo: "정수 오버플로 — 0을 지나 되감기는 산술",
+    description:
+      "Before Solidity 0.8 made checks default, unchecked arithmetic could wrap a balance from near-zero to near-max, and the pattern survives today in `unchecked` blocks and other languages.",
+    descriptionKo:
+      "Solidity 0.8이 검사를 기본으로 만들기 전, 검사 없는 산술은 잔액을 0 근처에서 최댓값 근처로 되감을 수 있었고, 이 패턴은 오늘날 `unchecked` 블록과 다른 언어에 남아 있습니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC demonstrates an overflow in an unchecked block and contrasts it with SafeMath and native 0.8 checks, making the invisible wrap explicit.",
+    purposeKo:
+      "이 PoC는 `unchecked` 블록의 오버플로를 시연하고 이를 SafeMath 및 0.8 네이티브 검사와 대조해, 보이지 않는 되감김을 드러냅니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-access-control",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Broken access control — the function that forgot its modifier",
+    titleKo: "깨진 접근 제어 — 수식자를 잊은 함수",
+    description:
+      "The most common and least glamorous vulnerability class is a privileged function missing an `onlyOwner`-style check, the same OWASP top category that lets one anonymous caller become admin.",
+    descriptionKo:
+      "가장 흔하고 가장 화려하지 않은 취약점 계급은 `onlyOwner` 류 검사를 빠뜨린 특권 함수이며, 익명 호출자 하나가 관리자가 되게 하는 바로 그 OWASP 최상위 범주입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC ships a contract with one unguarded initializer or setter and shows the takeover, then the missing modifier — the boring bug that causes real losses.",
+    purposeKo:
+      "이 PoC는 방어되지 않은 이니셜라이저나 세터 하나가 있는 컨트랙트를 배포해 탈취를 보인 뒤 빠진 수식자를 보입니다 — 실제 손실을 부르는 지루한 버그입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-oracle-flashloan",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Oracle manipulation — a flash loan rewrites the price for one block",
+    titleKo: "오라클 조작 — 플래시 론이 한 블록 동안 가격을 다시 쓴다",
+    description:
+      "A protocol that reads price from a spot AMM can be fooled by a flash loan that moves that pool within a single transaction, the mechanism behind a long list of DeFi drains.",
+    descriptionKo:
+      "현물 AMM에서 가격을 읽는 프로토콜은 단일 트랜잭션 안에서 그 풀을 움직이는 플래시 론에 속을 수 있으며, 이는 긴 DeFi 유출 목록 뒤의 메커니즘입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC executes a flash-loan price manipulation on a local fork and then shows a TWAP or Chainlink feed resisting it — the difference between a spot read and a manipulation-resistant one.",
+    purposeKo:
+      "이 PoC는 로컬 포크에서 플래시 론 가격 조작을 실행한 뒤 TWAP나 Chainlink 피드가 이를 견디는 것을 보입니다 — 현물 읽기와 조작 저항 읽기의 차이입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-signature-replay",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Signature replay — a valid signature used twice, or on the wrong chain",
+    titleKo: "서명 재사용 — 유효한 서명을 두 번, 또는 엉뚱한 체인에서",
+    description:
+      "Signatures without a nonce, domain separator, or chain id can be replayed against the same contract twice or against its twin on another chain — the class EIP-712 exists to close.",
+    descriptionKo:
+      "논스, 도메인 분리자, 체인 id 없는 서명은 같은 컨트랙트에 두 번, 또는 다른 체인의 쌍둥이에 재사용될 수 있으며, EIP-712가 막기 위해 존재하는 계급입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC replays a signed permit against a second deployment to show the cross-chain replay, then adds the domain separator that binds the signature to one contract and chain.",
+    purposeKo:
+      "이 PoC는 서명된 permit을 두 번째 배포에 재사용해 크로스체인 재사용을 보인 뒤, 서명을 하나의 컨트랙트·체인에 묶는 도메인 분리자를 추가합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-log4shell",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Log4Shell — a logging line that executes attacker code",
+    titleKo: "Log4Shell — 공격자 코드를 실행하는 로그 한 줄",
+    description:
+      "The Log4j zero-day (CVE-2021-44228) turned a logged string into remote code execution across half the internet, the canonical lesson that a dependency's feature is your attack surface.",
+    descriptionKo:
+      "Log4j 제로데이(CVE-2021-44228)는 로그에 남긴 문자열을 인터넷 절반에서 원격 코드 실행으로 바꿨으며, 의존성의 기능이 곧 내 공격 표면이라는 정전급 교훈입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC studies the JNDI-lookup mechanism in a sandbox and the patch timeline, treating 'what does logging even do' as the security question the incident forced everyone to ask.",
+    purposeKo:
+      "이 PoC는 샌드박스에서 JNDI 조회 메커니즘과 패치 타임라인을 연구하며, '로그가 대체 무엇을 하는가'를 이 사건이 모두에게 강제한 보안 질문으로 다룹니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-heartbleed",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Heartbleed — reading memory the protocol never meant to send",
+    titleKo: "하트블리드 — 프로토콜이 보낼 뜻이 없던 메모리를 읽다",
+    description:
+      "Heartbleed (CVE-2014-0160) let an attacker read chunks of OpenSSL server memory via a missing bounds check, leaking keys and sessions — a one-line bug in the code that secures most of the web.",
+    descriptionKo:
+      "하트블리드(CVE-2014-0160)는 경계 검사 누락을 통해 공격자가 OpenSSL 서버 메모리 조각을 읽어 키와 세션을 유출하게 했습니다 — 웹 대부분을 보호하는 코드의 한 줄 버그입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC dissects the missing length check and why memory-safety and mandatory bounds checks would have prevented it, connecting to the case for memory-safe languages.",
+    purposeKo:
+      "이 PoC는 빠진 길이 검사와 메모리 안전성·필수 경계 검사가 이를 막았을 이유를 해부하여, 메모리 안전 언어에 대한 논거로 연결합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-xz-backdoor",
+    updated: "2026-09-07",
+    group: "future",
+    title: "XZ Utils backdoor — a supply-chain attack that almost shipped",
+    titleKo: "XZ Utils 백도어 — 거의 배포될 뻔한 공급망 공격",
+    description:
+      "The 2024 XZ backdoor was a multi-year social-engineering campaign that planted an SSH bypass in a core Linux compression library, caught by luck days before wide release.",
+    descriptionKo:
+      "2024년 XZ 백도어는 핵심 리눅스 압축 라이브러리에 SSH 우회를 심은 다년간의 사회공학 캠페인이었고, 광범위 배포 며칠 전 운으로 발각됐습니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC studies the maintainer-trust attack rather than the payload — how a patient contributor earned commit rights — because the human supply chain is the vulnerability here.",
+    purposeKo:
+      "이 PoC는 페이로드가 아니라 관리자 신뢰 공격 — 인내심 있는 기여자가 커밋 권한을 얻은 과정 — 을 연구합니다. 여기서 취약점은 인간 공급망이기 때문입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-solarwinds",
+    updated: "2026-09-07",
+    group: "future",
+    title: "SolarWinds — compromising the build server, not the code",
+    titleKo: "솔라윈즈 — 코드가 아니라 빌드 서버를 침해하다",
+    description:
+      "The SolarWinds attack inserted malware during the build, so signed, trusted updates carried the backdoor to thousands of customers — proof that a valid signature says nothing about a clean build.",
+    descriptionKo:
+      "솔라윈즈 공격은 빌드 중에 악성코드를 삽입해, 서명되고 신뢰받는 업데이트가 백도어를 수천 고객에게 실어 날랐습니다 — 유효한 서명이 깨끗한 빌드에 대해 아무것도 말하지 않는다는 증거입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC maps the build-pipeline attack to reproducible-builds and SLSA provenance as the defenses, framing the CI system as the highest-value target.",
+    purposeKo:
+      "이 PoC는 빌드 파이프라인 공격을 방어책인 재현 가능 빌드와 SLSA 프로비넌스에 매핑하여, CI 시스템을 최고 가치 표적으로 규정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-spectre-meltdown",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Spectre and Meltdown — the CPU leaks through speculation",
+    titleKo: "스펙터와 멜트다운 — CPU가 추측 실행으로 새어 나간다",
+    description:
+      "Spectre and Meltdown showed that speculative execution — a performance feature in every modern CPU — leaves timing traces that leak memory across security boundaries in hardware.",
+    descriptionKo:
+      "스펙터와 멜트다운은 추측 실행 — 모든 현대 CPU의 성능 기능 — 이 타이밍 흔적을 남겨 하드웨어의 보안 경계를 넘어 메모리를 유출한다는 것을 보였습니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC studies the cache-timing side channel at concept level and why mitigations cost real performance, the case that some vulnerabilities are architectural, not bugs.",
+    purposeKo:
+      "이 PoC는 캐시 타이밍 부채널을 개념 수준에서 연구하고 완화책이 실제 성능을 대가로 하는 이유를 봅니다 — 어떤 취약점은 버그가 아니라 아키텍처라는 사례입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-sql-injection",
+    updated: "2026-09-07",
+    group: "future",
+    title: "SQL injection — the oldest bug that still tops the charts",
+    titleKo: "SQL 인젝션 — 여전히 차트 1위인 가장 오래된 버그",
+    description:
+      "SQL injection concatenates untrusted input into a query so the input becomes code, a decades-old class that parameterized queries fully solve yet still appears in new breaches.",
+    descriptionKo:
+      "SQL 인젝션은 신뢰할 수 없는 입력을 쿼리에 이어 붙여 입력을 코드로 만드는 수십 년 된 계급이며, 파라미터화 쿼리가 완전히 해결하는데도 새 침해에 계속 등장합니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC demonstrates injection against a toy endpoint and the parameterized fix, then generalizes to the rule: never build a command by string-joining untrusted data.",
+    purposeKo:
+      "이 PoC는 장난감 엔드포인트에 대한 인젝션과 파라미터화 수정을 시연한 뒤, 규칙으로 일반화합니다: 신뢰할 수 없는 데이터를 문자열로 이어 붙여 명령을 만들지 말라.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-xss-csrf",
+    updated: "2026-09-07",
+    group: "future",
+    title: "XSS and CSRF — the browser trusts the wrong origin",
+    titleKo: "XSS와 CSRF — 브라우저가 잘못된 출처를 신뢰한다",
+    description:
+      "Cross-site scripting runs attacker JavaScript in a victim's session and CSRF rides the victim's cookies to act as them; both exploit the browser's trust model, and both matter for any dapp UI.",
+    descriptionKo:
+      "크로스사이트 스크립팅은 피해자 세션에서 공격자 자바스크립트를 실행하고 CSRF는 피해자 쿠키를 타고 그를 대신해 행동합니다. 둘 다 브라우저 신뢰 모델을 악용하며 어떤 dapp UI에도 중요합니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC shows a stored-XSS payload and a CSRF request, then the defenses (CSP, sanitization, SameSite, tokens) — the front-end half of security a contract audit never covers.",
+    purposeKo:
+      "이 PoC는 저장형 XSS 페이로드와 CSRF 요청을 보인 뒤 방어책(CSP, 소독, SameSite, 토큰)을 보입니다 — 컨트랙트 감사가 결코 다루지 않는 보안의 프론트엔드 절반입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-ssrf",
+    updated: "2026-09-07",
+    group: "future",
+    title: "SSRF — making the server fetch the URL you chose",
+    titleKo: "SSRF — 서버가 내가 고른 URL을 가져오게 하기",
+    description:
+      "Server-side request forgery tricks a backend into requesting an attacker-chosen URL, reaching internal metadata endpoints and cloud credentials — the class behind several large cloud breaches.",
+    descriptionKo:
+      "서버측 요청 위조는 백엔드가 공격자가 고른 URL을 요청하도록 속여 내부 메타데이터 엔드포인트와 클라우드 자격증명에 닿습니다 — 여러 대형 클라우드 침해 뒤의 계급입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC demonstrates SSRF reaching a mock metadata service and the allowlist/egress controls that close it, connecting to the edge-jurisdiction cards' request-layer theme.",
+    purposeKo:
+      "이 PoC는 모의 메타데이터 서비스에 닿는 SSRF와 이를 막는 허용목록/이그레스 통제를 시연하며, 엣지-법역 카드들의 요청 계층 주제로 연결합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-dependency-confusion",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Dependency confusion — the package manager pulls the wrong registry",
+    titleKo: "의존성 혼동 — 패키지 매니저가 잘못된 레지스트리를 당긴다",
+    description:
+      "Publishing a public package with an internal package's name can make a build fetch the attacker's version, a supply-chain class that hit major companies via npm and PyPI defaults.",
+    descriptionKo:
+      "내부 패키지 이름으로 공개 패키지를 발행하면 빌드가 공격자 버전을 가져올 수 있으며, npm·PyPI 기본값을 통해 대기업을 강타한 공급망 계급입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC reproduces the name-resolution mismatch in a sandbox and the scoping/lockfile defenses, framing the registry as trusted input that is not.",
+    purposeKo:
+      "이 PoC는 샌드박스에서 이름 해석 불일치와 스코핑/락파일 방어책을 재현하여, 레지스트리를 사실은 아닌데 신뢰되는 입력으로 규정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-ransomware-colonial",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Ransomware — one password shut a pipeline",
+    titleKo: "랜섬웨어 — 비밀번호 하나가 파이프라인을 멈췄다",
+    description:
+      "The 2021 Colonial Pipeline shutdown started with one leaked VPN credential and no MFA, showing that a national-scale outage can trace back to the most basic control being absent.",
+    descriptionKo:
+      "2021년 콜로니얼 파이프라인 셧다운은 유출된 VPN 자격증명 하나와 MFA 부재에서 시작됐으며, 국가 규모 중단이 가장 기본적인 통제의 부재로 거슬러 올라갈 수 있음을 보였습니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC studies the intrusion chain and the recovery (including the traced ransom payment), framing MFA and segmentation as the boring controls that would have stopped it.",
+    purposeKo:
+      "이 PoC는 침입 사슬과 복구(추적된 몸값 지불 포함)를 연구하여, MFA와 분할을 이를 막았을 지루한 통제로 규정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-prompt-injection",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Prompt injection — untrusted text becomes an instruction",
+    titleKo: "프롬프트 인젝션 — 신뢰할 수 없는 텍스트가 명령이 된다",
+    description:
+      "An LLM agent cannot reliably tell data from instructions, so text in a fetched page or a tool result can hijack it — the class with no clean fix and rising stakes as agents gain permissions.",
+    descriptionKo:
+      "LLM 에이전트는 데이터와 명령을 안정적으로 구분하지 못하므로, 가져온 페이지나 도구 결과 속 텍스트가 그것을 탈취할 수 있습니다 — 깔끔한 해법이 없고 에이전트가 권한을 얻을수록 위험이 커지는 계급입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC plants an injection in a document an agent reads and shows it exfiltrating or acting out of scope, then the partial defenses (isolation, allowlists, human-in-the-loop) — the security core of the whole agent stack.",
+    purposeKo:
+      "이 PoC는 에이전트가 읽는 문서에 인젝션을 심어 유출하거나 범위를 벗어나 행동하는 것을 보인 뒤 부분적 방어책(격리, 허용목록, 인간 개입)을 보입니다 — 에이전트 스택 전체의 보안 핵심입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-static-analysis",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Static analysis — Slither and Semgrep read the code you skimmed",
+    titleKo: "정적 분석 — Slither와 Semgrep은 훑고 지나간 코드를 읽는다",
+    description:
+      "Static analyzers like Slither (Solidity) and Semgrep (general) flag known-bad patterns before deployment, cheap and fast but drowning in false positives that only judgment filters.",
+    descriptionKo:
+      "Slither(Solidity)와 Semgrep(범용) 같은 정적 분석기는 배포 전에 알려진 나쁜 패턴을 표시하며, 싸고 빠르지만 판단만이 걸러내는 거짓양성에 잠깁니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC runs Slither and Semgrep on a deliberately buggy contract and triages the output, treating the true-positive rate and noise as the honest measure of the tool.",
+    purposeKo:
+      "이 PoC는 의도적으로 버그가 있는 컨트랙트에 Slither와 Semgrep을 돌려 출력을 분류하며, 진양성률과 잡음을 도구의 정직한 척도로 다룹니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-bug-bounty",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Bug bounty platforms — pricing a vulnerability before an attacker does",
+    titleKo: "버그 바운티 플랫폼 — 공격자보다 먼저 취약점에 값을 매기다",
+    description:
+      "Immunefi, HackerOne and code contests (Code4rena, Sherlock) create a legal market for finding bugs, and the payout size is a live signal of what a given exploit is actually worth.",
+    descriptionKo:
+      "Immunefi, HackerOne, 코드 대회(Code4rena, Sherlock)는 버그 찾기의 합법 시장을 만들며, 보상 규모는 특정 익스플로잇이 실제로 얼마인지에 대한 실시간 신호입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC studies real disclosed reports and payout tiers, framing the bounty as a market that prices security the way an audit cannot.",
+    purposeKo:
+      "이 PoC는 실제로 공개된 리포트와 보상 등급을 연구하여, 바운티를 감사가 할 수 없는 방식으로 보안에 값을 매기는 시장으로 규정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-cve-zeroday",
+    updated: "2026-09-07",
+    group: "future",
+    title: "CVE, NVD and the zero-day — the clock between discovery and patch",
+    titleKo: "CVE·NVD와 제로데이 — 발견과 패치 사이의 시계",
+    description:
+      "A zero-day is a vulnerability with no patch available, and the CVE/NVD system is the public clock tracking it from disclosure to fix — the window during which everyone is exposed and priced.",
+    descriptionKo:
+      "제로데이는 패치가 없는 취약점이고, CVE/NVD 체계는 공개부터 수정까지 그것을 추적하는 공개 시계입니다 — 모두가 노출되고 값이 매겨지는 창입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC traces one CVE's lifecycle (report → embargo → disclosure → patch → exploitation) and the exploit market around it, framing patch latency as the real risk metric.",
+    purposeKo:
+      "이 PoC는 한 CVE의 수명주기(신고 → 엠바고 → 공개 → 패치 → 악용)와 그 주변 익스플로잇 시장을 추적하여, 패치 지연을 진짜 리스크 지표로 규정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "sec-competitive-audit",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Audit firms and contests — who signs off, and what a signature means",
+    titleKo: "감사 회사와 대회 — 누가 승인하고, 서명이 무엇을 뜻하나",
+    description:
+      "Trail of Bits, OpenZeppelin and competitive-audit platforms all produce a report, but a passed audit is a snapshot under a scope, not a proof of safety — the same preview-means-no-promise reading.",
+    descriptionKo:
+      "Trail of Bits, OpenZeppelin, 경쟁 감사 플랫폼은 모두 리포트를 내지만, 통과한 감사는 범위 아래의 스냅샷이지 안전의 증명이 아닙니다 — 같은 preview-means-no-promise 독법입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC compares a firm audit and a contest audit on scope, incentives and what each actually guarantees, treating 'audited' as a claim to be read, not a badge.",
+    purposeKo:
+      "이 PoC는 회사 감사와 대회 감사를 범위·인센티브·각자가 실제로 보장하는 것으로 비교하여, '감사됨'을 배지가 아니라 읽어야 할 주장으로 다룹니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-rag",
+    updated: "2026-09-07",
+    group: "future",
+    title: "RAG — the model answers from what you retrieved, right or wrong",
+    titleKo: "RAG — 모델은 검색해 준 것으로 답한다, 옳든 그르든",
+    description:
+      "Retrieval-augmented generation grounds an answer in fetched documents instead of the model's memory, which moves the failure mode from hallucination to retrieval quality — you now fail by fetching the wrong passage.",
+    descriptionKo:
+      "검색증강생성은 답을 모델의 기억이 아니라 가져온 문서에 근거하게 하며, 실패 양식을 환각에서 검색 품질로 옮깁니다 — 이제 잘못된 문단을 가져와서 실패합니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC builds a small RAG pipeline (chunk, embed, retrieve, answer) and measures answer quality against retrieval quality, showing the bottleneck is upstream of the model.",
+    purposeKo:
+      "이 PoC는 작은 RAG 파이프라인(청킹, 임베딩, 검색, 답변)을 만들어 답변 품질을 검색 품질에 대비해 측정하고, 병목이 모델 상류에 있음을 보입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-fine-tuning-lora",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Fine-tuning and LoRA — teaching a model style without retraining it",
+    titleKo: "파인튜닝과 LoRA — 재학습 없이 모델에 스타일을 가르치기",
+    description:
+      "LoRA fine-tunes a model by training a small number of added weights instead of all of them, cheap enough to run on one GPU — best for form and format, rarely the right tool for new facts.",
+    descriptionKo:
+      "LoRA는 모든 가중치가 아니라 소수의 추가 가중치를 학습해 모델을 파인튜닝하며, GPU 한 대로 돌릴 만큼 쌉니다 — 형식과 문체에 최적이고, 새 사실에는 좀처럼 맞는 도구가 아닙니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC fine-tunes a small model with LoRA on a style dataset and contrasts it with RAG, making the 'style vs facts' boundary the deliverable.",
+    purposeKo:
+      "이 PoC는 스타일 데이터셋에 LoRA로 작은 모델을 파인튜닝하고 RAG와 대조하여, '문체 대 사실' 경계를 산출물로 삼습니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-prompt-engineering",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Prompt engineering — the few-shot examples do most of the work",
+    titleKo: "프롬프트 엔지니어링 — 소수샷 예시가 대부분의 일을 한다",
+    description:
+      "How you phrase and exemplify a task often changes accuracy more than which model you pick, and the discipline is measuring that rather than trusting intuition about wording.",
+    descriptionKo:
+      "과제를 어떻게 표현하고 예시하느냐가 어느 모델을 고르느냐보다 정확도를 더 바꾸는 경우가 많고, 이 분야의 규율은 문구에 대한 직관을 믿는 대신 그것을 측정하는 것입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC runs the same task under zero-shot, few-shot and formatted prompts against a fixed eval set, turning prompt choices into a measured comparison.",
+    purposeKo:
+      "이 PoC는 고정된 평가 집합에 대해 같은 과제를 제로샷·소수샷·서식 프롬프트로 돌려, 프롬프트 선택을 측정된 비교로 바꿉니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-chain-of-thought",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Chain-of-thought — reasoning out loud buys accuracy and tokens",
+    titleKo: "생각의 사슬 — 소리 내어 추론하면 정확도와 토큰을 함께 산다",
+    description:
+      "Prompting a model to reason step by step raises accuracy on multi-step problems, at the cost of latency and tokens — and the written reasoning is a rationalization, not a faithful trace of the computation.",
+    descriptionKo:
+      "모델에게 단계별로 추론하게 하면 다단계 문제의 정확도가 오르지만, 지연시간과 토큰을 대가로 하며 — 적힌 추론은 계산의 충실한 흔적이 아니라 사후 합리화입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC compares direct and chain-of-thought answers on a reasoning benchmark and the token/accuracy tradeoff, cautioning that the trace explains less than it appears to.",
+    purposeKo:
+      "이 PoC는 추론 벤치마크에서 직접 답과 생각의 사슬 답, 그리고 토큰/정확도 트레이드오프를 비교하며, 그 흔적이 보이는 것만큼 설명하지 않는다는 점을 경고합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-rlhf",
+    updated: "2026-09-07",
+    group: "future",
+    title: "RLHF — aligning a model to preferences, and to their biases",
+    titleKo: "RLHF — 모델을 선호에, 그리고 그 편향에 정렬하기",
+    description:
+      "Reinforcement learning from human feedback tunes a model toward what raters prefer, which is how a raw model becomes a helpful assistant — and how rater bias becomes model behavior.",
+    descriptionKo:
+      "인간 피드백 강화학습은 모델을 평가자가 선호하는 쪽으로 조정하며, 이는 원시 모델이 유용한 조수가 되는 방법이자 평가자 편향이 모델 행동이 되는 방법입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC studies the reward-model-plus-policy loop conceptually and where preference data injects bias, framing alignment as a data-provenance problem.",
+    purposeKo:
+      "이 PoC는 보상모델+정책 루프를 개념적으로 연구하고 선호 데이터가 편향을 주입하는 지점을 봅니다 — 정렬을 데이터 출처 문제로 규정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-quantization",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Quantization — running a big model in a small memory",
+    titleKo: "양자화 — 큰 모델을 작은 메모리에서 돌리기",
+    description:
+      "Quantization stores weights at lower precision (8-bit, 4-bit) so a large model fits on modest hardware, trading a measurable accuracy drop for a large memory and speed win.",
+    descriptionKo:
+      "양자화는 가중치를 더 낮은 정밀도(8비트, 4비트)로 저장해 큰 모델이 소박한 하드웨어에 들어가게 하며, 측정 가능한 정확도 하락을 큰 메모리·속도 이득과 맞바꿉니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC runs one model at several bit-widths and measures the accuracy-versus-footprint curve, the number that decides whether local inference is viable.",
+    purposeKo:
+      "이 PoC는 한 모델을 여러 비트 폭으로 돌려 정확도 대 메모리 곡선을 측정합니다 — 로컬 추론이 가능한지 결정하는 숫자입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-attention",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Attention — the mechanism, and why context costs quadratically",
+    titleKo: "어텐션 — 그 메커니즘, 그리고 컨텍스트가 제곱으로 비싼 이유",
+    description:
+      "Self-attention lets every token weigh every other, which is the transformer's power and its cost — compute grows with the square of context length, the reason long context is expensive.",
+    descriptionKo:
+      "셀프 어텐션은 모든 토큰이 다른 모든 토큰을 저울질하게 하며, 이는 트랜스포머의 힘이자 비용입니다 — 계산이 컨텍스트 길이의 제곱으로 커지고, 긴 컨텍스트가 비싼 이유입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC visualizes attention on a short sequence and the O(n^2) scaling, connecting the mechanism to why context windows and caching matter downstream.",
+    purposeKo:
+      "이 PoC는 짧은 시퀀스에서 어텐션과 O(n^2) 스케일링을 시각화하여, 이 메커니즘을 컨텍스트 창과 캐싱이 하류에서 중요한 이유로 연결합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-tokenization",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Tokenization — the model does not see characters",
+    titleKo: "토크나이제이션 — 모델은 문자를 보지 않는다",
+    description:
+      "Text is split into subword tokens before a model sees it, which is why models miscount letters, why some languages cost more tokens, and why a prompt's real length is not its character count.",
+    descriptionKo:
+      "텍스트는 모델이 보기 전에 서브워드 토큰으로 쪼개지며, 그래서 모델이 글자를 잘못 세고, 어떤 언어는 토큰이 더 들고, 프롬프트의 실제 길이가 문자 수가 아닙니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC tokenizes English and Korean with the same tokenizer to show the cost asymmetry and the counting failures, making the invisible preprocessing visible.",
+    purposeKo:
+      "이 PoC는 같은 토크나이저로 영어와 한국어를 토큰화해 비용 비대칭과 세기 실패를 보이며, 보이지 않는 전처리를 드러냅니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-embeddings",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Embeddings — meaning as a vector you can search",
+    titleKo: "임베딩 — 검색할 수 있는 벡터로서의 의미",
+    description:
+      "Embeddings map text to vectors where nearby means similar, the substrate under semantic search and RAG — and the quality of every retrieval is bounded by the quality of the embedding model.",
+    descriptionKo:
+      "임베딩은 텍스트를 가까움이 곧 유사함인 벡터로 매핑하며, 의미 검색과 RAG의 기반입니다 — 그리고 모든 검색의 품질은 임베딩 모델의 품질에 의해 상한됩니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC embeds a corpus, runs nearest-neighbor search, and shows where semantic similarity diverges from what a user actually meant.",
+    purposeKo:
+      "이 PoC는 코퍼스를 임베딩하고 최근접 이웃 검색을 돌려, 의미 유사도가 사용자가 실제로 의도한 것과 갈라지는 지점을 보입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-moe",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Mixture of Experts — a big model that only runs part of itself",
+    titleKo: "전문가 혼합 — 자기 일부만 돌리는 큰 모델",
+    description:
+      "MoE models route each token to a few of many expert sub-networks, so total parameters can be huge while compute per token stays modest — the architecture behind several frontier models.",
+    descriptionKo:
+      "MoE 모델은 각 토큰을 여러 전문가 하위망 중 몇 개로 라우팅하여, 총 파라미터는 거대하되 토큰당 계산은 소박하게 유지합니다 — 여러 프런티어 모델 뒤의 아키텍처입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC studies the routing mechanism and the capacity-versus-compute tradeoff, explaining how a model can be 'large' and 'cheap to run' at once.",
+    purposeKo:
+      "이 PoC는 라우팅 메커니즘과 용량 대 계산 트레이드오프를 연구하여, 모델이 어떻게 '크면서' '돌리기 싸게' 될 수 있는지 설명합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-speculative-decoding",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Speculative decoding — a small model drafts, a big model checks",
+    titleKo: "추측 디코딩 — 작은 모델이 초안을 쓰고 큰 모델이 검사한다",
+    description:
+      "Speculative decoding speeds generation by letting a small draft model propose tokens that a large model verifies in parallel, cutting latency with no change to the output distribution.",
+    descriptionKo:
+      "추측 디코딩은 작은 초안 모델이 토큰을 제안하고 큰 모델이 병렬로 검증하게 해 생성을 가속하며, 출력 분포를 바꾸지 않고 지연시간을 줄입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC contrasts plain and speculative decoding on the same prompt and measures the latency win and its dependence on draft-model agreement.",
+    purposeKo:
+      "이 PoC는 같은 프롬프트에서 일반 디코딩과 추측 디코딩을 대조해 지연시간 이득과 초안 모델 일치도에 대한 의존성을 측정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-kv-cache",
+    updated: "2026-09-07",
+    group: "future",
+    title: "KV cache — why the second token is cheaper than the first",
+    titleKo: "KV 캐시 — 두 번째 토큰이 첫 번째보다 싼 이유",
+    description:
+      "The KV cache stores attention keys and values so each new token does not recompute the whole context, which is why prefill is expensive and decoding is fast — and why cache pricing reshapes agent economics.",
+    descriptionKo:
+      "KV 캐시는 어텐션 키와 값을 저장해 새 토큰마다 전체 컨텍스트를 재계산하지 않게 하며, 그래서 프리필은 비싸고 디코딩은 빠릅니다 — 그리고 캐시 가격이 에이전트 경제를 다시 짜는 이유입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC measures prefill versus decode cost with and without cache reuse, connecting the mechanism to the cache-read price cut that changes long-context agent bills.",
+    purposeKo:
+      "이 PoC는 캐시 재사용 유무에 따른 프리필 대 디코드 비용을 측정하여, 이 메커니즘을 긴 컨텍스트 에이전트 청구를 바꾸는 캐시 읽기 가격 인하로 연결합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-distillation",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Distillation — a small model trained to imitate a big one",
+    titleKo: "증류 — 큰 모델을 모방하도록 학습된 작은 모델",
+    description:
+      "Distillation trains a compact student on a large teacher's outputs, capturing much of the capability at a fraction of the cost — the standard path from a frontier model to a deployable one.",
+    descriptionKo:
+      "증류는 작은 학생을 큰 교사의 출력으로 학습시켜 능력의 상당 부분을 비용의 일부로 담아냅니다 — 프런티어 모델에서 배포 가능한 모델로 가는 표준 경로입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC distills a small model from a larger one's outputs on a narrow task and measures the capability retained versus the size saved.",
+    purposeKo:
+      "이 PoC는 좁은 과제에서 더 큰 모델의 출력으로 작은 모델을 증류하고, 유지된 능력 대 절약된 크기를 측정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-constitutional-ai",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Constitutional AI — alignment from written principles, not just raters",
+    titleKo: "헌법적 AI — 평가자만이 아니라 적힌 원칙에서 오는 정렬",
+    description:
+      "Constitutional AI has a model critique and revise its own outputs against a written set of principles, reducing reliance on human labels — and moving the value judgment into an auditable document.",
+    descriptionKo:
+      "헌법적 AI는 모델이 적힌 원칙 집합에 대해 자기 출력을 비평·수정하게 하여 인간 라벨 의존을 줄이고 — 가치 판단을 감사 가능한 문서로 옮깁니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC studies the self-critique loop and where a principle set decides behavior, framing the constitution as the reviewable seat of the model's values.",
+    purposeKo:
+      "이 PoC는 자기 비평 루프와 원칙 집합이 행동을 결정하는 지점을 연구하여, 헌법을 모델 가치의 검토 가능한 자리로 규정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-tool-use",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Tool use — the model that stops guessing and calls a function",
+    titleKo: "도구 사용 — 추측을 멈추고 함수를 호출하는 모델",
+    description:
+      "Function calling lets a model emit a structured call to real code instead of hallucinating an answer, the primitive under agents, MCP and x402 — and the point where a wrong call becomes a real action.",
+    descriptionKo:
+      "함수 호출은 모델이 답을 환각하는 대신 실제 코드로 가는 구조화된 호출을 내보내게 하며, 에이전트·MCP·x402의 기초입니다 — 그리고 잘못된 호출이 실제 행동이 되는 지점입니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC wires a model to two tools and shows correct routing, a wrong call, and the validation layer that must sit between intent and execution.",
+    purposeKo:
+      "이 PoC는 모델을 두 도구에 연결해 올바른 라우팅, 잘못된 호출, 그리고 의도와 실행 사이에 놓여야 할 검증 계층을 보입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-agentic-react",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Agentic loops — ReAct, and the cost of letting a model iterate",
+    titleKo: "에이전트 루프 — ReAct, 그리고 모델이 반복하게 두는 비용",
+    description:
+      "The reason-act-observe loop lets a model plan, call tools, and react to results across many steps, which unlocks real tasks and multiplies the ways it can go wrong or run away in cost.",
+    descriptionKo:
+      "추론-행동-관찰 루프는 모델이 여러 단계에 걸쳐 계획하고 도구를 호출하고 결과에 반응하게 하며, 이는 실제 과제를 열지만 잘못되거나 비용이 폭주할 수 있는 경로를 배가시킵니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC runs a small ReAct agent on a multi-step task with a step and cost budget, treating termination and guardrails as the hard part, not the planning.",
+    purposeKo:
+      "이 PoC는 단계·비용 예산을 둔 다단계 과제에서 작은 ReAct 에이전트를 돌려, 계획이 아니라 종료와 가드레일을 어려운 부분으로 다룹니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-evals-judge",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Evals — you cannot improve what you do not measure, judge included",
+    titleKo: "평가 — 측정하지 않는 것은 개선할 수 없다, 심판까지 포함해",
+    description:
+      "LLM evaluation ranges from exact-match benchmarks to using a model as a judge, and the judge itself has biases (length, position, self-preference) that must be measured before its scores are trusted.",
+    descriptionKo:
+      "LLM 평가는 정확 일치 벤치마크부터 모델을 심판으로 쓰는 것까지 걸쳐 있으며, 심판 자체에 편향(길이, 위치, 자기 선호)이 있어 그 점수를 믿기 전에 측정해야 합니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC builds a small eval set and an LLM-judge, then measures the judge's own biases — the meta-evaluation that keeps a scoreboard honest.",
+    purposeKo:
+      "이 PoC는 작은 평가 집합과 LLM 심판을 만든 뒤 심판 자신의 편향을 측정합니다 — 점수판을 정직하게 유지하는 메타 평가입니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-structured-output",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Structured output — forcing valid JSON instead of hoping for it",
+    titleKo: "구조화 출력 — 유효한 JSON을 바라는 대신 강제하기",
+    description:
+      "Constrained decoding and schema-guided generation make a model emit output that always parses, turning a flaky text-to-JSON step into a reliable interface an application can depend on.",
+    descriptionKo:
+      "제약 디코딩과 스키마 유도 생성은 모델이 항상 파싱되는 출력을 내보내게 하여, 불안정한 텍스트-투-JSON 단계를 애플리케이션이 의존할 수 있는 신뢰할 만한 인터페이스로 바꿉니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC contrasts free-form prompting with schema-constrained decoding on a extraction task and measures the parse-failure rate each produces.",
+    purposeKo:
+      "이 PoC는 추출 과제에서 자유 형식 프롬프팅과 스키마 제약 디코딩을 대조하고 각각이 내는 파싱 실패율을 측정합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-multimodal",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Multimodal — one model that reads images and text together",
+    titleKo: "멀티모달 — 이미지와 텍스트를 함께 읽는 한 모델",
+    description:
+      "Vision-language models take pixels and tokens in the same context, enabling screenshot understanding and document parsing — and inheriting prompt-injection risk through images, not just text.",
+    descriptionKo:
+      "비전-언어 모델은 픽셀과 토큰을 같은 컨텍스트에 받아 스크린샷 이해와 문서 파싱을 가능하게 하며 — 텍스트만이 아니라 이미지를 통한 프롬프트 인젝션 위험도 물려받습니다.",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC runs a VLM on a screenshot task and shows both the capability and an image-borne injection, connecting multimodal power to its new attack surface.",
+    purposeKo:
+      "이 PoC는 스크린샷 과제에서 VLM을 돌려 능력과 이미지로 실린 인젝션을 함께 보이며, 멀티모달의 힘을 그 새 공격 표면으로 연결합니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "llm-context-engineering",
+    updated: "2026-09-07",
+    group: "future",
+    title: "Context engineering — the window is a budget, not a bucket",
+    titleKo: "컨텍스트 엔지니어링 — 창은 양동이가 아니라 예산이다",
+    description:
+      "As context windows grow, the skill shifts from fitting information in to choosing what belongs there, because models attend unevenly and a stuffed context degrades accuracy (lost-in-the-middle).",
+    descriptionKo:
+      "컨텍스트 창이 커질수록 기술은 정보를 밀어 넣는 것에서 무엇이 거기 속하는지 고르는 것으로 옮겨 갑니다. 모델이 고르지 않게 주의하고, 꽉 채운 컨텍스트는 정확도를 떨어뜨리기 때문입니다(가운데에서 길을 잃음).",
+    status: "soon",
+    howTo: "Not yet scoped.",
+    howToKo: "아직 범위 미정.",
+    purpose:
+      "The PoC measures accuracy as a fact is moved through a long context and as irrelevant filler is added, making 'more context is not more signal' a number.",
+    purposeKo:
+      "이 PoC는 사실을 긴 컨텍스트 안에서 이동시키고 무관한 채움을 더할 때 정확도를 측정하여, '더 많은 컨텍스트가 더 많은 신호는 아니다'를 숫자로 만듭니다.",
+    howItWorks:
+      "Not yet built.",
+    howItWorksKo:
+      "아직 만들지 않음.",
+  },
+  {
+    key: "revision-is-the-fourth-column",
+    group: "economics",
+    title: "The fourth column: the −23,000 that a dozen notes cited never existed",
+    titleKo: "네 번째 칸: 여러 글이 인용한 −23,000은 존재한 적이 없다",
+    description: "Friday's employment lesson has three columns — consensus, surprise, guidance. There is a fourth: revision. The July print of −23,000 that several notes had cited for a month as a \"shock\" was revised to +21,000 in the same release that showed August at +162,000. The number a whole narrative rested on was a draft, and first estimates are wrongest exactly at the turning points, where response rates and seasonal adjustment fill in later.",
+    descriptionKo: "금요일 고용 수업에는 세 칸이 있습니다 — 컨센서스, 서프라이즈, 가이던스. 네 번째 칸이 있습니다 — 개정(revision). 여러 글이 한 달간 \"쇼크\"의 근거로 인용했던 **7월 −23,000이 같은 발표에서 +21,000으로 개정**됐습니다(그 발표의 8월 수치는 +162,000). **서사 하나가 딛고 선 숫자가 초안이었던 것**이고, 첫 추정치는 **전환점 근처에서 가장 크게 틀립니다** — 표본 응답률과 계절조정이 나중에 채워지기 때문입니다.",
+    status: "soon",
+    updated: "2026-09-07",
+    howTo: "Not a build — a bookkeeping discipline. For every employment figure a note quotes, record two values in the same line: the value at the moment of the print, and the current revised value, with the date each was read. Then take one indicator with a long revision history (nonfarm payrolls) and plot first-print against final for the last two years; measure the average absolute revision and, separately, the average revision in the three months around a turning point. The gap between those two averages is the whole card: revisions are not uniform noise, they are largest where the first estimate matters most. Facts here are the 2026-09-04 release — August +162,000 (consensus +53,000), unemployment 4.1%, July −23,000 → +21,000, June +20,000 → +31,000. Confirm against the BLS release before citing.",
+    howToKo: "만드는 일이 아니라 **부기 규율**입니다. 어떤 글이 인용하는 모든 고용 수치에 대해 한 줄에 두 값을 적습니다 — **발표 시점의 값**과 **현재 확정치**, 그리고 각각을 읽은 날짜. 그다음 개정 이력이 긴 지표 하나(비농업 고용)를 골라 지난 2년의 **첫 추정치 대 확정치**를 그리고, **평균 절대 개정폭**과 **전환점 전후 3개월의 평균 개정폭**을 따로 잽니다. 그 두 평균의 차이가 이 카드의 전부입니다 — **개정은 균일한 잡음이 아니라 첫 추정치가 가장 중요한 곳에서 가장 큽니다.** 여기 사실은 2026-09-04 발표 기준 — 8월 +162,000(컨센 +53,000), 실업률 4.1%, 7월 −23,000 → +21,000, 6월 +20,000 → +31,000. 인용 전 BLS 원문으로 확인.",
+    purpose: "**A first estimate is a draft, and the market reads it as a verdict.** The monthly jobs number is a survey with an incomplete response rate at publication; the missing responses arrive over the next two releases, and seasonal-adjustment factors are re-fit as more data lands. So the print is a point estimate with a wide, *asymmetric-in-time* error band — and the band is widest exactly at inflection points, because that is where the seasonal model and the late responders disagree most with the early ones. The −23,000 that read as \"the labour market cracked\" was the draft; +21,000 was the mark.\n\n**This is the same failure `indicators-add-a-decision` names, one level up.** That card's rule is that a number means nothing without the accounting beside it — a hit rate without a win/loss ratio, a backtest without fees. Here the missing column is time: a jobs print without its revision is a hit rate quoted before the game finished. `the-growth-formula-ran-backwards` was the same shape in the other direction — a formula run on numbers that had not settled. The discipline is not to distrust the data; it is to date it.\n\n**The rule is one sentence: never hang a narrative on a first print, especially near a turn.** Revisions are not always upward — the point is direction-free. What is reliable is that the estimate closest to a turning point is the one most likely to be rewritten, so a thesis built on it is built on the least stable number in the series. `priced-by-the-wrong-thing` is the adjacent error: a real, precise figure answering a question — 'what did the economy do in July' — that the figure was not yet able to answer.",
+    purposeKo: "**첫 추정치는 초안인데, 시장은 그것을 판결로 읽습니다.** 월간 고용 수치는 발표 시점에 **응답률이 불완전한 설문**입니다. 빠진 응답은 다음 두 발표에 걸쳐 도착하고, 계절조정 계수는 데이터가 더 쌓이면서 다시 적합됩니다. 그래서 발표값은 **넓고, 시간상 비대칭인 오차 밴드**를 가진 점추정이고 — 그 밴드는 **변곡점에서 가장 넓습니다.** 계절 모형과 늦은 응답자가 이른 응답자와 가장 크게 어긋나는 곳이 바로 거기이기 때문입니다. \"노동시장이 갈라졌다\"로 읽힌 −23,000은 초안이었고, +21,000이 채점이었습니다.\n\n**이것은 `indicators-add-a-decision`이 지적하는 바로 그 고장을 한 층 위에서 본 것입니다.** 그 카드의 규칙은 **옆에 회계가 없으면 숫자는 아무 뜻도 없다**는 것입니다 — 손익비 없는 승률, 수수료 뺀 적 없는 백테스트. 여기서 빠진 칸은 **시간**입니다 — 개정을 뺀 고용 수치는 **경기가 끝나기 전에 인용한 승률**입니다. `the-growth-formula-ran-backwards`는 반대 방향의 같은 모양이었습니다 — 아직 안정되지 않은 숫자에 돌린 공식. 규율은 데이터를 불신하는 게 아니라 **날짜를 붙이는 것**입니다.\n\n**규칙은 한 문장 — 첫 발표값에 서사를 걸지 말 것, 특히 전환점 근처에서.** 개정이 늘 상향인 것은 아닙니다. 요점은 **방향과 무관**합니다. 믿을 수 있는 것은 **전환점에 가장 가까운 추정치가 가장 다시 쓰일 가능성이 높다**는 것이고, 그래서 그 위에 세운 논지는 계열에서 **가장 불안정한 숫자** 위에 세운 것입니다. `priced-by-the-wrong-thing`이 이웃한 오류입니다 — 아직 답할 수 없던 질문('7월에 경제가 무엇을 했는가')에 답하는, 진짜이고 정밀한 숫자.",
+    howItWorks: "### The four columns of a data print\n\n| Column | Question it answers | Where it goes wrong |\n| --- | --- | --- |\n| **Consensus** | What did forecasters expect? | Can be clustered / stale |\n| **Surprise** | Print minus consensus | Overweighted on day one |\n| **Guidance** | What did officials signal? | Conditional, easily over-read |\n| **Revision** | What was the *previous* print really? | Usually ignored — and largest at turns |\n\nThe first three are Friday's lesson; the fourth is why Friday's lesson is provisional.\n\n### The 2026-09-04 release, in the two values that matter\n\n| Month | Value at print | Revised to | Read |\n| --- | --- | --- | --- |\n| August | +162,000 | — | 3× consensus (+53,000); strongest since March |\n| July | **−23,000** | **+21,000** | the \"shock\" that a month of notes cited — never happened |\n| June | +20,000 | +31,000 | quietly stronger |\n\nTwo months revised up by +55,000 combined, in the same breath as a hot August.\n\n### The discipline, in one habit\n\nWrite every employment figure as **value@date → current@date**. A timeline block exists for exactly this contrast, so that months later you can reconstruct which number a decision was actually made on.\n\n### Related cards\n\n`indicators-add-a-decision` (a number needs its accounting), `the-growth-formula-ran-backwards` (a formula run on unsettled numbers), `priced-by-the-wrong-thing` (a precise figure answering a question it cannot yet answer), `gross-over-net` (the other missing-column error).",
+    howItWorksKo: "### 데이터 발표의 네 칸\n\n| 칸 | 답하는 질문 | 어디서 틀리는가 |\n| --- | --- | --- |\n| **컨센서스** | 예측자들은 무엇을 기대했나 | 군집·낡음 가능 |\n| **서프라이즈** | 발표값 − 컨센서스 | 첫날에 과대평가됨 |\n| **가이던스** | 당국이 무엇을 신호했나 | 조건부, 과잉 해석되기 쉬움 |\n| **개정** | *이전* 발표값은 실제로 얼마였나 | 대개 무시됨 — 그리고 전환점에서 가장 큼 |\n\n**앞의 셋이 금요일의 수업**이고, **넷째가 금요일의 수업이 잠정적인 이유**입니다.\n\n### 2026-09-04 발표, 중요한 두 값으로\n\n| 월 | 발표 시점 값 | 개정값 | 독법 |\n| --- | --- | --- | --- |\n| 8월 | +162,000 | — | 컨센(+53,000)의 3배; 3월 이후 최강 |\n| 7월 | **−23,000** | **+21,000** | 한 달간 인용된 \"쇼크\" — 존재한 적 없음 |\n| 6월 | +20,000 | +31,000 | 조용히 더 강함 |\n\n**두 달이 합계 +55,000 상향 개정**됐습니다 — 뜨거운 8월과 같은 숨결에서.\n\n### 규율, 습관 하나로\n\n모든 고용 수치를 **값@날짜 → 현재값@날짜**로 적습니다. 타임라인 블록이 정확히 이 대조를 위해 존재합니다 — 몇 달 뒤에 **어떤 숫자 위에서 결정이 실제로 내려졌는지** 복원할 수 있도록.\n\n### 관련 카드\n\n`indicators-add-a-decision`(숫자에는 회계가 필요하다), `the-growth-formula-ran-backwards`(안정 안 된 숫자에 돌린 공식), `priced-by-the-wrong-thing`(아직 답 못 할 질문에 답하는 정밀한 숫자), `gross-over-net`(또 다른 빠진 칸 오류).",
+  },
+  {
+    key: "refill-rate-is-the-real-cap",
+    title: "A bridge's rate limit is not the loss cap — its refill speed is",
+    titleKo: "브리지의 한도는 손실 상한이 아니다 — 회복 속도가 상한이다",
+    description: "xERC20 (ERC-7281) puts a per-bridge mint/burn rate limit on-chain, and the limit refills over time. That refill is the part that decides the real exposure: a 1M limit that refills in an hour lets an attacker drain it 24 times a day, so the true loss cap is not the limit but limit × (time-to-detect ÷ refill period). The number most designs quote is the least binding one.",
+    descriptionKo: "xERC20(ERC-7281)은 **브리지별 발행·소각 한도(rate limit)**를 온체인에 두고, 그 **한도는 시간에 따라 회복(refill)**됩니다. 실제 노출을 결정하는 것이 바로 그 회복입니다 — **1시간에 회복되는 100만 한도는 공격자가 하루 24번 소진**할 수 있으므로, 진짜 손실 상한은 한도가 아니라 **한도 × (탐지까지 시간 ÷ 회복 주기)**입니다. 대부분의 설계가 인용하는 숫자가 가장 덜 구속력 있는 숫자입니다.",
+    status: "soon",
+    updated: "2026-09-07",
+    howTo: "Not a build — one calculation per bridge, then a table. List every bridge you would attach and read three numbers from each: the rate limit, the refill period (how long a fully-consumed limit takes to return), and your own realistic time-to-detect-and-halt. Compute max loss = limit × (time-to-detect ÷ refill period), rounded up to whole refills. Assume a 30-minute detection-and-stop and see which bridges still clear a loss you can survive; that number, not the headline limit, is the cap. Then flip it: for a loss you can survive, solve for the refill period the bridge would need, and notice that slowing refill blocks honest users (bridge queues). Source: xERC20 / ERC-7281 rate-limit design (per-bridge mint & burn limits, time-based refill); confirm the refill mechanics of each specific bridge against its own docs — implementations differ.",
+    howToKo: "만드는 일이 아니라 **브리지당 계산 한 번, 그리고 표**입니다. 붙일 모든 브리지를 나열하고 각각에서 세 숫자를 읽습니다 — **한도(rate limit)**, **회복 주기**(완전히 소진된 한도가 돌아오는 데 걸리는 시간), 그리고 **본인의 현실적인 탐지·정지 시간**. **최대 손실 = 한도 × (탐지까지 시간 ÷ 회복 주기)**를 회복 횟수 올림으로 계산합니다. **30분 탐지·정지**를 가정하고 감당 가능한 손실을 통과하는 브리지가 어느 것인지 봅니다 — 그 숫자가, 헤드라인 한도가 아니라, 상한입니다. 그다음 뒤집습니다 — 감당 가능한 손실에 대해 브리지가 가져야 할 회복 주기를 역산하고, **회복을 느리게 하면 정상 사용자가 막힌다(브리지 대기)**는 것을 확인합니다. 출처: xERC20 / ERC-7281 한도 설계(브리지별 발행·소각 한도, 시간 기반 회복); 각 브리지의 회복 메커니즘은 구현이 다르므로 해당 문서로 확인.",
+    purpose: "**A rate limit reads like a loss cap, and it is not one.** \"This bridge can mint at most 1M\" sounds like the most it can lose is 1M. But the limit is not a lifetime budget — it refills, because a limit that did not refill would throttle the bridge to uselessness within a day of normal traffic. The moment it refills, the ceiling stops being 1M and becomes 1M *per refill period*, and an attacker who has compromised the mint path spends it on every refill until someone notices and halts. The loss is therefore governed by two numbers the limit never mentions: how fast the limit comes back, and how fast you can stop it.\n\n**So the honest exposure is a rate, not a level: limit × (time-to-detect ÷ refill period).** A 1M limit refilling hourly, against a 6-hour detection lag, is a 6M exposure, not a 1M one. This is the operational floor under `the-bridge-is-inside-the-token` — that card asks *who* can halt minting when supply and custody disagree; this one asks *how much* is gone before they do. And it is the same shape as `governance-capture-cost` and the manipulation-cost number in the decision-market card: a safety property is not a property of the mechanism, it is a property of the mechanism at a given speed, and mechanisms are usually described without the speed.\n\n**The refill period is a safety/availability trade, and there is no setting that is comfortable on both sides.** Slow the refill and the loss cap drops — but honest users hit the limit and wait in a queue, which is `who-holds-the-mint` and `third-party-blast-radius` felt as latency instead of risk. Speed it up and the bridge is smooth and the cap is effectively the whole reserve. The right answer is not a default; it scales with the size of what sits behind the bridge, and the only way to choose it is to compute the loss at your real detection time and read the queue it implies. A rate limit quoted without its refill period has quoted the least binding half.",
+    purposeKo: "**한도는 손실 상한처럼 읽히지만 상한이 아닙니다.** \"이 브리지는 최대 100만까지 발행\"은 최대 손실이 100만처럼 들립니다. 하지만 한도는 **평생 예산이 아니라 회복됩니다** — 회복 안 되는 한도는 정상 트래픽 하루 만에 브리지를 무용지물로 조이니까요. 회복되는 순간 천장은 100만이 아니라 **회복 주기당 100만**이 되고, 발행 경로를 탈취한 공격자는 **누군가 알아채고 멈출 때까지 매 회복마다** 그것을 씁니다. 그래서 손실은 한도가 언급조차 않는 두 숫자가 지배합니다 — **한도가 얼마나 빨리 돌아오는가**, 그리고 **당신이 얼마나 빨리 멈출 수 있는가**.\n\n**따라서 정직한 노출은 수준이 아니라 속도입니다 — 한도 × (탐지까지 시간 ÷ 회복 주기).** 6시간 탐지 지연에 대해 1시간마다 회복되는 100만 한도는 100만이 아니라 **600만 노출**입니다. 이것은 `the-bridge-is-inside-the-token`의 운영 하부 바닥입니다 — 그 카드는 공급과 커스터디가 어긋날 때 **누가** 발행을 멈추냐고 묻고, 이 카드는 그 전에 **얼마가** 사라지냐고 묻습니다. 그리고 `governance-capture-cost`, 결정시장 카드의 조작비용 숫자와 **같은 모양**입니다 — 안전 속성은 메커니즘의 속성이 아니라 **특정 속도에서의 메커니즘의 속성**이고, 메커니즘은 보통 그 속도 없이 서술됩니다.\n\n**회복 주기는 안전 대 가용성의 교환이고, 양쪽 모두에서 편안한 설정은 없습니다.** 회복을 느리게 하면 손실 상한은 내려가지만 — 정상 사용자가 한도에 걸려 대기 줄에 섭니다. 이것이 위험 대신 **지연으로 체감되는** `who-holds-the-mint`와 `third-party-blast-radius`입니다. 빠르게 하면 브리지는 매끄럽고 상한은 사실상 준비금 전체가 됩니다. 정답은 기본값이 아니라 **브리지 뒤에 있는 것의 크기에 따라 달라지고**, 고르는 유일한 방법은 **본인의 실제 탐지 시간에서 손실을 계산하고 그것이 함의하는 대기 줄을 읽는 것**입니다. 회복 주기 없이 인용된 한도는 **가장 덜 구속력 있는 절반**만 인용한 것입니다.",
+    howItWorks: "### The limit is not the cap\n\n| Quantity | What it says | Binding? |\n| --- | --- | --- |\n| **Rate limit** (e.g. 1M) | Most that can mint before the limit is exhausted | Least — it refills |\n| **Refill period** | How long a spent limit takes to return | Sets how often the limit can be re-spent |\n| **Time-to-detect-and-halt** | Your own operational reality | The number nobody publishes |\n| **Max loss** | limit × ⌈detect ÷ refill⌉ | **The actual cap** |\n\n### Same limit, three refill speeds, 6-hour detection\n\n| Rate limit | Refill period | Max loss @ 6h detect |\n| --- | --- | --- |\n| 1M | 24h (once/day) | ~1M |\n| 1M | 6h | ~1M–2M |\n| 1M | 1h | **~6M** |\n\nThe headline \"1M limit\" is identical across all three; the exposure spans 6×.\n\n### The trade you cannot escape\n\n| Refill | Loss cap | Honest users |\n| --- | --- | --- |\n| Slow | Low | Blocked — bridge queues |\n| Fast | ≈ whole reserve | Smooth |\n\nThere is no setting that is safe and frictionless; the right point scales with the value behind the bridge.\n\n### Related cards\n\n`the-bridge-is-inside-the-token` (who can halt minting), `who-holds-the-mint` (mint authority), `third-party-blast-radius` (correlated failure), `erc-8141` (native-issuance mechanics).",
+    howItWorksKo: "### 한도는 상한이 아니다\n\n| 양 | 말하는 것 | 구속력 |\n| --- | --- | --- |\n| **한도(rate limit)** (예: 100만) | 한도가 소진되기 전 발행 최대치 | 가장 약함 — 회복됨 |\n| **회복 주기** | 소진된 한도가 돌아오는 시간 | 한도를 다시 쓸 수 있는 빈도를 정함 |\n| **탐지·정지 시간** | 본인의 운영 현실 | 아무도 공표 않는 숫자 |\n| **최대 손실** | 한도 × ⌈탐지 ÷ 회복⌉ | **실제 상한** |\n\n### 같은 한도, 세 회복 속도, 6시간 탐지\n\n| 한도 | 회복 주기 | 최대 손실 @6h 탐지 |\n| --- | --- | --- |\n| 100만 | 24h (하루 1회) | ~100만 |\n| 100만 | 6h | ~100만–200만 |\n| 100만 | 1h | **~600만** |\n\n**헤드라인 \"100만 한도\"는 셋 다 똑같지만**, 노출은 6배까지 벌어집니다.\n\n### 피할 수 없는 교환\n\n| 회복 | 손실 상한 | 정상 사용자 |\n| --- | --- | --- |\n| 느림 | 낮음 | 막힘 — 브리지 대기 |\n| 빠름 | ≈ 준비금 전체 | 매끄러움 |\n\n**안전하면서 마찰 없는 설정은 없습니다.** 옳은 지점은 브리지 뒤에 있는 가치에 따라 커집니다.\n\n### 관련 카드\n\n`the-bridge-is-inside-the-token`(누가 발행을 멈추나), `who-holds-the-mint`(발행 권한), `third-party-blast-radius`(상관 장애), `erc-8141`(네이티브 발행 메커니즘).",
+  },
+  {
+    key: "isaac-lab-gpu-sim",
+    group: "future",
+    title: "Isaac Lab — the sim that gets faster when you buy a GPU",
+    titleKo: "Isaac Lab — GPU를 사면 빨라지는 시뮬레이터",
+    description: "NVIDIA's robot-learning framework runs thousands to tens of thousands of environments in parallel on the GPU, with RL/imitation workflows and sensor sim built in. It fills the slot the stack map left empty — large-scale sim infrastructure. If MuJoCo/MJX is the \"runs on a laptop\" side, Isaac Lab is the \"buy a GPU and it goes faster\" side, and if the sim-to-real bottleneck is data, this points straight at it — at the cost of binding hard to one hardware and software stack.",
+    descriptionKo: "NVIDIA의 로봇 학습 프레임워크는 **수천~수만 개 환경을 GPU에서 병렬**로 돌리며, 강화·모방학습 워크플로와 센서 시뮬이 내장돼 있습니다. 스택 지도가 비워 둔 칸 — **대규모 시뮬 인프라** — 을 채웁니다. MuJoCo/MJX가 \"노트북에서 되는\" 쪽이라면 Isaac Lab은 **\"GPU를 사면 빨라지는\"** 쪽이고, sim-to-real 병목이 데이터라면 **이쪽이 정면 해법**입니다 — **하나의 하드웨어·소프트웨어 스택에 강하게 묶이는 대가**로.",
+    status: "soon",
+    updated: "2026-09-07",
+    howTo: "Not yet scoped — the deliverable is a benchmark, not a build. Take one policy and one task you already run in MJX, port it, and measure two things: steps-per-second at a fixed environment count, and — the number that actually decides the tool — whether raising the environment count 10× makes training converge ~10× faster (it usually does not; parallelism buys throughput, not free sample efficiency). Then write down the lock-in you took on: NVIDIA hardware, drivers, and Omniverse. Escape routes to note beside it: MJX (light, free), Genesis (new), and renting cloud GPUs to get the throughput without owning the stack. Source: NVIDIA Isaac Lab (formerly Isaac Gym / Orbit), on Omniverse + PhysX with camera/LiDAR sensor simulation.",
+    howToKo: "아직 범위 미정 — 산출물은 빌드가 아니라 **벤치마크**입니다. 이미 MJX에서 돌리는 정책·태스크 하나를 이식해 두 가지를 잽니다 — 고정 환경 수에서의 **초당 스텝 수**, 그리고 도구를 실제로 결정하는 숫자, 즉 **환경 수를 10배 늘리면 학습 수렴이 ~10배 빨라지는지**(대개 아닙니다 — 병렬성은 처리량을 사지 공짜 표본효율을 사지 않습니다). 그다음 감수한 락인을 적습니다 — NVIDIA 하드웨어, 드라이버, Omniverse. 옆에 적어 둘 탈출로: MJX(가볍고 무료), Genesis(신규), 그리고 스택을 소유하지 않고 처리량만 얻는 **클라우드 GPU 임대**. 출처: NVIDIA Isaac Lab(구 Isaac Gym / Orbit), Omniverse + PhysX 위, 카메라·라이다 센서 시뮬 포함.",
+    purpose: "**Isaac Lab is the missing quadrant of the robotics stack, and the quadrant is 'throughput you can buy.'** The earlier stack map — ROS 2 for control, LeRobot for learning, MuJoCo for physics, openpi for policy — had no entry for the case where the constraint is simply *how many environment-steps per hour you can generate*. That is what massively-parallel GPU sim is: not a better physics engine, but the same physics run across ten thousand copies at once, so the data factory scales with silicon instead of wall-clock. `the-simulator-is-the-data-factory` is the thesis; Isaac Lab is the industrial version of it.\n\n**But throughput is not the same as learning, and conflating them is the expensive mistake.** Ten thousand parallel environments generate ten thousand times the samples; they do not generally give ten thousand times the learning, because sample efficiency is a property of the algorithm and the task, not the sim. The honest benchmark is not steps-per-second — that number always flatters the GPU — but convergence-per-dollar against a laptop-scale baseline. `buying-bandwidth-not-flops` is the same accounting error in another domain: the resource that is cheap to add is rarely the resource that was binding.\n\n**And the real cost is written in the stack, not the invoice.** Isaac Lab binds to NVIDIA hardware, drivers, and Omniverse, which is a `choosing-a-chain-is-a-lease`-shaped decision: the speed is real and the lease is real, and the day you want off it is the day you learn how deep it went. `robotics-entry-decision` framed whether to enter robotics at all; this narrows it to whether the entry runs through one vendor's simulator — with MJX, Genesis, and cloud-GPU rental as the routes that keep the throughput while loosening the grip.",
+    purposeKo: "**Isaac Lab은 로보틱스 스택의 빠진 사분면이고, 그 사분면은 '돈으로 살 수 있는 처리량'입니다.** 앞선 스택 지도 — 제어의 ROS 2, 학습의 LeRobot, 물리의 MuJoCo, 정책의 openpi — 에는 제약이 단지 **시간당 생성 가능한 환경-스텝 수**인 경우를 위한 칸이 없었습니다. 대규모 병렬 GPU 시뮬이 바로 그것입니다 — 더 나은 물리 엔진이 아니라, **같은 물리를 만 개 복사본에 동시에 돌려** 데이터 공장이 벽시계 대신 실리콘에 따라 확장되는 것. `the-simulator-is-the-data-factory`가 논지이고, Isaac Lab이 그 산업 버전입니다.\n\n**그러나 처리량은 학습과 같지 않고, 둘을 뒤섞는 것이 값비싼 실수입니다.** 만 개 병렬 환경은 만 배의 표본을 생성하지만 대개 만 배의 학습을 주지 않습니다 — **표본효율은 알고리즘과 태스크의 속성이지 시뮬의 속성이 아니기** 때문입니다. 정직한 벤치마크는 초당 스텝 수 — 그 숫자는 늘 GPU를 치켜세웁니다 — 가 아니라, 노트북 규모 기준선 대비 **달러당 수렴**입니다. `buying-bandwidth-not-flops`가 다른 영역의 같은 회계 오류입니다 — **더하기 싼 자원이 구속하던 자원인 경우는 드뭅니다.**\n\n**그리고 진짜 비용은 청구서가 아니라 스택에 적혀 있습니다.** Isaac Lab은 NVIDIA 하드웨어·드라이버·Omniverse에 묶입니다 — `choosing-a-chain-is-a-lease` 모양의 결정입니다. 속도도 실재하고 임대차도 실재하며, **벗어나고 싶은 날에 그것이 얼마나 깊었는지 배웁니다.** `robotics-entry-decision`이 로보틱스에 아예 진입할지를 틀 잡았다면, 이 카드는 그 진입이 **한 벤더의 시뮬레이터를 통과하는지**로 좁힙니다 — MJX, Genesis, 클라우드 GPU 임대가 처리량은 지키며 손아귀를 느슨하게 하는 경로로.",
+    howItWorks: "### Where Isaac Lab sits\n\n| Layer | Tool | Isaac Lab's relation |\n| --- | --- | --- |\n| Control | ROS 2 | separate — runtime, not training |\n| Learning | LeRobot | consumes the data Isaac Lab generates |\n| Physics | MuJoCo / MJX | the laptop-scale peer |\n| **Sim infra** | **Isaac Lab** | **the missing quadrant — GPU-parallel data factory** |\n| Policy | openpi | trained on the samples |\n\n### Laptop-scale vs GPU-scale\n\n| | MuJoCo / MJX | Isaac Lab |\n| --- | --- | --- |\n| Runs on | a laptop | a GPU (more GPU = faster) |\n| Environments | tens–hundreds | thousands–tens of thousands |\n| Lock-in | light, free | NVIDIA hardware + Omniverse |\n| Bottleneck it attacks | prototyping | data throughput for sim-to-real |\n\n### The benchmark that decides it\n\n1. Steps-per-second at fixed env count — GPU wins; this number flatters.\n2. **10× the environments → does convergence get ~10× faster?** Usually no.\n3. Convergence-per-dollar vs a laptop baseline — the honest metric.\n4. Write down the lock-in taken on, and the escape routes: MJX, Genesis, cloud-GPU rental.\n\n### Related cards\n\n`the-simulator-is-the-data-factory` (the thesis), `buying-bandwidth-not-flops` (throughput ≠ the binding resource), `robotics-entry-decision` (whether to enter at all), `choosing-a-chain-is-a-lease` (the lock-in shape).",
+    howItWorksKo: "### Isaac Lab의 자리\n\n| 층 | 도구 | Isaac Lab과의 관계 |\n| --- | --- | --- |\n| 제어 | ROS 2 | 별개 — 학습이 아니라 런타임 |\n| 학습 | LeRobot | Isaac Lab이 생성한 데이터를 소비 |\n| 물리 | MuJoCo / MJX | 노트북 규모의 동류 |\n| **시뮬 인프라** | **Isaac Lab** | **빠진 사분면 — GPU 병렬 데이터 공장** |\n| 정책 | openpi | 표본으로 학습됨 |\n\n### 노트북 규모 대 GPU 규모\n\n| | MuJoCo / MJX | Isaac Lab |\n| --- | --- | --- |\n| 구동 | 노트북 | GPU (GPU 많을수록 빠름) |\n| 환경 수 | 수십~수백 | 수천~수만 |\n| 락인 | 가볍고 무료 | NVIDIA 하드웨어 + Omniverse |\n| 겨냥하는 병목 | 프로토타이핑 | sim-to-real용 데이터 처리량 |\n\n### 결정을 내리는 벤치마크\n\n1. 고정 환경 수에서 초당 스텝 수 — GPU가 이김; 이 숫자는 치켜세움.\n2. **환경 10배 → 수렴이 ~10배 빨라지는가?** 대개 아님.\n3. 노트북 기준선 대비 **달러당 수렴** — 정직한 지표.\n4. 감수한 락인과 탈출로를 적기: MJX, Genesis, 클라우드 GPU 임대.\n\n### 관련 카드\n\n`the-simulator-is-the-data-factory`(논지), `buying-bandwidth-not-flops`(처리량 ≠ 구속 자원), `robotics-entry-decision`(진입 여부), `choosing-a-chain-is-a-lease`(락인 모양).",
+  },
+  {
+    key: "temporal-durable-execution",
+    group: "future",
+    title: "Temporal — where 'retry, idempotency, visibility into a stuck run' actually lives",
+    titleKo: "Temporal — '재시도·멱등성·멈춘 실행의 가시성'이 실제로 사는 곳",
+    description: "Temporal is durable workflow orchestration: it replays workflow code deterministically so a process that dies keeps its state, and retries, timeouts, compensations, and multi-day waits are first-class. It is the product the dual-write end-condition problem keeps describing — and a settlement flow that is long-running plus externally-waiting is the textbook fit, at the price of a determinism constraint that reshapes how the code is written.",
+    descriptionKo: "Temporal은 **내구성 있는 워크플로 오케스트레이션**입니다 — 워크플로 코드를 **결정론적으로 재생(replay)**해 죽은 프로세스가 상태를 잃지 않게 하고, 재시도·타임아웃·보상 트랜잭션·며칠짜리 대기가 **1급 개념**입니다. 이중 쓰기 종료 조건 문제가 계속 묘사하던 바로 그 제품이고 — **장기 실행 + 외부 대기** 패턴인 정산 플로우가 교과서적으로 맞습니다 — **코드 작성 방식을 바꾸는 결정론 제약**을 대가로.",
+    status: "soon",
+    updated: "2026-09-07",
+    howTo: "Not yet scoped — the deliverable is a fit test on one real flow, not adopting a platform. Take a settlement or migration flow that already has a long-running, externally-waiting shape (submit → wait for confirmation → reconcile → release), and model it twice: once as the cron + state-table you would otherwise hand-build, once as a Temporal workflow. Compare on the four things Temporal sells — retries, idempotency, visibility into a stuck run, changing code mid-flight — and on the two costs it adds: the determinism constraint (no direct randomness, clock reads, or network calls in workflow code — they move to activities) and the operational bill (self-hosted worker cost vs Temporal Cloud per-action pricing, plus per-workflow event-history size, which grows replay cost). Alternatives to keep in the same table: Inngest (lighter for small backends), Restate, and the hand-rolled cron + state table itself. Source: Temporal — durable execution via deterministic replay.",
+    howToKo: "아직 범위 미정 — 산출물은 플랫폼 도입이 아니라 **실제 플로우 하나에 대한 적합성 테스트**입니다. 이미 장기 실행·외부 대기 모양(제출 → 확인 대기 → 대사 → 해제)을 가진 정산·마이그레이션 플로우를 골라 두 번 모델링합니다 — 한 번은 직접 만들 **크론 + 상태 테이블**로, 한 번은 **Temporal 워크플로**로. Temporal이 파는 네 가지 — 재시도, 멱등성, 멈춘 실행의 가시성, 실행 중 코드 변경 — 와, 그것이 더하는 두 비용으로 비교합니다 — **결정론 제약**(워크플로 코드에 직접 난수·시각 읽기·네트워크 호출 금지 — 액티비티로 이동)과 **운영 비용**(자체 호스팅 워커 비용 대 Temporal Cloud 액션 단가, 그리고 재생 비용을 키우는 워크플로당 이벤트 히스토리 크기). 같은 표에 둘 대안: Inngest(작은 백엔드에 가벼움), Restate, 그리고 직접 만든 크론 + 상태 테이블 자체. 출처: Temporal — 결정론적 재생을 통한 내구성 실행.",
+    purpose: "**Temporal is the packaged answer to a question this catalogue keeps arriving at from different doors.** The pattern is always the same: a process has to survive its own death mid-flight, retry the parts that failed without redoing the parts that succeeded, wait days for something external, and let an operator see where it is stuck. `circuit-breaker-saga` reached it from failure isolation; `x402-settlement-retry` reached it from payment retries; `irreversible-switch-design` reached it from the dual-write cutover that has an end date. Durable execution is the name of the thing all three were hand-building.\n\n**The mechanism is one idea — deterministic replay — and it is also the whole cost.** Temporal does not persist your variables; it persists the *history of events* and re-runs your workflow code against that history to rebuild state, which is why a worker can be killed and resume exactly where it was. For that replay to be correct, the workflow code must be deterministic: no direct clock reads, no random numbers, no network calls inside the workflow — those move into 'activities' that are recorded and replayed as results. That constraint is not a detail; it reshapes how the code is written, and it is the honest reason to model a flow twice before adopting it.\n\n**It is a build-vs-buy decision with a fork this catalogue has drawn before.** The hand-rolled cron + state table is exactly the 'conversation 2' option — it works, and for a small backend it may be the right amount of machinery. Temporal earns its weight when the flows are genuinely long-running and externally-waiting — which is precisely the settlement shape — and when the number of such flows is large enough that reimplementing retries and visibility per flow is the real cost. `build-rent-or-own-the-rail` is the same fork for payment rails; this is it for execution. The two costs to price against the four benefits are the event-history size per workflow and the determinism tax on the code.",
+    purposeKo: "**Temporal은 이 카탈로그가 서로 다른 문으로 계속 도착하는 질문에 대한 포장된 답입니다.** 패턴은 늘 같습니다 — 프로세스가 실행 중 자신의 죽음을 견디고, 성공한 부분은 다시 하지 않으면서 실패한 부분만 재시도하고, 외부의 무언가를 며칠 기다리고, 운영자가 어디서 멈췄는지 볼 수 있어야 합니다. `circuit-breaker-saga`는 장애 격리에서, `x402-settlement-retry`는 결제 재시도에서, `irreversible-switch-design`은 종료일이 있는 이중 쓰기 전환에서 여기 도달했습니다. **내구성 실행(durable execution)**이 셋 다 손으로 짓던 것의 이름입니다.\n\n**메커니즘은 한 아이디어 — 결정론적 재생 — 이고, 그것이 곧 전체 비용이기도 합니다.** Temporal은 변수를 보존하지 않습니다 — **이벤트의 이력**을 보존하고 그 이력에 대해 워크플로 코드를 다시 돌려 상태를 재구성합니다. 워커가 죽어도 있던 자리에서 정확히 재개되는 이유입니다. 그 재생이 옳으려면 워크플로 코드가 **결정론적**이어야 합니다 — 직접 시각 읽기·난수·네트워크 호출 금지. 이것들은 결과로 기록·재생되는 **'액티비티'**로 옮겨갑니다. 그 제약은 세부가 아니라 **코드 작성 방식을 바꾸고**, 도입 전에 플로우를 두 번 모델링할 정직한 이유입니다.\n\n**이것은 이 카탈로그가 전에 그린 갈림길을 가진 build-vs-buy 결정입니다.** 직접 만든 크론 + 상태 테이블이 바로 그 '대화 2' 선택지입니다 — 작동하고, 작은 백엔드에는 그것이 알맞은 양의 기계일 수 있습니다. Temporal은 플로우가 진짜로 장기 실행·외부 대기일 때 — 정확히 정산 모양일 때 — 그리고 그런 플로우 수가 **플로우마다 재시도·가시성을 재구현하는 것이 진짜 비용**이 될 만큼 많을 때 무게값을 합니다. `build-rent-or-own-the-rail`이 결제 레일의 같은 갈림길이고, 이건 **실행의** 갈림길입니다. 네 이점에 대고 값을 매길 두 비용은 **워크플로당 이벤트 히스토리 크기**와 **코드에 붙는 결정론 세금**입니다.",
+    howItWorks: "### The pattern three cards arrived at separately\n\n| Card | Reached durable execution from |\n| --- | --- |\n| `circuit-breaker-saga` | failure isolation / compensation |\n| `x402-settlement-retry` | retrying a payment safely |\n| `irreversible-switch-design` | the dual-write cutover with an end date |\n\nAll three want: survive a crash, retry without double-spending, wait for external state, see where it is stuck.\n\n### Deterministic replay — the mechanism and its tax\n\n| | How it works | What it costs |\n| --- | --- | --- |\n| State | rebuilt by replaying event history, not stored as variables | event-history size grows replay cost |\n| Correctness | requires deterministic workflow code | no clock/random/network in workflow — move to activities |\n| Resumption | worker dies → resumes exactly where it was | the reason to accept the constraint |\n\n### Build vs buy\n\n| Option | Good when |\n| --- | --- |\n| Hand-rolled cron + state table | small backend, few flows |\n| **Temporal** | flows long-running + externally-waiting, many of them |\n| Inngest / Restate | lighter middle ground |\n\nPrice the two costs (history size, determinism tax) against the four benefits (retry, idempotency, visibility, live code change).\n\n### Related cards\n\n`circuit-breaker-saga`, `x402-settlement-retry`, `irreversible-switch-design` (the flows that want this), `build-rent-or-own-the-rail` (the same build-vs-buy fork, for rails).",
+    howItWorksKo: "### 세 카드가 따로 도착한 패턴\n\n| 카드 | 내구성 실행에 도달한 경로 |\n| --- | --- |\n| `circuit-breaker-saga` | 장애 격리 / 보상 |\n| `x402-settlement-retry` | 결제를 안전하게 재시도 |\n| `irreversible-switch-design` | 종료일 있는 이중 쓰기 전환 |\n\n셋 다 원하는 것 — 크래시 생존, 이중지불 없는 재시도, 외부 상태 대기, 멈춘 위치의 가시성.\n\n### 결정론적 재생 — 메커니즘과 그 세금\n\n| | 작동 방식 | 대가 |\n| --- | --- | --- |\n| 상태 | 변수 저장이 아니라 이벤트 이력 재생으로 재구성 | 이벤트 히스토리 크기가 재생 비용을 키움 |\n| 정확성 | 결정론적 워크플로 코드 필요 | 워크플로에 시각/난수/네트워크 금지 — 액티비티로 이동 |\n| 재개 | 워커 죽음 → 있던 자리에서 정확히 재개 | 제약을 받아들이는 이유 |\n\n### Build vs buy\n\n| 선택지 | 알맞을 때 |\n| --- | --- |\n| 직접 만든 크론 + 상태 테이블 | 작은 백엔드, 적은 플로우 |\n| **Temporal** | 장기 실행 + 외부 대기 플로우가 많을 때 |\n| Inngest / Restate | 더 가벼운 중간 지대 |\n\n두 비용(히스토리 크기, 결정론 세금)을 네 이점(재시도, 멱등성, 가시성, 실행 중 코드 변경)에 대고 값을 매기세요.\n\n### 관련 카드\n\n`circuit-breaker-saga`, `x402-settlement-retry`, `irreversible-switch-design`(이것을 원하는 플로우들), `build-rent-or-own-the-rail`(레일용, 같은 build-vs-buy 갈림길).",
   },
 ];
