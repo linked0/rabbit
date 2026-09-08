@@ -627,6 +627,10 @@ export const POC_CARDS: DemoCard[] = [
       "Reading note, not a demo: how a Merkle proof's size grows with tree width (you must supply every sibling at every level), why vector commitments collapse that to a constant-size proof regardless of width, and what Ethereum's Verge roadmap intends to buy with the swap — stateless clients that validate without holding the state. Also what it costs: heavier cryptography, and a migration of the entire state trie.",
     howItWorksKo:
       "데모가 아니라 정독 노트입니다: 머클 증명의 크기가 트리 폭에 따라 어떻게 늘어나는지(각 레벨의 형제 노드를 전부 제출해야 한다), 벡터 커밋먼트가 어떻게 폭과 무관한 상수 크기 증명으로 그것을 접는지, 그리고 이더리움 Verge 로드맵이 그 교체로 사려는 것 — 상태를 들고 있지 않고도 검증하는 무상태 클라이언트. 대가도 함께: 더 무거운 암호학, 그리고 상태 트라이 전체의 마이그레이션.",
+    discussion:
+      "### Proof size, not proof time\n\nThis is the distinction the review kept returning to. A Verkle tree shrinks the proof's **size** (bytes to transmit), **not** the time to prove or verify. Its cryptography is *heavier* per operation — vector commitments over elliptic curves instead of plain SHA-256 hashing — so end-to-end compute goes **up**, not down. That is the card's subtitle made literal: hashing was never the bottleneck, **bandwidth** was.\n\n### One opening per level, regardless of width\n\nMerkle: at each level you must supply every *other* child in the group — `branching − 1` siblings, which grows with width. Verkle: a vector commitment collapses each level to **one constant-size opening**, whatever the width. So total proof ≈ (constant per level) × (number of levels). Numbers from the Related code, proving leaf #5 of 64:\n\n| branching | depth | Merkle openings | Verkle openings |\n|---|---|---|---|\n| 2 | 6 | 6 | 6 |\n| 16 | 2 | 30 | 2 |\n| 256 | 1 | 255 | 1 |\n\n### Why Verkle deliberately goes wide\n\nBecause width is **free for proof size**, Verkle designers make nodes wide — Ethereum's design is **256-ary** — which makes the tree **shallow**, so the proof is tiny on two counts at once: constant per level *and* fewer levels. Merkle cannot do this: every extra child costs one more sibling in **every** proof, which is why real Merkle trees stay **binary**.\n\n### The cost moved; it did not vanish\n\nVerkle trades many cheap hash siblings for **fewer, bigger, cryptographically heavier** openings. Size **down**, crypto compute **up**. That trade is what buys **stateless clients** — a node validates a block *without holding the whole state*, because the witness it ships each block is finally small enough to move around the network.\n\n### What the Related code does — and does not\n\nThe Merkle half is real (SHA-256, counts siblings). The Verkle half mirrors it line-for-line but **models proof *size* only**: its commitment is still a hash, so the file runs with no libraries and is **not** cryptographically sound. A production Verkle needs an **IPA/KZG** vector commitment (elliptic-curve math) to make one O(1) opening actually *prove* a child at any position.",
+    discussionKo:
+      "### 증명 크기지, 증명 시간이 아니다\n\n검토 중 계속 돌아온 구분입니다. Verkle 트리는 증명의 **크기**(전송할 바이트)를 줄이지, 증명·검증 **시간**을 줄이는 게 아닙니다. 암호학은 연산당 오히려 *더 무겁습니다* — 단순 SHA-256 해싱이 아니라 타원곡선 위의 벡터 커밋먼트라서, 전체 계산량은 줄지 않고 **늘어납니다**. 카드 부제를 문자 그대로 옮긴 것입니다: 병목은 애초에 해싱이 아니라 **대역폭**이었습니다.\n\n### 폭과 무관하게, 레벨당 오프닝 하나\n\n머클: 각 레벨에서 그룹의 *나머지* 자식을 전부 제출해야 합니다 — `branching − 1`개 형제, 폭에 따라 증가. Verkle: 벡터 커밋먼트가 각 레벨을 폭과 무관한 **상수 크기 오프닝 하나**로 접습니다. 그래서 전체 증명 ≈ (레벨당 상수) × (레벨 수). Related code에서 64개 중 리프 #5를 증명한 수치:\n\n| branching | depth | 머클 오프닝 | Verkle 오프닝 |\n|---|---|---|---|\n| 2 | 6 | 6 | 6 |\n| 16 | 2 | 30 | 2 |\n| 256 | 1 | 255 | 1 |\n\n### Verkle이 일부러 넓게 가는 이유\n\n폭이 **증명 크기 면에서 공짜**이기 때문에, Verkle 설계자는 노드를 넓게 만듭니다 — 이더리움 설계는 **256분기** — 그러면 트리가 **얕아져서** 증명이 두 가지로 동시에 작아집니다: 레벨당 상수 *그리고* 더 적은 레벨. 머클은 이걸 못 합니다: 자식 하나가 늘 때마다 **모든** 증명에 형제가 하나씩 더 붙으므로, 실제 머클 트리는 **이진**을 유지합니다.\n\n### 비용은 사라진 게 아니라 옮겨갔다\n\nVerkle은 값싼 해시 형제 여럿을 **더 적고 크고 암호적으로 무거운** 오프닝과 맞바꿉니다. 크기 **↓**, 암호 계산 **↑**. 이 맞바꿈이 **무상태 클라이언트**를 사옵니다 — 노드가 상태 전체를 들고 있지 *않고도* 블록을 검증합니다. 매 블록 실어 보내는 witness가 드디어 네트워크로 나를 만큼 작아졌기 때문입니다.\n\n### Related code가 하는 일, 그리고 하지 않는 일\n\n머클 절반은 진짜입니다(SHA-256, 형제 계수). Verkle 절반은 그것을 그대로 대응시키되 **증명 *크기*만 모델링**합니다: 커밋먼트가 여전히 해시라 라이브러리 없이 돌아가고, 암호적으로는 **안전하지 않습니다**. 실제 Verkle은 O(1) 오프닝 하나가 임의 위치의 자식을 실제로 *증명*하려면 **IPA/KZG** 벡터 커밋먼트(타원곡선 연산)가 필요합니다.",
   },
   {
     // price-at-a-moment 바로 앞에 두었다 (jay, 2026-08-19). 두 카드가 같은 창(window)을
@@ -5884,5 +5888,199 @@ export const POC_CARDS: DemoCard[] = [
     purposeKo: "**명제는 이 전환에 대해 옳고, 평가하기 전에 정확히 진술할 값이 있습니다.** LayerZero 의 가치는 두 체인 사이의 다리가 아니라, 개발자가 여러 독립 체인을 하나의 네트워크로 다루는 앱 하나를 쓸 수 있다는 것 — OApp / 옴니체인 모델입니다. 토큰 이동보다 넓은 진짜 아키텍처 아이디어이고, 그래서 상호운용 계층에 가치가 모이고 기관이 주목합니다. 그러나 운영체제는 단 하나의 속성으로 정의됩니다 — 다른 모든 것이 그 위에서 도는 계층. 그래서 \"LayerZero 가 OS 가 된다\"와 \"LayerZero 가 모든 옴니체인 앱이 신뢰하는 단일 대상이 된다\"는 두 진술이 아니라 하나입니다. 강세론을 찬찬히 읽으면 곧 위험 진술입니다.\n\n**\"하나의 네트워크인 듯\"이 솔직한 질문이 사는 곳입니다 — 추상화가 통합되지 않는 속성에서 정확히 새기 때문입니다: 검증, 파이널리티, 정지.** 검증: LayerZero 의 보안은 앱이 구성하는 DVN 집합이고, 기본값은 대부분의 팀이 의식적으로 내리지 않는 신뢰 결정입니다 — `layerzero-default-is-a-choice` — 그래서 \"하나의 네트워크\"는 연결된 모든 체인에 걸친 가장 약한 DVN 구성만큼만 강합니다. 파이널리티: 각 체인은 자기 합의·파이널리티·리오그 동작을 유지하므로, 옴니체인 앱은 자기가 걸친 모든 체인의 *가장 나쁜* 파이널리티와 리오그 노출을 물려받습니다(`l2-finality-three-clocks`, `receipt-is-not-settlement`). OS 추상화는 해피 패스에서 가장 설득력 있고 정산에서 가장 위험합니다 — 정확히 \"단일 네트워크\"가 하나가 아닌 곳.\n\n**그리고 \"OS\"는 아키텍처만큼이나 해자입니다 — 표면은 내려가고, 폭발 반경은 올라가고, 락인은 들어옵니다.** 상호운용을 한 계층으로 합치면 감사할 브리지 수가 줄고(진짜 이득) — 남은 하나의 폭발 반경이 커집니다. 메시징 계층의 침해나 정지가 앱이 걸친 모든 체인을 *한 번에* 완전히 상관된 채 무너뜨리니까요. 생태계 규모의 `the-bridge-is-inside-the-token`·`third-party-blast-radius` 입니다. 한편 LayerZero 위 옴니체인으로 지은 앱은 LayerZero 가 곧 런타임이라, 벗어나는 것은 앱 재작성입니다 — 상호운용 계층의 `choosing-a-chain-is-a-lease`, \"상호운용 OS\"가 구조적으로 **상호운용해서 벗어날 수 없는 유일한 것**인 곳. 그래서 솔직한 결론은 명제가 틀렸다가 아니라 — 기관이 주목하는 게 옳되 *완전한* 이유에서라는 것입니다: 상호운용 OS 는 가치·시스템 위험·통제점이 같은 주소에 모이는 곳이고, \"누구의 검증, 누구의 파이널리티, 누구의 킬스위치\"가 바로 그 우아한 추상화가 건너뛰게 만들도록 지어진 실사입니다. 관련: `layerzero-default-is-a-choice`, `the-bridge-is-inside-the-token`, `third-party-blast-radius`, `l2-finality-three-clocks`, `receipt-is-not-settlement`, `choosing-a-chain-is-a-lease`, `who-holds-the-mint`.",
     howItWorks: "### The shift the thesis names\n\n| | \"The bridge protocol\" | \"Interoperability OS\" |\n| --- | --- | --- |\n| Unit of value | a connection (ETH <-> Base) | one omnichain app over many chains |\n| What the developer writes | a bridge integration | one app that treats chains as one network |\n| Who cares | token teams | institutions / platform builders |\n| What it becomes | a tool | **the layer everything depends on** |\n\n### Where \"as if one network\" leaks\n\n| Property | Does it unify? | The honest question | Card |\n| --- | --- | --- | --- |\n| Verification | no | whose DVNs, default or chosen? | `layerzero-default-is-a-choice` |\n| Finality | no | do you inherit the worst chain's reorg risk? | `l2-finality-three-clocks`, `receipt-is-not-settlement` |\n| Halting | no | who can stop/censor a message? | `who-holds-the-mint` |\n\n### The candid ledger of becoming an OS\n\n| Direction | What moves | Card |\n| --- | --- | --- |\n| surface **down** | fewer bridges to audit — a real gain | — |\n| blast radius **up** | one compromise/halt takes every chain at once | `the-bridge-is-inside-the-token`, `third-party-blast-radius` |\n| lock-in **in** | omnichain app's runtime is LayerZero; leaving = rewrite | `choosing-a-chain-is-a-lease` |\n\nThe \"interoperability OS\" is, by construction, the one thing you cannot interoperate away from.\n\n### Related cards\n\n`layerzero-default-is-a-choice` (the DVN-trust angle), `the-bridge-is-inside-the-token` and `third-party-blast-radius` (surface down, blast radius up), `l2-finality-three-clocks` and `receipt-is-not-settlement` (finality does not unify), `choosing-a-chain-is-a-lease` (the interop layer as lock-in), `who-holds-the-mint` (who can halt).",
     howItWorksKo: "### 명제가 지목하는 전환\n\n| | \"브리지 프로토콜\" | \"상호운용 OS\" |\n| --- | --- | --- |\n| 가치 단위 | 연결 하나 (ETH <-> Base) | 여러 체인 위 옴니체인 앱 하나 |\n| 개발자가 쓰는 것 | 브리지 통합 | 체인을 하나의 네트워크로 다루는 앱 |\n| 누가 신경 쓰나 | 토큰 팀 | 기관 / 플랫폼 빌더 |\n| 무엇이 되나 | 도구 | **모든 것이 의존하는 계층** |\n\n### \"하나의 네트워크인 듯\"이 새는 곳\n\n| 속성 | 통합되나? | 솔직한 질문 | 카드 |\n| --- | --- | --- | --- |\n| 검증 | 아니오 | 누구의 DVN, 기본값인가 선택인가? | `layerzero-default-is-a-choice` |\n| 파이널리티 | 아니오 | 가장 나쁜 체인의 리오그 위험을 물려받나? | `l2-finality-three-clocks`, `receipt-is-not-settlement` |\n| 정지 | 아니오 | 누가 메시지를 멈추거나 검열하나? | `who-holds-the-mint` |\n\n### OS 가 되는 것의 솔직한 원장\n\n| 방향 | 무엇이 움직이나 | 카드 |\n| --- | --- | --- |\n| 표면 **↓** | 감사할 브리지가 줄어듦 — 진짜 이득 | — |\n| 폭발 반경 **↑** | 한 번의 침해/정지가 모든 체인을 한 번에 | `the-bridge-is-inside-the-token`, `third-party-blast-radius` |\n| 락인 **유입** | 옴니체인 앱의 런타임이 LayerZero; 떠남 = 재작성 | `choosing-a-chain-is-a-lease` |\n\n\"상호운용 OS\"는 구조적으로 **상호운용해서 벗어날 수 없는 유일한 것**입니다.\n\n### 관련 카드\n\n`layerzero-default-is-a-choice`(DVN 신뢰 각도), `the-bridge-is-inside-the-token`·`third-party-blast-radius`(표면↓, 폭발 반경↑), `l2-finality-three-clocks`·`receipt-is-not-settlement`(파이널리티는 통합 안 됨), `choosing-a-chain-is-a-lease`(락인으로서의 상호운용 계층), `who-holds-the-mint`(누가 멈추나).",
+  },
+  {
+    // 2026-09-08 jay 요청 — 프로토콜/알고리즘이 아니라 애플리케이션 레벨의 Blockchain
+    // 항목 8개를 추천에서 채택해 추가. 전부 verex/Jayverse 스택이 실제로 부딪히는 문제들.
+    key: "the-double-click-mints-twice",
+    updated: "2026-09-08",
+    title: "The double-click mints twice — idempotency is the app's duty",
+    titleKo: "더블클릭은 두 번 민트한다 — 멱등성은 앱의 의무",
+    description:
+      "The chain dedupes nonces, not intents: a user double-clicking Buy produces two valid transactions, and both settle. Payment APIs solved this decades ago with idempotency keys — on-chain apps have to rebuild that discipline themselves.",
+    descriptionKo:
+      "체인은 **논스**를 중복 제거하지 **의도**는 못 합니다: Buy 를 더블클릭한 사용자는 유효한 트랜잭션 둘을 만들고, 둘 다 체결됩니다. 결제 API 들은 수십 년 전 idempotency key 로 해결한 문제 — 온체인 앱은 그 규율을 직접 다시 만들어야 합니다.",
+    status: "soon",
+    important: true,
+    howTo:
+      "Build a checkout that issues an intent ID per user action, dedupes on it client-side and server-side, and a control version without it. Double-click both, slow the RPC to widen the race, and count what settles.",
+    howToKo:
+      "사용자 액션마다 intent ID 를 발급하고 클라이언트·서버 양쪽에서 그것으로 중복 제거하는 체크아웃과, 그것이 없는 대조군을 만듭니다. 둘 다 더블클릭하고, RPC 를 느리게 해 경쟁 구간을 넓힌 뒤, 무엇이 체결되는지 셉니다.",
+    purpose:
+      "Every payment API since Stripe ships idempotency keys because retries and double-clicks are how real users behave. On-chain the problem is worse: the wallet happily signs twice, both transactions carry different nonces so the chain sees two distinct valid payments, and finality means no one un-charges the second one.\n\nThe fix cannot live on the chain — the chain has no concept of the user's intent. It lives in the application: one intent, one ID, and every layer (button state, server, submission queue) refuses to act on an ID it has seen. This is the smallest possible example of a larger truth: application-level guarantees have to be built at the application level, even when the settlement layer is perfect.",
+    purposeKo:
+      "Stripe 이후의 모든 결제 API 가 idempotency key 를 싣는 이유는, 재시도와 더블클릭이 **실제 사용자의 행동**이기 때문입니다. 온체인에서는 문제가 더 나쁩니다: 지갑은 기꺼이 두 번 서명하고, 두 트랜잭션은 논스가 달라 체인에게는 **서로 다른 유효한 결제 둘**이며, 파이널리티 때문에 두 번째를 취소해 줄 사람이 없습니다.\n\n해법은 체인에 있을 수 없습니다 — 체인에는 사용자 **의도**라는 개념이 없으니까요. 해법은 애플리케이션에 삽니다: 의도 하나, ID 하나, 그리고 모든 계층(버튼 상태, 서버, 제출 큐)이 이미 본 ID 에는 행동을 거부하는 것. 이것은 더 큰 진실의 가장 작은 예입니다: **애플리케이션 레벨의 보장은 정산 계층이 완벽해도 애플리케이션 레벨에서 만들어야 합니다.**",
+    howItWorks:
+      "One checkout, two builds — with and without intent IDs — and a race you widen on purpose.\n\n### PoC\n\nA mint-or-buy button against anvil. Version A: on click, create intent { id, action, params }, disable the button on pending id, have the server (or client queue) refuse a second submission with the same id, and store the mapping id → txHash so a retry returns the existing receipt instead of a new transaction. Version B: none of that. Double-click both under a artificially slow RPC; assert version A settles exactly one transaction and version B settles two.\n\n### What it proves\n\nDeduplication by intent is an application responsibility, and it is cheap: one UUID, one lookup table, one disabled button. The chain's own uniqueness (nonces) protects against replay of the same signed bytes — it does nothing against the same human wish signed twice.",
+    howItWorksKo:
+      "체크아웃 하나, 빌드 둘 — intent ID 가 있는 버전과 없는 버전 — 그리고 일부러 넓힌 경쟁 구간.\n\n### PoC\n\nanvil 을 겨냥한 민트/구매 버튼. 버전 A: 클릭 시 intent { id, action, params } 생성, 대기 중인 id 에는 버튼 비활성화, 서버(또는 클라이언트 큐)는 같은 id 의 두 번째 제출을 거부, id → txHash 매핑을 저장해 재시도에는 새 트랜잭션 대신 기존 영수증을 반환. 버전 B: 그것 전부 없음. 인위적으로 느린 RPC 아래에서 둘 다 더블클릭하고, A 는 정확히 하나, B 는 둘이 체결됨을 확인합니다.\n\n### 무엇을 증명하나\n\n의도 기준 중복 제거는 애플리케이션의 책임이고, 쌉니다: UUID 하나, 조회 테이블 하나, 비활성화된 버튼 하나. 체인 자체의 유일성(논스)은 **같은 서명 바이트의 재사용**을 막을 뿐 — **같은 인간의 소망이 두 번 서명되는 것**은 전혀 막지 못합니다.",
+  },
+  {
+    key: "the-app-reads-a-projection",
+    updated: "2026-09-08",
+    title: "Your app doesn't read the chain — it reads a projection",
+    titleKo: "앱은 체인을 읽지 않는다 — 프로젝션을 읽는다",
+    description:
+      "Every real product reads an indexer, not the chain — a derived read model that is always some blocks behind. The honest UI prints which block it is speaking for; the dishonest one just looks occasionally wrong.",
+    descriptionKo:
+      "모든 실제 제품은 체인이 아니라 **인덱서** — 항상 몇 블록 뒤처진 파생 읽기 모델 — 를 읽습니다. 정직한 UI 는 자신이 **어느 블록을 대변하는지** 표기하고, 정직하지 않은 UI 는 그냥 가끔 틀려 보입니다.",
+    status: "soon",
+    important: true,
+    howTo:
+      "Serve the same balance screen twice — one from direct RPC, one from an indexer with injected lag — then add an as-of-block label and a pending-transaction overlay, and watch which version stops looking broken.",
+    howToKo:
+      "같은 잔액 화면을 두 번 서빙합니다 — 하나는 직접 RPC, 하나는 지연을 주입한 인덱서에서. 그다음 기준-블록 라벨과 대기 중 트랜잭션 오버레이를 더하고, 어느 버전이 더는 고장나 보이지 않는지 관찰합니다.",
+    purpose:
+      "Reading the chain directly does not scale past one widget — real screens need joins, history and aggregates, so they read a projection built by an indexer. That is CQRS by necessity, and it imports CQRS's one cost: the read model lags the write model. The user who just paid sees an old balance; the list is missing the newest row.\n\nThe failure mode is not the lag — it is hiding it. A screen that says balance as of block 19,342,001, with your payment pending on top, is telling the truth and feels fine. A screen that silently shows stale data feels broken exactly when the user cares most, seconds after they acted. The staleness is unavoidable; the dishonesty is a choice.",
+    purposeKo:
+      "체인을 직접 읽는 방식은 위젯 하나를 넘어서면 확장되지 않습니다 — 실제 화면에는 조인, 이력, 집계가 필요하므로 인덱서가 만든 **프로젝션**을 읽습니다. 필요에 의한 CQRS 이고, CQRS 의 비용 하나를 그대로 수입합니다: **읽기 모델은 쓰기 모델보다 늦습니다.** 방금 결제한 사용자는 옛 잔액을 보고, 목록에는 최신 행이 빠져 있습니다.\n\n실패 모드는 지연이 아니라 **지연을 숨기는 것**입니다. “블록 19,342,001 기준 잔액” 위에 대기 중인 결제를 얹어 보여주는 화면은 진실을 말하고 있고, 괜찮게 느껴집니다. 낡은 데이터를 말없이 보여주는 화면은 사용자가 가장 신경 쓰는 순간 — 행동한 직후 몇 초 — 에 정확히 고장나 보입니다. **뒤처짐은 불가피하고, 부정직은 선택입니다.**",
+    howItWorks:
+      "Two data paths for one screen, lag you control, and the two UI elements that repair trust.\n\n### PoC\n\nAn anvil chain with a token, a tiny indexer (Ponder or a hand-rolled event loop) writing balances to SQLite, and one balance page with a data-source toggle. Add a configurable indexing delay. Make a transfer, watch the indexer-backed view lie for N seconds, then add (1) an as-of block label read from the projection's own cursor and (2) an optimistic pending row sourced from the app's submitted-transactions list. Assert the repaired view never contradicts what the user just did.\n\n### What it proves\n\nThe projection's lag cannot be engineered away, only labeled and bridged: the as-of label bounds what the screen claims, and the pending overlay covers the gap between the user's action and the indexer's cursor. Every serious dapp front end converges on these two elements — this PoC derives why in fifty lines.",
+    howItWorksKo:
+      "한 화면에 두 데이터 경로, 직접 제어하는 지연, 그리고 신뢰를 복구하는 두 UI 요소.\n\n### PoC\n\n토큰이 있는 anvil 체인, 잔액을 SQLite 에 쓰는 작은 인덱서(Ponder 또는 직접 만든 이벤트 루프), 데이터 소스 토글이 있는 잔액 페이지 하나. 설정 가능한 인덱싱 지연을 추가합니다. 전송을 실행해 인덱서 기반 뷰가 N 초간 거짓말하는 것을 본 뒤, (1) 프로젝션 자신의 커서에서 읽은 기준-블록 라벨과 (2) 앱의 제출-트랜잭션 목록에서 가져온 낙관적 대기 행을 더합니다. 복구된 뷰가 사용자의 직전 행동과 절대 모순되지 않음을 확인합니다.\n\n### 무엇을 증명하나\n\n프로젝션의 지연은 공학으로 없앨 수 없고, **라벨을 붙이고 다리를 놓을 수만** 있습니다: 기준 라벨은 화면의 주장 범위를 한정하고, 대기 오버레이는 사용자 행동과 인덱서 커서 사이의 틈을 덮습니다. 진지한 dapp 프런트엔드는 전부 이 두 요소로 수렴합니다 — 이 PoC 는 그 이유를 50줄로 유도합니다.",
+  },
+  {
+    key: "the-quote-is-a-product-promise",
+    updated: "2026-09-08",
+    title: "Priced in fiat, settled in tokens — the quote is a product promise",
+    titleKo: "법정화폐로 가격, 토큰으로 정산 — 견적은 제품의 약속",
+    description:
+      "A five-dollar checkout paid in a volatile token needs a quote TTL, a re-quote flow and a policy for who absorbs the drift. That is product design wearing an exchange-rate costume — not an oracle problem.",
+    descriptionKo:
+      "변동성 있는 토큰으로 결제하는 5달러짜리 체크아웃에는 견적 TTL, 재견적 플로우, 그리고 **변동분을 누가 흡수하는지**의 정책이 필요합니다. 오라클 문제가 아니라 **환율 의상을 입은 제품 설계**입니다.",
+    status: "soon",
+    important: true,
+    howTo:
+      "Build a checkout that locks a token amount for a fixed fiat price for thirty seconds, expires visibly into a re-quote, and tabulates the three drift policies — merchant absorbs, buyer absorbs, band with re-quote — against a simulated price feed.",
+    howToKo:
+      "고정된 법정화폐 가격에 대한 토큰 수량을 30초간 잠그고, 만료를 눈에 보이게 재견적으로 잇는 체크아웃을 만듭니다. 그리고 세 가지 변동 정책 — 상인 흡수, 구매자 흡수, 밴드 + 재견적 — 을 시뮬레이션 가격 피드에 대고 표로 만듭니다.",
+    purpose:
+      "Users think in their currency; chains settle in theirs. Between the price shown and the payment settling, the rate moves — so every fiat-priced crypto checkout is silently running a tiny FX desk, whether its designers noticed or not. Ignore it and either the merchant leaks margin on every dip or the buyer gets surprise-charged on every spike; both discoveries arrive as support tickets.\n\nThe deliberate version has three knobs: how long a quote is honored (TTL), what happens at expiry (re-quote UX, not a silent failure), and who eats movement inside the window. None of these is an oracle question — the oracle only tells you the rate; the product decides what to promise about it. Stablecoin settlement makes the window narrow, not zero, and the structure identical.",
+    purposeKo:
+      "사용자는 자기 통화로 생각하고, 체인은 자기 통화로 정산합니다. 표시된 가격과 결제 체결 사이에 환율이 움직입니다 — 그래서 법정화폐로 가격을 매기는 모든 크립토 체크아웃은, 설계자가 알았든 몰랐든, **조용히 작은 FX 데스크를 운영 중**입니다. 무시하면 하락 때마다 상인이 마진을 흘리거나 급등 때마다 구매자가 기습 청구를 당하고 — 두 발견 모두 CS 티켓으로 도착합니다.\n\n의도된 버전에는 손잡이 셋이 있습니다: 견적을 존중하는 시간(TTL), 만료 시의 처리(조용한 실패가 아니라 재견적 UX), 그리고 창 안의 움직임을 누가 먹는가. 어느 것도 오라클 질문이 아닙니다 — 오라클은 환율을 알려줄 뿐, **무엇을 약속할지는 제품이 결정합니다.** 스테이블코인 정산은 창을 좁힐 뿐 0 으로 만들지 않고, 구조는 동일합니다.",
+    howItWorks:
+      "One checkout, a scripted price feed, three drift policies, and the ledger of who paid for movement.\n\n### PoC\n\nA checkout against anvil: item priced 5 USD, paid in a mock token whose USD price a script walks ±3% per minute. Quote endpoint returns { tokenAmount, quoteId, expiresAt(+30s) }; payment submits quoteId; the server accepts, re-quotes, or rejects per policy. Run the same 100 purchases with prices replayed under each policy: (A) honor expired quotes — measure merchant loss; (B) reject at settlement if moved — measure buyer failures; (C) 30s TTL with visible countdown and one-click re-quote — measure both. Print the three-row table.\n\n### What it proves\n\nThe quote is a short-dated option the product writes for free, and TTL is its expiry. Policy A prices the option at the merchant's expense, B at the buyer's UX, C bounds both — which is why every serious crypto checkout (and every FX-touching commerce API) converges on C. The interesting output is not the code but the table: drift cost as a product decision made visible.",
+    howItWorksKo:
+      "체크아웃 하나, 스크립트로 움직이는 가격 피드, 세 가지 변동 정책, 그리고 움직임의 값을 누가 냈는지의 장부.\n\n### PoC\n\nanvil 대상 체크아웃: 5 USD 상품을, 스크립트가 분당 ±3% 로 걷게 만든 목 토큰으로 결제. 견적 엔드포인트는 { tokenAmount, quoteId, expiresAt(+30초) } 를 반환하고, 결제는 quoteId 를 제출하며, 서버는 정책에 따라 수락·재견적·거절합니다. 같은 구매 100건을 가격 리플레이로 정책별 실행: (A) 만료 견적도 존중 — 상인 손실 측정; (B) 움직였으면 정산 시 거절 — 구매자 실패 측정; (C) 30초 TTL + 보이는 카운트다운 + 원클릭 재견적 — 둘 다 측정. 세 줄짜리 표를 출력합니다.\n\n### 무엇을 증명하나\n\n견적은 제품이 공짜로 써 주는 **단기 옵션**이고 TTL 이 그 만기입니다. 정책 A 는 그 옵션 값을 상인이, B 는 구매자 UX 가 치르고, C 는 둘 다 한정합니다 — 진지한 크립토 체크아웃(그리고 FX 를 만지는 모든 커머스 API)이 C 로 수렴하는 이유입니다. 흥미로운 산출물은 코드가 아니라 표입니다: **제품 결정으로서의 변동 비용을 눈에 보이게 만든 것.**",
+  },
+  {
+    key: "the-wallet-is-not-the-user",
+    updated: "2026-09-08",
+    title: "The wallet is not the user",
+    titleKo: "지갑은 사용자가 아니다",
+    description:
+      "One person holds five wallets; one wallet is shared by a team; SIWE proves control of a key, not identity of a person. An account model that assumes wallet = user breaks linking, history and support the moment real users arrive.",
+    descriptionKo:
+      "한 사람이 지갑 다섯을 갖고, 한 지갑을 팀이 공유하며, SIWE 는 **키의 통제**를 증명하지 **사람의 신원**을 증명하지 않습니다. 지갑 = 사용자를 가정한 계정 모델은 실제 사용자가 오는 순간 연결·이력·CS 에서 깨집니다.",
+    status: "soon",
+    important: true,
+    howTo:
+      "Build an app account that links two wallets via SIWE, then answer the questions that immediately appear in code: which wallet may unlink the other, what happens to history on unlink, and what a shared wallet does to the model.",
+    howToKo:
+      "SIWE 로 지갑 둘을 연결하는 앱 계정을 만들고, 즉시 나타나는 질문들을 코드로 답합니다: 어느 지갑이 다른 지갑을 해제할 수 있는가, 해제 시 이력은 어떻게 되는가, 공유 지갑은 이 모델을 어떻게 흔드는가.",
+    purpose:
+      "Wallet addresses are the worst of both identity worlds: too sticky to be anonymous, too loose to be an account. The person is many wallets (hot, cold, work, mobile, the one from 2021); sometimes the wallet is many people (a team multisig, a shared ops key). Every product question — whose purchase history, whose loyalty points, who can the support desk talk to — lands on a mapping the chain does not provide.\n\nSign-In-With-Ethereum narrows this but does not close it: a valid SIWE session proves the presenter controls the key now — it says nothing about whether that presenter is the same human as yesterday, or the only one. So the account model is an application design decision with real security edges: wallet linking is an authorization graph, and the unlink operation is where account-takeover hides. Getting it wrong is how a stolen hot wallet becomes a stolen whole account.",
+    purposeKo:
+      "지갑 주소는 두 신원 세계의 나쁜 점만 모았습니다: 익명이기엔 너무 끈적하고, 계정이기엔 너무 헐겁습니다. 사람은 여러 지갑(핫, 콜드, 업무용, 모바일, 2021년의 그것)이고, 때로 지갑이 여러 사람(팀 멀티시그, 공유 운영 키)입니다. 모든 제품 질문 — 누구의 구매 이력, 누구의 포인트, CS 데스크는 누구와 이야기하는가 — 이 **체인이 제공하지 않는 매핑** 위에 떨어집니다.\n\nSign-In-With-Ethereum 은 이것을 좁히지만 닫지 못합니다: 유효한 SIWE 세션은 제시자가 **지금 그 키를 통제한다**는 것만 증명합니다 — 어제의 그 사람과 같은지, 유일한지에 대해서는 아무 말도 하지 않습니다. 그래서 계정 모델은 실제 보안 모서리를 가진 애플리케이션 설계 결정입니다: **지갑 연결은 권한 그래프이고, 연결 해제가 계정 탈취가 숨는 곳**입니다. 이것을 틀리면 도난당한 핫월렛이 도난당한 계정 전체가 됩니다.",
+    howItWorks:
+      "An account service, two linked wallets, and the three edge cases that define the model.\n\n### PoC\n\nA small app (SIWE via viem, SQLite accounts): create an account with wallet A, link wallet B by signing a challenge from an already-authenticated session. Then implement and test the edges: (1) unlink policy — require the action from the remaining wallet, and add a time-locked grace period so a thief who links their wallet cannot immediately evict yours; (2) history — purchases stay with the account, not the wallet, and show what unlink means for them; (3) shared wallet — wallet B links to a second account and the code must choose: reject, allow-many, or transfer-with-consent. Each choice is a policy table row with a test.\n\n### What it proves\n\nAccount linking looks like a convenience feature and is actually an authorization system: every link is a granted capability, every unlink a revocation, and the timing rules between them are the account-takeover surface. The chain gives you a permissionless key graph; the product must decide, explicitly, what a person is.",
+    howItWorksKo:
+      "계정 서비스 하나, 연결된 지갑 둘, 그리고 모델을 정의하는 모서리 셋.\n\n### PoC\n\n작은 앱(viem 으로 SIWE, SQLite 계정): 지갑 A 로 계정 생성, 이미 인증된 세션에서 챌린지에 서명해 지갑 B 를 연결. 그다음 모서리들을 구현하고 테스트합니다: (1) 해제 정책 — 남는 지갑 쪽에서 실행하게 하고, 도둑이 자기 지갑을 연결하자마자 당신 지갑을 쫓아내지 못하도록 시간 잠금 유예를 추가; (2) 이력 — 구매는 지갑이 아니라 계정에 남고, 해제가 그것에 무엇을 뜻하는지 보여주기; (3) 공유 지갑 — 지갑 B 가 두 번째 계정에 연결될 때 코드는 선택해야 합니다: 거절, 다중 허용, 동의 하의 이전. 각 선택이 테스트가 달린 정책 표의 한 줄이 됩니다.\n\n### 무엇을 증명하나\n\n계정 연결은 편의 기능처럼 보이지만 실제로는 **권한 시스템**입니다: 모든 연결은 부여된 능력이고, 모든 해제는 취소이며, 그 사이의 타이밍 규칙이 계정 탈취 표면입니다. 체인은 무허가 키 그래프를 줄 뿐 — **사람이 무엇인지는 제품이 명시적으로 결정해야 합니다.**",
+  },
+  {
+    key: "a-refund-is-a-new-payment",
+    updated: "2026-09-08",
+    title: "A refund is a new payment — support flows on irreversible rails",
+    titleKo: "환불은 새 결제다 — 되돌릴 수 없는 레일의 CS 플로우",
+    description:
+      "Settlement finality does not delete refunds from your product — it moves them from reverse-the-charge to issue-a-linked-counter-payment. The refund becomes a first-class payment with its own receipt, policy and budget.",
+    descriptionKo:
+      "정산 파이널리티는 제품에서 환불을 지우지 않습니다 — **청구 취소**에서 **원결제를 참조하는 역방향 결제 발행**으로 옮길 뿐입니다. 환불은 자기 영수증·정책·예산을 가진 일급 결제가 됩니다.",
+    status: "soon",
+    important: true,
+    howTo:
+      "Implement a refund flow where the refund transaction carries a reference to the original payment, gate it behind an approval policy and a funded refund budget, and reconcile the pair in one ledger view.",
+    howToKo:
+      "환불 트랜잭션이 원결제 참조를 싣게 구현하고, 승인 정책과 자금이 채워진 환불 예산 뒤에 게이트하고, 한 장부 뷰에서 결제-환불 쌍을 대사합니다.",
+    purpose:
+      "Card rails bake refunds into the protocol: reverse the charge, the network handles the money. Crypto rails bake in the opposite: nobody can reverse anything, ever. Products read this as refunds are impossible — but the customer promise never went away, so what actually happened is that the refund moved up a layer: it is now a second payment, flowing the other way, that your application must create, fund, authorize and account for.\n\nThat relocation raises exactly the questions card networks answered internally: who approves (support agent, policy rule, second signer), within what window, from which pool of money (refunds need a funded balance — the original payment may already be swept), and how the pair is linked so accounting sees one net event rather than two unrelated transfers. An on-chain reference from refund to original makes the link auditable by anyone — one small advantage the transparent rail adds over the card networks it is imitating.",
+    purposeKo:
+      "카드 레일은 환불을 프로토콜에 구웠습니다: 청구를 취소하면 네트워크가 돈을 처리합니다. 크립토 레일은 정반대를 구웠습니다: 누구도, 무엇도, 영원히 되돌릴 수 없습니다. 제품은 이것을 “환불 불가”로 읽지만 — 고객에 대한 약속은 사라진 적이 없으므로, 실제로 일어난 일은 환불이 **한 층 위로 이사한 것**입니다: 이제 환불은 반대 방향으로 흐르는 두 번째 결제이고, 애플리케이션이 그것을 만들고, 자금을 대고, 승인하고, 회계 처리해야 합니다.\n\n그 이사는 카드 네트워크가 내부에서 답했던 질문들을 정확히 다시 제기합니다: 누가 승인하는가(상담원, 정책 규칙, 2차 서명자), 어떤 기한 안에, **어느 자금 풀에서**(환불에는 채워진 잔액이 필요합니다 — 원결제 대금은 이미 쓸려 나갔을 수 있습니다), 그리고 회계가 무관한 전송 둘이 아니라 **하나의 순 사건**을 보도록 쌍을 어떻게 잇는가. 환불에서 원결제로의 온체인 참조는 그 연결을 누구나 감사할 수 있게 합니다 — 투명한 레일이 모방 대상인 카드 네트워크보다 나은 작은 지점 하나입니다.",
+    howItWorks:
+      "A payment, a linked counter-payment, a policy gate, and one reconciled ledger.\n\n### PoC\n\nOn anvil: a merchant contract (or plain transfers plus a server ledger) where checkout records { paymentId, payer, amount }. Refund path: a support action creates a refund intent referencing paymentId; policy engine checks window (≤ 14 days), amount (≤ original, cumulative across partial refunds), and approver role; the refund pays from a dedicated refund-budget wallet and emits or memos the original paymentId. Ledger view joins the pair and shows net. Tests: double-refund blocked, partial refunds sum-capped, empty refund budget fails loudly before promising the customer, and the x402-settlement-retry boundary — a refund of a payment whose settlement later failed.\n\n### What it proves\n\nIrreversibility is a property of the rail, not of the business. The product re-creates reversal as composition — new payment plus reference plus policy — and the hard parts are the ones card networks hid: funding the refund pool and defining who may say yes. This card is the support-desk face of receipt-is-not-settlement.",
+    howItWorksKo:
+      "결제 하나, 연결된 역결제 하나, 정책 게이트, 그리고 대사된 장부 하나.\n\n### PoC\n\nanvil 위에서: 체크아웃이 { paymentId, payer, amount } 를 기록하는 상인 컨트랙트(또는 일반 전송 + 서버 장부). 환불 경로: CS 액션이 paymentId 를 참조하는 환불 의도를 만들고, 정책 엔진이 기한(≤ 14일)·금액(≤ 원금, 부분 환불 누적 상한)·승인자 역할을 검사하고, 환불은 전용 환불 예산 지갑에서 지급되며 원 paymentId 를 이벤트나 메모로 남깁니다. 장부 뷰는 쌍을 조인해 순액을 보여줍니다. 테스트: 이중 환불 차단, 부분 환불 합계 상한, 빈 환불 예산은 고객에게 약속하기 전에 시끄럽게 실패, 그리고 x402-settlement-retry 와의 경계 — 정산이 나중에 실패한 결제의 환불.\n\n### 무엇을 증명하나\n\n비가역성은 레일의 성질이지 사업의 성질이 아닙니다. 제품은 되돌림을 **합성**으로 재창조합니다 — 새 결제 + 참조 + 정책 — 그리고 어려운 부분은 카드 네트워크가 숨겨 왔던 것들입니다: 환불 풀에 자금을 대는 것과 누가 예라고 말할 수 있는지 정의하는 것. 이 카드는 receipt-is-not-settlement 의 **CS 데스크 면**입니다.",
+  },
+  {
+    key: "sponsored-gas-is-cogs",
+    updated: "2026-09-08",
+    title: "Sponsored gas is a COGS line — meter it or bleed",
+    titleKo: "스폰서드 가스는 원가 항목 — 계량하지 않으면 출혈",
+    description:
+      "The moment your paymaster sponsors gas, every user click spends your money — which makes per-user metering, budgets and abuse limits product features, not infrastructure options. An unmetered sponsor is a faucet with your logo on it.",
+    descriptionKo:
+      "페이마스터가 가스를 대납하는 순간 **사용자의 모든 클릭이 당신 돈을 씁니다** — 그래서 사용자별 계량, 예산, 남용 제한은 인프라 옵션이 아니라 제품 기능입니다. 계량 없는 스폰서는 당신 로고가 붙은 파우셋입니다.",
+    status: "soon",
+    important: true,
+    howTo:
+      "Attribute every sponsored operation to a user and an action, roll it into a live cost dashboard against a daily budget, then run a bot against the unmetered version and watch the budget die.",
+    howToKo:
+      "대납된 모든 오퍼레이션을 사용자와 액션에 귀속시키고, 일일 예산 대비 라이브 비용 대시보드로 집계한 뒤, 무계량 버전에 봇을 돌려 예산이 죽는 것을 관찰합니다.",
+    purpose:
+      "Gasless UX is table stakes for consumer on-chain apps, and it has a precise accounting meaning: gas moved from the user's cost line to yours. Cloud spend taught this lesson already — an unmetered resource that users can trigger is a bill someone else writes. The difference on-chain is that the trigger is permissionless: anyone can generate wallets and click.\n\nSo the sponsor needs what every payments company runs internally: attribution (which user, which action, how much), budgets (per-user daily caps, a global kill line), and pricing awareness (an action costing 40 cents of gas to earn 2 cents of revenue is a business decision someone should see). None of this exists at the protocol layer — ERC-4337 defines how a paymaster pays, not when it should refuse. The refusal policy is the product.",
+    purposeKo:
+      "가스리스 UX 는 소비자 온체인 앱의 기본값이고, 정확한 회계적 의미를 갖습니다: **가스가 사용자의 비용 줄에서 당신 비용 줄로 이동했다.** 클라우드 지출이 이미 가르친 교훈입니다 — 사용자가 트리거할 수 있는 무계량 자원은 남이 써 주는 청구서입니다. 온체인의 차이는 트리거가 **무허가**라는 것: 누구나 지갑을 만들어 클릭할 수 있습니다.\n\n그래서 스폰서에게는 모든 결제 회사가 내부에서 돌리는 것이 필요합니다: 귀속(어느 사용자, 어느 액션, 얼마), 예산(사용자별 일일 상한, 전역 킬 라인), 그리고 가격 감각(2센트 벌자고 40센트 가스를 쓰는 액션은 누군가 봐야 할 사업 결정입니다). 이 중 무엇도 프로토콜 계층에 없습니다 — ERC-4337 은 페이마스터가 **어떻게** 내는지를 정의하지 **언제 거절해야 하는지**는 정의하지 않습니다. **거절 정책이 곧 제품입니다.**",
+    howItWorks:
+      "Attribution on every UserOp, a budget with a kill line, and a bot that proves why.\n\n### PoC\n\nOn a 4337 stack (thirdweb or self-relay on anvil): wrap sponsorship so every sponsored UserOp records { user, action, gasUsed, costWei, timestamp }. Dashboard: cost per user, per action, cumulative against a daily budget; a global pause when the budget line is crossed and a per-user cap (say 20 sponsored ops/day) that degrades that user to pay-your-own-gas instead of blocking them. Then the red team: a script generating 200 fresh wallets hammering the cheapest sponsored action against the unmetered build — chart minutes-to-budget-death — and again against the metered build, where the caps hold and the burn flatlines.\n\n### What it proves\n\nSponsorship policy is spend control over a permissionless trigger, and the three pieces — attribution, budget, degrade-not-block — are the whole mechanism. It also surfaces the honest unit economics per action, which is the number that decides whether gasless is a growth cost or a slow leak. Extends bundler-paymaster-dependencies from whom you depend on to what it costs you.",
+    howItWorksKo:
+      "모든 UserOp 에 귀속, 킬 라인이 있는 예산, 그리고 이유를 증명하는 봇.\n\n### PoC\n\n4337 스택(thirdweb 또는 anvil 셀프 릴레이)에서: 대납을 감싸 모든 스폰서드 UserOp 이 { user, action, gasUsed, costWei, timestamp } 를 기록하게 합니다. 대시보드: 사용자별·액션별 비용, 일일 예산 대비 누적; 예산 라인을 넘으면 전역 일시정지, 사용자별 상한(예: 일 20 스폰서드 오퍼레이션)은 차단이 아니라 **자기 가스 지불로 강등**. 그다음 레드팀: 새 지갑 200개를 만들어 가장 싼 스폰서드 액션을 무계량 빌드에 때리는 스크립트 — 예산 사망까지의 분을 차트로 — 그리고 계량 빌드에 다시: 상한이 버티고 소진이 수평선이 됩니다.\n\n### 무엇을 증명하나\n\n대납 정책은 **무허가 트리거에 대한 지출 통제**이고, 세 조각 — 귀속, 예산, 차단 아닌 강등 — 이 메커니즘의 전부입니다. 액션별 정직한 단위 경제도 드러납니다 — 가스리스가 성장 비용인지 느린 누수인지 결정하는 바로 그 숫자. bundler-paymaster-dependencies 를 “누구에게 의존하나”에서 “그것이 얼마가 드나”로 확장합니다.",
+  },
+  {
+    key: "the-chain-never-calls-back",
+    updated: "2026-09-08",
+    title: "The chain never calls you back — notifications are your job",
+    titleKo: "체인은 회신 전화를 하지 않는다 — 알림은 앱의 몫",
+    description:
+      "Users expect a push when their payment arrives; chains have no callbacks, so the app builds event → queue → notify itself — and reorg-safety means the pipeline must also know how to take a notification back.",
+    descriptionKo:
+      "사용자는 결제가 도착하면 푸시를 기대하지만 체인에는 콜백이 없습니다. 그래서 앱이 이벤트 → 큐 → 알림을 직접 만듭니다 — 그리고 리오그 안전이란 파이프라인이 **보낸 알림을 되가져오는 법**도 알아야 한다는 뜻입니다.",
+    status: "soon",
+    important: true,
+    howTo:
+      "Build an event-to-notification pipeline that notifies tentatively at inclusion and confirms at finality, then force a reorg on anvil and watch the pipeline retract instead of lying.",
+    howToKo:
+      "포함 시 잠정 알림을 보내고 파이널리티에서 확정하는 이벤트-알림 파이프라인을 만든 뒤, anvil 에서 리오그를 강제해 파이프라인이 거짓말하는 대신 **철회**하는 것을 봅니다.",
+    purpose:
+      "Web2 rails call you back — Stripe webhooks, push services, delivery receipts. A chain just is: state advances, logs are emitted, and nobody tells your user their money arrived. So the notification layer everyone takes for granted is, on-chain, an application you must build: watch events, queue them, deliver through push or email, deduplicate across retries and websocket reconnects.\n\nThe part that separates the toy from the product is reorg handling. Notify instantly at inclusion and a reorg makes you a liar; notify only at finality and every payment feels slow. The honest design is tiered, mirroring receipt-is-not-settlement on the outbound side: a tentative payment detected at inclusion, a final payment confirmed at finality, and — the branch nobody builds until it burns them — a retraction path when the tentative event vanishes from the canonical chain. Notification state becomes a small state machine, not a fire-and-forget send.",
+    purposeKo:
+      "웹2 레일은 회신 전화를 합니다 — Stripe 웹훅, 푸시 서비스, 전달 영수증. 체인은 그냥 존재할 뿐입니다: 상태가 전진하고 로그가 방출되고, 누구도 당신 사용자에게 돈이 도착했다고 말해 주지 않습니다. 모두가 당연시하는 알림 계층은 온체인에서는 **직접 만들어야 하는 애플리케이션**입니다: 이벤트를 감시하고, 큐에 넣고, 푸시나 이메일로 전달하고, 재시도와 웹소켓 재접속 사이에서 중복 제거하고.\n\n장난감과 제품을 가르는 부분은 리오그 처리입니다. 포함 즉시 알리면 리오그가 당신을 거짓말쟁이로 만들고, 파이널리티에서만 알리면 모든 결제가 느려 보입니다. 정직한 설계는 계층적이고, receipt-is-not-settlement 를 발신 쪽에서 반사합니다: 포함 시 “결제 감지(잠정)”, 파이널리티에서 “결제 확정”, 그리고 — 데기 전엔 아무도 안 만드는 분기 — 잠정 이벤트가 정본 체인에서 사라졌을 때의 **철회 경로**. 알림 상태는 발사 후 망각 전송이 아니라 작은 상태 머신이 됩니다.",
+    howItWorks:
+      "Watcher, queue, tiered delivery, and a reorg drill.\n\n### PoC\n\nOn anvil: a watcher (viem watchEvent or the Ponder pipeline) feeding a queue table { event, blockHash, tier, notifyState }. Delivery worker sends payment detected on inclusion and upgrades to confirmed after N blocks or finality; every message carries an id so a later retraction can reference it. Then the drill: anvil snapshot, include the payment, notify; revert and re-mine without it; the watcher sees the canonical chain no longer contains the event and the pipeline sends the retraction (or edits the in-app notification state). Tests: no duplicate sends across watcher restarts, retraction fires only for tentative-tier messages, finalized notifications are never retracted.\n\n### What it proves\n\nOutbound truthfulness is a state machine, and inclusion-tier messages are conditional statements — the product face of probabilistic settlement. Pairs with the-app-reads-a-projection (inbound honesty) to complete the loop: what the user is told, in both directions, is an application-layer contract about chain state.",
+    howItWorksKo:
+      "워처, 큐, 계층 전달, 그리고 리오그 훈련.\n\n### PoC\n\nanvil 위에서: 워처(viem watchEvent 또는 Ponder 파이프라인)가 큐 테이블 { event, blockHash, tier, notifyState } 를 채웁니다. 전달 워커는 포함 시 “결제 감지”를 보내고 N 블록 또는 파이널리티 후 “확정”으로 승급합니다; 모든 메시지는 id 를 싣어 나중의 철회가 참조할 수 있게 합니다. 그다음 훈련: anvil 스냅샷 → 결제 포함 → 알림; 되돌리고 그것 없이 재채굴; 워처가 정본 체인에 이벤트가 더는 없음을 보고 파이프라인이 철회를 보냅니다(또는 인앱 알림 상태를 수정). 테스트: 워처 재시작에도 중복 발송 없음, 철회는 잠정 계층 메시지에만 발동, 확정 알림은 절대 철회되지 않음.\n\n### 무엇을 증명하나\n\n발신의 진실성은 상태 머신이고, 포함 계층 메시지는 조건부 진술입니다 — 확률적 정산의 제품 면. the-app-reads-a-projection(수신의 정직)과 짝지어 고리를 완성합니다: **사용자에게 말해지는 것은, 양방향 모두, 체인 상태에 대한 애플리케이션 계층의 계약입니다.**",
+  },
+  {
+    key: "a-faucet-is-a-payout",
+    updated: "2026-09-08",
+    title: "A faucet without limits is a payout, not a feature",
+    titleKo: "한도 없는 파우셋은 기능이 아니라 지출이다",
+    description:
+      "Anything free and permissionless — faucets, airdrops, gasless calls, referral bonuses — gets farmed by generated wallets within hours. Abuse economics is application design: price the free thing in something the attacker cannot mint.",
+    descriptionKo:
+      "무료이면서 무허가인 모든 것 — 파우셋, 에어드랍, 가스리스 호출, 추천 보너스 — 은 몇 시간 안에 생성 지갑들에게 파밍당합니다. 남용 경제학은 애플리케이션 설계입니다: **공격자가 찍어낼 수 없는 것으로 공짜의 값을 매기세요.**",
+    status: "soon",
+    important: true,
+    howTo:
+      "Deploy a naive faucet, drain it with fifty generated wallets, then rebuild it behind cost-bearing gates — per-address cooldown, proof-of-personhood stub, small stake, or paid gas — and measure how each gate changes the attacker's unit economics.",
+    howToKo:
+      "순진한 파우셋을 배포해 생성 지갑 50개로 고갈시킨 뒤, 비용을 지우는 게이트들 — 주소별 쿨다운, 인격 증명 스텁, 소액 스테이크, 유료 가스 — 뒤에 다시 만들어 각 게이트가 공격자의 단위 경제를 어떻게 바꾸는지 측정합니다.",
+    purpose:
+      "In a permissionless system, an address costs nothing — so any benefit keyed to an address is keyed to nothing. One person is a thousand wallets whenever a thousand wallets pay better than one. Every airdrop-farming industry, every drained testnet faucet, every sybil-swept referral program is the same arithmetic: benefit per wallet greater than cost per wallet, repeated until the pool is empty.\n\nThe defense is not detection — it is repricing. Attach to each claim a cost the attacker cannot manufacture: time (cooldowns cap extraction rate), money (a small stake makes 1,000 wallets 1,000 stakes), computation, or identity (proof-of-personhood, at its own trust cost). The design question is a product question: which cost can you impose that a legitimate user barely notices and a wallet-generator cannot amortize? The faucet is the minimal lab for this, but the same table prices your airdrop, your free tier and your sponsored gas.",
+    purposeKo:
+      "무허가 시스템에서 주소는 공짜입니다 — 그래서 **주소에 묶인 혜택은 아무것에도 묶이지 않은 것**입니다. 지갑 천 개가 하나보다 더 벌리는 순간, 한 사람은 지갑 천 개가 됩니다. 모든 에어드랍 파밍 산업, 모든 고갈된 테스트넷 파우셋, 모든 시빌에게 쓸려 나간 추천 프로그램은 같은 산수입니다: 지갑당 혜택 > 지갑당 비용, 풀이 빌 때까지 반복.\n\n방어는 탐지가 아니라 **재가격 책정**입니다. 각 청구에 공격자가 제조할 수 없는 비용을 붙이세요: 시간(쿨다운은 추출 속도를 상한), 돈(소액 스테이크는 지갑 1,000개를 스테이크 1,000개로 만듦), 연산, 또는 신원(인격 증명 — 그 자체의 신뢰 비용을 치르고). 설계 질문은 제품 질문입니다: **정상 사용자는 거의 못 느끼고 지갑 생성기는 상각할 수 없는 비용이 무엇인가?** 파우셋은 이것의 최소 실험실이지만, 같은 표가 당신의 에어드랍, 무료 티어, 스폰서드 가스의 값을 매깁니다.",
+    howItWorks:
+      "One naive faucet, one scripted sybil, four gates, and the attacker's P&L per gate.\n\n### PoC\n\nOn anvil (or a public testnet): Faucet.sol paying 0.1 tokens per claim. Attack script: generate 50 wallets, claim with each, sweep balances to one address — record time and gas spent vs tokens extracted. Then add gates one at a time and rerun: (1) per-address cooldown of 24h — extraction throttles but new wallets bypass it, proving address-keyed limits alone fail; (2) claim requires a 0.02 stake locked for a week — the sybil's capital cost now scales with wallet count; (3) claimer pays own gas on a chain where gas is nontrivial — same effect via fees; (4) a proof-of-personhood stub (one signature per registered identity). Output: one table, rows = gates, columns = attacker cost, attacker yield, legitimate-user friction.\n\n### What it proves\n\nSybil resistance is not a detection feature bolted on later — it is the pricing of the free thing, decided at design time. The winning gates are the ones that scale cost with wallet count while staying flat for a human with one wallet; the table makes that trade-off measurable instead of rhetorical. Directly reusable for the paymaster caps in sponsored-gas-is-cogs and any future Jayverse airdrop.",
+    howItWorksKo:
+      "순진한 파우셋 하나, 스크립트 시빌 하나, 게이트 넷, 그리고 게이트별 공격자 손익계산서.\n\n### PoC\n\nanvil(또는 공개 테스트넷)에서: 청구당 0.1 토큰을 주는 Faucet.sol. 공격 스크립트: 지갑 50개 생성, 각각 청구, 잔액을 한 주소로 쓸어 모음 — 추출한 토큰 대비 쓴 시간·가스를 기록. 그다음 게이트를 하나씩 더해 재실행: (1) 주소별 24시간 쿨다운 — 추출은 느려지지만 새 지갑이 우회, **주소 기반 한도 단독은 실패**함을 증명; (2) 청구에 一주일 잠기는 0.02 스테이크 요구 — 시빌의 자본 비용이 지갑 수에 비례; (3) 가스가 사소하지 않은 체인에서 청구자가 자기 가스 지불 — 수수료로 같은 효과; (4) 인격 증명 스텁(등록 신원당 서명 하나). 산출물: 표 하나 — 행 = 게이트, 열 = 공격자 비용, 공격자 수익, 정상 사용자 마찰.\n\n### 무엇을 증명하나\n\n시빌 저항은 나중에 덧붙이는 탐지 기능이 아니라 **설계 시점에 결정되는, 공짜의 가격 책정**입니다. 이기는 게이트는 지갑 수에 비용이 비례하면서 지갑 하나인 인간에게는 평평한 것들이고, 표는 그 트레이드오프를 수사가 아니라 측정으로 만듭니다. sponsored-gas-is-cogs 의 페이마스터 상한과 미래의 Jayverse 에어드랍에 그대로 재사용됩니다.",
   },
 ];
