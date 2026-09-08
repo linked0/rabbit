@@ -693,7 +693,8 @@ export const POC_CARDS: DemoCard[] = [
       "Two competing encrypted-mempool EIPs leave the sender, the gas, and the size in plaintext. Measure how much of the sandwich survives on metadata alone.",
     descriptionKo:
       "경합 중인 암호화 멤풀 EIP 두 건 모두 발신자·가스·크기를 평문으로 남깁니다. 메타데이터만으로 샌드위치가 얼마나 살아남는지를 측정합니다.",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-08",
     updated: "2026-09-07",
     important: true,
     howTo:
