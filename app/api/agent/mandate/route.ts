@@ -7,6 +7,25 @@ import { delegationEnvOrNull, storedDelegator } from "@/lib/delegation";
 
 export const dynamic = "force-dynamic";
 
+/// 에러 메시지를 UI 로 안전하게 내보낸다. 번들/직렬화 과정에서 Prisma 에러의 프로토타입이
+/// 뭉개져 `instanceof Error` 가 false 가 되면, 예전 코드의 String(e) 는 화면에
+/// "[object Object]" 만 남겼다 (jay, 2026-09-08). instanceof 에 기대지 말고 .message /
+/// .code 를 직접 파내, 진짜 원인(예: 연결 실패, 테이블 없음)이 그대로 보이게 한다.
+function errText(e: unknown): string {
+  if (e instanceof Error && e.message) return e.message.split("\n")[0];
+  if (e && typeof e === "object") {
+    const o = e as { message?: unknown; code?: unknown };
+    if (typeof o.message === "string" && o.message) return o.message.split("\n")[0];
+    if (typeof o.code === "string") return `code ${o.code}`;
+    try {
+      return JSON.stringify(e);
+    } catch {
+      /* fall through to String() */
+    }
+  }
+  return String(e);
+}
+
 // J2 / R-A — mandate: grant · fund · revoke.
 //
 // 서명은 브라우저에서 일어난다(MetaMask 가 EIP-712 Delegation 에 서명한다). 이
@@ -46,7 +65,9 @@ export async function GET() {
         orderBy: { createdAt: "desc" },
       });
     } catch (e) {
-      mandateError = `mandate DB unavailable — ${e instanceof Error ? e.message.split("\n")[0] : String(e)}`;
+      // 삼켜진 원인을 Cloud Run/터미널 로그에서도 볼 수 있게 남긴다.
+      console.error("[/api/agent/mandate GET] mandate query failed:", e);
+      mandateError = `mandate DB unavailable — ${errText(e)}`;
     }
   }
 
