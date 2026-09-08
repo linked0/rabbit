@@ -11,6 +11,16 @@ not built. Sibling docs indexed in [README-Jayverse.md](README-Jayverse.md).*
 
 ---
 
+## Phases (build order)
+
+| Phase | Focus | What we implement |
+|---|---|---|
+| **1 (MVP)** | simulate-before-sign | `simulate()` API (fork-backed node + `stateOverride`, viem `simulateContract`); `<JayverseSign>` connect→preview→sign component; decode effects / approvals / warnings; shared wallet client + address book. |
+| **2** | Session keys & templates | scoped ERC-7715/7710 session-key templates so agent and one-click flows are popup-free. |
+| **3** | 4337 & breadth | simulate full UserOperations through the EntryPoint (incl. paymaster); richer decoders; more warning classifiers. |
+
+---
+
 ## 1. What we build (the basic feature)
 
 A drop-in React component — `<JayverseSign>` — with three states: **connect → preview → sign**.
@@ -132,9 +142,13 @@ Every signing path routes through `<JayverseSign>`:
   a deposit previews the vault-share received and the token spent before any custody risk.
 - **Game** (§5) — the in-street trade panel previews an item trade (`simulate-before-sign` is one of
   its PoC links) so an in-game purchase is as legible as a web one.
+- **Token bridge** (§7) — the lock/mint bridge is the *scariest* signature (funds leave a chain), so
+  `<JayverseSign>` previews *lock N JYVE on source → receive N on dest* before signing.
+  simulate-before-sign is the connective tissue that makes verex-winnings → bridge → wallet one safe
+  flow ([jayverse-token-bridge.md](jayverse-token-bridge.md)).
 - **Agent / Agentic AA** (§1) — complements, not replaces, the agent's on-chain mandate: the agent's
   scoped session key (ERC-7715/7710) enforces *what it may do*; `simulate()` shows *what a given tx
-  would do*, so a human (or the Authority Auditor, §9) can preview an agent action before granting or
+  would do*, so a human (or the Authority Auditor, §8) can preview an agent action before granting or
   while reviewing it. Same decode pipeline feeds the agent action log.
 
 Shared address book (spender-name resolution, token metadata) comes from the **`jayverse-rails`**

@@ -11,6 +11,16 @@ DESIGN DRAFT for review — nothing here is built yet.*
 
 ---
 
+## Phases (build order)
+
+| Phase | Focus | What we implement |
+|---|---|---|
+| **1 (MVP)** | Mint + token-gated chat (Slice A) | `Persona721` (ERC-721); marketplace grid + detail page; **SIWE gate** verifying `ownerOf` on-chain → session → chat opens; stubbed persona reply. |
+| **2** | Day rentals (Slice B) | ERC-4907 `setUser`/`userOf`/`userExpires` + `rent()`; gate checks owner **or** active renter; rental UI + automatic expiry. |
+| **3** | Revenue + market | x402 per-message chat metering; openclone runtime wiring; IPFS pinning; creator flow `/personas/create`; public market listing + earnings tab. |
+
+---
+
 ## 1. What we build (basic feature)
 
 Ship in two thin slices, smallest first.

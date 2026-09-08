@@ -12,6 +12,16 @@ It would be great to cooperate with my existing services."). Builds on the shipp
 
 ---
 
+## Phases (build order)
+
+| Phase | Focus | What we implement |
+|---|---|---|
+| **1 (MVP)** | Gasless one-click bet | thirdweb ERC-4337 smart account + `sponsorGas` paymaster; `app/markets/` grid + Bet drawer; `lib/aa-bet.ts` batches `approve + placeOrder` into **one sponsored UserOp** against a real verex market; surfaces UserOp hash + receipt. Reuses `/live/aa`. |
+| **2** | Local ↔ Sepolia bundler switch | `lib/aa-bundler.ts` environment selector; `scripts/aa-self-relay.mjs` (call `EntryPoint.handleOps` on anvil); thirdweb bundler on Sepolia. Keyed by explicit `AA_MODE`, not chainId. |
+| **3** | Identity & UX breadth | one shared smart-account address across services; ERC-20 gas payment; recovery / social-login owner — handed to `jayverse-wallet`. |
+
+---
+
 ## 1. What we build (the basic feature)
 
 One buildable slice, nothing more:

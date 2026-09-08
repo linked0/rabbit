@@ -14,6 +14,16 @@ scrub a stored journal of what it already did.
 
 ---
 
+## Phases (build order)
+
+| Phase | Focus | What we implement |
+|---|---|---|
+| **1 (MVP)** | Replay | react-three-fiber street + market boards + agent character; bundled sample journal; timeline scrubber (play/pause/speed/step/drag-seek) + journal panel; buy pulses + labeled refusal barriers. Read-only, no backend. |
+| **2** | Live (synchronous) | `useAgentJournal()` delta-polling `?since=<cursor>` of the running agent; enqueue + animate new ticks in near-real-time; poll-rate vs render-rate decoupling. |
+| **3** | Polish (+ optional player-trading) | six distinct refusal visuals; follow-cam; real low-poly city assets; optional player-trading layer wired through the wallet. |
+
+---
+
 ## 1. What we build (basic feature)
 
 **The game is a *renderer* of the agent's journal, not a new system.** The

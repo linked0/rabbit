@@ -40,12 +40,48 @@
 <strong>authority matrix</strong> — who can <em>sign / recover / export keys / change policy</em>, alone or only in
 cooperation — as a shareable report where every cell is backed by an evidence link or marked
 &quot;not verified.&quot; Pure read/analyze: <strong>no keys, no custody, no transactions.</strong></p>
-<p><em>Source: <a href="../tasks/09-02-jayverse.html">../tasks/09-02-jayverse.md</a> §9 Authority Auditor and jay&#39;s
+<p><em>Source: <a href="../tasks/09-02-jayverse.html">../tasks/09-02-jayverse.md</a> §8 Authority Auditor and jay&#39;s
 comment there (&quot;Show me the user scenario and what web app shows and the flow. You can imagine
 some basic feature.&quot;). Sits under the Jayverse hub — <a href="README-Jayverse.html">README-Jayverse.md</a>.
 Repo: <code>jayverse-auditor</code> (small Next.js app + rules engine, rabbit cloud). Depends on nothing
 on-chain, so it can ship first; richest once the Wallet service (#6) exists to dogfood against.
 This is a <strong>design draft for review, not built.</strong></em></p>
+<hr>
+<h2>Why it matters</h2>
+<p>In web3, <strong>who can actually move funds or control an account is usually undocumented and diffuse.</strong>
+A modern wallet/dapp stacks a vendor, a smart account, an upgradeable proxy, guardians, session keys,
+and an owner key — each quietly adds an <em>actor</em> who can sign, recover, <strong>export keys</strong>, upgrade, or
+pause. A large share of hacks and rugs trace to one actor who could act <strong>alone</strong> that nobody had
+mapped. The Auditor makes that explicit — a per-action grid of <em>who can do it, alone or only
+together</em>, every cell backed by evidence — so a team fixes single points of failure <strong>before</strong> they
+are exploited, not after. It is the ecosystem&#39;s defensive lens, and its audience is <strong>builders</strong>
+(developers, founders, reviewers), not end-users.</p>
+<hr>
+<h2>Phases (build order)</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Focus</th>
+<th>What we implement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1 (MVP)</strong></td>
+<td>Dogfood matrix</td>
+<td>hand-authored authority matrix for our own wallet config; matrix schema (actions × actors × evidence + severity + verified-tag); report renderer + shareable read-only page; ship as the first public report.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Rules engine</td>
+<td><code>evaluate(config) → Matrix</code> pure function; per-provider parsers (<strong>Privy first</strong>, then Dynamic / Web3Auth / Turnkey); config intake tiers 1–2 (guided form/paste + exported JSON).</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>On-chain + API</td>
+<td>viem readers (<code>owner</code>/<code>getOwners</code>, EIP-1967 admin slot, <code>paused()</code> + <code>PAUSER_ROLE</code>) → <em>verified</em> cells; opt-in provider-API tier (tier 3); broader <code>AccessControl</code> role discovery.</td>
+</tr>
+</tbody></table>
 <hr>
 <h2>1. What we build (basic feature)</h2>
 <p>Three layers, built in this order — each is useful on its own:</p>
@@ -71,8 +107,10 @@ Wallet service&#39;s <code>simulate()</code>), multi-chain crawling, and auto-di
 arbitrary contract — v1 checks a known, small set of authority surfaces.</p>
 <hr>
 <h2>2. User scenario</h2>
-<p>Mina runs a small dapp on an embedded-wallet provider and isn&#39;t sure who could actually move her
-users&#39; funds if a vendor were compromised.</p>
+<p><strong>Dana, a small-dapp founder</strong> (a <em>developer/operator</em>, not an end-user — the Auditor&#39;s audience is
+builders), runs her app on an embedded-wallet provider and isn&#39;t sure who could actually move her
+users&#39; funds if a vendor were compromised. (End-user &quot;Mina&quot; appears in the other Jayverse docs; the
+Auditor&#39;s persona is a builder, so she has her own name.)</p>
 <ol>
 <li>She opens the Authority Auditor and either <strong>pastes her config</strong> (provider name + the relevant
 settings, or a contract address + chain) or <strong>picks a preset</strong> — e.g. &quot;Privy embedded wallet,
@@ -117,6 +155,40 @@ cells we could not determine, which show <strong>&quot;not verified.&quot;</stro
 worst-severity findings, date, and how many cells are verified vs doc-only vs unknown).</li>
 <li>A short <strong>findings list</strong> above the matrix: the highest-severity cells in plain English.</li>
 </ul>
+<h3>How the config gets in — three tiers</h3>
+<p>The provider-config half of the input can arrive three ways, trading secrecy for accuracy:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>How</th>
+<th>Secrets?</th>
+<th>Accuracy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. Manual form / paste</strong> (default)</td>
+<td>the operator types the settings</td>
+<td>none</td>
+<td>inferred (doc-only)</td>
+</tr>
+<tr>
+<td><strong>2. Exported config JSON</strong></td>
+<td>paste the <em>non-secret</em> config from the provider dashboard</td>
+<td>none</td>
+<td>accurate, credential-free</td>
+</tr>
+<tr>
+<td><strong>3. Provider API</strong> (opt-in)</td>
+<td>a <strong>read-scoped API key</strong>; the Auditor calls the provider</td>
+<td><strong>yes — a credential</strong></td>
+<td>auto + verified</td>
+</tr>
+</tbody></table>
+<p>Default is tiers 1–2 — they preserve the &quot;we never ask for keys or secrets&quot; promise (tier 2 is the
+sweet spot: accurate <em>and</em> credential-free). Tier 3 is a clearly-labeled opt-in that upgrades cells to
+<em>verified</em>; if used, the key is used server-side once, never stored, and read-scoped where the provider
+supports it. (The on-chain half never needs an API — public RPC reads, no key.)</p>
 <hr>
 <h2>4. The flow</h2>
 <pre><code>                 ┌────────────────────────────────────────────┐
@@ -144,6 +216,28 @@ authority model). Where the config names a contract, it calls the <strong>on-cha
 <em>verified</em> cells.</li>
 <li><strong>Report renderer</strong> assembles cells + evidence + severity into the matrix and the shareable page.</li>
 </ul>
+<h3>From matrix to action — decisions, levers, timing</h3>
+<p>The matrix is a <strong>decision list</strong>. For every dangerous cell the question is: <em>&quot;is it acceptable that
+this actor can do this <strong>alone</strong>? If not, make it require <strong>cooperation</strong> or a <strong>delay</strong>.&quot;</em> Each
+finding resolves to <strong>accept</strong>, <strong>fix</strong>, or <strong>avoid</strong> — but <em>who can act</em> depends on who holds the
+authority:</p>
+<ul>
+<li><strong>Authority the operator controls</strong> (their own contract/config, still changeable) → they fix it:
+move ownership to a <strong>multisig</strong>, add a <strong>Timelock</strong> (turns &quot;alone&quot; into &quot;cooperation + a warning
+window&quot;), or flip a provider setting they own.</li>
+<li><strong>Authority a vendor or third party holds</strong> (e.g. &quot;provider can export keys alone&quot;, or a third-party
+contract) → they <strong>cannot</strong> fix it directly. Levers, cheapest first: <strong>reconfigure to a safer mode
+within the same provider → switch provider → drop embedded custody for that surface → accept +
+monitor.</strong> Switching a provider is nearly free <strong>before launch</strong> and a <strong>migration</strong> after — which is
+why the Auditor&#39;s highest-value moment is <strong>before you commit</strong>, auditing vendor models so the &quot;fix&quot;
+is just <em>choose the safer option</em>.</li>
+<li><strong>Already-immutable</strong> (deployed, non-upgradeable) → many fixes no longer exist; it collapses to
+<em>accept</em> or <em>rebuild</em>.</li>
+</ul>
+<p>Beyond per-cell fixes the report drives: <strong>prioritize</strong> the HIGH single-points-of-failure first;
+<strong>vendor due-diligence</strong> before adopting; <strong>communicate</strong> custody posture (share the report); and
+<strong>catch regressions</strong> by re-running after any config change or upgrade (a change can silently <em>add</em> an
+authority).</p>
 <hr>
 <h2>5. Cooperate with existing services</h2>
 <ul>

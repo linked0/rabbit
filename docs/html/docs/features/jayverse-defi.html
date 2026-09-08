@@ -47,6 +47,32 @@ This supersedes the earlier read-only-dashboard framing. Hub:
 <a href="README-Jayverse.html">README-Jayverse.md</a>. Repo: <code>jayverse-defi</code> (verex cloud); may live as a page
 inside rabbit until it earns its own repo.</em></p>
 <hr>
+<h2>Phases (build order)</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Focus</th>
+<th>What we implement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1 (MVP)</strong></td>
+<td>Liquid-staking core</td>
+<td><code>LiquidityPool</code> + rebasing <code>jeETH</code> + wrapper <code>jweETH</code>; <code>deposit / wrap / requestWithdraw / claim</code>; <code>addRewards</code> (staking); yield-decomposition + &quot;how the math works&quot; view; <strong>Foundry tests are the deliverable</strong>.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Restaking layer</td>
+<td><code>MockAVS</code> delegation → a second <code>addRewards(&quot;restaking&quot;)</code> stream; study-mode <code>slash</code> that lowers the exchange rate for <strong>all</strong> holders; risk labels driven by real contract state.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Real EtherFi (read)</td>
+<td>optionally read/interact with real EtherFi testnet contracts, once the from-scratch mechanics are understood.</td>
+</tr>
+</tbody></table>
+<hr>
 <h2>1. What we build (basic feature)</h2>
 <p>A <strong>minimal liquid-staking + restaking protocol, written from scratch</strong> on anvil/Sepolia — the
 smallest thing that reproduces EtherFi&#39;s core mechanics:</p>

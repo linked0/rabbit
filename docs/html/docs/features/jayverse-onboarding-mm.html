@@ -41,6 +41,32 @@
 <p>Status: <strong>DESIGN DRAFT for review — not built.</strong> Scope: Verex prediction market (CLOB on Sepolia; CTF backbone, Fastify API, Next.js web at <code>verex.jaylabs.xyz</code>, in-process LMSR operator in <code>packages/api/src/mm.ts</code>, USDC collateral). Source request: <a href="../tasks/09-02-jayverse.html"><code>../tasks/09-02-jayverse.md</code></a> §2 &quot;Verex as Prediction Market&quot; (roadmap step <strong>S8–S9 Stripe onboarding</strong>). Reuses the Stripe/AP2 pattern in <a href="ap2-test.html"><code>ap2-test.md</code></a>.</p>
 </blockquote>
 <hr>
+<h2>Phases (build order)</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Focus</th>
+<th>What we implement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1 (MVP)</strong></td>
+<td>First-bet loop</td>
+<td>Stripe Checkout (test mode) <code>/funding</code> + webhook crediting a USDC-eq balance; header balance chip; LMSR maker (<code>mm.ts</code>) quoting YES/NO so a newcomer&#39;s first order always fills; bid/ask ladder + fill UI.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Operator / admin</td>
+<td>owner-gated <code>/admin/mm</code>: status (inventory, exposure, live quotes, max-loss headroom) + safe controls (global/per-market pause = kill switch); <code>b</code> and collateral cap stay deploy-time.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Production leg</td>
+<td>KYC/AML; real on/off-ramp custody or regulated partner; x402 metering; refund/chargeback handling; balance⇄chain reconciliation.</td>
+</tr>
+</tbody></table>
+<hr>
 <h2>1. Two features, why they ship together</h2>
 <p>The two features remove the two things that stop a newcomer from ever placing a first bet:</p>
 <p><strong>(a) Stripe onboarding — the demand side.</strong> A newcomer has no wallet, no testnet USDC, and no

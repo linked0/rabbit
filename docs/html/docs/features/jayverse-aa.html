@@ -45,6 +45,32 @@ It would be great to cooperate with my existing services.&quot;). Builds on the 
 <a href="https://github.com/linked0/rabbit/blob/main/app/live/aa/page.tsx">/live/aa</a> blocks and <a href="agentic-aa.html">agentic-aa.md</a>. Hub:
 <a href="README-Jayverse.html">README-Jayverse.md</a>.</em></p>
 <hr>
+<h2>Phases (build order)</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Focus</th>
+<th>What we implement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1 (MVP)</strong></td>
+<td>Gasless one-click bet</td>
+<td>thirdweb ERC-4337 smart account + <code>sponsorGas</code> paymaster; <code>app/markets/</code> grid + Bet drawer; <code>lib/aa-bet.ts</code> batches <code>approve + placeOrder</code> into <strong>one sponsored UserOp</strong> against a real verex market; surfaces UserOp hash + receipt. Reuses <code>/live/aa</code>.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Local ↔ Sepolia bundler switch</td>
+<td><code>lib/aa-bundler.ts</code> environment selector; <code>scripts/aa-self-relay.mjs</code> (call <code>EntryPoint.handleOps</code> on anvil); thirdweb bundler on Sepolia. Keyed by explicit <code>AA_MODE</code>, not chainId.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Identity &amp; UX breadth</td>
+<td>one shared smart-account address across services; ERC-20 gas payment; recovery / social-login owner — handed to <code>jayverse-wallet</code>.</td>
+</tr>
+</tbody></table>
+<hr>
 <h2>1. What we build (the basic feature)</h2>
 <p>One buildable slice, nothing more:</p>
 <ul>

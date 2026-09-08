@@ -135,17 +135,17 @@ the implementation never moves into rabbit.</li>
 </tr>
 <tr>
 <td>8</td>
-<td>L2 (lab)</td>
-<td><code>jayverse-l2-lab</code> (notes + scripts)</td>
-<td>l2-agent</td>
-<td>local only (supersim) until go/no-go</td>
-</tr>
-<tr>
-<td>9</td>
 <td>Authority Auditor</td>
 <td><code>jayverse-auditor</code></td>
 <td>auditor-agent</td>
 <td>rabbit cloud</td>
+</tr>
+<tr>
+<td>9</td>
+<td>L2 (lab)</td>
+<td><code>jayverse-l2-lab</code> (notes + scripts)</td>
+<td>l2-agent</td>
+<td>local only (supersim) until go/no-go</td>
 </tr>
 </tbody></table>
 <ul>
@@ -300,18 +300,7 @@ viem clients) that every app imports — plumbing, not a product.</li>
 </ul>
 </li>
 </ul>
-<h2>8. L2</h2>
-<ul>
-<li><strong>What</strong>: our own chain ambition — explicitly marked <strong>start at last</strong> in the diagram, with <strong>supersim</strong> as the local on-ramp.</li>
-<li><strong>Repo</strong>: none yet — a <code>docs/</code> research folder first; infra-as-code repo only if we truly commit.</li>
-<li><strong>Skills</strong>: OP Stack components (sequencer/batcher/proposer), supersim local runs, devops muscle (the real cost), fee economics.</li>
-<li><strong>Depends on</strong>: everything else being alive — an empty chain serves nobody; also the Bridge (assets would migrate).</li>
-<li><strong>Steps</strong>: 1) supersim locally, point a Verex prototype at it, break the batcher and watch the three finality clocks; 2) write the lease memo (choosing-a-chain-is-a-lease applied to <em>being</em> the landlord); 3) evaluate RaaS (Conduit/Caldera) vs self-run; 4) go/no-go with numbers, not vibes.</li>
-<li><strong>Subtasks</strong>: supersim lab notes; cost model (infra + ops hours/month); sequencer-downtime user story; RaaS comparison table.</li>
-<li><strong>Risk</strong>: the single most expensive line in the diagram to operate — hence &quot;start at last&quot; is the right call; local learning now, production maybe never.</li>
-<li><strong>PoC links</strong>: <code>choosing-a-chain-is-a-lease</code>, <code>l2-finality-three-clocks</code>, <code>l1-data-pricing-dimensions</code>.</li>
-</ul>
-<h2>9. Authority Auditor</h2>
+<h2>8. Authority Auditor</h2>
 <ul>
 <li><strong>What</strong>: the authority-matrix idea productized — feed it a wallet/dapp config and get the filled matrix (who can sign/recover/export/change policy) as a shareable report.</li>
 <li><strong>Repo</strong>: <code>jayverse-auditor</code> (small Next.js app + rules engine); pure read/analyze, no keys, no custody.</li>
@@ -325,6 +314,17 @@ viem clients) that every app imports — plumbing, not a product.</li>
 <li><strong>Design doc:</strong> <a href="../features/jayverse-auditor.html">../features/jayverse-auditor.md</a></li>
 </ul>
 </li>
+</ul>
+<h2>9. L2</h2>
+<ul>
+<li><strong>What</strong>: our own chain ambition — explicitly marked <strong>start at last</strong> in the diagram, with <strong>supersim</strong> as the local on-ramp.</li>
+<li><strong>Repo</strong>: none yet — a <code>docs/</code> research folder first; infra-as-code repo only if we truly commit.</li>
+<li><strong>Skills</strong>: OP Stack components (sequencer/batcher/proposer), supersim local runs, devops muscle (the real cost), fee economics.</li>
+<li><strong>Depends on</strong>: everything else being alive — an empty chain serves nobody; also the Bridge (assets would migrate).</li>
+<li><strong>Steps</strong>: 1) supersim locally, point a Verex prototype at it, break the batcher and watch the three finality clocks; 2) write the lease memo (choosing-a-chain-is-a-lease applied to <em>being</em> the landlord); 3) evaluate RaaS (Conduit/Caldera) vs self-run; 4) go/no-go with numbers, not vibes.</li>
+<li><strong>Subtasks</strong>: supersim lab notes; cost model (infra + ops hours/month); sequencer-downtime user story; RaaS comparison table.</li>
+<li><strong>Risk</strong>: the single most expensive line in the diagram to operate — hence &quot;start at last&quot; is the right call; local learning now, production maybe never.</li>
+<li><strong>PoC links</strong>: <code>choosing-a-chain-is-a-lease</code>, <code>l2-finality-three-clocks</code>, <code>l1-data-pricing-dimensions</code>.</li>
 </ul>
 <h2>10.Dark Horse</h2>
 <ul>
@@ -358,7 +358,7 @@ the agent&#39;s 7715 mandate (can a draw exceed the cap? survive expiry? replay 
 wallet); severity/triage rubric; responsible-disclosure policy for anything found outside.</li>
 <li><strong>Risk (dual-use)</strong>: exploits live on local forks only, never against live third-party
 systems; external findings go through responsible disclosure, always.</li>
-<li><strong>Ties</strong>: Authority Auditor (#9) is the defensive/product half — this research feeds its
+<li><strong>Ties</strong>: Authority Auditor (#8) is the defensive/product half — this research feeds its
 rules engine; Bridge (#7) is &quot;where double-spend bugs would live&quot;, so its invariant tests
 come from here.</li>
 <li><strong>PoC links</strong>: <code>third-party-blast-radius</code>, <code>safe-module-root-key</code>, <code>simulate-before-sign</code>,

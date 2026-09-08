@@ -5,12 +5,35 @@
 cooperation — as a shareable report where every cell is backed by an evidence link or marked
 "not verified." Pure read/analyze: **no keys, no custody, no transactions.**
 
-*Source: [../tasks/09-02-jayverse.md](../tasks/09-02-jayverse.md) §9 Authority Auditor and jay's
+*Source: [../tasks/09-02-jayverse.md](../tasks/09-02-jayverse.md) §8 Authority Auditor and jay's
 comment there ("Show me the user scenario and what web app shows and the flow. You can imagine
 some basic feature."). Sits under the Jayverse hub — [README-Jayverse.md](README-Jayverse.md).
 Repo: `jayverse-auditor` (small Next.js app + rules engine, rabbit cloud). Depends on nothing
 on-chain, so it can ship first; richest once the Wallet service (#6) exists to dogfood against.
 This is a **design draft for review, not built.***
+
+---
+
+## Why it matters
+
+In web3, **who can actually move funds or control an account is usually undocumented and diffuse.**
+A modern wallet/dapp stacks a vendor, a smart account, an upgradeable proxy, guardians, session keys,
+and an owner key — each quietly adds an *actor* who can sign, recover, **export keys**, upgrade, or
+pause. A large share of hacks and rugs trace to one actor who could act **alone** that nobody had
+mapped. The Auditor makes that explicit — a per-action grid of *who can do it, alone or only
+together*, every cell backed by evidence — so a team fixes single points of failure **before** they
+are exploited, not after. It is the ecosystem's defensive lens, and its audience is **builders**
+(developers, founders, reviewers), not end-users.
+
+---
+
+## Phases (build order)
+
+| Phase | Focus | What we implement |
+|---|---|---|
+| **1 (MVP)** | Dogfood matrix | hand-authored authority matrix for our own wallet config; matrix schema (actions × actors × evidence + severity + verified-tag); report renderer + shareable read-only page; ship as the first public report. |
+| **2** | Rules engine | `evaluate(config) → Matrix` pure function; per-provider parsers (**Privy first**, then Dynamic / Web3Auth / Turnkey); config intake tiers 1–2 (guided form/paste + exported JSON). |
+| **3** | On-chain + API | viem readers (`owner`/`getOwners`, EIP-1967 admin slot, `paused()` + `PAUSER_ROLE`) → *verified* cells; opt-in provider-API tier (tier 3); broader `AccessControl` role discovery. |
 
 ---
 
@@ -42,8 +65,10 @@ arbitrary contract — v1 checks a known, small set of authority surfaces.
 
 ## 2. User scenario
 
-Mina runs a small dapp on an embedded-wallet provider and isn't sure who could actually move her
-users' funds if a vendor were compromised.
+**Dana, a small-dapp founder** (a *developer/operator*, not an end-user — the Auditor's audience is
+builders), runs her app on an embedded-wallet provider and isn't sure who could actually move her
+users' funds if a vendor were compromised. (End-user "Mina" appears in the other Jayverse docs; the
+Auditor's persona is a builder, so she has her own name.)
 
 1. She opens the Authority Auditor and either **pastes her config** (provider name + the relevant
    settings, or a contract address + chain) or **picks a preset** — e.g. "Privy embedded wallet,
@@ -88,6 +113,21 @@ public chain state.
   worst-severity findings, date, and how many cells are verified vs doc-only vs unknown).
 - A short **findings list** above the matrix: the highest-severity cells in plain English.
 
+### How the config gets in — three tiers
+
+The provider-config half of the input can arrive three ways, trading secrecy for accuracy:
+
+| Tier | How | Secrets? | Accuracy |
+|---|---|---|---|
+| **1. Manual form / paste** (default) | the operator types the settings | none | inferred (doc-only) |
+| **2. Exported config JSON** | paste the *non-secret* config from the provider dashboard | none | accurate, credential-free |
+| **3. Provider API** (opt-in) | a **read-scoped API key**; the Auditor calls the provider | **yes — a credential** | auto + verified |
+
+Default is tiers 1–2 — they preserve the "we never ask for keys or secrets" promise (tier 2 is the
+sweet spot: accurate *and* credential-free). Tier 3 is a clearly-labeled opt-in that upgrades cells to
+*verified*; if used, the key is used server-side once, never stored, and read-scoped where the provider
+supports it. (The on-chain half never needs an API — public RPC reads, no key.)
+
 ---
 
 ## 4. The flow
@@ -117,6 +157,30 @@ public chain state.
 - **viem reads** fetch real permission state (owner, proxy admin, pause) — these produce
   *verified* cells.
 - **Report renderer** assembles cells + evidence + severity into the matrix and the shareable page.
+
+### From matrix to action — decisions, levers, timing
+
+The matrix is a **decision list**. For every dangerous cell the question is: *"is it acceptable that
+this actor can do this **alone**? If not, make it require **cooperation** or a **delay**."* Each
+finding resolves to **accept**, **fix**, or **avoid** — but *who can act* depends on who holds the
+authority:
+
+- **Authority the operator controls** (their own contract/config, still changeable) → they fix it:
+  move ownership to a **multisig**, add a **Timelock** (turns "alone" into "cooperation + a warning
+  window"), or flip a provider setting they own.
+- **Authority a vendor or third party holds** (e.g. "provider can export keys alone", or a third-party
+  contract) → they **cannot** fix it directly. Levers, cheapest first: **reconfigure to a safer mode
+  within the same provider → switch provider → drop embedded custody for that surface → accept +
+  monitor.** Switching a provider is nearly free **before launch** and a **migration** after — which is
+  why the Auditor's highest-value moment is **before you commit**, auditing vendor models so the "fix"
+  is just *choose the safer option*.
+- **Already-immutable** (deployed, non-upgradeable) → many fixes no longer exist; it collapses to
+  *accept* or *rebuild*.
+
+Beyond per-cell fixes the report drives: **prioritize** the HIGH single-points-of-failure first;
+**vendor due-diligence** before adopting; **communicate** custody posture (share the report); and
+**catch regressions** by re-running after any config change or upgrade (a change can silently *add* an
+authority).
 
 ---
 

@@ -6,6 +6,16 @@ Design draft for two paired Verex features: fiat card onboarding (Stripe test mo
 
 ---
 
+## Phases (build order)
+
+| Phase | Focus | What we implement |
+|---|---|---|
+| **1 (MVP)** | First-bet loop | Stripe Checkout (test mode) `/funding` + webhook crediting a USDC-eq balance; header balance chip; LMSR maker (`mm.ts`) quoting YES/NO so a newcomer's first order always fills; bid/ask ladder + fill UI. |
+| **2** | Operator / admin | owner-gated `/admin/mm`: status (inventory, exposure, live quotes, max-loss headroom) + safe controls (global/per-market pause = kill switch); `b` and collateral cap stay deploy-time. |
+| **3** | Production leg | KYC/AML; real on/off-ramp custody or regulated partner; x402 metering; refund/chargeback handling; balance⇄chain reconciliation. |
+
+---
+
 ## 1. Two features, why they ship together
 
 The two features remove the two things that stop a newcomer from ever placing a first bet:

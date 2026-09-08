@@ -44,6 +44,32 @@ per-message x402 payments turn &quot;owning a persona&quot; into ongoing creator
 <code>jayverse-personas</code> (app + contracts together). Hub: <a href="README-Jayverse.html">README-Jayverse.md</a>.
 DESIGN DRAFT for review — nothing here is built yet.</em></p>
 <hr>
+<h2>Phases (build order)</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Focus</th>
+<th>What we implement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1 (MVP)</strong></td>
+<td>Mint + token-gated chat (Slice A)</td>
+<td><code>Persona721</code> (ERC-721); marketplace grid + detail page; <strong>SIWE gate</strong> verifying <code>ownerOf</code> on-chain → session → chat opens; stubbed persona reply.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Day rentals (Slice B)</td>
+<td>ERC-4907 <code>setUser</code>/<code>userOf</code>/<code>userExpires</code> + <code>rent()</code>; gate checks owner <strong>or</strong> active renter; rental UI + automatic expiry.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Revenue + market</td>
+<td>x402 per-message chat metering; openclone runtime wiring; IPFS pinning; creator flow <code>/personas/create</code>; public market listing + earnings tab.</td>
+</tr>
+</tbody></table>
+<hr>
 <h2>1. What we build (basic feature)</h2>
 <p>Ship in two thin slices, smallest first.</p>
 <p><strong>Slice A — mint + token-gated chat (the MVP).</strong>

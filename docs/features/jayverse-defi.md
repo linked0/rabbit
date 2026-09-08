@@ -14,6 +14,16 @@ inside rabbit until it earns its own repo.*
 
 ---
 
+## Phases (build order)
+
+| Phase | Focus | What we implement |
+|---|---|---|
+| **1 (MVP)** | Liquid-staking core | `LiquidityPool` + rebasing `jeETH` + wrapper `jweETH`; `deposit / wrap / requestWithdraw / claim`; `addRewards` (staking); yield-decomposition + "how the math works" view; **Foundry tests are the deliverable**. |
+| **2** | Restaking layer | `MockAVS` delegation → a second `addRewards("restaking")` stream; study-mode `slash` that lowers the exchange rate for **all** holders; risk labels driven by real contract state. |
+| **3** | Real EtherFi (read) | optionally read/interact with real EtherFi testnet contracts, once the from-scratch mechanics are understood. |
+
+---
+
 ## 1. What we build (basic feature)
 
 A **minimal liquid-staking + restaking protocol, written from scratch** on anvil/Sepolia — the

@@ -38,8 +38,8 @@
 | 5 | Unity game (+ market-bridge worker) | `jayverse-game` | game-agent | verex cloud (worker; game client ships to stores/web) |
 | 6 | Wallet & Simulation service | `jayverse-wallet` | wallet-agent | rabbit cloud |
 | 7 | Intra Jayverse Bridge | `jayverse-bridge` | bridge-agent | verex cloud |
-| 8 | L2 (lab) | `jayverse-l2-lab` (notes + scripts) | l2-agent | local only (supersim) until go/no-go |
-| 9 | Authority Auditor | `jayverse-auditor` | auditor-agent | rabbit cloud |
+| 8 | Authority Auditor | `jayverse-auditor` | auditor-agent | rabbit cloud |
+| 9 | L2 (lab) | `jayverse-l2-lab` (notes + scripts) | l2-agent | local only (supersim) until go/no-go |
 
 - Cloud split logic: money-moving/market-coupled services (#2 #3 #5 #7) on **verex cloud**;
   portal/AI/read-only services (#1 #4 #6 #9) on **rabbit cloud** — 4 : 4, #8 stays local.
@@ -163,17 +163,7 @@
 - My Comment: We can create an ERC coin used in our ecosystem like JVRS or JVS. I should be bridged between some chains in my Anvil chain and Sepolia. Show me some imaginary scenario in a new file that I will check.
   - **Design doc:** [../features/jayverse-token-bridge.md](../features/jayverse-token-bridge.md)
 
-## 8. L2
-- **What**: our own chain ambition — explicitly marked **start at last** in the diagram, with **supersim** as the local on-ramp.
-- **Repo**: none yet — a `docs/` research folder first; infra-as-code repo only if we truly commit.
-- **Skills**: OP Stack components (sequencer/batcher/proposer), supersim local runs, devops muscle (the real cost), fee economics.
-- **Depends on**: everything else being alive — an empty chain serves nobody; also the Bridge (assets would migrate).
-- **Steps**: 1) supersim locally, point a Verex prototype at it, break the batcher and watch the three finality clocks; 2) write the lease memo (choosing-a-chain-is-a-lease applied to *being* the landlord); 3) evaluate RaaS (Conduit/Caldera) vs self-run; 4) go/no-go with numbers, not vibes.
-- **Subtasks**: supersim lab notes; cost model (infra + ops hours/month); sequencer-downtime user story; RaaS comparison table.
-- **Risk**: the single most expensive line in the diagram to operate — hence "start at last" is the right call; local learning now, production maybe never.
-- **PoC links**: `choosing-a-chain-is-a-lease`, `l2-finality-three-clocks`, `l1-data-pricing-dimensions`.
-
-## 9. Authority Auditor
+## 8. Authority Auditor
 - **What**: the authority-matrix idea productized — feed it a wallet/dapp config and get the filled matrix (who can sign/recover/export/change policy) as a shareable report.
 - **Repo**: `jayverse-auditor` (small Next.js app + rules engine); pure read/analyze, no keys, no custody.
 - **Skills**: provider config knowledge (Privy/Dynamic/Web3Auth/Turnkey docs), contract-permission reading (owners, roles, upgradeability), report UX.
@@ -184,6 +174,16 @@
 - **PoC links**: `embedded-wallet-policy`, `safe-module-root-key`, `third-party-blast-radius`.
 - My Comment: Show me the user scenario and what web app shows and the flow. You can imagine some basic feature. so please describe what you will do a new md file in features folder.
   - **Design doc:** [../features/jayverse-auditor.md](../features/jayverse-auditor.md)
+
+## 9. L2
+- **What**: our own chain ambition — explicitly marked **start at last** in the diagram, with **supersim** as the local on-ramp.
+- **Repo**: none yet — a `docs/` research folder first; infra-as-code repo only if we truly commit.
+- **Skills**: OP Stack components (sequencer/batcher/proposer), supersim local runs, devops muscle (the real cost), fee economics.
+- **Depends on**: everything else being alive — an empty chain serves nobody; also the Bridge (assets would migrate).
+- **Steps**: 1) supersim locally, point a Verex prototype at it, break the batcher and watch the three finality clocks; 2) write the lease memo (choosing-a-chain-is-a-lease applied to *being* the landlord); 3) evaluate RaaS (Conduit/Caldera) vs self-run; 4) go/no-go with numbers, not vibes.
+- **Subtasks**: supersim lab notes; cost model (infra + ops hours/month); sequencer-downtime user story; RaaS comparison table.
+- **Risk**: the single most expensive line in the diagram to operate — hence "start at last" is the right call; local learning now, production maybe never.
+- **PoC links**: `choosing-a-chain-is-a-lease`, `l2-finality-three-clocks`, `l1-data-pricing-dimensions`.
 
 ## 10.Dark Horse
 - This will be tackled later after some of the previous services are built
@@ -213,7 +213,7 @@
   wallet); severity/triage rubric; responsible-disclosure policy for anything found outside.
 - **Risk (dual-use)**: exploits live on local forks only, never against live third-party
   systems; external findings go through responsible disclosure, always.
-- **Ties**: Authority Auditor (#9) is the defensive/product half — this research feeds its
+- **Ties**: Authority Auditor (#8) is the defensive/product half — this research feeds its
   rules engine; Bridge (#7) is "where double-spend bugs would live", so its invariant tests
   come from here.
 - **PoC links**: `third-party-blast-radius`, `safe-module-root-key`, `simulate-before-sign`,

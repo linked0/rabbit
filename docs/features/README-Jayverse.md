@@ -99,10 +99,10 @@ the existing services so they cooperate rather than sit alone.
 | 4 | Persona market | [jayverse-personas.md](jayverse-personas.md) | NFT persona market — scenario, web app, flow | drafting |
 | 5 | Unity — 3D browser game | [jayverse-game.md](jayverse-game.md) | Wander a 3D street, find verex markets on boards, trade. **Start** | drafting |
 | 6 | Wallet & simulate-before-sign | [jayverse-wallet.md](jayverse-wallet.md) | Embedded wallet + tx simulation — scenario, web app, flow | drafting |
-| 7 | Token + Intra Bridge | [jayverse-token-bridge.md](jayverse-token-bridge.md) | JVRS/JVS ecosystem coin bridged Anvil ⇄ Sepolia — scenario | drafting |
-| 9 | Authority Auditor | [jayverse-auditor.md](jayverse-auditor.md) | Authority-matrix report — scenario, web app, flow | drafting |
+| 7 | Token + Exchange + Bridge | [jayverse-token-bridge.md](jayverse-token-bridge.md) | **JYVE** ecosystem coin + mini-AMM price + Anvil ⇄ Sepolia bridge (one `jayverse-token` repo) | drafting |
+| 8 | Authority Auditor | [jayverse-auditor.md](jayverse-auditor.md) | Authority-matrix report — scenario, web app, flow | drafting |
 
-*(§8 L2 has no design comment yet — it stays "start at last" per the plan.)*
+*(§9 L2 has no design comment yet — it stays "start at last" per the plan.)*
 
 Every doc is a **design draft for review**, not built work — the implementation status stays in the
 umbrella plan's Remaining sections and in each service repo.

@@ -49,6 +49,32 @@ path. Service #5 in <a href="../tasks/09-02-jayverse.html">../tasks/09-02-jayver
 Repo: <code>jayverse-game</code>; hosted inside the Rabbit portal.</p>
 </blockquote>
 <hr>
+<h2>Phases (build order)</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Focus</th>
+<th>What we implement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1 (MVP)</strong></td>
+<td>Replay</td>
+<td>react-three-fiber street + market boards + agent character; bundled sample journal; timeline scrubber (play/pause/speed/step/drag-seek) + journal panel; buy pulses + labeled refusal barriers. Read-only, no backend.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Live (synchronous)</td>
+<td><code>useAgentJournal()</code> delta-polling <code>?since=&lt;cursor&gt;</code> of the running agent; enqueue + animate new ticks in near-real-time; poll-rate vs render-rate decoupling.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Polish (+ optional player-trading)</td>
+<td>six distinct refusal visuals; follow-cam; real low-poly city assets; optional player-trading layer wired through the wallet.</td>
+</tr>
+</tbody></table>
+<hr>
 <h2>1. What we build (basic feature)</h2>
 <p><strong>The game is a <em>renderer</em> of the agent&#39;s journal, not a new system.</strong> The
 <a href="https://github.com/linked0/rabbit/blob/main/app/live/agent/console/page.tsx">mandate console</a> already produces the data: a journal of

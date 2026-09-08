@@ -1,6 +1,6 @@
-# Jayverse — JVRS token + intra-bridge
+# Jayverse — JYVE token + exchange + intra-bridge
 
-**Purpose:** define an ecosystem ERC-20 (`JVRS`) used across Jayverse services and a minimal, dev-grade bridge to move it between jay's local Anvil fork and Sepolia. Design draft for review — nothing here is built yet.
+**Purpose:** define an ecosystem ERC-20 (`JYVE`) used across Jayverse services, a tiny on-chain **exchange** (mini-AMM) that gives JYVE a readable price, and a minimal, dev-grade **bridge** to move it between jay's local Anvil fork and Sepolia. Token, exchange, and bridge are **one economic unit**, so they live together in a single **`jayverse-token`** repo (as packages), not three repos (jay, 2026-09-08). Design draft for review — nothing here is built yet.
 
 > Source: [`../tasks/09-02-jayverse.md`](../tasks/09-02-jayverse.md) §7 "Intra Jayverse Bridge" and jay's comment there ("We can create an ERC coin used in our ecosystem like JVRS or JVS… bridged between my Anvil chain and Sepolia. Show me some imaginary scenario."). Hub: [`README-Jayverse.md`](./README-Jayverse.md).
 >
@@ -8,12 +8,23 @@
 
 ---
 
+## Phases (build order)
+
+| Phase | Focus | What we implement |
+|---|---|---|
+| **1 (MVP)** | Token + exchange | `JYVE.sol` (ERC-20, `MINTER_ROLE`, per-address + global mint caps); `Exchange.sol` constant-product **`JYVE/USDC`** pool with `addLiquidity`/`removeLiquidity`/`swap`/`getPrice`, pool seeded at deploy so a price exists from block one. |
+| **2** | Intra bridge | `BridgeLock` / `BridgeMint` (or the relayer-script variant): lock-and-mint / burn-and-release between the Anvil fork and Sepolia; **idempotent relayer** keyed by transfer `id`; `processed[id]` guard; invariant + reconciliation cron. |
+| **3** | Real cross-chain | graduate to CCIP where a service truly leaves the home chain. |
+
+---
+
 ## 1. What we build (basic feature)
 
-Two small pieces, deliberately minimal:
+Three small pieces, deliberately minimal:
 
-1. **`JVRS` — an ERC-20 (Jayverse token).** Standard OpenZeppelin ERC-20, 18 decimals, symbol `JVRS`, name "Jayverse". Alt symbol `JVS` if `JVRS` reads badly in UI — primary is **JVRS**. It is the unit of account inside the ecosystem: verex rewards, persona rentals/payments, and game prizes are denominated and paid in JVRS. On testnet/dev it is mintable by an owner/faucet role (see §5); it is *not* a real-money asset.
-2. **A minimal bridge** to move JVRS between jay's **local Anvil fork of Sepolia** (chain id 11155111) and **real Sepolia** (also 11155111). Because both report the same chain id, the bridge is keyed by RPC endpoint / deployment, not by chain id — see the honesty note in §5. Pattern: **lock-and-mint / burn-and-release** driven by a single trusted relayer worker.
+1. **`JYVE` — an ERC-20 (Jayverse token).** Standard OpenZeppelin ERC-20, 18 decimals, symbol **`JYVE`** (read "jive"), name "Jayverse". Renamed from the `JVRS`/`JVS` jay first suggested — `JYVE` reads as a word and is far easier to say (jay, 2026-09-08). It is the unit of account inside the ecosystem: verex rewards, persona rentals/payments, and game prizes are denominated and paid in JYVE. On testnet/dev it is mintable by an owner/faucet role (see §6); it is *not* a real-money asset.
+2. **A minimal on-chain exchange (mini-AMM)** — a constant-product **`JYVE/USDC`** pool. JYVE is a token we invented, so it has **no external market an oracle could report** — an oracle only relays a price that already exists somewhere liquid. So the pool itself *is* the price: `price = usdcReserve / jyveReserve`. Anything that needs a JYVE price (the wallet's USD display, the bridge's value readout, a portfolio view) reads the pool ratio on-chain. This is the honest way to price a self-made token, and a clean learning build (`x·y=k`, add/remove liquidity, swap).
+3. **A minimal bridge** to move JYVE between jay's **local Anvil fork of Sepolia** (chain id 11155111) and **real Sepolia** (also 11155111). Because both report the same chain id, the bridge is keyed by RPC endpoint / deployment, not by chain id — see the honesty note in §6. Pattern: **lock-and-mint / burn-and-release** driven by a single trusted relayer worker.
 
 Keep both basic. No governance, no fee market, no multi-hop routing. The bridge is a developer convenience for testing cross-chain UX, not a trustless product.
 
@@ -23,11 +34,13 @@ Keep both basic. No governance, no fee market, no multi-hop routing. The bridge 
 
 Meet **Mina**, a Jayverse user, working against the local dev stack (Anvil fork of Sepolia).
 
-1. **She wins on verex.** Mina holds a YES position on a verex market ("Will it rain in Seoul this weekend?"). The market resolves YES. Verex settles her winnings and pays out **120 JVRS** to her wallet on the local Anvil chain. In the portal her balance ticks from 0 → 120 JVRS.
-2. **She rents a persona.** Mina wants "Startup-Mentor" for an hour. The persona service quotes **40 JVRS**. She confirms; the wallet service signs an ERC-20 `transfer` of 40 JVRS from her wallet to the persona's payment address. Balance: 120 → 80 JVRS. The persona unlocks for the session.
-3. **She bridges to Sepolia.** Mina wants **30 JVRS** on real Sepolia so a friend on the shared testnet can see it. In the portal she opens **Bridge**, picks source = *Local (Anvil fork)*, dest = *Sepolia*, amount = 30. She signs one transaction. The 30 JVRS is **locked** in the bridge contract on the Anvil chain.
-4. **The relayer does its job.** The bridge relayer worker sees the `Locked` event, waits for confirmation, and **mints** (or releases from a pre-funded reserve) 30 JVRS to Mina's address on Sepolia. The portal shows: `Locked ✓ → Relaying… → Minted ✓`. Sepolia balance: +30 JVRS. Local balance: 80 → 50 JVRS.
-5. **Later, she bridges back.** Mina sends 10 JVRS from Sepolia → Local. On Sepolia the bridge **burns** her 10 JVRS; the relayer **releases** 10 JVRS from the lock on the Anvil side back to her. Invariant holds: total locked on source always equals total minted on dest.
+1. **She wins on verex.** Mina holds a YES position on a verex market ("Will it rain in Seoul this weekend?"). The market resolves YES. Verex settles her winnings and pays out **120 JYVE** to her wallet on the local Anvil chain. In the portal her balance ticks from 0 → 120 JYVE.
+2. **She rents a persona.** Mina wants "Startup-Mentor" for an hour. The persona service quotes **40 JYVE**. She confirms; the wallet service signs an ERC-20 `transfer` of 40 JYVE from her wallet to the persona's payment address. Balance: 120 → 80 JYVE. The persona unlocks for the session.
+3. **She bridges to Sepolia.** Mina wants **30 JYVE** on real Sepolia so a friend on the shared testnet can see it. In the portal she opens **Bridge**, picks source = *Local (Anvil fork)*, dest = *Sepolia*, amount = 30. Before she signs, the wallet's **`<JayverseSign>` simulate-before-sign** previews the effect — *lock 30 JYVE on Anvil → receive 30 on Sepolia* — because a bridge (funds leaving a chain) is the scariest thing a user signs. She confirms one transaction and the 30 JYVE is **locked** in the bridge contract on the Anvil chain.
+4. **The relayer does its job.** The bridge relayer worker sees the `Locked` event, waits for confirmation, and **mints** (or releases from a pre-funded reserve) 30 JYVE to Mina's address on Sepolia. The portal shows: `Locked ✓ → Relaying… → Minted ✓`. Sepolia balance: +30 JYVE. Local balance: 80 → 50 JYVE.
+5. **Later, she bridges back.** Mina sends 10 JYVE from Sepolia → Local. On Sepolia the bridge **burns** her 10 JYVE; the relayer **releases** 10 JYVE from the lock on the Anvil side back to her. Invariant holds: total locked on source always equals total minted on dest.
+
+Every money-moving step above (win → pay → bridge) routes its signature through the Wallet service's **simulate-before-sign** ([jayverse-wallet.md](jayverse-wallet.md)), and JYVE amounts can be shown in USD via the **exchange** price (§1.2) — verex → bridge → wallet cooperating as one flow.
 
 No step requires Mina to understand that the "two chains" are really a fork plus its origin — the UX is identical to a real bridge, which is the point of building it.
 
@@ -35,7 +48,7 @@ No step requires Mina to understand that the "two chains" are really a fork plus
 
 ## 3. What the web app shows (portal)
 
-- **Balance widget:** JVRS balance per chain, labeled by network — `Local (Anvil fork)` and `Sepolia`. USDC shown alongside (rails already surface USDC).
+- **Balance widget:** JYVE balance per chain, labeled by network — `Local (Anvil fork)` and `Sepolia`. USDC shown alongside (rails already surface USDC).
 - **Bridge screen:**
   - Source chain → dest chain selector (swap arrow to flip direction).
   - Amount input with max = source balance; validation against mint caps / bridge limits.
@@ -61,7 +74,7 @@ Minimal mechanism:
 ```
    LOCAL (Anvil fork)                         SEPOLIA
   ┌──────────────────┐                    ┌──────────────────┐
-  │  JVRS (ERC-20)   │                    │  JVRS (ERC-20)   │
+  │  JYVE (ERC-20)   │                    │  JYVE (ERC-20)   │
   │  BridgeLock      │                    │  BridgeMint      │
   └────────┬─────────┘                    └─────────┬────────┘
            │ user: lock(30, to)                     │ mint(30, to, srcTxId)
@@ -86,19 +99,22 @@ Minimal mechanism:
 
 ## 5. Cooperate with existing services
 
-- **Settlement Rails (`jayverse-rails`):** publishes JVRS addresses per network in `addresses.json` alongside USDC. Rails stays the single source of truth for "what token is at what address on what network." JVRS is listed as a first-class rail asset next to USDC.
-- **Verex (collateral / rewards):** verex mints/pays JVRS as reward on market resolution (via `MINTER_ROLE` or a payout treasury). Collateral can stay USDC; rewards denominated in JVRS. Verex calls the token, not the bridge.
-- **Personas (payments):** persona rental/usage is priced in JVRS; payment is a plain ERC-20 `transfer` (or `transferFrom` with approval) to the persona payee. No bridge involved unless payer and payee are on different chains.
+- **Settlement Rails (`jayverse-rails`):** publishes JYVE addresses per network in `addresses.json` alongside USDC. Rails stays the single source of truth for "what token is at what address on what network." JYVE is listed as a first-class rail asset next to USDC.
+- **Verex (collateral / rewards):** verex mints/pays JYVE as reward on market resolution (via `MINTER_ROLE` or a payout treasury). Collateral can stay USDC; rewards denominated in JYVE. Verex calls the token, not the bridge.
+- **Personas (payments):** persona rental/usage is priced in JYVE; payment is a plain ERC-20 `transfer` (or `transferFrom` with approval) to the persona payee. No bridge involved unless payer and payee are on different chains.
 - **Wallet service (`jayverse-wallet`):** holds keys / signs all user actions — token transfers, bridge `lock`/`burn` transactions. The bridge screen asks the wallet service to sign; the relayer uses its own dedicated key, never a user key.
 
-Each service depends only on the JVRS contract + rails config; only the bridge screen and relayer touch the bridge contracts.
+Each service depends only on the JYVE contract + rails config; only the bridge screen and relayer touch the bridge contracts.
 
 ---
 
 ## 6. Implementation sketch
 
+**Repo layout:** one `jayverse-token` repo with packages `token/`, `exchange/`, `bridge/` (+ a shared `relayer/` worker). One economic unit, always deployed together; a fresh clone builds all three.
+
 **New:**
-- `JVRS.sol` — ERC-20 (OZ), `MINTER_ROLE`, per-address + global mint caps.
+- `JYVE.sol` — ERC-20 (OZ), `MINTER_ROLE`, per-address + global mint caps.
+- `Exchange.sol` — constant-product AMM for `JYVE/USDC`: `addLiquidity`/`removeLiquidity`, `swap`, and a `getPrice()` view (`usdcReserve * 1e18 / jyveReserve`) that every service reads as the JYVE price. Seed the pool at deploy so a price exists from block one. (No oracle: nothing external prices a made-up token.)
 - `BridgeLock.sol` (home chain) — `lock(amount, to)` escrows tokens, emits `Locked(id, to, amount)`; `release(id, to, amount)` callable only by relayer, guarded by `processed[id]`.
 - `BridgeMint.sol` (dest chain) — `mint(id, to, amount)` relayer-only + `processed[id]`; `burn(amount, to)` for the reverse leg emitting `Burned(id, to, amount)`.
   - *Alt (simpler first cut):* skip a dest contract and use a **relayer script** that mints via the token's `MINTER_ROLE` on the dest and locks via a vault on the source — same semantics, less contract surface. Decide in review.
@@ -118,7 +134,8 @@ Each service depends only on the JVRS contract + rails config; only the bridge s
 - **Reorgs on Sepolia** — wait N confirmations before minting; the fork side is deterministic.
 
 **Open questions (for jay):**
-1. **Do we even need a real bridge for a fork?** A fork already starts from Sepolia state. A **faucet-mirror** — mint the same JVRS balance on both networks via a script — may satisfy every dev/demo need with far less machinery. Real value of the lock/mint bridge is exercising the *UX and accounting* ahead of CCIP. Is that worth it now, or defer until a service truly leaves the home chain?
-2. **JVRS vs §7's "no new token" decision** — do we introduce JVRS ecosystem-wide, or keep USDC as the ledger unit and treat JVRS as a rewards/points token only?
+1. **Do we even need a real bridge for a fork?** A fork already starts from Sepolia state. A **faucet-mirror** — mint the same JYVE balance on both networks via a script — may satisfy every dev/demo need with far less machinery. Real value of the lock/mint bridge is exercising the *UX and accounting* ahead of CCIP. Is that worth it now, or defer until a service truly leaves the home chain?
+2. **JYVE vs §7's "no new token" decision** — do we introduce JYVE ecosystem-wide, or keep USDC as the ledger unit and treat JYVE as a rewards/points token only?
 3. **Mint authority** — one shared treasury with `MINTER_ROLE`, or per-service minters (verex, game) with individual caps?
-4. **Symbol** — confirm **JVRS** over `JVS`.
+4. **Symbol — resolved (jay, 2026-09-08):** **`JYVE`** (read "jive"), replacing the earlier `JVRS`/`JVS`.
+5. **Pricing — resolved (jay, 2026-09-08):** a `JYVE/USDC` mini-AMM in the same `jayverse-token` repo is the on-chain price source; an oracle is not used (it can't price a self-made token). Open sub-question: seed price + initial liquidity depth for the demo pool.
