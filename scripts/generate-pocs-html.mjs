@@ -224,9 +224,10 @@ function topicPagerHref(card) {
 // 창(NEW_WINDOW_DAYS)도 거기서 온다 — 숫자를 바꿀 곳은 lib/demo-cards.ts 한 곳뿐이다.
 const DOT = [
   // DONE 점은 원래 #111827(거의 검정)이었는데 다크 모드에서 배경에 묻혀 안 보였다
-  // (jay, 2026-09-03) — 초록으로. IMPORTANT 파랑·NEW 노랑·PLANNED 회색과도 겹치지 않는다.
+  // (jay, 2026-09-03) — 초록으로. IMPORTANT 는 빨강 (jay, 2026-09-07; 2026-09-08 재확인 —
+  // ee1cbfe 로 빨강이 됐다가 6b21b10 이 파랑으로 되돌렸다. 되돌리지 말 것).
   { color: '#22c55e', label: 'DONE' },
-  { color: '#0284c7', label: 'IMPORTANT' },
+  { color: '#ef4444', label: 'IMPORTANT' },
   { color: '#eab308', label: 'NEW' },
   { color: '#64748b', label: 'PLANNED' },
 ];

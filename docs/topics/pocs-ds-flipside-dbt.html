@@ -81,6 +81,15 @@
     color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
   }
   .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  /* Important/All 등급 토글 (jay, 2026-09-08) — 진입 시 기본은 Important. */
+  .rail-tier { display:flex; gap:6px; margin-bottom:8px; }
+  .rail-tier .tier-btn {
+    flex:1 1 auto; padding:6px 10px; font:inherit; font-size:0.78rem; font-weight:600;
+    color:var(--text2); background:var(--card); border:1px solid var(--border);
+    border-radius:8px; cursor:pointer;
+  }
+  .rail-tier .tier-btn:hover { color:var(--text); }
+  .rail-tier .tier-btn.on { color:var(--accent); border-color:var(--accent); background:var(--accent-soft); }
   .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
   .nav-group + .nav-group { margin-top:14px; }
   .nav-group-label {
@@ -146,7 +155,7 @@
   .topic-head { display:flex; gap:10px; align-items:baseline; }
   .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
   /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
-  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; }
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; padding-right:.4em; } /* 3자리 번호가 제목에 붙던 것(146The…) — 고정 간격 (2026-09-08) */
   article h1 .topic-no { font-size:0.72em; }
   .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
   .topic-done { flex:0 0 auto; }
@@ -343,46 +352,49 @@
     <div class="rail-head">
       <a class="rail-title" href="../index.html">Rabbit</a>
       
-      <div class="rail-jump"><a href="../pocs.html#sec-blockchain" title="Blockchain &mdash; done (34) / all (109)">Blockchain<b><span class="count-done">34</span><span class="count-all">/109</span></b></a><a href="../pocs.html#sec-economics" title="Economics/DataScience &mdash; done (0) / all (31)">Economics/DataScience<b><span class="count-done">0</span><span class="count-all">/31</span></b></a><a href="../pocs.html#sec-future" title="Robot/Security &mdash; done (0) / all (64)">Robot/Security<b><span class="count-done">0</span><span class="count-all">/64</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; done (3) / all (100)">Algorithms<b><span class="count-done">3</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; done (3) / all (52)">Math<b><span class="count-done">3</span><span class="count-all">/52</span></b></a></div>
+      <div class="rail-jump"><a href="../pocs.html#sec-blockchain" title="Blockchain &mdash; done (39) / all (112)">Blockchain<b><span class="count-done">39</span><span class="count-all">/112</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; done (0) / all (33)">Economics<b><span class="count-done">0</span><span class="count-all">/33</span></b></a><a href="../pocs.html#sec-future" title="Future/Etc &mdash; done (0) / all (68)">Future/Etc<b><span class="count-done">0</span><span class="count-all">/68</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; done (3) / all (100)">Algorithms<b><span class="count-done">3</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; done (3) / all (52)">Math<b><span class="count-done">3</span><span class="count-all">/52</span></b></a></div>
     </div>
     <div class="rail-search">
+      
       <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
     </div>
     <nav class="rail-nav" id="nav">
       <div class="nav-group" id="nav-sec-economics" data-group>
-        <p class="nav-group-label">Economics/DataScience (31)</p>
+        <p class="nav-group-label">Economics (33)</p>
         <ul>
-        <li><a class="nav-link" href="pocs-indicators-add-a-decision.html" data-key="indicators-add-a-decision"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">110</span>An indicator adds no information — it adds a decision</span></a></li>
-        <li><a class="nav-link" href="pocs-two-channels-of-a-war.html" data-key="two-channels-of-a-war"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">111</span>War headlines, falling gold — a geopolitical shock arrives on two wires</span></a></li>
-        <li><a class="nav-link" href="pocs-eighty-percent-is-sports.html" data-key="eighty-percent-is-sports"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">112</span>Kalshi passes Polymarket — and 80% of the win is sports</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-regression-ols.html" data-key="ds-regression-ols"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">113</span>OLS regression — the line that assumes it caused something</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-time-series-arima.html" data-key="ds-time-series-arima"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">114</span>Time-series forecasting — ARIMA and why most series are not stationary</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-bayesian-inference.html" data-key="ds-bayesian-inference"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">115</span>Bayesian inference — a prior is an assumption you have to write down</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-monte-carlo.html" data-key="ds-monte-carlo"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">116</span>Monte Carlo — simulating the distribution you cannot solve for</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-ab-testing.html" data-key="ds-ab-testing"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">117</span>A/B testing — the p-value that a peeked experiment inflates</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-causal-inference.html" data-key="ds-causal-inference"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">118</span>Causal inference — DiD, IV, and RDD when you cannot randomize</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-clustering.html" data-key="ds-clustering"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">119</span>Clustering — k-means finds groups even when there are none</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-dimensionality-pca.html" data-key="ds-dimensionality-pca"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">120</span>PCA — compressing dimensions and the meaning that leaks out</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-gradient-boosting.html" data-key="ds-gradient-boosting"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">121</span>Gradient boosting — XGBoost wins the leaderboard and hides the reason</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-cross-validation.html" data-key="ds-cross-validation"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">122</span>Cross-validation — the honest way to fail before you ship</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-anomaly-detection.html" data-key="ds-anomaly-detection"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">123</span>Anomaly detection — the alert that fires on everything or nothing</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-survival-analysis.html" data-key="ds-survival-analysis"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">124</span>Survival analysis — churn is a time-to-event, not a yes/no</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-cohort-analysis.html" data-key="ds-cohort-analysis"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">125</span>Cohort analysis — the retention curve a single average hides</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-var-cointegration.html" data-key="ds-var-cointegration"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">126</span>Cointegration — two prices that wander together are a trade</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-extreme-value.html" data-key="ds-extreme-value"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">127</span>Extreme value theory — the tail is a different distribution</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-dune-analytics.html" data-key="ds-dune-analytics"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">128</span>Dune — on-chain analytics is SQL over a decoded ledger</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-the-graph-subgraph.html" data-key="ds-the-graph-subgraph"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">129</span>The Graph — a subgraph is an index you have to design</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-onchain-labels.html" data-key="ds-onchain-labels"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">130</span>Address labeling — analytics is only as good as its entity map</span></a></li>
-        <li><a class="nav-link active" href="pocs-ds-flipside-dbt.html" data-key="ds-flipside-dbt"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">131</span>Flipside and dbt — modeling on-chain data like a warehouse</span></a></li>
-        <li><a class="nav-link" href="pocs-ds-feature-engineering.html" data-key="ds-feature-engineering"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">132</span>Feature engineering — the model is mostly the features</span></a></li>
-        <li><a class="nav-link" href="pocs-revision-is-the-fourth-column.html" data-key="revision-is-the-fourth-column"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">133</span>The fourth column: the −23,000 that a dozen notes cited never existed</span></a></li>
-        <li><a class="nav-link" href="pocs-a-good-bet-that-lost.html" data-key="a-good-bet-that-lost"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">134</span>A good bet that lost looks exactly like a bad bet that lost</span></a></li>
-        <li><a class="nav-link" href="pocs-where-yield-comes-from.html" data-key="where-yield-comes-from"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">135</span>Every yield is somebody's cost — the three places it can come from</span></a></li>
-        <li><a class="nav-link" href="pocs-gross-over-net.html" data-key="gross-over-net"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">136</span>Gross over net — the recycling multiple</span></a></li>
-        <li><a class="nav-link" href="pocs-risk-free-rate-is-the-floor.html" data-key="risk-free-rate-is-the-floor"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">137</span>The risk-free rate is the floor under every yield</span></a></li>
-        <li><a class="nav-link" href="pocs-m2-and-the-dollar.html" data-key="m2-and-the-dollar"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">138</span>M2, the dollar, and why crypto is a liquidity trade</span></a></li>
-        <li><a class="nav-link" href="pocs-lp-is-a-short-volatility-position.html" data-key="lp-is-a-short-volatility-position"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">139</span>Providing liquidity is selling volatility, and the loss is not impermanent</span></a></li>
-        <li><a class="nav-link" href="pocs-fees-over-security-budget.html" data-key="fees-over-security-budget"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">140</span>Does a chain pay for its own security?</span></a></li>
+        <li><a class="nav-link" href="pocs-indicators-add-a-decision.html" data-key="indicators-add-a-decision"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">113</span>An indicator adds no information — it adds a decision</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-regression-ols.html" data-key="ds-regression-ols"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">114</span>OLS regression — the line that assumes it caused something</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-time-series-arima.html" data-key="ds-time-series-arima"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">115</span>Time-series forecasting — ARIMA and why most series are not stationary</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-bayesian-inference.html" data-key="ds-bayesian-inference"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">116</span>Bayesian inference — a prior is an assumption you have to write down</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-monte-carlo.html" data-key="ds-monte-carlo"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">117</span>Monte Carlo — simulating the distribution you cannot solve for</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-ab-testing.html" data-key="ds-ab-testing"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">118</span>A/B testing — the p-value that a peeked experiment inflates</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-causal-inference.html" data-key="ds-causal-inference"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">119</span>Causal inference — DiD, IV, and RDD when you cannot randomize</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-clustering.html" data-key="ds-clustering"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">120</span>Clustering — k-means finds groups even when there are none</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-dimensionality-pca.html" data-key="ds-dimensionality-pca"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">121</span>PCA — compressing dimensions and the meaning that leaks out</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-gradient-boosting.html" data-key="ds-gradient-boosting"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">122</span>Gradient boosting — XGBoost wins the leaderboard and hides the reason</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-cross-validation.html" data-key="ds-cross-validation"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">123</span>Cross-validation — the honest way to fail before you ship</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-anomaly-detection.html" data-key="ds-anomaly-detection"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">124</span>Anomaly detection — the alert that fires on everything or nothing</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-survival-analysis.html" data-key="ds-survival-analysis"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">125</span>Survival analysis — churn is a time-to-event, not a yes/no</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-cohort-analysis.html" data-key="ds-cohort-analysis"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">126</span>Cohort analysis — the retention curve a single average hides</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-var-cointegration.html" data-key="ds-var-cointegration"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">127</span>Cointegration — two prices that wander together are a trade</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-extreme-value.html" data-key="ds-extreme-value"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">128</span>Extreme value theory — the tail is a different distribution</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-dune-analytics.html" data-key="ds-dune-analytics"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">129</span>Dune — on-chain analytics is SQL over a decoded ledger</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-the-graph-subgraph.html" data-key="ds-the-graph-subgraph"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">130</span>The Graph — a subgraph is an index you have to design</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-onchain-labels.html" data-key="ds-onchain-labels"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">131</span>Address labeling — analytics is only as good as its entity map</span></a></li>
+        <li><a class="nav-link active" href="pocs-ds-flipside-dbt.html" data-key="ds-flipside-dbt"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">132</span>Flipside and dbt — modeling on-chain data like a warehouse</span></a></li>
+        <li><a class="nav-link" href="pocs-ds-feature-engineering.html" data-key="ds-feature-engineering"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">133</span>Feature engineering — the model is mostly the features</span></a></li>
+        <li><a class="nav-link" href="pocs-revision-is-the-fourth-column.html" data-key="revision-is-the-fourth-column"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">134</span>The fourth column: the −23,000 that a dozen notes cited never existed</span></a></li>
+        <li><a class="nav-link" href="pocs-chain-becomes-a-token.html" data-key="chain-becomes-a-token"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">135</span>When a chain can't defend itself, it becomes a token on one that can</span></a></li>
+        <li><a class="nav-link" href="pocs-eth-money-or-fuel.html" data-key="eth-money-or-fuel"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">136</span>When nobody needs to hold ETH, is ETH money or fuel?</span></a></li>
+        <li><a class="nav-link" href="pocs-a-good-bet-that-lost.html" data-key="a-good-bet-that-lost"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">137</span>A good bet that lost looks exactly like a bad bet that lost</span></a></li>
+        <li><a class="nav-link" href="pocs-where-yield-comes-from.html" data-key="where-yield-comes-from"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">138</span>Every yield is somebody's cost — the three places it can come from</span></a></li>
+        <li><a class="nav-link" href="pocs-gross-over-net.html" data-key="gross-over-net"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">139</span>Gross over net — the recycling multiple</span></a></li>
+        <li><a class="nav-link" href="pocs-risk-free-rate-is-the-floor.html" data-key="risk-free-rate-is-the-floor"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">140</span>The risk-free rate is the floor under every yield</span></a></li>
+        <li><a class="nav-link" href="pocs-m2-and-the-dollar.html" data-key="m2-and-the-dollar"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">141</span>M2, the dollar, and why crypto is a liquidity trade</span></a></li>
+        <li><a class="nav-link" href="pocs-lp-is-a-short-volatility-position.html" data-key="lp-is-a-short-volatility-position"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">142</span>Providing liquidity is selling volatility, and the loss is not impermanent</span></a></li>
+        <li><a class="nav-link" href="pocs-fees-over-security-budget.html" data-key="fees-over-security-budget"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">143</span>Does a chain pay for its own security?</span></a></li>
+        <li><a class="nav-link" href="pocs-two-channels-of-a-war.html" data-key="two-channels-of-a-war"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">144</span>War headlines, falling gold — a geopolitical shock arrives on two wires</span></a></li>
+        <li><a class="nav-link" href="pocs-eighty-percent-is-sports.html" data-key="eighty-percent-is-sports"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">145</span>Kalshi passes Polymarket — and 80% of the win is sports</span></a></li>
         </ul>
       </div>
       <p class="no-results" id="no-results">No match.</p>
@@ -393,7 +405,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Flipside and dbt — modeling on-chain data like a warehouse</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#131</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#132</span><span>PoC</span></p>
       <h1>Flipside and dbt — modeling on-chain data like a warehouse</h1>
       <p class="lead">Flipside exposes curated chain tables and dbt turns ad-hoc queries into versioned, tested data models — the difference between a one-off chart and a metric a team can trust twice.</p>
       <p class="meta">Not yet scoped.</p>
@@ -424,7 +436,7 @@
       
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-ds-onchain-labels.html">&larr; 130. Address labeling — analytics is only as good as its entity map</a><a href="pocs-ds-feature-engineering.html">132. Feature engineering — the model is mostly the features &rarr;</a></div>
+    <div class="pager"><a href="pocs-ds-onchain-labels.html">&larr; 131. Address labeling — analytics is only as good as its entity map</a><a href="pocs-ds-feature-engineering.html">133. Feature engineering — the model is mostly the features &rarr;</a></div>
   </div>
   </main>
 </div>
@@ -434,11 +446,16 @@
   const links = [...document.querySelectorAll('.nav-link')];
   const groups = [...document.querySelectorAll('[data-group]')];
   const noResults = document.getElementById('no-results');
-  input.addEventListener('input', () => {
+  // 레일 필터 = 텍스트 질의 + 등급 모드(Important/All)의 합성. 등급 토글이 없는 페이지에서는
+  // tierMode 가 'all' 로 남아 예전과 완전히 동일하게 동작한다 (jay, 2026-09-08).
+  const tierBtns = [...document.querySelectorAll('.rail-tier .tier-btn')];
+  let tierMode = tierBtns.some((b) => b.dataset.tierMode === 'important') ? 'important' : 'all';
+  const isImportant = (a) => { const d = a.querySelector('.nav-dot'); return !!d && d.title === 'IMPORTANT'; };
+  function applyFilter() {
     const q = input.value.trim().toLowerCase();
     let shown = 0;
     for (const a of links) {
-      const hit = !q || a.textContent.toLowerCase().includes(q);
+      const hit = (!q || a.textContent.toLowerCase().includes(q)) && (tierMode === 'all' || isImportant(a));
       a.parentElement.style.display = hit ? '' : 'none';
       if (hit) shown++;
     }
@@ -447,7 +464,17 @@
       g.style.display = any ? '' : 'none';
     }
     noResults.style.display = shown ? 'none' : 'block';
-  });
+  }
+  input.addEventListener('input', applyFilter);
+  for (const b of tierBtns) {
+    b.addEventListener('click', () => {
+      tierMode = b.dataset.tierMode;
+      for (const x of tierBtns) { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+      applyFilter();
+    });
+  }
+  // 진입 시 기본값: 등급 토글이 있으면 Important 만 보여 준다 (jay, 2026-09-08).
+  if (tierBtns.length) applyFilter();
 
   // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
   // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
