@@ -144,16 +144,13 @@ const CARD_GROUPS = [
   },
   {
     id: 'economics',
-    // 2026-09-07 (jay): Economics -> "Economics/DataScience". id 는 'economics' 로 두므로
-    // 카드의 group 값과 #sec-economics 앵커는 그대로다 — 바뀐 것은 표시 이름과 범위뿐.
-    title: 'Economics/DataScience',
-    lead: 'The money logic underneath all of it &mdash; where a yield actually comes from, what a headline number is really counting &mdash; plus the data-science toolbox that turns those numbers into defensible claims.',
+    title: 'Economics',
+    lead: 'The money logic underneath all of it &mdash; where a yield actually comes from, what a headline number is really counting, and the handful of macro facts that move every price on this list.',
   },
   {
     id: 'future',
-    // 2026-09-07 (jay): Future/Etc -> "Robot/Security". id 는 'future' 로 유지 (앵커·group 불변).
-    title: 'Robot/Security',
-    lead: 'Robotics and embodied AI, the security incidents worth learning from one at a time, and the LLM techniques underneath the agents &mdash; still the honest catch-all for what fits nowhere else.',
+    title: 'Future/Etc',
+    lead: 'Robotics, embodied AI and data-science method, plus anything that does not belong to a section above &mdash; the catch-all, kept honest about what is a demo and what is a cost curve.',
   },
 ];
 // group 을 안 붙인 카드가 전부 Blockchain 으로 온다 (2026-08-29 에 Protocol+Applied 를
@@ -229,9 +226,7 @@ const DOT = [
   // DONE 점은 원래 #111827(거의 검정)이었는데 다크 모드에서 배경에 묻혀 안 보였다
   // (jay, 2026-09-03) — 초록으로. IMPORTANT 파랑·NEW 노랑·PLANNED 회색과도 겹치지 않는다.
   { color: '#22c55e', label: 'DONE' },
-  // IMPORTANT 는 파랑(#0284c7)이었는데 빨강으로 (jay, 2026-09-06) — "중요"가 색으로도
-  // 급해 보이게. DONE 초록·NEW 노랑·PLANNED 회색과 겹치지 않고 다크 모드에서도 선다.
-  { color: '#ef4444', label: 'IMPORTANT' },
+  { color: '#0284c7', label: 'IMPORTANT' },
   { color: '#eab308', label: 'NEW' },
   { color: '#64748b', label: 'PLANNED' },
 ];
@@ -636,6 +631,8 @@ fs.writeFileSync(
     railTitle: 'Rabbit',
     railTitleHref: 'index.html',
     filterPlaceholder: 'Filter PoCs',
+    // 진입 시 왼쪽 레일 기본값을 Important 항목으로 (jay, 2026-09-08). All 로 전환 가능.
+    railTierToggle: true,
     navGroups,
     railJump,
     railNote: doneNote,

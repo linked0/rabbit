@@ -109,6 +109,15 @@ const PAGE_CSS = `
     color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
   }
   .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  /* Important/All 등급 토글 (jay, 2026-09-08) — 진입 시 기본은 Important. */
+  .rail-tier { display:flex; gap:6px; margin-bottom:8px; }
+  .rail-tier .tier-btn {
+    flex:1 1 auto; padding:6px 10px; font:inherit; font-size:0.78rem; font-weight:600;
+    color:var(--text2); background:var(--card); border:1px solid var(--border);
+    border-radius:8px; cursor:pointer;
+  }
+  .rail-tier .tier-btn:hover { color:var(--text); }
+  .rail-tier .tier-btn.on { color:var(--accent); border-color:var(--accent); background:var(--accent-soft); }
   .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
   .nav-group + .nav-group { margin-top:14px; }
   .nav-group-label {
@@ -375,6 +384,10 @@ function railHtml(o, navGroupsHtml) {
       ${o.railJump ? `<div class="rail-jump">${o.railJump}</div>` : ''}
     </div>
     <div class="rail-search">
+      ${o.railTierToggle ? `<div class="rail-tier" role="group" aria-label="Show which items">
+        <button type="button" class="tier-btn on" data-tier-mode="important" aria-pressed="true">Important</button>
+        <button type="button" class="tier-btn" data-tier-mode="all" aria-pressed="false">All</button>
+      </div>` : ''}
       <input id="filter" type="search" placeholder="${escapeHtml(o.filterPlaceholder)}" aria-label="${escapeHtml(o.filterPlaceholder)}" autocomplete="off">
     </div>
     <nav class="rail-nav" id="nav">
@@ -450,11 +463,16 @@ const RAIL_SCRIPT = String.raw`
   const links = [...document.querySelectorAll('.nav-link')];
   const groups = [...document.querySelectorAll('[data-group]')];
   const noResults = document.getElementById('no-results');
-  input.addEventListener('input', () => {
+  // 레일 필터 = 텍스트 질의 + 등급 모드(Important/All)의 합성. 등급 토글이 없는 페이지에서는
+  // tierMode 가 'all' 로 남아 예전과 완전히 동일하게 동작한다 (jay, 2026-09-08).
+  const tierBtns = [...document.querySelectorAll('.rail-tier .tier-btn')];
+  let tierMode = tierBtns.some((b) => b.dataset.tierMode === 'important') ? 'important' : 'all';
+  const isImportant = (a) => { const d = a.querySelector('.nav-dot'); return !!d && d.title === 'IMPORTANT'; };
+  function applyFilter() {
     const q = input.value.trim().toLowerCase();
     let shown = 0;
     for (const a of links) {
-      const hit = !q || a.textContent.toLowerCase().includes(q);
+      const hit = (!q || a.textContent.toLowerCase().includes(q)) && (tierMode === 'all' || isImportant(a));
       a.parentElement.style.display = hit ? '' : 'none';
       if (hit) shown++;
     }
@@ -463,7 +481,17 @@ const RAIL_SCRIPT = String.raw`
       g.style.display = any ? '' : 'none';
     }
     noResults.style.display = shown ? 'none' : 'block';
-  });
+  }
+  input.addEventListener('input', applyFilter);
+  for (const b of tierBtns) {
+    b.addEventListener('click', () => {
+      tierMode = b.dataset.tierMode;
+      for (const x of tierBtns) { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+      applyFilter();
+    });
+  }
+  // 진입 시 기본값: 등급 토글이 있으면 Important 만 보여 준다 (jay, 2026-09-08).
+  if (tierBtns.length) applyFilter();
 
   // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
   // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
