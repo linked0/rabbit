@@ -185,9 +185,17 @@
 - **Risk**: the single most expensive line in the diagram to operate — hence "start at last" is the right call; local learning now, production maybe never.
 - **PoC links**: `choosing-a-chain-is-a-lease`, `l2-finality-three-clocks`, `l1-data-pricing-dimensions`.
 
-## 10.Dark Horse
-- This will be tackled later after some of the previous services are built
-- PoCs items
+## 10. Dark Horse (candidate tracks)
+- Not committed services like #1–9 — **candidates** to pick up after some of the core is built.
+- **(a) L1/L2** — the own-chain ambition (start-at-last, supersim local on-ramp). Full writeup at
+  §9 above; listed here because it is a candidate, not a committed build.
+- **(b) 보안 취약점 연구 (Security-hole research)** — the offensive-security muscle; full writeup in
+  the ETC section below.
+- (also on the radar: **데이터 과학 / data science** — pandas/numpy, Dune/The Graph; see the PoC
+  "Essential Math for Data Science".)
+- PoC items feed these candidates before any one of them graduates to a numbered service.
+- Mirrored on the design hub: [`../features/README-Jayverse.md`](../features/README-Jayverse.md)
+  "Dark Horse — candidate tracks (#10)".
 
 ## ETC
 ### 보안 취약점 연구 (Security-hole research)

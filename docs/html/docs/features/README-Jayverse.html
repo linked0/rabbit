@@ -202,8 +202,36 @@ the existing services so they cooperate rather than sit alone.</p>
 <td>Authority-matrix report — scenario, web app, flow</td>
 <td>drafting</td>
 </tr>
+<tr>
+<td>9</td>
+<td>Base App — Mini App</td>
+<td><a href="jayverse-base-app.html">jayverse-base-app.md</a></td>
+<td>What a Base App Mini App <strong>buys</strong> (funded passkey account, inline market open) vs <strong>rents</strong> (discovery, review, jurisdiction) — strategy draft, plan later</td>
+<td>drafting</td>
+</tr>
 </tbody></table>
-<p><em>(§9 L2 has no design comment yet — it stays &quot;start at last&quot; per the plan.)</em></p>
+<p><em>(#1–8 are the committed services; #9 Base App is a strategy draft jay will plan later. Tracks that are <strong>not</strong> committed services live in the Dark Horse section below.)</em></p>
+<h2>Dark Horse — candidate tracks (#10)</h2>
+<p>Not committed services like #1–9 — <strong>candidates</strong> to pick up after the core is built. Full detail
+(steps, risks, PoC links) is in the umbrella plan
+<a href="../tasks/09-02-jayverse.html"><code>../tasks/09-02-jayverse.md</code></a> §10; summarized here.</p>
+<h3>(a) L1/L2 — our own chain (start at last)</h3>
+<p>The own-chain ambition, explicitly <strong>start-at-last</strong>, with <strong>supersim</strong> as the local on-ramp. No
+repo yet — a <code>docs/</code> research folder first, infra-as-code only if we truly commit. The single most
+expensive line in the architecture to operate, so: learn locally now, production maybe never. PoC
+links: <code>choosing-a-chain-is-a-lease</code>, <code>l2-finality-three-clocks</code>, <code>l1-data-pricing-dimensions</code>.
+(Plan §9 has the full writeup.)</p>
+<h3>(b) Security-hole research (보안 취약점 연구)</h3>
+<p>The offensive-security muscle of Jayverse — study the exploit classes that actually drain protocols
+(reentrancy, price-oracle manipulation, access-control gaps, signature/permit replay, bridge
+message-validation bugs, proxy/upgradeability pitfalls, and the one we ourselves ship: 7702/7715
+session-key scope abuse) and run them against <strong>our own contracts on a local fork before anyone else
+does</strong>. Dark horse because it compounds across every service — verex caps, the bridge&#39;s 1:1 vault
+invariant, the wallet&#39;s session keys, the agent&#39;s mandate enforcers are all attack surfaces — and it
+pairs with data-science (exploit detection is on-chain analysis). Skills: Foundry fuzz/invariant
+testing, Slither/Aderyn, Echidna, fork-based exploit reproduction, later Halmos/Certora.
+<strong>Dual-use guardrail:</strong> exploits live on local forks only; external findings go through responsible
+disclosure, always. (Plan ETC section has the full writeup.)</p>
 <p>Every doc is a <strong>design draft for review</strong>, not built work — the implementation status stays in the
 umbrella plan&#39;s Remaining sections and in each service repo.</p>
 

@@ -101,8 +101,34 @@ the existing services so they cooperate rather than sit alone.
 | 6 | Wallet & simulate-before-sign | [jayverse-wallet.md](jayverse-wallet.md) | Embedded wallet + tx simulation — scenario, web app, flow | drafting |
 | 7 | Token + Exchange + Bridge | [jayverse-token-bridge.md](jayverse-token-bridge.md) | **JYVE** ecosystem coin + mini-AMM price + Anvil ⇄ Sepolia bridge (one `jayverse-token` repo) | drafting |
 | 8 | Authority Auditor | [jayverse-auditor.md](jayverse-auditor.md) | Authority-matrix report — scenario, web app, flow | drafting |
+| 9 | Base App — Mini App | [jayverse-base-app.md](jayverse-base-app.md) | What a Base App Mini App **buys** (funded passkey account, inline market open) vs **rents** (discovery, review, jurisdiction) — strategy draft, plan later | drafting |
 
-*(§9 L2 has no design comment yet — it stays "start at last" per the plan.)*
+*(#1–8 are the committed services; #9 Base App is a strategy draft jay will plan later. Tracks that are **not** committed services live in the Dark Horse section below.)*
+
+## Dark Horse — candidate tracks (#10)
+
+Not committed services like #1–9 — **candidates** to pick up after the core is built. Full detail
+(steps, risks, PoC links) is in the umbrella plan
+[`../tasks/09-02-jayverse.md`](../tasks/09-02-jayverse.md) §10; summarized here.
+
+### (a) L1/L2 — our own chain (start at last)
+The own-chain ambition, explicitly **start-at-last**, with **supersim** as the local on-ramp. No
+repo yet — a `docs/` research folder first, infra-as-code only if we truly commit. The single most
+expensive line in the architecture to operate, so: learn locally now, production maybe never. PoC
+links: `choosing-a-chain-is-a-lease`, `l2-finality-three-clocks`, `l1-data-pricing-dimensions`.
+(Plan §9 has the full writeup.)
+
+### (b) Security-hole research (보안 취약점 연구)
+The offensive-security muscle of Jayverse — study the exploit classes that actually drain protocols
+(reentrancy, price-oracle manipulation, access-control gaps, signature/permit replay, bridge
+message-validation bugs, proxy/upgradeability pitfalls, and the one we ourselves ship: 7702/7715
+session-key scope abuse) and run them against **our own contracts on a local fork before anyone else
+does**. Dark horse because it compounds across every service — verex caps, the bridge's 1:1 vault
+invariant, the wallet's session keys, the agent's mandate enforcers are all attack surfaces — and it
+pairs with data-science (exploit detection is on-chain analysis). Skills: Foundry fuzz/invariant
+testing, Slither/Aderyn, Echidna, fork-based exploit reproduction, later Halmos/Certora.
+**Dual-use guardrail:** exploits live on local forks only; external findings go through responsible
+disclosure, always. (Plan ETC section has the full writeup.)
 
 Every doc is a **design draft for review**, not built work — the implementation status stays in the
 umbrella plan's Remaining sections and in each service repo.
