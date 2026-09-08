@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ERC-8141 — PoCs</title>
+<title>The check passed; the number it trusted was already false — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -392,7 +392,7 @@
         <li><a class="nav-link" href="pocs-x402-settlement-retry.html" data-key="x402-settlement-retry"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">28</span>HTTP 402 is the easy part — settlement owns the retry</span></a></li>
         <li><a class="nav-link" href="pocs-safe-module-root-key.html" data-key="safe-module-root-key"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">29</span>A Safe module is a root key with an interface</span></a></li>
         <li><a class="nav-link" href="pocs-what-encryption-does-not-hide.html" data-key="what-encryption-does-not-hide"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">30</span>Hiding the amount is the easy half</span></a></li>
-        <li><a class="nav-link active" href="pocs-erc-8141.html" data-key="erc-8141"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">31</span>ERC-8141</span></a></li>
+        <li><a class="nav-link" href="pocs-erc-8141.html" data-key="erc-8141"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">31</span>ERC-8141</span></a></li>
         <li><a class="nav-link" href="pocs-receipt-is-not-settlement.html" data-key="receipt-is-not-settlement"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">32</span>A successful receipt is not settlement</span></a></li>
         <li><a class="nav-link" href="pocs-l2-finality-three-clocks.html" data-key="l2-finality-three-clocks"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">33</span>L2 finality is three clocks</span></a></li>
         <li><a class="nav-link" href="pocs-simulate-before-sign.html" data-key="simulate-before-sign"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">34</span>Simulation belongs before the wallet prompt</span></a></li>
@@ -428,7 +428,7 @@
         <li><a class="nav-link" href="pocs-refill-rate-is-the-real-cap.html" data-key="refill-rate-is-the-real-cap"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">64</span>A bridge's rate limit is not the loss cap — its refill speed is</span></a></li>
         <li><a class="nav-link" href="pocs-aa-standard-execution-split.html" data-key="aa-standard-execution-split"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">65</span>One AA spec, two execution models — or the EVM fragments</span></a></li>
         <li><a class="nav-link" href="pocs-interop-os-one-network.html" data-key="interop-os-one-network"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">66</span>&quot;As if all chains are one network&quot; is the value and the risk at once</span></a></li>
-        <li><a class="nav-link" href="pocs-invariant-is-the-live-check.html" data-key="invariant-is-the-live-check"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">67</span>The check passed; the number it trusted was already false</span></a></li>
+        <li><a class="nav-link active" href="pocs-invariant-is-the-live-check.html" data-key="invariant-is-the-live-check"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">67</span>The check passed; the number it trusted was already false</span></a></li>
         <li><a class="nav-link" href="pocs-storage-collision-admin-takeover.html" data-key="storage-collision-admin-takeover"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">68</span>The code was right and the layout was wrong</span></a></li>
         <li><a class="nav-link" href="pocs-dkg-resharing.html" data-key="dkg-resharing"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">69</span>The ceremony ends, the committee doesn't</span></a></li>
         <li><a class="nav-link" href="pocs-the-record-is-not-the-path.html" data-key="the-record-is-not-the-path"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">70</span>The record is not the path — a registry and a vault for the same problem</span></a></li>
@@ -491,358 +491,102 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ERC-8141</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The check passed; the number it trusted was already false</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#31</span><span>PoC</span></p>
-      <h1>ERC-8141</h1>
-      <p class="lead">Native account-abstraction explainer — Ethereum&#39;s protocol-level Frame Transactions.</p>
-      <p class="meta">Read-only explainer — no wallet needed.</p>
+      <p class="topic-kicker"><span class="topic-no">#67</span><span>PoC</span></p>
+      <h1>The check passed; the number it trusted was already false</h1>
+      <p class="lead">Blockstream confirmed the Liquid loss was an issuance bug, not an authorization bypass: the pegout verified correctly against a token that should never have existed. The defense in this class is not a better check but a live invariant — reserves = issuance, computed every block and wired to an automatic halt.</p>
+      <p class="meta">Not yet scoped — the deliverable is a list, not a build. Write down every equation in our system that must hold at all times and can be checked independently of the system&#39;s own bookkeeping — e.g. <code>total deposits = total minted</code>, <code>settlement sum = per-market sum</code>, <code>escrow balance &amp;gt;= open claims</code>. Beside each, name the single thing it automatically halts when it breaks (an alert nobody reads at 3am is not a defense). Source: Blockstream&#39;s post-mortem confirming an Elements issuance bug — LBTC minted improperly, the pegout processing it as a technically valid token; ~4,000 BTC / $320M / ~95% of reserves; attacker demanded &#39;fix the bug first&#39; via OP_RETURN + PGP, most funds pledged for return (not yet complete). Read against a runtime invariant-monitoring layer and Tenderly-style pre-execution simulation. Confirm against the primary post-mortem before relying on any detail.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# ERC-8141\n\nNative account-abstraction explainer — Ethereum's protocol-level Frame Transactions.\n\nRead-only explainer — no wallet needed.\n\n## Why\n\nA protocol-native preview of what this project's application-layer AA demos (session keys, atomic batching) do today with smart contracts and delegation — EIP-8141 proposes moving those same properties into Ethereum's base transaction format itself.\n\n## How it works\n\nNot a working demo by necessity: EIP-8141 defines a new transaction type where a single transaction carries a sequence of frames (a VERIFY frame for signature/fee authorization, then one or more EXECUTE frames) instead of one implicit call — but no client or RPC can send this transaction type yet, since it requires execution-layer support the network doesn't have. As of writing it's only \"considered for inclusion\" in a future fork, so this stays a diagram/explainer page rather than a live demo.\n\n### The ACDE readout, and the two kinds of \"no\" (2026-08-28)\n\nThe call was set to conclude between this proposal and EIP-8130, and as of writing no public readout confirms an outcome. What the developer timeline did in that gap is the useful part: **the argument moved off the content and onto the weight.** The recurring sentence was *\"the direction is right, but this is too heavy for the current stage\"* — and that is a **schedule objection, not a technical one**.\n\nThe distinction is worth holding onto because the two look identical from outside and demand opposite responses:\n\n| The objection | What it actually says | What you do next |\n| --- | --- | --- |\n| **\"This is wrong\"** | the design does not achieve the goal | change the design |\n| **\"This is not now\"** | the design is right and too large to land here | **split the scope** |\n\nHearing the second and redesigning is wasted work; hearing the first and merely deferring is worse. **The question to ask in the room is which one you are being given** — and the tell is usually whether the objection survives when you make the proposal smaller.\n\n## Review clarification\n\n### The basic concept, from zero\n\nEthereum has two kinds of accounts, and only the dumb one can act. An **EOA** can start transactions, but its rules are frozen into the protocol: one ECDSA key, one sequential nonce, fees paid by the sender in ETH, one call per transaction — lose the key, lose the account. A **contract account** is fully programmable but cannot initiate anything. **Account abstraction** is the project of erasing that split: let the account that acts also be programmable — in who may sign, how fees are paid, and what one transaction may contain.\n\nToday's AA is an emulation built one layer up: ERC-4337 rebuilt a transaction system out of contracts (UserOperations, bundlers, an EntryPoint), and EIP-7702 lets an EOA borrow contract code. It works, at the price of extra actors, extra gas, and extra trust surfaces. EIP-8141 proposes ending the emulation: a new base transaction type made of **frames** — one **VERIFY** frame (\"here is the proof this is authorized, and how fees get paid\") followed by one or more **EXECUTE** frames (the calls, atomically: all or nothing). The two jobs every transaction always had — prove it's allowed, then do things — become explicit, separate, programmable parts of the format itself.\n\n### The same action, three generations of code\n\nToday, the node's checks are hard-coded and unchangeable:\n\n```js\nassert(ecrecover(tx.sig) == tx.from);     // exactly one ECDSA key\nassert(tx.nonce == account.nonce);        // exactly one nonce\nassert(balance[tx.from] >= gas * price);  // sender pays, ETH only\ncall(tx.to, tx.data);                     // exactly one call\n```\n\nERC-4337 replays those checks inside a contract — `EntryPoint.handleOps` loops over UserOperations calling `account.validateUserOp` and then `account.execute`, with a bundler carrying the batch and a paymaster optionally paying. Every hop is the emulation tax.\n\nUnder EIP-8141 the node itself runs the loop the EntryPoint used to fake:\n\n```js\ntx = { type: FRAME_TX, frames: [\n  { kind: VERIFY,  target: myAccount,\n    input: { scheme: \"p256-passkey\", proof, feeToken: USDC } },\n  { kind: EXECUTE, target: USDC, data: approve(dex, 100e6) },\n  { kind: EXECUTE, target: dex,  data: swap(USDC, ETH, 100e6) },\n]}\n```\n\nand the account's own verify code is where the features live — a session key, natively:\n\n```solidity\nfunction verify(Proof p, Frame[] fs) external view returns (bool) {\n    if (p.signer == owner) return checkSig(p);\n    Session s = sessions[p.signer];              // a temporary key\n    require(block.timestamp \u003c s.expiry);         // ...that expires\n    require(allCallsTo(fs, s.allowedContract));  // ...only this app\n    require(totalValue(fs) \u003c= s.perTxLimit);     // ...small amounts\n    return checkSig(p);\n}\n```\n\n### Who it makes happy\n\n| Who | Today's pain | With frame transactions |\n| --- | --- | --- |\n| Users | Seed phrase or bust; approve-then-swap leaves a dangling approval; need ETH first | Passkey as the native key; approve+swap atomic; fees in tokens or sponsored |\n| Wallet builders | Run or rent bundler + paymaster infrastructure | Those services largely disappear; the chain validates directly |\n| dApp/game/agent builders | Session keys need a smart-wallet stack per provider | Bounded delegation is a base-layer feature |\n| The protocol | A parallel 4337 mempool; EntryPoint as a shared choke point | One canonical mempool, no single trusted contract |\n\nConcrete situations it improves: the dangling-approve accident (two EXECUTE frames make approval-without-swap impossible); onboarding without ETH (a sponsor pays inside VERIFY); lost-key recovery as account logic instead of a custodian's feature; the post-quantum migration (signature schemes become account code to upgrade, not protocol constants to fork); and agent commerce (an AI agent holding a session key with expiry, an allowed contract, and a per-transaction limit is delegation with a chosen blast radius).\n\nThe honest cost — and most of why ACDE said \"too heavy\": the VERIFY frame is arbitrary code deciding mempool validity *before anyone has paid*, so it must be strictly gas-bounded and cheaply re-checkable, or invalid transactions become a free DoS vector.\n\n### \"Then ERC-4337 could be sunsetted?\" (jay, 2026-09-03)\n\nRight direction, wrong tense. 4337 was always the stopgap — enshrinement was the stated endgame, and 8141's VERIFY/EXECUTE split is essentially `validateUserOp`/`execute` promoted into the transaction format. So 4337 doesn't get killed; it gets **absorbed** — the concepts survive as the contracts empty out. But the sunset is a decade-scale decay, for four reasons: nothing on Ethereum is ever removed (the EntryPoint is immortal, and millions of deployed and counterfactual smart-account addresses don't migrate themselves); the native-AA competition is unsettled (8141 vs 8130 vs Tempo — a workaround with users beats a proposal without a fork date); L2s break the symmetry (4337 works identically on every EVM chain today, while native AA lands chain by chain — cross-chain wallets may be its last stronghold); and the bundler/paymaster vendors will pivot to the new rails rather than defend the old ones, accelerating the very sunset that obsoletes them. As strategy — don't build a moat out of 4337 plumbing — the sentence is already true. As a forecast — traffic to zero — add ten years and an asterisk.\n\n### Progress (2026-09-08)\n\nVitalik's 9/6 Frames update reported movement: on the 8/27 call the proposal went CFI → SFI (considered → scheduled for inclusion), slotted for Hegotá (targeted 2027 Q2) alongside FOCIL. SFI is an assignment, not a completion — the tell to watch after the 9/10 devnet-priority list is whether a devnet actually attaches to 8141. Two framing notes. The headline 'pay gas in stablecoins' is a *consequence*, not the design: the design separates the three jobs that today share one signer — authorization, gas payment, execution — and stablecoin fees are what fall out once gas payment is its own strand inside VERIFY. And the competition is asymmetric on timing: rival EIP-8130 targets a Base deployment in September, so the L2 implementation becomes real before the L1 standard does — a workaround with users, again, outrunning a proposal with a fork date.\n\nThe same runtime-vs-spec point the invariant card makes applies to the objection here: `invariant-is-the-live-check` is why an enshrined VERIFY frame must be strictly gas-bounded and cheaply re-checkable — arbitrary validity code that runs before anyone pays is a premise the network cannot afford to trust unconditionally.\n"</script>
+      <script type="application/json" id="copy-en">"# The check passed; the number it trusted was already false\n\nBlockstream confirmed the Liquid loss was an issuance bug, not an authorization bypass: the pegout verified correctly against a token that should never have existed. The defense in this class is not a better check but a live invariant — reserves = issuance, computed every block and wired to an automatic halt.\n\nNot yet scoped — the deliverable is a list, not a build. Write down every equation in our system that must hold at all times and can be checked independently of the system's own bookkeeping — e.g. `total deposits = total minted`, `settlement sum = per-market sum`, `escrow balance >= open claims`. Beside each, name the single thing it automatically halts when it breaks (an alert nobody reads at 3am is not a defense). Source: Blockstream's post-mortem confirming an Elements issuance bug — LBTC minted improperly, the pegout processing it as a technically valid token; ~4,000 BTC / $320M / ~95% of reserves; attacker demanded 'fix the bug first' via OP_RETURN + PGP, most funds pledged for return (not yet complete). Read against a runtime invariant-monitoring layer and Tenderly-style pre-execution simulation. Confirm against the primary post-mortem before relying on any detail.\n\n## Why\n\n**An audit and an invariant answer different questions, and Liquid is the case that shows why you need both.** An audit asks *does the code match the spec* — a claim about the program, checked once, before deployment. An invariant asks *is this equation true right now* — a claim about the live state, checked every block. Liquid's code did what it was told: the pegout verified the token it was handed. The token was fraudulent, minted by an issuance bug upstream, and no amount of verifying the pegout could have known that — because **verification confirms a proof, it does not confirm the premise the proof rests on.** The premise, `mainnet reserves = issued LBTC`, was computable at all times and checked by nothing.\n\n**A good invariant has three properties, and the third is the one people skip.** It must be (1) *independently computable* — derivable without trusting the system's own internal state, or it just re-reads the lie; (2) *violation-is-meaningless* — if it is false, every downstream number is void, so there is no 'degraded mode' to limp along in; and (3) *wired to an automatic halt* — because an alert is a request for a human to notice, and the whole point is that the human did not. Reserves = issuance is the canonical example: independently checkable against the mainnet chain, catastrophic if false, cheap to stop the mint on.\n\n**Put the monitor somewhere the thing it watches cannot reach.** If the invariant checker runs on the same infrastructure and trust boundary as the signing and execution path, the compromise that breaks one breaks both — the watcher goes down with the watched. And tune it for a narrow *halt scope* rather than a loose threshold: a monitor that fires often gets muted, and a muted monitor is worse than none because it was believed.\n\n**Simulation is the same defense moved one step earlier.** Where the invariant asks *did the equation just break*, pre-execution simulation asks *would this transaction break it* — replaying the transaction against current state and reading the state diff before it is signed. Tooling like Tenderly (or a Foundry fork in CI) makes that a check on the mint transaction itself: a single alert on 'total issuance changed unexpectedly' is the shape of thing that would have caught this before the pegout ever saw the token. The pair — simulate before, invariant after — is one discipline: never trust a number your own system produced without an equation, computed elsewhere, that says the number is still true.\n\n## How it works\n\nReading note plus a scoping exercise, not a live demo yet.\n\n### The three-line output\n\nList the system's invariant candidates and, for each, the automatic stop:\n\n| Invariant (must always hold) | Independently computable from | Halts on violation |\n| --- | --- | --- |\n| total deposits = total minted | deposit contract + token supply | new mints |\n| settlement sum = per-market sum | market ledgers, summed | settlement writes |\n| escrow balance >= open claims | escrow account + claim registry | new claims |\n\n### Why this, and not more auditing\n\nLiquid was audited; it was not *invariant-monitored*. The failure was not a bug the audit missed in the code — it was a true statement about live state (`reserves \u003c issuance`) that nothing was computing. Auditing scales the confidence that the code matches the spec; it does nothing for the moment the inputs stop matching reality. The two are different defenses and neither substitutes for the other. Cross-refs: `foundry-invariant-reachability` (the same idea at test time — an invariant test only catches what its actions reach), `simulate-before-sign` (the pre-execution half), `who-holds-the-mint` (the mint is exactly the privileged write an invariant should bound), and `receipt-is-not-settlement` (a success flag is not proof the state is sound).\n"</script>
       <h2>Why</h2>
-      <p>A protocol-native preview of what this project&#39;s application-layer AA demos (session keys, atomic batching) do today with smart contracts and delegation — EIP-8141 proposes moving those same properties into Ethereum&#39;s base transaction format itself.</p>
+      <p><strong>An audit and an invariant answer different questions, and Liquid is the case that shows why you need both.</strong> An audit asks <em>does the code match the spec</em> — a claim about the program, checked once, before deployment. An invariant asks <em>is this equation true right now</em> — a claim about the live state, checked every block. Liquid&#39;s code did what it was told: the pegout verified the token it was handed. The token was fraudulent, minted by an issuance bug upstream, and no amount of verifying the pegout could have known that — because <strong>verification confirms a proof, it does not confirm the premise the proof rests on.</strong> The premise, <code>mainnet reserves = issued LBTC</code>, was computable at all times and checked by nothing.</p>
+<p><strong>A good invariant has three properties, and the third is the one people skip.</strong> It must be (1) <em>independently computable</em> — derivable without trusting the system&#39;s own internal state, or it just re-reads the lie; (2) <em>violation-is-meaningless</em> — if it is false, every downstream number is void, so there is no &#39;degraded mode&#39; to limp along in; and (3) <em>wired to an automatic halt</em> — because an alert is a request for a human to notice, and the whole point is that the human did not. Reserves = issuance is the canonical example: independently checkable against the mainnet chain, catastrophic if false, cheap to stop the mint on.</p>
+<p><strong>Put the monitor somewhere the thing it watches cannot reach.</strong> If the invariant checker runs on the same infrastructure and trust boundary as the signing and execution path, the compromise that breaks one breaks both — the watcher goes down with the watched. And tune it for a narrow <em>halt scope</em> rather than a loose threshold: a monitor that fires often gets muted, and a muted monitor is worse than none because it was believed.</p>
+<p><strong>Simulation is the same defense moved one step earlier.</strong> Where the invariant asks <em>did the equation just break</em>, pre-execution simulation asks <em>would this transaction break it</em> — replaying the transaction against current state and reading the state diff before it is signed. Tooling like Tenderly (or a Foundry fork in CI) makes that a check on the mint transaction itself: a single alert on &#39;total issuance changed unexpectedly&#39; is the shape of thing that would have caught this before the pegout ever saw the token. The pair — simulate before, invariant after — is one discipline: never trust a number your own system produced without an equation, computed elsewhere, that says the number is still true.</p>
       <h2>How it works</h2>
-      <p>Not a working demo by necessity: EIP-8141 defines a new transaction type where a single transaction carries a sequence of frames (a VERIFY frame for signature/fee authorization, then one or more EXECUTE frames) instead of one implicit call — but no client or RPC can send this transaction type yet, since it requires execution-layer support the network doesn&#39;t have. As of writing it&#39;s only &quot;considered for inclusion&quot; in a future fork, so this stays a diagram/explainer page rather than a live demo.</p>
-<h3>The ACDE readout, and the two kinds of &quot;no&quot; (2026-08-28)</h3>
-<p>The call was set to conclude between this proposal and EIP-8130, and as of writing no public readout confirms an outcome. What the developer timeline did in that gap is the useful part: <strong>the argument moved off the content and onto the weight.</strong> The recurring sentence was <em>&quot;the direction is right, but this is too heavy for the current stage&quot;</em> — and that is a <strong>schedule objection, not a technical one</strong>.</p>
-<p>The distinction is worth holding onto because the two look identical from outside and demand opposite responses:</p>
+      <p>Reading note plus a scoping exercise, not a live demo yet.</p>
+<h3>The three-line output</h3>
+<p>List the system&#39;s invariant candidates and, for each, the automatic stop:</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>The objection</th>
-<th>What it actually says</th>
-<th>What you do next</th>
+<th>Invariant (must always hold)</th>
+<th>Independently computable from</th>
+<th>Halts on violation</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>&quot;This is wrong&quot;</strong></td>
-<td>the design does not achieve the goal</td>
-<td>change the design</td>
+<td>total deposits = total minted</td>
+<td>deposit contract + token supply</td>
+<td>new mints</td>
 </tr>
 <tr>
-<td><strong>&quot;This is not now&quot;</strong></td>
-<td>the design is right and too large to land here</td>
-<td><strong>split the scope</strong></td>
+<td>settlement sum = per-market sum</td>
+<td>market ledgers, summed</td>
+<td>settlement writes</td>
+</tr>
+<tr>
+<td>escrow balance &gt;= open claims</td>
+<td>escrow account + claim registry</td>
+<td>new claims</td>
 </tr>
 </tbody></table></div>
-<p>Hearing the second and redesigning is wasted work; hearing the first and merely deferring is worse. <strong>The question to ask in the room is which one you are being given</strong> — and the tell is usually whether the objection survives when you make the proposal smaller.</p>
-      <h2>Review clarification</h2>
-      <h3>The basic concept, from zero</h3>
-<p>Ethereum has two kinds of accounts, and only the dumb one can act. An <strong>EOA</strong> can start transactions, but its rules are frozen into the protocol: one ECDSA key, one sequential nonce, fees paid by the sender in ETH, one call per transaction — lose the key, lose the account. A <strong>contract account</strong> is fully programmable but cannot initiate anything. <strong>Account abstraction</strong> is the project of erasing that split: let the account that acts also be programmable — in who may sign, how fees are paid, and what one transaction may contain.</p>
-<p>Today&#39;s AA is an emulation built one layer up: ERC-4337 rebuilt a transaction system out of contracts (UserOperations, bundlers, an EntryPoint), and EIP-7702 lets an EOA borrow contract code. It works, at the price of extra actors, extra gas, and extra trust surfaces. EIP-8141 proposes ending the emulation: a new base transaction type made of <strong>frames</strong> — one <strong>VERIFY</strong> frame (&quot;here is the proof this is authorized, and how fees get paid&quot;) followed by one or more <strong>EXECUTE</strong> frames (the calls, atomically: all or nothing). The two jobs every transaction always had — prove it&#39;s allowed, then do things — become explicit, separate, programmable parts of the format itself.</p>
-<h3>The same action, three generations of code</h3>
-<p>Today, the node&#39;s checks are hard-coded and unchangeable:</p>
-<pre><code class="language-js">assert(ecrecover(tx.sig) == tx.from);     // exactly one ECDSA key
-assert(tx.nonce == account.nonce);        // exactly one nonce
-assert(balance[tx.from] &amp;gt;= gas * price);  // sender pays, ETH only
-call(tx.to, tx.data);                     // exactly one call
-</code></pre>
-<p>ERC-4337 replays those checks inside a contract — <code>EntryPoint.handleOps</code> loops over UserOperations calling <code>account.validateUserOp</code> and then <code>account.execute</code>, with a bundler carrying the batch and a paymaster optionally paying. Every hop is the emulation tax.</p>
-<p>Under EIP-8141 the node itself runs the loop the EntryPoint used to fake:</p>
-<pre><code class="language-js">tx = { type: FRAME_TX, frames: [
-  { kind: VERIFY,  target: myAccount,
-    input: { scheme: &amp;quot;p256-passkey&amp;quot;, proof, feeToken: USDC } },
-  { kind: EXECUTE, target: USDC, data: approve(dex, 100e6) },
-  { kind: EXECUTE, target: dex,  data: swap(USDC, ETH, 100e6) },
-]}
-</code></pre>
-<p>and the account&#39;s own verify code is where the features live — a session key, natively:</p>
-<pre><code class="language-solidity">function verify(Proof p, Frame[] fs) external view returns (bool) {
-    if (p.signer == owner) return checkSig(p);
-    Session s = sessions[p.signer];              // a temporary key
-    require(block.timestamp &amp;lt; s.expiry);         // ...that expires
-    require(allCallsTo(fs, s.allowedContract));  // ...only this app
-    require(totalValue(fs) &amp;lt;= s.perTxLimit);     // ...small amounts
-    return checkSig(p);
-}
-</code></pre>
-<h3>Who it makes happy</h3>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>Who</th>
-<th>Today&#39;s pain</th>
-<th>With frame transactions</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Users</td>
-<td>Seed phrase or bust; approve-then-swap leaves a dangling approval; need ETH first</td>
-<td>Passkey as the native key; approve+swap atomic; fees in tokens or sponsored</td>
-</tr>
-<tr>
-<td>Wallet builders</td>
-<td>Run or rent bundler + paymaster infrastructure</td>
-<td>Those services largely disappear; the chain validates directly</td>
-</tr>
-<tr>
-<td>dApp/game/agent builders</td>
-<td>Session keys need a smart-wallet stack per provider</td>
-<td>Bounded delegation is a base-layer feature</td>
-</tr>
-<tr>
-<td>The protocol</td>
-<td>A parallel 4337 mempool; EntryPoint as a shared choke point</td>
-<td>One canonical mempool, no single trusted contract</td>
-</tr>
-</tbody></table></div>
-<p>Concrete situations it improves: the dangling-approve accident (two EXECUTE frames make approval-without-swap impossible); onboarding without ETH (a sponsor pays inside VERIFY); lost-key recovery as account logic instead of a custodian&#39;s feature; the post-quantum migration (signature schemes become account code to upgrade, not protocol constants to fork); and agent commerce (an AI agent holding a session key with expiry, an allowed contract, and a per-transaction limit is delegation with a chosen blast radius).</p>
-<p>The honest cost — and most of why ACDE said &quot;too heavy&quot;: the VERIFY frame is arbitrary code deciding mempool validity <em>before anyone has paid</em>, so it must be strictly gas-bounded and cheaply re-checkable, or invalid transactions become a free DoS vector.</p>
-<h3>&quot;Then ERC-4337 could be sunsetted?&quot; (jay, 2026-09-03)</h3>
-<p>Right direction, wrong tense. 4337 was always the stopgap — enshrinement was the stated endgame, and 8141&#39;s VERIFY/EXECUTE split is essentially <code>validateUserOp</code>/<code>execute</code> promoted into the transaction format. So 4337 doesn&#39;t get killed; it gets <strong>absorbed</strong> — the concepts survive as the contracts empty out. But the sunset is a decade-scale decay, for four reasons: nothing on Ethereum is ever removed (the EntryPoint is immortal, and millions of deployed and counterfactual smart-account addresses don&#39;t migrate themselves); the native-AA competition is unsettled (8141 vs 8130 vs Tempo — a workaround with users beats a proposal without a fork date); L2s break the symmetry (4337 works identically on every EVM chain today, while native AA lands chain by chain — cross-chain wallets may be its last stronghold); and the bundler/paymaster vendors will pivot to the new rails rather than defend the old ones, accelerating the very sunset that obsoletes them. As strategy — don&#39;t build a moat out of 4337 plumbing — the sentence is already true. As a forecast — traffic to zero — add ten years and an asterisk.</p>
-<h3>Progress (2026-09-08)</h3>
-<p>Vitalik&#39;s 9/6 Frames update reported movement: on the 8/27 call the proposal went CFI → SFI (considered → scheduled for inclusion), slotted for Hegotá (targeted 2027 Q2) alongside FOCIL. SFI is an assignment, not a completion — the tell to watch after the 9/10 devnet-priority list is whether a devnet actually attaches to 8141. Two framing notes. The headline &#39;pay gas in stablecoins&#39; is a <em>consequence</em>, not the design: the design separates the three jobs that today share one signer — authorization, gas payment, execution — and stablecoin fees are what fall out once gas payment is its own strand inside VERIFY. And the competition is asymmetric on timing: rival EIP-8130 targets a Base deployment in September, so the L2 implementation becomes real before the L1 standard does — a workaround with users, again, outrunning a proposal with a fork date.</p>
-<p>The same runtime-vs-spec point the invariant card makes applies to the objection here: <code>invariant-is-the-live-check</code> is why an enshrined VERIFY frame must be strictly gas-bounded and cheaply re-checkable — arbitrary validity code that runs before anyone pays is a premise the network cannot afford to trust unconditionally.</p>
-      <h2>Related code</h2>
-      <pre><code># ERC-8141 — a transaction carries a sequence of frames instead of one implicit call:
-# a VERIFY frame (signature/fee authorization) followed by one or more EXECUTE frames.
-# Simulates the frame structure and runs it in sequence, aborting if VERIFY fails.
-
-from dataclasses import dataclass, field
-from typing import Callable
-
-
-@dataclass
-class Frame:
-    kind: str  # &quot;VERIFY&quot; or &quot;EXECUTE&quot;
-    description: str
-    run: Callable[[dict], bool]
-
-
-@dataclass
-class FrameTransaction:
-    frames: list[Frame] = field(default_factory=list)
-
-    def execute(self, context: dict) -&gt; bool:
-        for frame in self.frames:
-            print(f&quot;  [{frame.kind}] {frame.description} ...&quot;, end=&quot; &quot;)
-            ok = frame.run(context)
-            print(&quot;OK&quot; if ok else &quot;FAILED&quot;)
-            if frame.kind == &quot;VERIFY&quot; and not ok:
-                print(&quot;  -&gt; VERIFY frame failed: transaction aborted before any EXECUTE frame runs.&quot;)
-                return False
-            if frame.kind == &quot;EXECUTE&quot; and not ok:
-                print(&quot;  -&gt; EXECUTE frame failed: transaction reverts.&quot;)
-                return False
-        return True
-
-
-def verify_signature_and_fee(ctx: dict) -&gt; bool:
-    return ctx.get(&quot;signature_valid&quot;, False) and ctx.get(&quot;balance&quot;, 0) &gt;= ctx.get(&quot;max_fee&quot;, 0)
-
-
-def execute_transfer(ctx: dict) -&gt; bool:
-    ctx[&quot;balance&quot;] -= ctx[&quot;transfer_amount&quot;]
-    return ctx[&quot;balance&quot;] &gt;= 0
-
-
-def execute_approve(ctx: dict) -&gt; bool:
-    ctx[&quot;allowance&quot;] = ctx.get(&quot;allowance&quot;, 0) + ctx[&quot;approve_amount&quot;]
-    return True
-
-
-def build_transaction() -&gt; FrameTransaction:
-    return FrameTransaction(frames=[
-        Frame(&quot;VERIFY&quot;, &quot;signature + fee authorization&quot;, verify_signature_and_fee),
-        Frame(&quot;EXECUTE&quot;, &quot;transfer 50 tokens&quot;, execute_transfer),
-        Frame(&quot;EXECUTE&quot;, &quot;approve spender for 20 tokens&quot;, execute_approve),
-    ])
-
-
-if __name__ == &quot;__main__&quot;:
-    print(&quot;EIP-8141 Frame Transaction — VERIFY then EXECUTE, EXECUTE, ...\n&quot;)
-
-    print(&quot;Case 1: valid signature, sufficient balance&quot;)
-    ctx = {&quot;signature_valid&quot;: True, &quot;balance&quot;: 100, &quot;max_fee&quot;: 5, &quot;transfer_amount&quot;: 50, &quot;approve_amount&quot;: 20}
-    ok = build_transaction().execute(ctx)
-    print(f&quot;Transaction succeeded: {ok}, final state: {ctx}\n&quot;)
-
-    print(&quot;Case 2: invalid signature — VERIFY frame blocks all EXECUTE frames&quot;)
-    ctx = {&quot;signature_valid&quot;: False, &quot;balance&quot;: 100, &quot;max_fee&quot;: 5, &quot;transfer_amount&quot;: 50, &quot;approve_amount&quot;: 20}
-    ok = build_transaction().execute(ctx)
-    print(f&quot;Transaction succeeded: {ok}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/erc-8141.py">docs/code/pocs/erc-8141.py</a></p>
+<h3>Why this, and not more auditing</h3>
+<p>Liquid was audited; it was not <em>invariant-monitored</em>. The failure was not a bug the audit missed in the code — it was a true statement about live state (<code>reserves &amp;lt; issuance</code>) that nothing was computing. Auditing scales the confidence that the code matches the spec; it does nothing for the moment the inputs stop matching reality. The two are different defenses and neither substitutes for the other. Cross-refs: <code>foundry-invariant-reachability</code> (the same idea at test time — an invariant test only catches what its actions reach), <code>simulate-before-sign</code> (the pre-execution half), <code>who-holds-the-mint</code> (the mint is exactly the privileged write an invariant should bound), and <code>receipt-is-not-settlement</code> (a success flag is not proof the state is sound).</p>
+      
       <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# ERC-8141\n\n네이티브 계정 추상화 설명 페이지 — 이더리움 프로토콜 레벨 Frame Transactions.\n\n읽기 전용 설명 페이지 — 지갑 불필요.\n\n## 왜\n\n이 프로젝트의 애플리케이션 레벨 AA 데모(세션 키, 원자적 배치)가 스마트 컨트랙트와 위임으로 지금 하고 있는 일을, 프로토콜 네이티브 수준에서 미리 보여줍니다 — EIP-8141은 같은 속성을 이더리움의 기본 트랜잭션 포맷 자체로 옮기자는 제안입니다.\n\n## 동작 방식\n\n구조상 실제 동작하는 데모가 될 수 없습니다: EIP-8141은 트랜잭션 하나가 암묵적 호출 한 번이 아니라 프레임의 시퀀스(서명·수수료 인가를 담당하는 VERIFY 프레임, 이어지는 하나 이상의 EXECUTE 프레임)를 담는 새 트랜잭션 타입을 정의하지만, 아직 어떤 클라이언트나 RPC도 이 타입을 보낼 수 없습니다 — 네트워크에 없는 실행 계층 지원이 필요하기 때문입니다. 이 글을 쓰는 시점 기준 향후 포크에 \"포함 검토 중\"인 단계라, 라이브 데모가 아니라 다이어그램·설명 페이지로 남습니다.\n\n### ACDE 리드아웃, 그리고 두 종류의 \"아니오\" (2026-08-28)\n\n이 제안과 EIP-8130 사이의 결론이 예정돼 있었고, 이 글을 쓰는 시점까지 **공개된 리드아웃은 확인되지 않습니다.** 그 공백에서 개발자 타임라인이 향한 곳이 쓸모 있는 부분입니다 — **논쟁이 내용이 아니라 무게로 옮겨갔습니다.** 반복된 문장은 *\"방향은 맞는데 지금 단계에서 너무 무겁다\"* 였고, 이건 **기술 반대가 아니라 일정 반대**입니다.\n\n이 구분은 붙들 값이 있습니다 — **밖에서 보면 똑같이 생겼는데 요구하는 대응이 정반대**이기 때문입니다:\n\n| 반대 | 실제로 하는 말 | 다음에 할 일 |\n| --- | --- | --- |\n| **\"이건 틀렸다\"** | 설계가 목적을 달성하지 못한다 | **설계를 바꾼다** |\n| **\"이건 지금이 아니다\"** | 설계는 맞고, 여기 넣기엔 크다 | **범위를 쪼갠다** |\n\n**두 번째를 듣고 재설계하면 헛일**이고, **첫 번째를 듣고 미루기만 하면 더 나쁩니다.** **회의실에서 물어야 할 것은 지금 받은 게 어느 쪽인가**이고, 판별법은 대개 **제안을 작게 만들었을 때도 그 반대가 살아남는가**입니다.\n\n## 검토 후 보완\n\n### 기본 개념, 처음부터\n\n이더리움에는 계정이 두 종류인데, 행동할 수 있는 쪽이 멍청합니다. **EOA** 는 트랜잭션을 시작할 수 있지만 규칙이 프로토콜에 얼어붙어 있습니다: ECDSA 키 하나, 순차 논스 하나, 수수료는 본인이 ETH 로, 트랜잭션당 호출 하나 — 키를 잃으면 계정을 잃습니다. **컨트랙트 계정**은 완전히 프로그래머블하지만 아무것도 시작하지 못합니다. **계정 추상화(AA)** 는 이 분리를 지우는 프로젝트입니다: 행동하는 계정이 프로그래머블하게 — 누가 서명하는지, 수수료를 어떻게 내는지, 트랜잭션 하나에 무엇이 담기는지를.\n\n오늘의 AA 는 한 층 위에 지은 에뮬레이션입니다: ERC-4337 은 컨트랙트로 트랜잭션 시스템을 재건축했고(UserOperation, 번들러, EntryPoint), EIP-7702 는 EOA 가 컨트랙트 코드를 빌리게 합니다. 작동하지만 — 추가 행위자, 추가 가스, 추가 신뢰 표면이 대가입니다. EIP-8141 은 에뮬레이션을 끝내자는 제안입니다: **프레임**으로 이루어진 새 베이스 트랜잭션 타입 — **VERIFY** 프레임 하나(\"인가 증명은 이것, 수수료는 이렇게\") 뒤에 **EXECUTE** 프레임 하나 이상(호출들, 원자적으로: 전부 아니면 전무). **트랜잭션이 늘 갖고 있던 두 가지 일 — 허용됐음을 증명하기, 그다음 실행하기 — 이 포맷 자체의 명시적이고 분리된, 프로그래밍 가능한 부품이 됩니다.**\n\n### 같은 동작, 코드 세 세대\n\n오늘 노드의 검사는 하드코딩이라 바꿀 수 없습니다:\n\n```js\nassert(ecrecover(tx.sig) == tx.from);     // ECDSA 키 정확히 하나\nassert(tx.nonce == account.nonce);        // 논스 정확히 하나\nassert(balance[tx.from] >= gas * price);  // 본인이, ETH 로만\ncall(tx.to, tx.data);                     // 호출 정확히 하나\n```\n\nERC-4337 은 이 검사를 컨트랙트 안에서 재연합니다 — `EntryPoint.handleOps` 가 UserOperation 들을 돌며 `account.validateUserOp` 그리고 `account.execute` 를 호출하고, 번들러가 배치를 나르고 페이마스터가 선택적으로 지불합니다. 홉 하나하나가 에뮬레이션 세금입니다.\n\nEIP-8141 에서는 EntryPoint 가 흉내 내던 루프를 노드 자신이 돕니다:\n\n```js\ntx = { type: FRAME_TX, frames: [\n  { kind: VERIFY,  target: 내계정,\n    input: { scheme: \"p256-passkey\", proof, feeToken: USDC } },\n  { kind: EXECUTE, target: USDC, data: approve(dex, 100e6) },\n  { kind: EXECUTE, target: dex,  data: swap(USDC, ETH, 100e6) },\n]}\n```\n\n기능이 사는 곳은 계정 자신의 verify 코드입니다 — 네이티브 세션 키:\n\n```solidity\nfunction verify(Proof p, Frame[] fs) external view returns (bool) {\n    if (p.signer == owner) return checkSig(p);\n    Session s = sessions[p.signer];              // 임시 키\n    require(block.timestamp \u003c s.expiry);         // …만료되고\n    require(allCallsTo(fs, s.allowedContract));  // …이 앱만\n    require(totalValue(fs) \u003c= s.perTxLimit);     // …소액만\n    return checkSig(p);\n}\n```\n\n### 누가 행복해지나\n\n| 누가 | 오늘의 고통 | 프레임 트랜잭션에서는 |\n| --- | --- | --- |\n| 사용자 | 시드 문구 아니면 끝; 승인→스왑이 열린 승인을 남김; 먼저 ETH 필요 | 패스키가 네이티브 키; 승인+스왑 원자적; 수수료는 토큰이나 스폰서가 |\n| 지갑 개발자 | 번들러+페이마스터 인프라 운영/임대 | 그 서비스들이 대부분 사라짐; 체인이 직접 검증 |\n| dApp/게임/에이전트 개발자 | 세션 키에 제공자별 스마트 지갑 스택 | 유계 위임이 베이스 레이어 기능 |\n| 프로토콜 | 병렬 4337 멤풀; 공유 관문 EntryPoint | 정본 멤풀 하나, 신뢰할 단일 컨트랙트 없음 |\n\n구체적으로 개선되는 상황: 열린 승인 사고(EXECUTE 프레임 둘이면 스왑 없는 승인이 존재 불가능); ETH 없는 온보딩(VERIFY 안에서 스폰서가 지불); 키 분실 복구가 수탁자의 기능이 아니라 계정 로직이 되는 것; 포스트퀀텀 마이그레이션(서명 스킴이 포크할 프로토콜 상수가 아니라 업그레이드할 계정 코드가 됨); 에이전트 커머스(만료·허용 컨트랙트·건당 한도가 붙은 세션 키를 쥔 AI 에이전트 = 내가 고른 폭발 반경을 가진 위임).\n\n정직한 비용 — ACDE 가 \"너무 무겁다\"고 한 이유의 대부분: VERIFY 프레임은 *아무도 돈을 내기 전에* 멤풀 유효성을 결정하는 임의 코드라서, 엄격한 가스 상한과 값싼 재검사가 없으면 무효 트랜잭션이 공짜 DoS 벡터가 됩니다.\n\n### \"그럼 ERC-4337 은 일몰될 수 있겠네?\" (jay, 2026-09-03)\n\n방향은 맞고 시제가 틀렸습니다. 4337 은 처음부터 임시방편이었고 — 인슈라인먼트가 공공연한 최종 목표였으며, 8141 의 VERIFY/EXECUTE 분리는 본질적으로 `validateUserOp`/`execute` 의 포맷 승격입니다. 그러니 4337 은 죽는 게 아니라 **흡수됩니다** — 컨트랙트는 비어 가도 개념은 살아남습니다. 하지만 일몰은 10년 단위의 감쇠입니다. 이유 넷: 이더리움에서는 아무것도 제거되지 않고(EntryPoint 는 불멸, 배포됐거나 counterfactual 인 수백만 스마트 계정 주소는 스스로 이주하지 않음); 네이티브 AA 경쟁이 미결이며(8141 대 8130 대 Tempo — 사용자를 가진 임시방편이 포크 날짜 없는 제안을 이김); L2 가 대칭을 깨고(4337 은 오늘 모든 EVM 체인에서 동일하게 작동하지만 네이티브 AA 는 체인마다 따로 — 크로스체인 지갑이 마지막 요새); 번들러/페이마스터 벤더들이 옛 레일을 지키는 대신 새 레일로 피벗해 자기를 낡게 만드는 일몰을 가속할 것이기 때문입니다. 전략으로서 — 4337 배관을 해자로 삼지 마라 — 는 이미 참입니다. 예보로서 — 트래픽 0 — 는 10년과 별표 하나를 붙이십시오.\n\n### 진행 상황 (2026-09-08)\n\n비탈릭의 9/6 Frames 업데이트가 진전을 알렸습니다: 8/27 콜에서 제안이 CFI → SFI(포함 검토 → 포함 예정)로 승격, FOCIL 과 나란히 Hegotá(2027 Q2 목표)에 배정됐습니다. SFI 는 배정이지 완료가 아닙니다 — 9/10 데브넷 선호목록 이후 볼 판별점은 **8141 에 데브넷이 실제로 붙는가**입니다. 프레이밍 둘. 헤드라인 '스테이블코인으로 가스 지불'은 설계가 아니라 *결과*입니다: 설계는 오늘 한 서명자에 묶인 세 역할 — 인가·가스 지불·실행 — 을 분리하는 것이고, 스테이블코인 수수료는 가스 지불이 VERIFY 안의 독립된 가닥이 되면 따라 나옵니다. 그리고 경쟁은 타이밍이 비대칭입니다: 경쟁안 EIP-8130 은 9월 중 Base 배포를 목표로 해서, L2 구현이 L1 표준보다 먼저 실물이 됩니다 — 사용자를 가진 임시방편이 또 한 번 포크 날짜 있는 제안을 앞지릅니다.\n\n불변식 카드가 말하는 런타임 대 명세 논점이 여기 반대에도 적용됩니다: `invariant-is-the-live-check` 가, 인슈라인된 VERIFY 프레임이 왜 엄격히 가스 상한이 걸리고 값싸게 재검사돼야 하는지의 이유입니다 — 아무도 돈 내기 전에 도는 임의 유효성 코드는, 네트워크가 무조건 믿어 줄 수 없는 전제입니다.\n"</script>
-      <h1>ERC-8141</h1>
-      <p class="lead">네이티브 계정 추상화 설명 페이지 — 이더리움 프로토콜 레벨 Frame Transactions.</p>
-      <p class="meta">읽기 전용 설명 페이지 — 지갑 불필요.</p>
+      <script type="application/json" id="copy-ko">"# 검사는 통과했다 — 그 검사가 믿은 숫자가 이미 거짓이었다\n\n블록스트림이 리퀴드 손실의 원인을 인가 우회가 아니라 **발행 버그**로 확정했습니다: 페그아웃은 애초에 존재해선 안 될 토큰을 상대로 **정상적으로 검증**되었습니다. 이 계열의 방어선은 더 나은 검사가 아니라 **살아 있는 불변식** — 준비금 = 발행량, 매 블록 계산하고 자동 정지에 연결된 것입니다.\n\n아직 범위 미정 — 산출물은 만들기가 아니라 **목록**입니다. 우리 시스템에서 **항상 성립해야 하고 시스템 자체 장부와 독립적으로 확인 가능한** 모든 등식을 적으세요 — 예: `총예치 = 총발행`, `정산합계 = 마켓별합계`, `에스크로 잔고 >= 미결제 청구액`. 각각 옆에, 깨졌을 때 **자동으로 멈출 단 하나**를 적으세요(새벽 3시에 아무도 안 읽는 경보는 방어가 아닙니다). 출처: 블록스트림 사후분석 — Elements 발행 버그 확정, LBTC가 부적절하게 생성되고 페그아웃이 그것을 기술적으로 유효한 토큰으로 처리; 약 4,000 BTC / $3.2억 / 준비금의 약 95%; 공격자는 OP_RETURN + PGP로 '버그부터 고쳐라' 요구, 대부분 반환 의사(아직 미완). 런타임 불변식 감시 계층과 Tenderly류 실행 전 시뮬레이션에 견주어 읽을 것. 세부는 원 사후분석으로 확인.\n\n## 왜\n\n**감사와 불변식은 서로 다른 질문에 답하고, 리퀴드는 왜 둘 다 필요한지 보여주는 사례입니다.** 감사는 *코드가 명세대로인가* 를 묻습니다 — 프로그램에 대한 주장, 배포 전에 한 번 확인. 불변식은 *지금 이 등식이 참인가* 를 묻습니다 — 살아 있는 상태에 대한 주장, 매 블록 확인. 리퀴드의 코드는 시킨 대로 했습니다: 페그아웃은 건네받은 토큰을 검증했죠. 그 토큰은 상류의 발행 버그로 만들어진 가짜였고, 페그아웃을 아무리 검증해도 그걸 알 수는 없었습니다 — **검증은 증명을 확인하지, 그 증명이 딛고 선 전제를 확인하지 않기 때문**입니다. 전제인 `메인넷 준비금 = 발행된 LBTC` 는 항상 계산 가능했고, 아무것도 확인하지 않았습니다.\n\n**좋은 불변식은 세 성질을 갖고, 사람들이 빼먹는 건 세 번째입니다.** (1) *독립적으로 계산 가능* — 시스템 자체 내부 상태를 믿지 않고 도출되어야 함, 아니면 거짓말을 다시 읽을 뿐; (2) *위반이 곧 무의미* — 거짓이면 하위 숫자 전부가 무효라, 절뚝이며 굴러갈 '저하 모드'가 없음; (3) *자동 정지에 연결* — 경보는 사람이 알아채 달라는 요청인데, 요점은 사람이 못 알아챘다는 것이므로. 준비금 = 발행량이 정석 예입니다: 메인넷 체인 대비 독립 검증 가능, 거짓이면 파국, 발행을 멈추긴 값쌈.\n\n**감시자는 감시 대상이 닿을 수 없는 곳에 두세요.** 불변식 검사기가 서명·실행 경로와 같은 인프라·같은 신뢰 경계에서 돌면, 하나를 뚫는 침해가 둘 다 뚫습니다 — 감시자가 대상과 함께 쓰러집니다. 그리고 느슨한 임계값보다 좁은 *정지 범위* 로 조율하세요: 자주 울리는 감시자는 꺼지고, 꺼진 감시자는 믿어졌기에 없느니만 못합니다.\n\n**시뮬레이션은 같은 방어를 한 걸음 앞으로 옮긴 것입니다.** 불변식이 *등식이 방금 깨졌나* 를 묻는다면, 실행 전 시뮬레이션은 *이 트랜잭션이 그걸 깰까* 를 묻습니다 — 현재 상태에 트랜잭션을 재생해 서명 전에 상태 diff 를 읽는 것. Tenderly(또는 CI 의 Foundry 포크) 같은 도구는 그걸 발행 트랜잭션 자체에 대한 검사로 만듭니다: '총발행량이 예기치 않게 변함' 경보 하나가, 페그아웃이 그 토큰을 보기도 전에 잡았을 종류입니다. 이 짝 — 앞에서 시뮬레이션, 뒤에서 불변식 — 은 하나의 규율입니다: 내 시스템이 만든 숫자를, 다른 곳에서 계산한 '그 숫자가 여전히 참'이라는 등식 없이 믿지 마라.\n\n## 동작 방식\n\n라이브 데모가 아니라 정독 노트 + 범위 잡기 연습입니다.\n\n### 세 줄짜리 산출물\n\n시스템의 불변식 후보를 나열하고, 각각에 대해 자동 정지를 적습니다:\n\n| 불변식(항상 성립) | 독립 계산 근거 | 위반 시 멈추는 것 |\n| --- | --- | --- |\n| 총예치 = 총발행 | 예치 컨트랙트 + 토큰 공급량 | 신규 발행 |\n| 정산합계 = 마켓별합계 | 마켓 장부 합산 | 정산 쓰기 |\n| 에스크로 잔고 >= 미결제 청구액 | 에스크로 계정 + 청구 레지스트리 | 신규 청구 |\n\n### 왜 감사 강화가 아니라 이것인가\n\n리퀴드는 감사를 받았습니다; *불변식 감시* 는 받지 않았습니다. 실패는 감사가 코드에서 놓친 버그가 아니라 — 아무것도 계산하지 않던 살아 있는 상태에 대한 참인 명제(`준비금 \u003c 발행량`)였습니다. 감사는 코드가 명세대로라는 확신을 키우고, 입력이 현실과 어긋나는 순간에는 아무것도 못 합니다. 둘은 다른 방어선이고 서로를 대체하지 못합니다. 교차: `foundry-invariant-reachability`(테스트 시점의 같은 생각 — 불변식 테스트는 자기 액션이 닿는 것만 잡는다), `simulate-before-sign`(실행 전 절반), `who-holds-the-mint`(발행은 불변식이 묶어야 할 바로 그 특권 쓰기), `receipt-is-not-settlement`(성공 플래그는 상태가 건전하다는 증명이 아니다).\n"</script>
+      <h1>검사는 통과했다 — 그 검사가 믿은 숫자가 이미 거짓이었다</h1>
+      <p class="lead">블록스트림이 리퀴드 손실의 원인을 인가 우회가 아니라 <strong>발행 버그</strong>로 확정했습니다: 페그아웃은 애초에 존재해선 안 될 토큰을 상대로 <strong>정상적으로 검증</strong>되었습니다. 이 계열의 방어선은 더 나은 검사가 아니라 <strong>살아 있는 불변식</strong> — 준비금 = 발행량, 매 블록 계산하고 자동 정지에 연결된 것입니다.</p>
+      <p class="meta">아직 범위 미정 — 산출물은 만들기가 아니라 <strong>목록</strong>입니다. 우리 시스템에서 <strong>항상 성립해야 하고 시스템 자체 장부와 독립적으로 확인 가능한</strong> 모든 등식을 적으세요 — 예: <code>총예치 = 총발행</code>, <code>정산합계 = 마켓별합계</code>, <code>에스크로 잔고 &amp;gt;= 미결제 청구액</code>. 각각 옆에, 깨졌을 때 <strong>자동으로 멈출 단 하나</strong>를 적으세요(새벽 3시에 아무도 안 읽는 경보는 방어가 아닙니다). 출처: 블록스트림 사후분석 — Elements 발행 버그 확정, LBTC가 부적절하게 생성되고 페그아웃이 그것을 기술적으로 유효한 토큰으로 처리; 약 4,000 BTC / $3.2억 / 준비금의 약 95%; 공격자는 OP_RETURN + PGP로 &#39;버그부터 고쳐라&#39; 요구, 대부분 반환 의사(아직 미완). 런타임 불변식 감시 계층과 Tenderly류 실행 전 시뮬레이션에 견주어 읽을 것. 세부는 원 사후분석으로 확인.</p>
       <h2>왜</h2>
-      <p>이 프로젝트의 애플리케이션 레벨 AA 데모(세션 키, 원자적 배치)가 스마트 컨트랙트와 위임으로 지금 하고 있는 일을, 프로토콜 네이티브 수준에서 미리 보여줍니다 — EIP-8141은 같은 속성을 이더리움의 기본 트랜잭션 포맷 자체로 옮기자는 제안입니다.</p>
+      <p><strong>감사와 불변식은 서로 다른 질문에 답하고, 리퀴드는 왜 둘 다 필요한지 보여주는 사례입니다.</strong> 감사는 <em>코드가 명세대로인가</em> 를 묻습니다 — 프로그램에 대한 주장, 배포 전에 한 번 확인. 불변식은 <em>지금 이 등식이 참인가</em> 를 묻습니다 — 살아 있는 상태에 대한 주장, 매 블록 확인. 리퀴드의 코드는 시킨 대로 했습니다: 페그아웃은 건네받은 토큰을 검증했죠. 그 토큰은 상류의 발행 버그로 만들어진 가짜였고, 페그아웃을 아무리 검증해도 그걸 알 수는 없었습니다 — <strong>검증은 증명을 확인하지, 그 증명이 딛고 선 전제를 확인하지 않기 때문</strong>입니다. 전제인 <code>메인넷 준비금 = 발행된 LBTC</code> 는 항상 계산 가능했고, 아무것도 확인하지 않았습니다.</p>
+<p><strong>좋은 불변식은 세 성질을 갖고, 사람들이 빼먹는 건 세 번째입니다.</strong> (1) <em>독립적으로 계산 가능</em> — 시스템 자체 내부 상태를 믿지 않고 도출되어야 함, 아니면 거짓말을 다시 읽을 뿐; (2) <em>위반이 곧 무의미</em> — 거짓이면 하위 숫자 전부가 무효라, 절뚝이며 굴러갈 &#39;저하 모드&#39;가 없음; (3) <em>자동 정지에 연결</em> — 경보는 사람이 알아채 달라는 요청인데, 요점은 사람이 못 알아챘다는 것이므로. 준비금 = 발행량이 정석 예입니다: 메인넷 체인 대비 독립 검증 가능, 거짓이면 파국, 발행을 멈추긴 값쌈.</p>
+<p><strong>감시자는 감시 대상이 닿을 수 없는 곳에 두세요.</strong> 불변식 검사기가 서명·실행 경로와 같은 인프라·같은 신뢰 경계에서 돌면, 하나를 뚫는 침해가 둘 다 뚫습니다 — 감시자가 대상과 함께 쓰러집니다. 그리고 느슨한 임계값보다 좁은 <em>정지 범위</em> 로 조율하세요: 자주 울리는 감시자는 꺼지고, 꺼진 감시자는 믿어졌기에 없느니만 못합니다.</p>
+<p><strong>시뮬레이션은 같은 방어를 한 걸음 앞으로 옮긴 것입니다.</strong> 불변식이 <em>등식이 방금 깨졌나</em> 를 묻는다면, 실행 전 시뮬레이션은 <em>이 트랜잭션이 그걸 깰까</em> 를 묻습니다 — 현재 상태에 트랜잭션을 재생해 서명 전에 상태 diff 를 읽는 것. Tenderly(또는 CI 의 Foundry 포크) 같은 도구는 그걸 발행 트랜잭션 자체에 대한 검사로 만듭니다: &#39;총발행량이 예기치 않게 변함&#39; 경보 하나가, 페그아웃이 그 토큰을 보기도 전에 잡았을 종류입니다. 이 짝 — 앞에서 시뮬레이션, 뒤에서 불변식 — 은 하나의 규율입니다: 내 시스템이 만든 숫자를, 다른 곳에서 계산한 &#39;그 숫자가 여전히 참&#39;이라는 등식 없이 믿지 마라.</p>
       <h2>동작 방식</h2>
-      <p>구조상 실제 동작하는 데모가 될 수 없습니다: EIP-8141은 트랜잭션 하나가 암묵적 호출 한 번이 아니라 프레임의 시퀀스(서명·수수료 인가를 담당하는 VERIFY 프레임, 이어지는 하나 이상의 EXECUTE 프레임)를 담는 새 트랜잭션 타입을 정의하지만, 아직 어떤 클라이언트나 RPC도 이 타입을 보낼 수 없습니다 — 네트워크에 없는 실행 계층 지원이 필요하기 때문입니다. 이 글을 쓰는 시점 기준 향후 포크에 &quot;포함 검토 중&quot;인 단계라, 라이브 데모가 아니라 다이어그램·설명 페이지로 남습니다.</p>
-<h3>ACDE 리드아웃, 그리고 두 종류의 &quot;아니오&quot; (2026-08-28)</h3>
-<p>이 제안과 EIP-8130 사이의 결론이 예정돼 있었고, 이 글을 쓰는 시점까지 <strong>공개된 리드아웃은 확인되지 않습니다.</strong> 그 공백에서 개발자 타임라인이 향한 곳이 쓸모 있는 부분입니다 — <strong>논쟁이 내용이 아니라 무게로 옮겨갔습니다.</strong> 반복된 문장은 <em>&quot;방향은 맞는데 지금 단계에서 너무 무겁다&quot;</em> 였고, 이건 <strong>기술 반대가 아니라 일정 반대</strong>입니다.</p>
-<p>이 구분은 붙들 값이 있습니다 — <strong>밖에서 보면 똑같이 생겼는데 요구하는 대응이 정반대</strong>이기 때문입니다:</p>
+      <p>라이브 데모가 아니라 정독 노트 + 범위 잡기 연습입니다.</p>
+<h3>세 줄짜리 산출물</h3>
+<p>시스템의 불변식 후보를 나열하고, 각각에 대해 자동 정지를 적습니다:</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>반대</th>
-<th>실제로 하는 말</th>
-<th>다음에 할 일</th>
+<th>불변식(항상 성립)</th>
+<th>독립 계산 근거</th>
+<th>위반 시 멈추는 것</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>&quot;이건 틀렸다&quot;</strong></td>
-<td>설계가 목적을 달성하지 못한다</td>
-<td><strong>설계를 바꾼다</strong></td>
+<td>총예치 = 총발행</td>
+<td>예치 컨트랙트 + 토큰 공급량</td>
+<td>신규 발행</td>
 </tr>
 <tr>
-<td><strong>&quot;이건 지금이 아니다&quot;</strong></td>
-<td>설계는 맞고, 여기 넣기엔 크다</td>
-<td><strong>범위를 쪼갠다</strong></td>
+<td>정산합계 = 마켓별합계</td>
+<td>마켓 장부 합산</td>
+<td>정산 쓰기</td>
+</tr>
+<tr>
+<td>에스크로 잔고 &gt;= 미결제 청구액</td>
+<td>에스크로 계정 + 청구 레지스트리</td>
+<td>신규 청구</td>
 </tr>
 </tbody></table></div>
-<p><strong>두 번째를 듣고 재설계하면 헛일</strong>이고, <strong>첫 번째를 듣고 미루기만 하면 더 나쁩니다.</strong> <strong>회의실에서 물어야 할 것은 지금 받은 게 어느 쪽인가</strong>이고, 판별법은 대개 <strong>제안을 작게 만들었을 때도 그 반대가 살아남는가</strong>입니다.</p>
-      <h2>검토 후 보완</h2>
-      <h3>기본 개념, 처음부터</h3>
-<p>이더리움에는 계정이 두 종류인데, 행동할 수 있는 쪽이 멍청합니다. <strong>EOA</strong> 는 트랜잭션을 시작할 수 있지만 규칙이 프로토콜에 얼어붙어 있습니다: ECDSA 키 하나, 순차 논스 하나, 수수료는 본인이 ETH 로, 트랜잭션당 호출 하나 — 키를 잃으면 계정을 잃습니다. <strong>컨트랙트 계정</strong>은 완전히 프로그래머블하지만 아무것도 시작하지 못합니다. <strong>계정 추상화(AA)</strong> 는 이 분리를 지우는 프로젝트입니다: 행동하는 계정이 프로그래머블하게 — 누가 서명하는지, 수수료를 어떻게 내는지, 트랜잭션 하나에 무엇이 담기는지를.</p>
-<p>오늘의 AA 는 한 층 위에 지은 에뮬레이션입니다: ERC-4337 은 컨트랙트로 트랜잭션 시스템을 재건축했고(UserOperation, 번들러, EntryPoint), EIP-7702 는 EOA 가 컨트랙트 코드를 빌리게 합니다. 작동하지만 — 추가 행위자, 추가 가스, 추가 신뢰 표면이 대가입니다. EIP-8141 은 에뮬레이션을 끝내자는 제안입니다: <strong>프레임</strong>으로 이루어진 새 베이스 트랜잭션 타입 — <strong>VERIFY</strong> 프레임 하나(&quot;인가 증명은 이것, 수수료는 이렇게&quot;) 뒤에 <strong>EXECUTE</strong> 프레임 하나 이상(호출들, 원자적으로: 전부 아니면 전무). <strong>트랜잭션이 늘 갖고 있던 두 가지 일 — 허용됐음을 증명하기, 그다음 실행하기 — 이 포맷 자체의 명시적이고 분리된, 프로그래밍 가능한 부품이 됩니다.</strong></p>
-<h3>같은 동작, 코드 세 세대</h3>
-<p>오늘 노드의 검사는 하드코딩이라 바꿀 수 없습니다:</p>
-<pre><code class="language-js">assert(ecrecover(tx.sig) == tx.from);     // ECDSA 키 정확히 하나
-assert(tx.nonce == account.nonce);        // 논스 정확히 하나
-assert(balance[tx.from] &amp;gt;= gas * price);  // 본인이, ETH 로만
-call(tx.to, tx.data);                     // 호출 정확히 하나
-</code></pre>
-<p>ERC-4337 은 이 검사를 컨트랙트 안에서 재연합니다 — <code>EntryPoint.handleOps</code> 가 UserOperation 들을 돌며 <code>account.validateUserOp</code> 그리고 <code>account.execute</code> 를 호출하고, 번들러가 배치를 나르고 페이마스터가 선택적으로 지불합니다. 홉 하나하나가 에뮬레이션 세금입니다.</p>
-<p>EIP-8141 에서는 EntryPoint 가 흉내 내던 루프를 노드 자신이 돕니다:</p>
-<pre><code class="language-js">tx = { type: FRAME_TX, frames: [
-  { kind: VERIFY,  target: 내계정,
-    input: { scheme: &amp;quot;p256-passkey&amp;quot;, proof, feeToken: USDC } },
-  { kind: EXECUTE, target: USDC, data: approve(dex, 100e6) },
-  { kind: EXECUTE, target: dex,  data: swap(USDC, ETH, 100e6) },
-]}
-</code></pre>
-<p>기능이 사는 곳은 계정 자신의 verify 코드입니다 — 네이티브 세션 키:</p>
-<pre><code class="language-solidity">function verify(Proof p, Frame[] fs) external view returns (bool) {
-    if (p.signer == owner) return checkSig(p);
-    Session s = sessions[p.signer];              // 임시 키
-    require(block.timestamp &amp;lt; s.expiry);         // …만료되고
-    require(allCallsTo(fs, s.allowedContract));  // …이 앱만
-    require(totalValue(fs) &amp;lt;= s.perTxLimit);     // …소액만
-    return checkSig(p);
-}
-</code></pre>
-<h3>누가 행복해지나</h3>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>누가</th>
-<th>오늘의 고통</th>
-<th>프레임 트랜잭션에서는</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>사용자</td>
-<td>시드 문구 아니면 끝; 승인→스왑이 열린 승인을 남김; 먼저 ETH 필요</td>
-<td>패스키가 네이티브 키; 승인+스왑 원자적; 수수료는 토큰이나 스폰서가</td>
-</tr>
-<tr>
-<td>지갑 개발자</td>
-<td>번들러+페이마스터 인프라 운영/임대</td>
-<td>그 서비스들이 대부분 사라짐; 체인이 직접 검증</td>
-</tr>
-<tr>
-<td>dApp/게임/에이전트 개발자</td>
-<td>세션 키에 제공자별 스마트 지갑 스택</td>
-<td>유계 위임이 베이스 레이어 기능</td>
-</tr>
-<tr>
-<td>프로토콜</td>
-<td>병렬 4337 멤풀; 공유 관문 EntryPoint</td>
-<td>정본 멤풀 하나, 신뢰할 단일 컨트랙트 없음</td>
-</tr>
-</tbody></table></div>
-<p>구체적으로 개선되는 상황: 열린 승인 사고(EXECUTE 프레임 둘이면 스왑 없는 승인이 존재 불가능); ETH 없는 온보딩(VERIFY 안에서 스폰서가 지불); 키 분실 복구가 수탁자의 기능이 아니라 계정 로직이 되는 것; 포스트퀀텀 마이그레이션(서명 스킴이 포크할 프로토콜 상수가 아니라 업그레이드할 계정 코드가 됨); 에이전트 커머스(만료·허용 컨트랙트·건당 한도가 붙은 세션 키를 쥔 AI 에이전트 = 내가 고른 폭발 반경을 가진 위임).</p>
-<p>정직한 비용 — ACDE 가 &quot;너무 무겁다&quot;고 한 이유의 대부분: VERIFY 프레임은 <em>아무도 돈을 내기 전에</em> 멤풀 유효성을 결정하는 임의 코드라서, 엄격한 가스 상한과 값싼 재검사가 없으면 무효 트랜잭션이 공짜 DoS 벡터가 됩니다.</p>
-<h3>&quot;그럼 ERC-4337 은 일몰될 수 있겠네?&quot; (jay, 2026-09-03)</h3>
-<p>방향은 맞고 시제가 틀렸습니다. 4337 은 처음부터 임시방편이었고 — 인슈라인먼트가 공공연한 최종 목표였으며, 8141 의 VERIFY/EXECUTE 분리는 본질적으로 <code>validateUserOp</code>/<code>execute</code> 의 포맷 승격입니다. 그러니 4337 은 죽는 게 아니라 <strong>흡수됩니다</strong> — 컨트랙트는 비어 가도 개념은 살아남습니다. 하지만 일몰은 10년 단위의 감쇠입니다. 이유 넷: 이더리움에서는 아무것도 제거되지 않고(EntryPoint 는 불멸, 배포됐거나 counterfactual 인 수백만 스마트 계정 주소는 스스로 이주하지 않음); 네이티브 AA 경쟁이 미결이며(8141 대 8130 대 Tempo — 사용자를 가진 임시방편이 포크 날짜 없는 제안을 이김); L2 가 대칭을 깨고(4337 은 오늘 모든 EVM 체인에서 동일하게 작동하지만 네이티브 AA 는 체인마다 따로 — 크로스체인 지갑이 마지막 요새); 번들러/페이마스터 벤더들이 옛 레일을 지키는 대신 새 레일로 피벗해 자기를 낡게 만드는 일몰을 가속할 것이기 때문입니다. 전략으로서 — 4337 배관을 해자로 삼지 마라 — 는 이미 참입니다. 예보로서 — 트래픽 0 — 는 10년과 별표 하나를 붙이십시오.</p>
-<h3>진행 상황 (2026-09-08)</h3>
-<p>비탈릭의 9/6 Frames 업데이트가 진전을 알렸습니다: 8/27 콜에서 제안이 CFI → SFI(포함 검토 → 포함 예정)로 승격, FOCIL 과 나란히 Hegotá(2027 Q2 목표)에 배정됐습니다. SFI 는 배정이지 완료가 아닙니다 — 9/10 데브넷 선호목록 이후 볼 판별점은 <strong>8141 에 데브넷이 실제로 붙는가</strong>입니다. 프레이밍 둘. 헤드라인 &#39;스테이블코인으로 가스 지불&#39;은 설계가 아니라 <em>결과</em>입니다: 설계는 오늘 한 서명자에 묶인 세 역할 — 인가·가스 지불·실행 — 을 분리하는 것이고, 스테이블코인 수수료는 가스 지불이 VERIFY 안의 독립된 가닥이 되면 따라 나옵니다. 그리고 경쟁은 타이밍이 비대칭입니다: 경쟁안 EIP-8130 은 9월 중 Base 배포를 목표로 해서, L2 구현이 L1 표준보다 먼저 실물이 됩니다 — 사용자를 가진 임시방편이 또 한 번 포크 날짜 있는 제안을 앞지릅니다.</p>
-<p>불변식 카드가 말하는 런타임 대 명세 논점이 여기 반대에도 적용됩니다: <code>invariant-is-the-live-check</code> 가, 인슈라인된 VERIFY 프레임이 왜 엄격히 가스 상한이 걸리고 값싸게 재검사돼야 하는지의 이유입니다 — 아무도 돈 내기 전에 도는 임의 유효성 코드는, 네트워크가 무조건 믿어 줄 수 없는 전제입니다.</p>
-      <h2>관련 코드</h2>
-      <pre><code># ERC-8141 — a transaction carries a sequence of frames instead of one implicit call:
-# a VERIFY frame (signature/fee authorization) followed by one or more EXECUTE frames.
-# Simulates the frame structure and runs it in sequence, aborting if VERIFY fails.
-
-from dataclasses import dataclass, field
-from typing import Callable
-
-
-@dataclass
-class Frame:
-    kind: str  # &quot;VERIFY&quot; or &quot;EXECUTE&quot;
-    description: str
-    run: Callable[[dict], bool]
-
-
-@dataclass
-class FrameTransaction:
-    frames: list[Frame] = field(default_factory=list)
-
-    def execute(self, context: dict) -&gt; bool:
-        for frame in self.frames:
-            print(f&quot;  [{frame.kind}] {frame.description} ...&quot;, end=&quot; &quot;)
-            ok = frame.run(context)
-            print(&quot;OK&quot; if ok else &quot;FAILED&quot;)
-            if frame.kind == &quot;VERIFY&quot; and not ok:
-                print(&quot;  -&gt; VERIFY frame failed: transaction aborted before any EXECUTE frame runs.&quot;)
-                return False
-            if frame.kind == &quot;EXECUTE&quot; and not ok:
-                print(&quot;  -&gt; EXECUTE frame failed: transaction reverts.&quot;)
-                return False
-        return True
-
-
-def verify_signature_and_fee(ctx: dict) -&gt; bool:
-    return ctx.get(&quot;signature_valid&quot;, False) and ctx.get(&quot;balance&quot;, 0) &gt;= ctx.get(&quot;max_fee&quot;, 0)
-
-
-def execute_transfer(ctx: dict) -&gt; bool:
-    ctx[&quot;balance&quot;] -= ctx[&quot;transfer_amount&quot;]
-    return ctx[&quot;balance&quot;] &gt;= 0
-
-
-def execute_approve(ctx: dict) -&gt; bool:
-    ctx[&quot;allowance&quot;] = ctx.get(&quot;allowance&quot;, 0) + ctx[&quot;approve_amount&quot;]
-    return True
-
-
-def build_transaction() -&gt; FrameTransaction:
-    return FrameTransaction(frames=[
-        Frame(&quot;VERIFY&quot;, &quot;signature + fee authorization&quot;, verify_signature_and_fee),
-        Frame(&quot;EXECUTE&quot;, &quot;transfer 50 tokens&quot;, execute_transfer),
-        Frame(&quot;EXECUTE&quot;, &quot;approve spender for 20 tokens&quot;, execute_approve),
-    ])
-
-
-if __name__ == &quot;__main__&quot;:
-    print(&quot;EIP-8141 Frame Transaction — VERIFY then EXECUTE, EXECUTE, ...\n&quot;)
-
-    print(&quot;Case 1: valid signature, sufficient balance&quot;)
-    ctx = {&quot;signature_valid&quot;: True, &quot;balance&quot;: 100, &quot;max_fee&quot;: 5, &quot;transfer_amount&quot;: 50, &quot;approve_amount&quot;: 20}
-    ok = build_transaction().execute(ctx)
-    print(f&quot;Transaction succeeded: {ok}, final state: {ctx}\n&quot;)
-
-    print(&quot;Case 2: invalid signature — VERIFY frame blocks all EXECUTE frames&quot;)
-    ctx = {&quot;signature_valid&quot;: False, &quot;balance&quot;: 100, &quot;max_fee&quot;: 5, &quot;transfer_amount&quot;: 50, &quot;approve_amount&quot;: 20}
-    ok = build_transaction().execute(ctx)
-    print(f&quot;Transaction succeeded: {ok}&quot;)
-</code></pre>
-      <p class="code-link"><a href="../code/pocs/erc-8141.py">docs/code/pocs/erc-8141.py</a></p>
+<h3>왜 감사 강화가 아니라 이것인가</h3>
+<p>리퀴드는 감사를 받았습니다; <em>불변식 감시</em> 는 받지 않았습니다. 실패는 감사가 코드에서 놓친 버그가 아니라 — 아무것도 계산하지 않던 살아 있는 상태에 대한 참인 명제(<code>준비금 &amp;lt; 발행량</code>)였습니다. 감사는 코드가 명세대로라는 확신을 키우고, 입력이 현실과 어긋나는 순간에는 아무것도 못 합니다. 둘은 다른 방어선이고 서로를 대체하지 못합니다. 교차: <code>foundry-invariant-reachability</code>(테스트 시점의 같은 생각 — 불변식 테스트는 자기 액션이 닿는 것만 잡는다), <code>simulate-before-sign</code>(실행 전 절반), <code>who-holds-the-mint</code>(발행은 불변식이 묶어야 할 바로 그 특권 쓰기), <code>receipt-is-not-settlement</code>(성공 플래그는 상태가 건전하다는 증명이 아니다).</p>
+      
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-what-encryption-does-not-hide.html">&larr; 30. Hiding the amount is the easy half</a><a href="pocs-receipt-is-not-settlement.html">32. A successful receipt is not settlement &rarr;</a></div>
+    <div class="pager"><a href="pocs-interop-os-one-network.html">&larr; 66. &quot;As if all chains are one network&quot; is the value and the risk at once</a><a href="pocs-storage-collision-admin-takeover.html">68. The code was right and the layout was wrong &rarr;</a></div>
   </div>
   </main>
 </div>
