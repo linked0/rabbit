@@ -22,6 +22,11 @@ RUN pnpm build
 FROM node:22-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+# Prisma 의 쿼리 엔진(debian-openssl-3.0.x)은 시스템 libssl3 에 동적 링크된다.
+# node:22-slim 은 libssl 을 담지 않아, 이게 없으면 엔진 require 가 실패하고 모든 DB
+# 쿼리가 "cannot find libssl" 로 죽는다 — mandate 패널만이 아니라 전부 (jay, 2026-09-08).
+# 빌더 단계는 prisma generate 만 하므로 libssl 이 필요 없지만, 런타임은 필요하다.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
