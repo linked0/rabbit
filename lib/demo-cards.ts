@@ -47,6 +47,11 @@ export type DemoCard = {
   // 직접 걸리거나, 다른 카드들이 반복해서 참조하는 허브이거나, 도메인을 넘어 이전되는 방법이거나.
   // 선별이 목적이므로 늘려서는 안 된다. 전부가 중요하면 아무것도 중요하지 않다.
   important?: boolean;
+  // "최근 완료" 표시용 KST 날짜 (jay, 2026-09-08). done 카드 중 doneAt 이 **가장 최근 날짜**인
+  // 것들만 왼쪽 레일 점이 하늘색이 된다. 다음 KST 날짜에 새 완료가 등록되면 그날 것이 하늘색이
+  // 되고 이전 것은 보통 done(초록)으로 돌아간다 — "new" 창처럼 저절로 정리되므로 나중에 지울
+  // 필요가 없다. 같은 날 여러 개를 등록하면 함께 하늘색으로 유지된다. 정렬에는 쓰지 않는다.
+  doneAt?: string;
   howTo: string;
   howToKo: string;
   // Longer technical write-up rendered in the "Technical Notes" section at the page bottom
@@ -96,6 +101,27 @@ export function cardTier(card: DemoCard, newSince: string = newSinceDate()): 0 |
   return 3; // 계획된 것 — 회색
 }
 
+// "최근 완료"(하늘색 점) — done 카드 중 doneAt 이 가장 최근 KST 날짜인 것만.
+// 가장 최근 doneAt 을 찾아 두고(latestDoneAt), 그 날짜와 일치하는 done 카드에만 하늘색을 준다.
+// 다음 날 새 완료가 등록되면 최댓값이 바뀌어 이전 날 것은 저절로 보통 done 으로 돌아간다.
+export function latestDoneAt(cards: DemoCard[]): string | null {
+  let latest: string | null = null;
+  for (const c of cards) {
+    if ((c.status === 'done' || c.status === 'live') && c.doneAt) {
+      if (latest === null || c.doneAt > latest) latest = c.doneAt;
+    }
+  }
+  return latest;
+}
+
+export function isRecentlyDone(card: DemoCard, latest: string | null): boolean {
+  return (
+    (card.status === 'done' || card.status === 'live') &&
+    !!card.doneAt &&
+    card.doneAt === latest
+  );
+}
+
 export function sortDemoCards(cards: DemoCard[]): DemoCard[] {
   const newSince = newSinceDate();
   return [...cards].sort((a, b) => {
@@ -105,6 +131,13 @@ export function sortDemoCards(cards: DemoCard[]): DemoCard[] {
     if (a.date && b.date) return b.date.localeCompare(a.date); // ISO 문자열이라 사전순 = 시간순
     if (a.date) return -1;
     if (b.date) return 1;
+    // "최근 완료"(doneAt)는 done 칸의 **맨 끝**으로 가라앉힌다 (jay, 2026-09-08: "last in done
+    // number, not in the middle"). 그래야 기존 done 카드 번호가 그대로 유지되고, 새로 완료된
+    // 카드만 done 블록 끝에 붙는다. doneAt 이 있는 카드는 오직 최근 완료뿐이라 다른 카드 순서는
+    // 건드리지 않는다. 둘 다 있으면 최신 doneAt 이 뒤로 — 그래도 배열 순서로 안정 정렬된다.
+    if (a.doneAt && b.doneAt) return a.doneAt.localeCompare(b.doneAt);
+    if (a.doneAt) return 1;
+    if (b.doneAt) return -1;
     return 0;
   });
 }

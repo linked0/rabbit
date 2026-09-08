@@ -614,7 +614,8 @@ export const POC_CARDS: DemoCard[] = [
     titleKo: "Merkle vs Verkle",
     description: "Why proof size, not hashing speed, is what decides whether stateless clients are possible.",
     descriptionKo: "무상태 클라이언트의 가능 여부를 가르는 건 해싱 속도가 아니라 증명 크기라는 것.",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-08",
     updated: "2026-09-07",
     important: true,
     howTo: "Reference — docs/knowledge/merkle-vs-verkle.html.",
@@ -1328,7 +1329,8 @@ export const POC_CARDS: DemoCard[] = [
       "An L2's pitch moved from cheap blockspace to run your chain here, which is a revenue model moving from transaction fees to rent on settlement space. That makes chain selection a commercial negotiation, and the terms — sequencer control, fee sharing, exit cost — are the product's margin.",
     descriptionKo:
       "L2의 소개 문장이 **싼 블록스페이스**에서 **당신의 체인을 여기서 돌려라**로 옮겨갔습니다. 이는 수익 모델이 **거래 수수료에서 정산 공간의 임대료**로 옮겨간 것입니다. 그러면 **체인 선택은 상업적 협상**이 되고, 조건 — **시퀀서 통제권·수수료 분배·이탈 비용** — 이 곧 **제품의 마진**입니다.",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-08",
     // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
     important: true,
     howTo:

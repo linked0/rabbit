@@ -107,7 +107,7 @@ execFileSync(
 const require_ = createRequire(import.meta.url);
 const { POC_CARDS } = require_(path.join(TMP_DIR, 'poc-cards.js'));
 const { TIL_REMAINING } = require_(path.join(TMP_DIR, 'algorithm-cards.js'));
-const { sortDemoCards, cardTier, NEW_WINDOW_DAYS } = require_(path.join(TMP_DIR, 'demo-cards.js'));
+const { sortDemoCards, cardTier, NEW_WINDOW_DAYS, latestDoneAt, isRecentlyDone } = require_(path.join(TMP_DIR, 'demo-cards.js'));
 fs.rmSync(TMP_DIR, { recursive: true, force: true });
 
 // 앱의 /poc 페이지와 같은 목록·순서 (app/poc/page.tsx): 라이브는 /live 허브 소관이라 뺀다.
@@ -231,7 +231,11 @@ const DOT = [
   { color: '#eab308', label: 'NEW' },
   { color: '#64748b', label: 'PLANNED' },
 ];
-const navDot = (c) => DOT[cardTier(c)];
+// "최근 완료" — done 점(초록) 대신 하늘색 (jay, 2026-09-08). done 카드 중 doneAt 이 가장 최근
+// KST 날짜인 것만. 다음 날 새 완료가 등록되면 최댓값이 옮겨가 이전 것은 저절로 초록으로 돌아간다.
+const RECENT_DOT = { color: '#38bdf8', label: 'RECENTLY DONE' };
+const LATEST_DONE_AT = latestDoneAt(POC_CARDS);
+const navDot = (c) => (isRecentlyDone(c, LATEST_DONE_AT) ? RECENT_DOT : DOT[cardTier(c)]);
 
 
 
