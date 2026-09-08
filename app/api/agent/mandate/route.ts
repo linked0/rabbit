@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { agentAddress, agentKeyIsPersistent } from "@/lib/agent-wallet";
+import { agentAddress, agentAddressOrNull, agentKeyIsPersistent } from "@/lib/agent-wallet";
 import { verex } from "@/lib/verex-client";
 import { delegationEnvOrNull, storedDelegator } from "@/lib/delegation";
 
@@ -26,19 +26,28 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.email) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
+  // 이 라우트는 **읽기** 경로다 — 패널을 처음 채운다. `agentAddress()` 는 키가 없으면
+  // (키 없는 배포, 재시작 직후) 던지는데, 여기서 던지면 응답이 통째로 500 이 되고 패널은
+  // 주소까지 잃어 "not loaded yet" 만 남는다 — 프리플라이트·참여자가 던지지 않는
+  // `agentAddressOrNull()` 을 쓰는 바로 그 이유다 (jay, 2026-09-08). 읽기 경로도 통일한다:
+  // 주소가 없으면 500 대신 그 사실을 그대로 내보내고, 왜 없는지는 아래 note 로 말한다.
+  const agent = agentAddressOrNull();
+
   // DB 가 죽어도 라우트 전체를 500 으로 만들지 않는다 (jay, 2026-09-07). 예전에는 이
   // 호출이 던지면 응답이 통째로 사라져서, 패널은 에이전트 주소까지 잃고 "agent address
   // is not loaded yet" 만 남았다 — 참여자 표(다른 라우트)는 멀쩡한데. 주소·USDC 는
   // env/verex 소관이므로 그대로 주고, 무엇이 빠졌는지는 mandateError 로 말한다.
   let mandate: Awaited<ReturnType<typeof prisma.mandate.findFirst>> = null;
   let mandateError: string | null = null;
-  try {
-    mandate = await prisma.mandate.findFirst({
-      where: { agent: agentAddress(), revokedAt: null },
-      orderBy: { createdAt: "desc" },
-    });
-  } catch (e) {
-    mandateError = `mandate DB unavailable — ${e instanceof Error ? e.message.split("\n")[0] : String(e)}`;
+  if (agent) {
+    try {
+      mandate = await prisma.mandate.findFirst({
+        where: { agent, revokedAt: null },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch (e) {
+      mandateError = `mandate DB unavailable — ${e instanceof Error ? e.message.split("\n")[0] : String(e)}`;
+    }
   }
 
   const env = await delegationEnvOrNull();
@@ -51,10 +60,15 @@ export async function GET() {
     chainId: cfg?.chainId ?? env?.chainId ?? null,
     // 브라우저에 나가는 유일한 것. 개인키는 서버에 있고, 페이지는 이 사실을
     // "testnet-grade"로 표시해야 한다 — 숨기면 데모가 정직하지 않다.
-    agentAddress: agentAddress(),
+    agentAddress: agent,
     agentKeyIsPersistent: agentKeyIsPersistent(),
     delegationDeployed: Boolean(env),
-    mandateError,
+    // 키가 없으면 그 사실을 loadErr 자리로 보내, 패널이 "왜 비었는지"를 말하게 한다.
+    mandateError:
+      mandateError ??
+      (agent
+        ? null
+        : "AGENT_PRIVATE_KEY is not set on the server — the console has no agent address to grant to."),
     mandate: mandate
       ? {
           id: mandate.id,
