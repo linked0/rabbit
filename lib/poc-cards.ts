@@ -1023,6 +1023,8 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo:
       "2026-07-28 개정판이 **세션 핸드셰이크를 없앴습니다.** MCP 서버가 **평범한 무상태 HTTP 서비스**가 되어 서버리스·엣지에 배포되고, **여느 엔터프라이즈 API처럼 인가**됩니다. 그 프로토콜 변화가 **나머지 두 위치 밑에 깔려 있고**, 그래서 **이것부터** 해야 합니다.",
     status: "soon",
+    // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
+    important: true,
     howTo:
       "Build one narrow tool server against 2026-07-28 from the start rather than porting a 2025-11-25 one, deploy it to Cloud Run, and connect it to Claude. Then the client side: hold a Zapier MCP connection in a server-side route (URL plus auth token, never exposed to the browser) and forward tool calls through the Anthropic API's native MCP connector or a generic client via @modelcontextprotocol/sdk — scoped to an explicit allowlist of safe actions rather than handing an agent unrestricted access to real accounts. The framework question is a 30-minute skim afterwards: whether an existing subagent can be wrapped in Google ADK and served over MCP. Spec: blog.modelcontextprotocol.io, release candidate 2026-07-28.",
     howToKo:
@@ -1323,6 +1325,8 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo:
       "L2의 소개 문장이 **싼 블록스페이스**에서 **당신의 체인을 여기서 돌려라**로 옮겨갔습니다. 이는 수익 모델이 **거래 수수료에서 정산 공간의 임대료**로 옮겨간 것입니다. 그러면 **체인 선택은 상업적 협상**이 되고, 조건 — **시퀀서 통제권·수수료 분배·이탈 비용** — 이 곧 **제품의 마진**입니다.",
     status: "soon",
+    // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
+    important: true,
     howTo:
       "Not yet scoped — and the deliverable is a term sheet, not an evaluation. For each candidate host, fill four rows: who runs the sequencer and can they censor or reorder; how fees are split and who can change the split; what it costs to leave, in engineering weeks and in liquidity that does not follow; and what happens to open positions if the host stops operating. Price the fourth row first, because it is the only one nobody markets. Source: Offchain Labs' shift toward custom and app-specific chains, read against LayerZero's ATLAS announcement of 2026-08-26 — two starting points converging on selling a place rather than a tool. Both to confirm against primary material.",
     howToKo:
@@ -1351,6 +1355,8 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo:
       "Base App 에서 탐낼 것은 **관객이 아닙니다.** **모든 사용자가 이미 만들어지고 이미 충전된 패스키 스마트 계정을 들고 도착한다**는 것 — **대부분의 크립토 제품 퍼널을 죽이는 두 단계를 지워 줍니다.** 대가는 **발견(discovery)이 남의 것**이라는 점입니다.",
     status: "soon",
+    // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
+    important: true,
     howTo:
       "An afternoon, and the first task is a manifest rather than a rewrite. A Mini App is an ordinary web app running inside the client with a wallet already present, so an existing Next.js app is most of the work already done: serve the manifest the client looks for, call the SDK's ready() so the splash screen clears, and open it in the client's own preview tool before publishing anything. Then measure the only number that decides whether it was worth it — of the people who see a share, how many open it, and of those, how many transact. Everything specific below (the manifest path, SDK and framework names, whether swap or trade intents are exposed to Mini Apps, and whether there is a review or allowlist step) is from a mid-2026 understanding and moves fast: confirm against Base's current Mini App and MiniKit documentation and the Base App release notes before building.",
     howToKo:
@@ -1469,6 +1475,8 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo:
       "Coldcard의 엔트로피 소스, Trezor의 배송 위탁사, Ledger의 이더리움 앱 — 세 제조사가 한 달 안에 각각 다른 층에서 사고를 냈습니다. 브랜드 이름 하나는 실은 네 개의 독립된 공급망이고, 이번 달에 조용했던 층이야말로 무너져도 티가 나지 않는 층입니다.",
     status: "soon",
+    // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
+    important: true,
     howTo:
       "Not yet scoped — and the deliverable is a one-page comparison table filled in before any purchase, not after. For each candidate device, find five things and write down where each answer came from: (a) the most recent independent audit of the app that signs for the chain you actually use, with its date; (b) whether signing uses deterministic nonces (RFC 6979) or hedged determinism, and whether that is verifiable rather than claimed; (c) what generates the seed and whether the entropy path has ever been audited end-to-end — plus whether the device accepts user-supplied entropy; (d) the manufacturer's fulfilment and logistics partners, whether a purchase requires an account and a shipping address, and its last incident disclosure read in full; (e) whether firmware can replace the signature algorithm or the curve is fixed in silicon. Two of the five are testable at the desk: sign the same message twice and compare bytes, and add dice entropy if the device offers it. Sources: the Coldcard Mk2/Mk3 seed-entropy defect (July 2026), Trezor's ShipMonk disclosure (2026-08-13), and the Ledger Ethereum app fix (2026-08-25, as reported — read the advisory before repeating the severity).",
     howToKo:
@@ -1617,6 +1625,8 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo:
       "L2 를 직접 만드는 것은 **응용이 운영하는 층이 아니라 빌려 쓰는 층**을 배우는 일이라, 공부 깊이는 **\"임대 조건을 읽을 만큼\"** 이면 됩니다. 대신 만들 값어치가 있는 것은 **지원 매트릭스**입니다 — **\"EIP-7702 를 지원한다\"** 는 **서로 독립된 사실 셋**을 한 문장으로 말한 것이고, **사용자가 실제로 할 수 있는지를 정하는 것은 세 번째뿐**이기 때문입니다.",
     status: "soon",
+    // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
+    important: true,
     updated: "2026-08-29",
     howTo:
       "Not yet scoped, and it is three passes rather than one build. First, Anvil with the right hardfork, optionally forking a public chain so real contract state is in play: exercise the authorization tuple, the delegation, revocation, and what happens when the same authorization is replayed on a different chain id. The deliverable of this pass is a test suite that pins the semantics the product relies on — not a demo. Second, the same transactions through a public testnet that has the fork, over a real RPC, and record the two numbers Anvil structurally cannot produce: the L1 data component of the fee, and the wall-clock gap between \"included\" and \"final\". Third, and this is the one that decides the product: a matrix of wallet by chain with four columns — does the wallet accept the authorization at all, does it render what is being delegated, does it show the delegate address, and can the user revoke afterwards. Keep the screenshots; the failures are a product decision rather than a bug report. Wallet support for 7702 moves week to week, so treat any table including this one as needing re-checking at source.",
@@ -3694,6 +3704,8 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo:
       "x402 의 홍보 문구는 **결제 흐름에 프로세서가 없다**는 것이지만, 유료 요청 하나하나는 여전히 **검증하고 정산해 주는 facilitator** 를 지나갑니다 — **스펙은 이 역할을 무허가로 열어 두었고, 시장은 대부분 Coinbase 에서 빌려 씁니다.** 유료 엔드포인트 하나를 세 facilitator — **Coinbase 호스팅 기본값, 경쟁사 하나, 셀프호스팅 하나** — 에 붙여 보고, 지연시간을 비교하기 전에 **권한 행부터 채웁니다: 누가 정산을 거부할 수 있고, 누가 트래픽을 보고, 수수료 면제가 끝나면 누가 가격을 정하는가.**",
     status: "soon",
+    // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
+    important: true,
     updated: "2026-09-02",
     howTo:
       "Not yet scoped — the deliverable is one endpoint, three facilitator configs, and a filled authority table.\n\n1. **The default.** Protect one API route with x402 middleware and point it at the Coinbase CDP facilitator (Base, USDC). Record what onboarding demanded (CDP account, verification), the settle latency, and today's fee line.\n2. **The swap test.** Change the facilitator config to a second hosted one (PayAI; or Stripe's private preview if admitted). The code diff should be about one line — write down what *actually* changed: chains, fee schedule, refund and reporting surface, terms of service.\n3. **The exit door.** Self-host the reference facilitator: your own RPC, your own gas wallet, your own retry queue. The ops delta between this and step 1, measured in hours, is the price of the hosted default.\n4. **The matrix.** Per facilitator, answer: can it decline to settle a valid payment? what does it log per request? who can end the fee waiver, with what notice? and when it dies mid-settle, who owns the retry (`x402-settlement-retry` owns that path).\n\nReferences: [x402 facilitator docs](https://docs.cdp.coinbase.com/x402/core-concepts/facilitator), [x402.org ecosystem — facilitators](https://www.x402.org/ecosystem?category=facilitators).",
