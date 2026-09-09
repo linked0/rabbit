@@ -101,24 +101,27 @@ export function cardTier(card: DemoCard, newSince: string = newSinceDate()): 0 |
   return 3; // 계획된 것 — 회색
 }
 
-// "최근 완료"(하늘색 점) — done 카드 중 doneAt 이 가장 최근 KST 날짜인 것만.
-// 가장 최근 doneAt 을 찾아 두고(latestDoneAt), 그 날짜와 일치하는 done 카드에만 하늘색을 준다.
-// 다음 날 새 완료가 등록되면 최댓값이 바뀌어 이전 날 것은 저절로 보통 done 으로 돌아간다.
-export function latestDoneAt(cards: DemoCard[]): string | null {
-  let latest: string | null = null;
+// "최근 완료"(하늘색 점) — done 카드 중 doneAt 이 **가장 최근 두 완료일**에 드는 것 (jay, 2026-09-09:
+// "recently done 을 이틀 유지"). 예전에는 가장 최근 doneAt 하루치만 하늘색이었지만, 이제 서로 다른
+// 완료 날짜 중 최근 두 개를 유지한다 — 새 완료일이 등록돼도 직전 완료일까지는 함께 하늘색으로
+// 남고, 완료일이 셋째로 밀려날 때 비로소 보통 done(초록)으로 돌아간다. 벽시계가 아니라
+// 데이터(완료일)에 상대적이라, 페이지를 언제 다시 만들든 결과가 같다. 정렬에는 쓰지 않는다.
+export const RECENT_DONE_DAYS = 2;
+
+export function recentDoneDates(cards: DemoCard[], days: number = RECENT_DONE_DAYS): string[] {
+  const dates = new Set<string>();
   for (const c of cards) {
-    if ((c.status === 'done' || c.status === 'live') && c.doneAt) {
-      if (latest === null || c.doneAt > latest) latest = c.doneAt;
-    }
+    if ((c.status === 'done' || c.status === 'live') && c.doneAt) dates.add(c.doneAt);
   }
-  return latest;
+  // 서로 다른 완료 날짜를 내림차순으로 정렬해 최근 N개(기본 2개)만 남긴다.
+  return [...dates].sort().reverse().slice(0, days);
 }
 
-export function isRecentlyDone(card: DemoCard, latest: string | null): boolean {
+export function isRecentlyDone(card: DemoCard, recentDates: string[]): boolean {
   return (
     (card.status === 'done' || card.status === 'live') &&
     !!card.doneAt &&
-    card.doneAt === latest
+    recentDates.includes(card.doneAt)
   );
 }
 
