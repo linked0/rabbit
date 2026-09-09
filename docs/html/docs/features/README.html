@@ -217,9 +217,10 @@ the existing services so they cooperate rather than sit alone.</p>
 </tbody></table>
 <p><em>(#1–8 are the committed services; #9 Base App is a strategy draft jay will plan later. Tracks that are <strong>not</strong> committed services live in the Dark Horse section below.)</em></p>
 <h2>Running each service on the terminal</h2>
-<p>Each service is its own repo (sibling folders under <code>~/work</code>), its own <code>pnpm</code>/Foundry project. Most
-web apps are Next.js on <strong>:3000</strong> by default, so run one at a time or override the port; Rabbit is on
-<strong>:3100</strong>. Services with contracts need a local <strong>anvil</strong> (chainId 31337) started first.</p>
+<p>Each service is its own repo (sibling folders under <code>~/work</code>), its own <code>pnpm</code>/Foundry project. Web
+ports follow one rule — <strong><code>port = 3000 + (service #) × 10</code></strong> — so nothing collides and you can run
+several side by side. The Rabbit portal is the exception at <strong>:3100</strong>. Services with contracts need a
+local <strong>anvil</strong> started first.</p>
 <table>
 <thead>
 <tr>
@@ -235,7 +236,7 @@ web apps are Next.js on <strong>:3000</strong> by default, so run one at a time 
 <td><strong>Rabbit</strong> (portal)</td>
 <td><code>rabbit</code></td>
 <td><code>pnpm install</code> → <code>pnpm dev</code></td>
-<td><a href="http://localhost:3100">http://localhost:3100</a></td>
+<td>:3100</td>
 </tr>
 <tr>
 <td>1</td>
@@ -248,50 +249,50 @@ web apps are Next.js on <strong>:3000</strong> by default, so run one at a time 
 <td>2</td>
 <td><strong>Verex</strong> — markets + onboarding/MM</td>
 <td><code>verex</code></td>
-<td><code>pnpm install</code>; <strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>./scripts/reset.sh</code> (deploy CTF backbone + seed 10 markets); <strong>t3</strong> <code>pnpm --filter @verex/api dev</code>; <strong>t4</strong> <code>pnpm --filter @verex/web dev</code>. Re-run <code>./scripts/reset.sh</code> after any anvil restart.</td>
-<td>web :3000 · api :4000</td>
+<td><code>pnpm install</code>; <strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>./scripts/reset.sh</code> (deploy CTF backbone + seed 10 markets); <strong>t3</strong> <code>pnpm --filter @verex/api dev</code>; <strong>t4</strong> <code>pnpm --filter @verex/web dev -- -p 3020</code>. Re-run <code>./scripts/reset.sh</code> after any anvil restart.</td>
+<td>web :3020 · api :4000</td>
 </tr>
 <tr>
 <td>3</td>
 <td><strong>DeFi</strong> — EtherFi study</td>
 <td><code>jayverse-defi</code></td>
-<td><strong>t1</strong> <code>anvil</code>; <code>forge test</code>; <code>npm run deploy</code> (writes <code>addresses.json</code>); <code>npm run study</code> (CLI walk-through); <code>npm run dev</code> (Vite)</td>
-<td><a href="http://localhost:5183">http://localhost:5183</a></td>
+<td><strong>t1</strong> <code>anvil</code>; <code>forge test</code>; <code>npm run deploy</code> (writes <code>addresses.json</code>); <code>npm run study</code> (CLI walk-through); <code>npm run dev -- --port 3030</code> (Vite)</td>
+<td>:3030</td>
 </tr>
 <tr>
 <td>4</td>
 <td><strong>Personas</strong> — NFT market</td>
 <td><code>jayverse-personas</code></td>
-<td><code>forge test</code>; <strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast</code> (mints 2); then <code>cd app &amp;&amp; pnpm install &amp;&amp; pnpm dev</code></td>
-<td><a href="http://localhost:3000">http://localhost:3000</a></td>
+<td>in <code>contracts/</code>: <code>forge test</code>; <strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast</code> (mints 2); then <code>cd ../app &amp;&amp; pnpm install &amp;&amp; pnpm dev -- -p 3040</code></td>
+<td>:3040</td>
 </tr>
 <tr>
 <td>5</td>
 <td><strong>Game</strong> — 3D street</td>
 <td><code>jayverse-game</code></td>
-<td><code>pnpm install</code> → <code>pnpm dev</code> (open <code>/street</code>)</td>
-<td><a href="http://localhost:3000">http://localhost:3000</a></td>
+<td><code>pnpm install</code> → <code>pnpm dev -- -p 3050</code> (open <code>/street</code>)</td>
+<td>:3050</td>
 </tr>
 <tr>
 <td>6</td>
 <td><strong>Wallet</strong> — simulate-before-sign</td>
 <td><code>jayverse-wallet</code></td>
-<td><strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>pnpm install</code> → <code>pnpm dev</code></td>
-<td><a href="http://localhost:3000">http://localhost:3000</a></td>
+<td><strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>pnpm install</code> → <code>pnpm dev -- -p 3060</code></td>
+<td>:3060</td>
 </tr>
 <tr>
 <td>7</td>
 <td><strong>Token + Exchange</strong></td>
 <td><code>jayverse-token</code></td>
-<td><code>forge test</code>; <strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast</code> (seed pool); then <code>cd app &amp;&amp; pnpm install &amp;&amp; pnpm dev</code></td>
-<td><a href="http://localhost:3000">http://localhost:3000</a></td>
+<td>in <code>contracts/</code>: <code>forge test</code>; <strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast</code> (seed pool); then <code>cd ../app &amp;&amp; pnpm install &amp;&amp; pnpm dev -- -p 3070</code></td>
+<td>:3070</td>
 </tr>
 <tr>
 <td>8</td>
 <td><strong>Authority Auditor</strong></td>
 <td><code>jayverse-auditor</code></td>
-<td><code>pnpm install</code> → <code>pnpm dev</code></td>
-<td><a href="http://localhost:3000">http://localhost:3000</a></td>
+<td><code>pnpm install</code> → <code>pnpm dev -- -p 3080</code></td>
+<td>:3080</td>
 </tr>
 <tr>
 <td>9</td>
@@ -302,9 +303,10 @@ web apps are Next.js on <strong>:3000</strong> by default, so run one at a time 
 </tr>
 </tbody></table>
 <blockquote>
-<p><strong>Port note:</strong> Personas, Game, Wallet, Token, and Auditor all take the Next.js default <strong>:3000</strong>,
-so run them one at a time or override with <code>pnpm dev -- -p 3001</code>. Rabbit (:3100), Verex web (:3000)
-/ api (:4000), and DeFi&#39;s Vite harness (:5183) have their own ports.</p>
+<p><strong>Ports:</strong> each web is pinned with <code>-p &lt;port&gt;</code> (Vite: <code>--port</code>) to <code>3000 + # × 10</code> — Verex :3020,
+DeFi :3030, Personas :3040, Game :3050, Wallet :3060, Token :3070, Auditor :3080 — so they run
+side by side without collisions. Fixed extras: Rabbit portal <strong>:3100</strong>, Verex API <strong>:4000</strong>, anvil
+<strong>:8545</strong>. (Bake the port into each repo&#39;s <code>dev</code> script if you don&#39;t want to pass the flag each time.)</p>
 </blockquote>
 <h2>Dark Horse — candidate tracks (#10)</h2>
 <p>Not committed services like #1–9 — <strong>candidates</strong> to pick up after the core is built. Full detail

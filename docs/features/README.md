@@ -111,26 +111,28 @@ the existing services so they cooperate rather than sit alone.
 
 ## Running each service on the terminal
 
-Each service is its own repo (sibling folders under `~/work`), its own `pnpm`/Foundry project. Most
-web apps are Next.js on **:3000** by default, so run one at a time or override the port; Rabbit is on
-**:3100**. Services with contracts need a local **anvil** (chainId 31337) started first.
+Each service is its own repo (sibling folders under `~/work`), its own `pnpm`/Foundry project. Web
+ports follow one rule — **`port = 3000 + (service #) × 10`** — so nothing collides and you can run
+several side by side. The Rabbit portal is the exception at **:3100**. Services with contracts need a
+local **anvil** started first.
 
 | # | Service | Repo | Terminal steps | Opens |
 |---|---------|------|----------------|-------|
-| — | **Rabbit** (portal) | `rabbit` | `pnpm install` → `pnpm dev` | http://localhost:3100 |
+| — | **Rabbit** (portal) | `rabbit` | `pnpm install` → `pnpm dev` | :3100 |
 | 1 | **Agentic AA** | in `rabbit` | see Rabbit — pages `/live/aa`, `/live/agent/console` | :3100 |
-| 2 | **Verex** — markets + onboarding/MM | `verex` | `pnpm install`; **t1** `anvil`; **t2** `./scripts/reset.sh` (deploy CTF backbone + seed 10 markets); **t3** `pnpm --filter @verex/api dev`; **t4** `pnpm --filter @verex/web dev`. Re-run `./scripts/reset.sh` after any anvil restart. | web :3000 · api :4000 |
-| 3 | **DeFi** — EtherFi study | `jayverse-defi` | **t1** `anvil`; `forge test`; `npm run deploy` (writes `addresses.json`); `npm run study` (CLI walk-through); `npm run dev` (Vite) | http://localhost:5183 |
-| 4 | **Personas** — NFT market | `jayverse-personas` | `forge test`; **t1** `anvil`; **t2** `forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast` (mints 2); then `cd app && pnpm install && pnpm dev` | http://localhost:3000 |
-| 5 | **Game** — 3D street | `jayverse-game` | `pnpm install` → `pnpm dev` (open `/street`) | http://localhost:3000 |
-| 6 | **Wallet** — simulate-before-sign | `jayverse-wallet` | **t1** `anvil`; **t2** `pnpm install` → `pnpm dev` | http://localhost:3000 |
-| 7 | **Token + Exchange** | `jayverse-token` | `forge test`; **t1** `anvil`; **t2** `forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast` (seed pool); then `cd app && pnpm install && pnpm dev` | http://localhost:3000 |
-| 8 | **Authority Auditor** | `jayverse-auditor` | `pnpm install` → `pnpm dev` | http://localhost:3000 |
+| 2 | **Verex** — markets + onboarding/MM | `verex` | `pnpm install`; **t1** `anvil`; **t2** `./scripts/reset.sh` (deploy CTF backbone + seed 10 markets); **t3** `pnpm --filter @verex/api dev`; **t4** `pnpm --filter @verex/web dev -- -p 3020`. Re-run `./scripts/reset.sh` after any anvil restart. | web :3020 · api :4000 |
+| 3 | **DeFi** — EtherFi study | `jayverse-defi` | **t1** `anvil`; `forge test`; `npm run deploy` (writes `addresses.json`); `npm run study` (CLI walk-through); `npm run dev -- --port 3030` (Vite) | :3030 |
+| 4 | **Personas** — NFT market | `jayverse-personas` | in `contracts/`: `forge test`; **t1** `anvil`; **t2** `forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast` (mints 2); then `cd ../app && pnpm install && pnpm dev -- -p 3040` | :3040 |
+| 5 | **Game** — 3D street | `jayverse-game` | `pnpm install` → `pnpm dev -- -p 3050` (open `/street`) | :3050 |
+| 6 | **Wallet** — simulate-before-sign | `jayverse-wallet` | **t1** `anvil`; **t2** `pnpm install` → `pnpm dev -- -p 3060` | :3060 |
+| 7 | **Token + Exchange** | `jayverse-token` | in `contracts/`: `forge test`; **t1** `anvil`; **t2** `forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast` (seed pool); then `cd ../app && pnpm install && pnpm dev -- -p 3070` | :3070 |
+| 8 | **Authority Auditor** | `jayverse-auditor` | `pnpm install` → `pnpm dev -- -p 3080` | :3080 |
 | 9 | **Base App — Mini App** | — | strategy draft only — nothing to run yet | — |
 
-> **Port note:** Personas, Game, Wallet, Token, and Auditor all take the Next.js default **:3000**,
-> so run them one at a time or override with `pnpm dev -- -p 3001`. Rabbit (:3100), Verex web (:3000)
-> / api (:4000), and DeFi's Vite harness (:5183) have their own ports.
+> **Ports:** each web is pinned with `-p <port>` (Vite: `--port`) to `3000 + # × 10` — Verex :3020,
+> DeFi :3030, Personas :3040, Game :3050, Wallet :3060, Token :3070, Auditor :3080 — so they run
+> side by side without collisions. Fixed extras: Rabbit portal **:3100**, Verex API **:4000**, anvil
+> **:8545**. (Bake the port into each repo's `dev` script if you don't want to pass the flag each time.)
 
 ## Dark Horse — candidate tracks (#10)
 
