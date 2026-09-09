@@ -467,10 +467,11 @@ const RAIL_SCRIPT = String.raw`
   // tierMode 가 'all' 로 남아 예전과 완전히 동일하게 동작한다 (jay, 2026-09-08).
   const tierBtns = [...document.querySelectorAll('.rail-tier .tier-btn')];
   let tierMode = tierBtns.some((b) => b.dataset.tierMode === 'important') ? 'important' : 'all';
-  // "Important" 필터는 중요(빨강)뿐 아니라 "최근 완료"(하늘)도 함께 보여 준다 (jay, 2026-09-08:
-  // "even though All clicked, the recently done and important should be shown"). 최근 완료는
-  // 방금 끝낸 강조 항목이라 중요 항목과 같은 줄에 두고 필터에서 숨기지 않는다.
-  const isImportant = (a) => { const d = a.querySelector('.nav-dot'); return !!d && (d.title === 'IMPORTANT' || d.title === 'RECENTLY DONE'); };
+  // "Important" 필터는 중요(빨강)뿐 아니라 "최근 완료"(하늘)와 "새 항목"(노랑)도 함께 보여 준다
+  // (jay, 2026-09-08: "even though All clicked, the recently done and important should be shown";
+  // 2026-09-09: "important button shows also new items"). 최근 완료는 방금 끝낸 강조 항목이고,
+  // 새 항목은 최근 창(NEW_WINDOW) 안에 손댄 것이라 둘 다 중요 줄에 두고 필터에서 숨기지 않는다.
+  const isImportant = (a) => { const d = a.querySelector('.nav-dot'); return !!d && (d.title === 'IMPORTANT' || d.title === 'RECENTLY DONE' || d.title === 'NEW'); };
   function applyFilter() {
     const q = input.value.trim().toLowerCase();
     let shown = 0;
