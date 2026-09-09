@@ -23,7 +23,7 @@
   (Ponder), and a single `addresses.json` published from the `jayverse-rails` config package.
 - My comment: For web application, all the apps will be run on Rabbit as a portal web app. If all the apps in the rabbit cloud, the instance could have much burdens. Is it good to seperate web app and api server between rabbit and verex? create a new md file called README-Jayverse.md in features folder and answer it.
 - My comment: you can create following related files for desiging the features with each starting the name jayverse. You can add the file links to the following table and also add the README-Jayverse.md file's link. Before that, what is the best beween Jayverse-README.md and README-Jayvers.md. You can choose at your will.
-  - **Answered (2026-09-07):** hub created at [../features/README-Jayverse.md](../features/README-Jayverse.md) (name chosen: `README-Jayverse.md`); it holds the web/API-separation answer and links every per-service `jayverse-*.md` design doc. Per-service doc links are added under each service section below.
+  - **Answered (2026-09-07):** hub created at [../features/README.md](../features/README.md) (name chosen: `README-Jayverse.md`); it holds the web/API-separation answer and links every per-service `jayverse-*.md` design doc. Per-service doc links are added under each service section below.
 
 
 ## Repo / agent / cloud map
@@ -194,7 +194,7 @@
 - (also on the radar: **데이터 과학 / data science** — pandas/numpy, Dune/The Graph; see the PoC
   "Essential Math for Data Science".)
 - PoC items feed these candidates before any one of them graduates to a numbered service.
-- Mirrored on the design hub: [`../features/README-Jayverse.md`](../features/README-Jayverse.md)
+- Mirrored on the design hub: [`../features/README.md`](../features/README.md)
   "Dark Horse — candidate tracks (#10)".
 
 ## ETC

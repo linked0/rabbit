@@ -3,7 +3,7 @@
 > 소스 문서:
 > - 설계: [docs/features/jayverse-game.md](../features/jayverse-game.md),
 >   [docs/features/jayverse-personas.md](../features/jayverse-personas.md),
->   허브 [docs/features/README-Jayverse.md](../features/README-Jayverse.md)
+>   허브 [docs/features/README-Jayverse.md](../features/README.md)
 > - 플랜: [docs/tasks/09-02-jayverse.md](../tasks/09-02-jayverse.md) §4(Persona) · §5(Unity/Game)
 >
 > - 설계(추가, 다른 세션): [docs/features/jayverse-aa.md](../features/jayverse-aa.md),
@@ -67,7 +67,7 @@ why on-chain" 섹션(3단계 표 + 왜-챗봇-아닌-NFT + 티켓 비유 + 컴�
 *(이 rabbit 문서 변경은 미커밋.)*
 
 **Result:** 문서가 "무엇을"에 더해 "왜"를 답하게 됐다. 배치 결정도 확정: 웹은 rabbit 클라우드 통합,
-API는 4:4, verex만 예외([README-Jayverse.md](../features/README-Jayverse.md)).
+API는 4:4, verex만 예외([README-Jayverse.md](../features/README.md)).
 
 ### jayverse-personas Slice A MVP 구현(민트 + 토큰게이트 채팅, 렌탈 컨트랙트 포함)
 

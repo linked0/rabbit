@@ -3,7 +3,7 @@
 *Jayverse service #9 (added 2026-09-08, jay). **Strategy / analysis draft** — captured from
 jay's write-up as-is; jay will review and turn it into a build plan later, so it is **not yet a
 build task** and has no Phases table. Sibling docs indexed in
-[README-Jayverse.md](README-Jayverse.md).*
+[README.md](README.md).*
 
 > **Verify before building — this is genuinely fast-moving.** Every mid-2026 platform specific
 > below (manifest path/filename, SDK and React-framework names, whether `ready()` still clears the

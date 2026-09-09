@@ -2,7 +2,7 @@
 
 **Purpose:** define an ecosystem ERC-20 (`JYVE`) used across Jayverse services, a tiny on-chain **exchange** (mini-AMM) that gives JYVE a readable price, and a minimal, dev-grade **bridge** to move it between jay's local Anvil fork and Sepolia. Token, exchange, and bridge are **one economic unit**, so they live together in a single **`jayverse-token`** repo (as packages), not three repos (jay, 2026-09-08). Design draft for review — nothing here is built yet.
 
-> Source: [`../tasks/09-02-jayverse.md`](../tasks/09-02-jayverse.md) §7 "Intra Jayverse Bridge" and jay's comment there ("We can create an ERC coin used in our ecosystem like JVRS or JVS… bridged between my Anvil chain and Sepolia. Show me some imaginary scenario."). Hub: [`README-Jayverse.md`](./README-Jayverse.md).
+> Source: [`../tasks/09-02-jayverse.md`](../tasks/09-02-jayverse.md) §7 "Intra Jayverse Bridge" and jay's comment there ("We can create an ERC coin used in our ecosystem like JVRS or JVS… bridged between my Anvil chain and Sepolia. Show me some imaginary scenario."). Hub: [`README.md`](./README.md).
 >
 > Note on scope vs §7: the plan's §7 records a "no new token" decision (the intra-ledger is USDC balances in a shared vault). This doc explores the *opposite* branch jay asked for — an actual ecosystem token plus a real cross-chain hop — as a parallel design for jay to compare against the ledger-only approach. It does not overturn §7; it gives the token option a concrete shape to review.
 

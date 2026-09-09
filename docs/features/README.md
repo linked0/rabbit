@@ -6,8 +6,8 @@ design hub** — it answers the cross-cutting architecture question below and in
 design docs.
 
 > **This file also carries the Rabbit feature-design index** — preserved as the
-> [History section](#history) at the bottom (merged here 2026-09-09; `README-Jayverse.md` now
-> redirects to this file).
+> [History section](#history) at the bottom (merged here 2026-09-09; the former
+> `README-Jayverse.md` has been removed — its links now point here).
 
 > **Naming (jay asked, 2026-09-07).** Chosen **`README-Jayverse.md`** over `Jayverse-README.md`,
 > for one reason: keeping the `README` prefix makes it sort right next to `README.md` in every file
@@ -143,7 +143,8 @@ umbrella plan's Remaining sections and in each service repo.
 
 > **Merged 2026-09-09.** This file (`docs/features/README.md`) was the Rabbit feature-design index
 > until the Jayverse hub (formerly `README-Jayverse.md`) was merged in above and became the lead.
-> `README-Jayverse.md` now redirects here. The original Rabbit content is preserved verbatim below.
+> The former `README-Jayverse.md` has since been removed. The original Rabbit content is preserved
+> verbatim below.
 
 # Rabbit — Feature Designs
 

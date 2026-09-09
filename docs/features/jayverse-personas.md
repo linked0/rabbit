@@ -6,7 +6,7 @@ per-message x402 payments turn "owning a persona" into ongoing creator revenue.
 
 *Source: [09-02-jayverse.md](../tasks/09-02-jayverse.md) "## 4. Persona market as NFT market"
 (jay's comment: "Show me the user scenario and what web app shows and the flow…"). Repo:
-`jayverse-personas` (app + contracts together). Hub: [README-Jayverse.md](README-Jayverse.md).
+`jayverse-personas` (app + contracts together). Hub: [README.md](README.md).
 DESIGN DRAFT for review — nothing here is built yet.*
 
 ---

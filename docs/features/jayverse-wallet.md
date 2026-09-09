@@ -7,7 +7,7 @@ warnings — **before** they sign it.*
 *Source: umbrella plan [`../tasks/09-02-jayverse.md`](../tasks/09-02-jayverse.md) §6 "Wallet &
 Simulation-before-sign as a service" and jay's comment there ("Show me the user scenario and what
 web app shows and the flow… describe what you will do in a new md file"). Design draft for review —
-not built. Sibling docs indexed in [README-Jayverse.md](README-Jayverse.md).*
+not built. Sibling docs indexed in [README.md](README.md).*
 
 ---
 

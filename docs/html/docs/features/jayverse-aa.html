@@ -43,7 +43,7 @@ without ever holding Sepolia ETH or signing twice.</p>
 (jay&#39;s comment: &quot;We start with AA which is ERC 4337. Show me the user scenario … the flow …
 It would be great to cooperate with my existing services.&quot;). Builds on the shipped
 <a href="https://github.com/linked0/rabbit/blob/main/app/live/aa/page.tsx">/live/aa</a> blocks and <a href="agentic-aa.html">agentic-aa.md</a>. Hub:
-<a href="README-Jayverse.html">README-Jayverse.md</a>.</em></p>
+<a href="README.html">README.md</a>.</em></p>
 <hr>
 <h2>Phases (build order)</h2>
 <table>
@@ -285,7 +285,7 @@ error-decoding hardening.</p>
 <h2>7. Local anvil vs Sepolia — the bundler switch (self-relay local)</h2>
 <p><strong>Decision (jay, 2026-09-07): don&#39;t implement a bundler — self-relay locally, thirdweb in the
 cloud, behind one environment switch.</strong></p>
-<p>The bundler is not a Jayverse service (see <a href="README-Jayverse.html">README-Jayverse.md</a>). It is a
+<p>The bundler is not a Jayverse service (see <a href="README.html">README.md</a>). It is a
 hosted relay that submits <code>EntryPoint.handleOps</code> on a public chain. That works for Sepolia, but
 <strong>not for a local anvil fork</strong>: anvil reports Sepolia&#39;s chainId (<code>11155111</code>), so thirdweb&#39;s
 chainId-keyed bundler would route to the <em>real</em> Sepolia, never to <code>127.0.0.1:8545</code>. Local tests

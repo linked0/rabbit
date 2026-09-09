@@ -9,7 +9,7 @@ we rebuild its core mechanics so the accounting is visible and testable.
 there: "I will implement basic EtherFi features so please describe what you will do." Clarified by
 jay (2026-09-07): **implement the algorithms to study DeFi — do not cooperate with real EtherFi.**
 This supersedes the earlier read-only-dashboard framing. Hub:
-[README-Jayverse.md](README-Jayverse.md). Repo: `jayverse-defi` (verex cloud); may live as a page
+[README.md](README.md). Repo: `jayverse-defi` (verex cloud); may live as a page
 inside rabbit until it earns its own repo.*
 
 ---

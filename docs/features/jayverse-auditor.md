@@ -7,7 +7,7 @@ cooperation — as a shareable report where every cell is backed by an evidence 
 
 *Source: [../tasks/09-02-jayverse.md](../tasks/09-02-jayverse.md) §8 Authority Auditor and jay's
 comment there ("Show me the user scenario and what web app shows and the flow. You can imagine
-some basic feature."). Sits under the Jayverse hub — [README-Jayverse.md](README-Jayverse.md).
+some basic feature."). Sits under the Jayverse hub — [README.md](README.md).
 Repo: `jayverse-auditor` (small Next.js app + rules engine, rabbit cloud). Depends on nothing
 on-chain, so it can ship first; richest once the Wallet service (#6) exists to dogfood against.
 This is a **design draft for review, not built.***
