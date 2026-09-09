@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Issuance-as-a-service — you mint a brand, the platform keeps the money — PoCs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 제목과 배지를 한 줄에 — .rail-title 이 block 이라 그냥 두면 배지가 아래로 떨어진다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-left:8px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-done { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  /* Important/All 등급 토글 (jay, 2026-09-08) — 진입 시 기본은 Important. */
+  .rail-tier { display:flex; gap:6px; margin-bottom:8px; }
+  .rail-tier .tier-btn {
+    flex:1 1 auto; padding:6px 10px; font:inherit; font-size:0.78rem; font-weight:600;
+    color:var(--text2); background:var(--card); border:1px solid var(--border);
+    border-radius:8px; cursor:pointer;
+  }
+  .rail-tier .tier-btn:hover { color:var(--text); }
+  .rail-tier .tier-btn.on { color:var(--accent); border-color:var(--accent); background:var(--accent-soft); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; padding-right:.4em; } /* 3자리 번호가 제목에 붙던 것(146The…) — 고정 간격 (2026-09-08) */
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
+
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  /* 목록 행 안에서는 링크들과 한 줄에 서야 하므로 더 작고 납작하게 (jay, 2026-08-28). */
+  .copy-inline { font-size:0.72rem; padding:2px 9px; margin-left:6px; vertical-align:baseline; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a>
+      
+      <div class="rail-jump"><a href="../pocs.html#sec-blockchain" title="Blockchain &mdash; done (42) / all (124)">Blockchain<b><span class="count-done">42</span><span class="count-all">/124</span></b></a><a href="../pocs.html#sec-economics" title="Economics &mdash; done (0) / all (36)">Economics<b><span class="count-done">0</span><span class="count-all">/36</span></b></a><a href="../pocs.html#sec-future" title="Future/Etc &mdash; done (0) / all (70)">Future/Etc<b><span class="count-done">0</span><span class="count-all">/70</span></b></a><a href="../pocs.html#sec-algorithms" title="Algorithms &mdash; done (3) / all (100)">Algorithms<b><span class="count-done">3</span><span class="count-all">/100</span></b></a><a href="../pocs.html#sec-math" title="Math &mdash; done (3) / all (52)">Math<b><span class="count-done">3</span><span class="count-all">/52</span></b></a></div>
+    </div>
+    <div class="rail-search">
+      
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+      <div class="nav-group" id="nav-sec-blockchain" data-group>
+        <p class="nav-group-label">Blockchain (124)</p>
+        <ul>
+        <li><a class="nav-link" href="pocs-governance-capture-cost.html" data-key="governance-capture-cost"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">1</span>Governance capture — when the exploit is a market order</span></a></li>
+        <li><a class="nav-link" href="pocs-agentic-intent-veto.html" data-key="agentic-intent-veto"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">2</span>The budget is the wrong invariant</span></a></li>
+        <li><a class="nav-link" href="pocs-aqua-shared-liquidity.html" data-key="aqua-shared-liquidity"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">3</span>Shared liquidity — quoted depth vs. the balance behind it</span></a></li>
+        <li><a class="nav-link" href="pocs-rwa-multichain.html" data-key="rwa-multichain"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">4</span>RWA across chains — the invariant nobody enforces</span></a></li>
+        <li><a class="nav-link" href="pocs-oz-relayer.html" data-key="oz-relayer"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">5</span>OpenZeppelin Relayer &amp; Monitor</span></a></li>
+        <li><a class="nav-link" href="pocs-dvt.html" data-key="dvt"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">6</span>DVT in the protocol</span></a></li>
+        <li><a class="nav-link" href="pocs-l1-zkevm-optional-proofs.html" data-key="l1-zkevm-optional-proofs"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">7</span>L1 zkEVM — the word doing the work is &quot;optional&quot;</span></a></li>
+        <li><a class="nav-link" href="pocs-erc-7683-settlement-security.html" data-key="erc-7683-settlement-security"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">8</span>ERC-7683 settlement security — the layer left deliberately unstandardized</span></a></li>
+        <li><a class="nav-link" href="pocs-event-contract-plumbing.html" data-key="event-contract-plumbing"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">9</span>The hiring signal is the spec — event-contract plumbing</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenized-money-banks.html" data-key="tokenized-money-banks"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">10</span>Tokenized Money for Banks</span></a></li>
+        <li><a class="nav-link" href="pocs-what-needs-a-stablecoin.html" data-key="what-needs-a-stablecoin"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">11</span>Not what a stablecoin can do — what needs one</span></a></li>
+        <li><a class="nav-link" href="pocs-monad-last-general-purpose-l1.html" data-key="monad-last-general-purpose-l1"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">12</span>Monad — the last general-purpose L1, and the number nobody adjusts for</span></a></li>
+        <li><a class="nav-link" href="pocs-the-bridge-is-inside-the-token.html" data-key="the-bridge-is-inside-the-token"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">13</span>The bridge is not beside the token any more — it is inside it</span></a></li>
+        <li><a class="nav-link" href="pocs-decision-market-uncontrollability.html" data-key="decision-market-uncontrollability"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">14</span>The property that makes a market work is the one that makes it gambling</span></a></li>
+        <li><a class="nav-link" href="pocs-stake-concentration.html" data-key="stake-concentration"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">15</span>Stake concentration risk</span></a></li>
+        <li><a class="nav-link" href="pocs-the-settlement-instant.html" data-key="the-settlement-instant"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">16</span>A price at a moment — the instant, the window, and who can move it</span></a></li>
+        <li><a class="nav-link" href="pocs-stablecoin-redemption-desk.html" data-key="stablecoin-redemption-desk"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">17</span>The redemption desk — what actually makes a stablecoin's denominator</span></a></li>
+        <li><a class="nav-link" href="pocs-arb-bots-are-the-peg.html" data-key="arb-bots-are-the-peg"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">18</span>Nobody runs the peg — the competing bots are the mechanism</span></a></li>
+        <li><a class="nav-link" href="pocs-third-party-blast-radius.html" data-key="third-party-blast-radius"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">19</span>Trusted third parties — the blast radius nobody maps</span></a></li>
+        <li><a class="nav-link" href="pocs-jurisdiction-decides-the-category.html" data-key="jurisdiction-decides-the-category"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">20</span>Same product, three verdicts in eight days</span></a></li>
+        <li><a class="nav-link" href="pocs-plumbing-skills-buyback.html" data-key="plumbing-skills-buyback"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">21</span>Four capabilities, each buying back what the chain gave away</span></a></li>
+        <li><a class="nav-link" href="pocs-irreversible-switch-design.html" data-key="irreversible-switch-design"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">22</span>The migration works by making the contract dumber</span></a></li>
+        <li><a class="nav-link" href="pocs-quick-slots-10s.html" data-key="quick-slots-10s"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">23</span>Ten-second slots — the constant nobody wrote down</span></a></li>
+        <li><a class="nav-link" href="pocs-l1-data-pricing-dimensions.html" data-key="l1-data-pricing-dimensions"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">24</span>When gas stops being one number — data pricing and bandwidth accounting</span></a></li>
+        <li><a class="nav-link" href="pocs-rpc-view-not-consensus.html" data-key="rpc-view-not-consensus"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">25</span>An RPC response is a view, not consensus</span></a></li>
+        <li><a class="nav-link" href="pocs-ponder-reorg-indexer.html" data-key="ponder-reorg-indexer"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">26</span>Ponder — the indexer is the reorg handler</span></a></li>
+        <li><a class="nav-link" href="pocs-embedded-wallet-policy.html" data-key="embedded-wallet-policy"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">27</span>The wallet disappeared into the app</span></a></li>
+        <li><a class="nav-link" href="pocs-x402-settlement-retry.html" data-key="x402-settlement-retry"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">28</span>HTTP 402 is the easy part — settlement owns the retry</span></a></li>
+        <li><a class="nav-link" href="pocs-safe-module-root-key.html" data-key="safe-module-root-key"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">29</span>A Safe module is a root key with an interface</span></a></li>
+        <li><a class="nav-link" href="pocs-what-encryption-does-not-hide.html" data-key="what-encryption-does-not-hide"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">30</span>Hiding the amount is the easy half</span></a></li>
+        <li><a class="nav-link" href="pocs-erc-8141.html" data-key="erc-8141"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">31</span>ERC-8141</span></a></li>
+        <li><a class="nav-link" href="pocs-receipt-is-not-settlement.html" data-key="receipt-is-not-settlement"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">32</span>A successful receipt is not settlement</span></a></li>
+        <li><a class="nav-link" href="pocs-l2-finality-three-clocks.html" data-key="l2-finality-three-clocks"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">33</span>L2 finality is three clocks</span></a></li>
+        <li><a class="nav-link" href="pocs-simulate-before-sign.html" data-key="simulate-before-sign"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">34</span>Simulation belongs before the wallet prompt</span></a></li>
+        <li><a class="nav-link" href="pocs-bundler-paymaster-dependencies.html" data-key="bundler-paymaster-dependencies"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">35</span>Gasless is two infrastructure services</span></a></li>
+        <li><a class="nav-link" href="pocs-private-rpc-visibility.html" data-key="private-rpc-visibility"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">36</span>Private RPC changes visibility, not settlement</span></a></li>
+        <li><a class="nav-link" href="pocs-walletconnect-session-authority.html" data-key="walletconnect-session-authority"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">37</span>Connect once means authorize a session</span></a></li>
+        <li><a class="nav-link" href="pocs-foundry-invariant-reachability.html" data-key="foundry-invariant-reachability"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">38</span>An invariant test is only as good as the actions it reaches</span></a></li>
+        <li><a class="nav-link" href="pocs-constraint-was-the-product.html" data-key="constraint-was-the-product"><span class="nav-dot" style="background:#22c55e;" title="DONE"></span><span class="nav-text"><span class="topic-no">39</span>Constraint was the product — and no firewall blocks a sentence</span></a></li>
+        <li><a class="nav-link" href="pocs-merkle-vs-verkle.html" data-key="merkle-vs-verkle"><span class="nav-dot" style="background:#38bdf8;" title="RECENTLY DONE"></span><span class="nav-text"><span class="topic-no">40</span>Merkle vs Verkle</span></a></li>
+        <li><a class="nav-link" href="pocs-encrypted-mempool.html" data-key="encrypted-mempool"><span class="nav-dot" style="background:#38bdf8;" title="RECENTLY DONE"></span><span class="nav-text"><span class="topic-no">41</span>What encryption does not hide</span></a></li>
+        <li><a class="nav-link" href="pocs-choosing-a-chain-is-a-lease.html" data-key="choosing-a-chain-is-a-lease"><span class="nav-dot" style="background:#38bdf8;" title="RECENTLY DONE"></span><span class="nav-text"><span class="topic-no">42</span>Choosing a chain is signing a lease</span></a></li>
+        <li><a class="nav-link" href="pocs-chainlink-jayverse-cooperation.html" data-key="chainlink-jayverse-cooperation"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">43</span>Chainlink is infra Jayverse uses, not builds — where each product plugs in</span></a></li>
+        <li><a class="nav-link" href="pocs-liquid-issuance-not-authorization.html" data-key="liquid-issuance-not-authorization"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">44</span>Liquid's peg-out drain — the mint was poisoned, not the gate</span></a></li>
+        <li><a class="nav-link" href="pocs-censorship-becomes-a-fork-choice-rule.html" data-key="censorship-becomes-a-fork-choice-rule"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">45</span>Censorship resistance stops being a norm and becomes a fork-choice rule</span></a></li>
+        <li><a class="nav-link" href="pocs-mcp-three-sides.html" data-key="mcp-three-sides"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">46</span>MCP from three sides — build one, consume one, wrap an agent as one</span></a></li>
+        <li><a class="nav-link" href="pocs-base-app-mini-app.html" data-key="base-app-mini-app"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">47</span>Base App — what a Mini App buys, and what it rents</span></a></li>
+        <li><a class="nav-link" href="pocs-layerzero-default-is-a-choice.html" data-key="layerzero-default-is-a-choice"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">48</span>LayerZero — the default verifier is a trust assumption nobody wrote down</span></a></li>
+        <li><a class="nav-link" href="pocs-pick-a-signer-not-a-brand.html" data-key="pick-a-signer-not-a-brand"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">49</span>Three layers failed in a month; the fourth one fails silently</span></a></li>
+        <li><a class="nav-link" href="pocs-supported-means-three-things.html" data-key="supported-means-three-things"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">50</span>Anvil proves the protocol, a testnet proves the chain, only a wallet proves the user</span></a></li>
+        <li><a class="nav-link" href="pocs-x402-facilitator-market.html" data-key="x402-facilitator-market"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">51</span>The middleman is optional in the spec — and standard in practice</span></a></li>
+        <li><a class="nav-link" href="pocs-a-boolean-hides-a-state-machine.html" data-key="a-boolean-hides-a-state-machine"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">52</span>A boolean hides a state machine</span></a></li>
+        <li><a class="nav-link" href="pocs-the-double-click-mints-twice.html" data-key="the-double-click-mints-twice"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">53</span>The double-click mints twice — idempotency is the app's duty</span></a></li>
+        <li><a class="nav-link" href="pocs-the-app-reads-a-projection.html" data-key="the-app-reads-a-projection"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">54</span>Your app doesn't read the chain — it reads a projection</span></a></li>
+        <li><a class="nav-link" href="pocs-the-quote-is-a-product-promise.html" data-key="the-quote-is-a-product-promise"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">55</span>Priced in fiat, settled in tokens — the quote is a product promise</span></a></li>
+        <li><a class="nav-link" href="pocs-the-wallet-is-not-the-user.html" data-key="the-wallet-is-not-the-user"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">56</span>The wallet is not the user</span></a></li>
+        <li><a class="nav-link" href="pocs-a-refund-is-a-new-payment.html" data-key="a-refund-is-a-new-payment"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">57</span>A refund is a new payment — support flows on irreversible rails</span></a></li>
+        <li><a class="nav-link" href="pocs-sponsored-gas-is-cogs.html" data-key="sponsored-gas-is-cogs"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">58</span>Sponsored gas is a COGS line — meter it or bleed</span></a></li>
+        <li><a class="nav-link" href="pocs-the-chain-never-calls-back.html" data-key="the-chain-never-calls-back"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">59</span>The chain never calls you back — notifications are your job</span></a></li>
+        <li><a class="nav-link" href="pocs-a-faucet-is-a-payout.html" data-key="a-faucet-is-a-payout"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">60</span>A faucet without limits is a payout, not a feature</span></a></li>
+        <li><a class="nav-link active" href="pocs-issuance-as-a-service.html" data-key="issuance-as-a-service"><span class="nav-dot" style="background:#ef4444;" title="IMPORTANT"></span><span class="nav-text"><span class="topic-no">61</span>Issuance-as-a-service — you mint a brand, the platform keeps the money</span></a></li>
+        <li><a class="nav-link" href="pocs-can-you-leave-by-2030.html" data-key="can-you-leave-by-2030"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">62</span>The 2027 question is easy — the 2030 question is whether you can leave</span></a></li>
+        <li><a class="nav-link" href="pocs-refill-rate-is-the-real-cap.html" data-key="refill-rate-is-the-real-cap"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">63</span>A bridge's rate limit is not the loss cap — its refill speed is</span></a></li>
+        <li><a class="nav-link" href="pocs-aa-standard-execution-split.html" data-key="aa-standard-execution-split"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">64</span>One AA spec, two execution models — or the EVM fragments</span></a></li>
+        <li><a class="nav-link" href="pocs-interop-os-one-network.html" data-key="interop-os-one-network"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">65</span>&quot;As if all chains are one network&quot; is the value and the risk at once</span></a></li>
+        <li><a class="nav-link" href="pocs-key-never-leaves-the-secure-element.html" data-key="key-never-leaves-the-secure-element"><span class="nav-dot" style="background:#eab308;" title="NEW"></span><span class="nav-text"><span class="topic-no">66</span>The private key never leaves the secure element</span></a></li>
+        <li><a class="nav-link" href="pocs-storage-collision-admin-takeover.html" data-key="storage-collision-admin-takeover"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">67</span>The code was right and the layout was wrong</span></a></li>
+        <li><a class="nav-link" href="pocs-dkg-resharing.html" data-key="dkg-resharing"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">68</span>The ceremony ends, the committee doesn't</span></a></li>
+        <li><a class="nav-link" href="pocs-the-record-is-not-the-path.html" data-key="the-record-is-not-the-path"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">69</span>The record is not the path — a registry and a vault for the same problem</span></a></li>
+        <li><a class="nav-link" href="pocs-fork-date-provenance.html" data-key="fork-date-provenance"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">70</span>A fork date nobody decided — reading the claim, not the number</span></a></li>
+        <li><a class="nav-link" href="pocs-simplicity-ctf.html" data-key="simplicity-ctf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">71</span>Simplicity CTF</span></a></li>
+        <li><a class="nav-link" href="pocs-float-not-the-paperwork.html" data-key="float-not-the-paperwork"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">72</span>The stablecoin replaces the float, not the paperwork</span></a></li>
+        <li><a class="nav-link" href="pocs-build-rent-or-own-the-rail.html" data-key="build-rent-or-own-the-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">73</span>Build the rail, rent it, or own it together — three answers in one month</span></a></li>
+        <li><a class="nav-link" href="pocs-the-only-commitment-is-the-issuer.html" data-key="the-only-commitment-is-the-issuer"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">74</span>Every verb is &quot;explore&quot; — the one commitment is which stablecoin</span></a></li>
+        <li><a class="nav-link" href="pocs-two-currencies-one-ledger.html" data-key="two-currencies-one-ledger"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">75</span>Two currencies on one ledger — the spread is the claim</span></a></li>
+        <li><a class="nav-link" href="pocs-the-harness-not-the-model.html" data-key="the-harness-not-the-model"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">76</span>The harness, not the model — governing agents instead of building them</span></a></li>
+        <li><a class="nav-link" href="pocs-agents-computer-use.html" data-key="agents-computer-use"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">77</span>Can an agent drive a computer yet — and if so, whose?</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenized-equity-claim-rail.html" data-key="tokenized-equity-claim-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">78</span>A claim, not a derivative — the three jobs a tokenized share creates</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenized-equity-scoreboard.html" data-key="tokenized-equity-scoreboard"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">79</span>The token is not the product — composability is, and volume is its scoreboard</span></a></li>
+        <li><a class="nav-link" href="pocs-japan-t0-settlement.html" data-key="japan-t0-settlement"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">80</span>T+0 removes settlement risk, and removes netting with it</span></a></li>
+        <li><a class="nav-link" href="pocs-cross-border-rail-interop.html" data-key="cross-border-rail-interop"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">81</span>Linking payment systems is a routing problem</span></a></li>
+        <li><a class="nav-link" href="pocs-non-reserve-currency-seat.html" data-key="non-reserve-currency-seat"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">82</span>The seat is the point — a non-reserve currency at the standards table</span></a></li>
+        <li><a class="nav-link" href="pocs-st-self-distribution.html" data-key="st-self-distribution"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">83</span>What tokenization actually removed</span></a></li>
+        <li><a class="nav-link" href="pocs-headless-exchange-engines.html" data-key="headless-exchange-engines"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">84</span>Headless arrives — the company that sells the engine, not the app</span></a></li>
+        <li><a class="nav-link" href="pocs-demonstration-is-not-a-specification.html" data-key="demonstration-is-not-a-specification"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">85</span>Showing is not telling — a demonstration is an example, not a specification</span></a></li>
+        <li><a class="nav-link" href="pocs-ndf-measures-the-restriction.html" data-key="ndf-measures-the-restriction"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">86</span>The NDF market is the size of the restriction, and removing it does not relocate the market</span></a></li>
+        <li><a class="nav-link" href="pocs-the-rule-names-an-entity.html" data-key="the-rule-names-an-entity"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">87</span>The rule names an entity and the risk lives in the group</span></a></li>
+        <li><a class="nav-link" href="pocs-aml-compliance.html" data-key="aml-compliance"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">88</span>AML — where the cryptography stops</span></a></li>
+        <li><a class="nav-link" href="pocs-address-to-identity-join.html" data-key="address-to-identity-join"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">89</span>The chain gives you the graph and never the names</span></a></li>
+        <li><a class="nav-link" href="pocs-korea-digital-asset-act.html" data-key="korea-digital-asset-act"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">90</span>The bill count is not the disagreement count</span></a></li>
+        <li><a class="nav-link" href="pocs-korea-spot-share-is-an-artifact.html" data-key="korea-spot-share-is-an-artifact"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">91</span>Thirty percent of spot is a restriction, not a market size</span></a></li>
+        <li><a class="nav-link" href="pocs-jurisdiction-below-the-country.html" data-key="jurisdiction-below-the-country"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">92</span>Jurisdiction is not country-sized</span></a></li>
+        <li><a class="nav-link" href="pocs-cap-table-ceiling.html" data-key="cap-table-ceiling"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">93</span>The ceiling is per holder, the control is not</span></a></li>
+        <li><a class="nav-link" href="pocs-fisheries-receivable-rail.html" data-key="fisheries-receivable-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">94</span>The custody was never the hard part</span></a></li>
+        <li><a class="nav-link" href="pocs-dsrv-portal.html" data-key="dsrv-portal"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">95</span>Institutional custody study</span></a></li>
+        <li><a class="nav-link" href="pocs-priced-by-the-wrong-thing.html" data-key="priced-by-the-wrong-thing"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">96</span>Priced by the wrong thing — a question, an instrument, and the gap between them</span></a></li>
+        <li><a class="nav-link" href="pocs-cre-cloud.html" data-key="cre-cloud"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">97</span>CRE × Cloud — four hybrid patterns</span></a></li>
+        <li><a class="nav-link" href="pocs-solana.html" data-key="solana"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">98</span>Solana</span></a></li>
+        <li><a class="nav-link" href="pocs-linera-microchains.html" data-key="linera-microchains"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">99</span>Linera microchains</span></a></li>
+        <li><a class="nav-link" href="pocs-thirdweb.html" data-key="thirdweb"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">100</span>Thirdweb — platform survey</span></a></li>
+        <li><a class="nav-link" href="pocs-steal-the-structure.html" data-key="steal-the-structure"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">101</span>Two reading lists, and the same instruction — steal the structure, not the content</span></a></li>
+        <li><a class="nav-link" href="pocs-claude-in-slack.html" data-key="claude-in-slack"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">102</span>Claude in Slack — the workflow first, the presence second</span></a></li>
+        <li><a class="nav-link" href="pocs-the-product-is-resume-not-schedule.html" data-key="the-product-is-resume-not-schedule"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">103</span>What you are buying is resume, not scheduling</span></a></li>
+        <li><a class="nav-link" href="pocs-circuit-breaker-saga.html" data-key="circuit-breaker-saga"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">104</span>Microservice patterns — Circuit Breaker &amp; Saga</span></a></li>
+        <li><a class="nav-link" href="pocs-web-stack-layers.html" data-key="web-stack-layers"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">105</span>Web stack layers</span></a></li>
+        <li><a class="nav-link" href="pocs-one-page-not-the-curriculum.html" data-key="one-page-not-the-curriculum"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">106</span>Pull the page you are stuck on, not the next one in order</span></a></li>
+        <li><a class="nav-link" href="pocs-publish-by-default-rule.html" data-key="publish-by-default-rule"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">107</span>The draft already exists — a selection rule, not a new channel</span></a></li>
+        <li><a class="nav-link" href="pocs-apple-container.html" data-key="apple-container"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">108</span>Apple container</span></a></li>
+        <li><a class="nav-link" href="pocs-preview-means-no-promise.html" data-key="preview-means-no-promise"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">109</span>The data was always public — the SLA is the product</span></a></li>
+        <li><a class="nav-link" href="pocs-consortium-owns-the-rail.html" data-key="consortium-owns-the-rail"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">110</span>Twenty-one banks, one issuer — &quot;own it together&quot; becomes a company</span></a></li>
+        <li><a class="nav-link" href="pocs-deposit-rate-is-a-trade.html" data-key="deposit-rate-is-a-trade"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">111</span>6% is not interest — a neobank whose deposit rate is a trade</span></a></li>
+        <li><a class="nav-link" href="pocs-halted-or-upgraded.html" data-key="halted-or-upgraded"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">112</span>Halted or upgraded — the block gap is the same either way</span></a></li>
+        <li><a class="nav-link" href="pocs-incumbent-lists-the-wrapper.html" data-key="incumbent-lists-the-wrapper"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">113</span>The incumbent lists the wrapper — xStocks moves inside the LSE</span></a></li>
+        <li><a class="nav-link" href="pocs-interest-ban-draws-the-border.html" data-key="interest-ban-draws-the-border"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">114</span>No yield allowed — the interest ban is the border between payment and deposit</span></a></li>
+        <li><a class="nav-link" href="pocs-the-form-arrives-before-the-rule.html" data-key="the-form-arrives-before-the-rule"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">115</span>The reporting form ships before the rule — OCC shows its checklist early</span></a></li>
+        <li><a class="nav-link" href="pocs-who-holds-the-mint.html" data-key="who-holds-the-mint"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">116</span>xERC20, CCTP, NTT — three answers to who holds the mint</span></a></li>
+        <li><a class="nav-link" href="pocs-the-index-is-an-ops-manual.html" data-key="the-index-is-an-ops-manual"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">117</span>The formula is free — an ETF-grade index is an ops manual</span></a></li>
+        <li><a class="nav-link" href="pocs-the-moat-has-a-fork-date.html" data-key="the-moat-has-a-fork-date"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">118</span>Middleware's moat has a fork date</span></a></li>
+        <li><a class="nav-link" href="pocs-tokenize-the-receipt-not-the-share.html" data-key="tokenize-the-receipt-not-the-share"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">119</span>The share stays put — Korea tokenizes a trust receipt, and the cash leg comes last</span></a></li>
+        <li><a class="nav-link" href="pocs-who-prices-samsung-on-sunday.html" data-key="who-prices-samsung-on-sunday"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">120</span>Who prices Samsung on a Sunday? — the hours column is the oracle's real product</span></a></li>
+        <li><a class="nav-link" href="pocs-the-growth-formula-ran-backwards.html" data-key="the-growth-formula-ran-backwards"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">121</span>Robinhood Chain — the growth formula runs backwards when you launch with the asset</span></a></li>
+        <li><a class="nav-link" href="pocs-geometric-series-dcf.html" data-key="geometric-series-dcf"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">122</span>Geometric series → DCF valuation</span></a></li>
+        <li><a class="nav-link" href="pocs-amortized-potential-function.html" data-key="amortized-potential-function"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">123</span>Amortized analysis via potential functions</span></a></li>
+        <li><a class="nav-link" href="pocs-moralis-wallet-api.html" data-key="moralis-wallet-api"><span class="nav-dot" style="background:#64748b;" title="PLANNED"></span><span class="nav-text"><span class="topic-no">124</span>Moralis — wallet snapshot via API</span></a></li>
+        </ul>
+      </div>
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Issuance-as-a-service — you mint a brand, the platform keeps the money</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#61</span><span>PoC</span></p>
+      <h1>Issuance-as-a-service — you mint a brand, the platform keeps the money</h1>
+      <p class="lead">PayPal, M0, and MoonPay launched <strong>PYUSDx</strong>, a platform where any developer mints their <strong>own</strong> branded stablecoin — USDat (Saturn), concUSD (Concrete), cUSD (Cap) already live, $100M+ in scale — all backed by one reserve: <strong>PYUSD</strong>. But read what the issuer actually gets versus what the platform keeps. The developer configures the <em>surface</em>: the token&#39;s name, reward logic, access controls, reserve mix, and cross-chain routing. The <strong>reserve and redemption stay with the stack underneath</strong> — PYUSD (issued by Paxos), reserves custodied by MoonPay, infra by M0. So a &#39;new stablecoin&#39; here is a <strong>configured skin over someone else&#39;s dollar</strong>, and the durable position is the reserve layer, not the brand on top. That is PayPal&#39;s real move: turn PYUSD from a payment coin into the base layer others are obliged to build on.</p>
+      <p class="meta">Not yet scoped — a read-and-map, then one probe. First map the stack: on PYUSDx, list who holds each layer — brand/config (the developer), infra (M0), reserve custody (MoonPay), the underlying dollar and its redemption (PYUSD / Paxos). Then the probe that matters: <strong>mint a toy branded token on a testnet (or model it) and enumerate what you can and cannot do without the platform.</strong> Can you change the reserve backing? Redeem to fiat yourself? Survive if M0 or MoonPay pauses you? The compliance controls (account freeze, transaction pause) and the interchange with PYUSD/USDC tell you where authority actually sits. Supported chains at launch: Ethereum, Arbitrum, Monad. Sources: M0 research, &#39;PayPal and M0 launch developer platform for PYUSD…&#39; (research.m0.org); digitalasset.works (박재연, 2026-09-09). Confirm figures and the layer split against the source before citing.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Issuance-as-a-service — you mint a brand, the platform keeps the money\n\nPayPal, M0, and MoonPay launched **PYUSDx**, a platform where any developer mints their **own** branded stablecoin — USDat (Saturn), concUSD (Concrete), cUSD (Cap) already live, $100M+ in scale — all backed by one reserve: **PYUSD**. But read what the issuer actually gets versus what the platform keeps. The developer configures the *surface*: the token's name, reward logic, access controls, reserve mix, and cross-chain routing. The **reserve and redemption stay with the stack underneath** — PYUSD (issued by Paxos), reserves custodied by MoonPay, infra by M0. So a 'new stablecoin' here is a **configured skin over someone else's dollar**, and the durable position is the reserve layer, not the brand on top. That is PayPal's real move: turn PYUSD from a payment coin into the base layer others are obliged to build on.\n\nNot yet scoped — a read-and-map, then one probe. First map the stack: on PYUSDx, list who holds each layer — brand/config (the developer), infra (M0), reserve custody (MoonPay), the underlying dollar and its redemption (PYUSD / Paxos). Then the probe that matters: **mint a toy branded token on a testnet (or model it) and enumerate what you can and cannot do without the platform.** Can you change the reserve backing? Redeem to fiat yourself? Survive if M0 or MoonPay pauses you? The compliance controls (account freeze, transaction pause) and the interchange with PYUSD/USDC tell you where authority actually sits. Supported chains at launch: Ethereum, Arbitrum, Monad. Sources: M0 research, 'PayPal and M0 launch developer platform for PYUSD…' (research.m0.org); digitalasset.works (박재연, 2026-09-09). Confirm figures and the layer split against the source before citing.\n\n## Why\n\n**A stablecoin's moat was never the coin — it is being the reserve layer everyone else has to issue on top of.** PYUSDx makes that literal. It offers 'issue your own stablecoin' as a service, but the thing you issue is a *configuration*, not money: name, rewards, access control, reserve composition, bridging. The dollar itself — the reserve that backs redemption — stays PYUSD, custodied by MoonPay, plumbed by M0. So three 'independent' stablecoins (USDat, concUSD, cUSD) are three brands drawing on **one** pool. This is the same shape as `stablecoin-mcap-is-repackaged-money` (the branded tokens are claims re-wrapping one reserve) and `the-only-commitment-is-the-issuer` (the redemption promise is what has value, and it lives below the brand).\n\n**Why PayPal wants to be the layer, not just the coin.** A payment stablecoin competes on distribution and is easily substituted. A *platform* stablecoin is different: every branded dollar minted on PYUSDx deepens PYUSD's reserve and makes PYUSD the thing others depend on. M0's own line — 'PYUSD's lasting value comes from what others can build on top of it' — is the strategy stated plainly. This is `build-rent-or-own-the-rail` seen from the owner's chair: PayPal owns the rail and rents out issuance; the developers rent denomination. It also rhymes with `st-self-distribution` and `consortium-owns-the-rail` — the durable economics accrue to whoever holds the reserve and the redemption switch, not to the brand on the wrapper.\n\n**The honest question a developer should ask before minting.** What do I actually control, and what can the platform do to me? The compliance surface answers it: account freeze and transaction pause are *platform* powers, redemption runs through *PYUSD/Paxos*, reserves sit with *MoonPay*. So the branded issuer holds marketing and configuration; the stack holds the money, the off-switch, and the redemption. That is not a criticism — it is a clean division of labor — but calling the result 'your own stablecoin' oversells what changed hands. The transferable lesson: when a platform offers to let you issue money, check whether you are issuing the *reserve* or just a *skin over someone else's reserve* — the power is wherever redemption and freeze live.\n\n## How it works\n\nWho holds what, drawn once.\n\n### The PYUSDx stack — brand on top, money at the bottom\n\n| Layer | Held by | What it controls |\n|---|---|---|\n| Branded token (USDat, concUSD, cUSD) | the developer | name, rewards, access control, reserve mix, bridging — the *surface* |\n| Issuance infra | M0 | minting/redemption plumbing, cross-chain |\n| Reserve custody | MoonPay | where the backing assets sit |\n| Underlying dollar + redemption | PYUSD / Paxos | the actual money and the promise to pay |\n| Compliance controls | platform | account freeze, transaction pause |\n\n### What actually changed hands\n\n- The developer receives **configuration**, not a reserve. 'Your stablecoin' = a skin whose value is PYUSD's value.\n- Branded tokens interchange on-chain with **PYUSD and USDC**, so they are not really separate monies — they are views on the same dollar.\n- The **off-switch and redemption live below the brand**. Whoever holds those holds the power.\n\n### Chains & controls at launch\n\nEthereum, Arbitrum, Monad. Regulatory controls (freeze, pause) are built in — a reminder that this is permissioned issuance, not sovereign money.\n\nCross-refs: `stablecoin-mcap-is-repackaged-money` (branded tokens re-wrap one reserve), `the-only-commitment-is-the-issuer` (redemption is the value, and it sits below the brand), `build-rent-or-own-the-rail` (owner rents out issuance; developers rent denomination), `st-self-distribution` and `consortium-owns-the-rail` (economics accrue to the reserve/switch holder), `what-needs-a-stablecoin` (does this use case need a *new* coin, or a config on an existing one?), `liquid-issuance-not-authorization` (issuing a token is not the same as holding the authority behind it).\n"</script>
+      <h2>Why</h2>
+      <p><strong>A stablecoin&#39;s moat was never the coin — it is being the reserve layer everyone else has to issue on top of.</strong> PYUSDx makes that literal. It offers &#39;issue your own stablecoin&#39; as a service, but the thing you issue is a <em>configuration</em>, not money: name, rewards, access control, reserve composition, bridging. The dollar itself — the reserve that backs redemption — stays PYUSD, custodied by MoonPay, plumbed by M0. So three &#39;independent&#39; stablecoins (USDat, concUSD, cUSD) are three brands drawing on <strong>one</strong> pool. This is the same shape as <code>stablecoin-mcap-is-repackaged-money</code> (the branded tokens are claims re-wrapping one reserve) and <code>the-only-commitment-is-the-issuer</code> (the redemption promise is what has value, and it lives below the brand).</p>
+<p><strong>Why PayPal wants to be the layer, not just the coin.</strong> A payment stablecoin competes on distribution and is easily substituted. A <em>platform</em> stablecoin is different: every branded dollar minted on PYUSDx deepens PYUSD&#39;s reserve and makes PYUSD the thing others depend on. M0&#39;s own line — &#39;PYUSD&#39;s lasting value comes from what others can build on top of it&#39; — is the strategy stated plainly. This is <code>build-rent-or-own-the-rail</code> seen from the owner&#39;s chair: PayPal owns the rail and rents out issuance; the developers rent denomination. It also rhymes with <code>st-self-distribution</code> and <code>consortium-owns-the-rail</code> — the durable economics accrue to whoever holds the reserve and the redemption switch, not to the brand on the wrapper.</p>
+<p><strong>The honest question a developer should ask before minting.</strong> What do I actually control, and what can the platform do to me? The compliance surface answers it: account freeze and transaction pause are <em>platform</em> powers, redemption runs through <em>PYUSD/Paxos</em>, reserves sit with <em>MoonPay</em>. So the branded issuer holds marketing and configuration; the stack holds the money, the off-switch, and the redemption. That is not a criticism — it is a clean division of labor — but calling the result &#39;your own stablecoin&#39; oversells what changed hands. The transferable lesson: when a platform offers to let you issue money, check whether you are issuing the <em>reserve</em> or just a <em>skin over someone else&#39;s reserve</em> — the power is wherever redemption and freeze live.</p>
+      <h2>How it works</h2>
+      <p>Who holds what, drawn once.</p>
+<h3>The PYUSDx stack — brand on top, money at the bottom</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Held by</th>
+<th>What it controls</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Branded token (USDat, concUSD, cUSD)</td>
+<td>the developer</td>
+<td>name, rewards, access control, reserve mix, bridging — the <em>surface</em></td>
+</tr>
+<tr>
+<td>Issuance infra</td>
+<td>M0</td>
+<td>minting/redemption plumbing, cross-chain</td>
+</tr>
+<tr>
+<td>Reserve custody</td>
+<td>MoonPay</td>
+<td>where the backing assets sit</td>
+</tr>
+<tr>
+<td>Underlying dollar + redemption</td>
+<td>PYUSD / Paxos</td>
+<td>the actual money and the promise to pay</td>
+</tr>
+<tr>
+<td>Compliance controls</td>
+<td>platform</td>
+<td>account freeze, transaction pause</td>
+</tr>
+</tbody></table></div>
+<h3>What actually changed hands</h3>
+<ul>
+<li>The developer receives <strong>configuration</strong>, not a reserve. &#39;Your stablecoin&#39; = a skin whose value is PYUSD&#39;s value.</li>
+<li>Branded tokens interchange on-chain with <strong>PYUSD and USDC</strong>, so they are not really separate monies — they are views on the same dollar.</li>
+<li>The <strong>off-switch and redemption live below the brand</strong>. Whoever holds those holds the power.</li>
+</ul>
+<h3>Chains &amp; controls at launch</h3>
+<p>Ethereum, Arbitrum, Monad. Regulatory controls (freeze, pause) are built in — a reminder that this is permissioned issuance, not sovereign money.</p>
+<p>Cross-refs: <code>stablecoin-mcap-is-repackaged-money</code> (branded tokens re-wrap one reserve), <code>the-only-commitment-is-the-issuer</code> (redemption is the value, and it sits below the brand), <code>build-rent-or-own-the-rail</code> (owner rents out issuance; developers rent denomination), <code>st-self-distribution</code> and <code>consortium-owns-the-rail</code> (economics accrue to the reserve/switch holder), <code>what-needs-a-stablecoin</code> (does this use case need a <em>new</em> coin, or a config on an existing one?), <code>liquid-issuance-not-authorization</code> (issuing a token is not the same as holding the authority behind it).</p>
+      
+      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# 발행형 서비스 — 당신은 브랜드를 찍고, 플랫폼이 돈을 쥔다\n\n페이팔·M0·문페이가 **PYUSDx**를 출시했습니다. 개발자가 **자체** 브랜드 스테이블코인을 찍는 플랫폼으로 — USDat(새턴), concUSD(콘크리트), cUSD(캡)가 이미 가동, 규모 1억 달러 이상 — 전부 하나의 준비자산 **PYUSD**로 뒷받침됩니다. 하지만 발행자가 실제로 갖는 것과 플랫폼이 쥐는 것을 구분해 읽으세요. 개발자는 *표면*을 설정합니다: 토큰 이름, 보상 로직, 접근 통제, 준비자산 구성, 체인 간 라우팅. 반면 **준비자산과 상환은 아래 스택이 쥡니다** — PYUSD(팍소스 발행), 준비자산 보관은 문페이, 인프라는 M0. 그러니 여기서 '새 스테이블코인'은 **남의 달러 위에 설정된 스킨**이고, 지속되는 위치는 위의 브랜드가 아니라 아래의 준비자산 계층입니다. 그게 페이팔의 진짜 수: PYUSD를 결제 코인에서 남들이 그 위에 지을 수밖에 없는 기반 계층으로 바꾸는 것.\n\n아직 범위 미정 — 읽고 지도를 그린 뒤 한 번 찔러보기. 먼저 스택을 지도화: PYUSDx에서 각 계층을 누가 쥐는지 나열 — 브랜드/설정(개발자), 인프라(M0), 준비자산 보관(문페이), 기반 달러와 그 상환(PYUSD / 팍소스). 그다음 핵심 실험: **테스트넷에서 장난감 브랜드 토큰을 찍어(또는 모델링해) 플랫폼 없이 할 수 있는 것과 없는 것을 열거**합니다. 준비자산 구성을 바꿀 수 있나? 직접 법정화폐로 상환할 수 있나? M0나 문페이가 당신을 정지시켜도 살아남나? 규제 준수 통제(계정 동결, 거래 일시중지)와 PYUSD/USDC 상호교환이 권한이 실제로 어디 있는지 알려줍니다. 출시 지원 체인: 이더리움, 아비트럼, 모나드. 출처: M0 리서치 'PayPal and M0 launch developer platform for PYUSD…'(research.m0.org); digitalasset.works(박재연, 2026-09-09). 수치와 계층 분할은 인용 전 출처로 확인.\n\n## 왜\n\n**스테이블코인의 해자는 코인이 아니라, 남들이 그 위에 발행할 수밖에 없는 준비자산 계층이 되는 것이었습니다.** PYUSDx는 그걸 문자 그대로 만듭니다. '당신만의 스테이블코인을 발행하라'를 서비스로 제공하지만, 당신이 발행하는 건 돈이 아니라 *설정*입니다: 이름, 보상, 접근 통제, 준비자산 구성, 브리징. 달러 자체 — 상환을 뒷받침하는 준비자산 — 는 PYUSD로 남고, 문페이가 보관하고, M0가 배관합니다. 그래서 세 개의 '독립' 스테이블코인(USDat, concUSD, cUSD)은 **하나**의 풀을 끌어 쓰는 세 브랜드입니다. 이건 `stablecoin-mcap-is-repackaged-money`(브랜드 토큰은 하나의 준비자산을 재포장한 청구권)와 `the-only-commitment-is-the-issuer`(가치를 갖는 건 상환 약속이고, 그건 브랜드 아래에 있다)와 같은 형태입니다.\n\n**왜 페이팔이 코인이 아니라 계층이 되려 하나.** 결제 스테이블코인은 유통으로 경쟁하고 쉽게 대체됩니다. *플랫폼* 스테이블코인은 다릅니다: PYUSDx에서 찍히는 모든 브랜드 달러가 PYUSD의 준비자산을 키우고 PYUSD를 남들이 의존하는 것으로 만듭니다. M0의 말 — 'PYUSD의 지속적 가치는 남들이 그 위에 무엇을 지을 수 있는지에서 나온다' — 이 전략을 그대로 진술합니다. 이건 `build-rent-or-own-the-rail`을 주인의 자리에서 본 것입니다: 페이팔은 레일을 소유하고 발행을 임대하며, 개발자는 화폐 단위를 임대합니다. `st-self-distribution`·`consortium-owns-the-rail`과도 운을 맞춥니다 — 지속되는 경제학은 래퍼 위 브랜드가 아니라 준비자산과 상환 스위치를 쥔 쪽에 쌓입니다.\n\n**발행 전에 개발자가 물어야 할 정직한 질문.** 나는 실제로 무엇을 통제하고, 플랫폼은 내게 무엇을 할 수 있나? 규제 준수 표면이 답합니다: 계정 동결·거래 일시중지는 *플랫폼*의 권한, 상환은 *PYUSD/팍소스*를 통하고, 준비자산은 *문페이*에 있습니다. 그러니 브랜드 발행자는 마케팅과 설정을 쥐고, 스택이 돈·정지 스위치·상환을 쥡니다. 이건 비판이 아니라 깔끔한 분업이지만, 그 결과를 '당신만의 스테이블코인'이라 부르는 건 실제로 넘어온 걸 과장합니다. 이전 가능한 교훈: 플랫폼이 돈을 발행하게 해주겠다고 하면, 당신이 *준비자산*을 발행하는지 아니면 *남의 준비자산 위 스킨*만 발행하는지 확인하라 — 권력은 상환과 동결이 있는 곳에 있다.\n\n## 동작 방식\n\n누가 무엇을 쥐는지 한 번에 그립니다.\n\n### PYUSDx 스택 — 위는 브랜드, 바닥은 돈\n\n| 계층 | 쥐는 주체 | 통제하는 것 |\n|---|---|---|\n| 브랜드 토큰(USDat, concUSD, cUSD) | 개발자 | 이름·보상·접근 통제·준비자산 구성·브리징 — *표면* |\n| 발행 인프라 | M0 | 발행/상환 배관, 체인 간 |\n| 준비자산 보관 | 문페이 | 뒷받침 자산이 있는 곳 |\n| 기반 달러 + 상환 | PYUSD / 팍소스 | 실제 돈과 지급 약속 |\n| 규제 준수 통제 | 플랫폼 | 계정 동결, 거래 일시중지 |\n\n### 실제로 넘어온 것\n\n- 개발자가 받는 건 **설정**이지 준비자산이 아님. '당신의 스테이블코인' = 가치가 PYUSD의 가치인 스킨.\n- 브랜드 토큰은 온체인에서 **PYUSD·USDC**와 상호교환 — 그러니 사실 별개의 돈이 아니라 같은 달러의 뷰(view).\n- **정지 스위치와 상환은 브랜드 아래에 있음.** 그걸 쥔 자가 권력을 쥠.\n\n### 출시 시점 체인·통제\n\n이더리움, 아비트럼, 모나드. 규제 통제(동결, 일시중지)가 내장 — 이건 주권 화폐가 아니라 허가형 발행이라는 상기.\n\n교차: `stablecoin-mcap-is-repackaged-money`(브랜드 토큰은 하나의 준비자산 재포장), `the-only-commitment-is-the-issuer`(상환이 가치, 브랜드 아래에 있음), `build-rent-or-own-the-rail`(주인은 발행을 임대, 개발자는 화폐 단위를 임대), `st-self-distribution`·`consortium-owns-the-rail`(경제학은 준비자산/스위치 보유자에게 쌓임), `what-needs-a-stablecoin`(이 유즈케이스에 *새* 코인이 필요한가, 아니면 기존 코인의 설정인가?), `liquid-issuance-not-authorization`(토큰 발행은 그 뒤의 권한을 쥐는 것과 다르다).\n"</script>
+      <h1>발행형 서비스 — 당신은 브랜드를 찍고, 플랫폼이 돈을 쥔다</h1>
+      <p class="lead">페이팔·M0·문페이가 <strong>PYUSDx</strong>를 출시했습니다. 개발자가 <strong>자체</strong> 브랜드 스테이블코인을 찍는 플랫폼으로 — USDat(새턴), concUSD(콘크리트), cUSD(캡)가 이미 가동, 규모 1억 달러 이상 — 전부 하나의 준비자산 <strong>PYUSD</strong>로 뒷받침됩니다. 하지만 발행자가 실제로 갖는 것과 플랫폼이 쥐는 것을 구분해 읽으세요. 개발자는 <em>표면</em>을 설정합니다: 토큰 이름, 보상 로직, 접근 통제, 준비자산 구성, 체인 간 라우팅. 반면 <strong>준비자산과 상환은 아래 스택이 쥡니다</strong> — PYUSD(팍소스 발행), 준비자산 보관은 문페이, 인프라는 M0. 그러니 여기서 &#39;새 스테이블코인&#39;은 <strong>남의 달러 위에 설정된 스킨</strong>이고, 지속되는 위치는 위의 브랜드가 아니라 아래의 준비자산 계층입니다. 그게 페이팔의 진짜 수: PYUSD를 결제 코인에서 남들이 그 위에 지을 수밖에 없는 기반 계층으로 바꾸는 것.</p>
+      <p class="meta">아직 범위 미정 — 읽고 지도를 그린 뒤 한 번 찔러보기. 먼저 스택을 지도화: PYUSDx에서 각 계층을 누가 쥐는지 나열 — 브랜드/설정(개발자), 인프라(M0), 준비자산 보관(문페이), 기반 달러와 그 상환(PYUSD / 팍소스). 그다음 핵심 실험: <strong>테스트넷에서 장난감 브랜드 토큰을 찍어(또는 모델링해) 플랫폼 없이 할 수 있는 것과 없는 것을 열거</strong>합니다. 준비자산 구성을 바꿀 수 있나? 직접 법정화폐로 상환할 수 있나? M0나 문페이가 당신을 정지시켜도 살아남나? 규제 준수 통제(계정 동결, 거래 일시중지)와 PYUSD/USDC 상호교환이 권한이 실제로 어디 있는지 알려줍니다. 출시 지원 체인: 이더리움, 아비트럼, 모나드. 출처: M0 리서치 &#39;PayPal and M0 launch developer platform for PYUSD…&#39;(research.m0.org); digitalasset.works(박재연, 2026-09-09). 수치와 계층 분할은 인용 전 출처로 확인.</p>
+      <h2>왜</h2>
+      <p><strong>스테이블코인의 해자는 코인이 아니라, 남들이 그 위에 발행할 수밖에 없는 준비자산 계층이 되는 것이었습니다.</strong> PYUSDx는 그걸 문자 그대로 만듭니다. &#39;당신만의 스테이블코인을 발행하라&#39;를 서비스로 제공하지만, 당신이 발행하는 건 돈이 아니라 <em>설정</em>입니다: 이름, 보상, 접근 통제, 준비자산 구성, 브리징. 달러 자체 — 상환을 뒷받침하는 준비자산 — 는 PYUSD로 남고, 문페이가 보관하고, M0가 배관합니다. 그래서 세 개의 &#39;독립&#39; 스테이블코인(USDat, concUSD, cUSD)은 <strong>하나</strong>의 풀을 끌어 쓰는 세 브랜드입니다. 이건 <code>stablecoin-mcap-is-repackaged-money</code>(브랜드 토큰은 하나의 준비자산을 재포장한 청구권)와 <code>the-only-commitment-is-the-issuer</code>(가치를 갖는 건 상환 약속이고, 그건 브랜드 아래에 있다)와 같은 형태입니다.</p>
+<p><strong>왜 페이팔이 코인이 아니라 계층이 되려 하나.</strong> 결제 스테이블코인은 유통으로 경쟁하고 쉽게 대체됩니다. <em>플랫폼</em> 스테이블코인은 다릅니다: PYUSDx에서 찍히는 모든 브랜드 달러가 PYUSD의 준비자산을 키우고 PYUSD를 남들이 의존하는 것으로 만듭니다. M0의 말 — &#39;PYUSD의 지속적 가치는 남들이 그 위에 무엇을 지을 수 있는지에서 나온다&#39; — 이 전략을 그대로 진술합니다. 이건 <code>build-rent-or-own-the-rail</code>을 주인의 자리에서 본 것입니다: 페이팔은 레일을 소유하고 발행을 임대하며, 개발자는 화폐 단위를 임대합니다. <code>st-self-distribution</code>·<code>consortium-owns-the-rail</code>과도 운을 맞춥니다 — 지속되는 경제학은 래퍼 위 브랜드가 아니라 준비자산과 상환 스위치를 쥔 쪽에 쌓입니다.</p>
+<p><strong>발행 전에 개발자가 물어야 할 정직한 질문.</strong> 나는 실제로 무엇을 통제하고, 플랫폼은 내게 무엇을 할 수 있나? 규제 준수 표면이 답합니다: 계정 동결·거래 일시중지는 <em>플랫폼</em>의 권한, 상환은 <em>PYUSD/팍소스</em>를 통하고, 준비자산은 <em>문페이</em>에 있습니다. 그러니 브랜드 발행자는 마케팅과 설정을 쥐고, 스택이 돈·정지 스위치·상환을 쥡니다. 이건 비판이 아니라 깔끔한 분업이지만, 그 결과를 &#39;당신만의 스테이블코인&#39;이라 부르는 건 실제로 넘어온 걸 과장합니다. 이전 가능한 교훈: 플랫폼이 돈을 발행하게 해주겠다고 하면, 당신이 <em>준비자산</em>을 발행하는지 아니면 <em>남의 준비자산 위 스킨</em>만 발행하는지 확인하라 — 권력은 상환과 동결이 있는 곳에 있다.</p>
+      <h2>동작 방식</h2>
+      <p>누가 무엇을 쥐는지 한 번에 그립니다.</p>
+<h3>PYUSDx 스택 — 위는 브랜드, 바닥은 돈</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>계층</th>
+<th>쥐는 주체</th>
+<th>통제하는 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>브랜드 토큰(USDat, concUSD, cUSD)</td>
+<td>개발자</td>
+<td>이름·보상·접근 통제·준비자산 구성·브리징 — <em>표면</em></td>
+</tr>
+<tr>
+<td>발행 인프라</td>
+<td>M0</td>
+<td>발행/상환 배관, 체인 간</td>
+</tr>
+<tr>
+<td>준비자산 보관</td>
+<td>문페이</td>
+<td>뒷받침 자산이 있는 곳</td>
+</tr>
+<tr>
+<td>기반 달러 + 상환</td>
+<td>PYUSD / 팍소스</td>
+<td>실제 돈과 지급 약속</td>
+</tr>
+<tr>
+<td>규제 준수 통제</td>
+<td>플랫폼</td>
+<td>계정 동결, 거래 일시중지</td>
+</tr>
+</tbody></table></div>
+<h3>실제로 넘어온 것</h3>
+<ul>
+<li>개발자가 받는 건 <strong>설정</strong>이지 준비자산이 아님. &#39;당신의 스테이블코인&#39; = 가치가 PYUSD의 가치인 스킨.</li>
+<li>브랜드 토큰은 온체인에서 <strong>PYUSD·USDC</strong>와 상호교환 — 그러니 사실 별개의 돈이 아니라 같은 달러의 뷰(view).</li>
+<li><strong>정지 스위치와 상환은 브랜드 아래에 있음.</strong> 그걸 쥔 자가 권력을 쥠.</li>
+</ul>
+<h3>출시 시점 체인·통제</h3>
+<p>이더리움, 아비트럼, 모나드. 규제 통제(동결, 일시중지)가 내장 — 이건 주권 화폐가 아니라 허가형 발행이라는 상기.</p>
+<p>교차: <code>stablecoin-mcap-is-repackaged-money</code>(브랜드 토큰은 하나의 준비자산 재포장), <code>the-only-commitment-is-the-issuer</code>(상환이 가치, 브랜드 아래에 있음), <code>build-rent-or-own-the-rail</code>(주인은 발행을 임대, 개발자는 화폐 단위를 임대), <code>st-self-distribution</code>·<code>consortium-owns-the-rail</code>(경제학은 준비자산/스위치 보유자에게 쌓임), <code>what-needs-a-stablecoin</code>(이 유즈케이스에 <em>새</em> 코인이 필요한가, 아니면 기존 코인의 설정인가?), <code>liquid-issuance-not-authorization</code>(토큰 발행은 그 뒤의 권한을 쥐는 것과 다르다).</p>
+      
+      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-a-faucet-is-a-payout.html">&larr; 60. A faucet without limits is a payout, not a feature</a><a href="pocs-can-you-leave-by-2030.html">62. The 2027 question is easy — the 2030 question is whether you can leave &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script>
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  // 레일 필터 = 텍스트 질의 + 등급 모드(Important/All)의 합성. 등급 토글이 없는 페이지에서는
+  // tierMode 가 'all' 로 남아 예전과 완전히 동일하게 동작한다 (jay, 2026-09-08).
+  const tierBtns = [...document.querySelectorAll('.rail-tier .tier-btn')];
+  let tierMode = tierBtns.some((b) => b.dataset.tierMode === 'important') ? 'important' : 'all';
+  // "Important" 필터는 중요(빨강)뿐 아니라 "최근 완료"(하늘)와 "새 항목"(노랑)도 함께 보여 준다
+  // (jay, 2026-09-08: "even though All clicked, the recently done and important should be shown";
+  // 2026-09-09: "important button shows also new items"). 최근 완료는 방금 끝낸 강조 항목이고,
+  // 새 항목은 최근 창(NEW_WINDOW) 안에 손댄 것이라 둘 다 중요 줄에 두고 필터에서 숨기지 않는다.
+  const isImportant = (a) => { const d = a.querySelector('.nav-dot'); return !!d && (d.title === 'IMPORTANT' || d.title === 'RECENTLY DONE' || d.title === 'NEW'); };
+  function applyFilter() {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = (!q || a.textContent.toLowerCase().includes(q)) && (tierMode === 'all' || isImportant(a));
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  }
+  input.addEventListener('input', applyFilter);
+  for (const b of tierBtns) {
+    b.addEventListener('click', () => {
+      tierMode = b.dataset.tierMode;
+      for (const x of tierBtns) { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+      applyFilter();
+    });
+  }
+  // 진입 시 기본값: 등급 토글이 있으면 Important 만 보여 준다 (jay, 2026-09-08).
+  if (tierBtns.length) applyFilter();
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const observed = new Map();
+  let revealTimer;
+  // 밴드에 걸친 항목 중 "문서 순서로 첫 번째"를 고르면 언제나 한 칸 앞이 켜진다
+  // (jay, 2026-08-27: "the left pane should sync with right pane in the item's position").
+  // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
+  // 고르면 방금 도착한 항목이 켜진다.
+  function syncActive() {
+    // 상세 페이지에는 관측할 본문 항목이 없다 — 그때 돌면 서버가 표시한 active 를
+    // 첫 스크롤에 지워 버리므로, 관측 대상이 없으면 아무것도 하지 않는다 (2026-09-03).
+    if (observed.size === 0) return;
+    // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
+    // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
+    // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
+    const line = window.innerHeight * 0.1;
+    let first = null;
+    let started = -Infinity;
+    let upcoming = Infinity;
+    let firstUpcoming = null;
+    for (const k of seen) {
+      const el = observed.get(k);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top <= line) {
+        if (top > started) {
+          started = top;
+          first = k;
+        }
+      } else if (top < upcoming) {
+        upcoming = top;
+        firstUpcoming = k;
+      }
+    }
+    if (first === null) first = firstUpcoming;
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    // 사용자가 실제로 스크롤하기 전에는 끌어오지 않는다 (jay, 2026-09-02) — 로드 직후
+    // 관측자의 첫 콜백이 1번 항목으로 레일을 되감아, 초기 스크롤(첫 important 가운데
+    // 정렬)을 덮어쓰는 것을 막는다. 해시 딥링크는 브라우저 앵커 스크롤이 scroll 이벤트를
+    // 내므로 여전히 첫 프레임부터 동기화된다.
+    clearTimeout(revealTimer);
+    if (userScrolled) revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }
+
+  // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
+  // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
+  let ticking = false;
+  // 해시 딥링크는 스크롤 이벤트가 리스너 등록 전에 끝날 수 있으므로 처음부터 켠다 —
+  // 특정 항목을 열었다는 것 자체가 "그 항목을 보라"는 의도다.
+  let userScrolled = !!location.hash;
+  addEventListener(
+    'scroll',
+    () => {
+      userScrolled = true;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncActive();
+      });
+    },
+    { passive: true }
+  );
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    syncActive();
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) {
+      observed.set(key, el);
+      io.observe(el);
+    }
+  }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
+
+(function () {
+  var nav = document.querySelector('.rail-nav');
+  if (!nav) return;
+  var el = nav.querySelector('.nav-link.active');
+  if (!el && !location.hash) {
+    var dot = nav.querySelector('.nav-dot[title="IMPORTANT"]');
+    el = dot && dot.closest('a');
+  }
+  if (!el) return;
+  var r = el.getBoundingClientRect();
+  var c = nav.getBoundingClientRect();
+  nav.scrollTop += (r.top - c.top) - (c.height / 2 - r.height / 2);
+})();
+</script>
+</body>
+</html>
