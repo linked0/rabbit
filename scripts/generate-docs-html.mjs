@@ -223,6 +223,88 @@ ${items}
   return entries.length;
 }
 
+// docs/html/docs/index.html — docs 폴더 전체의 자동 색인 (jay, 2026-09-09).
+// 인덱스의 "Rabbit — Docs" 카드가 여기로 온다. 렌더된 docs 트리(docs/**.md → .html)를
+// 최상위 하위폴더별로 묶어 보여 준다. tasks·history 는 날짜별 파일이 수십 개라 전부
+// 나열하는 대신 이미 있는 폴더 색인(tasks/index.html·history/index.html) 한 줄로 접는다 —
+// 그래야 페이지가 짧게 유지되고, 목록이 폴더와 어긋날 방법도 없다. 매 실행마다 폴더에서
+// 다시 만든다.
+function generateDocsIndex() {
+  const DOCS_DIR = path.join(REPO_ROOT, 'docs');
+  const outAbs = path.join(OUT_ROOT, 'docs', 'index.html');
+  const FOLDED = new Map([['tasks', 'All Tasks'], ['history', 'All Logs']]); // 폴더 색인으로 접는다
+  const groups = new Map(); // topFolder ('' = root) -> [{ title, href, name }]
+  const push = (top, entry) => {
+    if (!groups.has(top)) groups.set(top, []);
+    groups.get(top).push(entry);
+  };
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, e.name);
+      if (e.isDirectory()) {
+        if (e.name.startsWith('.')) continue;
+        if (abs === OUT_ROOT) continue; // docs/html (렌더 출력) 자신은 제외
+        walk(abs);
+        continue;
+      }
+      if (!e.isFile() || !/\.md$/i.test(e.name)) continue;
+      const relFromDocs = path.relative(DOCS_DIR, abs); // e.g. knowledge/foo.md
+      const top = relFromDocs.includes(path.sep) ? relFromDocs.split(path.sep)[0] : '';
+      if (FOLDED.has(top)) continue; // tasks·history 는 아래에서 접어서 따로 추가
+      const raw = fs.readFileSync(abs, 'utf8');
+      const h1 = raw.match(/^#\s+(.+)$/m);
+      push(top, {
+        title: h1 ? h1[1].trim() : e.name.replace(/\.md$/i, ''),
+        href: relFromDocs.replace(/\.md$/i, '.html'),
+        name: relFromDocs,
+      });
+    }
+  };
+  walk(DOCS_DIR);
+  // VERBATIM 설정 파일(docs/zsub/…)도 렌더되므로 색인에 포함한다.
+  for (const { src } of VERBATIM) {
+    const relFromDocs = path.relative(DOCS_DIR, path.join(REPO_ROOT, src));
+    if (relFromDocs.startsWith('..')) continue;
+    const top = relFromDocs.includes(path.sep) ? relFromDocs.split(path.sep)[0] : '';
+    push(top, {
+      title: path.basename(src),
+      href: relFromDocs.replace(/\.[^.]+$/, '.html'),
+      name: relFromDocs,
+    });
+  }
+  // 접은 폴더(tasks·history)를 각자 섹션 한 줄로.
+  for (const [folder, label] of FOLDED) {
+    if (fs.existsSync(path.join(outAbs, '..', folder, 'index.html'))) {
+      push(folder, { title: label, href: `${folder}/index.html`, name: `${folder}/`, folded: true });
+    }
+  }
+  const sections = [...groups.entries()].sort((a, b) => {
+    if (a[0] === '') return -1; // 루트 먼저
+    if (b[0] === '') return 1;
+    return a[0].localeCompare(b[0]);
+  });
+  const bodyHtml = `<h1>Rabbit — Docs</h1>
+<blockquote><p>Every rendered page under <code>docs/</code>, grouped by folder. Rebuilt from the folder on each docs generation — it cannot go stale the way a hand-written list can. <code>tasks/</code> and <code>history/</code> are folded into their own indexes.</p></blockquote>
+${sections.map(([folder, entries]) => {
+  entries.sort((a, b) => a.name.localeCompare(b.name));
+  const heading = folder === '' ? 'docs/' : `docs/${folder}/`;
+  const items = entries.map((it) =>
+    `<li><a href="${escapeHtml(it.href)}">${escapeHtml(it.title)}</a> <code>${escapeHtml(it.name)}</code></li>`
+  ).join('\n');
+  return `<h2>${escapeHtml(heading)}</h2>\n<ul>\n${items}\n</ul>`;
+}).join('\n')}
+`;
+  fs.mkdirSync(path.dirname(outAbs), { recursive: true });
+  fs.writeFileSync(outAbs, renderPage({
+    title: 'Rabbit — Docs',
+    sourceRel: 'docs/ (folder listing, auto-generated)',
+    bodyHtml,
+    backHref: path.relative(path.dirname(outAbs), INDEX_HTML),
+    backLabel: 'Index',
+  }), 'utf8');
+  return [...groups.values()].reduce((n, e) => n + e.length, 0);
+}
+
 function main() {
   // With file args, only convert those (used by the pre-commit hook for changed files).
   // With no args, do a full scan (used by `pnpm docs:html`).
@@ -276,7 +358,8 @@ function main() {
   }
 
   const taskCount = generateTasksIndex();
-  console.log(`Converted ${converted} markdown files (+ ${verbatim} verbatim, tasks index: ${taskCount} entries) to ${path.relative(REPO_ROOT, OUT_ROOT)}/`);
+  const docsCount = generateDocsIndex();
+  console.log(`Converted ${converted} markdown files (+ ${verbatim} verbatim, tasks index: ${taskCount} entries, docs index: ${docsCount} entries) to ${path.relative(REPO_ROOT, OUT_ROOT)}/`);
   if (conflicts.length) {
     console.log(`WARNING: ${conflicts.length} output path conflicts (later file skipped):`);
     for (const [a, b] of conflicts) console.log(`  ${a}  <->  ${b}`);
