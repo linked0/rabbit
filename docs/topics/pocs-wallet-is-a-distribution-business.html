@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Monte Carlo — simulating the distribution you cannot solve for — PoCs</title>
+<title>A stablecoin wallet is a distribution business, not a crypto one — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,45 +366,175 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Monte Carlo — simulating the distribution you cannot solve for</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; A stablecoin wallet is a distribution business, not a crypto one</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#132</span><span>PoC</span></p>
-      <h1>Monte Carlo — simulating the distribution you cannot solve for</h1>
-      <p class="lead">When a payoff has no closed form, Monte Carlo samples thousands of random paths and reads the answer off the distribution; the quality of the answer is exactly the quality of the assumed randomness.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#66</span><span>PoC</span></p>
+      <h1>A stablecoin wallet is a distribution business, not a crypto one</h1>
+      <p class="lead">KakaoPay finished a PoC extending its <strong>43M-user prepaid KakaoPay Money wallet</strong> to hold, send, pay, and settle on-chain assets — including a KRW stablecoin — verified at its high-traffic scale. Read where the moat actually sits: not in the on-chain support (the late, small addition) but in the 43M users, the settlement infra that already carries that traffic, the payment and merchant relationships, and a regulatory posture. &quot;Add stablecoins&quot; is a feature bolted onto a distribution business. KakaoGroup is now packaging that wallet tech + consulting as a <strong>B2B product</strong> for other firms and banks — renting the distribution out. And the CEO names where value lands: <em>not at issuance, but at the usage stage where the asset is actually spent.</em></p>
+      <p class="meta">Not a build — a moat audit. For any &#39;we added a stablecoin wallet&#39; announcement, split the crypto part from the distribution part and ask which one is scarce. Draw the stack: <strong>users (43M) · high-traffic settlement infra · payment/merchant relationships · regulatory posture</strong> — then, underneath, the on-chain custody/keys. Score each layer on &#39;how long to replicate from zero&#39;: the on-chain part is weeks (SDKs exist), the 43M users and the infra are years. Then interrogate the B2B angle: when Kakao sells wallet tech + consulting to a bank, what is actually being rented — the wallet SDK (cheap, commoditized) or the distribution and the regulatory template (the real thing)? Source: KakaoPay via digitalasset.works (박재연, 2026-09-09). Confirm the figures (43M users, PoC scope: send/pay/settle + UI, KakaoBank&#39;s bank-level track) against the source before citing.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Monte Carlo — simulating the distribution you cannot solve for\n\nWhen a payoff has no closed form, Monte Carlo samples thousands of random paths and reads the answer off the distribution; the quality of the answer is exactly the quality of the assumed randomness.\n\nNot yet scoped.\n\n## Why\n\nThe instructive case is tail risk: a simulation with thin-tailed inputs will systematically underprice the disaster, so the PoC pairs a Gaussian and a fat-tailed generator on the same portfolio.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# A stablecoin wallet is a distribution business, not a crypto one\n\nKakaoPay finished a PoC extending its **43M-user prepaid KakaoPay Money wallet** to hold, send, pay, and settle on-chain assets — including a KRW stablecoin — verified at its high-traffic scale. Read where the moat actually sits: not in the on-chain support (the late, small addition) but in the 43M users, the settlement infra that already carries that traffic, the payment and merchant relationships, and a regulatory posture. \"Add stablecoins\" is a feature bolted onto a distribution business. KakaoGroup is now packaging that wallet tech + consulting as a **B2B product** for other firms and banks — renting the distribution out. And the CEO names where value lands: *not at issuance, but at the usage stage where the asset is actually spent.*\n\nNot a build — a moat audit. For any 'we added a stablecoin wallet' announcement, split the crypto part from the distribution part and ask which one is scarce. Draw the stack: **users (43M) · high-traffic settlement infra · payment/merchant relationships · regulatory posture** — then, underneath, the on-chain custody/keys. Score each layer on 'how long to replicate from zero': the on-chain part is weeks (SDKs exist), the 43M users and the infra are years. Then interrogate the B2B angle: when Kakao sells wallet tech + consulting to a bank, what is actually being rented — the wallet SDK (cheap, commoditized) or the distribution and the regulatory template (the real thing)? Source: KakaoPay via digitalasset.works (박재연, 2026-09-09). Confirm the figures (43M users, PoC scope: send/pay/settle + UI, KakaoBank's bank-level track) against the source before citing.\n\n## Why\n\n**The scarce thing in a stablecoin wallet is the distribution it already has, not the on-chain support it adds.** The on-chain layer — key custody, signing, an ERC-20 balance — is a solved, commoditized problem; SDKs ship it in weeks. What KakaoPay brings that a crypto startup cannot is the part that took a decade: **43M users, settlement infra proven at that traffic, merchant and payment relationships, and a regulatory posture.** So the honest reading of 'KakaoPay added a stablecoin wallet' is not a crypto milestone — it is a distribution business attaching a feature. The crypto is the easy 10%.\n\n**Value accrues at the usage/distribution stage, which is exactly where the incumbent already sits.** The CEO's line — *'the true value of digital assets reveals itself beyond issuance, at the stage where the asset is actually used'* — is the same claim `issuance-as-a-service` recorded from M0 on the *issuance* side ('PYUSD's lasting value comes from what others build on top of it'). Put the two together and the whole stablecoin stack has a shape: **issuers rent denomination; wallets rent distribution; and the durable positions are the reserve layer (issuance) and the distribution layer (usage).** A KRW stablecoin's issuer is replaceable; the wallet that 43M people already open every day is not.\n\n**The B2B move is the tell.** KakaoGroup is packaging the wallet tech + consulting as a product for other firms and banks, tailored to each service environment and future Korean regulation. That is `build-rent-or-own-the-rail` from the owner's chair — Kakao owns the distribution rail and rents access to everyone who wants to reach Korean users with a stablecoin. And note *what* is bundled: not just an SDK but **consulting on regulation** — because the regulatory template (bank-level KYC/AML/custody tuned to rules that don't fully exist yet) is itself a moat a newcomer can't buy. The one number worth extracting from any such PoC: of the value created, how much rides on the crypto, and how much on the 43M-user distribution the crypto is riding on.\n\n## How it works\n\nSplit the stack, score what's scarce.\n\n### The wallet stack — crypto is the thin top layer\n\n| Layer | Held by KakaoPay | Time to replicate from zero |\n|---|---|---|\n| 43M users, daily-open habit | yes | years |\n| Settlement infra at high traffic | yes (prepaid-money system) | years |\n| Merchant / payment relationships | yes | years |\n| Regulatory posture (KYC/AML/custody) | yes (KakaoBank: bank-level track) | years — and rule-dependent |\n| On-chain custody / keys / stablecoin support | newly added in the PoC | weeks (SDKs exist) |\n\nThe drain of value flows to the top four rows; the PoC verified the bottom one. That inversion — the hard part already owned, the 'crypto' part the easy add — is the whole reading.\n\n### The two-sided shape of the stablecoin stack\n\n| Side | Who rents what | Durable position | Card |\n|---|---|---|---|\n| Issuance | issuers rent denomination on a reserve | the reserve layer | `issuance-as-a-service` |\n| Distribution | apps rent reach into users | the wallet / usage layer | this card |\n\nBoth quotes (Kakao's Shin, M0) name the *usage* stage as where value lands — issuance is the commodity, distribution and reserve are the moats.\n\n### The B2B tell\n\nKakaoGroup sells wallet tech **+ consulting** to firms and banks. The SDK is commodity; the distribution and the **regulatory template** are not. Renting the rail is the owner's play (`build-rent-or-own-the-rail`).\n\nCross-refs: `issuance-as-a-service` (the issuance-side twin — same 'value at usage, not issuance' claim), `st-self-distribution` and `consortium-owns-the-rail` (economics accrue to whoever owns distribution/the rail), `the-wallet-is-not-the-user` (a wallet is a key, but a *payments* wallet is also a distribution asset), `won-stablecoin-fee-savings` and `what-needs-a-stablecoin` (the KRW-stablecoin use case), `embedded-wallet-policy` (the on-chain custody layer this bolts on).\n"</script>
       <h2>Why</h2>
-      <p>The instructive case is tail risk: a simulation with thin-tailed inputs will systematically underprice the disaster, so the PoC pairs a Gaussian and a fat-tailed generator on the same portfolio.</p>
+      <p><strong>The scarce thing in a stablecoin wallet is the distribution it already has, not the on-chain support it adds.</strong> The on-chain layer — key custody, signing, an ERC-20 balance — is a solved, commoditized problem; SDKs ship it in weeks. What KakaoPay brings that a crypto startup cannot is the part that took a decade: <strong>43M users, settlement infra proven at that traffic, merchant and payment relationships, and a regulatory posture.</strong> So the honest reading of &#39;KakaoPay added a stablecoin wallet&#39; is not a crypto milestone — it is a distribution business attaching a feature. The crypto is the easy 10%.</p>
+<p><strong>Value accrues at the usage/distribution stage, which is exactly where the incumbent already sits.</strong> The CEO&#39;s line — <em>&#39;the true value of digital assets reveals itself beyond issuance, at the stage where the asset is actually used&#39;</em> — is the same claim <code>issuance-as-a-service</code> recorded from M0 on the <em>issuance</em> side (&#39;PYUSD&#39;s lasting value comes from what others build on top of it&#39;). Put the two together and the whole stablecoin stack has a shape: <strong>issuers rent denomination; wallets rent distribution; and the durable positions are the reserve layer (issuance) and the distribution layer (usage).</strong> A KRW stablecoin&#39;s issuer is replaceable; the wallet that 43M people already open every day is not.</p>
+<p><strong>The B2B move is the tell.</strong> KakaoGroup is packaging the wallet tech + consulting as a product for other firms and banks, tailored to each service environment and future Korean regulation. That is <code>build-rent-or-own-the-rail</code> from the owner&#39;s chair — Kakao owns the distribution rail and rents access to everyone who wants to reach Korean users with a stablecoin. And note <em>what</em> is bundled: not just an SDK but <strong>consulting on regulation</strong> — because the regulatory template (bank-level KYC/AML/custody tuned to rules that don&#39;t fully exist yet) is itself a moat a newcomer can&#39;t buy. The one number worth extracting from any such PoC: of the value created, how much rides on the crypto, and how much on the 43M-user distribution the crypto is riding on.</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <p>Split the stack, score what&#39;s scarce.</p>
+<h3>The wallet stack — crypto is the thin top layer</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Held by KakaoPay</th>
+<th>Time to replicate from zero</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>43M users, daily-open habit</td>
+<td>yes</td>
+<td>years</td>
+</tr>
+<tr>
+<td>Settlement infra at high traffic</td>
+<td>yes (prepaid-money system)</td>
+<td>years</td>
+</tr>
+<tr>
+<td>Merchant / payment relationships</td>
+<td>yes</td>
+<td>years</td>
+</tr>
+<tr>
+<td>Regulatory posture (KYC/AML/custody)</td>
+<td>yes (KakaoBank: bank-level track)</td>
+<td>years — and rule-dependent</td>
+</tr>
+<tr>
+<td>On-chain custody / keys / stablecoin support</td>
+<td>newly added in the PoC</td>
+<td>weeks (SDKs exist)</td>
+</tr>
+</tbody></table></div>
+<p>The drain of value flows to the top four rows; the PoC verified the bottom one. That inversion — the hard part already owned, the &#39;crypto&#39; part the easy add — is the whole reading.</p>
+<h3>The two-sided shape of the stablecoin stack</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Side</th>
+<th>Who rents what</th>
+<th>Durable position</th>
+<th>Card</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Issuance</td>
+<td>issuers rent denomination on a reserve</td>
+<td>the reserve layer</td>
+<td><code>issuance-as-a-service</code></td>
+</tr>
+<tr>
+<td>Distribution</td>
+<td>apps rent reach into users</td>
+<td>the wallet / usage layer</td>
+<td>this card</td>
+</tr>
+</tbody></table></div>
+<p>Both quotes (Kakao&#39;s Shin, M0) name the <em>usage</em> stage as where value lands — issuance is the commodity, distribution and reserve are the moats.</p>
+<h3>The B2B tell</h3>
+<p>KakaoGroup sells wallet tech <strong>+ consulting</strong> to firms and banks. The SDK is commodity; the distribution and the <strong>regulatory template</strong> are not. Renting the rail is the owner&#39;s play (<code>build-rent-or-own-the-rail</code>).</p>
+<p>Cross-refs: <code>issuance-as-a-service</code> (the issuance-side twin — same &#39;value at usage, not issuance&#39; claim), <code>st-self-distribution</code> and <code>consortium-owns-the-rail</code> (economics accrue to whoever owns distribution/the rail), <code>the-wallet-is-not-the-user</code> (a wallet is a key, but a <em>payments</em> wallet is also a distribution asset), <code>won-stablecoin-fee-savings</code> and <code>what-needs-a-stablecoin</code> (the KRW-stablecoin use case), <code>embedded-wallet-policy</code> (the on-chain custody layer this bolts on).</p>
       
       <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 몬테카를로 — 풀 수 없는 분포를 시뮬레이션하기\n\n수익 구조에 닫힌 해가 없을 때 몬테카를로는 수천 개의 무작위 경로를 표집해 분포에서 답을 읽습니다. 답의 품질은 정확히 가정된 무작위성의 품질입니다.\n\n아직 범위 미정.\n\n## 왜\n\n교훈적인 사례는 꼬리 위험입니다: 얇은 꼬리 입력을 쓴 시뮬레이션은 재난을 체계적으로 과소평가하므로, 이 PoC는 같은 포트폴리오에 가우시안과 두꺼운 꼬리 생성기를 나란히 놓습니다.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>몬테카를로 — 풀 수 없는 분포를 시뮬레이션하기</h1>
-      <p class="lead">수익 구조에 닫힌 해가 없을 때 몬테카를로는 수천 개의 무작위 경로를 표집해 분포에서 답을 읽습니다. 답의 품질은 정확히 가정된 무작위성의 품질입니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# 스테이블코인 지갑은 크립토 사업이 아니라 유통 사업이다\n\n카카오페이가 **4300만 이용자의 선불충전 카카오페이머니 지갑**을 온체인 자산 — 원화 스테이블코인 포함 — 을 보관·송금·결제·정산할 수 있게 확장하는 PoC를 마쳤습니다. 대용량 트래픽 환경에서 검증했죠. 해자가 실제로 어디 있는지 읽으세요: 온체인 지원(늦고 작은 추가)이 아니라, 4300만 이용자, 그 트래픽을 이미 감당하는 정산 인프라, 결제·가맹 관계, 그리고 규제 대응 태세에. '스테이블코인 추가'는 유통 사업에 붙인 기능일 뿐입니다. 카카오그룹은 이제 그 지갑 기술 + 컨설팅을 다른 기업·은행에 **B2B 상품**으로 묶어 — 유통을 임대하려 합니다. 그리고 대표는 가치가 어디서 드러나는지 짚습니다: *발행이 아니라, 자산이 실제로 쓰이는 유통 단계에서.*\n\n구현이 아니라 해자 감사입니다. '스테이블코인 지갑을 붙였다'는 발표마다, 크립토 부분과 유통 부분을 갈라 어느 쪽이 희소한지 물으세요. 스택을 그리세요: **이용자(4300만) · 대용량 정산 인프라 · 결제·가맹 관계 · 규제 대응 태세** — 그 아래에 온체인 커스터디/키. 각 층을 '맨바닥부터 복제하는 데 걸리는 시간'으로 채점: 온체인 부분은 몇 주(SDK가 있음), 4300만 이용자와 인프라는 몇 년. 그다음 B2B 각도를 캐물으세요: 카카오가 은행에 지갑 기술 + 컨설팅을 팔 때 실제로 임대되는 건 지갑 SDK(싸고 범용화됨)인가, 아니면 유통과 규제 템플릿(진짜)인가? 출처: 카카오페이, digitalasset.works(박재연, 2026-09-09). 수치(4300만 이용자, PoC 범위: 송금·결제·정산 + UI, 카카오뱅크의 은행급 트랙)는 인용 전 출처로 확인.\n\n## 왜\n\n**스테이블코인 지갑에서 희소한 것은 새로 붙인 온체인 지원이 아니라 이미 가진 유통입니다.** 온체인 층 — 키 커스터디, 서명, ERC-20 잔액 — 은 이미 풀린 범용 문제로, SDK가 몇 주면 실어줍니다. 카카오페이가 크립토 스타트업이 못 가진 채로 들고 오는 건 10년이 걸린 부분입니다: **4300만 이용자, 그 트래픽에서 검증된 정산 인프라, 가맹·결제 관계, 규제 대응 태세.** 그러니 '카카오페이가 스테이블코인 지갑을 붙였다'의 정직한 독해는 크립토 이정표가 아니라, 유통 사업이 기능 하나를 붙인 것입니다. 크립토는 쉬운 10%.\n\n**가치는 사용/유통 단계에서 쌓이고, 바로 그 자리에 인큐번트가 이미 앉아 있습니다.** 대표의 말 — *'디지털자산의 진정한 가치는 발행을 넘어 자산이 실제로 사용되는 유통 단계에서 드러난다'* — 은 `issuance-as-a-service`가 *발행* 쪽에서 M0로부터 기록한 주장('PYUSD의 지속적 가치는 남들이 그 위에 짓는 것에서 나온다')과 같습니다. 둘을 합치면 스테이블코인 스택 전체의 형태가 보입니다: **발행자는 화폐 단위를 임대하고, 지갑은 유통을 임대하며, 지속되는 위치는 준비자산 계층(발행)과 유통 계층(사용)이다.** 원화 스테이블코인의 발행자는 교체 가능하지만, 4300만 명이 매일 여는 지갑은 아닙니다.\n\n**B2B 수가 결정적 신호입니다.** 카카오그룹은 지갑 기술 + 컨설팅을 다른 기업·은행용 상품으로, 각 서비스 환경과 향후 한국 규제에 맞춰 묶습니다. 이건 `build-rent-or-own-the-rail`을 주인의 자리에서 본 것 — 카카오가 유통 레일을 소유하고, 스테이블코인으로 한국 이용자에 닿으려는 모두에게 접근을 임대합니다. 그리고 *무엇이* 묶이는지 보세요: SDK만이 아니라 **규제 컨설팅** — 아직 온전히 존재하지 않는 규칙에 맞춘 은행급 KYC/AML/커스터디 템플릿 자체가 신규 진입자가 살 수 없는 해자이기 때문입니다. 이런 PoC에서 뽑을 한 숫자: 창출된 가치 중 얼마가 크립토에 걸려 있고, 얼마가 그 크립토가 올라탄 4300만 유통에 걸려 있는가.\n\n## 동작 방식\n\n스택을 가르고, 희소한 것을 채점.\n\n### 지갑 스택 — 크립토는 얇은 최상층\n\n| 층 | 카카오페이 보유 | 맨바닥부터 복제 시간 |\n|---|---|---|\n| 4300만 이용자, 매일 여는 습관 | 예 | 수년 |\n| 대용량 정산 인프라 | 예(선불충전 시스템) | 수년 |\n| 가맹 / 결제 관계 | 예 | 수년 |\n| 규제 대응 태세(KYC/AML/커스터디) | 예(카카오뱅크: 은행급 트랙) | 수년 — 규칙 의존 |\n| 온체인 커스터디 / 키 / 스테이블코인 지원 | PoC에서 새로 추가 | 몇 주(SDK 존재) |\n\n가치의 흐름은 위 네 행으로 가고, PoC가 검증한 건 맨 아래 행. 그 역전 — 어려운 부분은 이미 소유, '크립토' 부분이 쉬운 추가 — 이 독해 전부입니다.\n\n### 스테이블코인 스택의 양면 형태\n\n| 면 | 누가 무엇을 임대 | 지속 위치 | 카드 |\n|---|---|---|---|\n| 발행 | 발행자가 준비자산 위 화폐 단위 임대 | 준비자산 계층 | `issuance-as-a-service` |\n| 유통 | 앱이 이용자 접근을 임대 | 지갑/사용 계층 | 이 카드 |\n\n두 인용(카카오 신원근, M0) 모두 *사용* 단계를 가치가 드러나는 곳으로 지목 — 발행은 범용재, 유통과 준비자산이 해자.\n\n### B2B 신호\n\n카카오그룹은 지갑 기술 **+ 컨설팅**을 기업·은행에 판매. SDK는 범용재고, 유통과 **규제 템플릿**은 아님. 레일을 임대하는 건 주인의 수(`build-rent-or-own-the-rail`).\n\n교차: `issuance-as-a-service`(발행 쪽 쌍둥이 — 같은 '가치는 발행이 아니라 사용에서' 주장), `st-self-distribution`·`consortium-owns-the-rail`(경제학은 유통/레일 소유자에게 쌓임), `the-wallet-is-not-the-user`(지갑은 키지만, *결제* 지갑은 유통 자산이기도), `won-stablecoin-fee-savings`·`what-needs-a-stablecoin`(원화 스테이블코인 유즈케이스), `embedded-wallet-policy`(이게 붙는 온체인 커스터디 층).\n"</script>
+      <h1>스테이블코인 지갑은 크립토 사업이 아니라 유통 사업이다</h1>
+      <p class="lead">카카오페이가 <strong>4300만 이용자의 선불충전 카카오페이머니 지갑</strong>을 온체인 자산 — 원화 스테이블코인 포함 — 을 보관·송금·결제·정산할 수 있게 확장하는 PoC를 마쳤습니다. 대용량 트래픽 환경에서 검증했죠. 해자가 실제로 어디 있는지 읽으세요: 온체인 지원(늦고 작은 추가)이 아니라, 4300만 이용자, 그 트래픽을 이미 감당하는 정산 인프라, 결제·가맹 관계, 그리고 규제 대응 태세에. &#39;스테이블코인 추가&#39;는 유통 사업에 붙인 기능일 뿐입니다. 카카오그룹은 이제 그 지갑 기술 + 컨설팅을 다른 기업·은행에 <strong>B2B 상품</strong>으로 묶어 — 유통을 임대하려 합니다. 그리고 대표는 가치가 어디서 드러나는지 짚습니다: <em>발행이 아니라, 자산이 실제로 쓰이는 유통 단계에서.</em></p>
+      <p class="meta">구현이 아니라 해자 감사입니다. &#39;스테이블코인 지갑을 붙였다&#39;는 발표마다, 크립토 부분과 유통 부분을 갈라 어느 쪽이 희소한지 물으세요. 스택을 그리세요: <strong>이용자(4300만) · 대용량 정산 인프라 · 결제·가맹 관계 · 규제 대응 태세</strong> — 그 아래에 온체인 커스터디/키. 각 층을 &#39;맨바닥부터 복제하는 데 걸리는 시간&#39;으로 채점: 온체인 부분은 몇 주(SDK가 있음), 4300만 이용자와 인프라는 몇 년. 그다음 B2B 각도를 캐물으세요: 카카오가 은행에 지갑 기술 + 컨설팅을 팔 때 실제로 임대되는 건 지갑 SDK(싸고 범용화됨)인가, 아니면 유통과 규제 템플릿(진짜)인가? 출처: 카카오페이, digitalasset.works(박재연, 2026-09-09). 수치(4300만 이용자, PoC 범위: 송금·결제·정산 + UI, 카카오뱅크의 은행급 트랙)는 인용 전 출처로 확인.</p>
       <h2>왜</h2>
-      <p>교훈적인 사례는 꼬리 위험입니다: 얇은 꼬리 입력을 쓴 시뮬레이션은 재난을 체계적으로 과소평가하므로, 이 PoC는 같은 포트폴리오에 가우시안과 두꺼운 꼬리 생성기를 나란히 놓습니다.</p>
+      <p><strong>스테이블코인 지갑에서 희소한 것은 새로 붙인 온체인 지원이 아니라 이미 가진 유통입니다.</strong> 온체인 층 — 키 커스터디, 서명, ERC-20 잔액 — 은 이미 풀린 범용 문제로, SDK가 몇 주면 실어줍니다. 카카오페이가 크립토 스타트업이 못 가진 채로 들고 오는 건 10년이 걸린 부분입니다: <strong>4300만 이용자, 그 트래픽에서 검증된 정산 인프라, 가맹·결제 관계, 규제 대응 태세.</strong> 그러니 &#39;카카오페이가 스테이블코인 지갑을 붙였다&#39;의 정직한 독해는 크립토 이정표가 아니라, 유통 사업이 기능 하나를 붙인 것입니다. 크립토는 쉬운 10%.</p>
+<p><strong>가치는 사용/유통 단계에서 쌓이고, 바로 그 자리에 인큐번트가 이미 앉아 있습니다.</strong> 대표의 말 — <em>&#39;디지털자산의 진정한 가치는 발행을 넘어 자산이 실제로 사용되는 유통 단계에서 드러난다&#39;</em> — 은 <code>issuance-as-a-service</code>가 <em>발행</em> 쪽에서 M0로부터 기록한 주장(&#39;PYUSD의 지속적 가치는 남들이 그 위에 짓는 것에서 나온다&#39;)과 같습니다. 둘을 합치면 스테이블코인 스택 전체의 형태가 보입니다: <strong>발행자는 화폐 단위를 임대하고, 지갑은 유통을 임대하며, 지속되는 위치는 준비자산 계층(발행)과 유통 계층(사용)이다.</strong> 원화 스테이블코인의 발행자는 교체 가능하지만, 4300만 명이 매일 여는 지갑은 아닙니다.</p>
+<p><strong>B2B 수가 결정적 신호입니다.</strong> 카카오그룹은 지갑 기술 + 컨설팅을 다른 기업·은행용 상품으로, 각 서비스 환경과 향후 한국 규제에 맞춰 묶습니다. 이건 <code>build-rent-or-own-the-rail</code>을 주인의 자리에서 본 것 — 카카오가 유통 레일을 소유하고, 스테이블코인으로 한국 이용자에 닿으려는 모두에게 접근을 임대합니다. 그리고 <em>무엇이</em> 묶이는지 보세요: SDK만이 아니라 <strong>규제 컨설팅</strong> — 아직 온전히 존재하지 않는 규칙에 맞춘 은행급 KYC/AML/커스터디 템플릿 자체가 신규 진입자가 살 수 없는 해자이기 때문입니다. 이런 PoC에서 뽑을 한 숫자: 창출된 가치 중 얼마가 크립토에 걸려 있고, 얼마가 그 크립토가 올라탄 4300만 유통에 걸려 있는가.</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <p>스택을 가르고, 희소한 것을 채점.</p>
+<h3>지갑 스택 — 크립토는 얇은 최상층</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>층</th>
+<th>카카오페이 보유</th>
+<th>맨바닥부터 복제 시간</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4300만 이용자, 매일 여는 습관</td>
+<td>예</td>
+<td>수년</td>
+</tr>
+<tr>
+<td>대용량 정산 인프라</td>
+<td>예(선불충전 시스템)</td>
+<td>수년</td>
+</tr>
+<tr>
+<td>가맹 / 결제 관계</td>
+<td>예</td>
+<td>수년</td>
+</tr>
+<tr>
+<td>규제 대응 태세(KYC/AML/커스터디)</td>
+<td>예(카카오뱅크: 은행급 트랙)</td>
+<td>수년 — 규칙 의존</td>
+</tr>
+<tr>
+<td>온체인 커스터디 / 키 / 스테이블코인 지원</td>
+<td>PoC에서 새로 추가</td>
+<td>몇 주(SDK 존재)</td>
+</tr>
+</tbody></table></div>
+<p>가치의 흐름은 위 네 행으로 가고, PoC가 검증한 건 맨 아래 행. 그 역전 — 어려운 부분은 이미 소유, &#39;크립토&#39; 부분이 쉬운 추가 — 이 독해 전부입니다.</p>
+<h3>스테이블코인 스택의 양면 형태</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>면</th>
+<th>누가 무엇을 임대</th>
+<th>지속 위치</th>
+<th>카드</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>발행</td>
+<td>발행자가 준비자산 위 화폐 단위 임대</td>
+<td>준비자산 계층</td>
+<td><code>issuance-as-a-service</code></td>
+</tr>
+<tr>
+<td>유통</td>
+<td>앱이 이용자 접근을 임대</td>
+<td>지갑/사용 계층</td>
+<td>이 카드</td>
+</tr>
+</tbody></table></div>
+<p>두 인용(카카오 신원근, M0) 모두 <em>사용</em> 단계를 가치가 드러나는 곳으로 지목 — 발행은 범용재, 유통과 준비자산이 해자.</p>
+<h3>B2B 신호</h3>
+<p>카카오그룹은 지갑 기술 <strong>+ 컨설팅</strong>을 기업·은행에 판매. SDK는 범용재고, 유통과 <strong>규제 템플릿</strong>은 아님. 레일을 임대하는 건 주인의 수(<code>build-rent-or-own-the-rail</code>).</p>
+<p>교차: <code>issuance-as-a-service</code>(발행 쪽 쌍둥이 — 같은 &#39;가치는 발행이 아니라 사용에서&#39; 주장), <code>st-self-distribution</code>·<code>consortium-owns-the-rail</code>(경제학은 유통/레일 소유자에게 쌓임), <code>the-wallet-is-not-the-user</code>(지갑은 키지만, <em>결제</em> 지갑은 유통 자산이기도), <code>won-stablecoin-fee-savings</code>·<code>what-needs-a-stablecoin</code>(원화 스테이블코인 유즈케이스), <code>embedded-wallet-policy</code>(이게 붙는 온체인 커스터디 층).</p>
       
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-ds-bayesian-inference.html">&larr; 131. Bayesian inference — a prior is an assumption you have to write down</a><a href="pocs-ds-ab-testing.html">133. A/B testing — the p-value that a peeked experiment inflates &rarr;</a></div>
+    <div class="pager"><a href="pocs-interop-os-one-network.html">&larr; 65. &quot;As if all chains are one network&quot; is the value and the risk at once</a><a href="pocs-key-never-leaves-the-secure-element.html">67. The private key never leaves the secure element &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="ds-monte-carlo";</script>
+<script>window.__NAV_CURRENT__="wallet-is-a-distribution-business";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;
