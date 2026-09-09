@@ -61,7 +61,8 @@ export const POC_CARDS: DemoCard[] = [
     key: "chainlink-jayverse-cooperation",
     important: true,
     updated: "2026-09-08",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-09",
     title: "Chainlink is infra Jayverse uses, not builds — where each product plugs in",
     titleKo: "Chainlink은 Jayverse가 쓰는 인프라지 짓는 게 아니다 — 각 제품이 붙는 자리",
     description:
@@ -85,7 +86,8 @@ export const POC_CARDS: DemoCard[] = [
     key: "liquid-issuance-not-authorization",
     important: true,
     updated: "2026-09-08",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-09",
     title: "Liquid's peg-out drain — the mint was poisoned, not the gate",
     titleKo: "Liquid 페그아웃 유출 — 뚫린 건 문이 아니라 발행이었다",
     description:
