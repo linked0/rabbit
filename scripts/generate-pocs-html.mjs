@@ -495,6 +495,28 @@ const contentHtml = `${cardSectionsHtml}${curriculumHtml}`;
 // 상세 페이지는 구획 정보(grouped·SECTIONS)에 의존하므로 그 뒤에서 만든다
 // (jay, 2026-08-27 에 레일이 붙으면서 순서가 중요해졌다).
 fs.mkdirSync(TOPICS_DIR, { recursive: true });
+
+// 상세 페이지 레일을 공유 데이터 파일 하나로 뺀다 (jay, 2026-09-09). 예전에는 각 상세 페이지에
+// 레일(알약 카운트 + 형제 항목의 번호·제목)이 통째로 구워져, 카드를 추가하면 pocs.html 만
+// 갱신되고 나머지 상세 페이지는 얼어붙어 번호·제목·카운트가 어긋났다. 이제 레일 데이터를
+// _nav.js 한 곳에 두고 상세 페이지는 클라이언트에서 그것을 읽어 그린다 — 카드를 추가하면
+// _nav.js 하나만 다시 쓰면 되고, 기존 상세 페이지 HTML 은 바뀌지 않는다.
+const navData = {
+  jump: SECTIONS.map(([id, label, all, done]) => ({ id, label, all, done })),
+  sections: grouped.map((g) => ({
+    navId: `nav-sec-${g.id}`,
+    label: `${g.title} (${g.numbered.length})`,
+    items: g.numbered.map((n) => ({
+      key: n.key,
+      href: detailHref(n).replace(/^topics\//, ''),
+      color: navDot(n).color,
+      label: navDot(n).label,
+      text: `<span class="topic-no">${n.no}</span>${escapeHtml(n.title)}`,
+    })),
+  })),
+};
+fs.writeFileSync(path.join(TOPICS_DIR, '_nav.js'), `window.__NAV__=${JSON.stringify(navData)};\n`, 'utf8');
+
 const written = new Set();
 for (const [idx, c] of numbered.entries()) {
   if (c.docsHref) continue;
@@ -503,34 +525,6 @@ for (const [idx, c] of numbered.entries()) {
   const b = badge(c);
   const prev = numbered[idx - 1];
   const next = numbered[idx + 1];
-// 상세 페이지 레일 — 구획 알약은 목록 페이지의 앵커를 가리키고, 항목 목록은 같은 구획의
-// 형제들을 파일 링크로 잇는다. 지금 보고 있는 항목은 active 로 표시된다.
-const detailRailJump = SECTIONS.map(
-  ([id, label, all, done]) =>
-    `<a href="../pocs.html#${id}" title="${label} &mdash; done (${done}) / all (${all})">${label}<b><span class="count-done">${done}</span><span class="count-all">/${all}</span></b></a>`
-).join('');
-
-function detailNavGroups(current) {
-  const g = grouped.find((x) => x.numbered.some((n) => n.key === current.key));
-  if (!g) return null;
-  return [
-    {
-      id: `nav-sec-${g.id}`,
-      label: `${g.title} (${g.numbered.length})`,
-      items: g.numbered.map((n) => {
-        const b = badge(n);
-        return {
-          anchor: n.key,
-          href: detailHref(n).replace(/^topics\//, ''),
-          current: n.key === current.key,
-          text: `<span class="topic-no">${n.no}</span>${escapeHtml(n.title)}`,
-          color: navDot(n).color,
-          statusLabel: navDot(n).label,
-        };
-      }),
-    },
-  ];
-}
 
   const diagramNote = c.diagrams?.length
     ? `      <p class="meta">${c.diagrams.length} diagram(s) on the live page.</p>\n`
@@ -563,13 +557,15 @@ function detailNavGroups(current) {
   fs.writeFileSync(
     path.join(TOPICS_DIR, fname),
     renderTopicPage({
-      // 상세 페이지에도 같은 레일 (jay, 2026-08-27). 224개를 전부 실으면 페이지마다
-      // 수십 KB 라, 지금 보고 있는 구획의 형제 항목만 싣고 나머지 구획은 알약으로 잇는다.
+      // 상세 페이지에도 같은 레일 (jay, 2026-08-27). 레일 데이터는 공유 파일 _nav.js 에서
+      // 읽어 클라이언트에서 그린다 (jay, 2026-09-09) — 카드를 추가해도 이 페이지 HTML 은
+      // 안 바뀌고 _nav.js 만 갱신되면 되어 번호·제목·카운트가 낡지 않는다.
       railTitle: 'Rabbit',
       railTitleHref: '../index.html',
-      railJump: detailRailJump,
       filterPlaceholder: 'Filter section',
-      navGroups: detailNavGroups(c),
+      sharedNav: true,
+      sharedNavSrc: '_nav.js',
+      sharedNavCurrent: c.key,
       railFoot: `<a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a>`,
       title: `${c.title} — PoCs`,
       crumbHtml: `<a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; ${escapeHtml(c.title)}`,

@@ -377,11 +377,19 @@ const PAGE_CSS = `
 // 레일과 그 스크립트를 목록 페이지와 상세 페이지가 함께 쓴다 (jay, 2026-08-27).
 // 상세 페이지에서 왼쪽 페인이 사라지면 224개짜리 목록에서 자기 위치를 잃는다.
 function railHtml(o, navGroupsHtml) {
+  // sharedNav 모드(상세 페이지): 알약(rail-jump)과 항목 목록을 서버에서 굽지 않고 빈 컨테이너만
+  // 두고, 공유 파일 _nav.js 를 읽어 클라이언트에서 채운다 (jay, 2026-09-09). 그래야 카드를
+  // 추가해도 상세 페이지 HTML 자체는 안 바뀌고 _nav.js 하나만 갱신되면 되어, 번호·제목·카운트가
+  // 페이지마다 낡는 문제가 사라진다.
+  const jump = o.sharedNav
+    ? `<div class="rail-jump" id="rail-jump"></div>`
+    : (o.railJump ? `<div class="rail-jump">${o.railJump}</div>` : '');
+  const navInner = o.sharedNav ? '' : navGroupsHtml;
   return `  <aside class="rail">
     <div class="rail-head">
       <a class="rail-title" href="${escapeHtml(o.railTitleHref)}">${escapeHtml(o.railTitle)}</a>${o.railNote ? `<span class="rail-note">${o.railNote}</span>` : ''}
       ${o.railSub ? `<span class="rail-sub">${o.railSub}</span>` : ''}
-      ${o.railJump ? `<div class="rail-jump">${o.railJump}</div>` : ''}
+      ${jump}
     </div>
     <div class="rail-search">
       ${o.railTierToggle ? `<div class="rail-tier" role="group" aria-label="Show which items">
@@ -391,12 +399,48 @@ function railHtml(o, navGroupsHtml) {
       <input id="filter" type="search" placeholder="${escapeHtml(o.filterPlaceholder)}" aria-label="${escapeHtml(o.filterPlaceholder)}" autocomplete="off">
     </div>
     <nav class="rail-nav" id="nav">
-${navGroupsHtml}
+${navInner}
       <p class="no-results" id="no-results">No match.</p>
     </nav>
     <div class="rail-foot">${o.railFoot}</div>
   </aside>`;
 }
+
+// 상세 페이지 레일을 _nav.js(window.__NAV__)와 현재 카드 키(window.__NAV_CURRENT__)로부터
+// 클라이언트에서 그린다 (jay, 2026-09-09). renderNavGroups 가 서버에서 만들던 것과 같은
+// 마크업(.nav-group[data-group] · .nav-link · .nav-dot[title] · .nav-text)을 만들어야
+// 이어지는 RAIL_SCRIPT(필터)와 스크롤 스크립트가 그대로 동작한다. RAIL_SCRIPT 앞에 둔다.
+const NAV_RENDER_SCRIPT = String.raw`
+(function () {
+  var data = window.__NAV__, cur = window.__NAV_CURRENT__;
+  if (!data) return;
+  var jw = document.getElementById('rail-jump');
+  if (jw) {
+    jw.innerHTML = data.jump.map(function (s) {
+      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+    }).join('');
+  }
+  var sec = null;
+  for (var i = 0; i < data.sections.length && !sec; i++) {
+    for (var j = 0; j < data.sections[i].items.length; j++) {
+      if (data.sections[i].items[j].key === cur) { sec = data.sections[i]; break; }
+    }
+  }
+  var navEl = document.getElementById('nav');
+  if (navEl && sec) {
+    var lis = sec.items.map(function (it) {
+      var active = it.key === cur ? ' active' : '';
+      return '<li><a class="nav-link' + active + '" href="' + it.href + '" data-key="' + it.key + '"><span class="nav-dot" style="background:' + it.color + ';" title="' + it.label + '"></span><span class="nav-text">' + it.text + '</span></a></li>';
+    }).join('');
+    var group = document.createElement('div');
+    group.className = 'nav-group';
+    group.id = sec.navId;
+    group.setAttribute('data-group', '');
+    group.innerHTML = '<p class="nav-group-label">' + sec.label + '</p><ul>' + lis + '</ul>';
+    navEl.insertBefore(group, navEl.firstChild);
+  }
+})();
+`;
 
 // 페이지를 열면 레일을 초기 스크롤한다 (jay, 2026-09-02 + 2026-09-03).
 //  · 상세 페이지: 서버가 active 로 표시한 현재 항목을 가운데로 — "when the detail page
@@ -679,19 +723,27 @@ export function renderTopicPage(o) {
   // 레일이 있으면 목록 페이지와 같은 레이아웃, 없으면 예전처럼 단독 페이지
   // (jay, 2026-08-27) — 상세 페이지에서 왼쪽 페인이 사라지면 224개 목록에서 위치를 잃는다.
   const navGroupsHtml = o.navGroups ? renderNavGroups(o.navGroups) : '';
+  const hasRail = o.navGroups || o.sharedNav;
   const solo = `  <div class="solo">
     <p class="crumb">${o.crumbHtml}</p>
 ${o.bodyHtml}
     <div class="pager">${o.pagerHtml}</div>
   </div>`;
-  const body = o.navGroups
+  // sharedNav 면 _nav.js 를 먼저 불러 window.__NAV__ 를 정의하고, 현재 카드 키를 넘긴 뒤
+  // NAV_RENDER_SCRIPT 가 레일을 그리고 나서 RAIL_SCRIPT(필터)·스크롤이 돈다 (순서 중요).
+  const railScripts = o.sharedNav
+    ? `<script src="${escapeHtml(o.sharedNavSrc)}"></script>
+<script>window.__NAV_CURRENT__=${JSON.stringify(o.sharedNavCurrent)};</script>
+<script>${NAV_RENDER_SCRIPT}${RAIL_SCRIPT}${COPY_SCRIPT}${RAIL_INIT_SCROLL_SCRIPT}</script>`
+    : `<script>${RAIL_SCRIPT}${COPY_SCRIPT}${RAIL_INIT_SCROLL_SCRIPT}</script>`;
+  const body = hasRail
     ? `<div class="layout">
 ${railHtml(o, navGroupsHtml)}
   <main class="content content-solo">
 ${solo}
   </main>
 </div>
-<script>${RAIL_SCRIPT}${COPY_SCRIPT}${RAIL_INIT_SCROLL_SCRIPT}</script>`
+${railScripts}`
     : `<div class="solo">
   <p class="crumb">${o.crumbHtml}</p>
 ${o.bodyHtml}
