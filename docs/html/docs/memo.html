@@ -80,6 +80,13 @@ on 31337) and optionally the <strong>agent</strong> as a cushion.</li>
 set -a; source rabbit/.env; set +a
 anvil --fork-url &quot;$SEPOLIA_RPC&quot; --fork-block-number 11609470 --chain-id 11155111 --state ./anvil-sepolia-state.json --state-interval 60
 </code></pre>
+<p><strong>First run</strong> creates the state file — keep <code>--fork-block-number</code> to pin the fork block.</p>
+<p><strong>Resume</strong> — same command, but the file now exists so <code>--state</code> <em>loads</em> it. <strong>Drop <code>--fork-block-number</code></strong> (the block env is restored from the file; a mismatch can conflict):</p>
+<pre><code class="language-bash">cd /Users/jay/work
+set -a; source rabbit/.env; set +a
+anvil --fork-url &quot;$SEPOLIA_RPC&quot; --chain-id 11155111 --state ./anvil-sepolia-state.json --state-interval 60
+</code></pre>
+<p><code>--state</code> = <code>--load-state</code> + <code>--dump-state</code> (load if the file exists, dump on exit); <code>--state-interval 60</code> snapshots every 60 s so a crash keeps the session. <code>forge test</code> needs no anvil; <code>deploy</code>/<code>study</code>/<code>dev</code> do.</p>
 <h2>2. verex (API only — root <code>pnpm dev</code> also starts web on :3000)</h2>
 <pre><code class="language-bash">cd /Users/jay/work/verex
 ./scripts/reset.sh                      # first time / after deleting the state file

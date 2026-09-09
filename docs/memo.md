@@ -53,6 +53,18 @@ set -a; source rabbit/.env; set +a
 anvil --fork-url "$SEPOLIA_RPC" --fork-block-number 11609470 --chain-id 11155111 --state ./anvil-sepolia-state.json --state-interval 60
 ```
 
+**First run** creates the state file — keep `--fork-block-number` to pin the fork block.
+
+**Resume** — same command, but the file now exists so `--state` *loads* it. **Drop `--fork-block-number`** (the block env is restored from the file; a mismatch can conflict):
+
+```bash
+cd /Users/jay/work
+set -a; source rabbit/.env; set +a
+anvil --fork-url "$SEPOLIA_RPC" --chain-id 11155111 --state ./anvil-sepolia-state.json --state-interval 60
+```
+
+`--state` = `--load-state` + `--dump-state` (load if the file exists, dump on exit); `--state-interval 60` snapshots every 60 s so a crash keeps the session. `forge test` needs no anvil; `deploy`/`study`/`dev` do.
+
 ## 2. verex (API only — root `pnpm dev` also starts web on :3000)
 
 ```bash
