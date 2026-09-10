@@ -1490,7 +1490,8 @@ export const POC_CARDS: DemoCard[] = [
       "The thing worth wanting from Base App is not the audience. It is that every user arrives with a passkey smart account already created and already funded — which deletes the two steps that kill most of a crypto product's funnel. The cost is that discovery belongs to somebody else.",
     descriptionKo:
       "Base App 에서 탐낼 것은 **관객이 아닙니다.** **모든 사용자가 이미 만들어지고 이미 충전된 패스키 스마트 계정을 들고 도착한다**는 것 — **대부분의 크립토 제품 퍼널을 죽이는 두 단계를 지워 줍니다.** 대가는 **발견(discovery)이 남의 것**이라는 점입니다.",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-10",
     // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
     important: true,
     howTo:

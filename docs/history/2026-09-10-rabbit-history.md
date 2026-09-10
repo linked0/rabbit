@@ -64,3 +64,19 @@ Cloud Run env 로 자동 전달해 재배포로 라이브(`/live/auditor` 200 �
 (`#db2777`)·경로(docs/memo.md)는 그대로.
 
 **Result:** 진행 중 프로젝트 줄 맨 앞쪽에서 현재 작업 런북 진입점이 바로 보인다.
+
+### PoC `base-app-mini-app` 완료 처리 — "Base App: 미니앱이 사는 것과 빌리는 것"
+
+**Cause:** jay: "#47 … make this done." Base App 미니앱을 만들지/미니앱 환경을 짓지 논의한
+끝에 "안 만든다"로 결론 — 소득은 아키텍처 이해뿐이라 이미 있던 카드(`base-app-mini-app`,
+status `soon`+important)를 done 으로 확정. (소스 문서 없음 — 논의 기반.)
+
+**Reasoning:** 처음엔 신규 중복 카드(`base-app-mini-app-buys-and-rents`)를 만들었다가, 같은
+제목의 카드가 이미 #47 로 존재함을 확인하고 되돌렸다(`git checkout --`). "make it done" 은
+새 카드가 아니라 기존 #47 을 완료로 바꾸라는 뜻이었다.
+
+**Change:** `lib/poc-cards.ts` 의 `base-app-mini-app` — `status: "soon"→"done"`, `doneAt:
+"2026-09-10"` 추가(`date` 는 안 붙임 → done 블록 끝으로 가라앉아 번호 요동 최소화). 재생성.
+
+**Result:** #47(important)→#45(done, RECENTLY DONE 하늘색 점). 경계에서 3장만 이동
+(Base App 47→45, Censorship 45→46, MCP 46→47), 나머지 전부 고정. tsc 클린. 커밋만, 푸시 대기.
