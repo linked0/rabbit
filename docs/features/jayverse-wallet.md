@@ -20,6 +20,25 @@ not built. Sibling docs indexed in [README.md](README.md).*
 | **3** | 4337 & breadth | simulate full UserOperations through the EntryPoint (incl. paymaster); richer decoders; more warning classifiers. |
 | **4** | Our own dev wallet | a dev-only wallet + MV3 extension that drives 7702/7710/7715 on a Sepolia fork at a **distinct chainId 31337** — replaces MetaMask *for testing only*. Detail in [Next phase](#next-phase--our-own-dev-wallet-for-testing-jay-2026-09-10) below. |
 
+> **Status (jay asked, 2026-09-10): two of four phases done.**
+> - **Phase 1 ✅ done** — `simulate()` API, `<JayverseSign>` connect→preview→sign, effect/approval/
+>   warning decoding, shared wallet client + address book; all click-verified. The embedded
+>   (email/passkey) connect path was deliberately deferred — connect today = injected / dev /
+>   local accounts.
+> - **Phase 2 ❌ not built** — only the 7702 sign/verify primitive exists; the scoped 7710/7715
+>   session-key **grant** and the **type-4 submit** are the "Deferred" items below. This phase is
+>   what makes agent flows popup-free.
+> - **Phase 3 ❌ not started** — no UserOperation simulation through the EntryPoint, no paymaster
+>   leg, no ERC-721/1155 decoders, no price feeds.
+> - **Phase 4 🟨 built beyond spec, unverified at the edges** — slices 1–5 plus the four-page UI,
+>   account-in-use selection, network lists (web + extension v0.2.0, `chainChanged` broadcast),
+>   extension icons. Still open: **confirm anvil's EIP-7702 on our fork** and **run the 7710/7715
+>   grant → type-4 submit end-to-end**.
+> - Next, in order of leverage: the two Phase-4 verifications → Phase 2's grant flow (what the
+>   agent console's mandate work needs from this wallet) → Phase 3's UserOp simulation (plugs into
+>   the AA markets build). Day detail:
+>   [2026-09-10 history](../history/2026-09-10-jayverse-wallet-history.md).
+
 ---
 
 ## 1. What we build (the basic feature)
@@ -240,7 +259,7 @@ solve for us here.
    Sepolia-fork chain (11155111); `sendTransaction` targets the active chain.
 3. **Encrypted vault** — import a private key, encrypt with PBKDF2 (310k) → AES-256-GCM, persist in
    `localStorage`; unlock to sign. Works in browser and Node.
-4. **MV3 browser extension** — a universal **EIP-1193 dApp connector** for the whole web: inpage
+4. **MV3 browser extension** (now with a proper icon set — indigo J tile + preview-check badge, 16/48/128 px, copied into `dist/` by the build) — a universal **EIP-1193 dApp connector** for the whole web: inpage
    provider (world MAIN) ↔ content bridge ↔ background service worker that holds the signer and
    proxies JSON-RPC, **auto-approving** (dev). esbuild IIFE bundle. This is what lets any dApp use
    our wallet the way it would use MetaMask — without the network-switching dance.
@@ -256,6 +275,73 @@ solve for us here.
 This phase is where the wallet stops being "a component inside apps" and becomes a **standalone dev
 tool** — which is also why it pairs with the Authority Auditor: the extension's auto-approve +
 session-key scope choices *are* an authority-matrix that the Auditor should be pointed at.
+
+### Four-page UI — implemented (jay, 2026-09-10)
+
+The reason this wallet exists is that **MetaMask is complex**; the UI encodes that thesis
+directly. Four pages, every one reachable from a single always-visible top menu — no drawers,
+no nested settings, nothing a first-time user cannot scan:
+
+| Page | Route | What it shows |
+|---|---|---|
+| **Account list** | `/accounts` (also `/`) | anvil #0–#9, address + live ETH balance; **“Use” selects the account the wallet acts as** (persisted, shown as an “In use” chip in the top menu on every page); click a row for detail |
+| **Account detail** | `/accounts/[address]` | balance, nonce, and **Send ETH** — every send runs `POST /api/simulate` first and shows decoded effects/warnings/gas *before* Sign & send; a would-revert preview blocks signing. Non-wallet addresses render watch-only |
+| **Traded** | `/traded` | the accounts' transactions read straight from recent blocks (window printed — the page never pretends to be complete); no indexer in Phase 1 |
+| **Network setup** | `/network` | a user-maintained network list (jay, 2026-09-10): two built-ins (Sepolia fork 8545/11155111 · own-wallet node 8546/31337) + add-your-own (name/RPC/chainId with a Detect button), select exactly one — Accounts, sending and Traded all read through the selection; every row live-probes its node (connected / mismatch / unreachable); custom entries removable, built-ins not |
+
+The original **simulate-before-sign demo stays as a feature** — it moved from `/` to `/demo`
+(top-menu tab "Simulate demo"), and its `simulate()` preview is also the heart of the new
+Send flow, so the widget is exercised on every transfer.
+
+**Setup / install / run**
+
+```bash
+cd ~/work/jayverse-wallet
+pnpm install
+anvil --chain-id 11155111        # terminal 1 (or the Sepolia-fork anvil already running)
+pnpm dev                         # terminal 2 → http://localhost:3060
+```
+
+**Concrete test case (verified end-to-end with Playwright, 2026-09-10):**
+
+1. Open `http://localhost:3060` → redirects to **Accounts**; ten rows with live balances.
+2. Click account **#2** → detail shows balance + nonce.
+3. Recipient = account #3's address, amount `0.25`, click **Preview** →
+   the simulate box shows `-0.25 ETH`, a *value-drain* warning, `gas ≈ 21000`.
+4. Click **Sign & send** → `Sent ✓` with the tx hash; balance and nonce refresh.
+5. Open **Traded** → the `#2 → #3` row appears with value `0.25 ETH` and status ✓.
+6. Open **Network** → `Connected ✓ — live chainId 11155111`, current block.
+7. On Accounts, click **Use** on #2 → the row shows “In use ✓” and the top menu shows the
+   `In use: #2 0x3C44…` chip on every page; the selection survives a reload.
+8. Negative case: preview an amount larger than the balance → the preview reports the
+   revert and **Sign & send never appears**.
+
+### Install the dev extension (Chrome) — summary
+
+> DEV/TESTNET ONLY: the extension auto-approves and signs with public anvil dev keys on
+> chainId 31337. Load it in a browser profile that never touches real funds.
+
+1. **Build it** — from `~/work/jayverse-wallet`:
+   ```bash
+   pnpm build:ext        # bundles to extension/dist (manifest, scripts, icons)
+   ```
+2. **Load it** — Chrome → `chrome://extensions` → toggle **Developer mode** (top right) →
+   **Load unpacked** → select the `extension/dist` folder. The indigo **J** icon (preview-check
+   badge) appears in the toolbar — pin it for the popup.
+3. **Point it at the right chain** — by default the extension targets its OWN node on port 8546; since v0.2.0 the popup has a **network selector** (switch between the built-ins, add your own by RPC URL — chainId auto-detected from the node, remove custom ones); dapps get the standard `chainChanged` event on switch, and `wallet_switchEthereumChain` works onto any network in the list
+   (distinct chainId, so it runs beside the 11155111 fork on 8545 without a mismatch):
+   ```bash
+   anvil --fork-url $SEPOLIA_RPC --port 8546 --chain-id 31337
+   ```
+   The popup and the wallet's Network page both probe the node live and say
+   matched / mismatched / unreachable — with this command in the error text.
+4. **Verify** — open any dapp page (e.g. the wallet's own `/demo`): the page's
+   `window.ethereum` is now the Jayverse provider; `eth_requestAccounts` returns an anvil dev
+   account with no prompt (auto-approve is the dev convenience *and* the reason this must never
+   hold value).
+5. **After code changes** — rebuild (`pnpm build:ext`, or keep `pnpm watch:ext` running) and hit
+   the ↻ **reload** button on the extension's card in `chrome://extensions`; a plain browser
+   refresh is not enough, the service worker must restart.
 
 ## Chainlink — infra we use, not build
 
