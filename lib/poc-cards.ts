@@ -11,6 +11,7 @@ export const FEATURED_POC_KEY = "aa";
 export const POC_CARDS: DemoCard[] = [
   {
     key: "mid-level-backend-role-the-hiring-stack",
+    important: true,
     updated: "2026-09-10",
     status: "soon",
     group: "future",
