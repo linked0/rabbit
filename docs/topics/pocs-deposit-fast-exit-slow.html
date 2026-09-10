@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PCA — compressing dimensions and the meaning that leaks out — PoCs</title>
+<title>Deposit trusts a fast confirmation; exit waits on the rollup's own proof — PoCs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,45 +366,159 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; PCA — compressing dimensions and the meaning that leaks out</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Deposit trusts a fast confirmation; exit waits on the rollup's own proof</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#139</span><span>PoC</span></p>
-      <h1>PCA — compressing dimensions and the meaning that leaks out</h1>
-      <p class="lead">Principal component analysis rotates many correlated variables into a few uncorrelated ones, trading interpretability for compactness — the components explain variance but rarely name anything you can act on.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#65</span><span>PoC</span></p>
+      <h1>Deposit trusts a fast confirmation; exit waits on the rollup's own proof</h1>
+      <p class="lead">Ethlabs&#39; &#39;Fast Ethereum&#39; work makes the <strong>L1→L2 deposit</strong> fast: the <strong>Fast Confirmation Rule (FCR)</strong> lets bridges confirm an L1 transaction in <strong>12–24 seconds — ~30× faster than finality</strong> — a weaker-but-priceable guarantee, enough to credit a deposit. But the <strong>L2→L1 exit</strong> cannot be sped the same way: an optimistic rollup is bounded by its <strong>challenge window</strong>, a zk rollup by its <strong>proving time</strong>. That asymmetry is structural, not an implementation gap — entering a rollup only needs you to <em>trust</em> an L1 confirmation, while leaving needs the rollup to <em>prove</em> its state. The lesson the app-L2s (Lighter, Derive) named as their top pain: you can accelerate the direction you can trust weakly, not the direction that must be proven.</p>
+      <p class="meta">Not a build — a two-direction latency map. For a chosen L2, measure (or model) both crossings and, more importantly, name what each <em>waits on</em>. <strong>Deposit (L1→L2):</strong> what does the sequencer wait for before crediting — N block confirmations, finality, or an FCR-style rule? FCR promises 12–24s by confirming an L1 tx under a rule weaker than finality; write down the exact failure it accepts (a reorg past the confirmed depth) and who eats it. <strong>Exit (L2→L1):</strong> what gates the withdrawal — an optimistic challenge window (days) or zk proving time (minutes-to-hours)? That gate is the rollup&#39;s <em>own</em> security mechanism; it cannot be shortcut without weakening the rollup. Then note the real-world blocker FCR hit: L2s watch L1 deposits through external RPC providers, so FCR adoption is gated on the RPC providers shipping it — a supply-chain dependency, not a protocol one. Sources: Ethlabs Week 11 (2026-09-07, via X); FCR, EIP-8198 (Quick/Fast Slots), Fast Finality. Confirm the numbers (12–24s, 30×, 12s→10s) and EIP/fork status against the post and the EIPs before citing.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# PCA — compressing dimensions and the meaning that leaks out\n\nPrincipal component analysis rotates many correlated variables into a few uncorrelated ones, trading interpretability for compactness — the components explain variance but rarely name anything you can act on.\n\nNot yet scoped.\n\n## Why\n\nThe PoC would show PCA on a market factor set, then ask the harder question the technique cannot answer alone: whether a top component is a risk factor or just the scaling of the inputs.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# Deposit trusts a fast confirmation; exit waits on the rollup's own proof\n\nEthlabs' 'Fast Ethereum' work makes the **L1→L2 deposit** fast: the **Fast Confirmation Rule (FCR)** lets bridges confirm an L1 transaction in **12–24 seconds — ~30× faster than finality** — a weaker-but-priceable guarantee, enough to credit a deposit. But the **L2→L1 exit** cannot be sped the same way: an optimistic rollup is bounded by its **challenge window**, a zk rollup by its **proving time**. That asymmetry is structural, not an implementation gap — entering a rollup only needs you to *trust* an L1 confirmation, while leaving needs the rollup to *prove* its state. The lesson the app-L2s (Lighter, Derive) named as their top pain: you can accelerate the direction you can trust weakly, not the direction that must be proven.\n\nNot a build — a two-direction latency map. For a chosen L2, measure (or model) both crossings and, more importantly, name what each *waits on*. **Deposit (L1→L2):** what does the sequencer wait for before crediting — N block confirmations, finality, or an FCR-style rule? FCR promises 12–24s by confirming an L1 tx under a rule weaker than finality; write down the exact failure it accepts (a reorg past the confirmed depth) and who eats it. **Exit (L2→L1):** what gates the withdrawal — an optimistic challenge window (days) or zk proving time (minutes-to-hours)? That gate is the rollup's *own* security mechanism; it cannot be shortcut without weakening the rollup. Then note the real-world blocker FCR hit: L2s watch L1 deposits through external RPC providers, so FCR adoption is gated on the RPC providers shipping it — a supply-chain dependency, not a protocol one. Sources: Ethlabs Week 11 (2026-09-07, via X); FCR, EIP-8198 (Quick/Fast Slots), Fast Finality. Confirm the numbers (12–24s, 30×, 12s→10s) and EIP/fork status against the post and the EIPs before citing.\n\n## Why\n\n**The two directions across a rollup boundary run on different security clocks, and that is why one accelerates and the other does not.** Entering a rollup — a deposit — only requires the L2 to *trust that an L1 transaction happened*. Trust can be graded: instead of waiting for finality, a bridge can accept a **Fast Confirmation Rule** that says 'this L1 tx is confirmed to depth D under these assumptions,' get 12–24 seconds instead of ~13 minutes, and price the residual reorg risk. Leaving a rollup — a withdrawal — is the opposite: the L1 will not release funds on trust, it demands the rollup *prove* its state is valid. An optimistic rollup proves-by-absence-of-challenge (wait out the window); a zk rollup proves-by-proof (wait for the prover). Neither wait is a bug to optimize away; it *is* the rollup's security.\n\n**So 'faster interop' is really two different problems wearing one phrase.** Deposit latency is a *trust-calibration* problem — pick a confirmation rule weaker than finality and manage the tail risk (`l2-finality-three-clocks` is the same insight: 'finalized' is one clock among several, and you can act on an earlier one if you price it). Exit latency is a *proof-cost* problem — you can shrink proving time or the challenge window, but you cannot remove the requirement that the rollup convince L1. Conflating the two is how roadmaps promise 'instant bridging' and quietly mean only the easy direction.\n\n**Two second-order lessons the Ethlabs update surfaces.** First, adoption is a supply chain: FCR is blocked not by the protocol but by the **RPC providers** L2s depend on to watch L1 — the fast rule is useless until the boring middleware ships it (`third-party-blast-radius`, `rpc-view-not-consensus`). Second, the base-layer speedups are complementary but distinct: **Fast Slots (EIP-8198)** cuts block time 12s→10s (a UX lever, `quick-slots-10s`), and **Fast Finality** reworks consensus toward 1–2-slot finality (which *would* shrink the deposit-trust gap directly). The through-line for any 'we made bridging faster' claim: ask which crossing got faster, and whether the speedup relaxed a *trust* assumption (fine, if priced) or a *proof* requirement (much harder, and suspicious if claimed cheaply).\n\n## How it works\n\n### One boundary, two clocks\n\n| Crossing | What the receiver needs | What gates the speed | Can it be fast? |\n|---|---|---|---|\n| **Deposit** L1→L2 | *trust* an L1 tx happened | confirmation depth vs finality | **yes** — FCR: 12–24s, ~30× faster than finality |\n| **Exit** L2→L1 | L1 must be *convinced* of L2 state | optimistic challenge window / zk proving time | **no** — it is the rollup's own security |\n\nThe asymmetry is the whole card: trust can be graded and hurried; proof cannot be skipped.\n\n### Fast-Ethereum pieces, and which gap each closes\n\n| Piece | What it does | Which gap |\n|---|---|---|\n| **FCR** | confirm L1 tx in 12–24s under a sub-finality rule | deposit trust latency |\n| **Fast Slots (EIP-8198)** | block time 12s → 10s, trending lower | base UX latency (`quick-slots-10s`) |\n| **Fast Finality** | consensus rework → 1–2 slot finality | shrinks the deposit-trust gap at the source |\n\n### The adoption supply chain\n\nFCR's blocker is not cryptographic — L2s watch L1 deposits via **external RPC providers**, so the fast rule is inert until those providers ship it. A protocol win stalls on middleware (`rpc-view-not-consensus`, `third-party-blast-radius`).\n\n### Also in the same update (folds into existing cards)\n\n- **8130 ↔ 8141 AA collab** — unifying Base's EIP-8130 with Frames (EIP-8141) by making validation *swappable*: extend 7702-style delegation / mandated proxy bytecode / re-interpreted frames so an L2 can replace EVM validation with equivalent native code. This is an update to `erc-8141`.\n\nCross-refs: `l2-finality-three-clocks` (finality is several clocks; act on the one you can price — the deposit side of this card), `erc-8141` and `aa` (the AA-standards collab), `quick-slots-10s` (EIP-8198), `erc-7683-settlement-security` (cross-chain settlement guarantees), `rpc-view-not-consensus` and `third-party-blast-radius` (the RPC-provider dependency).\n"</script>
       <h2>Why</h2>
-      <p>The PoC would show PCA on a market factor set, then ask the harder question the technique cannot answer alone: whether a top component is a risk factor or just the scaling of the inputs.</p>
+      <p><strong>The two directions across a rollup boundary run on different security clocks, and that is why one accelerates and the other does not.</strong> Entering a rollup — a deposit — only requires the L2 to <em>trust that an L1 transaction happened</em>. Trust can be graded: instead of waiting for finality, a bridge can accept a <strong>Fast Confirmation Rule</strong> that says &#39;this L1 tx is confirmed to depth D under these assumptions,&#39; get 12–24 seconds instead of ~13 minutes, and price the residual reorg risk. Leaving a rollup — a withdrawal — is the opposite: the L1 will not release funds on trust, it demands the rollup <em>prove</em> its state is valid. An optimistic rollup proves-by-absence-of-challenge (wait out the window); a zk rollup proves-by-proof (wait for the prover). Neither wait is a bug to optimize away; it <em>is</em> the rollup&#39;s security.</p>
+<p><strong>So &#39;faster interop&#39; is really two different problems wearing one phrase.</strong> Deposit latency is a <em>trust-calibration</em> problem — pick a confirmation rule weaker than finality and manage the tail risk (<code>l2-finality-three-clocks</code> is the same insight: &#39;finalized&#39; is one clock among several, and you can act on an earlier one if you price it). Exit latency is a <em>proof-cost</em> problem — you can shrink proving time or the challenge window, but you cannot remove the requirement that the rollup convince L1. Conflating the two is how roadmaps promise &#39;instant bridging&#39; and quietly mean only the easy direction.</p>
+<p><strong>Two second-order lessons the Ethlabs update surfaces.</strong> First, adoption is a supply chain: FCR is blocked not by the protocol but by the <strong>RPC providers</strong> L2s depend on to watch L1 — the fast rule is useless until the boring middleware ships it (<code>third-party-blast-radius</code>, <code>rpc-view-not-consensus</code>). Second, the base-layer speedups are complementary but distinct: <strong>Fast Slots (EIP-8198)</strong> cuts block time 12s→10s (a UX lever, <code>quick-slots-10s</code>), and <strong>Fast Finality</strong> reworks consensus toward 1–2-slot finality (which <em>would</em> shrink the deposit-trust gap directly). The through-line for any &#39;we made bridging faster&#39; claim: ask which crossing got faster, and whether the speedup relaxed a <em>trust</em> assumption (fine, if priced) or a <em>proof</em> requirement (much harder, and suspicious if claimed cheaply).</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <h3>One boundary, two clocks</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Crossing</th>
+<th>What the receiver needs</th>
+<th>What gates the speed</th>
+<th>Can it be fast?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Deposit</strong> L1→L2</td>
+<td><em>trust</em> an L1 tx happened</td>
+<td>confirmation depth vs finality</td>
+<td><strong>yes</strong> — FCR: 12–24s, ~30× faster than finality</td>
+</tr>
+<tr>
+<td><strong>Exit</strong> L2→L1</td>
+<td>L1 must be <em>convinced</em> of L2 state</td>
+<td>optimistic challenge window / zk proving time</td>
+<td><strong>no</strong> — it is the rollup&#39;s own security</td>
+</tr>
+</tbody></table></div>
+<p>The asymmetry is the whole card: trust can be graded and hurried; proof cannot be skipped.</p>
+<h3>Fast-Ethereum pieces, and which gap each closes</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>What it does</th>
+<th>Which gap</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>FCR</strong></td>
+<td>confirm L1 tx in 12–24s under a sub-finality rule</td>
+<td>deposit trust latency</td>
+</tr>
+<tr>
+<td><strong>Fast Slots (EIP-8198)</strong></td>
+<td>block time 12s → 10s, trending lower</td>
+<td>base UX latency (<code>quick-slots-10s</code>)</td>
+</tr>
+<tr>
+<td><strong>Fast Finality</strong></td>
+<td>consensus rework → 1–2 slot finality</td>
+<td>shrinks the deposit-trust gap at the source</td>
+</tr>
+</tbody></table></div>
+<h3>The adoption supply chain</h3>
+<p>FCR&#39;s blocker is not cryptographic — L2s watch L1 deposits via <strong>external RPC providers</strong>, so the fast rule is inert until those providers ship it. A protocol win stalls on middleware (<code>rpc-view-not-consensus</code>, <code>third-party-blast-radius</code>).</p>
+<h3>Also in the same update (folds into existing cards)</h3>
+<ul>
+<li><strong>8130 ↔ 8141 AA collab</strong> — unifying Base&#39;s EIP-8130 with Frames (EIP-8141) by making validation <em>swappable</em>: extend 7702-style delegation / mandated proxy bytecode / re-interpreted frames so an L2 can replace EVM validation with equivalent native code. This is an update to <code>erc-8141</code>.</li>
+</ul>
+<p>Cross-refs: <code>l2-finality-three-clocks</code> (finality is several clocks; act on the one you can price — the deposit side of this card), <code>erc-8141</code> and <code>aa</code> (the AA-standards collab), <code>quick-slots-10s</code> (EIP-8198), <code>erc-7683-settlement-security</code> (cross-chain settlement guarantees), <code>rpc-view-not-consensus</code> and <code>third-party-blast-radius</code> (the RPC-provider dependency).</p>
       
       <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# PCA — 차원 압축과 새어 나가는 의미\n\n주성분분석은 상관된 여러 변수를 몇 개의 무상관 변수로 회전시켜, 해석 가능성을 간결함과 맞바꿉니다 — 성분은 분산을 설명하지만 행동으로 옮길 만한 무언가를 이름 붙이는 경우는 드뭅니다.\n\n아직 범위 미정.\n\n## 왜\n\n이 PoC는 시장 팩터 집합에 PCA를 적용한 뒤, 기법 혼자서는 답할 수 없는 더 어려운 질문을 던집니다: 상위 성분이 리스크 팩터인지, 아니면 그저 입력의 스케일링인지.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>PCA — 차원 압축과 새어 나가는 의미</h1>
-      <p class="lead">주성분분석은 상관된 여러 변수를 몇 개의 무상관 변수로 회전시켜, 해석 가능성을 간결함과 맞바꿉니다 — 성분은 분산을 설명하지만 행동으로 옮길 만한 무언가를 이름 붙이는 경우는 드뭅니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# 입금은 빠른 확인을 믿고, 출금은 롤업 자신의 증명을 기다린다\n\nEthlabs의 'Fast Ethereum' 작업은 **L1→L2 입금**을 빠르게 합니다: **Fast Confirmation Rule(FCR)**은 브리지가 L1 트랜잭션을 **12–24초 — 파이널리티보다 ~30배 빠르게** 확인하게 합니다. 더 약하지만 값을 매길 수 있는 보장으로, 입금을 인정하기엔 충분합니다. 하지만 **L2→L1 출금**은 같은 식으로 빠르게 못 합니다: 옵티미스틱 롤업은 **챌린지 윈도우**에, zk 롤업은 **증명 시간**에 묶입니다. 그 비대칭은 구현 결함이 아니라 구조적입니다 — 롤업에 들어가려면 L1 확인을 *신뢰*하면 되지만, 나가려면 롤업이 자기 상태를 *증명*해야 합니다. 앱-L2들(Lighter, Derive)이 최고 고충으로 꼽은 교훈: 약하게 신뢰할 수 있는 방향은 가속할 수 있어도, 증명되어야 하는 방향은 못 한다.\n\n구현이 아니라 양방향 지연 지도입니다. 고른 L2에 대해 두 방향을 측정(또는 모델링)하되, 더 중요하게 각각이 *무엇을 기다리는지* 명명하세요. **입금(L1→L2):** 시퀀서가 인정 전에 무엇을 기다리나 — N개 블록 확인, 파이널리티, 아니면 FCR식 규칙? FCR은 파이널리티보다 약한 규칙으로 L1 tx를 확인해 12–24초를 약속합니다; 받아들이는 정확한 실패(확인 깊이를 넘는 리오그)와 그걸 누가 떠안는지 적으세요. **출금(L2→L1):** 인출을 막는 게 무엇인가 — 옵티미스틱 챌린지 윈도우(수일)인가 zk 증명 시간(수분~수시간)인가? 그 게이트는 롤업 *자신의* 보안 메커니즘이라, 롤업을 약화시키지 않고는 단축 불가. 그다음 FCR이 부딪힌 현실 장애: L2는 외부 RPC 제공자를 통해 L1 입금을 감시하므로, FCR 채택이 RPC 제공자의 출시에 묶임 — 프로토콜이 아니라 공급망 의존성. 출처: Ethlabs Week 11(2026-09-07, X); FCR, EIP-8198(Quick/Fast Slots), Fast Finality. 수치(12–24초, 30배, 12s→10s)와 EIP/포크 상태는 게시글·EIP로 확인 후 인용.\n\n## 왜\n\n**롤업 경계를 넘는 두 방향은 서로 다른 보안 시계로 돌아가고, 그래서 하나는 가속되고 하나는 안 됩니다.** 롤업에 들어가기 — 입금 — 는 L2가 *L1 트랜잭션이 일어났음을 신뢰*하기만 하면 됩니다. 신뢰는 등급을 매길 수 있습니다: 파이널리티를 기다리는 대신, 브리지는 '이 L1 tx가 이 가정 하에 깊이 D까지 확인됨'이라는 **Fast Confirmation Rule**을 받아들여 ~13분 대신 12–24초를 얻고 잔여 리오그 리스크에 값을 매길 수 있습니다. 롤업에서 나가기 — 출금 — 는 반대입니다: L1은 신뢰로 자금을 풀지 않고, 롤업이 자기 상태가 유효함을 *증명*하길 요구합니다. 옵티미스틱 롤업은 챌린지 부재로 증명(윈도우를 견딤), zk 롤업은 증명으로 증명(프루버를 기다림). 어느 대기도 최적화로 없앨 버그가 아니라 — 그게 *곧* 롤업의 보안입니다.\n\n**그래서 '빠른 인터롭'은 사실 한 문구를 쓴 두 개의 다른 문제입니다.** 입금 지연은 *신뢰 보정* 문제 — 파이널리티보다 약한 확인 규칙을 골라 꼬리 리스크를 관리(`l2-finality-three-clocks`가 같은 통찰: '파이널'은 여러 시계 중 하나이고, 값을 매기면 더 이른 시계로 행동 가능). 출금 지연은 *증명 비용* 문제 — 증명 시간이나 챌린지 윈도우를 줄일 순 있어도, 롤업이 L1을 설득해야 한다는 요건 자체는 못 없앱니다. 둘을 뭉치는 게 로드맵이 '즉시 브리징'을 약속하고 조용히 쉬운 방향만 뜻하는 경로입니다.\n\n**Ethlabs 업데이트가 드러내는 2차 교훈 둘.** 첫째, 채택은 공급망입니다: FCR은 프로토콜이 아니라 L2가 L1 감시에 의존하는 **RPC 제공자**에 막힙니다 — 지루한 미들웨어가 출시하기 전엔 빠른 규칙이 무용(`third-party-blast-radius`, `rpc-view-not-consensus`). 둘째, 베이스 계층 가속은 상보적이나 별개입니다: **Fast Slots(EIP-8198)**는 블록 타임 12s→10s(UX 레버, `quick-slots-10s`), **Fast Finality**는 합의를 1–2슬롯 파이널리티로 재설계(입금-신뢰 간극을 직접 줄임). 어떤 '브리징을 빠르게 했다' 주장에도 관통하는 질문: 어느 방향이 빨라졌고, 그 가속이 *신뢰* 가정을 완화했나(값 매기면 괜찮음) 아니면 *증명* 요건을 완화했나(훨씬 어렵고, 싸게 주장하면 의심스러움)?\n\n## 동작 방식\n\n### 한 경계, 두 시계\n\n| 방향 | 수신자가 필요로 하는 것 | 속도를 막는 것 | 빠르게 가능? |\n|---|---|---|---|\n| **입금** L1→L2 | L1 tx가 일어났음을 *신뢰* | 확인 깊이 vs 파이널리티 | **예** — FCR: 12–24초, 파이널리티보다 ~30배 |\n| **출금** L2→L1 | L1이 L2 상태를 *확신*해야 | 옵티미스틱 챌린지 윈도우 / zk 증명 시간 | **아니오** — 롤업 자신의 보안 |\n\n비대칭이 카드 전부: 신뢰는 등급을 매겨 서두를 수 있고, 증명은 건너뛸 수 없다.\n\n### Fast-Ethereum 조각들, 각각이 닫는 간극\n\n| 조각 | 하는 일 | 어느 간극 |\n|---|---|---|\n| **FCR** | 서브-파이널리티 규칙으로 L1 tx를 12–24초에 확인 | 입금 신뢰 지연 |\n| **Fast Slots(EIP-8198)** | 블록 타임 12s → 10s, 더 낮추는 추세 | 베이스 UX 지연(`quick-slots-10s`) |\n| **Fast Finality** | 합의 재설계 → 1–2슬롯 파이널리티 | 입금-신뢰 간극을 근원에서 축소 |\n\n### 채택 공급망\n\nFCR의 장애는 암호가 아님 — L2는 **외부 RPC 제공자**로 L1 입금을 감시하므로, 그들이 출시하기 전엔 빠른 규칙이 무력. 프로토콜 승리가 미들웨어에 막힘(`rpc-view-not-consensus`, `third-party-blast-radius`).\n\n### 같은 업데이트에 함께 (기존 카드로 흡수)\n\n- **8130 ↔ 8141 AA 협업** — Base의 EIP-8130과 Frames(EIP-8141)를 검증을 *교체 가능*하게 만들어 통합: 7702식 위임 확장 / 강제 프록시 바이트코드 / 재해석된 프레임으로 L2가 EVM 검증을 동등한 네이티브 코드로 대체. 이건 `erc-8141` 업데이트.\n\n교차: `l2-finality-three-clocks`(파이널리티는 여러 시계; 값 매길 수 있는 것으로 행동 — 이 카드의 입금 쪽), `erc-8141`·`aa`(AA 표준 협업), `quick-slots-10s`(EIP-8198), `erc-7683-settlement-security`(크로스체인 정산 보장), `rpc-view-not-consensus`·`third-party-blast-radius`(RPC 제공자 의존).\n"</script>
+      <h1>입금은 빠른 확인을 믿고, 출금은 롤업 자신의 증명을 기다린다</h1>
+      <p class="lead">Ethlabs의 &#39;Fast Ethereum&#39; 작업은 <strong>L1→L2 입금</strong>을 빠르게 합니다: <strong>Fast Confirmation Rule(FCR)</strong>은 브리지가 L1 트랜잭션을 <strong>12–24초 — 파이널리티보다 ~30배 빠르게</strong> 확인하게 합니다. 더 약하지만 값을 매길 수 있는 보장으로, 입금을 인정하기엔 충분합니다. 하지만 <strong>L2→L1 출금</strong>은 같은 식으로 빠르게 못 합니다: 옵티미스틱 롤업은 <strong>챌린지 윈도우</strong>에, zk 롤업은 <strong>증명 시간</strong>에 묶입니다. 그 비대칭은 구현 결함이 아니라 구조적입니다 — 롤업에 들어가려면 L1 확인을 <em>신뢰</em>하면 되지만, 나가려면 롤업이 자기 상태를 <em>증명</em>해야 합니다. 앱-L2들(Lighter, Derive)이 최고 고충으로 꼽은 교훈: 약하게 신뢰할 수 있는 방향은 가속할 수 있어도, 증명되어야 하는 방향은 못 한다.</p>
+      <p class="meta">구현이 아니라 양방향 지연 지도입니다. 고른 L2에 대해 두 방향을 측정(또는 모델링)하되, 더 중요하게 각각이 <em>무엇을 기다리는지</em> 명명하세요. <strong>입금(L1→L2):</strong> 시퀀서가 인정 전에 무엇을 기다리나 — N개 블록 확인, 파이널리티, 아니면 FCR식 규칙? FCR은 파이널리티보다 약한 규칙으로 L1 tx를 확인해 12–24초를 약속합니다; 받아들이는 정확한 실패(확인 깊이를 넘는 리오그)와 그걸 누가 떠안는지 적으세요. <strong>출금(L2→L1):</strong> 인출을 막는 게 무엇인가 — 옵티미스틱 챌린지 윈도우(수일)인가 zk 증명 시간(수분~수시간)인가? 그 게이트는 롤업 <em>자신의</em> 보안 메커니즘이라, 롤업을 약화시키지 않고는 단축 불가. 그다음 FCR이 부딪힌 현실 장애: L2는 외부 RPC 제공자를 통해 L1 입금을 감시하므로, FCR 채택이 RPC 제공자의 출시에 묶임 — 프로토콜이 아니라 공급망 의존성. 출처: Ethlabs Week 11(2026-09-07, X); FCR, EIP-8198(Quick/Fast Slots), Fast Finality. 수치(12–24초, 30배, 12s→10s)와 EIP/포크 상태는 게시글·EIP로 확인 후 인용.</p>
       <h2>왜</h2>
-      <p>이 PoC는 시장 팩터 집합에 PCA를 적용한 뒤, 기법 혼자서는 답할 수 없는 더 어려운 질문을 던집니다: 상위 성분이 리스크 팩터인지, 아니면 그저 입력의 스케일링인지.</p>
+      <p><strong>롤업 경계를 넘는 두 방향은 서로 다른 보안 시계로 돌아가고, 그래서 하나는 가속되고 하나는 안 됩니다.</strong> 롤업에 들어가기 — 입금 — 는 L2가 <em>L1 트랜잭션이 일어났음을 신뢰</em>하기만 하면 됩니다. 신뢰는 등급을 매길 수 있습니다: 파이널리티를 기다리는 대신, 브리지는 &#39;이 L1 tx가 이 가정 하에 깊이 D까지 확인됨&#39;이라는 <strong>Fast Confirmation Rule</strong>을 받아들여 ~13분 대신 12–24초를 얻고 잔여 리오그 리스크에 값을 매길 수 있습니다. 롤업에서 나가기 — 출금 — 는 반대입니다: L1은 신뢰로 자금을 풀지 않고, 롤업이 자기 상태가 유효함을 <em>증명</em>하길 요구합니다. 옵티미스틱 롤업은 챌린지 부재로 증명(윈도우를 견딤), zk 롤업은 증명으로 증명(프루버를 기다림). 어느 대기도 최적화로 없앨 버그가 아니라 — 그게 <em>곧</em> 롤업의 보안입니다.</p>
+<p><strong>그래서 &#39;빠른 인터롭&#39;은 사실 한 문구를 쓴 두 개의 다른 문제입니다.</strong> 입금 지연은 <em>신뢰 보정</em> 문제 — 파이널리티보다 약한 확인 규칙을 골라 꼬리 리스크를 관리(<code>l2-finality-three-clocks</code>가 같은 통찰: &#39;파이널&#39;은 여러 시계 중 하나이고, 값을 매기면 더 이른 시계로 행동 가능). 출금 지연은 <em>증명 비용</em> 문제 — 증명 시간이나 챌린지 윈도우를 줄일 순 있어도, 롤업이 L1을 설득해야 한다는 요건 자체는 못 없앱니다. 둘을 뭉치는 게 로드맵이 &#39;즉시 브리징&#39;을 약속하고 조용히 쉬운 방향만 뜻하는 경로입니다.</p>
+<p><strong>Ethlabs 업데이트가 드러내는 2차 교훈 둘.</strong> 첫째, 채택은 공급망입니다: FCR은 프로토콜이 아니라 L2가 L1 감시에 의존하는 <strong>RPC 제공자</strong>에 막힙니다 — 지루한 미들웨어가 출시하기 전엔 빠른 규칙이 무용(<code>third-party-blast-radius</code>, <code>rpc-view-not-consensus</code>). 둘째, 베이스 계층 가속은 상보적이나 별개입니다: <strong>Fast Slots(EIP-8198)</strong>는 블록 타임 12s→10s(UX 레버, <code>quick-slots-10s</code>), <strong>Fast Finality</strong>는 합의를 1–2슬롯 파이널리티로 재설계(입금-신뢰 간극을 직접 줄임). 어떤 &#39;브리징을 빠르게 했다&#39; 주장에도 관통하는 질문: 어느 방향이 빨라졌고, 그 가속이 <em>신뢰</em> 가정을 완화했나(값 매기면 괜찮음) 아니면 <em>증명</em> 요건을 완화했나(훨씬 어렵고, 싸게 주장하면 의심스러움)?</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <h3>한 경계, 두 시계</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>방향</th>
+<th>수신자가 필요로 하는 것</th>
+<th>속도를 막는 것</th>
+<th>빠르게 가능?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>입금</strong> L1→L2</td>
+<td>L1 tx가 일어났음을 <em>신뢰</em></td>
+<td>확인 깊이 vs 파이널리티</td>
+<td><strong>예</strong> — FCR: 12–24초, 파이널리티보다 ~30배</td>
+</tr>
+<tr>
+<td><strong>출금</strong> L2→L1</td>
+<td>L1이 L2 상태를 <em>확신</em>해야</td>
+<td>옵티미스틱 챌린지 윈도우 / zk 증명 시간</td>
+<td><strong>아니오</strong> — 롤업 자신의 보안</td>
+</tr>
+</tbody></table></div>
+<p>비대칭이 카드 전부: 신뢰는 등급을 매겨 서두를 수 있고, 증명은 건너뛸 수 없다.</p>
+<h3>Fast-Ethereum 조각들, 각각이 닫는 간극</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>조각</th>
+<th>하는 일</th>
+<th>어느 간극</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>FCR</strong></td>
+<td>서브-파이널리티 규칙으로 L1 tx를 12–24초에 확인</td>
+<td>입금 신뢰 지연</td>
+</tr>
+<tr>
+<td><strong>Fast Slots(EIP-8198)</strong></td>
+<td>블록 타임 12s → 10s, 더 낮추는 추세</td>
+<td>베이스 UX 지연(<code>quick-slots-10s</code>)</td>
+</tr>
+<tr>
+<td><strong>Fast Finality</strong></td>
+<td>합의 재설계 → 1–2슬롯 파이널리티</td>
+<td>입금-신뢰 간극을 근원에서 축소</td>
+</tr>
+</tbody></table></div>
+<h3>채택 공급망</h3>
+<p>FCR의 장애는 암호가 아님 — L2는 <strong>외부 RPC 제공자</strong>로 L1 입금을 감시하므로, 그들이 출시하기 전엔 빠른 규칙이 무력. 프로토콜 승리가 미들웨어에 막힘(<code>rpc-view-not-consensus</code>, <code>third-party-blast-radius</code>).</p>
+<h3>같은 업데이트에 함께 (기존 카드로 흡수)</h3>
+<ul>
+<li><strong>8130 ↔ 8141 AA 협업</strong> — Base의 EIP-8130과 Frames(EIP-8141)를 검증을 <em>교체 가능</em>하게 만들어 통합: 7702식 위임 확장 / 강제 프록시 바이트코드 / 재해석된 프레임으로 L2가 EVM 검증을 동등한 네이티브 코드로 대체. 이건 <code>erc-8141</code> 업데이트.</li>
+</ul>
+<p>교차: <code>l2-finality-three-clocks</code>(파이널리티는 여러 시계; 값 매길 수 있는 것으로 행동 — 이 카드의 입금 쪽), <code>erc-8141</code>·<code>aa</code>(AA 표준 협업), <code>quick-slots-10s</code>(EIP-8198), <code>erc-7683-settlement-security</code>(크로스체인 정산 보장), <code>rpc-view-not-consensus</code>·<code>third-party-blast-radius</code>(RPC 제공자 의존).</p>
       
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-ds-clustering.html">&larr; 138. Clustering — k-means finds groups even when there are none</a><a href="pocs-ds-gradient-boosting.html">140. Gradient boosting — XGBoost wins the leaderboard and hides the reason &rarr;</a></div>
+    <div class="pager"><a href="pocs-interop-os-one-network.html">&larr; 64. &quot;As if all chains are one network&quot; is the value and the risk at once</a><a href="pocs-distribution-splits-from-infrastructure.html">66. Distribution splits from infrastructure — a wallet is worth more un-captured &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="ds-dimensionality-pca";</script>
+<script>window.__NAV_CURRENT__="deposit-fast-exit-slow";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;
