@@ -285,6 +285,29 @@ Chainlink&#39;s oracle stack is settlement-rail infrastructure Verex *consumes*,
 **Deliberate non-use — pricing.** Verex prices YES/NO with **LMSR**; the market maker sets the price, not an oracle. An oracle carries an *external* fact onto the chain, and a market&#39;s own price isn&#39;t one — so no feed prices a Verex market.
 
 &gt; Every feed is a dependency with a failure mode — keep the &quot;if wrong / late&quot; guard (staleness check / fallback) in code, not only here.
+
+## Settlement architecture — separate risk from settlement (the ATLAS split)
+
+LayerZero&#39;s **ATLAS** (announced 2026-08-26, unreleased — treat every figure as a vendor claim) is
+a *market venue*, not a library: there is nothing here to &quot;use&quot; or &quot;implement.&quot; The one
+transferable asset is its published module boundary — **matching · clearing · settlement · risk** —
+and specifically the split worth copying: **risk separated from settlement.**
+
+Applied to Verex:
+
+- **Matching / quote** — the LMSR price + fill (§4 market-maker flow).
+- **Settlement** — pay the winning side on resolution.
+- **Risk** — per-market caps, exposure limits, the &quot;refuse the bet&quot; checks.
+
+The habit most systems skip is keeping **risk as its own module that settlement calls**, not risk
+checks tangled inside the settlement path. Entangled, a settlement change can quietly weaken a cap;
+as a separate gate, the cap is auditable on its own and can say *no* before settlement runs. This
+is the same &quot;keep the load-bearing split explicit&quot; reasoning as the `plumbing-skills-buyback`
+argument, and it is independent of whether ATLAS ever ships.
+
+**If Verex collateral ever spans chains:** make the collateral token omnichain for *reach*, but keep
+**settlement finality on one chain** — the message layer never becomes the place truth lives. (Rail
+choice + the two silent traps: [jayverse-token-bridge.md](jayverse-token-bridge.md).)
 </code></pre>
 
   </article>

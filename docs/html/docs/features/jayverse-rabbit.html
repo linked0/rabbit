@@ -393,6 +393,24 @@ the active track. Nothing here is built yet.</p>
 <blockquote>
 <p>Every feed is a dependency with a failure mode — keep the &quot;if wrong / late&quot; guard in code, not only here.</p>
 </blockquote>
+<h2>The trust assumption lives in config, not code (session keys, auto-approve)</h2>
+<p>A general law surfaced by LayerZero&#39;s default-verifier problem, and it lands hardest here because
+the agent is the <strong>highest-authority component</strong>: <em>a default you never chose is still a choice, and
+it is invisible because it lives in configuration, not code.</em></p>
+<ul>
+<li>A <strong>7715 session-key grant with no caveats</strong> still grants <em>something</em> — the scope lives in the
+grant, not the contract.</li>
+<li>The <strong>wallet&#39;s auto-approve</strong> (dev) is a config fact: &quot;who can sign alone right now&quot; is in no
+reviewed source file.</li>
+<li>A <strong>mandate</strong> with a loose bound is the same — the load-bearing limit is a value, not logic.</li>
+</ul>
+<p><strong>The habit:</strong> at every moment the question <em>who can act alone right now</em> has an answer; the only
+variable is whether anyone wrote it down <strong>where a change would break it.</strong> So record the agent&#39;s
+session-key scope + mandate bounds, and add a test / CI check asserting the live config equals the
+documented one — the trust assumption then <strong>fails loudly when it moves</strong>, the same reasoning as
+&quot;keep the &#39;if wrong / late&#39; feed guard in code, not only in the table.&quot;</p>
+<p>This is exactly what the <a href="jayverse-auditor.html">Authority Auditor</a> renders — point it at the agent&#39;s
+own config and the answer becomes a row, not a footnote.</p>
 
   </article>
 </div>

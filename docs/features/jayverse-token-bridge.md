@@ -162,3 +162,35 @@ Chainlink's oracle stack is settlement-rail infrastructure this token *consumes*
 **Deliberate non-use — pricing JYVE (the loud one).** JYVE trades only in our own market, so it has **no external price an oracle could report**. Its price comes from the constant-product mini-AMM (`price = usdcReserve / jyveReserve`), never a feed. Reaching for an oracle here is a category error — an oracle relays an *external* truth, and a self-made token has none. (See §1.2 and §6.)
 
 > Every feed is a dependency with a failure mode — keep the "if wrong / late" guard in code, not only here.
+
+## Cross-chain message layer — rail choice, and toy-vs-rent (LayerZero / CCIP)
+
+The bridge needs to carry a message across chains (Phase 3). Three options, three different
+answers — and naming the split matters because getting it wrong wastes the most time here.
+
+- **Build a toy (yes — for learning).** A minimal from-scratch relayer plus the 1:1 lock↔mint
+  invariant is the *point* of this repo: it teaches where a bridge actually breaks, and it pairs
+  with the `liquid-issuance-not-authorization` lesson (authorization checks the *actor*; nothing
+  checks the *object's backing*). Keep it as the local dev path.
+- **Rent a real rail (for anything real).** Cross-chain *transport* is undifferentiated infra —
+  rebuilding it for production teaches nothing new and costs forever, the same stance as the
+  ERC-4337 bundler ([jayverse-rabbit.md §7](jayverse-rabbit.md)). **CCIP stays the documented
+  default rail.** **LayerZero** is the considered alternative: its Decentralized Verifier Network
+  lets the application *choose* its verifier set — more control, and more responsibility. Switch
+  only if that explicit verifier choice is a feature we specifically want.
+- **The rule:** use the rail, build only the toy, put the choice behind an environment selector.
+
+**The principle that outlives the rail choice:** *a message layer widens what you can reach, not
+where truth lives.* Settlement finality happens on **exactly one chain**; every other chain is a
+display / deposit path. That is the 1:1 invariant restated — one side is the sole source of truth,
+the other a mirror.
+
+**Two silent traps, whichever rail you pick:**
+
+| Trap | Looks like | The fix |
+|---|---|---|
+| Under-provisioned destination gas | send *succeeds*, destination execution fails on another chain | a retry story written **before** it's needed — the failure isn't visible at the call site |
+| Untouched verifier config (LayerZero DVN / CCIP RMN) | everything works | **record who verifies in the repo, plus a CI/test that asserts the live config matches** — an unrecorded verifier is a trust assumption absent from every code review |
+
+The second trap is the [Authority Auditor](jayverse-auditor.md)'s domain: *who am I trusting right
+now, and is it written down where a change would break?*

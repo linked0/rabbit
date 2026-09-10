@@ -203,6 +203,48 @@ chains&quot; live in one place (jay, 2026-09-09). Two primary screens — <stron
 <blockquote>
 <p>Every feed is a dependency with a failure mode — keep the &quot;if wrong / late&quot; guard in code, not only here.</p>
 </blockquote>
+<h2>Cross-chain message layer — rail choice, and toy-vs-rent (LayerZero / CCIP)</h2>
+<p>The bridge needs to carry a message across chains (Phase 3). Three options, three different
+answers — and naming the split matters because getting it wrong wastes the most time here.</p>
+<ul>
+<li><strong>Build a toy (yes — for learning).</strong> A minimal from-scratch relayer plus the 1:1 lock↔mint
+invariant is the <em>point</em> of this repo: it teaches where a bridge actually breaks, and it pairs
+with the <code>liquid-issuance-not-authorization</code> lesson (authorization checks the <em>actor</em>; nothing
+checks the <em>object&#39;s backing</em>). Keep it as the local dev path.</li>
+<li><strong>Rent a real rail (for anything real).</strong> Cross-chain <em>transport</em> is undifferentiated infra —
+rebuilding it for production teaches nothing new and costs forever, the same stance as the
+ERC-4337 bundler (<a href="jayverse-rabbit.html">jayverse-rabbit.md §7</a>). <strong>CCIP stays the documented
+default rail.</strong> <strong>LayerZero</strong> is the considered alternative: its Decentralized Verifier Network
+lets the application <em>choose</em> its verifier set — more control, and more responsibility. Switch
+only if that explicit verifier choice is a feature we specifically want.</li>
+<li><strong>The rule:</strong> use the rail, build only the toy, put the choice behind an environment selector.</li>
+</ul>
+<p><strong>The principle that outlives the rail choice:</strong> <em>a message layer widens what you can reach, not
+where truth lives.</em> Settlement finality happens on <strong>exactly one chain</strong>; every other chain is a
+display / deposit path. That is the 1:1 invariant restated — one side is the sole source of truth,
+the other a mirror.</p>
+<p><strong>Two silent traps, whichever rail you pick:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trap</th>
+<th>Looks like</th>
+<th>The fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Under-provisioned destination gas</td>
+<td>send <em>succeeds</em>, destination execution fails on another chain</td>
+<td>a retry story written <strong>before</strong> it&#39;s needed — the failure isn&#39;t visible at the call site</td>
+</tr>
+<tr>
+<td>Untouched verifier config (LayerZero DVN / CCIP RMN)</td>
+<td>everything works</td>
+<td><strong>record who verifies in the repo, plus a CI/test that asserts the live config matches</strong> — an unrecorded verifier is a trust assumption absent from every code review</td>
+</tr>
+</tbody></table>
+<p>The second trap is the <a href="jayverse-auditor.html">Authority Auditor</a>&#39;s domain: <em>who am I trusting right
+now, and is it written down where a change would break?</em></p>
 
   </article>
 </div>

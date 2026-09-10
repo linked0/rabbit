@@ -325,6 +325,23 @@ re-read live?</li>
 <li>A wrong or late feed is therefore a <strong>finding</strong>, not a dependency, in this product — the Auditor&#39;s job is to surface who controls the feed and whether one actor can move it unilaterally.</li>
 </ul>
 <p>So for the Auditor, &quot;if the feed is wrong&quot; isn&#39;t a runtime guard — it&#39;s a row worth auditing. (Umbrella map: <a href="README.html">README.md</a>.)</p>
+<h2>Config-not-code trust facts — a Phase 3 target (LayerZero DVN)</h2>
+<p>The Auditor&#39;s whole thesis — <em>the most security-relevant fact is absent from code review because it
+lives in configuration, not code</em> — has a clean external test case: <strong>LayerZero&#39;s Decentralized
+Verifier Network.</strong> An application picks its verifier set; skip the choice and it accepts a default
+(usually &quot;LayerZero Labs&#39; own DVN, 1-of-1&quot;), and <strong>nothing in the repo names who verifies its
+cross-chain messages.</strong></p>
+<p><strong>Concrete Phase 3 target:</strong> read an OApp&#39;s verifier config (<code>lz:oapp:config:get</code>) and render it as
+an authority row — not just <em>who</em> verifies, but <em>how many of whom, after how many block
+confirmations</em> (required DVNs · optional DVNs + threshold · confirmations). &quot;The default&quot; sounds
+neutral; &quot;trusting one company&#39;s DVN, 1-of-1&quot; does not — naming it is the whole value, the same job
+this tool already does for <code>sign</code> / <code>recover</code> / <code>upgrade</code>.</p>
+<p><strong>It generalizes the product beyond wallets:</strong> a pluggable verifier set, an oracle feed address, a
+7715 session-key scope, a mandate bound — all the same shape, a load-bearing decision recorded
+outside code. The Auditor&#39;s reach is <em>every &quot;who am I trusting right now, written where a change
+would break&quot; fact</em>, on-chain config included. (Rail-side view:
+<a href="jayverse-token-bridge.html">jayverse-token-bridge.md</a>; agent-side:
+<a href="jayverse-rabbit.html">jayverse-rabbit.md</a>.)</p>
 
   </article>
 </div>

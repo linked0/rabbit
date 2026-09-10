@@ -313,3 +313,24 @@ Chainlink's oracle stack is settlement-rail infrastructure Rabbit *consumes*, no
 As the portal that **imports** each product, Rabbit also inherits every product's Chainlink dependency listed in the umbrella map. Note the stakes: the agent is the **highest-authority component**, so a wrong or late feed driving an *autonomous* action is more dangerous here than anywhere else — guard feeds (staleness / bounds) before the agent acts on them.
 
 > Every feed is a dependency with a failure mode — keep the "if wrong / late" guard in code, not only here.
+
+## The trust assumption lives in config, not code (session keys, auto-approve)
+
+A general law surfaced by LayerZero's default-verifier problem, and it lands hardest here because
+the agent is the **highest-authority component**: *a default you never chose is still a choice, and
+it is invisible because it lives in configuration, not code.*
+
+- A **7715 session-key grant with no caveats** still grants *something* — the scope lives in the
+  grant, not the contract.
+- The **wallet's auto-approve** (dev) is a config fact: "who can sign alone right now" is in no
+  reviewed source file.
+- A **mandate** with a loose bound is the same — the load-bearing limit is a value, not logic.
+
+**The habit:** at every moment the question *who can act alone right now* has an answer; the only
+variable is whether anyone wrote it down **where a change would break it.** So record the agent's
+session-key scope + mandate bounds, and add a test / CI check asserting the live config equals the
+documented one — the trust assumption then **fails loudly when it moves**, the same reasoning as
+"keep the 'if wrong / late' feed guard in code, not only in the table."
+
+This is exactly what the [Authority Auditor](jayverse-auditor.md) renders — point it at the agent's
+own config and the answer becomes a row, not a footnote.

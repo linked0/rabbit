@@ -273,3 +273,24 @@ The Authority Auditor is pure read / analyze, so it **consumes no Chainlink itse
 - A wrong or late feed is therefore a **finding**, not a dependency, in this product — the Auditor's job is to surface who controls the feed and whether one actor can move it unilaterally.
 
 So for the Auditor, "if the feed is wrong" isn't a runtime guard — it's a row worth auditing. (Umbrella map: [README.md](README.md).)
+
+## Config-not-code trust facts — a Phase 3 target (LayerZero DVN)
+
+The Auditor's whole thesis — *the most security-relevant fact is absent from code review because it
+lives in configuration, not code* — has a clean external test case: **LayerZero's Decentralized
+Verifier Network.** An application picks its verifier set; skip the choice and it accepts a default
+(usually "LayerZero Labs' own DVN, 1-of-1"), and **nothing in the repo names who verifies its
+cross-chain messages.**
+
+**Concrete Phase 3 target:** read an OApp's verifier config (`lz:oapp:config:get`) and render it as
+an authority row — not just *who* verifies, but *how many of whom, after how many block
+confirmations* (required DVNs · optional DVNs + threshold · confirmations). "The default" sounds
+neutral; "trusting one company's DVN, 1-of-1" does not — naming it is the whole value, the same job
+this tool already does for `sign` / `recover` / `upgrade`.
+
+**It generalizes the product beyond wallets:** a pluggable verifier set, an oracle feed address, a
+7715 session-key scope, a mandate bound — all the same shape, a load-bearing decision recorded
+outside code. The Auditor's reach is *every "who am I trusting right now, written where a change
+would break" fact*, on-chain config included. (Rail-side view:
+[jayverse-token-bridge.md](jayverse-token-bridge.md); agent-side:
+[jayverse-rabbit.md](jayverse-rabbit.md).)
