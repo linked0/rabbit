@@ -10,6 +10,29 @@ export const FEATURED_POC_KEY = "aa";
 
 export const POC_CARDS: DemoCard[] = [
   {
+    key: "scaling-simulation-on-a-general-cloud",
+    updated: "2026-09-10",
+    status: "soon",
+    title: "Simulate scaling before you need it — a load study on AWS or GCP",
+    titleKo: "필요해지기 전에 스케일링을 시뮬레이션하라 — AWS·GCP 부하 스터디",
+    description:
+      "A dev study: deploy a trivial service on a general cloud (GCP Cloud Run / GKE, or AWS Fargate / EKS), drive synthetic load, and watch how the platform actually scales — where latency knees, what a request costs at scale, how cold starts and the autoscaler behave. Scaling is a property you measure, not one you assume.",
+    descriptionKo:
+      "dev 스터디: 일반 클라우드(GCP Cloud Run / GKE, 또는 AWS Fargate / EKS)에 사소한 서비스를 배포하고 합성 부하를 걸어, 플랫폼이 실제로 어떻게 스케일하는지 관찰 — 지연이 꺾이는 지점, 규모에서 요청당 비용, 콜드 스타트와 오토스케일러의 동작. 스케일링은 가정하는 게 아니라 재는 속성이다.",
+    howTo:
+      "Not a big build — a measurement harness. 1) Deploy a trivial service (an echo or a CPU-bound endpoint) on one autoscaling target: Cloud Run (concurrency + max instances) or GKE HPA; the AWS twins are Fargate / App Runner or EKS HPA. 2) Drive load low → high RPS with k6 / Locust / vegeta. 3) Record four curves: p50/p99 latency vs RPS (find the knee), instance count vs RPS (the autoscaler's reaction and its lag), cost vs RPS (cost per 1k requests), and cold-start time. 4) Flip one knob at a time (concurrency, CPU, min instances) and re-measure. Confirm current pricing and autoscaler behavior against each provider's docs — both move.",
+    howToKo:
+      "큰 구현이 아니라 측정 하네스입니다. 1) 사소한 서비스(에코 또는 CPU 바운드 엔드포인트)를 오토스케일 타깃 하나에 배포: Cloud Run(동시성 + 최대 인스턴스) 또는 GKE HPA; AWS 쌍둥이는 Fargate / App Runner 또는 EKS HPA. 2) k6 / Locust / vegeta로 낮은 → 높은 RPS 부하. 3) 네 곡선 기록: RPS 대비 p50/p99 지연(꺾이는 지점 찾기), RPS 대비 인스턴스 수(오토스케일러의 반응과 지연), RPS 대비 비용(1k 요청당 비용), 콜드 스타트 시간. 4) 노브를 한 번에 하나씩(동시성, CPU, 최소 인스턴스) 바꿔 재측정. 현재 가격·오토스케일러 동작은 각 공급자 문서로 확인 — 둘 다 바뀝니다.",
+    purpose:
+      "Scaling is a property at a load — the same shape as this catalogue's other 'property at a speed' cards (refill-rate-is-the-real-cap, an-invariant-is-a-stop-not-an-alarm). A service that is fine at 10 RPS tells you nothing about 1,000: the knee (where p99 falls off), the autoscaler's lag (how long before new instances absorb a spike), and the cost curve are all empirical and provider-specific. 'Scales to zero' and 'infinite scale' are marketing, not your service's numbers.\n\nThe reason to simulate rather than read is that the three numbers that actually drive an architecture decision only exist as measurements: the knee (your real ceiling per instance), the lag (how badly a spike hurts before capacity catches up), and cost per 1k requests (the number that decides Cloud Run vs GKE vs serverless). The simulation is cheap — a trivial service, a load tool, an afternoon — and it replaces a guess with a curve. Jayverse already runs on GCP Cloud Run, so this is the harness that says whether a demo survives a front-page spike, and at what cost.",
+    purposeKo:
+      "스케일링은 부하에서의 속성입니다 — 이 카탈로그의 다른 '특정 속도에서의 속성' 카드들과 같은 모양(refill-rate-is-the-real-cap, an-invariant-is-a-stop-not-an-alarm). 10 RPS에서 멀쩡한 서비스는 1,000에 대해 아무것도 말해주지 않습니다: 꺾이는 지점(p99가 무너지는 곳), 오토스케일러의 지연(스파이크를 새 인스턴스가 흡수하기까지 걸리는 시간), 비용 곡선은 전부 경험적이고 공급자별입니다. '0으로 스케일', '무한 스케일'은 마케팅이지 당신 서비스의 숫자가 아닙니다.\n\n읽지 않고 시뮬레이션하는 이유는, 아키텍처 결정을 실제로 좌우하는 세 숫자가 오직 측정으로만 존재하기 때문입니다: 꺾이는 지점(인스턴스당 진짜 천장), 지연(용량이 따라잡기 전 스파이크가 얼마나 아픈가), 1k 요청당 비용(Cloud Run vs GKE vs 서버리스를 정하는 숫자). 시뮬레이션은 쌉니다 — 사소한 서비스, 부하 도구, 한나절 — 추측을 곡선으로 바꿉니다. Jayverse는 이미 GCP Cloud Run에서 도니, 이 하네스가 데모가 첫 페이지 스파이크를 버티는지, 얼마의 비용으로인지를 말해줍니다.",
+    howItWorks:
+      "### The four curves to record\n\n| Curve | What it tells you | The decision it drives |\n|---|---|---|\n| **p50 / p99 latency vs RPS** | the knee — where p99 falls off a cliff | your real per-instance ceiling |\n| **instances vs RPS** | how fast the autoscaler reacts, and its lag | how badly a spike hurts before capacity arrives |\n| **cost vs RPS** | cost per 1,000 requests at each level | Cloud Run vs GKE vs serverless |\n| **cold-start time** | first-request penalty after scale-to-zero | whether min-instances is worth paying for |\n\n### The knobs, one at a time\n\n| Knob | Cloud Run | GKE / AWS twin |\n|---|---|---|\n| **Concurrency** | requests per instance | HPA target / container threads |\n| **CPU / memory** | per-instance size | pod resources / task size |\n| **Min instances** | kill cold starts (costs idle) | HPA minReplicas / warm pool |\n| **Max instances** | the ceiling and the blast radius of a runaway | HPA maxReplicas |\n\n### The one idea\n\nEvery vendor's scaling story is a curve you have not measured yet. Simulate the load, find the knee, the lag, and the cost — then the architecture choice is a number, not a slogan. Related: refill-rate-is-the-real-cap (a limit is meaningless without its rate) and an-invariant-is-a-stop-not-an-alarm (measure, don't assume).",
+    howItWorksKo:
+      "### 기록할 네 곡선\n\n| 곡선 | 알려주는 것 | 좌우하는 결정 |\n|---|---|---|\n| **RPS 대비 p50 / p99 지연** | 꺾이는 지점 — p99가 절벽처럼 무너지는 곳 | 인스턴스당 진짜 천장 |\n| **RPS 대비 인스턴스 수** | 오토스케일러가 얼마나 빨리 반응하는지, 그 지연 | 용량 도착 전 스파이크가 얼마나 아픈가 |\n| **RPS 대비 비용** | 각 수준에서 1,000 요청당 비용 | Cloud Run vs GKE vs 서버리스 |\n| **콜드 스타트 시간** | scale-to-zero 후 첫 요청 페널티 | min-instances를 낼 값어치가 있는가 |\n\n### 노브, 한 번에 하나씩\n\n| 노브 | Cloud Run | GKE / AWS 쌍둥이 |\n|---|---|---|\n| **동시성** | 인스턴스당 요청 수 | HPA 타깃 / 컨테이너 스레드 |\n| **CPU / 메모리** | 인스턴스당 크기 | 파드 리소스 / 태스크 크기 |\n| **최소 인스턴스** | 콜드 스타트 제거(유휴 비용) | HPA minReplicas / 웜 풀 |\n| **최대 인스턴스** | 천장이자 폭주 시 blast radius | HPA maxReplicas |\n\n### 한 가지 아이디어\n\n모든 벤더의 스케일링 이야기는 당신이 아직 재보지 않은 곡선입니다. 부하를 시뮬레이션해 꺾이는 지점·지연·비용을 찾으면, 아키텍처 선택은 슬로건이 아니라 숫자가 됩니다. 관련: refill-rate-is-the-real-cap(한도는 속도 없이 무의미), an-invariant-is-a-stop-not-an-alarm(가정 말고 측정).",
+  },
+  {
     key: "jayverse-build-on-the-shortlist",
     important: true,
     updated: "2026-09-10",

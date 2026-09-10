@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ransomware — one password shut a pipeline — Notes</title>
+<title>Simulate scaling before you need it — a load study on AWS or GCP — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,45 +366,169 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Ransomware — one password shut a pipeline</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Simulate scaling before you need it — a load study on AWS or GCP</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#87</span><span>PoC</span></p>
-      <h1>Ransomware — one password shut a pipeline</h1>
-      <p class="lead">The 2021 Colonial Pipeline shutdown started with one leaked VPN credential and no MFA, showing that a national-scale outage can trace back to the most basic control being absent.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#64</span><span>PoC</span></p>
+      <h1>Simulate scaling before you need it — a load study on AWS or GCP</h1>
+      <p class="lead">A dev study: deploy a trivial service on a general cloud (GCP Cloud Run / GKE, or AWS Fargate / EKS), drive synthetic load, and watch how the platform actually scales — where latency knees, what a request costs at scale, how cold starts and the autoscaler behave. Scaling is a property you measure, not one you assume.</p>
+      <p class="meta">Not a big build — a measurement harness. 1) Deploy a trivial service (an echo or a CPU-bound endpoint) on one autoscaling target: Cloud Run (concurrency + max instances) or GKE HPA; the AWS twins are Fargate / App Runner or EKS HPA. 2) Drive load low → high RPS with k6 / Locust / vegeta. 3) Record four curves: p50/p99 latency vs RPS (find the knee), instance count vs RPS (the autoscaler&#39;s reaction and its lag), cost vs RPS (cost per 1k requests), and cold-start time. 4) Flip one knob at a time (concurrency, CPU, min instances) and re-measure. Confirm current pricing and autoscaler behavior against each provider&#39;s docs — both move.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Ransomware — one password shut a pipeline\n\nThe 2021 Colonial Pipeline shutdown started with one leaked VPN credential and no MFA, showing that a national-scale outage can trace back to the most basic control being absent.\n\nNot yet scoped.\n\n## Why\n\nThe PoC studies the intrusion chain and the recovery (including the traced ransom payment), framing MFA and segmentation as the boring controls that would have stopped it.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# Simulate scaling before you need it — a load study on AWS or GCP\n\nA dev study: deploy a trivial service on a general cloud (GCP Cloud Run / GKE, or AWS Fargate / EKS), drive synthetic load, and watch how the platform actually scales — where latency knees, what a request costs at scale, how cold starts and the autoscaler behave. Scaling is a property you measure, not one you assume.\n\nNot a big build — a measurement harness. 1) Deploy a trivial service (an echo or a CPU-bound endpoint) on one autoscaling target: Cloud Run (concurrency + max instances) or GKE HPA; the AWS twins are Fargate / App Runner or EKS HPA. 2) Drive load low → high RPS with k6 / Locust / vegeta. 3) Record four curves: p50/p99 latency vs RPS (find the knee), instance count vs RPS (the autoscaler's reaction and its lag), cost vs RPS (cost per 1k requests), and cold-start time. 4) Flip one knob at a time (concurrency, CPU, min instances) and re-measure. Confirm current pricing and autoscaler behavior against each provider's docs — both move.\n\n## Why\n\nScaling is a property at a load — the same shape as this catalogue's other 'property at a speed' cards (refill-rate-is-the-real-cap, an-invariant-is-a-stop-not-an-alarm). A service that is fine at 10 RPS tells you nothing about 1,000: the knee (where p99 falls off), the autoscaler's lag (how long before new instances absorb a spike), and the cost curve are all empirical and provider-specific. 'Scales to zero' and 'infinite scale' are marketing, not your service's numbers.\n\nThe reason to simulate rather than read is that the three numbers that actually drive an architecture decision only exist as measurements: the knee (your real ceiling per instance), the lag (how badly a spike hurts before capacity catches up), and cost per 1k requests (the number that decides Cloud Run vs GKE vs serverless). The simulation is cheap — a trivial service, a load tool, an afternoon — and it replaces a guess with a curve. Jayverse already runs on GCP Cloud Run, so this is the harness that says whether a demo survives a front-page spike, and at what cost.\n\n## How it works\n\n### The four curves to record\n\n| Curve | What it tells you | The decision it drives |\n|---|---|---|\n| **p50 / p99 latency vs RPS** | the knee — where p99 falls off a cliff | your real per-instance ceiling |\n| **instances vs RPS** | how fast the autoscaler reacts, and its lag | how badly a spike hurts before capacity arrives |\n| **cost vs RPS** | cost per 1,000 requests at each level | Cloud Run vs GKE vs serverless |\n| **cold-start time** | first-request penalty after scale-to-zero | whether min-instances is worth paying for |\n\n### The knobs, one at a time\n\n| Knob | Cloud Run | GKE / AWS twin |\n|---|---|---|\n| **Concurrency** | requests per instance | HPA target / container threads |\n| **CPU / memory** | per-instance size | pod resources / task size |\n| **Min instances** | kill cold starts (costs idle) | HPA minReplicas / warm pool |\n| **Max instances** | the ceiling and the blast radius of a runaway | HPA maxReplicas |\n\n### The one idea\n\nEvery vendor's scaling story is a curve you have not measured yet. Simulate the load, find the knee, the lag, and the cost — then the architecture choice is a number, not a slogan. Related: refill-rate-is-the-real-cap (a limit is meaningless without its rate) and an-invariant-is-a-stop-not-an-alarm (measure, don't assume).\n"</script>
       <h2>Why</h2>
-      <p>The PoC studies the intrusion chain and the recovery (including the traced ransom payment), framing MFA and segmentation as the boring controls that would have stopped it.</p>
+      <p>Scaling is a property at a load — the same shape as this catalogue&#39;s other &#39;property at a speed&#39; cards (refill-rate-is-the-real-cap, an-invariant-is-a-stop-not-an-alarm). A service that is fine at 10 RPS tells you nothing about 1,000: the knee (where p99 falls off), the autoscaler&#39;s lag (how long before new instances absorb a spike), and the cost curve are all empirical and provider-specific. &#39;Scales to zero&#39; and &#39;infinite scale&#39; are marketing, not your service&#39;s numbers.</p>
+<p>The reason to simulate rather than read is that the three numbers that actually drive an architecture decision only exist as measurements: the knee (your real ceiling per instance), the lag (how badly a spike hurts before capacity catches up), and cost per 1k requests (the number that decides Cloud Run vs GKE vs serverless). The simulation is cheap — a trivial service, a load tool, an afternoon — and it replaces a guess with a curve. Jayverse already runs on GCP Cloud Run, so this is the harness that says whether a demo survives a front-page spike, and at what cost.</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <h3>The four curves to record</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Curve</th>
+<th>What it tells you</th>
+<th>The decision it drives</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>p50 / p99 latency vs RPS</strong></td>
+<td>the knee — where p99 falls off a cliff</td>
+<td>your real per-instance ceiling</td>
+</tr>
+<tr>
+<td><strong>instances vs RPS</strong></td>
+<td>how fast the autoscaler reacts, and its lag</td>
+<td>how badly a spike hurts before capacity arrives</td>
+</tr>
+<tr>
+<td><strong>cost vs RPS</strong></td>
+<td>cost per 1,000 requests at each level</td>
+<td>Cloud Run vs GKE vs serverless</td>
+</tr>
+<tr>
+<td><strong>cold-start time</strong></td>
+<td>first-request penalty after scale-to-zero</td>
+<td>whether min-instances is worth paying for</td>
+</tr>
+</tbody></table></div>
+<h3>The knobs, one at a time</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Knob</th>
+<th>Cloud Run</th>
+<th>GKE / AWS twin</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Concurrency</strong></td>
+<td>requests per instance</td>
+<td>HPA target / container threads</td>
+</tr>
+<tr>
+<td><strong>CPU / memory</strong></td>
+<td>per-instance size</td>
+<td>pod resources / task size</td>
+</tr>
+<tr>
+<td><strong>Min instances</strong></td>
+<td>kill cold starts (costs idle)</td>
+<td>HPA minReplicas / warm pool</td>
+</tr>
+<tr>
+<td><strong>Max instances</strong></td>
+<td>the ceiling and the blast radius of a runaway</td>
+<td>HPA maxReplicas</td>
+</tr>
+</tbody></table></div>
+<h3>The one idea</h3>
+<p>Every vendor&#39;s scaling story is a curve you have not measured yet. Simulate the load, find the knee, the lag, and the cost — then the architecture choice is a number, not a slogan. Related: refill-rate-is-the-real-cap (a limit is meaningless without its rate) and an-invariant-is-a-stop-not-an-alarm (measure, don&#39;t assume).</p>
       
       <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 랜섬웨어 — 비밀번호 하나가 파이프라인을 멈췄다\n\n2021년 콜로니얼 파이프라인 셧다운은 유출된 VPN 자격증명 하나와 MFA 부재에서 시작됐으며, 국가 규모 중단이 가장 기본적인 통제의 부재로 거슬러 올라갈 수 있음을 보였습니다.\n\n아직 범위 미정.\n\n## 왜\n\n이 PoC는 침입 사슬과 복구(추적된 몸값 지불 포함)를 연구하여, MFA와 분할을 이를 막았을 지루한 통제로 규정합니다.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>랜섬웨어 — 비밀번호 하나가 파이프라인을 멈췄다</h1>
-      <p class="lead">2021년 콜로니얼 파이프라인 셧다운은 유출된 VPN 자격증명 하나와 MFA 부재에서 시작됐으며, 국가 규모 중단이 가장 기본적인 통제의 부재로 거슬러 올라갈 수 있음을 보였습니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# 필요해지기 전에 스케일링을 시뮬레이션하라 — AWS·GCP 부하 스터디\n\ndev 스터디: 일반 클라우드(GCP Cloud Run / GKE, 또는 AWS Fargate / EKS)에 사소한 서비스를 배포하고 합성 부하를 걸어, 플랫폼이 실제로 어떻게 스케일하는지 관찰 — 지연이 꺾이는 지점, 규모에서 요청당 비용, 콜드 스타트와 오토스케일러의 동작. 스케일링은 가정하는 게 아니라 재는 속성이다.\n\n큰 구현이 아니라 측정 하네스입니다. 1) 사소한 서비스(에코 또는 CPU 바운드 엔드포인트)를 오토스케일 타깃 하나에 배포: Cloud Run(동시성 + 최대 인스턴스) 또는 GKE HPA; AWS 쌍둥이는 Fargate / App Runner 또는 EKS HPA. 2) k6 / Locust / vegeta로 낮은 → 높은 RPS 부하. 3) 네 곡선 기록: RPS 대비 p50/p99 지연(꺾이는 지점 찾기), RPS 대비 인스턴스 수(오토스케일러의 반응과 지연), RPS 대비 비용(1k 요청당 비용), 콜드 스타트 시간. 4) 노브를 한 번에 하나씩(동시성, CPU, 최소 인스턴스) 바꿔 재측정. 현재 가격·오토스케일러 동작은 각 공급자 문서로 확인 — 둘 다 바뀝니다.\n\n## 왜\n\n스케일링은 부하에서의 속성입니다 — 이 카탈로그의 다른 '특정 속도에서의 속성' 카드들과 같은 모양(refill-rate-is-the-real-cap, an-invariant-is-a-stop-not-an-alarm). 10 RPS에서 멀쩡한 서비스는 1,000에 대해 아무것도 말해주지 않습니다: 꺾이는 지점(p99가 무너지는 곳), 오토스케일러의 지연(스파이크를 새 인스턴스가 흡수하기까지 걸리는 시간), 비용 곡선은 전부 경험적이고 공급자별입니다. '0으로 스케일', '무한 스케일'은 마케팅이지 당신 서비스의 숫자가 아닙니다.\n\n읽지 않고 시뮬레이션하는 이유는, 아키텍처 결정을 실제로 좌우하는 세 숫자가 오직 측정으로만 존재하기 때문입니다: 꺾이는 지점(인스턴스당 진짜 천장), 지연(용량이 따라잡기 전 스파이크가 얼마나 아픈가), 1k 요청당 비용(Cloud Run vs GKE vs 서버리스를 정하는 숫자). 시뮬레이션은 쌉니다 — 사소한 서비스, 부하 도구, 한나절 — 추측을 곡선으로 바꿉니다. Jayverse는 이미 GCP Cloud Run에서 도니, 이 하네스가 데모가 첫 페이지 스파이크를 버티는지, 얼마의 비용으로인지를 말해줍니다.\n\n## 동작 방식\n\n### 기록할 네 곡선\n\n| 곡선 | 알려주는 것 | 좌우하는 결정 |\n|---|---|---|\n| **RPS 대비 p50 / p99 지연** | 꺾이는 지점 — p99가 절벽처럼 무너지는 곳 | 인스턴스당 진짜 천장 |\n| **RPS 대비 인스턴스 수** | 오토스케일러가 얼마나 빨리 반응하는지, 그 지연 | 용량 도착 전 스파이크가 얼마나 아픈가 |\n| **RPS 대비 비용** | 각 수준에서 1,000 요청당 비용 | Cloud Run vs GKE vs 서버리스 |\n| **콜드 스타트 시간** | scale-to-zero 후 첫 요청 페널티 | min-instances를 낼 값어치가 있는가 |\n\n### 노브, 한 번에 하나씩\n\n| 노브 | Cloud Run | GKE / AWS 쌍둥이 |\n|---|---|---|\n| **동시성** | 인스턴스당 요청 수 | HPA 타깃 / 컨테이너 스레드 |\n| **CPU / 메모리** | 인스턴스당 크기 | 파드 리소스 / 태스크 크기 |\n| **최소 인스턴스** | 콜드 스타트 제거(유휴 비용) | HPA minReplicas / 웜 풀 |\n| **최대 인스턴스** | 천장이자 폭주 시 blast radius | HPA maxReplicas |\n\n### 한 가지 아이디어\n\n모든 벤더의 스케일링 이야기는 당신이 아직 재보지 않은 곡선입니다. 부하를 시뮬레이션해 꺾이는 지점·지연·비용을 찾으면, 아키텍처 선택은 슬로건이 아니라 숫자가 됩니다. 관련: refill-rate-is-the-real-cap(한도는 속도 없이 무의미), an-invariant-is-a-stop-not-an-alarm(가정 말고 측정).\n"</script>
+      <h1>필요해지기 전에 스케일링을 시뮬레이션하라 — AWS·GCP 부하 스터디</h1>
+      <p class="lead">dev 스터디: 일반 클라우드(GCP Cloud Run / GKE, 또는 AWS Fargate / EKS)에 사소한 서비스를 배포하고 합성 부하를 걸어, 플랫폼이 실제로 어떻게 스케일하는지 관찰 — 지연이 꺾이는 지점, 규모에서 요청당 비용, 콜드 스타트와 오토스케일러의 동작. 스케일링은 가정하는 게 아니라 재는 속성이다.</p>
+      <p class="meta">큰 구현이 아니라 측정 하네스입니다. 1) 사소한 서비스(에코 또는 CPU 바운드 엔드포인트)를 오토스케일 타깃 하나에 배포: Cloud Run(동시성 + 최대 인스턴스) 또는 GKE HPA; AWS 쌍둥이는 Fargate / App Runner 또는 EKS HPA. 2) k6 / Locust / vegeta로 낮은 → 높은 RPS 부하. 3) 네 곡선 기록: RPS 대비 p50/p99 지연(꺾이는 지점 찾기), RPS 대비 인스턴스 수(오토스케일러의 반응과 지연), RPS 대비 비용(1k 요청당 비용), 콜드 스타트 시간. 4) 노브를 한 번에 하나씩(동시성, CPU, 최소 인스턴스) 바꿔 재측정. 현재 가격·오토스케일러 동작은 각 공급자 문서로 확인 — 둘 다 바뀝니다.</p>
       <h2>왜</h2>
-      <p>이 PoC는 침입 사슬과 복구(추적된 몸값 지불 포함)를 연구하여, MFA와 분할을 이를 막았을 지루한 통제로 규정합니다.</p>
+      <p>스케일링은 부하에서의 속성입니다 — 이 카탈로그의 다른 &#39;특정 속도에서의 속성&#39; 카드들과 같은 모양(refill-rate-is-the-real-cap, an-invariant-is-a-stop-not-an-alarm). 10 RPS에서 멀쩡한 서비스는 1,000에 대해 아무것도 말해주지 않습니다: 꺾이는 지점(p99가 무너지는 곳), 오토스케일러의 지연(스파이크를 새 인스턴스가 흡수하기까지 걸리는 시간), 비용 곡선은 전부 경험적이고 공급자별입니다. &#39;0으로 스케일&#39;, &#39;무한 스케일&#39;은 마케팅이지 당신 서비스의 숫자가 아닙니다.</p>
+<p>읽지 않고 시뮬레이션하는 이유는, 아키텍처 결정을 실제로 좌우하는 세 숫자가 오직 측정으로만 존재하기 때문입니다: 꺾이는 지점(인스턴스당 진짜 천장), 지연(용량이 따라잡기 전 스파이크가 얼마나 아픈가), 1k 요청당 비용(Cloud Run vs GKE vs 서버리스를 정하는 숫자). 시뮬레이션은 쌉니다 — 사소한 서비스, 부하 도구, 한나절 — 추측을 곡선으로 바꿉니다. Jayverse는 이미 GCP Cloud Run에서 도니, 이 하네스가 데모가 첫 페이지 스파이크를 버티는지, 얼마의 비용으로인지를 말해줍니다.</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <h3>기록할 네 곡선</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>곡선</th>
+<th>알려주는 것</th>
+<th>좌우하는 결정</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RPS 대비 p50 / p99 지연</strong></td>
+<td>꺾이는 지점 — p99가 절벽처럼 무너지는 곳</td>
+<td>인스턴스당 진짜 천장</td>
+</tr>
+<tr>
+<td><strong>RPS 대비 인스턴스 수</strong></td>
+<td>오토스케일러가 얼마나 빨리 반응하는지, 그 지연</td>
+<td>용량 도착 전 스파이크가 얼마나 아픈가</td>
+</tr>
+<tr>
+<td><strong>RPS 대비 비용</strong></td>
+<td>각 수준에서 1,000 요청당 비용</td>
+<td>Cloud Run vs GKE vs 서버리스</td>
+</tr>
+<tr>
+<td><strong>콜드 스타트 시간</strong></td>
+<td>scale-to-zero 후 첫 요청 페널티</td>
+<td>min-instances를 낼 값어치가 있는가</td>
+</tr>
+</tbody></table></div>
+<h3>노브, 한 번에 하나씩</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>노브</th>
+<th>Cloud Run</th>
+<th>GKE / AWS 쌍둥이</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>동시성</strong></td>
+<td>인스턴스당 요청 수</td>
+<td>HPA 타깃 / 컨테이너 스레드</td>
+</tr>
+<tr>
+<td><strong>CPU / 메모리</strong></td>
+<td>인스턴스당 크기</td>
+<td>파드 리소스 / 태스크 크기</td>
+</tr>
+<tr>
+<td><strong>최소 인스턴스</strong></td>
+<td>콜드 스타트 제거(유휴 비용)</td>
+<td>HPA minReplicas / 웜 풀</td>
+</tr>
+<tr>
+<td><strong>최대 인스턴스</strong></td>
+<td>천장이자 폭주 시 blast radius</td>
+<td>HPA maxReplicas</td>
+</tr>
+</tbody></table></div>
+<h3>한 가지 아이디어</h3>
+<p>모든 벤더의 스케일링 이야기는 당신이 아직 재보지 않은 곡선입니다. 부하를 시뮬레이션해 꺾이는 지점·지연·비용을 찾으면, 아키텍처 선택은 슬로건이 아니라 숫자가 됩니다. 관련: refill-rate-is-the-real-cap(한도는 속도 없이 무의미), an-invariant-is-a-stop-not-an-alarm(가정 말고 측정).</p>
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-sec-dependency-confusion.html">&larr; 86. Dependency confusion — the package manager pulls the wrong registry</a><a href="pocs-sec-prompt-injection.html">88. Prompt injection — untrusted text becomes an instruction &rarr;</a></div>
+    <div class="pager"><a href="pocs-a-faucet-is-a-payout.html">&larr; 63. A faucet without limits is a payout, not a feature</a><a href="pocs-mid-level-backend-role-the-hiring-stack.html">65. A mid-level backend JD, read as a stack checklist &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="sec-ransomware-colonial";</script>
+<script>window.__NAV_CURRENT__="scaling-simulation-on-a-general-cloud";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;

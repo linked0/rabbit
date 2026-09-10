@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; The code was right and the layout was wrong</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#129</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#130</span><span>PoC</span></p>
       <h1>The code was right and the layout was wrong</h1>
       <p class="lead">An attacker took Enjin&#39;s admin rights through a storage slot collision — adapters and the contract managing them used the same storage for different meanings — and drained about $162,000. Every function was individually correct. The defect lived in the space between modules.</p>
       <p class="meta">Not yet scoped — and the first task is an inventory, not an audit. For any system where code executes in another contract&#39;s storage context, list every such module, compute each one&#39;s storage layout, and assert that no two claim the same slot for different meanings. Layout-diff tooling already exists, but it is aimed at successive versions of one contract during an upgrade; the gap here is that a pluggable adapter set is not a sequence of versions, so nothing checks it. Second task, cheaper still: write the invariant that says the admin address may only change inside an admin-change transaction, and measure how long an unauthorised change would go unnoticed today. Source: SlowMist via X, and Digital Asset, 2026-08-26 — roughly $162,000 taken, ENJ down 6.39% to $0.02625, no statement from Enjin at the time of reporting. To confirm against the post-mortem when one appears.</p>
@@ -477,7 +477,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-sft-the-shape-of-thinking.html">&larr; 128. You can SFT the shape of thinking, not the thinking</a><a href="pocs-dkg-resharing.html">130. The ceremony ends, the committee doesn't &rarr;</a></div>
+    <div class="pager"><a href="pocs-sft-the-shape-of-thinking.html">&larr; 129. You can SFT the shape of thinking, not the thinking</a><a href="pocs-dkg-resharing.html">131. The ceremony ends, the committee doesn't &rarr;</a></div>
   </div>
   </main>
 </div>
