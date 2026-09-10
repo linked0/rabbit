@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Give the agent the right to ask, not the right to write</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#117</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#120</span><span>PoC</span></p>
       <h1>Give the agent the right to ask, not the right to write</h1>
       <p class="lead">Samsung Account (≈2.1B users) built a production multi-agent AIOps system on Bedrock AgentCore, and its load-bearing choice is a permission boundary, not a model: agents get no write access — they only propose an exact command, and a separate deterministic scheduler executes the approved artifact verbatim after a human reviews it. Analysis can be wrong and re-checked; execution that is wrong is irreversible. It is a shipped implementation of &quot;separate deciding from acting by something that is not a prompt.&quot;</p>
       <p class="meta">Not yet scoped — a design-pattern study you can apply to any agent that touches production. First, split your agent&#39;s actions into read (analysis) and write (execution) and confirm the write path does not run through the LLM at all. Then implement the proposal/execution split: the agent registers <em>what to run</em> — the exact command or code — a human reviews that exact artifact, and a deterministic executor runs the approved artifact verbatim, nothing regenerated. Add the maturity ladder they use: Level 1 is read-only cross-domain analysis (low risk, biggest time sink), Level 2 is plan → approve → execute, and the gate sits precisely on the read/write line. Layer in the single-entry guardrail — one Orchestrator every request converges on, where PII redaction, routing, and long-term memory live once — so adding agents does not scatter the boundary. The measurable question: what share of your operational toil is read-only analysis (safe to automate today) versus write actions (gated), and does automation grow by adding <em>executor</em> procedures rather than <em>agent</em> permissions? Source: AWS blog, Samsung Account SRE, &quot;Samsung Account AIOps&quot; Part 1, 2026-09-03 — a vendor showcase for AgentCore; weight the product framing, but the pattern is the point.</p>
@@ -565,7 +565,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-aa-standard-execution-split.html">&larr; 116. One AA spec, two execution models — or the EVM fragments</a><a href="pocs-cli-batch-vs-mcp-interactive.html">118. The CLI leaves an artifact; the MCP holds a conversation &rarr;</a></div>
+    <div class="pager"><a href="pocs-aa-standard-execution-split.html">&larr; 119. One AA spec, two execution models — or the EVM fragments</a><a href="pocs-cli-batch-vs-mcp-interactive.html">121. The CLI leaves an artifact; the MCP holds a conversation &rarr;</a></div>
   </div>
   </main>
 </div>

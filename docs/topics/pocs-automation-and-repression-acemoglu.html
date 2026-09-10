@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reentrancy — the withdraw that calls back before the balance drops — Notes</title>
+<title>Automation and Repression — when control gets cheaper than sharing — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,45 +366,99 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Reentrancy — the withdraw that calls back before the balance drops</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Automation and Repression — when control gets cheaper than sharing</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#76</span><span>PoC</span></p>
-      <h1>Reentrancy — the withdraw that calls back before the balance drops</h1>
-      <p class="lead">Reentrancy lets a callee re-enter the caller before its state updates, the class that drained The DAO in 2016; the fix (checks-effects-interactions) is old, and the bug still ships.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#210</span><span>PoC</span></p>
+      <h1>Automation and Repression — when control gets cheaper than sharing</h1>
+      <p class="lead">Acemoglu, Gitmez &amp; Shadmehr (NBER w35336, June 2026) model automation inside a polity: decentralized automation raises capital&#39;s income share and the odds of a successful revolt, so an owner-state chooses among regulating automation, redistributing via taxes, or repressing. The result is a complementarity — unless the revolt threat is weak or capital low, the state prefers repression. (A viral post overstated this as &#39;proof AI will destroy democracy&#39; to sell a guide; the paper is a conditional model, not a prophecy.)</p>
+      <p class="meta">Not a build — read the actual paper, not the viral summary. The mechanism: automation raises capital&#39;s income share, which raises inequality, which raises revolt risk; the owner-state then weighs redistribution (give some back via tax) against repression (spend on control), and as capital accumulates, control gets cheaper relative to sharing, so the equilibrium drifts toward repression — &#39;not because anyone is evil but because it costs less.&#39; Verify against the primary source (NBER w35336 / MIT Economics / SSRN), and note the gap between the paper&#39;s conditional complementarity result and the viral post&#39;s deterministic framing plus its guide-selling close.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Reentrancy — the withdraw that calls back before the balance drops\n\nReentrancy lets a callee re-enter the caller before its state updates, the class that drained The DAO in 2016; the fix (checks-effects-interactions) is old, and the bug still ships.\n\nNot yet scoped.\n\n## Why\n\nThe PoC reproduces a minimal reentrancy exploit on a local fork, then shows the one-line ordering change and a reentrancy guard closing it — the canonical first lesson in smart-contract security.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# Automation and Repression — when control gets cheaper than sharing\n\nAcemoglu, Gitmez & Shadmehr (NBER w35336, June 2026) model automation inside a polity: decentralized automation raises capital's income share and the odds of a successful revolt, so an owner-state chooses among regulating automation, redistributing via taxes, or repressing. The result is a complementarity — unless the revolt threat is weak or capital low, the state prefers repression. (A viral post overstated this as 'proof AI will destroy democracy' to sell a guide; the paper is a conditional model, not a prophecy.)\n\nNot a build — read the actual paper, not the viral summary. The mechanism: automation raises capital's income share, which raises inequality, which raises revolt risk; the owner-state then weighs redistribution (give some back via tax) against repression (spend on control), and as capital accumulates, control gets cheaper relative to sharing, so the equilibrium drifts toward repression — 'not because anyone is evil but because it costs less.' Verify against the primary source (NBER w35336 / MIT Economics / SSRN), and note the gap between the paper's conditional complementarity result and the viral post's deterministic framing plus its guide-selling close.\n\n## Why\n\nThe mechanism is genuine; the discipline is separating it from its packaging. The paper models automation inside a polity: decentralized automation raises capital's income share, which raises the odds of a successful revolt, so an owner-state chooses among regulating automation, redistributing through taxes, or paying for repression. Its result is a complementarity between automation and repression — and unless the revolt threat is weak or the capital stock low, the state prefers repression, which then makes room for more automation. 'Not because anyone is evil, but because it costs less' is a fair gloss of that equilibrium.\n\nWhat the viral post did is the part to flag. It kept the mechanism but bolted on two distortions: 'mathematically proved AI will destroy democracy' (a model gives conditional results; it does not prove an outcome) and a marketing close ('that is why I wrote the guide below'). Same failure this catalogue keeps finding — a real signal wrapped to sell, provenance separable from truth (op-return-is-a-shared-state-channel). For Economics / jayverse-number the reusable idea is the cost comparison itself: redistribution versus control as competing expenses, and how capital accumulation moves which one is cheaper.\n\n## How it works\n\n### The mechanism (as the paper models it)\n\nAutomation → capital's share of income up → inequality up → probability of a successful revolt up → the owner-state weighs its options:\n\n| Option | What it costs the owners |\n|---|---|\n| **Redistribute** (taxes) | give some of the gains back |\n| **Repress** (spend on control) | pay to keep things quiet |\n| **Regulate automation** | cap the automation driving the threat |\n\n**Result:** a complementarity between automation and repression — as capital accumulates, control gets cheaper relative to sharing, so above a threshold the capitalist state prefers repression, which then permits further automation. Pushed far, democracy itself becomes an expense the owners would shed.\n\n### What the viral post added (flag it)\n\nTwo distortions on a real paper: 'mathematically proved AI will destroy democracy' (the paper shows a conditional complementarity, not a proven outcome) and a 'buy my guide' close. The mechanism is citable; the certainty and the sales hook are not the paper. Provenance separable from truth — the same axis as op-return-is-a-shared-state-channel.\n\n### Source\n\nDaron Acemoglu, A. Arda Gitmez, Mehdi Shadmehr, 'Automation and Repression', NBER Working Paper w35336 (June 2026); also MIT Economics and SSRN. Read the paper, not the thread.\n"</script>
       <h2>Why</h2>
-      <p>The PoC reproduces a minimal reentrancy exploit on a local fork, then shows the one-line ordering change and a reentrancy guard closing it — the canonical first lesson in smart-contract security.</p>
+      <p>The mechanism is genuine; the discipline is separating it from its packaging. The paper models automation inside a polity: decentralized automation raises capital&#39;s income share, which raises the odds of a successful revolt, so an owner-state chooses among regulating automation, redistributing through taxes, or paying for repression. Its result is a complementarity between automation and repression — and unless the revolt threat is weak or the capital stock low, the state prefers repression, which then makes room for more automation. &#39;Not because anyone is evil, but because it costs less&#39; is a fair gloss of that equilibrium.</p>
+<p>What the viral post did is the part to flag. It kept the mechanism but bolted on two distortions: &#39;mathematically proved AI will destroy democracy&#39; (a model gives conditional results; it does not prove an outcome) and a marketing close (&#39;that is why I wrote the guide below&#39;). Same failure this catalogue keeps finding — a real signal wrapped to sell, provenance separable from truth (op-return-is-a-shared-state-channel). For Economics / jayverse-number the reusable idea is the cost comparison itself: redistribution versus control as competing expenses, and how capital accumulation moves which one is cheaper.</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <h3>The mechanism (as the paper models it)</h3>
+<p>Automation → capital&#39;s share of income up → inequality up → probability of a successful revolt up → the owner-state weighs its options:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>What it costs the owners</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Redistribute</strong> (taxes)</td>
+<td>give some of the gains back</td>
+</tr>
+<tr>
+<td><strong>Repress</strong> (spend on control)</td>
+<td>pay to keep things quiet</td>
+</tr>
+<tr>
+<td><strong>Regulate automation</strong></td>
+<td>cap the automation driving the threat</td>
+</tr>
+</tbody></table></div>
+<p><strong>Result:</strong> a complementarity between automation and repression — as capital accumulates, control gets cheaper relative to sharing, so above a threshold the capitalist state prefers repression, which then permits further automation. Pushed far, democracy itself becomes an expense the owners would shed.</p>
+<h3>What the viral post added (flag it)</h3>
+<p>Two distortions on a real paper: &#39;mathematically proved AI will destroy democracy&#39; (the paper shows a conditional complementarity, not a proven outcome) and a &#39;buy my guide&#39; close. The mechanism is citable; the certainty and the sales hook are not the paper. Provenance separable from truth — the same axis as op-return-is-a-shared-state-channel.</p>
+<h3>Source</h3>
+<p>Daron Acemoglu, A. Arda Gitmez, Mehdi Shadmehr, &#39;Automation and Repression&#39;, NBER Working Paper w35336 (June 2026); also MIT Economics and SSRN. Read the paper, not the thread.</p>
       
       <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 재진입 — 잔액이 줄기 전에 되돌아오는 인출\n\n재진입은 호출된 쪽이 호출자의 상태 갱신 전에 다시 진입하게 하며, 2016년 The DAO를 털어낸 계급입니다. 해법(검사-효과-상호작용)은 오래됐지만 이 버그는 여전히 배포됩니다.\n\n아직 범위 미정.\n\n## 왜\n\n이 PoC는 로컬 포크에서 최소 재진입 익스플로잇을 재현한 뒤, 한 줄 순서 변경과 재진입 가드가 그것을 막는 것을 보입니다 — 스마트 컨트랙트 보안의 정전급 첫 수업입니다.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>재진입 — 잔액이 줄기 전에 되돌아오는 인출</h1>
-      <p class="lead">재진입은 호출된 쪽이 호출자의 상태 갱신 전에 다시 진입하게 하며, 2016년 The DAO를 털어낸 계급입니다. 해법(검사-효과-상호작용)은 오래됐지만 이 버그는 여전히 배포됩니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# Automation and Repression — 통제가 분배보다 싸질 때\n\nAcemoglu, Gitmez & Shadmehr(NBER w35336, 2026년 6월)가 정치체 안의 자동화를 모델링: 분산된 자동화가 자본의 소득 몫과 성공적 봉기 확률을 높여, 소유자-국가는 자동화 규제·세금 재분배·억압 중 선택. 결과는 상보성 — 봉기 위협이 약하거나 자본이 낮지 않는 한 국가는 억압을 선호. (바이럴 글은 이를 '가이드 판매'용으로 'AI가 민주주의를 파괴할 증명'이라 과장했지만, 논문은 조건부 모델이지 예언이 아님.)\n\n구현이 아니라 바이럴 요약이 아니라 실제 논문을 읽으세요. 메커니즘: 자동화가 자본 소득 몫을 높이고 → 불평등 → 봉기 위험을 높임; 소유자-국가는 재분배(세금으로 일부 환원)와 억압(통제에 지출)을 저울질하고, 자본이 쌓일수록 통제가 분배보다 싸져 균형이 억압으로 흘러감 — '누가 악해서가 아니라 더 싸서'. 1차 출처(NBER w35336 / MIT Economics / SSRN)로 확인하고, 논문의 조건부 상보성 결과와 바이럴 글의 결정론적 프레이밍 + 가이드 판매 마무리 사이의 간극을 유의하세요.\n\n## 왜\n\n메커니즘은 진짜이고, 규율은 그것을 포장에서 분리하는 것입니다. 논문은 정치체 안의 자동화를 모델링합니다: 분산된 자동화가 자본 소득 몫을 높이고, 이것이 성공적 봉기 확률을 높여, 소유자-국가는 자동화 규제·세금 재분배·억압 지출 중 선택합니다. 결과는 자동화와 억압의 상보성 — 봉기 위협이 약하거나 자본이 낮지 않는 한 국가는 억압을 선호하고, 그것이 다시 더 많은 자동화의 여지를 만듭니다. '누가 악해서가 아니라 더 싸서'는 그 균형의 정당한 요약입니다.\n\n바이럴 글이 한 일이 짚을 부분입니다. 메커니즘은 유지하되 두 왜곡을 덧붙였습니다: 'AI가 민주주의를 파괴할 것을 수학적으로 증명'(모델은 조건부 결과를 줄 뿐, 결과를 증명하지 않음)과 마케팅 마무리('그래서 아래 가이드를 썼다'). 이 카탈로그가 반복해 찾는 같은 실패 — 팔기 위해 포장된 진짜 신호, 진실과 분리된 출처(op-return-is-a-shared-state-channel). Economics / jayverse-number엔 재사용되는 아이디어가 비용 비교 자체입니다: 경합하는 지출로서의 재분배 대 통제, 그리고 자본 축적이 어느 쪽을 더 싸게 만드는가.\n\n## 동작 방식\n\n### 메커니즘(논문의 모델대로)\n\n자동화 → 자본의 소득 몫 상승 → 불평등 상승 → 성공적 봉기 확률 상승 → 소유자-국가가 선택지를 저울질:\n\n| 선택지 | 소유자에게 드는 비용 |\n|---|---|\n| **재분배**(세금) | 이득의 일부를 돌려줌 |\n| **억압**(통제 지출) | 조용히 만들려 지불 |\n| **자동화 규제** | 위협을 부르는 자동화를 제한 |\n\n**결과:** 자동화와 억압의 상보성 — 자본이 쌓일수록 통제가 분배보다 싸져, 임계 위에서 자본주의 국가는 억압을 선호하고, 이것이 다시 더 많은 자동화를 허용. 멀리 가면 민주주의 자체가 소유자가 버리고 싶은 비용이 됨.\n\n### 바이럴 글이 더한 것(짚기)\n\n진짜 논문 위의 두 왜곡: 'AI가 민주주의를 파괴할 것을 수학적으로 증명'(논문은 조건부 상보성이지 증명된 결과 아님)과 '가이드를 사라' 마무리. 메커니즘은 인용 가능; 확실성과 판매 훅은 논문이 아님. 진실과 분리된 출처 — op-return-is-a-shared-state-channel과 같은 축.\n\n### 출처\n\nDaron Acemoglu, A. Arda Gitmez, Mehdi Shadmehr, 'Automation and Repression', NBER Working Paper w35336(2026년 6월); MIT Economics·SSRN에도. 스레드가 아니라 논문을 읽을 것.\n"</script>
+      <h1>Automation and Repression — 통제가 분배보다 싸질 때</h1>
+      <p class="lead">Acemoglu, Gitmez &amp; Shadmehr(NBER w35336, 2026년 6월)가 정치체 안의 자동화를 모델링: 분산된 자동화가 자본의 소득 몫과 성공적 봉기 확률을 높여, 소유자-국가는 자동화 규제·세금 재분배·억압 중 선택. 결과는 상보성 — 봉기 위협이 약하거나 자본이 낮지 않는 한 국가는 억압을 선호. (바이럴 글은 이를 &#39;가이드 판매&#39;용으로 &#39;AI가 민주주의를 파괴할 증명&#39;이라 과장했지만, 논문은 조건부 모델이지 예언이 아님.)</p>
+      <p class="meta">구현이 아니라 바이럴 요약이 아니라 실제 논문을 읽으세요. 메커니즘: 자동화가 자본 소득 몫을 높이고 → 불평등 → 봉기 위험을 높임; 소유자-국가는 재분배(세금으로 일부 환원)와 억압(통제에 지출)을 저울질하고, 자본이 쌓일수록 통제가 분배보다 싸져 균형이 억압으로 흘러감 — &#39;누가 악해서가 아니라 더 싸서&#39;. 1차 출처(NBER w35336 / MIT Economics / SSRN)로 확인하고, 논문의 조건부 상보성 결과와 바이럴 글의 결정론적 프레이밍 + 가이드 판매 마무리 사이의 간극을 유의하세요.</p>
       <h2>왜</h2>
-      <p>이 PoC는 로컬 포크에서 최소 재진입 익스플로잇을 재현한 뒤, 한 줄 순서 변경과 재진입 가드가 그것을 막는 것을 보입니다 — 스마트 컨트랙트 보안의 정전급 첫 수업입니다.</p>
+      <p>메커니즘은 진짜이고, 규율은 그것을 포장에서 분리하는 것입니다. 논문은 정치체 안의 자동화를 모델링합니다: 분산된 자동화가 자본 소득 몫을 높이고, 이것이 성공적 봉기 확률을 높여, 소유자-국가는 자동화 규제·세금 재분배·억압 지출 중 선택합니다. 결과는 자동화와 억압의 상보성 — 봉기 위협이 약하거나 자본이 낮지 않는 한 국가는 억압을 선호하고, 그것이 다시 더 많은 자동화의 여지를 만듭니다. &#39;누가 악해서가 아니라 더 싸서&#39;는 그 균형의 정당한 요약입니다.</p>
+<p>바이럴 글이 한 일이 짚을 부분입니다. 메커니즘은 유지하되 두 왜곡을 덧붙였습니다: &#39;AI가 민주주의를 파괴할 것을 수학적으로 증명&#39;(모델은 조건부 결과를 줄 뿐, 결과를 증명하지 않음)과 마케팅 마무리(&#39;그래서 아래 가이드를 썼다&#39;). 이 카탈로그가 반복해 찾는 같은 실패 — 팔기 위해 포장된 진짜 신호, 진실과 분리된 출처(op-return-is-a-shared-state-channel). Economics / jayverse-number엔 재사용되는 아이디어가 비용 비교 자체입니다: 경합하는 지출로서의 재분배 대 통제, 그리고 자본 축적이 어느 쪽을 더 싸게 만드는가.</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <h3>메커니즘(논문의 모델대로)</h3>
+<p>자동화 → 자본의 소득 몫 상승 → 불평등 상승 → 성공적 봉기 확률 상승 → 소유자-국가가 선택지를 저울질:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>선택지</th>
+<th>소유자에게 드는 비용</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>재분배</strong>(세금)</td>
+<td>이득의 일부를 돌려줌</td>
+</tr>
+<tr>
+<td><strong>억압</strong>(통제 지출)</td>
+<td>조용히 만들려 지불</td>
+</tr>
+<tr>
+<td><strong>자동화 규제</strong></td>
+<td>위협을 부르는 자동화를 제한</td>
+</tr>
+</tbody></table></div>
+<p><strong>결과:</strong> 자동화와 억압의 상보성 — 자본이 쌓일수록 통제가 분배보다 싸져, 임계 위에서 자본주의 국가는 억압을 선호하고, 이것이 다시 더 많은 자동화를 허용. 멀리 가면 민주주의 자체가 소유자가 버리고 싶은 비용이 됨.</p>
+<h3>바이럴 글이 더한 것(짚기)</h3>
+<p>진짜 논문 위의 두 왜곡: &#39;AI가 민주주의를 파괴할 것을 수학적으로 증명&#39;(논문은 조건부 상보성이지 증명된 결과 아님)과 &#39;가이드를 사라&#39; 마무리. 메커니즘은 인용 가능; 확실성과 판매 훅은 논문이 아님. 진실과 분리된 출처 — op-return-is-a-shared-state-channel과 같은 축.</p>
+<h3>출처</h3>
+<p>Daron Acemoglu, A. Arda Gitmez, Mehdi Shadmehr, &#39;Automation and Repression&#39;, NBER Working Paper w35336(2026년 6월); MIT Economics·SSRN에도. 스레드가 아니라 논문을 읽을 것.</p>
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-the-interface-premium-collapses.html">&larr; 75. The 2,234 pieces were already there — the agent collapsed the interface premium</a><a href="pocs-sec-integer-overflow.html">77. Integer overflow — arithmetic that wraps past zero &rarr;</a></div>
+    <div class="pager"><a href="pocs-moralis-wallet-api.html">&larr; 209. Moralis — wallet snapshot via API</a><a href="pocs-investing-for-programmers-book.html">211. Investing for Programmers — understanding markets through data and code &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="sec-reentrancy";</script>
+<script>window.__NAV_CURRENT__="automation-and-repression-acemoglu";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;

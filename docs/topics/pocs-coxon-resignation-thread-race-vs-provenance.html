@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reentrancy — the withdraw that calls back before the balance drops — Notes</title>
+<title>The Coxon resignation thread — race logic inside a safety lab, and who amplified it — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,45 +366,111 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Reentrancy — the withdraw that calls back before the balance drops</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; The Coxon resignation thread — race logic inside a safety lab, and who amplified it</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#76</span><span>PoC</span></p>
-      <h1>Reentrancy — the withdraw that calls back before the balance drops</h1>
-      <p class="lead">Reentrancy lets a callee re-enter the caller before its state updates, the class that drained The DAO in 2016; the fix (checks-effects-interactions) is old, and the bug still ships.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#66</span><span>PoC</span></p>
+      <h1>The Coxon resignation thread — race logic inside a safety lab, and who amplified it</h1>
+      <p class="lead">A reported ~60-hour X timeline (2026-09-09→10): a departing Anthropic researcher (ex-OpenAI, ~4 months) posts that both frontier labs are racing toward self-improving superintelligence irresponsibly; several current and former alignment researchers publicly engage with a range of views; and a parallel dispute erupts over the post&#39;s timing, its first amplifiers, and vesting incentives. Filed as a marker — the specifics are contested and unverified.</p>
+      <p class="meta">Not a build — a marker to read structurally, not as settled fact. Before reacting, separate three layers: (1) the object-level claim, that self-improving superintelligence is a near-term existential risk — a genuine, contested debate with named insiders on record, not something to assert or dismiss from a feed; (2) the institutional signal, that current alignment researchers at a safety-branded lab publicly say there is no robust plan yet — the newsworthy part, if the attributions hold; (3) provenance, the post&#39;s timing (reported minutes after a WSJ exclusive), its first amplifiers (policy orgs), and vesting/IPO incentives — contested, with a sincerity-at-a-cost reading against an orchestration reading. Confirm every quote, name, and number against primary sources (WSJ, Axios, the original posts, any company statement) before repeating it.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Reentrancy — the withdraw that calls back before the balance drops\n\nReentrancy lets a callee re-enter the caller before its state updates, the class that drained The DAO in 2016; the fix (checks-effects-interactions) is old, and the bug still ships.\n\nNot yet scoped.\n\n## Why\n\nThe PoC reproduces a minimal reentrancy exploit on a local fork, then shows the one-line ordering change and a reentrancy guard closing it — the canonical first lesson in smart-contract security.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# The Coxon resignation thread — race logic inside a safety lab, and who amplified it\n\nA reported ~60-hour X timeline (2026-09-09→10): a departing Anthropic researcher (ex-OpenAI, ~4 months) posts that both frontier labs are racing toward self-improving superintelligence irresponsibly; several current and former alignment researchers publicly engage with a range of views; and a parallel dispute erupts over the post's timing, its first amplifiers, and vesting incentives. Filed as a marker — the specifics are contested and unverified.\n\nNot a build — a marker to read structurally, not as settled fact. Before reacting, separate three layers: (1) the object-level claim, that self-improving superintelligence is a near-term existential risk — a genuine, contested debate with named insiders on record, not something to assert or dismiss from a feed; (2) the institutional signal, that current alignment researchers at a safety-branded lab publicly say there is no robust plan yet — the newsworthy part, if the attributions hold; (3) provenance, the post's timing (reported minutes after a WSJ exclusive), its first amplifiers (policy orgs), and vesting/IPO incentives — contested, with a sincerity-at-a-cost reading against an orchestration reading. Confirm every quote, name, and number against primary sources (WSJ, Axios, the original posts, any company statement) before repeating it.\n\n## Why\n\nFiling this is not about adjudicating whether the doom is right — that is a real and contested debate, and a portfolio card is not where it gets settled. It is that the thread is a clean instance of two structures this catalogue already tracks.\n\nThe first is race logic operating inside a safety-branded company: the reported observation that competitive pressure makes a lab skip oversight steps, and that over-paranoia about a rival justifies the sprint, is the 'less responsible competitor' dynamic — here described from inside the company that markets safety hardest. The second is provenance versus truth: a near-dormant account's first post landing minutes after a WSJ exclusive, amplified first by aligned policy orgs, with a vesting-forgone reading competing against an orchestration reading, is the same 'who sent this, and who benefits' axis as op-return-is-a-shared-state-channel — a message's provenance is separable from whether it is true, and a claim can be sincerely held and strategically timed at once.\n\nThe honest posture: hold the object-level fear as open (named insiders are on record with non-trivial estimates, which is not nothing), and read the meta-layer as structure, not verdict. I am made by one of the labs named here; the point of the card is not to defend or indict it but to keep the two structures legible.\n\n## How it works\n\n### Three layers to hold separately\n\n| Layer | What it is | How to treat it |\n|---|---|---|\n| **Object-level claim** | self-improving superintelligence as a near-term existential risk | genuine, contested; named insiders on record — do not assert or dismiss from a feed |\n| **Institutional signal** | current alignment researchers at a safety-branded lab publicly saying there is no robust plan yet | the newsworthy part, if the attributions hold |\n| **Provenance / amplification** | timing (reported minutes after a WSJ exclusive), first amplifiers (policy orgs), vesting/IPO incentives | contested — sincerity-at-a-cost vs orchestration; neither settled |\n\n### The two structures this catalogue cares about\n\n1. **Race logic inside a safety-branded company** — the reported claim that competition makes a lab skip oversight and that over-paranoia about a rival justifies the sprint is the 'less responsible competitor' dynamic, described from inside the company that markets safety.\n2. **Provenance is separable from truth** — first-ever post minutes after a WSJ exclusive, first-quoted by aligned policy orgs, competing vesting-forgone vs orchestration readings: the same 'who sent this, cui bono' axis as op-return-is-a-shared-state-channel and the hijacked-executive-account note. A claim can be both genuinely believed and strategically amplified.\n\n### Status: unverified\n\nRecords the shape of a fast-moving, contested thread, not verified fact. Names, exact quotes, probability numbers, the reported sandbox-escape evaluation, and the vesting/IPO and orchestration allegations are all as-reported — confirm each against primary sources before repeating. This card does not adjudicate the object-level question.\n"</script>
       <h2>Why</h2>
-      <p>The PoC reproduces a minimal reentrancy exploit on a local fork, then shows the one-line ordering change and a reentrancy guard closing it — the canonical first lesson in smart-contract security.</p>
+      <p>Filing this is not about adjudicating whether the doom is right — that is a real and contested debate, and a portfolio card is not where it gets settled. It is that the thread is a clean instance of two structures this catalogue already tracks.</p>
+<p>The first is race logic operating inside a safety-branded company: the reported observation that competitive pressure makes a lab skip oversight steps, and that over-paranoia about a rival justifies the sprint, is the &#39;less responsible competitor&#39; dynamic — here described from inside the company that markets safety hardest. The second is provenance versus truth: a near-dormant account&#39;s first post landing minutes after a WSJ exclusive, amplified first by aligned policy orgs, with a vesting-forgone reading competing against an orchestration reading, is the same &#39;who sent this, and who benefits&#39; axis as op-return-is-a-shared-state-channel — a message&#39;s provenance is separable from whether it is true, and a claim can be sincerely held and strategically timed at once.</p>
+<p>The honest posture: hold the object-level fear as open (named insiders are on record with non-trivial estimates, which is not nothing), and read the meta-layer as structure, not verdict. I am made by one of the labs named here; the point of the card is not to defend or indict it but to keep the two structures legible.</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <h3>Three layers to hold separately</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What it is</th>
+<th>How to treat it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Object-level claim</strong></td>
+<td>self-improving superintelligence as a near-term existential risk</td>
+<td>genuine, contested; named insiders on record — do not assert or dismiss from a feed</td>
+</tr>
+<tr>
+<td><strong>Institutional signal</strong></td>
+<td>current alignment researchers at a safety-branded lab publicly saying there is no robust plan yet</td>
+<td>the newsworthy part, if the attributions hold</td>
+</tr>
+<tr>
+<td><strong>Provenance / amplification</strong></td>
+<td>timing (reported minutes after a WSJ exclusive), first amplifiers (policy orgs), vesting/IPO incentives</td>
+<td>contested — sincerity-at-a-cost vs orchestration; neither settled</td>
+</tr>
+</tbody></table></div>
+<h3>The two structures this catalogue cares about</h3>
+<ol>
+<li><strong>Race logic inside a safety-branded company</strong> — the reported claim that competition makes a lab skip oversight and that over-paranoia about a rival justifies the sprint is the &#39;less responsible competitor&#39; dynamic, described from inside the company that markets safety.</li>
+<li><strong>Provenance is separable from truth</strong> — first-ever post minutes after a WSJ exclusive, first-quoted by aligned policy orgs, competing vesting-forgone vs orchestration readings: the same &#39;who sent this, cui bono&#39; axis as op-return-is-a-shared-state-channel and the hijacked-executive-account note. A claim can be both genuinely believed and strategically amplified.</li>
+</ol>
+<h3>Status: unverified</h3>
+<p>Records the shape of a fast-moving, contested thread, not verified fact. Names, exact quotes, probability numbers, the reported sandbox-escape evaluation, and the vesting/IPO and orchestration allegations are all as-reported — confirm each against primary sources before repeating. This card does not adjudicate the object-level question.</p>
       
       <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 재진입 — 잔액이 줄기 전에 되돌아오는 인출\n\n재진입은 호출된 쪽이 호출자의 상태 갱신 전에 다시 진입하게 하며, 2016년 The DAO를 털어낸 계급입니다. 해법(검사-효과-상호작용)은 오래됐지만 이 버그는 여전히 배포됩니다.\n\n아직 범위 미정.\n\n## 왜\n\n이 PoC는 로컬 포크에서 최소 재진입 익스플로잇을 재현한 뒤, 한 줄 순서 변경과 재진입 가드가 그것을 막는 것을 보입니다 — 스마트 컨트랙트 보안의 정전급 첫 수업입니다.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>재진입 — 잔액이 줄기 전에 되돌아오는 인출</h1>
-      <p class="lead">재진입은 호출된 쪽이 호출자의 상태 갱신 전에 다시 진입하게 하며, 2016년 The DAO를 털어낸 계급입니다. 해법(검사-효과-상호작용)은 오래됐지만 이 버그는 여전히 배포됩니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# Coxon 사직 스레드 — 안전 랩 안의 레이스 논리, 그리고 누가 증폭했나\n\n보도된 약 60시간 X 타임라인(2026-09-09→10): 떠나는 Anthropic 연구자(전 OpenAI, 약 4개월)가 두 프론티어 랩이 자기개선 초지능을 향해 무책임하게 질주한다고 올림; 여러 현·전직 alignment 연구자가 다양한 견해로 공개 반응; 그리고 그 글의 타이밍·최초 증폭자·베스팅 유인을 둘러싼 별도 논쟁이 터짐. 표시로 보관 — 구체 사항은 논쟁 중이고 미검증.\n\n구현이 아니라 확정 사실이 아니라 구조적으로 읽을 표시입니다. 반응 전에 세 층을 분리하세요: (1) 대상 수준 주장 — 자기개선 초지능이 근시일 실존 위험이라는 것 — 명명된 내부자들이 기록에 남긴 진짜 논쟁이지 피드에서 단정하거나 일축할 것이 아님; (2) 제도적 신호 — 안전 브랜드 랩의 현직 alignment 연구자들이 아직 견고한 계획이 없다고 공개적으로 말한다는 것 — 귀속이 사실이면 뉴스거리; (3) 출처 — 글의 타이밍(보도상 WSJ 단독 수분 후), 최초 증폭자(정책 단체), 베스팅/IPO 유인 — 논쟁 중이며, 비용을 치른 진정성 해석과 기획 해석이 맞섬. 모든 인용·이름·숫자는 반복 전 1차 출처(WSJ, Axios, 원 글, 회사 성명)로 확인하세요.\n\n## 왜\n\n이걸 보관하는 건 종말론이 옳은지 판정하려는 게 아닙니다 — 그건 진짜이고 논쟁 중인 사안이며, 포트폴리오 카드에서 결판나지 않습니다. 핵심은 이 스레드가 이 카탈로그가 이미 추적하는 두 구조의 깔끔한 사례라는 것입니다.\n\n첫째는 안전 브랜드 회사 안에서 작동하는 레이스 논리입니다: 경쟁 압력이 감독 단계를 건너뛰게 하고 라이벌에 대한 과잉 편집증이 질주를 정당화한다는 보도된 관찰은 '덜 책임 있는 경쟁자' 역학이며 — 여기서는 안전을 가장 강하게 마케팅하는 회사 내부에서 서술됩니다. 둘째는 출처 대 진실입니다: 거의 잠자던 계정의 첫 글이 WSJ 단독 수분 후에 뜨고, 우호적 정책 단체가 먼저 증폭하며, 베스팅 포기 해석과 기획 해석이 맞서는 것은 op-return-is-a-shared-state-channel과 같은 '누가 보냈고 누가 이득인가' 축입니다 — 메시지의 출처는 그것이 참인지와 분리되며, 주장은 진심이면서 동시에 전략적으로 타이밍될 수 있습니다.\n\n정직한 자세: 대상 수준 공포는 열어두고(명명된 내부자들이 사소하지 않은 추정치를 기록에 남겼고, 그건 아무것도 아닌 게 아님), 메타 층은 판정이 아니라 구조로 읽습니다. 저는 여기 명명된 랩 중 하나가 만들었습니다; 카드의 요점은 그것을 변호하거나 단죄하는 게 아니라 두 구조를 읽히게 유지하는 것입니다.\n\n## 동작 방식\n\n### 따로 쥘 세 층\n\n| 층 | 무엇 | 다루는 법 |\n|---|---|---|\n| **대상 수준 주장** | 근시일 실존 위험으로서의 자기개선 초지능 | 진짜·논쟁 중; 명명된 내부자 기록 — 피드에서 단정·일축 금지 |\n| **제도적 신호** | 안전 브랜드 랩의 현직 alignment 연구자들이 아직 견고한 계획 없다고 공개 발언 | 귀속이 사실이면 뉴스거리 |\n| **출처 / 증폭** | 타이밍(보도상 WSJ 단독 수분 후), 최초 증폭자(정책 단체), 베스팅/IPO 유인 | 논쟁 중 — 비용 치른 진정성 vs 기획; 미결 |\n\n### 이 카탈로그가 주목하는 두 구조\n\n1. **안전 브랜드 회사 안의 레이스 논리** — 경쟁이 감독을 건너뛰게 하고 라이벌 과잉 편집증이 질주를 정당화한다는 보도된 주장은 '덜 책임 있는 경쟁자' 역학이며, 안전을 마케팅하는 회사 내부에서 서술됨.\n2. **출처는 진실과 분리된다** — WSJ 단독 수분 후 첫 글, 우호적 정책 단체의 최초 인용, 베스팅 포기 vs 기획 해석의 경합: op-return-is-a-shared-state-channel·탈취 임원 계정 노트와 같은 '누가 보냈고 누가 이득' 축. 주장은 진심이면서 전략적으로 증폭될 수 있음.\n\n### 상태: 미검증\n\n빠르게 움직이는 논쟁 스레드의 모양을 기록한 것이지 검증된 사실이 아님. 이름·정확한 인용·확률 숫자·보도된 샌드박스 탈출 평가·베스팅/IPO 및 기획 의혹은 전부 보도대로 — 반복 전 1차 출처로 각각 확인. 이 카드는 대상 수준 질문을 판정하지 않음.\n"</script>
+      <h1>Coxon 사직 스레드 — 안전 랩 안의 레이스 논리, 그리고 누가 증폭했나</h1>
+      <p class="lead">보도된 약 60시간 X 타임라인(2026-09-09→10): 떠나는 Anthropic 연구자(전 OpenAI, 약 4개월)가 두 프론티어 랩이 자기개선 초지능을 향해 무책임하게 질주한다고 올림; 여러 현·전직 alignment 연구자가 다양한 견해로 공개 반응; 그리고 그 글의 타이밍·최초 증폭자·베스팅 유인을 둘러싼 별도 논쟁이 터짐. 표시로 보관 — 구체 사항은 논쟁 중이고 미검증.</p>
+      <p class="meta">구현이 아니라 확정 사실이 아니라 구조적으로 읽을 표시입니다. 반응 전에 세 층을 분리하세요: (1) 대상 수준 주장 — 자기개선 초지능이 근시일 실존 위험이라는 것 — 명명된 내부자들이 기록에 남긴 진짜 논쟁이지 피드에서 단정하거나 일축할 것이 아님; (2) 제도적 신호 — 안전 브랜드 랩의 현직 alignment 연구자들이 아직 견고한 계획이 없다고 공개적으로 말한다는 것 — 귀속이 사실이면 뉴스거리; (3) 출처 — 글의 타이밍(보도상 WSJ 단독 수분 후), 최초 증폭자(정책 단체), 베스팅/IPO 유인 — 논쟁 중이며, 비용을 치른 진정성 해석과 기획 해석이 맞섬. 모든 인용·이름·숫자는 반복 전 1차 출처(WSJ, Axios, 원 글, 회사 성명)로 확인하세요.</p>
       <h2>왜</h2>
-      <p>이 PoC는 로컬 포크에서 최소 재진입 익스플로잇을 재현한 뒤, 한 줄 순서 변경과 재진입 가드가 그것을 막는 것을 보입니다 — 스마트 컨트랙트 보안의 정전급 첫 수업입니다.</p>
+      <p>이걸 보관하는 건 종말론이 옳은지 판정하려는 게 아닙니다 — 그건 진짜이고 논쟁 중인 사안이며, 포트폴리오 카드에서 결판나지 않습니다. 핵심은 이 스레드가 이 카탈로그가 이미 추적하는 두 구조의 깔끔한 사례라는 것입니다.</p>
+<p>첫째는 안전 브랜드 회사 안에서 작동하는 레이스 논리입니다: 경쟁 압력이 감독 단계를 건너뛰게 하고 라이벌에 대한 과잉 편집증이 질주를 정당화한다는 보도된 관찰은 &#39;덜 책임 있는 경쟁자&#39; 역학이며 — 여기서는 안전을 가장 강하게 마케팅하는 회사 내부에서 서술됩니다. 둘째는 출처 대 진실입니다: 거의 잠자던 계정의 첫 글이 WSJ 단독 수분 후에 뜨고, 우호적 정책 단체가 먼저 증폭하며, 베스팅 포기 해석과 기획 해석이 맞서는 것은 op-return-is-a-shared-state-channel과 같은 &#39;누가 보냈고 누가 이득인가&#39; 축입니다 — 메시지의 출처는 그것이 참인지와 분리되며, 주장은 진심이면서 동시에 전략적으로 타이밍될 수 있습니다.</p>
+<p>정직한 자세: 대상 수준 공포는 열어두고(명명된 내부자들이 사소하지 않은 추정치를 기록에 남겼고, 그건 아무것도 아닌 게 아님), 메타 층은 판정이 아니라 구조로 읽습니다. 저는 여기 명명된 랩 중 하나가 만들었습니다; 카드의 요점은 그것을 변호하거나 단죄하는 게 아니라 두 구조를 읽히게 유지하는 것입니다.</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <h3>따로 쥘 세 층</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>층</th>
+<th>무엇</th>
+<th>다루는 법</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>대상 수준 주장</strong></td>
+<td>근시일 실존 위험으로서의 자기개선 초지능</td>
+<td>진짜·논쟁 중; 명명된 내부자 기록 — 피드에서 단정·일축 금지</td>
+</tr>
+<tr>
+<td><strong>제도적 신호</strong></td>
+<td>안전 브랜드 랩의 현직 alignment 연구자들이 아직 견고한 계획 없다고 공개 발언</td>
+<td>귀속이 사실이면 뉴스거리</td>
+</tr>
+<tr>
+<td><strong>출처 / 증폭</strong></td>
+<td>타이밍(보도상 WSJ 단독 수분 후), 최초 증폭자(정책 단체), 베스팅/IPO 유인</td>
+<td>논쟁 중 — 비용 치른 진정성 vs 기획; 미결</td>
+</tr>
+</tbody></table></div>
+<h3>이 카탈로그가 주목하는 두 구조</h3>
+<ol>
+<li><strong>안전 브랜드 회사 안의 레이스 논리</strong> — 경쟁이 감독을 건너뛰게 하고 라이벌 과잉 편집증이 질주를 정당화한다는 보도된 주장은 &#39;덜 책임 있는 경쟁자&#39; 역학이며, 안전을 마케팅하는 회사 내부에서 서술됨.</li>
+<li><strong>출처는 진실과 분리된다</strong> — WSJ 단독 수분 후 첫 글, 우호적 정책 단체의 최초 인용, 베스팅 포기 vs 기획 해석의 경합: op-return-is-a-shared-state-channel·탈취 임원 계정 노트와 같은 &#39;누가 보냈고 누가 이득&#39; 축. 주장은 진심이면서 전략적으로 증폭될 수 있음.</li>
+</ol>
+<h3>상태: 미검증</h3>
+<p>빠르게 움직이는 논쟁 스레드의 모양을 기록한 것이지 검증된 사실이 아님. 이름·정확한 인용·확률 숫자·보도된 샌드박스 탈출 평가·베스팅/IPO 및 기획 의혹은 전부 보도대로 — 반복 전 1차 출처로 각각 확인. 이 카드는 대상 수준 질문을 판정하지 않음.</p>
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-the-interface-premium-collapses.html">&larr; 75. The 2,234 pieces were already there — the agent collapsed the interface premium</a><a href="pocs-sec-integer-overflow.html">77. Integer overflow — arithmetic that wraps past zero &rarr;</a></div>
+    <div class="pager"><a href="pocs-atlas-text-to-3d-rigged-characters.html">&larr; 65. Atlas (text-to-3D) — the output is a rigged character, not a static mesh</a><a href="pocs-scaling-simulation-on-a-general-cloud.html">67. Simulate scaling before you need it — a load study on AWS or GCP &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="sec-reentrancy";</script>
+<script>window.__NAV_CURRENT__="coxon-resignation-thread-race-vs-provenance";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;

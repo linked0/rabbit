@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reentrancy — the withdraw that calls back before the balance drops — Notes</title>
+<title>Atlas (text-to-3D) — the output is a rigged character, not a static mesh — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,45 +366,103 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Reentrancy — the withdraw that calls back before the balance drops</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Atlas (text-to-3D) — the output is a rigged character, not a static mesh</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#76</span><span>PoC</span></p>
-      <h1>Reentrancy — the withdraw that calls back before the balance drops</h1>
-      <p class="lead">Reentrancy lets a callee re-enter the caller before its state updates, the class that drained The DAO in 2016; the fix (checks-effects-interactions) is old, and the bug still ships.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#65</span><span>PoC</span></p>
+      <h1>Atlas (text-to-3D) — the output is a rigged character, not a static mesh</h1>
+      <p class="lead">A text-to-3D tool whose pitch is that it does not stop at a static mesh: a prompt yields a standardized T-pose plus a rig and skin weights, so the character is IK-ready and animatable the moment it is generated. Filed as a marker of where generative 3D is heading — from geometry to pipeline-ready assets. (Naming note: unrelated to FastLane&#39;s Atlas / execution abstraction discussed elsewhere here.)</p>
+      <p class="meta">Not a build — a capability marker to test against a real need. The claim worth checking: most text-to-3D gives you a mesh you must then retopologize, rig, and weight by hand (hours to days); Atlas claims to ship the T-pose + rig + weights so the asset animates immediately. If you have a 3D/character need (robotics-sim avatars, game or agent embodiment), measure not the mesh&#39;s looks but the rig: clean topology, sensible joint placement, weights that deform without artifacts. Confirm current capabilities and limits against the product before relying on it — and mind the naming collision with FastLane&#39;s Atlas.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Reentrancy — the withdraw that calls back before the balance drops\n\nReentrancy lets a callee re-enter the caller before its state updates, the class that drained The DAO in 2016; the fix (checks-effects-interactions) is old, and the bug still ships.\n\nNot yet scoped.\n\n## Why\n\nThe PoC reproduces a minimal reentrancy exploit on a local fork, then shows the one-line ordering change and a reentrancy guard closing it — the canonical first lesson in smart-contract security.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# Atlas (text-to-3D) — the output is a rigged character, not a static mesh\n\nA text-to-3D tool whose pitch is that it does not stop at a static mesh: a prompt yields a standardized T-pose plus a rig and skin weights, so the character is IK-ready and animatable the moment it is generated. Filed as a marker of where generative 3D is heading — from geometry to pipeline-ready assets. (Naming note: unrelated to FastLane's Atlas / execution abstraction discussed elsewhere here.)\n\nNot a build — a capability marker to test against a real need. The claim worth checking: most text-to-3D gives you a mesh you must then retopologize, rig, and weight by hand (hours to days); Atlas claims to ship the T-pose + rig + weights so the asset animates immediately. If you have a 3D/character need (robotics-sim avatars, game or agent embodiment), measure not the mesh's looks but the rig: clean topology, sensible joint placement, weights that deform without artifacts. Confirm current capabilities and limits against the product before relying on it — and mind the naming collision with FastLane's Atlas.\n\n## Why\n\nThe pitch names the real bottleneck in generative 3D. Geometry was never the hard part of using a generated model — rigging and skinning were: a raw mesh must be retopologized, given a skeleton, and weighted before it can move, which is hours to days of manual work. Atlas's claim is that a prompt yields a standardized T-pose plus a rig and skin weights, so the character is animatable the day it is generated. If the rig quality holds, it collapses the mesh-to-animatable gap that usually eats the time.\n\nThe transferable idea is the one lerobot-the-format-outlives-the-framework already states: the durable value is the standardized, ready-to-use output, not the generator behind it. A static mesh is a screenshot; a rigged, weighted, T-posed character is a pipeline input. For jayverse this is adjacent — robotics / embodied AI and any character or agent embodiment — and the thing to measure is not mesh beauty but rig quality. Same word, different product from the FastLane Atlas: worth stating plainly so the two never get conflated in notes.\n\n## How it works\n\n### Static mesh vs. what Atlas claims to ship\n\n| | Typical text-to-3D | Atlas's pitch |\n|---|---|---|\n| **Output** | a static mesh | mesh + standardized T-pose + rig + skin weights |\n| **To animate it** | retopo, rig, weight by hand (hours–days) | animatable the day it is generated (IK-ready) |\n| **What it is** | a screenshot of a shape | a pipeline-ready asset |\n\n### What to actually measure\n\nNot the mesh's looks — the **rig**: clean topology, sensible joint placement, and skin weights that deform without artifacts. A pretty mesh on a bad rig is still hours of cleanup.\n\n### Naming collision\n\nThis Atlas (text-to-3D characters) is **not** FastLane's Atlas (execution-abstraction / MEV) referenced elsewhere in this catalogue — same word, unrelated product. Related here: lerobot-the-format-outlives-the-framework (the standardized output is the durable value).\n"</script>
       <h2>Why</h2>
-      <p>The PoC reproduces a minimal reentrancy exploit on a local fork, then shows the one-line ordering change and a reentrancy guard closing it — the canonical first lesson in smart-contract security.</p>
+      <p>The pitch names the real bottleneck in generative 3D. Geometry was never the hard part of using a generated model — rigging and skinning were: a raw mesh must be retopologized, given a skeleton, and weighted before it can move, which is hours to days of manual work. Atlas&#39;s claim is that a prompt yields a standardized T-pose plus a rig and skin weights, so the character is animatable the day it is generated. If the rig quality holds, it collapses the mesh-to-animatable gap that usually eats the time.</p>
+<p>The transferable idea is the one lerobot-the-format-outlives-the-framework already states: the durable value is the standardized, ready-to-use output, not the generator behind it. A static mesh is a screenshot; a rigged, weighted, T-posed character is a pipeline input. For jayverse this is adjacent — robotics / embodied AI and any character or agent embodiment — and the thing to measure is not mesh beauty but rig quality. Same word, different product from the FastLane Atlas: worth stating plainly so the two never get conflated in notes.</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <h3>Static mesh vs. what Atlas claims to ship</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Typical text-to-3D</th>
+<th>Atlas&#39;s pitch</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Output</strong></td>
+<td>a static mesh</td>
+<td>mesh + standardized T-pose + rig + skin weights</td>
+</tr>
+<tr>
+<td><strong>To animate it</strong></td>
+<td>retopo, rig, weight by hand (hours–days)</td>
+<td>animatable the day it is generated (IK-ready)</td>
+</tr>
+<tr>
+<td><strong>What it is</strong></td>
+<td>a screenshot of a shape</td>
+<td>a pipeline-ready asset</td>
+</tr>
+</tbody></table></div>
+<h3>What to actually measure</h3>
+<p>Not the mesh&#39;s looks — the <strong>rig</strong>: clean topology, sensible joint placement, and skin weights that deform without artifacts. A pretty mesh on a bad rig is still hours of cleanup.</p>
+<h3>Naming collision</h3>
+<p>This Atlas (text-to-3D characters) is <strong>not</strong> FastLane&#39;s Atlas (execution-abstraction / MEV) referenced elsewhere in this catalogue — same word, unrelated product. Related here: lerobot-the-format-outlives-the-framework (the standardized output is the durable value).</p>
       
       <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 재진입 — 잔액이 줄기 전에 되돌아오는 인출\n\n재진입은 호출된 쪽이 호출자의 상태 갱신 전에 다시 진입하게 하며, 2016년 The DAO를 털어낸 계급입니다. 해법(검사-효과-상호작용)은 오래됐지만 이 버그는 여전히 배포됩니다.\n\n아직 범위 미정.\n\n## 왜\n\n이 PoC는 로컬 포크에서 최소 재진입 익스플로잇을 재현한 뒤, 한 줄 순서 변경과 재진입 가드가 그것을 막는 것을 보입니다 — 스마트 컨트랙트 보안의 정전급 첫 수업입니다.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>재진입 — 잔액이 줄기 전에 되돌아오는 인출</h1>
-      <p class="lead">재진입은 호출된 쪽이 호출자의 상태 갱신 전에 다시 진입하게 하며, 2016년 The DAO를 털어낸 계급입니다. 해법(검사-효과-상호작용)은 오래됐지만 이 버그는 여전히 배포됩니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# Atlas(text-to-3D) — 결과물이 정적 메시가 아니라 리깅된 캐릭터\n\n정적 메시에서 멈추지 않는다는 게 요지인 text-to-3D 도구: 프롬프트가 표준 T-pose에 리그와 스킨 웨이트까지 내놔, 생성되는 순간 캐릭터가 IK 준비·애니메이션 가능. 생성 3D가 어디로 가는지 — 지오메트리에서 파이프라인 준비 완료 에셋으로 — 의 표시로 보관. (이름 주의: 이 카탈로그의 FastLane Atlas / 실행 추상화와 무관.)\n\n구현이 아니라 실제 필요에 대볼 역량 표시입니다. 확인할 주장: 대부분의 text-to-3D는 손으로 리토폴로지·리깅·웨이팅해야 하는 메시를 주지만(수 시간~수 일), Atlas는 T-pose + 리그 + 웨이트까지 줘 에셋이 즉시 애니메이션된다고 함. 3D/캐릭터 필요(로보틱스 시뮬 아바타, 게임·에이전트 임바디먼트)가 있으면, 메시의 외양이 아니라 리그를 재세요: 깔끔한 토폴로지, 합리적 관절 배치, 아티팩트 없이 변형되는 웨이트. 의존 전 현재 역량·한계를 제품으로 확인 — FastLane Atlas와의 이름 충돌 주의.\n\n## 왜\n\n이 홍보는 생성 3D의 진짜 병목을 지목합니다. 생성된 모델을 '쓰는' 데 어려운 건 지오메트리가 아니라 리깅과 스키닝이었습니다: 원시 메시는 움직이기 전에 리토폴로지·스켈레톤·웨이팅을 거쳐야 하고, 이는 수 시간~수 일의 수작업입니다. Atlas의 주장은 프롬프트가 표준 T-pose에 리그·스킨 웨이트까지 내놔 생성 당일 애니메이션된다는 것. 리그 품질이 버티면, 보통 시간을 잡아먹는 메시→애니메이션 간극을 무너뜨립니다.\n\n전이 가능한 아이디어는 lerobot-the-format-outlives-the-framework가 이미 말한 것입니다: 지속되는 값어치는 뒤의 생성기가 아니라 표준화된 즉시 사용 가능한 출력. 정적 메시는 스크린샷이고, 리깅·웨이팅된 T-pose 캐릭터는 파이프라인 입력입니다. jayverse엔 인접 — 로보틱스 / 임바디드 AI, 모든 캐릭터·에이전트 임바디먼트 — 이고, 잴 것은 메시의 미가 아니라 리그 품질. FastLane Atlas와 같은 단어, 다른 제품: 노트에서 절대 뒤섞이지 않게 분명히 적어 둡니다.\n\n## 동작 방식\n\n### 정적 메시 vs Atlas가 준다는 것\n\n| | 보통의 text-to-3D | Atlas의 주장 |\n|---|---|---|\n| **출력** | 정적 메시 | 메시 + 표준 T-pose + 리그 + 스킨 웨이트 |\n| **애니메이션하려면** | 손으로 리토포·리그·웨이팅(수 시간~수 일) | 생성 당일 애니메이션(IK 준비) |\n| **정체** | 형태의 스크린샷 | 파이프라인 준비 에셋 |\n\n### 실제로 잴 것\n\n메시의 외양이 아니라 **리그**: 깔끔한 토폴로지, 합리적 관절 배치, 아티팩트 없이 변형되는 스킨 웨이트. 나쁜 리그 위의 예쁜 메시는 여전히 몇 시간의 정리.\n\n### 이름 충돌\n\n이 Atlas(text-to-3D 캐릭터)는 이 카탈로그의 FastLane Atlas(실행 추상화 / MEV)가 **아닙니다** — 같은 단어, 무관한 제품. 관련: lerobot-the-format-outlives-the-framework(표준화된 출력이 지속되는 값어치).\n"</script>
+      <h1>Atlas(text-to-3D) — 결과물이 정적 메시가 아니라 리깅된 캐릭터</h1>
+      <p class="lead">정적 메시에서 멈추지 않는다는 게 요지인 text-to-3D 도구: 프롬프트가 표준 T-pose에 리그와 스킨 웨이트까지 내놔, 생성되는 순간 캐릭터가 IK 준비·애니메이션 가능. 생성 3D가 어디로 가는지 — 지오메트리에서 파이프라인 준비 완료 에셋으로 — 의 표시로 보관. (이름 주의: 이 카탈로그의 FastLane Atlas / 실행 추상화와 무관.)</p>
+      <p class="meta">구현이 아니라 실제 필요에 대볼 역량 표시입니다. 확인할 주장: 대부분의 text-to-3D는 손으로 리토폴로지·리깅·웨이팅해야 하는 메시를 주지만(수 시간~수 일), Atlas는 T-pose + 리그 + 웨이트까지 줘 에셋이 즉시 애니메이션된다고 함. 3D/캐릭터 필요(로보틱스 시뮬 아바타, 게임·에이전트 임바디먼트)가 있으면, 메시의 외양이 아니라 리그를 재세요: 깔끔한 토폴로지, 합리적 관절 배치, 아티팩트 없이 변형되는 웨이트. 의존 전 현재 역량·한계를 제품으로 확인 — FastLane Atlas와의 이름 충돌 주의.</p>
       <h2>왜</h2>
-      <p>이 PoC는 로컬 포크에서 최소 재진입 익스플로잇을 재현한 뒤, 한 줄 순서 변경과 재진입 가드가 그것을 막는 것을 보입니다 — 스마트 컨트랙트 보안의 정전급 첫 수업입니다.</p>
+      <p>이 홍보는 생성 3D의 진짜 병목을 지목합니다. 생성된 모델을 &#39;쓰는&#39; 데 어려운 건 지오메트리가 아니라 리깅과 스키닝이었습니다: 원시 메시는 움직이기 전에 리토폴로지·스켈레톤·웨이팅을 거쳐야 하고, 이는 수 시간~수 일의 수작업입니다. Atlas의 주장은 프롬프트가 표준 T-pose에 리그·스킨 웨이트까지 내놔 생성 당일 애니메이션된다는 것. 리그 품질이 버티면, 보통 시간을 잡아먹는 메시→애니메이션 간극을 무너뜨립니다.</p>
+<p>전이 가능한 아이디어는 lerobot-the-format-outlives-the-framework가 이미 말한 것입니다: 지속되는 값어치는 뒤의 생성기가 아니라 표준화된 즉시 사용 가능한 출력. 정적 메시는 스크린샷이고, 리깅·웨이팅된 T-pose 캐릭터는 파이프라인 입력입니다. jayverse엔 인접 — 로보틱스 / 임바디드 AI, 모든 캐릭터·에이전트 임바디먼트 — 이고, 잴 것은 메시의 미가 아니라 리그 품질. FastLane Atlas와 같은 단어, 다른 제품: 노트에서 절대 뒤섞이지 않게 분명히 적어 둡니다.</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <h3>정적 메시 vs Atlas가 준다는 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>보통의 text-to-3D</th>
+<th>Atlas의 주장</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>출력</strong></td>
+<td>정적 메시</td>
+<td>메시 + 표준 T-pose + 리그 + 스킨 웨이트</td>
+</tr>
+<tr>
+<td><strong>애니메이션하려면</strong></td>
+<td>손으로 리토포·리그·웨이팅(수 시간~수 일)</td>
+<td>생성 당일 애니메이션(IK 준비)</td>
+</tr>
+<tr>
+<td><strong>정체</strong></td>
+<td>형태의 스크린샷</td>
+<td>파이프라인 준비 에셋</td>
+</tr>
+</tbody></table></div>
+<h3>실제로 잴 것</h3>
+<p>메시의 외양이 아니라 <strong>리그</strong>: 깔끔한 토폴로지, 합리적 관절 배치, 아티팩트 없이 변형되는 스킨 웨이트. 나쁜 리그 위의 예쁜 메시는 여전히 몇 시간의 정리.</p>
+<h3>이름 충돌</h3>
+<p>이 Atlas(text-to-3D 캐릭터)는 이 카탈로그의 FastLane Atlas(실행 추상화 / MEV)가 <strong>아닙니다</strong> — 같은 단어, 무관한 제품. 관련: lerobot-the-format-outlives-the-framework(표준화된 출력이 지속되는 값어치).</p>
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-the-interface-premium-collapses.html">&larr; 75. The 2,234 pieces were already there — the agent collapsed the interface premium</a><a href="pocs-sec-integer-overflow.html">77. Integer overflow — arithmetic that wraps past zero &rarr;</a></div>
+    <div class="pager"><a href="pocs-hyperliquid-pays-for-the-public-good.html">&larr; 64. Hyperliquid paid for a public good — the amicus brief as a regulatory moat</a><a href="pocs-coxon-resignation-thread-race-vs-provenance.html">66. The Coxon resignation thread — race logic inside a safety lab, and who amplified it &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="sec-reentrancy";</script>
+<script>window.__NAV_CURRENT__="atlas-text-to-3d-rigged-characters";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;
