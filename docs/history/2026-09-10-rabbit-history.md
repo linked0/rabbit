@@ -53,3 +53,14 @@ number.jaylabs.xyz). 메뉴 지우고 Cloud Run env 도 바꿔라."
 **Result:** 프로덕션에서 메뉴 사라짐, `/portfolio` 는 302→/login(관리자 전용, 라우트 유지) —
 의도대로. hot-demo 링크(AA·Settlement Agent·Auditor)는 `deploy.sh` 가 `.env` 의 ALLOW_* 를
 Cloud Run env 로 자동 전달해 재배포로 라이브(`/live/auditor` 200 확인).
+
+### 인덱스 Current Projects — Memo 카드 2번째로, 이름 "Memo" 로 축약
+
+**Cause:** jay: "Rabbit — Memo 카드를 두 번째로 올리고 이름을 Memo 로 바꿔라." (소스 문서 없음 —
+인덱스 UI 직접 지시.)
+
+**Change:** `docs/index.html`(손편집 파일, 생성물 아님) Current Projects 섹션에서 Memo 카드
+블록을 5번째→2번째(All PoCs 바로 뒤)로 이동, 카드 제목 `Rabbit — Memo`→`Memo`. 링크·색
+(`#db2777`)·경로(docs/memo.md)는 그대로.
+
+**Result:** 진행 중 프로젝트 줄 맨 앞쪽에서 현재 작업 런북 진입점이 바로 보인다.
