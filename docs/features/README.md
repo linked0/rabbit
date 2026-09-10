@@ -106,8 +106,9 @@ the existing services so they cooperate rather than sit alone.
 | 7 | Token + Exchange + Bridge | [jayverse-token-bridge.md](jayverse-token-bridge.md) | **JYVE** ecosystem coin + mini-AMM price + Anvil ⇄ Sepolia bridge (one `jayverse-token` repo) | drafting |
 | 8 | OFA — intent + solver auction | [jayverse-ofa.md](jayverse-ofa.md) | ATLAS's core mechanism as a from-scratch study — intent + solver auction, surplus to the user. **Build the mechanism, not the framework** | drafting |
 | 9 | Math & Investment (Number) | [jayverse-number.md](jayverse-number.md) | Standalone `number.jaylabs.xyz` — investment information + math / economy / algorithm research. **Admin-only** (login-gated), split out of Rabbit's Portfolio into its own `jayverse-number` repo | drafting |
+| 10 | Dark Horse — candidate tracks | [jayverse-darkhorse.md](jayverse-darkhorse.md) | **Not committed** — candidates that *could* become services but aren't yet: (a) own L1/L2, (b) security-hole research, (c) **Base App** (moved from #8) | candidates |
 
-*(#1–9 are the committed services. **Base App moved to the Dark Horse section (#10)** — a candidate that could become a service but isn't one yet. Tracks that are **not** committed services live in the Dark Horse section below.)*
+*(#1–9 are the committed services; **#10 Dark Horse is candidates, not committed** — including Base App, moved from #8. Detail lives in [jayverse-darkhorse.md](jayverse-darkhorse.md); the section below expands it.)*
 
 ### Completed — built, past design
 
@@ -138,6 +139,7 @@ started first.
 | 7 | **Token + Exchange** | `jayverse-token` | in `contracts/`: `forge test`; **t1** `anvil`; **t2** `forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast` (seed pool); then `cd ../app && pnpm install && pnpm dev` | :3070 |
 | 8 | **OFA** — intent + solver auction | `jayverse-ofa` | in `contracts/`: `forge test`; **t1** `anvil`; optional tiny harness | :3080† |
 | 9 | **Math & Investment (Number)** | `jayverse-number` | `pnpm install` → `pnpm dev` (admin login) | :3090 |
+| 10 | **Dark Horse** — candidate tracks | — | candidates only — nothing to run yet | — |
 | ✅ | **Authority Auditor** (built) | `jayverse-auditor` | `pnpm install` → `pnpm dev` — also live in Rabbit at `/live/auditor` | :3080 |
 
 > **Ports:** the six study webs bake their port into `dev` (`3000 + # × 10`) — DeFi :3030, Personas
