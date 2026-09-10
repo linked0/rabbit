@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cointegration — two prices that wander together are a trade — Notes</title>
+<title>Investing for Programmers — understanding markets through data and code — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,45 +366,111 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Cointegration — two prices that wander together are a trade</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Investing for Programmers — understanding markets through data and code</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#226</span><span>PoC</span></p>
-      <h1>Cointegration — two prices that wander together are a trade</h1>
-      <p class="lead">Vector autoregression and cointegration test whether two non-stationary series share a long-run equilibrium, which is the statistical basis of pairs trading and a common false-positive under spurious regression.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#207</span><span>PoC</span></p>
+      <h1>Investing for Programmers — understanding markets through data and code</h1>
+      <p class="lead">A saved reading pointer: Stefan Papp&#39;s Manning book (surfaced by Kirk Borne) that teaches markets and investing to programmers through data and code rather than finance-first. Kept as the catalogue&#39;s marker for the engineer&#39;s on-ramp to markets — the same lens jayverse-number (Math &amp; Investment) and Verex already work in.</p>
+      <p class="meta">Not a build — a reading pointer. Read it as the programmer&#39;s on-ramp to markets: data pipelines, signals, backtesting, and risk in code rather than finance jargon. Map its chapters onto what jayverse-number (Math &amp; Investment) and Verex (pricing / probability) already touch, and mark which techniques are directly reusable (data ingestion, a signal, a backtest, risk sizing). Confirm the book&#39;s actual table of contents and scope against Manning / the listing before citing specifics — this card is a pointer, not a summary of contents I have verified.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Cointegration — two prices that wander together are a trade\n\nVector autoregression and cointegration test whether two non-stationary series share a long-run equilibrium, which is the statistical basis of pairs trading and a common false-positive under spurious regression.\n\nNot yet scoped.\n\n## Why\n\nThe PoC runs an Engle-Granger test on a real pair and a random pair, showing how spurious regression fakes a relationship that a cointegration test correctly rejects.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# Investing for Programmers — understanding markets through data and code\n\nA saved reading pointer: Stefan Papp's Manning book (surfaced by Kirk Borne) that teaches markets and investing to programmers through data and code rather than finance-first. Kept as the catalogue's marker for the engineer's on-ramp to markets — the same lens jayverse-number (Math & Investment) and Verex already work in.\n\nNot a build — a reading pointer. Read it as the programmer's on-ramp to markets: data pipelines, signals, backtesting, and risk in code rather than finance jargon. Map its chapters onto what jayverse-number (Math & Investment) and Verex (pricing / probability) already touch, and mark which techniques are directly reusable (data ingestion, a signal, a backtest, risk sizing). Confirm the book's actual table of contents and scope against Manning / the listing before citing specifics — this card is a pointer, not a summary of contents I have verified.\n\n## Why\n\nThe value of a 'for programmers' markets book is the inversion. Most investing material assumes finance fluency and bolts tooling on; this assumes code fluency and bolts markets on — the right direction for a builder-first stance, and for jayverse-number (Math & Investment) specifically, which enters investing from the engineering side. The skills such a book drills — ingest data, model a signal, backtest it, size the risk — are the same ones Verex needs to price probability and the DeFi study needs to reason about rates, so a data-and-code treatment of markets is reusable across the ecosystem rather than a one-off read.\n\nIt is kept as a pointer, not a claim: I have not verified the table of contents, so the card records what the book is for and where it maps, and defers the specifics to Manning's listing. The reason to put it on the catalogue at all is jay's cross-machine-continuity habit — a reading intent that lives in a feed is lost by tomorrow; one that lives here is a marker you can return to.\n\n## How it works\n\n### The reference\n\n| Field | Value |\n|---|---|\n| **Title** | Investing for Programmers — Understanding markets through data and code |\n| **Author** | Stefan Papp |\n| **Publisher** | Manning |\n| **Surfaced by** | Kirk Borne (@KirkDBorne) on X |\n| **Angle** | markets/investing taught **code-first**, not finance-first |\n\n### Why it earns a slot in the catalogue\n\nThe inversion — code fluency assumed, markets bolted on — is the builder's on-ramp, and it maps onto work already here: **jayverse-number** (Math & Investment) enters investing from engineering; **Verex** prices probability; the **DeFi study** reasons about rates. The reusable spine is the same everywhere: ingest data → model a signal → backtest → size risk.\n\n### Status of this card\n\nA **pointer, not a summary** — the table of contents is unverified; confirm scope against Manning before treating any specific technique as covered. Related: Verex (pricing/probability), priced-by-the-wrong-thing (markets read through the wrong instrument).\n"</script>
       <h2>Why</h2>
-      <p>The PoC runs an Engle-Granger test on a real pair and a random pair, showing how spurious regression fakes a relationship that a cointegration test correctly rejects.</p>
+      <p>The value of a &#39;for programmers&#39; markets book is the inversion. Most investing material assumes finance fluency and bolts tooling on; this assumes code fluency and bolts markets on — the right direction for a builder-first stance, and for jayverse-number (Math &amp; Investment) specifically, which enters investing from the engineering side. The skills such a book drills — ingest data, model a signal, backtest it, size the risk — are the same ones Verex needs to price probability and the DeFi study needs to reason about rates, so a data-and-code treatment of markets is reusable across the ecosystem rather than a one-off read.</p>
+<p>It is kept as a pointer, not a claim: I have not verified the table of contents, so the card records what the book is for and where it maps, and defers the specifics to Manning&#39;s listing. The reason to put it on the catalogue at all is jay&#39;s cross-machine-continuity habit — a reading intent that lives in a feed is lost by tomorrow; one that lives here is a marker you can return to.</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <h3>The reference</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Title</strong></td>
+<td>Investing for Programmers — Understanding markets through data and code</td>
+</tr>
+<tr>
+<td><strong>Author</strong></td>
+<td>Stefan Papp</td>
+</tr>
+<tr>
+<td><strong>Publisher</strong></td>
+<td>Manning</td>
+</tr>
+<tr>
+<td><strong>Surfaced by</strong></td>
+<td>Kirk Borne (@KirkDBorne) on X</td>
+</tr>
+<tr>
+<td><strong>Angle</strong></td>
+<td>markets/investing taught <strong>code-first</strong>, not finance-first</td>
+</tr>
+</tbody></table></div>
+<h3>Why it earns a slot in the catalogue</h3>
+<p>The inversion — code fluency assumed, markets bolted on — is the builder&#39;s on-ramp, and it maps onto work already here: <strong>jayverse-number</strong> (Math &amp; Investment) enters investing from engineering; <strong>Verex</strong> prices probability; the <strong>DeFi study</strong> reasons about rates. The reusable spine is the same everywhere: ingest data → model a signal → backtest → size risk.</p>
+<h3>Status of this card</h3>
+<p>A <strong>pointer, not a summary</strong> — the table of contents is unverified; confirm scope against Manning before treating any specific technique as covered. Related: Verex (pricing/probability), priced-by-the-wrong-thing (markets read through the wrong instrument).</p>
       
       <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 공적분 — 함께 방황하는 두 가격은 하나의 거래다\n\n벡터자기회귀(VAR)와 공적분은 두 비정상 시계열이 장기 균형을 공유하는지 검정하며, 이는 페어 트레이딩의 통계적 기반이자 허구적 회귀 아래 흔한 거짓양성입니다.\n\n아직 범위 미정.\n\n## 왜\n\n이 PoC는 실제 페어와 무작위 페어에 엥글-그레인저 검정을 돌려, 허구적 회귀가 관계를 위조하고 공적분 검정이 이를 올바르게 기각하는 것을 보입니다.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>공적분 — 함께 방황하는 두 가격은 하나의 거래다</h1>
-      <p class="lead">벡터자기회귀(VAR)와 공적분은 두 비정상 시계열이 장기 균형을 공유하는지 검정하며, 이는 페어 트레이딩의 통계적 기반이자 허구적 회귀 아래 흔한 거짓양성입니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# Investing for Programmers — 데이터와 코드로 시장 이해하기\n\n저장한 독서 포인터: Stefan Papp의 Manning 책(Kirk Borne이 소개)으로, 금융 우선이 아니라 데이터와 코드로 프로그래머에게 시장·투자를 가르칩니다. jayverse-number(Math & Investment)와 Verex가 이미 일하는 그 렌즈 — 엔지니어의 시장 진입로 — 로서 카탈로그에 표시로 보관.\n\n구현이 아니라 독서 포인터입니다. 프로그래머의 시장 진입로로 읽으세요: 금융 용어가 아니라 코드로 된 데이터 파이프라인·시그널·백테스트·리스크. 챕터를 jayverse-number(Math & Investment)와 Verex(가격/확률)가 이미 다루는 것에 매핑하고, 바로 재사용 가능한 기법(데이터 수집, 시그널 하나, 백테스트, 리스크 사이징)을 표시하세요. 구체 내용 인용 전 Manning/판매 페이지로 실제 목차·범위를 확인하세요 — 이 카드는 포인터지 제가 검증한 내용 요약이 아닙니다.\n\n## 왜\n\n'for programmers' 시장 책의 값어치는 뒤집기에 있습니다. 대부분의 투자 자료는 금융 유창함을 전제하고 도구를 덧붙이지만, 이 책은 코드 유창함을 전제하고 시장을 덧붙입니다 — 빌더 우선 태도에 맞는 방향이고, 특히 엔지니어링 쪽에서 투자로 들어가는 jayverse-number(Math & Investment)에 맞습니다. 이런 책이 훈련시키는 기술 — 데이터 수집, 시그널 모델링, 백테스트, 리스크 사이징 — 은 Verex가 확률을 가격 매기는 데, DeFi 학습이 이율을 다루는 데 필요한 바로 그 기술이라, 데이터·코드로 다룬 시장은 일회성 독서가 아니라 생태계 전반에 재사용됩니다.\n\n주장이 아니라 포인터로 보관합니다: 목차를 검증하지 않았으므로, 카드는 책이 무엇을 위한 것이고 어디에 매핑되는지를 기록하고 구체 내용은 Manning 페이지로 미룹니다. 그럼에도 카탈로그에 두는 이유는 jay의 기기 간 연속성 습관입니다 — 피드에 사는 독서 의도는 내일이면 사라지고, 여기 사는 것은 되돌아올 수 있는 표시입니다.\n\n## 동작 방식\n\n### 레퍼런스\n\n| 항목 | 값 |\n|---|---|\n| **제목** | Investing for Programmers — Understanding markets through data and code |\n| **저자** | Stefan Papp |\n| **출판사** | Manning |\n| **소개** | Kirk Borne(@KirkDBorne), X |\n| **각도** | 금융 우선이 아니라 **코드 우선**으로 가르치는 시장/투자 |\n\n### 카탈로그에 자리를 얻는 이유\n\n뒤집기 — 코드 유창함을 전제하고 시장을 덧붙임 — 는 빌더의 진입로이고, 이미 여기 있는 작업에 매핑됩니다: **jayverse-number**(Math & Investment)는 엔지니어링에서 투자로 들어가고; **Verex**는 확률을 가격 매기며; **DeFi 학습**은 이율을 다룹니다. 재사용되는 척추는 어디서나 같습니다: 데이터 수집 → 시그널 모델링 → 백테스트 → 리스크 사이징.\n\n### 이 카드의 상태\n\n**요약이 아니라 포인터** — 목차 미검증; 특정 기법이 다뤄졌다고 보기 전 Manning으로 범위 확인. 관련: Verex(가격/확률), priced-by-the-wrong-thing(엉뚱한 도구로 읽은 시장).\n"</script>
+      <h1>Investing for Programmers — 데이터와 코드로 시장 이해하기</h1>
+      <p class="lead">저장한 독서 포인터: Stefan Papp의 Manning 책(Kirk Borne이 소개)으로, 금융 우선이 아니라 데이터와 코드로 프로그래머에게 시장·투자를 가르칩니다. jayverse-number(Math &amp; Investment)와 Verex가 이미 일하는 그 렌즈 — 엔지니어의 시장 진입로 — 로서 카탈로그에 표시로 보관.</p>
+      <p class="meta">구현이 아니라 독서 포인터입니다. 프로그래머의 시장 진입로로 읽으세요: 금융 용어가 아니라 코드로 된 데이터 파이프라인·시그널·백테스트·리스크. 챕터를 jayverse-number(Math &amp; Investment)와 Verex(가격/확률)가 이미 다루는 것에 매핑하고, 바로 재사용 가능한 기법(데이터 수집, 시그널 하나, 백테스트, 리스크 사이징)을 표시하세요. 구체 내용 인용 전 Manning/판매 페이지로 실제 목차·범위를 확인하세요 — 이 카드는 포인터지 제가 검증한 내용 요약이 아닙니다.</p>
       <h2>왜</h2>
-      <p>이 PoC는 실제 페어와 무작위 페어에 엥글-그레인저 검정을 돌려, 허구적 회귀가 관계를 위조하고 공적분 검정이 이를 올바르게 기각하는 것을 보입니다.</p>
+      <p>&#39;for programmers&#39; 시장 책의 값어치는 뒤집기에 있습니다. 대부분의 투자 자료는 금융 유창함을 전제하고 도구를 덧붙이지만, 이 책은 코드 유창함을 전제하고 시장을 덧붙입니다 — 빌더 우선 태도에 맞는 방향이고, 특히 엔지니어링 쪽에서 투자로 들어가는 jayverse-number(Math &amp; Investment)에 맞습니다. 이런 책이 훈련시키는 기술 — 데이터 수집, 시그널 모델링, 백테스트, 리스크 사이징 — 은 Verex가 확률을 가격 매기는 데, DeFi 학습이 이율을 다루는 데 필요한 바로 그 기술이라, 데이터·코드로 다룬 시장은 일회성 독서가 아니라 생태계 전반에 재사용됩니다.</p>
+<p>주장이 아니라 포인터로 보관합니다: 목차를 검증하지 않았으므로, 카드는 책이 무엇을 위한 것이고 어디에 매핑되는지를 기록하고 구체 내용은 Manning 페이지로 미룹니다. 그럼에도 카탈로그에 두는 이유는 jay의 기기 간 연속성 습관입니다 — 피드에 사는 독서 의도는 내일이면 사라지고, 여기 사는 것은 되돌아올 수 있는 표시입니다.</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <h3>레퍼런스</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>값</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>제목</strong></td>
+<td>Investing for Programmers — Understanding markets through data and code</td>
+</tr>
+<tr>
+<td><strong>저자</strong></td>
+<td>Stefan Papp</td>
+</tr>
+<tr>
+<td><strong>출판사</strong></td>
+<td>Manning</td>
+</tr>
+<tr>
+<td><strong>소개</strong></td>
+<td>Kirk Borne(@KirkDBorne), X</td>
+</tr>
+<tr>
+<td><strong>각도</strong></td>
+<td>금융 우선이 아니라 <strong>코드 우선</strong>으로 가르치는 시장/투자</td>
+</tr>
+</tbody></table></div>
+<h3>카탈로그에 자리를 얻는 이유</h3>
+<p>뒤집기 — 코드 유창함을 전제하고 시장을 덧붙임 — 는 빌더의 진입로이고, 이미 여기 있는 작업에 매핑됩니다: <strong>jayverse-number</strong>(Math &amp; Investment)는 엔지니어링에서 투자로 들어가고; <strong>Verex</strong>는 확률을 가격 매기며; <strong>DeFi 학습</strong>은 이율을 다룹니다. 재사용되는 척추는 어디서나 같습니다: 데이터 수집 → 시그널 모델링 → 백테스트 → 리스크 사이징.</p>
+<h3>이 카드의 상태</h3>
+<p><strong>요약이 아니라 포인터</strong> — 목차 미검증; 특정 기법이 다뤄졌다고 보기 전 Manning으로 범위 확인. 관련: Verex(가격/확률), priced-by-the-wrong-thing(엉뚱한 도구로 읽은 시장).</p>
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-ds-cohort-analysis.html">&larr; 225. Cohort analysis — the retention curve a single average hides</a><a href="pocs-ds-extreme-value.html">227. Extreme value theory — the tail is a different distribution &rarr;</a></div>
+    <div class="pager"><a href="pocs-moralis-wallet-api.html">&larr; 206. Moralis — wallet snapshot via API</a><a href="pocs-which-etf-window-not-the-size.html">208. ETH ETF outflows — read which window, not the size &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="ds-var-cointegration";</script>
+<script>window.__NAV_CURRENT__="investing-for-programmers-book";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;
