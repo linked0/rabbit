@@ -11,7 +11,6 @@ export const FEATURED_POC_KEY = "aa";
 export const POC_CARDS: DemoCard[] = [
   {
     key: "mid-level-backend-role-the-hiring-stack",
-    important: true,
     updated: "2026-09-10",
     status: "soon",
     group: "future",
@@ -36,7 +35,6 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "op-return-is-a-shared-state-channel",
-    important: true,
     updated: "2026-09-10",
     status: "soon",
     title: "OP_RETURN became a negotiation channel — sharing one fact without trust",
@@ -796,7 +794,6 @@ export const POC_CARDS: DemoCard[] = [
     // 주문 형식(GaslessCrossChainOrder)은 표준화됐지만 정산 검증과 리스크는 필러가 지는 구조.
     // governance-capture-cost(감사 경계 vs 신뢰 경계) 및 l1-zkevm-optional-proofs(경제적 선택에 기댄 안전)와 같은 계열.
     key: "erc-7683-settlement-security",
-    important: true,
     updated: "2026-08-25",
     title: "ERC-7683 settlement security — the layer left deliberately unstandardized",
     titleKo: "ERC-7683 정산 보안 — 표준이 일부러 비워둔 그 층",
@@ -852,7 +849,6 @@ export const POC_CARDS: DemoCard[] = [
     // 뽑는 사람이 "예측시장 전문가"가 아니라 청산·정산·주문 라우팅·규제 보고 백엔드라는 것이 신호의 전부.
     // 같은 주 한국은 Polymarket을 형법상 도박으로 차단 — 같은 상품, 두 법역, 다른 재료.
     key: "event-contract-plumbing",
-    important: true,
     updated: "2026-08-28",
     title: "The hiring signal is the spec — event-contract plumbing",
     titleKo: "채용 신호가 곧 명세서다 — 이벤트 계약 배관",
@@ -914,7 +910,6 @@ export const POC_CARDS: DemoCard[] = [
     status: "done",
     doneAt: "2026-09-08",
     updated: "2026-09-07",
-    important: true,
     howTo: "Reference — docs/knowledge/merkle-vs-verkle.html.",
     howToKo: "참조 — docs/knowledge/merkle-vs-verkle.html.",
     purpose:
@@ -1028,7 +1023,6 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo:
       "FOCIL 은 인클루전 리스트 작성을 **프로포저 한 명에서 무작위 위원회로** 옮기고 — **진짜 중요한 부분** — **강제를 포크초이스 안으로** 옮깁니다. 어테스터가 집계된 리스트를 무시한 블록에 **투표를 주지 않으므로, 검열하는 블록은 정본이 될 수 없습니다.** **보장의 범주가 바뀝니다** — *\"넣어 주세요\"* 가 아니라 **\"빼면 당신 블록이 안 세어진다\"** 입니다.",
     status: "soon",
-    important: true,
     howTo:
       "Not a build — read two sections and write down one number. In EIP-7805 read only the Rationale and the parameters: how the committee size is justified, and how the view-freeze deadline is chosen. Those two choices carry the whole design. Then do the part that is actually yours: list every path in your own system where a one-slot delay changes an outcome — an order at the close, a dispute filing, an oracle update — and next to each write the number of slots it can absorb. That number is the deliverable; FOCIL knowledge is not. Figures here (a committee on the order of sixteen plus the proposer, a per-slot gossip subnet, a separate gas allowance for the list) come from a 2026-08-28 reading and need checking against the current spec, which is still moving.",
     howToKo:
@@ -1144,7 +1138,6 @@ export const POC_CARDS: DemoCard[] = [
     // ① 그 시험을 원문의 후보 4개에 실제로 적용하면 셋이 죽거나 모양이 바뀐다는 것,
     // ② 그리고 한국의 기존 마찰 기준선이 달러권과 달라 방법론까지 수입하면 안 된다는 것.
     key: "what-needs-a-stablecoin",
-    important: true,
     updated: "2026-08-29",
     title: "Not what a stablecoin can do — what needs one",
     titleKo: "스테이블코인으로 할 수 있는 일이 아니라, 스테이블코인이 필요한 일",
@@ -1661,7 +1654,6 @@ export const POC_CARDS: DemoCard[] = [
     status: "done",
     doneAt: "2026-09-10",
     // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
-    important: true,
     howTo:
       "An afternoon, and the first task is a manifest rather than a rewrite. A Mini App is an ordinary web app running inside the client with a wallet already present, so an existing Next.js app is most of the work already done: serve the manifest the client looks for, call the SDK's ready() so the splash screen clears, and open it in the client's own preview tool before publishing anything. Then measure the only number that decides whether it was worth it — of the people who see a share, how many open it, and of those, how many transact. Everything specific below (the manifest path, SDK and framework names, whether swap or trade intents are exposed to Mini Apps, and whether there is a review or allowlist step) is from a mid-2026 understanding and moves fast: confirm against Base's current Mini App and MiniKit documentation and the Base App release notes before building.",
     howToKo:
@@ -1782,7 +1774,6 @@ export const POC_CARDS: DemoCard[] = [
       "Coldcard의 엔트로피 소스, Trezor의 배송 위탁사, Ledger의 이더리움 앱 — 세 제조사가 한 달 안에 각각 다른 층에서 사고를 냈습니다. 브랜드 이름 하나는 실은 네 개의 독립된 공급망이고, 이번 달에 조용했던 층이야말로 무너져도 티가 나지 않는 층입니다.",
     status: "soon",
     // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
-    important: true,
     howTo:
       "Not yet scoped — and the deliverable is a one-page comparison table filled in before any purchase, not after. For each candidate device, find five things and write down where each answer came from: (a) the most recent independent audit of the app that signs for the chain you actually use, with its date; (b) whether signing uses deterministic nonces (RFC 6979) or hedged determinism, and whether that is verifiable rather than claimed; (c) what generates the seed and whether the entropy path has ever been audited end-to-end — plus whether the device accepts user-supplied entropy; (d) the manufacturer's fulfilment and logistics partners, whether a purchase requires an account and a shipping address, and its last incident disclosure read in full; (e) whether firmware can replace the signature algorithm or the curve is fixed in silicon. Two of the five are testable at the desk: sign the same message twice and compare bytes, and add dice entropy if the device offers it. Sources: the Coldcard Mk2/Mk3 seed-entropy defect (July 2026), Trezor's ShipMonk disclosure (2026-08-13), and the Ledger Ethereum app fix (2026-08-25, as reported — read the advisory before repeating the severity).",
     howToKo:
@@ -2338,7 +2329,6 @@ export const POC_CARDS: DemoCard[] = [
     // ② 만기가 없으므로 수렴을 강제하는 것이 없다 — 페그는 구조가 아니라 행동이다,
     // ③ 관측되는 베이시스 폭은 곧 가장 싼 참가자의 비용 구조를 읽는 계기판이다.
     key: "arb-bots-are-the-peg",
-    important: true,
     updated: "2026-08-27",
     title: "Nobody runs the peg — the competing bots are the mechanism",
     titleKo: "페그를 돌리는 주체는 없다 — 경쟁하는 봇들이 곧 메커니즘이다",
@@ -2392,7 +2382,6 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-26 리포트 카드 4/5 (jay). Four Pillars 항목의 3층 대조 + a16z 정책 항목.
     // 산출물은 시스템이 아니라 문장 하나 — 12월 문서의 법역 칸.
     key: "jurisdiction-decides-the-category",
-    important: true,
     updated: "2026-08-26",
     title: "Same product, three verdicts in eight days",
     titleKo: "같은 상품, 8일 사이 세 개의 판정",
@@ -2583,7 +2572,6 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-26 리포트에서 뽑은 카드 1/5 (jay). 프로토콜 묶음 중 EIP-8198 Quick Slots.
     // 요지는 프로토콜 변경 자체가 아니라, 앱 코드 곳곳에 적히지 않은 채 박혀 있는 "12초"다.
     key: "quick-slots-10s",
-    important: true, // 2026-08-31 (jay) — 배열 위치는 번호 보존용: important 구획 끝에 둔다
     updated: "2026-09-02",
     title: "Ten-second slots — the constant nobody wrote down",
     titleKo: "10초 슬롯 — 아무도 적어두지 않은 상수",
@@ -2609,7 +2597,6 @@ export const POC_CARDS: DemoCard[] = [
     // 2026-08-26 리포트 카드 2/5 (jay). S티어 L1 스케일링 — EIP-8131 · EIP-8279.
     // 단일 가스 숫자가 감추고 있던 교차보조를 이 프로젝트의 트랜잭션 구성으로 재계산한다.
     key: "l1-data-pricing-dimensions",
-    important: true, // 2026-08-31 (jay) — 배열 위치는 번호 보존용: important 구획 끝에 둔다
     updated: "2026-09-07",
     title: "When gas stops being one number — data pricing and bandwidth accounting",
     titleKo: "가스가 더 이상 숫자 하나가 아닐 때 — 데이터 가격과 대역폭 회계",
@@ -2772,7 +2759,6 @@ export const POC_CARDS: DemoCard[] = [
     // 원래도 짝으로 배치돼 있었다 — 한쪽은 "끝내 읽히지 않는 데이터 위에서 계산하기",
     // 다른 쪽은 "값만 가렸을 때 무엇이 새는가". 두 절반이 하나의 트릴레마를 이룬다.
     key: "what-encryption-does-not-hide",
-    important: true, // 2026-08-31 (jay) — 배열 위치는 번호 보존용: important 구획 끝에 둔다
     updated: "2026-08-28",
     title: "Hiding the amount is the easy half",
     titleKo: "금액을 가리는 것은 쉬운 절반이다",
@@ -2796,7 +2782,6 @@ export const POC_CARDS: DemoCard[] = [
   },
   {
     key: "erc-8141",
-    important: true, // 2026-08-31 (jay) — 배열 위치는 번호 보존용: important 구획 끝에 둔다
     updated: "2026-08-28",
     title: "ERC-8141",
     titleKo: "ERC-8141",
@@ -2863,7 +2848,6 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo:
       "시퀀서 확인, L1 게시, L1 최종 확정은 서로 다른 질문에 답합니다. \"confirmed\" 배지 하나는 신뢰 경계 세 개를 한 단어로 뭉갭니다.",
     status: "done",
-    important: true,
     updated: "2026-09-02",
     // 2026-09-03 (jay): 튜터링 논의를 상세 페이지에 정리 — 2초 confirmed 의 실체, 시계 셋의
     // 신뢰 경계, RPC 태그와의 연결, 출금 4번째 시계, 배지 버그와 제품 매핑, 브리지 수수료
@@ -3219,7 +3203,6 @@ export const POC_CARDS: DemoCard[] = [
     // ② 캘리브레이션만으로는 부족하다(기저율만 외쳐도 완벽히 캘리브레이션된다) —
     // 그래서 resolution 과 시장가 기준선이 같이 있어야 한다.
     key: "the-70-has-to-be-wrong",
-    important: true,
     updated: "2026-08-28",
     group: "future",
     title: "The 70% has to be wrong three times in ten",
@@ -3248,7 +3231,6 @@ export const POC_CARDS: DemoCard[] = [
     // 온체인 데이터가 시간순이면서 동시에 주소로 그룹지어져 있다는 점이 이 카드가
     // 교과서 요약이 아니라 이 카탈로그의 카드인 이유.
     key: "the-split-is-the-experiment",
-    important: true,
     updated: "2026-08-28",
     group: "future",
     title: "The model is not the experiment — the split is",
@@ -6351,7 +6333,6 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo:
       "페이마스터가 가스를 대납하는 순간 **사용자의 모든 클릭이 당신 돈을 씁니다** — 그래서 사용자별 계량, 예산, 남용 제한은 인프라 옵션이 아니라 제품 기능입니다. 계량 없는 스폰서는 당신 로고가 붙은 파우셋입니다.",
     status: "soon",
-    important: true,
     howTo:
       "Attribute every sponsored operation to a user and an action, roll it into a live cost dashboard against a daily budget, then run a bot against the unmetered version and watch the budget die.",
     howToKo:
@@ -6556,7 +6537,6 @@ export const POC_CARDS: DemoCard[] = [
   {
     key: "issuance-as-a-service",
     updated: "2026-09-09",
-    important: true,
     title: "Issuance-as-a-service — you mint a brand, the platform keeps the money",
     titleKo: "발행형 서비스 — 당신은 브랜드를 찍고, 플랫폼이 돈을 쥔다",
     description:

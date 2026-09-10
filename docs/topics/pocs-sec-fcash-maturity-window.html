@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; A heist that has to wait is one you can still stop</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#118</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#113</span><span>PoC</span></p>
       <h1>A heist that has to wait is one you can still stop</h1>
       <p class="lead">SlowMist flagged (via The Block, 2026-09-07) two attackers replaying last week&#39;s ~$1.7M Notional Finance exploit on BNB Chain: they have already opened malicious fCash positions on an unnamed contract (0x0795…D9F0), but the positions must mature before the funds can be pulled. Unlike an atomic flash-loan drain, this attack is staged on-chain in advance and leaves a maturity window — the rarest thing in an exploit: time to notice and act before the money moves.</p>
       <p class="meta">Not yet scoped — the deliverable is a detector and a rescue path, not a new exploit, and it splits in two. <strong>(1) Signature.</strong> fCash is Notional&#39;s tokenized fixed-term lending claim that settles only at maturity, so the malicious set-up sits on the target contract as ordinary positions long before payout. Write the on-chain query that flags an account whose settle-at-maturity value exceeds what it actually deposited, and alert on the gap between the current block and the maturity block — that gap is the defense window. <strong>(2) Rescue, and its arithmetic.</strong> Within the window, list what could actually stop it — a pause guardian, a parameter change, a counter-position, a governance action — and how many blocks each takes to land against how many blocks are left. The one number is <code>maturity_block − (detect + respond) cost</code>: positive means the heist is stoppable, negative means the window was theater. Then the copycat question: given the disclosed playbook, enumerate other live contracts on BNB and elsewhere that share the same state gap, because a public exploit is a template. Facts: The Block / SlowMist, 2026-09-07 — two attackers, BNB Chain, contract 0x0795…D9F0, positions awaiting maturity. Partial address and social-sourced attribution; confirm on-chain before acting on any of it.</p>
@@ -607,7 +607,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-temporal-durable-execution.html">&larr; 117. Temporal — where 'retry, idempotency, visibility into a stuck run' actually lives</a><a href="pocs-aa-standard-execution-split.html">119. One AA spec, two execution models — or the EVM fragments &rarr;</a></div>
+    <div class="pager"><a href="pocs-temporal-durable-execution.html">&larr; 112. Temporal — where 'retry, idempotency, visibility into a stuck run' actually lives</a><a href="pocs-aa-standard-execution-split.html">114. One AA spec, two execution models — or the EVM fragments &rarr;</a></div>
   </div>
   </main>
 </div>

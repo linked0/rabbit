@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Temporal — where 'retry, idempotency, visibility into a stuck run' actually lives</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#117</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#112</span><span>PoC</span></p>
       <h1>Temporal — where 'retry, idempotency, visibility into a stuck run' actually lives</h1>
       <p class="lead">Temporal is durable workflow orchestration: it replays workflow code deterministically so a process that dies keeps its state, and retries, timeouts, compensations, and multi-day waits are first-class. It is the product the dual-write end-condition problem keeps describing — and a settlement flow that is long-running plus externally-waiting is the textbook fit, at the price of a determinism constraint that reshapes how the code is written.</p>
       <p class="meta">Not yet scoped — the deliverable is a fit test on one real flow, not adopting a platform. Take a settlement or migration flow that already has a long-running, externally-waiting shape (submit → wait for confirmation → reconcile → release), and model it twice: once as the cron + state-table you would otherwise hand-build, once as a Temporal workflow. Compare on the four things Temporal sells — retries, idempotency, visibility into a stuck run, changing code mid-flight — and on the two costs it adds: the determinism constraint (no direct randomness, clock reads, or network calls in workflow code — they move to activities) and the operational bill (self-hosted worker cost vs Temporal Cloud per-action pricing, plus per-workflow event-history size, which grows replay cost). Alternatives to keep in the same table: Inngest (lighter for small backends), Restate, and the hand-rolled cron + state table itself. Source: Temporal — durable execution via deterministic replay.</p>
@@ -543,7 +543,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-isaac-lab-gpu-sim.html">&larr; 116. Isaac Lab — the sim that gets faster when you buy a GPU</a><a href="pocs-sec-fcash-maturity-window.html">118. A heist that has to wait is one you can still stop &rarr;</a></div>
+    <div class="pager"><a href="pocs-isaac-lab-gpu-sim.html">&larr; 111. Isaac Lab — the sim that gets faster when you buy a GPU</a><a href="pocs-sec-fcash-maturity-window.html">113. A heist that has to wait is one you can still stop &rarr;</a></div>
   </div>
   </main>
 </div>
