@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Two reading lists, and the same instruction — steal the structure, not the content — PoCs</title>
+<title>Two reading lists, and the same instruction — steal the structure, not the content — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Two reading lists, and the same instruction — steal the structure, not the content</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Two reading lists, and the same instruction — steal the structure, not the content</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#107</span><span>PoC</span></p>
       <h1>Two reading lists, and the same instruction — steal the structure, not the content</h1>
@@ -423,7 +423,7 @@
 <h3>Why loops versus graphs is the chapter to keep</h3>
 <p>It is the one structural decision in agent design that survives changing every other choice: <strong>a loop re-enters the same step until a condition holds; a graph moves through named states with explicit edges.</strong> The first is easier to write and harder to reason about; the second is the opposite. Everything about observability, retry behaviour and cost ceilings follows from it, which is why <code>the-harness-not-the-model</code> cares about it and a monetization chapter does not.</p>
       
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -477,7 +477,7 @@
 <h3>왜 루프 대 그래프가 남길 장인가</h3>
 <p><strong>다른 모든 선택을 바꿔도 살아남는 유일한 구조적 결정</strong>이기 때문입니다 — <strong>루프는 조건이 성립할 때까지 같은 단계로 다시 들어가고, 그래프는 명시적 간선을 따라 이름 붙은 상태들을 지나갑니다.</strong> 앞은 쓰기 쉽고 추론하기 어렵고, 뒤는 반대입니다. <strong>관측 가능성·재시도 동작·비용 상한이 전부 여기서 따라 나옵니다.</strong> <code>the-harness-not-the-model</code> 이 이것을 신경 쓰고 수익화 장이 신경 쓰지 않는 이유입니다.</p>
       
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-thirdweb.html">&larr; 106. Thirdweb — platform survey</a><a href="pocs-claude-in-slack.html">108. Claude in Slack — the workflow first, the presence second &rarr;</a></div>
   </div>
@@ -492,7 +492,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

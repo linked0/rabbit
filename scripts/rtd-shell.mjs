@@ -417,7 +417,7 @@ const NAV_RENDER_SCRIPT = String.raw`
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

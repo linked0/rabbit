@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MCP from three sides — build one, consume one, wrap an agent as one — PoCs</title>
+<title>MCP from three sides — build one, consume one, wrap an agent as one — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; MCP from three sides — build one, consume one, wrap an agent as one</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; MCP from three sides — build one, consume one, wrap an agent as one</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#50</span><span>PoC</span></p>
       <h1>MCP from three sides — build one, consume one, wrap an agent as one</h1>
@@ -501,7 +501,7 @@
 <p>The shape is familiar: <strong>this is the reverse proxy, arriving for agents.</strong> Every line in that table is something you would otherwise write badly yourself — a retry policy, a key vault, a budget, an audit log — and the reason it wants to be a separate box is that <strong>an agent cannot be trusted to enforce a limit on itself.</strong> That is the same argument as <code>the-harness-not-the-model</code>, and <code>agentic-intent-veto</code> is the warning about which limit to pick: a spending cap is the wrong invariant if what you actually care about is what the agent is <em>for</em>.</p>
 <p>This lands directly on the client seat above, where the conclusion was that consuming an MCP server is a <strong>security decision</strong> — hold the connection server-side, never let the URL and token reach the browser. A gateway is that answer, productised. So the question to ask before adopting one is <strong>which of the four it is actually giving you</strong> — routing, identity, cost, or observability — because they are sold as a single product and needed one at a time, and the cheapest version of three of them is a server-side route you already know how to write.</p>
       
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -633,7 +633,7 @@
 <p>모양은 낯익습니다: <strong>에이전트용 리버스 프록시가 도착한 것</strong>입니다. 표의 각 줄은 안 그러면 <strong>자기가 어설프게 짜게 될 것들</strong>입니다 — 재시도 정책, 키 보관소, 예산, 감사 로그. 그리고 이게 별도 박스가 되려는 이유는 하나입니다: <strong>에이전트에게 자기 한도를 스스로 지키라고 맡길 수 없기 때문.</strong> <code>the-harness-not-the-model</code> 과 같은 논지이고, <strong>어떤 한도를 고를지에 대한 경고는 <code>agentic-intent-veto</code></strong> 에 있습니다 — 정작 중요한 게 에이전트가 <em>무엇을 위해</em> 움직이는가라면, 지출 한도는 틀린 불변량입니다.</p>
 <p>이건 위의 클라이언트 자리에 그대로 내려앉습니다. 거기 결론은 MCP 서버를 <strong>소비하는 일이 보안 결정</strong>이라는 것이었습니다 — 연결은 서버 사이드에 두고, URL과 토큰은 브라우저에 절대 내보내지 않는다. <strong>게이트웨이는 그 답을 제품화한 것</strong>입니다. 그래서 도입 전에 물을 것은 <strong>넷 중 무엇을 실제로 주는가</strong> — 라우팅인가, 신원인가, 비용인가, 관측가능성인가 — 입니다. 이들은 하나의 제품으로 팔리지만 필요해지는 시점은 하나씩이고, 셋 중 대부분의 가장 싼 버전은 <strong>이미 짤 줄 아는 서버 사이드 라우트 하나</strong>이기 때문입니다.</p>
       
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-censorship-becomes-a-fork-choice-rule.html">&larr; 49. Censorship resistance stops being a norm and becomes a fork-choice rule</a><a href="pocs-pick-a-signer-not-a-brand.html">51. Three layers failed in a month; the fourth one fails silently &rarr;</a></div>
   </div>
@@ -648,7 +648,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hugging Face is a package manager, and almost nobody pins the version — PoCs</title>
+<title>Hugging Face is a package manager, and almost nobody pins the version — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Hugging Face is a package manager, and almost nobody pins the version</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Hugging Face is a package manager, and almost nobody pins the version</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#230</span><span>PoC</span></p>
       <h1>Hugging Face is a package manager, and almost nobody pins the version</h1>
@@ -447,7 +447,7 @@
 <h3>What to read on a model card, and what to distrust</h3>
 <p>Model cards are the good artifact here, but they are self-published. <strong>Intended use, limitations and training-data description are the valuable parts</strong> — they are claims the author had no incentive to invent, and their <em>absence</em> is itself informative. <strong>Benchmark numbers are the part to discount</strong>, since they are self-reported, frequently on evaluation code that is not published alongside them. The practical rule is the one this catalogue keeps arriving at from different directions: <strong>read the primary artifact, and treat any number you did not see produced as a claim rather than a fact.</strong></p>
       
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -525,7 +525,7 @@
 <h3>모델 카드에서 읽을 것과 의심할 것</h3>
 <p>모델 카드는 <strong>여기서 좋은 산출물</strong>이지만 <strong>자기 출판물</strong>입니다. <strong>의도된 용도·한계·학습 데이터 서술이 값어치 있는 부분</strong>입니다 — 저자가 <strong>지어낼 유인이 없는 주장</strong>이고, <strong>그것이 비어 있다는 사실 자체가 정보</strong>입니다. <strong>할인해서 읽을 부분은 벤치마크 숫자</strong>입니다 — <strong>자기 보고</strong>이고, 평가 코드가 함께 공개되지 않은 경우가 잦습니다. 실무 규칙은 이 카탈로그가 여러 방향에서 계속 도달하는 그것입니다: <strong>1차 산출물을 읽고, 생성되는 것을 직접 보지 않은 숫자는 사실이 아니라 주장으로 다룰 것.</strong></p>
       
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-opencv-robot-vision.html">&larr; 229. Pixels to millimetres — the step before the arm moves</a><a href="pocs-lead-time-is-the-product.html">231. The lead time is the product — a fault detected at failure is worth nothing &rarr;</a></div>
   </div>
@@ -540,7 +540,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

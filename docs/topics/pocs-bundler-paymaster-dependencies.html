@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gasless is two infrastructure services — PoCs</title>
+<title>Gasless is two infrastructure services — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Gasless is two infrastructure services</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Gasless is two infrastructure services</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#35</span><span>PoC</span></p>
       <h1>Gasless is two infrastructure services</h1>
@@ -483,7 +483,7 @@
 <p>&quot;Send the same UserOperation through two bundlers&quot; sounds like an endpoint swap; it is not. <strong>EntryPoint v0.6 vs v0.7/0.8 changed the UserOp struct and the <code>paymasterAndData</code> layout</strong>, so the &quot;same&quot; op is not byte-identical across stacks. Sponsorship-data format, error codes, and the fallback funding path all differ per provider. Multi-bundler resilience is therefore real engineering, and a gasless product that cannot degrade or switch providers has a single point of failure it is not advertising.</p>
 <h3>The fallback is a UX confession</h3>
 <p>&quot;Retry unsponsored with user funds&quot; quietly admits gasless is <strong>best-effort</strong>. That is the honest design — but it means the account must actually <em>hold</em> a gas asset for the degraded path, and the app must decide when to spend the user&#39;s own money without a fresh consent. Silently switching from sponsored to user-paid is a policy decision a user might want to veto — which is where this card touches <code>embedded-wallet-policy</code> and <code>agentic-intent-veto</code>.</p>
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -597,7 +597,7 @@
 <p>&quot;같은 UserOperation 을 두 번들러로&quot;는 엔드포인트 교체처럼 들리지만 아닙니다. <strong>EntryPoint v0.6 대 v0.7/0.8 은 UserOp 구조와 <code>paymasterAndData</code> 레이아웃이 달라</strong>, &quot;같은&quot; op 가 스택 간 바이트 동일이 아닙니다. 후원 데이터 포맷·에러 코드·폴백 자금 경로도 제공자마다 다릅니다. 그래서 멀티 번들러 복원력은 진짜 엔지니어링이고, 열화나 제공자 전환을 못 하는 가스리스 제품은 광고하지 않는 단일 장애점을 안고 있습니다.</p>
 <h3>폴백은 UX 의 고백</h3>
 <p>&quot;비후원으로 사용자 자금 재시도&quot;는 가스리스가 <strong>최선노력(best-effort)</strong>임을 조용히 인정합니다. 정직한 설계지만 — 계정이 열화 경로용 가스 자산을 실제로 <em>보유</em>해야 하고, 앱은 새 동의 없이 사용자 돈을 언제 쓸지 정해야 합니다. 후원→사용자 지불로의 무단 전환은 사용자가 거부(veto)하고 싶을 정책 결정입니다 — 이 카드가 <code>embedded-wallet-policy</code> 와 <code>agentic-intent-veto</code> 에 닿는 지점입니다.</p>
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-simulate-before-sign.html">&larr; 34. Simulation belongs before the wallet prompt</a><a href="pocs-private-rpc-visibility.html">36. Private RPC changes visibility, not settlement &rarr;</a></div>
   </div>
@@ -612,7 +612,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

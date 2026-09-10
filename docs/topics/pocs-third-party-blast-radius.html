@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Trusted third parties — the blast radius nobody maps — PoCs</title>
+<title>Trusted third parties — the blast radius nobody maps — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Trusted third parties — the blast radius nobody maps</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Trusted third parties — the blast radius nobody maps</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#19</span><span>PoC</span></p>
       <h1>Trusted third parties — the blast radius nobody maps</h1>
@@ -383,7 +383,7 @@
       <h2>How it works</h2>
       <p>The build is an inventory and a containment test, in that order. Inventory: for one real frontend, list every third-party script and every vendor holding customer PII, and go one layer down where it is discoverable — ShipMonk&#39;s exposure arrived through Metabase, and a list that stops at direct vendors would have missed it. Capability rather than origin: for each entry, write what it could do if it turned hostile today, and for scripts make the test concrete — can it reach the wallet-signing path at all? Containment: since SRI and CSP shrink the origin set and nothing else, the thing worth prototyping is isolation — moving the signing surface into an origin that third-party JavaScript cannot address, and treating &quot;our own page may prompt for a signature&quot; as itself a privilege to be scoped rather than an ambient property of the site. Then the same question turned inward: a private key that has been valid for six years has a blast radius measured in years, so rotation age belongs in the inventory next to the vendors, not in a separate ops checklist. One consumer-side corollary was parked here for want of anywhere better; it now has its own card. See <code>pick-a-signer-not-a-brand</code>, which turns audit history, signing scheme, entropy source and fulfilment handling into a selection procedure rather than a maxim. July&#39;s Coldcard defect is the inside-the-device version of the same lesson: a 2021 build-configuration error routed seed generation to a software PRNG instead of the STM32 hardware RNG, leaving roughly 40 bits of effective entropy on Mk2/Mk3 devices, and at least 1,719 BTC — about $111M across more than 5,200 addresses — was swept once someone noticed. ShipMonk is the who-shipped-the-device version, and the leaked list is worse than it looks precisely because no key was touched: a verified roster of hardware-wallet owners with delivery addresses is raw material for targeted phishing and for the physical coercion this space calls a wrench attack, and it appears in no threat model drawn around the device.</p>
       
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -397,7 +397,7 @@
       <h2>동작 방식</h2>
       <p>만들 것은 <strong>인벤토리와 봉쇄 테스트</strong>이고 순서가 그대로입니다. <strong>인벤토리</strong>: 실제 프론트엔드 하나를 대상으로 모든 서드파티 스크립트와 고객 개인정보를 쥔 모든 협력사를 적고, 알아낼 수 있는 한 <strong>한 겹 더 내려갑니다</strong> — ShipMonk의 노출은 Metabase를 통해 왔고, 직접 협력사에서 멈춘 목록은 그것을 놓쳤을 것입니다. <strong>출처가 아니라 권한</strong>: 각 항목에 대해 &quot;오늘 적대적으로 돌아서면 무엇을 할 수 있는가&quot;를 적고, 스크립트는 검사를 구체화합니다 — <strong>지갑 서명 경로에 닿을 수 있는가?</strong> <strong>봉쇄</strong>: SRI·CSP는 출처 집합만 줄이므로, 프로토타이핑할 가치가 있는 것은 <strong>격리</strong>입니다 — 서명 표면을 서드파티 JS가 주소 지정할 수 없는 오리진으로 옮기고, &quot;우리 페이지가 서명을 요청할 수 있다&quot;는 것 자체를 사이트의 기본 성질이 아니라 <strong>범위를 정해야 할 권한</strong>으로 다루는 것. 그다음 같은 질문을 안쪽으로 돌립니다: 6년간 유효했던 개인키의 폭발 반경은 <strong>연 단위</strong>로 측정되므로, 키 교체 연한은 별도 운영 체크리스트가 아니라 협력사 목록 옆 같은 인벤토리에 들어가야 합니다. 소비자 쪽 따름정리 하나가 마땅한 자리가 없어 여기 얹혀 있었는데, 이제 자기 카드가 생겼습니다 — <code>pick-a-signer-not-a-brand</code> 가 감사 이력·서명 방식·엔트로피 소스·물류 위탁을 <strong>격언이 아니라 선택 절차</strong>로 바꿉니다. 7월의 Coldcard 결함이 같은 교훈의 &quot;기기 안&quot; 판본입니다 — 2021년의 빌드 설정 오류가 시드 생성을 STM32 하드웨어 RNG 대신 소프트웨어 PRNG로 흘려보내 Mk2/Mk3에 유효 엔트로피 약 40비트만 남겼고, 누군가 알아챈 뒤 5,200개 넘는 주소에서 최소 1,719 BTC(약 1억 1,100만 달러)가 쓸려 나갔습니다. ShipMonk는 같은 교훈의 <strong>&quot;기기를 배송한 사람&quot;</strong> 판본이고, 유출된 목록이 겉보기보다 나쁜 이유는 <strong>키가 하나도 건드려지지 않았다는 바로 그 점</strong> 때문입니다: 배송지가 붙은 하드웨어 월렛 보유자 명부는 표적 피싱과 이 바닥이 렌치 공격이라 부르는 물리적 강압의 완벽한 원재료인데, 기기를 중심으로 그린 어떤 위협 모델에도 등장하지 않습니다.</p>
       
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-arb-bots-are-the-peg.html">&larr; 18. Nobody runs the peg — the competing bots are the mechanism</a><a href="pocs-jurisdiction-decides-the-category.html">20. Same product, three verdicts in eight days &rarr;</a></div>
   </div>
@@ -412,7 +412,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

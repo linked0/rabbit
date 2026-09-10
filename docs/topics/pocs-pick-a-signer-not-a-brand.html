@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Three layers failed in a month; the fourth one fails silently — PoCs</title>
+<title>Three layers failed in a month; the fourth one fails silently — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Three layers failed in a month; the fourth one fails silently</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Three layers failed in a month; the fourth one fails silently</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#51</span><span>PoC</span></p>
       <h1>Three layers failed in a month; the fourth one fails silently</h1>
@@ -434,7 +434,7 @@
 <p>If the four layers are independent across vendors and correlated inside one, then the strongest available control is not a better single device — it is <strong>a multisig whose signers come from different manufacturers</strong>. A quorum of two devices from one brand shares an entropy path, an app codebase, a signing implementation and a fulfilment partner; a quorum spanning two brands shares none of them. This is the same argument as <code>third-party-blast-radius</code> turned toward hardware: the question is never whether a vendor is trustworthy, it is <strong>how far the damage reaches when one turns out not to be.</strong></p>
       
       <p class="meta">1 diagram(s) on the live page.</p>
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -499,7 +499,7 @@
 <p>네 층이 <strong>제조사 사이에서는 독립적이고 한 제조사 안에서는 상관</strong>되어 있다면, 쓸 수 있는 가장 강한 통제는 더 좋은 기기 한 대가 아니라 <strong>서명자를 서로 다른 제조사에서 가져온 멀티시그</strong>입니다. 같은 브랜드 기기 두 대로 만든 정족수는 <strong>엔트로피 경로·앱 코드베이스·서명 구현·배송 위탁사를 전부 공유</strong>하고, 두 브랜드에 걸친 정족수는 <strong>하나도 공유하지 않습니다.</strong> 이건 <code>third-party-blast-radius</code> 의 논지를 하드웨어 쪽으로 돌린 것입니다: 질문은 결코 <strong>&quot;이 공급사가 믿을 만한가&quot;</strong> 가 아니라 <strong>&quot;믿을 만하지 않은 것으로 드러났을 때 피해가 어디까지 닿는가&quot;</strong> 입니다.</p>
       
       <p class="meta">1 diagram(s) on the live page.</p>
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-mcp-three-sides.html">&larr; 50. MCP from three sides — build one, consume one, wrap an agent as one</a><a href="pocs-supported-means-three-things.html">52. Anvil proves the protocol, a testnet proves the chain, only a wallet proves the user &rarr;</a></div>
   </div>
@@ -514,7 +514,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Give the agent the right to ask, not the right to write — PoCs</title>
+<title>Give the agent the right to ask, not the right to write — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Give the agent the right to ask, not the right to write</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Give the agent the right to ask, not the right to write</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#221</span><span>PoC</span></p>
       <h1>Give the agent the right to ask, not the right to write</h1>
@@ -466,7 +466,7 @@
 <h3>Related cards</h3>
 <p><code>agentic-intent-veto</code> and <code>simulate-before-sign</code> (a check/veto outside the model, before the irreversible act), <code>constraint-was-the-product</code> (&quot;not a prompt&quot; as the boundary; fewer tools = better judgment), <code>the-boundary-is-the-unit</code> (single-point governance), <code>a-boolean-hides-a-state-machine</code> (non-determinism: one good run proves nothing), <code>what-encryption-does-not-hide</code> (a masked+hashed audit log that isn&#39;t its own leak path).</p>
       
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -563,7 +563,7 @@
 <h3>관련 카드</h3>
 <p><code>agentic-intent-veto</code>·<code>simulate-before-sign</code>(돌이킬 수 없는 행동 전, 모델 밖의 검사/거부권), <code>constraint-was-the-product</code>(경계로서의 &quot;프롬프트 아님&quot;; 도구 적을수록 판단 나음), <code>the-boundary-is-the-unit</code>(단일 지점 거버넌스), <code>a-boolean-hides-a-state-machine</code>(비결정성: 한 번 잘 됐다고 증명 아님), <code>what-encryption-does-not-hide</code>(자기 유출 경로가 아닌 마스킹·해시 감사 로그).</p>
       
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-sec-fcash-maturity-window.html">&larr; 220. A heist that has to wait is one you can still stop</a><a href="pocs-cli-batch-vs-mcp-interactive.html">222. The CLI leaves an artifact; the MCP holds a conversation &rarr;</a></div>
   </div>
@@ -578,7 +578,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

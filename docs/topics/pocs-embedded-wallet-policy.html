@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The wallet disappeared into the app — PoCs</title>
+<title>The wallet disappeared into the app — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; The wallet disappeared into the app</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; The wallet disappeared into the app</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#27</span><span>PoC</span></p>
       <h1>The wallet disappeared into the app</h1>
@@ -485,7 +485,7 @@
 <h3>The developer is the auditor</h3>
 <p>The end user never sees any of this — that is the point of embedded wallets, and the risk. Whatever the integrator configures becomes the custody reality users silently inherit. And the answers are configuration choices, not fixed properties: &quot;Privy is non-custodial&quot; is a marketing sentence, and two apps on the same Privy SDK can have genuinely different custody models. Run the four paths by hand because docs describe the design; the paths reveal deployed behavior — unnoticed defaults, failing flows, support-team backdoors. That is also why the matrix comes first: it forces &quot;who can do what&quot; onto paper as observed facts before any UX judgment.</p>
       
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -601,7 +601,7 @@
 <h3>개발자가 곧 감사인이다</h3>
 <p>최종 사용자는 이 어떤 것도 보지 못합니다 — 그게 임베디드 지갑의 존재 이유이자 위험입니다. 도입자가 설정한 그대로가 사용자들이 조용히 물려받는 수탁 현실이 됩니다. 그리고 답들은 고정된 성질이 아니라 설정 선택입니다: &quot;Privy 는 논커스터디얼&quot;은 마케팅 문장이고, 같은 Privy SDK 로 만든 두 앱이 진짜로 다른 수탁 모델을 가질 수 있습니다. 문서는 설계를 설명할 뿐이므로 네 경로를 직접 실행합니다 — 미처 못 본 기본값, 실패하는 플로우, 지원팀 뒷문은 배포된 동작에서만 드러납니다. 권한표를 먼저 만드는 이유도 같습니다: UX 판단에 앞서 &quot;누가 무엇을 할 수 있는가&quot;를 관찰된 사실로 종이에 강제하는 산출물이기 때문입니다.</p>
       
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-ponder-reorg-indexer.html">&larr; 26. Ponder — the indexer is the reorg handler</a><a href="pocs-x402-settlement-retry.html">28. HTTP 402 is the easy part — settlement owns the retry &rarr;</a></div>
   </div>
@@ -616,7 +616,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

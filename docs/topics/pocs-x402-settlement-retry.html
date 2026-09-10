@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HTTP 402 is the easy part — settlement owns the retry — PoCs</title>
+<title>HTTP 402 is the easy part — settlement owns the retry — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; HTTP 402 is the easy part — settlement owns the retry</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; HTTP 402 is the easy part — settlement owns the retry</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#28</span><span>PoC</span></p>
       <h1>HTTP 402 is the easy part — settlement owns the retry</h1>
@@ -427,7 +427,7 @@
 <p>At most one settled payment per signed request; exactly one durable entitlement per settled payment. Everything else — middleware, facilitator, SDK — is replaceable plumbing. This is exactly the Web2 payments playbook: Stripe&#39;s <code>Idempotency-Key</code> and a durable state machine (<code>received → verified → submitted → settled → fulfilled</code>) keyed by the payment nonce. x402 changes the rail, not the semantics. &quot;Settlement owns the retry&quot; means retry handling cannot live in generic HTTP retry logic; a retry is a <strong>lookup about an existing payment first</strong>, and a new attempt only after that lookup says so.</p>
 <h3>Vigilance is not the deliverable</h3>
 <p>You cannot monitor your way out of a double charge — by the time you see it, the money moved twice. The guarantee has to be structural: assume every response can be lost, treat the retry as the normal path, and ask in design review, for each arrow in the flow, &quot;what happens if the response after this arrow is lost and the same request arrives again?&quot; If any arrow answers &quot;we charge again&quot; or &quot;we deliver nothing,&quot; that arrow is the bug — before any code is written. The reconciliation line at the end is <code>receipt-is-not-settlement</code> again: the facilitator saying &quot;settled&quot; is one service&#39;s claim; the canonical receipt on chain is the authority. And the reason x402 matters at all is agent commerce — pay-per-request with no account and no API key is the rail an AI agent would use.</p>
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -485,7 +485,7 @@
 <p>서명 요청당 정산은 최대 한 번; 정산된 결제당 지속성 있는 사용 권한 정확히 하나. 나머지 — 미들웨어, facilitator, SDK — 는 교체 가능한 배관입니다. 이것은 정확히 Web2 결제의 교과서입니다: Stripe 의 <code>Idempotency-Key</code> 와, 결제 논스를 키로 삼는 지속성 있는 상태 머신(<code>received → verified → submitted → settled → fulfilled</code>). x402 가 바꾸는 것은 레일이지 의미론이 아닙니다. &quot;재시도는 정산의 책임&quot;이라는 말은 재시도 처리가 일반 HTTP 재시도 로직에 살 수 없다는 뜻입니다 — 재시도는 먼저 <strong>기존 결제에 대한 조회</strong>이고, 그 조회가 허락할 때에만 새 시도입니다.</p>
 <h3>주시가 산출물이 아니다</h3>
 <p>이중 청구는 지켜봐서 막을 수 없습니다 — 눈에 보였을 때는 이미 돈이 두 번 움직인 뒤입니다. 보장은 구조적이어야 합니다: 모든 응답은 사라질 수 있다고 가정하고, 재시도를 정상 경로로 취급하고, 설계 리뷰에서 플로우의 화살표 하나하나에 &quot;이 화살표 직후의 응답이 사라지고 같은 요청이 다시 오면 무슨 일이 생기는가?&quot;를 묻습니다. 어느 화살표든 답이 &quot;또 청구된다&quot;거나 &quot;아무것도 전달 안 된다&quot;면, 코드를 쓰기 전에 그 화살표가 버그입니다. 마지막의 대사(reconciliation) 줄은 <code>receipt-is-not-settlement</code> 의 반복입니다: facilitator 의 &quot;정산됨&quot;은 한 서비스의 주장이고, 권위는 체인 위의 정규 receipt 에 있습니다. 그리고 x402 가 애초에 중요한 이유는 에이전트 커머스입니다 — 계정도 API 키도 없는 요청당 결제는 AI 에이전트가 쓸 레일입니다.</p>
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-embedded-wallet-policy.html">&larr; 27. The wallet disappeared into the app</a><a href="pocs-safe-module-root-key.html">29. A Safe module is a root key with an interface &rarr;</a></div>
   </div>
@@ -500,7 +500,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

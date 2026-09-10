@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What encryption does not hide — PoCs</title>
+<title>What encryption does not hide — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; What encryption does not hide</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; What encryption does not hide</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#41</span><span>PoC</span></p>
       <h1>What encryption does not hide</h1>
@@ -383,7 +383,7 @@
       <h2>How it works</h2>
       <p>Three measurements, cheapest first. One, the residual-MEV replay. Take a window of historical mainnet blocks, strip every transaction down to only the fields EIP-8105 leaves in plaintext — sender, nonce, gas amount, priority fee, max fee — and try to select the sandwichable ones from that alone. Score the selection against the sandwiches actually extracted in the same window; the relay and bundle plumbing the live pbs card already built is the labelling path, so this is analysis on top of existing infrastructure rather than new infrastructure. The output is one fraction: the share of extracted profit a metadata-only adversary could still have targeted. Publish it whichever way it comes out — a low number is the strongest possible argument for the EIPs, and a high one is the strongest argument against calling this solved. Two, the two-block bill. EIP-8105 executes the envelope in one block (nonce incremented, fees paid) and the decrypted payload in the next, and the fee is paid even when decryption fails. So encryption costs a block of latency plus a failure mode where the user pays for nothing, against a status quo where routing through a private relay costs zero at the point of use. Model the crossover: at what trade size does the sandwich you avoid exceed the latency and failure cost you accept? Below that line, users rationally keep using private relays, and an encrypted mempool that the largest traders route around has not fixed the centralization it was meant to fix. Three, the failure nobody can attribute. The unresolved item on the call was that the protocol cannot establish why a key failed to arrive, or whether a provider sold it early. Build the smallest possible simulator — n key providers, threshold k, one colluding subset — and generate three traces: a key withheld deliberately, a key leaked early, and a key that was merely late. Then ask the only question that matters for enforcement: from outside, are the three distinguishable? If they are not, slashing has nothing to attach to, and the honest-threshold assumption is not an assumption but the entire security model. Reads against the live pbs card, which sits on the extraction side of the same market, and alongside third-party-blast-radius, which asks the same committee-capture question of every threshold scheme.</p>
       
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -397,7 +397,7 @@
       <h2>동작 방식</h2>
       <p>측정 셋을, 싼 것부터. <strong>하나, 잔여 MEV 재현.</strong> 과거 메인넷 블록 구간을 잡아 모든 트랜잭션을 <strong>EIP-8105 가 평문으로 남기는 필드만으로 깎아낸 뒤</strong>(발신자·논스·가스량·우선 수수료·최대 수수료), 그것만으로 샌드위치 가능한 것들을 골라 봅니다. 같은 구간에서 <strong>실제로 추출된 샌드위치</strong>를 정답으로 두고 채점하는데, 라벨링 경로는 라이브 <code>pbs</code> 카드가 이미 만들어 둔 릴레이·번들 배관을 그대로 씁니다 — 새 인프라가 아니라 <strong>기존 인프라 위의 분석</strong>입니다. 산출물은 분수 하나: <strong>메타데이터만 보는 공격자가 여전히 조준할 수 있었던 추출 이익의 비율.</strong> 어느 쪽으로 나오든 그대로 공개합니다 — <strong>낮게 나오면 그게 EIP 들에 대한 가장 강한 지지</strong>이고, 높게 나오면 <strong>이걸 해결됐다고 부르는 것에 대한 가장 강한 반박</strong>입니다. <strong>둘, 두 블록짜리 청구서.</strong> EIP-8105 는 봉투를 한 블록에서 실행하고(논스 증가, 수수료 지불) 복호화된 페이로드를 그다음 블록에서 실행하며, <strong>복호화가 실패해도 수수료는 이미 지불된 상태</strong>입니다. 즉 암호화의 대가는 <strong>한 블록의 지연 + 사용자가 아무것도 못 받고 지불하는 실패 양식</strong>이고, 비교 대상인 현상 유지는 <strong>사용 시점 비용이 0인 프라이빗 릴레이</strong>입니다. 교차점을 모델링합니다: <strong>피하는 샌드위치가 감수하는 지연·실패 비용을 넘어서는 거래 규모는 얼마부터인가?</strong> 그 선 아래에서는 사용자가 프라이빗 릴레이를 계속 쓰는 게 합리적이고, <strong>가장 큰 거래자들이 우회하는 암호화 멤풀은 애초에 고치려던 중앙화를 고치지 못한 것</strong>입니다. <strong>셋, 누구에게도 귀속되지 않는 실패.</strong> 콜에서 미해결로 남은 항목이 바로 이것입니다 — 프로토콜은 <strong>키가 왜 도착하지 않았는지, 제공자가 그것을 미리 팔았는지 확정할 수 없습니다.</strong> 가능한 가장 작은 시뮬레이터를 만듭니다(제공자 n, 임계값 k, 담합 부분집합 하나) 그리고 트레이스 셋을 생성합니다: <strong>고의로 보류된 키</strong>, <strong>미리 유출된 키</strong>, <strong>그냥 늦은 키</strong>. 그다음 강제(enforcement)에 유일하게 중요한 질문을 던집니다: <strong>바깥에서 이 셋이 구별되는가?</strong> 구별되지 않는다면 <strong>슬래싱은 물 곳이 없고</strong>, 정직한 임계값 가정은 가정이 아니라 <strong>보안 모델 전체</strong>입니다. 같은 시장의 추출 쪽에 앉아 있는 라이브 <code>pbs</code> 카드와 대조해 읽고, 모든 임계 기법에 같은 위원회 장악 질문을 던지는 <code>third-party-blast-radius</code> 와 함께 읽습니다.</p>
       
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-merkle-vs-verkle.html">&larr; 40. Merkle vs Verkle</a><a href="pocs-choosing-a-chain-is-a-lease.html">42. Choosing a chain is signing a lease &rarr;</a></div>
   </div>
@@ -412,7 +412,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;

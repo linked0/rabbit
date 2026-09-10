@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Four ways into robotics, and what each one actually buys — PoCs</title>
+<title>Four ways into robotics, and what each one actually buys — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Four ways into robotics, and what each one actually buys</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Four ways into robotics, and what each one actually buys</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#175</span><span>PoC</span></p>
       <h1>Four ways into robotics, and what each one actually buys</h1>
@@ -533,7 +533,7 @@
 <p>The SO-101 route above records demonstrations — and the honest entry cost of that physical cell is not the ~$100 arm, it is <strong>the time to collect enough demonstrations to fine-tune one policy.</strong> Hugging Face&#39;s LeRobot ships the SO-100/SO-101 reference hardware (3D-printed parts plus off-the-shelf servos) with assembly, calibration, and leader-follower teleop-collection scripts, so the bottleneck moves from money to <strong>human repetition.</strong> The figure that decides &#39;hobby or project&#39; is the wall-clock time for <strong>~50 demonstrations of one target task</strong>: at 2 minutes each that is under two hours; at 10 minutes each it is a full working day. Compute that for your actual task before buying, and treat the low repeatability of budget servos as a ceiling on task difficulty — simulation (MuJoCo/MJX) is enough to learn the loop, so <strong>buy the arm only when measuring the sim-to-real gap is itself the goal.</strong></p>
       
       <p class="meta">1 diagram(s) on the live page.</p>
-      <p><a href="../pocs.html">&larr; All PoCs</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -697,7 +697,7 @@
 <p>위 SO-101 경로는 시연을 녹화합니다 — 그리고 그 실물 칸의 정직한 진입 비용은 ~$100짜리 팔이 아니라 <strong>정책 하나를 파인튜닝할 만큼 시연을 모으는 시간</strong>입니다. Hugging Face 의 LeRobot 은 SO-100/SO-101 레퍼런스 하드웨어(3D 프린트 부품 + 시판 서보)를 조립·캘리브레이션·리더-팔로워 원격조작 수집 스크립트와 함께 제공해서, 병목이 돈에서 <strong>사람의 반복</strong>으로 옮겨갑니다. &#39;취미냐 프로젝트냐&#39;를 가르는 수치는 <strong>목표 태스크 하나에 대한 시연 ~50회</strong>의 실제 소요 시간입니다: 1회 2분이면 두 시간 미만, 1회 10분이면 꼬박 하루입니다. <strong>실제 태스크에 대해 이 숫자를 사기 전에 계산</strong>하고, 저가 서보의 낮은 반복 정밀도를 태스크 난이도의 상한으로 취급하세요 — 루프를 배우는 데는 시뮬(MuJoCo/MJX)로 충분하니, <strong>팔은 sim-to-real 격차 측정 자체가 목표일 때만</strong> 사는 게 맞습니다.</p>
       
       <p class="meta">1 diagram(s) on the live page.</p>
-      <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-lerobot-the-format-outlives-the-framework.html">&larr; 174. LeRobot — why the dataset format outlives the framework</a><a href="pocs-three-thousand-lanterns-nobody-asked-for.html">176. 3,500 lanterns nobody asked for — Blender agents and the underspecification benchmark &rarr;</a></div>
   </div>
@@ -712,7 +712,7 @@
   var jw = document.getElementById('rail-jump');
   if (jw) {
     jw.innerHTML = data.jump.map(function (s) {
-      return '<a href="../pocs.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
     }).join('');
   }
   var sec = null;
