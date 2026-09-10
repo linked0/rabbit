@@ -1,7 +1,7 @@
 "use client";
 
 // Jayverse AA §3 — Bet 드로어: 아웃컴 토글, 금액, 상태 머신
-// (idle → signing → bundling → success / error). 설계: docs/features/jayverse-aa.md §3·§4.
+// (idle → signing → bundling → success / error). 설계: docs/features/jayverse-rabbit.md §3·§4.
 //
 // 견적/calldata 는 /api/markets/quote 가 서버에서 조립한다. 여기서는 그 두 콜을
 // lib/aa-bet.ts 로 넘겨 하나의 UserOperation(executeBatch)로 보낼 뿐이다.

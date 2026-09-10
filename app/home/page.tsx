@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import Nav from "../Nav";
 import VerexBallLazy from "./VerexBallLazy";
 import SessionKeyMark from "./SessionKeyMark";
@@ -10,7 +9,6 @@ import { POC_CARDS, FEATURED_POC_KEY } from "@/lib/poc-cards";
 import { verexUrl } from "@/lib/verex";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
-import { notifyPageView } from "@/lib/visitor-notify";
 
 // Task 5 — www.jaylabs.xyz 홈 (공개). linked0.github.io 미러 + verex 링크.
 export const metadata = {
@@ -20,7 +18,8 @@ export const metadata = {
 
 export default function HomePage() {
   const lang = getLang();
-  notifyPageView("/ (home)", headers().get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown");
+  // Home no longer pings Telegram — everyone lands here, so it was the least informative signal.
+  // Page-view pings now fire on the *other* top-menu pages via <NotifyPageView/> (jay, 2026-09-10).
   // 대표 PoC 한 장 — 어느 카드인지는 lib/poc-cards.ts의 FEATURED_POC_KEY가 정한다(/poc 상단과
   // 같은 출처). 없는 key여도 홈이 죽지 않도록, 못 찾으면 이 자리를 통째로 비운다.
   const poc = POC_CARDS.find((c) => c.key === FEATURED_POC_KEY);

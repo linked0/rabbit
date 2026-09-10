@@ -239,3 +239,16 @@ verex-internal and shouldn't cross the cloud boundary.
   whether human liquidity, once it arrives, competes with or replaces the operator maker.
 - **Refunds / chargebacks** — even in test mode, decide the story before real cards.
 ```
+
+---
+
+## Chainlink — infra we use, not build
+
+Chainlink's oracle stack is settlement-rail infrastructure Verex *consumes*, not reimplements — see the umbrella map in [README.md](README.md).
+
+- **Data Feeds** — resolve real-world-event markets to an objective number. **If wrong or late:** the market resolves the wrong way and pays the wrong side.
+- **Automation** — keeper-triggered resolution / settlement ticks with no server timer. **If a tick is missed:** settlement is delayed.
+
+**Deliberate non-use — pricing.** Verex prices YES/NO with **LMSR**; the market maker sets the price, not an oracle. An oracle carries an *external* fact onto the chain, and a market's own price isn't one — so no feed prices a Verex market.
+
+> Every feed is a dependency with a failure mode — keep the "if wrong / late" guard (staleness check / fallback) in code, not only here.

@@ -262,3 +262,54 @@ never chainId alone.
   non-forked anvil.)
 - `lib/aa-bundler.ts` — the environment selector above; `lib/aa-bet.ts` (§6) calls it instead of
   hardcoding thirdweb, so the same bet flow runs on either path.
+
+---
+
+## Agent-payment observatory (planned — build starts 2026-09-10)
+
+A read-only dashboard that watches the **agent-payment market while it is still quiet**. Agent
+commerce (x402, ERC-8004) is mostly demos and near-wash-trading today, but the structure —
+which standard wins, which facilitator settles, which chain the activity lands on — is being
+set *now*, at low volume. Human payments grow one user at a time; agent payments jump the moment
+a line of code changes. So the honest move is to read the structure early, not to wait for volume.
+
+**What it shows (reads on-chain, signs nothing):**
+- **Registered agents** — identity/reputation entries (ERC-8004 registry, when a testnet one is available).
+- **Per-facilitator live payments** — which wallet paid which service how many cents through which
+  facilitator, and the Base/Polygon settlement a few seconds later. Grouped by facilitator so the
+  authority row (who settles, who sees the traffic, who sets the fee) is visible per row — this is
+  [`x402-facilitator-market`](../../lib/poc-cards.ts)'s question shown live.
+- **Marketplace status** — endpoints on offer and their prices.
+
+**Why it belongs to Rabbit:** Rabbit is the agentic portal — the read/observe layer for agent
+activity. It sits on top of the infra the plan already has: key custody → [jayverse-wallet.md](jayverse-wallet.md),
+spend policy/caps → the mandate agent (§ agentic-aa), audit/authority → [jayverse-auditor.md](jayverse-auditor.md).
+The observatory is the missing *watch* surface over those.
+
+### What I'll build tomorrow (2026-09-10)
+
+1. Scaffold a read-only `/agent-payments` route in the rabbit app (no keys, no signing).
+2. Pick the data source for one facilitator first (Coinbase-hosted default): the minimal on-chain
+   query for x402 settlements on Base (public RPC or a light indexer). Define the row schema —
+   `{ agent, facilitator, service, cents, chain, settledAt, txHash }`.
+3. Render a live feed grouped by facilitator, each group carrying its authority row (settle / see /
+   fee), reusing the framing from `x402-facilitator-market`.
+4. Add a second facilitator + Polygon once one works, so "swap the facilitator" is a real test.
+5. Cross-link the surface to wallet (keys), the mandate agent (caps), and the Authority Auditor (audit).
+6. Promote the blinking `x402-facilitator-market` card to a dedicated **Agent-payment observatory**
+   card once the route renders something real.
+
+> Status: **planned**, design-only. The live `x402-facilitator-market` card blinks to mark this as
+> the active track. Nothing here is built yet.
+
+---
+
+## Chainlink — infra we use, not build
+
+Chainlink's oracle stack is settlement-rail infrastructure Rabbit *consumes*, not reimplements — see the umbrella map in [README.md](README.md).
+
+- **Automation** — keeper-triggered ticks for scheduled agent / mandate actions with no server timer. **If a tick is missed:** a scheduled action (e.g. a settlement or a mandate draw) is delayed.
+
+As the portal that **imports** each product, Rabbit also inherits every product's Chainlink dependency listed in the umbrella map. Note the stakes: the agent is the **highest-authority component**, so a wrong or late feed driving an *autonomous* action is more dangerous here than anywhere else — guard feeds (staleness / bounds) before the agent acts on them.
+
+> Every feed is a dependency with a failure mode — keep the "if wrong / late" guard in code, not only here.

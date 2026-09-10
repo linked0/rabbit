@@ -89,9 +89,20 @@
 <p>Every money-moving step above (win → pay → bridge) routes its signature through the Wallet service&#39;s <strong>simulate-before-sign</strong> (<a href="jayverse-wallet.html">jayverse-wallet.md</a>), and JYVE amounts can be shown in USD via the <strong>exchange</strong> price (§1.2) — verex → bridge → wallet cooperating as one flow.</p>
 <p>No step requires Mina to understand that the &quot;two chains&quot; are really a fork plus its origin — the UX is identical to a real bridge, which is the point of building it.</p>
 <hr>
-<h2>3. What the web app shows (portal)</h2>
+<h2>3. What the web app shows (the exchange site)</h2>
+<p>The web app is a single <strong>token-exchange site</strong>: a swap-first UI over the <code>JYVE/USDC</code>
+pool (§1.2) with the <strong>bridge as a second tab</strong>, so &quot;trade JYVE&quot; and &quot;move JYVE across
+chains&quot; live in one place (jay, 2026-09-09). Two primary screens — <strong>Swap</strong> and
+<strong>Bridge</strong> — sit over a shared balance/activity shell.</p>
 <ul>
 <li><strong>Balance widget:</strong> JYVE balance per chain, labeled by network — <code>Local (Anvil fork)</code> and <code>Sepolia</code>. USDC shown alongside (rails already surface USDC).</li>
+<li><strong>Swap screen (the exchange):</strong><ul>
+<li>JYVE ⇄ USDC swap form over the constant-product pool: pay-with / receive selector, amount in, live quote out.</li>
+<li>Live <strong>price</strong> and <strong>reserves</strong> from <code>Exchange.getPrice()</code> (polled every 5s), plus the price impact and the 0.30% fee for the entered amount.</li>
+<li>Slippage tolerance + minimum-received guard; a two-step <strong><code>approve → swap</code></strong> when the spent token needs allowance. Reads work with no wallet; executing a swap needs a connected wallet.</li>
+<li><em>(Later)</em> an add/remove-liquidity panel for the pool, reusing the same reserves read.</li>
+</ul>
+</li>
 <li><strong>Bridge screen:</strong><ul>
 <li>Source chain → dest chain selector (swap arrow to flip direction).</li>
 <li>Amount input with max = source balance; validation against mint caps / bridge limits.</li>
@@ -99,7 +110,7 @@
 <li>Per-leg tx links (source lock tx, dest mint tx) so the user can inspect each on the right explorer.</li>
 </ul>
 </li>
-<li><strong>Tx / transfer status:</strong> a small activity list — verex payout, persona payment, bridge legs — each with state (<code>pending</code>/<code>confirmed</code>/<code>failed</code>) and idempotency key, so a stuck relay is visible rather than silent.</li>
+<li><strong>Tx / transfer status:</strong> a small activity list — swaps, verex payout, persona payment, bridge legs — each with state (<code>pending</code>/<code>confirmed</code>/<code>failed</code>) and idempotency key, so a stuck relay is visible rather than silent.</li>
 </ul>
 <hr>
 <h2>4. The flow</h2>
@@ -181,6 +192,17 @@
 <li><strong>Symbol — resolved (jay, 2026-09-08):</strong> <strong><code>JYVE</code></strong> (read &quot;jive&quot;), replacing the earlier <code>JVRS</code>/<code>JVS</code>.</li>
 <li><strong>Pricing — resolved (jay, 2026-09-08):</strong> a <code>JYVE/USDC</code> mini-AMM in the same <code>jayverse-token</code> repo is the on-chain price source; an oracle is not used (it can&#39;t price a self-made token). Open sub-question: seed price + initial liquidity depth for the demo pool.</li>
 </ol>
+<hr>
+<h2>Chainlink — infra we use, not build</h2>
+<p>Chainlink&#39;s oracle stack is settlement-rail infrastructure this token <em>consumes</em>, not reimplements — see the umbrella map in <a href="README.html">README.md</a>.</p>
+<ul>
+<li><strong>CCIP</strong> — cross-chain transport when a service truly leaves the home chain (<strong>Phase 3</strong>), replacing the trusted dev relayer with Chainlink&#39;s cross-chain messaging + security. <strong>If a message is stuck or forged:</strong> the 1:1 lock↔mint invariant breaks (double-mint or stranded funds).</li>
+<li><strong>Proof of Reserve</strong> — attest that the locked reserve on the source backs the minted supply on the dest, so a redeem / release path can refuse units the reserve can&#39;t cover. This is the missing check from the <code>liquid-issuance-not-authorization</code> lesson: a mint bug made valid-but-unbacked units that every downstream check honored — authorization checked the <em>actor</em>, nothing checked the <em>object&#39;s backing</em>. PoR is that object-backing check (pair it with a mint-conservation invariant test).</li>
+</ul>
+<p><strong>Deliberate non-use — pricing JYVE (the loud one).</strong> JYVE trades only in our own market, so it has <strong>no external price an oracle could report</strong>. Its price comes from the constant-product mini-AMM (<code>price = usdcReserve / jyveReserve</code>), never a feed. Reaching for an oracle here is a category error — an oracle relays an <em>external</em> truth, and a self-made token has none. (See §1.2 and §6.)</p>
+<blockquote>
+<p>Every feed is a dependency with a failure mode — keep the &quot;if wrong / late&quot; guard in code, not only here.</p>
+</blockquote>
 
   </article>
 </div>

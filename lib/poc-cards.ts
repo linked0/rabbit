@@ -393,8 +393,8 @@ export const POC_CARDS: DemoCard[] = [
     // 겸하면 조작판이 카드 본문 속 링크로 숨는다. 조작판은 로컬 체인이 떠 있어야 열린다는
     // 사실을 카드가 스스로 말한다.
     key: "agent-console",
-    title: "Agent Console — grant, tick, journal",
-    titleKo: "에이전트 조작판 — 위임·틱·저널",
+    title: "Settlement Agent — grant, tick, journal",
+    titleKo: "정산 에이전트 — 위임·틱·저널",
     description:
       "The operator console: grant a mandate through MetaMask's ERC-7715 popup, run ticks, and read the journal the chain cannot reconstruct.",
     descriptionKo:
@@ -415,6 +415,33 @@ export const POC_CARDS: DemoCard[] = [
       "Preflight shows the live addresses (click to copy) because the most likely failure is a stale exchange address after a reset. The mandate panel branches on chain id: on 31337 it builds an EIP-712 delegation server-side; on any chain MetaMask supports (11155111 in the table) it calls wallet_requestExecutionPermissions and stores the opaque context the wallet returns. Ticks then draw through the DelegationManager and place signed CTF limit orders on verex; every skip is journalled with the enforcer's own words.",
     howItWorksKo:
       "프리플라이트가 살아 있는 주소를 보여 줍니다(클릭하면 복사) — 리셋 뒤의 낡은 exchange 주소가 가장 유력한 실패라서요. 위임 패널은 체인 id 로 갈립니다: 31337 에서는 서버가 EIP-712 위임 구조체를 만들고, MetaMask 가 지원하는 체인(표에 있는 11155111)에서는 wallet_requestExecutionPermissions 를 불러 지갑이 돌려주는 불투명한 context 를 저장합니다. 이후 틱은 DelegationManager 를 통해 자금을 뽑아 verex 에 서명된 CTF 지정가 주문을 냅니다. 모든 스킵은 enforcer 자신의 문장으로 저널에 남습니다.",
+  },
+  {
+    // Authority Auditor — ported into rabbit as a live demo (jay, 2026-09-10).
+    // Pure client-side; the page mounts components/auditor/Auditor.tsx at /live/auditor.
+    key: "authority-auditor",
+    title: "Authority Auditor — who can act alone",
+    titleKo: "권한 오디터 — 누가 혼자 움직일 수 있나",
+    description:
+      "Feed a wallet/dapp config and get a per-action authority matrix: for sign / recover / export-key / change-policy / pause / upgrade, which actor can act alone, only in cooperation, or cannot — severity-colored, worst-first. Pick a preset, fill the form, or paste a provider export (Privy / Dynamic / Web3Auth / Turnkey).",
+    descriptionKo:
+      "지갑/dapp 설정을 넣으면 행동별 권한 매트릭스를 만든다: sign / recover / export-key / change-policy / pause / upgrade 각각에 대해 어떤 액터가 단독으로/협조해야만/불가능한지를 심각도 색으로, 최악부터. 프리셋 선택·폼 입력·공급자 export 붙여넣기(Privy / Dynamic / Web3Auth / Turnkey).",
+    status: "live",
+    href: "/live/auditor",
+    updated: "2026-09-10",
+    important: true,
+    howTo:
+      "Open the demo → pick a preset (or Guided form / Exported JSON) → read the matrix and top findings. Read-only: no keys, no signatures, no on-chain writes.",
+    howToKo:
+      "데모 열기 → 프리셋 선택(또는 가이드 폼 / Export JSON) → 매트릭스와 주요 발견 읽기. 읽기 전용: 키·서명·온체인 쓰기 없음.",
+    purpose:
+      "In web3, who can actually move funds or control an account is usually undocumented and diffuse — a vendor, a proxy admin, guardians, session keys, an owner key each quietly add an actor who can act alone. A large share of hacks trace to one such actor nobody had mapped. The auditor makes that explicit as a grid, so single points of failure get fixed before they are exploited.",
+    purposeKo:
+      "web3 에서는 누가 실제로 자금을 옮기거나 계정을 통제할 수 있는지가 대개 문서화돼 있지 않고 흩어져 있다 — 공급자·프록시 admin·가디언·세션키·오너키가 각각 조용히 '혼자 움직일 수 있는 액터'를 하나씩 늘린다. 해킹의 상당수는 아무도 매핑하지 않은 그런 액터 하나로 거슬러 올라간다. 오디터는 그것을 격자로 명시해, 단일 실패점을 악용되기 전에 고치게 한다.",
+    howItWorks:
+      "A pure evaluate(config) → Matrix engine fills every (action × actor) cell and computes severity; it never emits a bare verdict — anything the config doesn't determine is 'unknown / not-verified' (a confidently-wrong cell is worse than none). Per-provider parsers map a vendor's non-secret exported config onto the canonical shape, falling back to vendor defaults with a warning. All client-side — no keys, no network.",
+    howItWorksKo:
+      "순수 evaluate(config) → Matrix 엔진이 (행동 × 액터) 셀을 모두 채우고 심각도를 계산한다. 절대 근거 없는 판정을 내지 않는다 — 설정이 결정하지 못하는 것은 'unknown / not-verified'다(확신에 찬 오답 셀이 빈 셀보다 나쁘다). 공급자별 파서가 벤더의 비밀 아닌 export 를 표준 형태로 매핑하고, 못 읽은 필드는 경고와 함께 벤더 기본값으로 폴백한다. 전부 클라이언트 사이드 — 키·네트워크 없음.",
   },
   {
     // 서비스 탐방 42/113에서 넘어온 카드 (jay, 2026-08-11). 다른 카드와 성격이 다르다 —
@@ -3813,6 +3840,8 @@ export const POC_CARDS: DemoCard[] = [
     descriptionKo:
       "x402 의 홍보 문구는 **결제 흐름에 프로세서가 없다**는 것이지만, 유료 요청 하나하나는 여전히 **검증하고 정산해 주는 facilitator** 를 지나갑니다 — **스펙은 이 역할을 무허가로 열어 두었고, 시장은 대부분 Coinbase 에서 빌려 씁니다.** 유료 엔드포인트 하나를 세 facilitator — **Coinbase 호스팅 기본값, 경쟁사 하나, 셀프호스팅 하나** — 에 붙여 보고, 지연시간을 비교하기 전에 **권한 행부터 채웁니다: 누가 정산을 거부할 수 있고, 누가 트래픽을 보고, 수수료 면제가 끝나면 누가 가격을 정하는가.**",
     status: "soon",
+    // 지금 이 브랜치에서 구현 중 — 라이브 페이지에서 빨간 점이 깜빡인다 (jay, 2026-09-09).
+    wip: true,
     // 앱 레벨 승격 (jay, 2026-09-08) — 애플리케이션 레벨 항목을 important 로.
     important: true,
     updated: "2026-09-02",

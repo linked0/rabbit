@@ -1,4 +1,5 @@
 import Nav from "../../Nav";
+import NotifyPageView from "@/app/NotifyPageView";
 import BackLink from "../../BackLink";
 import TechNotes from "../../TechNotes";
 import TechNotesLink from "../../TechNotesLink";
@@ -21,6 +22,7 @@ export default function AaPage() {
   return (
     <>
       <Nav />
+      <NotifyPageView path="/live/aa" />
       <main>
         <BackLink lang={lang} href="/live" ko="라이브" en="Live" />
         <h1>{t("AA — 위임형 계정 & 세션 키", "AA — Delegatable Accounts & Session Keys")}</h1>

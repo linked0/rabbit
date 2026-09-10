@@ -254,3 +254,16 @@ X402-PRICED CHAT (ongoing revenue)
   a per-persona sandbox) and how gating maps to that runtime.
 - Rental during an active chat session: hard cut at expiry vs grace period.
 - Royalty enforcement on secondary sales (ERC-2981 is a hint, not enforced by all markets).
+
+---
+
+## Chainlink — infra we use, not build
+
+Chainlink's oracle stack is settlement-rail infrastructure the persona market *consumes*, not reimplements — see the umbrella map in [README.md](README.md).
+
+- **CCIP** — cross-chain transport *if* a persona ever moves off the home chain (already noted in §5); on the home chain there is nothing to bridge. **If a message is stuck or forged:** an ownership transfer could double-count.
+- **VRF** — *optional*, only if persona drops / mints ever need provably fair randomness. **If biased:** the drop is riggable.
+
+**Deliberate non-use — pricing.** Persona rent / purchase is a plain ERC-20 transfer priced in **JYVE** (via the mini-AMM), so no external price feed is involved.
+
+> Every feed is a dependency with a failure mode — keep the "if wrong / late" guard in code, not only here.

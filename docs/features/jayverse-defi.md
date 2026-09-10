@@ -157,7 +157,7 @@ the thing that had to be *approximated* when reading real EtherFi.
 - **jayverse-rails.** Our own `jeETH` / `jweETH` / `LiquidityPool` / `MockAVS` addresses and the viem
   clients live in the shared rails package; the app hardcodes nothing.
 - **Rabbit AA (optional, later).** A 4337 batch could `approve`-free **deposit** gaslessly (ETH in,
-  token out in one sponsored UserOp) — a natural cross-link to [jayverse-aa.md](jayverse-aa.md), noted
+  token out in one sponsored UserOp) — a natural cross-link to [jayverse-rabbit.md](jayverse-rabbit.md), noted
   not built.
 - **Ponder + viem.** Still the indexing layer, now indexing **our** contracts' events for the rate
   chart, decomposition, and queue status.
@@ -193,7 +193,7 @@ RewardSnap { id, source: 'staking'|'restaking', amount, timestamp } // exact dec
 **Deploy / run**
 - `scripts/deploy-defi.mjs` deploys the four contracts to anvil (and Sepolia); a small
   `drip`/`restake`/`slash` dev script drives the study scenarios. Local vs Sepolia follows the same
-  environment-switch discipline as [jayverse-aa.md §7](jayverse-aa.md).
+  environment-switch discipline as [jayverse-rabbit.md §7](jayverse-rabbit.md).
 
 **Estimate:** ~3–4 focused days for contracts + Foundry tests (the core), ~2 days to repoint the
 existing dashboard/decomposition UI at our contracts.
@@ -206,3 +206,16 @@ existing dashboard/decomposition UI at our contracts.
   path a casual visitor can trigger.
 - **When to add gasless deposit via AA** — nice teaching cross-link, but only after the DeFi basics
   and the wallet `simulate()` path both work.
+
+---
+
+## Chainlink — infra we use, not build
+
+Chainlink's oracle stack is settlement-rail infrastructure this build *consumes*, not reimplements — see the umbrella map in [README.md](README.md).
+
+- **Data Feeds** — price inputs (e.g. ETH/USD) for the from-scratch staking-rate / APR math and any USD display. **If wrong or late:** the app's accounting drifts from reality.
+- **Proof of Reserve** — if a jeETH / jweETH ever claims external backing, PoR attests it so a redeem path can refuse unbacked units.
+
+**Deliberate non-use — the share price.** The LST exchange rate (`assets / shares`) is computed on-chain from our *own* pool events, not fed from an oracle — it is internal truth, so no feed is needed or wanted there.
+
+> Every feed is a dependency with a failure mode — keep the "if wrong / late" guard (staleness check / fallback) in code, not only here.

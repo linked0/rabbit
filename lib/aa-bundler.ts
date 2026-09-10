@@ -1,4 +1,4 @@
-// Jayverse AA §7 — 번들러 환경 선택자. 설계: docs/features/jayverse-aa.md §7.
+// Jayverse AA §7 — 번들러 환경 선택자. 설계: docs/features/jayverse-rabbit.md §7.
 //
 // 번들러는 Jayverse 서비스가 아니다 — Sepolia 에서는 thirdweb(호스티드)을 쓰고,
 // 로컬 anvil 에서는 번들러 없이 scripts/aa-self-relay.mjs 가 EntryPoint.handleOps 를

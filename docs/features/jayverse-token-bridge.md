@@ -46,15 +46,25 @@ No step requires Mina to understand that the "two chains" are really a fork plus
 
 ---
 
-## 3. What the web app shows (portal)
+## 3. What the web app shows (the exchange site)
+
+The web app is a single **token-exchange site**: a swap-first UI over the `JYVE/USDC`
+pool (§1.2) with the **bridge as a second tab**, so "trade JYVE" and "move JYVE across
+chains" live in one place (jay, 2026-09-09). Two primary screens — **Swap** and
+**Bridge** — sit over a shared balance/activity shell.
 
 - **Balance widget:** JYVE balance per chain, labeled by network — `Local (Anvil fork)` and `Sepolia`. USDC shown alongside (rails already surface USDC).
+- **Swap screen (the exchange):**
+  - JYVE ⇄ USDC swap form over the constant-product pool: pay-with / receive selector, amount in, live quote out.
+  - Live **price** and **reserves** from `Exchange.getPrice()` (polled every 5s), plus the price impact and the 0.30% fee for the entered amount.
+  - Slippage tolerance + minimum-received guard; a two-step **`approve → swap`** when the spent token needs allowance. Reads work with no wallet; executing a swap needs a connected wallet.
+  - *(Later)* an add/remove-liquidity panel for the pool, reusing the same reserves read.
 - **Bridge screen:**
   - Source chain → dest chain selector (swap arrow to flip direction).
   - Amount input with max = source balance; validation against mint caps / bridge limits.
   - A status strip showing the lifecycle: `Sign lock → Locked ✓ → Relaying… → Minted ✓` (and the mirror for burn-and-release).
   - Per-leg tx links (source lock tx, dest mint tx) so the user can inspect each on the right explorer.
-- **Tx / transfer status:** a small activity list — verex payout, persona payment, bridge legs — each with state (`pending`/`confirmed`/`failed`) and idempotency key, so a stuck relay is visible rather than silent.
+- **Tx / transfer status:** a small activity list — swaps, verex payout, persona payment, bridge legs — each with state (`pending`/`confirmed`/`failed`) and idempotency key, so a stuck relay is visible rather than silent.
 
 ---
 
@@ -139,3 +149,16 @@ Each service depends only on the JYVE contract + rails config; only the bridge s
 3. **Mint authority** — one shared treasury with `MINTER_ROLE`, or per-service minters (verex, game) with individual caps?
 4. **Symbol — resolved (jay, 2026-09-08):** **`JYVE`** (read "jive"), replacing the earlier `JVRS`/`JVS`.
 5. **Pricing — resolved (jay, 2026-09-08):** a `JYVE/USDC` mini-AMM in the same `jayverse-token` repo is the on-chain price source; an oracle is not used (it can't price a self-made token). Open sub-question: seed price + initial liquidity depth for the demo pool.
+
+---
+
+## Chainlink — infra we use, not build
+
+Chainlink's oracle stack is settlement-rail infrastructure this token *consumes*, not reimplements — see the umbrella map in [README.md](README.md).
+
+- **CCIP** — cross-chain transport when a service truly leaves the home chain (**Phase 3**), replacing the trusted dev relayer with Chainlink's cross-chain messaging + security. **If a message is stuck or forged:** the 1:1 lock↔mint invariant breaks (double-mint or stranded funds).
+- **Proof of Reserve** — attest that the locked reserve on the source backs the minted supply on the dest, so a redeem / release path can refuse units the reserve can't cover. This is the missing check from the `liquid-issuance-not-authorization` lesson: a mint bug made valid-but-unbacked units that every downstream check honored — authorization checked the *actor*, nothing checked the *object's backing*. PoR is that object-backing check (pair it with a mint-conservation invariant test).
+
+**Deliberate non-use — pricing JYVE (the loud one).** JYVE trades only in our own market, so it has **no external price an oracle could report**. Its price comes from the constant-product mini-AMM (`price = usdcReserve / jyveReserve`), never a feed. Reaching for an oracle here is a category error — an oracle relays an *external* truth, and a self-made token has none. (See §1.2 and §6.)
+
+> Every feed is a dependency with a failure mode — keep the "if wrong / late" guard in code, not only here.

@@ -43,6 +43,11 @@ const MENU: NavItem[] = [
   // ⚠️ 새 메뉴는 `ALLOW_LIVE=true` 가 있어야 뜬다 — .env 에 넣었고, deploy.sh 가
   // ALLOW_* 를 전부 Cloud Run env 로 전달하므로 배포 시 자동으로 따라간다.
   { href: "/live", ko: "데모", en: "Demo", code: "LIVE", pub: true },
+  // Hot demos — direct top-menu access (jay, 2026-09-10). Each needs ALLOW_<code>=true
+  // in .env (and the Cloud Run deploy env) or it stays hidden — see menuVisible below.
+  { href: "/live/aa", ko: "AA", en: "AA", code: "AA", pub: true },
+  { href: "/live/agent/console", ko: "정산 에이전트", en: "Settlement Agent", code: "AGENTCONSOLE", pub: true },
+  { href: "/live/auditor", ko: "오디터", en: "Auditor", code: "AUDITOR", pub: true },
   // 알고리즘 상단 메뉴는 제거 (2026-08-11, jay) — 수학·알고리즘 노트는 데모가 아니라 문서라,
   // 문서 색인(docs/index.html)의 Algorithms 섹션이 정본이 됐다. 카드는 /poc 로 돌아온다.
   // TIL 메뉴는 제거 — /poc 안의 섹션으로 흡수했다 (2026-08-11, jay). /til 은 /poc 로

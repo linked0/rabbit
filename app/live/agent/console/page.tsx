@@ -1,4 +1,5 @@
 import Nav from "../../../Nav";
+import NotifyPageView from "@/app/NotifyPageView";
 import BackLink from "../../../BackLink";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
@@ -26,6 +27,7 @@ export default function AgentConsolePage() {
   return (
     <>
       <Nav />
+      <NotifyPageView path="/live/agent/console" />
       <main>
         <BackLink lang={lang} href="/live/agent" ko="자율 거래 에이전트" en="Autonomous trading agent" />
         <h1>{t("에이전트 조작판", "Agent console")}</h1>

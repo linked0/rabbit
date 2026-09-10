@@ -300,6 +300,16 @@ recorded quote to stay fully read-only?</li>
 <li><strong>Repo boundary</strong> — R3F scene as an npm package Rabbit imports, a submodule, or a proxied route?</li>
 <li><strong>Player-trading later</strong> — if/when added, is it a distinct mode or a toggle within the live view?</li>
 </ol>
+<hr>
+<h2>Chainlink — infra we use, not build</h2>
+<p>Chainlink&#39;s oracle stack is settlement-rail infrastructure this build would <em>consume</em>, not reimplement — see the umbrella map in <a href="README.html">README.md</a>.</p>
+<ul>
+<li><strong>VRF</strong> — verifiable randomness for any draw / loot / spawn surface. <strong>If randomness is biased or predictable:</strong> the draw is a rigged game.</li>
+</ul>
+<p><strong>Deliberate non-use — the world state.</strong> The game is a read-only visualization of real chain state (both modes), so most of it needs no oracle at all — it reads what already happened; it doesn&#39;t price or resolve anything.</p>
+<blockquote>
+<p>Every feed is a dependency with a failure mode — keep the &quot;if wrong / late&quot; guard in code, not only here.</p>
+</blockquote>
 
   </article>
 </div>

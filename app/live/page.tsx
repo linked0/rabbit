@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Nav from "../Nav";
+import NotifyPageView from "@/app/NotifyPageView";
 import Card from "../DemoCard";
 import SessionKeyMark from "../home/SessionKeyMark";
 import { POC_CARDS, FEATURED_POC_KEY } from "@/lib/poc-cards";
@@ -27,6 +28,7 @@ export default function LivePage() {
   return (
     <>
       <Nav />
+      <NotifyPageView path="/live" />
       <main>
         <h1>{pick(lang, "데모", "Demo")}</h1>
         <p className="sub">

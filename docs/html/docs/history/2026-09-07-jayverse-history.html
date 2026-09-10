@@ -45,8 +45,8 @@
 </li>
 <li><p>플랜: <a href="../tasks/09-02-jayverse.html">docs/tasks/09-02-jayverse.md</a> §4(Persona) · §5(Unity/Game)</p>
 </li>
-<li><p>설계(추가, 다른 세션): <a href="../features/jayverse-aa.html">docs/features/jayverse-aa.md</a>,
-<a href="../features/jayverse-onboarding-mm.html">docs/features/jayverse-onboarding-mm.md</a>,
+<li><p>설계(추가, 다른 세션): <a href="" data-missing="../features/jayverse-aa.md">docs/features/jayverse-aa.md</a>,
+<a href="" data-missing="../features/jayverse-onboarding-mm.md">docs/features/jayverse-onboarding-mm.md</a>,
 <a href="../features/jayverse-defi.html">docs/features/jayverse-defi.md</a></p>
 </li>
 </ul>
@@ -126,7 +126,7 @@ x402 메시지당 과금, openclone 런타임, IPFS 핀닝(플레이스홀더 CI
 출력한다. 배포 사이트 반영은 <code>deploy.sh</code> 실행 대기 — 클라우드 콘솔 동작에는 <code>CLOUD_*</code> env
 4종이 채워져 있어야 한다(env 분리 커밋 <code>6f79544</code>).</p>
 <h3>AA 마켓 v1 — 서명 한 번의 가스리스 베팅</h3>
-<p><strong>Cause:</strong> jay의 &quot;세 서비스 진행&quot; 지시 중 #1. 설계: <a href="../features/jayverse-aa.html">jayverse-aa.md</a>
+<p><strong>Cause:</strong> jay의 &quot;세 서비스 진행&quot; 지시 중 #1. 설계: <a href="" data-missing="../features/jayverse-aa.md">jayverse-aa.md</a>
 §3·§4·§6·§7.</p>
 <p><strong>Reasoning:</strong> thirdweb 4337이 이미 <code>/live/aa</code>에 배선돼 있어 증분 구현이 최소 배관. 로컬은
 번들러를 만들지 않고 <code>EntryPoint.handleOps</code> 셀프 릴레이(§7 결정), 전환 키는 chainId가 아닌
@@ -139,7 +139,7 @@ CTFExchange에는 트레이더 호출 <code>placeOrder</code>가 없고 운영�
 실제 체결되려면 verex가 EIP-1271 스마트계정 주문을 <code>POST /orders</code>에서 받아야 한다 — jay
 결정 대기(<code>encodeBetCalls()</code> 주석에 문서화). <code>/markets</code>는 내비 미연결(URL 직접 접근).</p>
 <h3>verex 온보딩(Stripe) + MM v1 — 상세는 verex 저장소 history로</h3>
-<p><strong>Cause:</strong> #2. 설계: <a href="../features/jayverse-onboarding-mm.html">jayverse-onboarding-mm.md</a>.</p>
+<p><strong>Cause:</strong> #2. 설계: <a href="" data-missing="../features/jayverse-onboarding-mm.md">jayverse-onboarding-mm.md</a>.</p>
 <p><strong>Change/Result:</strong> 구현·검증 전부 <code>~/work/verex</code>에서 — 상세는 verex의
 <code>docs/history/2026-09-07.md</code> 참조. 요약: Checkout/웹훅 멱등 크레딧, USDCX 잔액 가드,
 <code>/funding</code> 화면 + 헤더 칩, <code>/admin/mm</code>(상태 + 안전 컨트롤만 + 감사 로그). 타입체크·빌드·

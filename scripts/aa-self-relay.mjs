@@ -1,4 +1,4 @@
-// Jayverse AA §7 — 로컬 anvil 셀프 릴레이. 설계: docs/features/jayverse-aa.md §7.
+// Jayverse AA §7 — 로컬 anvil 셀프 릴레이. 설계: docs/features/jayverse-rabbit.md §7.
 //
 // 번들러를 구현하지 않는다(2026-09-07 결정): anvil 은 Sepolia 의 chainId 를 그대로
 // 보고하므로 thirdweb 의 chainId 기반 번들러는 진짜 Sepolia 로 가버린다. 대신 이

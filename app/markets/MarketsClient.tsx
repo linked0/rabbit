@@ -3,7 +3,7 @@
 // Jayverse AA §3 — Markets 그리드 + 지갑 칩 + Bet 드로어의 클라이언트 셸.
 // 스택은 /live/aa 에서 증명된 그대로: thirdweb Connect + ERC-4337 스마트 계정 +
 // sponsorGas 페이마스터(Sepolia). 여기서는 그 능력을 no-op 이 아니라 진짜 verex
-// 콜(approve + 주문)에 겨눈다 — docs/features/jayverse-aa.md §6.
+// 콜(approve + 주문)에 겨눈다 — docs/features/jayverse-rabbit.md §6.
 import { ThirdwebProvider, ConnectButton, useActiveAccount, lightTheme } from "thirdweb/react";
 import { sepolia } from "thirdweb/chains";
 import { useMemo, useState } from "react";

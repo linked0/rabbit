@@ -188,7 +188,7 @@ export async function placeSignedLimitOrder(args: {
   });
 }
 
-// ── Jayverse AA (docs/features/jayverse-aa.md §6) — /markets 의 견적 + 배치 콜 인코딩 ──
+// ── Jayverse AA (docs/features/jayverse-rabbit.md §6) — /markets 의 견적 + 배치 콜 인코딩 ──
 //
 // 문서의 lib/verex.ts 항목이 여기 있는 이유: "이미 동등한 클라이언트가 있으면 확장"
 // — 이 파일이 콘솔이 쓰는 verex REST 클라이언트라서 목록/호가는 위의 `verex` 를

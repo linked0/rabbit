@@ -47,7 +47,12 @@ on the 08-21 plan reset) lives in
 authoritative for step-level status, and the unchecked §1.4 checkboxes below predate it.
 <strong>Plan reset 2026-08-21</strong> (jay): the 2026-08-03 batch plan shipped waves 0–2 and was archived at
 <a href="../tasks/aug-03-plan.html"><code>docs/tasks/aug-03-plan.md</code></a>; its unfinished tail and everything it
-deferred now live in <a href="#backlog">Backlog</a> below.</p>
+deferred now live in <a href="#backlog">Backlog</a> below.
+<strong>Update 2026-09-04:</strong> <strong>W6 — a counterparty verex does not custody — is built and proven</strong>
+(merged 2026-08-26, exercised unattended on 2026-09-02 by rabbit&#39;s J2 agent trading through it);
+status and the one open sub-item (W6.5, match-time funds re-check) live in
+<a href="../tasks/current-plan.html#w6"><code>docs/tasks/current-plan.md</code> → W6</a>. Local dev now runs on an
+<strong>anvil fork of Sepolia</strong> (one root <code>.env</code>, 7702-aware seed).</p>
 <h2>Categories</h2>
 <table>
 <thead>
@@ -55,100 +60,123 @@ deferred now live in <a href="#backlog">Backlog</a> below.</p>
 <th>Category</th>
 <th>Roadmap</th>
 <th>Doc</th>
+<th>Status</th>
 </tr>
 </thead>
 <tbody><tr>
 <td>Markets</td>
 <td>S2</td>
 <td><a href="markets.html">markets.md</a></td>
+<td>✅ Done — oracle-typed markets live on Sepolia (staging + prod) and the local fork; create → trade → resolve works</td>
 </tr>
 <tr>
 <td>Negative-risk (multi-outcome)</td>
 <td>post-S2</td>
 <td><a href="negative-risk-markets.html">negative-risk-markets.md</a></td>
+<td>⬜ Design only — no NegRisk adapter under <code>packages/contracts/src</code></td>
 </tr>
 <tr>
 <td>Market groups &amp; probability sums</td>
 <td>post-S2 (design)</td>
 <td><a href="market-groups.html">market-groups.md</a> — when outcome YES prices must sum to 100% and when they must <strong>not</strong> (exclusive · directional/nested · independent); normalization + invariant rules per group type</td>
+<td>⬜ Design only — no <code>groupType</code> in <code>schema.prisma</code>, seeded groups mis-modelled (<a href="#v5">V5.1</a>)</td>
 </tr>
 <tr>
 <td>Trading &amp; orders</td>
 <td>S2</td>
 <td><a href="trading-orders.html">trading-orders.md</a></td>
+<td>✅ Done — CLOB matching against the LMSR operator; <strong>external signed makers since 2026-08-26 (W6)</strong>, funds read-and-reject; open: W6.5 match-time re-check</td>
 </tr>
 <tr>
 <td>Settlement &amp; redeem</td>
 <td>S2</td>
 <td><a href="settlement-redeem.html">settlement-redeem.md</a></td>
+<td>✅ Done — settle worker + external redeem recorded from the verified receipt (W6.4); external redeem costs the holder gas, trading does not</td>
 </tr>
 <tr>
 <td>Oracle (resolution)</td>
 <td>S2 → S6</td>
 <td><a href="oracle.html">oracle.md</a></td>
+<td>◐ Partial — mock path proven end-to-end; <strong>the live UMA adapter is deployed but has never resolved a market</strong> (<a href="#v1">V1.2</a>, A5 open → W1)</td>
 </tr>
 <tr>
 <td>MM Agent</td>
 <td>S2.5 → S6</td>
 <td><a href="mm-agent.html">mm-agent.md</a></td>
+<td>✅ Done, differently — in-process <code>mm.ts</code> LMSR ladder, not a separate worker (structural drift noted in the plan)</td>
 </tr>
 <tr>
 <td>Hybrid AMM + CLOB</td>
 <td><strong>early</strong> (priority)</td>
 <td><a href="hybrid-amm-clob.html">hybrid-amm-clob.md</a> — incl. <strong>Extreme-probability handling</strong> (CPMM tail slippage → simulation · curve decision · tail guard, 2026-07-17)</td>
+<td>◐ Partial — LMSR quoting lives inside the CLOB today; the on-chain pool (phase B) deferred to mainnet (<a href="#v3">V3.1</a>)</td>
 </tr>
 <tr>
 <td>Account abstraction</td>
 <td>S7–S8</td>
 <td><a href="account-abstraction.html">account-abstraction.md</a></td>
+<td>⬜ Not started (<a href="#v4">V4</a>) — the fork seed&#39;s 7702 hygiene is not AA</td>
 </tr>
 <tr>
 <td>API &amp; indexer</td>
 <td>S4–S5</td>
 <td><a href="api-indexer.html">api-indexer.md</a></td>
+<td>◐ Split — API ✅ (Fastify + Cloud SQL, staging + prod); indexer dropped by decision, read-only checker queued as W5 (<a href="#v3">V3.2</a>)</td>
 </tr>
 <tr>
 <td>Web UI</td>
 <td>S3</td>
 <td><a href="web-ui.html">web-ui.md</a></td>
+<td>✅ Done — Polymarket-style feed + market pages on Cloud Run</td>
 </tr>
 <tr>
 <td>MCP interface</td>
 <td>S3 → S8</td>
 <td><a href="mcp-interface.html">mcp-interface.md</a></td>
+<td>⬜ Not built — <code>packages/mcp-server</code> does not exist; queued as W7</td>
 </tr>
 <tr>
 <td>Onboarding &amp; payments</td>
 <td>S8–S9</td>
 <td><a href="onboarding-payments.html">onboarding-payments.md</a></td>
+<td>⬜ Not started (<a href="#v4">V4</a>)</td>
 </tr>
 <tr>
 <td>Runtime validation (Zod)</td>
 <td>incremental — CLI now · api S4 · mm-agent S2.5</td>
 <td><a href="zod-validation.html">zod-validation.md</a> — env/ABI/JSON boundary validation + inferred types; folds in audit item A2</td>
+<td>⬜ Not started — no <code>zod</code> imports under <code>packages/*/src</code></td>
 </tr>
 <tr>
 <td>Markets as tokens</td>
 <td>post-S2 (exploratory)</td>
 <td><a href="markets-as-tokens.html">markets-as-tokens.md</a> — ERC-20 wrapper for CTF outcome shares → external DeFi composability (DEX listing, lending, bots)</td>
+<td>⬜ Exploratory design only</td>
 </tr>
 <tr>
 <td>CCIP market results</td>
 <td>S6-adjacent (exploratory)</td>
 <td><a href="ccip-market-result.html">ccip-market-result.md</a> — Chainlink CCIP <code>MarketResultReceiver</code> + <code>CCIPLocalSimulator</code> local test setup (Foundry/Hardhat); cross-chain resolution path for the oracle Stage-2 track</td>
+<td>⬜ Exploratory design only</td>
 </tr>
 <tr>
 <td>Thirdweb</td>
 <td>exploratory</td>
 <td><a href="thirdweb.html">thirdweb.md</a> — platform bundle vs hand-rolled parts (Connect wallets/AA · Engine backend tx · browser-signing deploy); check item: review the Rabbit-side Thirdweb feature too before deciding</td>
+<td>⬜ Exploratory — decision not made</td>
 </tr>
 <tr>
 <td>Observability</td>
 <td>S4-adjacent (exploratory)</td>
 <td><a href="observability.html">observability.md</a> — OpenTelemetry-first instrumentation with a swappable export target (Cloud Trace now, Datadog later); ChainJob worker traced first since metrics structurally can&#39;t answer &quot;which step is slow&quot;, plus a standing metric-cardinality rule</td>
+<td>⬜ Design only (<a href="#v5">V5.2</a>)</td>
 </tr>
 </tbody></table>
 <p>Hierarchy: <strong>Category</strong> (file) → <strong>Feature</strong> (bold item) → <strong>to-do</strong> (checkbox); <code>(you)</code> = needs your decision or action.</p>
+<blockquote>
+<p><strong>Status column added 2026-09-04</strong> — audited against <code>packages/*/src</code>, <code>schema.prisma</code> and the
+plan&#39;s roadmap table, not against doc text. Legend: ✅ done · ◐ partial · ⬜ not started/design only.</p>
+</blockquote>
 <h2>Other docs (moved from the former <code>plan/</code>)</h2>
 <ul>
 <li><a href="review-checklist.html">review-checklist.md</a> — what to check / analyze (review of work to date)</li>
@@ -230,7 +258,7 @@ the archive.</p>
 <td><strong>V3.2</strong></td>
 <td><strong>S5 indexer</strong></td>
 <td>dropped 2026-08-03 — the justification did not survive reading the code; <code>SETTLE_MATCH</code> is already idempotent and <code>onFailed</code> compensates. Reframed as an <strong>observability</strong> tool, not a correctness one; a read-only DB-vs-chain consistency checker gets most of the value for none of the subsystem. <strong>Second trigger, 2026-08-25:</strong> the drop rested on <em>&quot;the DB is written only by the API&quot;</em>, and <strong>W6 ends that</strong> — an external holder can redeem, split or merge on CTF directly, and can move funds out from under a resting order. Still not a subsystem: the reframed read-only checker is the right size, and the first thing it should check is the resting-order gap in W6</td>
-<td>after V1 — the adapter adds on-chain state the DB mirrors, including disputes that can change an answer days later — <strong>or</strong> once external makers are live</td>
+<td>after V1 — the adapter adds on-chain state the DB mirrors, including disputes that can change an answer days later — <strong>or</strong> once external makers are live. <strong>That trigger fired 2026-08-26: W6 is live</strong>, so the read-only checker is now actionable (queued as W5 in the plan)</td>
 </tr>
 <tr>
 <td><strong>V3.3</strong></td>
@@ -268,7 +296,7 @@ are here so a cold session does not have to re-grep to learn they are empty.</p>
 <tr>
 <td><strong>S7–S8</strong> AA / cross-chain</td>
 <td>⬜ none</td>
-<td>no 4337 / 7702 / session-key references under <code>packages/*/src</code>; no CCIP or LayerZero either. Design in <a href="account-abstraction.html">account-abstraction.md</a>, <a href="ccip-market-result.html">ccip-market-result.md</a></td>
+<td>no 4337 / session-key references under <code>packages/*/src</code>; no CCIP or LayerZero either. <em>(2026-09-04 nuance: the fork seed is now 7702-aware — it probes and strips dead 7702 delegations on reused test accounts — but that is account hygiene, not an AA feature.)</em> Design in <a href="account-abstraction.html">account-abstraction.md</a>, <a href="ccip-market-result.html">ccip-market-result.md</a></td>
 </tr>
 <tr>
 <td><strong>S8–S9</strong> Stripe onboarding</td>
