@@ -10,6 +10,30 @@ export const FEATURED_POC_KEY = "aa";
 
 export const POC_CARDS: DemoCard[] = [
   {
+    key: "mid-level-backend-role-the-hiring-stack",
+    updated: "2026-09-10",
+    status: "soon",
+    group: "future",
+    title: "A mid-level backend JD, read as a stack checklist",
+    titleKo: "미들 백엔드 채용 공고 — 스택 체크리스트로 읽기",
+    description:
+      "A saved 'what you'll do if you join' listing for a mid-level backend engineer: Java/Spring Boot, JPA/Querydsl over MySQL/MariaDB, REST + GraphQL, tech-debt paydown, Docker/Kubernetes with CI/CD, and Scrum. Kept as a snapshot of the boring-but-real stack such a team hires for.",
+    descriptionKo:
+      "미들 백엔드 엔지니어 '합류하면 함께 할 업무' 공고를 저장: Java/Spring Boot, MySQL/MariaDB 위 JPA/Querydsl, REST + GraphQL, 기술 부채 상환, Docker/Kubernetes + CI/CD, 그리고 Scrum. 이런 팀이 채용하는 '지루하지만 진짜인' 스택의 스냅샷으로 보관.",
+    howTo:
+      "Not a build — a saved reference. Read it as a checklist, not prose: each bullet is a capability a mid-level Java/Spring team assumes you already have. Map each line to have / gap / not-my-direction against your own stack, and the JD turns into a two-column skills diff. Note the shape — none of it is exotic; the value a mid-level is hired for is the steady operation of a conventional stack, not novelty.",
+    howToKo:
+      "구현이 아니라 저장된 참조입니다. 산문이 아니라 체크리스트로 읽으세요: 각 항목은 미들 Java/Spring 팀이 이미 갖췄다고 가정하는 역량입니다. 각 줄을 본인 스택에 대해 보유 / 격차 / 내 방향 아님으로 표시하면, 공고가 두 열짜리 스킬 diff가 됩니다. 모양에 주목 — 화려한 건 하나도 없습니다; 미들을 뽑는 값어치는 신기함이 아니라 통상적 스택의 꾸준한 운영입니다.",
+    purpose:
+      "The posting is worth keeping not for any one line but for its shape: a mid-level backend role is defined almost entirely by the reliable operation of a conventional stack — Java/Spring, an ORM over a relational database, HTTP APIs, containers, CI/CD, and an agile process. Nothing on the list is a research problem; the bar is competence and steadiness across all of it at once. Read against a crypto/TypeScript background it is also a map of the distance between two ecosystems — the same concerns (data modeling, APIs, deploys) wearing entirely different tools.",
+    purposeKo:
+      "이 공고가 보관할 값어치가 있는 건 어느 한 줄이 아니라 모양 때문입니다: 미들 백엔드 역할은 거의 전적으로 통상적 스택의 신뢰성 있는 운영으로 정의됩니다 — Java/Spring, 관계형 DB 위 ORM, HTTP API, 컨테이너, CI/CD, 애자일 프로세스. 목록에 연구 문제는 없습니다; 기준은 그 전부를 동시에 다루는 역량과 꾸준함입니다. 크립토/TypeScript 배경에서 읽으면 두 생태계 사이 거리의 지도이기도 합니다 — 같은 관심사(데이터 모델링·API·배포)가 전혀 다른 도구를 입은 것.",
+    howItWorks:
+      "### The role — 'what you'll do if you join' (mid-level backend)\n\n| Area | The responsibility |\n|---|---|\n| **Language / framework** | Java + Spring Boot — build new services and modernize existing systems into a stable, scalable backend architecture |\n| **Data / ORM** | JPA, Querydsl to optimize DB design; efficient data logic on MySQL/MariaDB |\n| **APIs** | design & build RESTful APIs and GraphQL for smooth front-end data exchange; performance tuning |\n| **Tech debt** | identify and incrementally pay down tech debt to raise maintainability and stability |\n| **Ops** | run services on Docker/Kubernetes; automate deploys with CI/CD pipelines |\n| **Process** | collaborate across teams on Agile (Scrum); analyze requirements and propose the best technical solution |\n\nSource: job-posting screenshot `백엔드(미들).png` (captured 2026-09-10).",
+    howItWorksKo:
+      "### 역할 — '합류하면 함께 할 업무' (미들 백엔드)\n\n| 영역 | 업무 |\n|---|---|\n| **언어/프레임워크** | Java + Spring Boot — 신규 서비스 개발 및 기존 시스템 고도화로 안정적·확장 가능한 백엔드 아키텍처 설계 |\n| **데이터/ORM** | JPA·Querydsl로 DB 설계 최적화; MySQL/MariaDB 위 효율적 데이터 로직 |\n| **API** | RESTful API·GraphQL 설계·개발로 프론트엔드와 원활한 데이터 통신; 성능 개선 |\n| **기술 부채** | 기술 부채 식별·점진적 개선으로 유지보수성·안정성 강화 |\n| **운영** | Docker/Kubernetes에서 서비스 운영; CI/CD 파이프라인으로 배포 자동화 |\n| **프로세스** | 애자일(Scrum) 기반 팀 협업; 요구사항 분석·최적 기술 솔루션 제안 |\n\n출처: 채용 공고 스크린샷 `백엔드(미들).png` (2026-09-10 캡처).",
+  },
+  {
     key: "op-return-is-a-shared-state-channel",
     important: true,
     updated: "2026-09-10",
