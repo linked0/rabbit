@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; On-chain settlement funding — the card issuer's working capital, not the cardholder's payment</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#216</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#217</span><span>PoC</span></p>
       <h1>On-chain settlement funding — the card issuer's working capital, not the cardholder's payment</h1>
       <p class="lead">Visa&#39;s stablecoin-card growth moved the interesting part one layer up: not users paying in stablecoins, but the card issuer borrowing stablecoins on-chain to fund Visa&#39;s daily settlement, underwritten by its own settlement history and repaid automatically as receipts arrive. Model that loop.</p>
       <p class="meta">Not a build yet — a model to build. Reproduce the funding loop on a local fork: (1) an issuer owes a daily settlement amount before its cardholder receipts land; (2) it draws stablecoin from a revolving credit line to cover the gap; (3) incoming receipts hit a smart-contract waterfall that repays principal + interest first, before the issuer keeps the rest; (4) the credit limit is a function of observed settlement throughput, not posted asset collateral. Then add the &#39;just-in-time&#39; variant — draw exactly the settlement shortfall at settlement time instead of pre-borrowing a buffer — and measure idle-capital cost against it. Confirm the real mechanics (Visa × Credit Coop, Rain, Karta) against their own writeups before citing numbers.</p>
@@ -473,7 +473,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-won-stablecoin-fee-savings.html">&larr; 215. The ₩5T card-fee 'saving' is one optimistic cell — and a transfer, not free money</a><a href="pocs-indicators-add-a-decision.html">217. An indicator adds no information — it adds a decision &rarr;</a></div>
+    <div class="pager"><a href="pocs-won-stablecoin-fee-savings.html">&larr; 216. The ₩5T card-fee 'saving' is one optimistic cell — and a transfer, not free money</a><a href="pocs-indicators-add-a-decision.html">218. An indicator adds no information — it adds a decision &rarr;</a></div>
   </div>
   </main>
 </div>

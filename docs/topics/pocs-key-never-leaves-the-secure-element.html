@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; The private key never leaves the secure element</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#132</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#133</span><span>PoC</span></p>
       <h1>The private key never leaves the secure element</h1>
       <p class="lead">A hardware wallet&#39;s whole thesis in one sentence: a certified tamper-resistant chip <strong>generates the private key, keeps it, and signs inside itself</strong> — the key is never exported. Malware on the connected phone or PC can <em>request</em> a signature but can never <em>read</em> the key, and the on-device screen closes the loop (what-you-see-is-what-you-sign). But that only protects the key <strong>in use</strong>. The BIP-39 seed that can regenerate it is a bearer secret whose <strong>backup</strong> is the real attack surface — which is exactly the problem D&#39;CENT&#39;s R3covery card and SLIP-39 shares target.</p>
       <p class="meta">Not yet scoped — a two-boundary probe, not a product. (1) <strong>Key-in-use:</strong> connect a hardware wallet (or emulate a secure-element signer), sign a transaction, and <em>prove the key never appears on the host</em> — capture the USB/BLE traffic and show only the signature crosses the wire, never the seed or key. Then contrast <strong>blind signing</strong> (host says &#39;sign this hash&#39;) against <strong>on-device verification</strong> (the chip&#39;s own screen renders the actual recipient/amount) — the second is the whole reason the screen exists. (2) <strong>Key-at-rest:</strong> reconstruct the same wallet from its seed on a <em>second</em> device and observe that whoever holds the seed holds the funds, chip or no chip — then compare backup schemes (paper, metal plate, SLIP-39 m-of-n shares, a recovery card). Reference: BIP-39, SLIP-39 (Shamir), a CC-EAL-rated secure element (D&#39;CENT, Ledger). Confirm certification levels before citing.</p>
@@ -517,7 +517,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-issuance-as-a-service.html">&larr; 131. Issuance-as-a-service — you mint a brand, the platform keeps the money</a><a href="pocs-sft-the-shape-of-thinking.html">133. You can SFT the shape of thinking, not the thinking &rarr;</a></div>
+    <div class="pager"><a href="pocs-issuance-as-a-service.html">&larr; 132. Issuance-as-a-service — you mint a brand, the platform keeps the money</a><a href="pocs-sft-the-shape-of-thinking.html">134. You can SFT the shape of thinking, not the thinking &rarr;</a></div>
   </div>
   </main>
 </div>
