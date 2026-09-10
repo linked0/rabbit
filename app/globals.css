@@ -423,6 +423,34 @@ a.ghost:hover {
   font-weight: 600;
   white-space: nowrap;
 }
+/* WIP — 지금 이 브랜치에서 구현 중인 항목 (jay, 2026-09-09). 빨간 점이 깜빡여
+   "작업 중"을 표시한다. 구현이 끝나면 카드의 wip 플래그를 지운다. */
+.poc-wip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #ef4444;
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+}
+.poc-wip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #ef4444;
+  animation: poc-wip-blink 1s steps(1, end) infinite;
+}
+@keyframes poc-wip-blink {
+  50% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .poc-wip-dot { animation: none; }
+}
 .poc-badge-live {
   color: var(--success);
   background: color-mix(in srgb, var(--success) 14%, transparent);
@@ -1028,4 +1056,34 @@ a.ghost:hover {
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
+}
+
+/* ── Authority Auditor (ported) — follows rabbit's light/dark theme (jay, 2026-09-10).
+   Base tokens (panel/border/text/accent) come from rabbit's theme, so the auditor flips
+   with the toggle. Only the original font + the severity palette are added here; severity
+   has a light set (:root) and a dark set matching the original app. */
+.auditor-scope {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.auditor-scope .small { font-size: 0.85rem; }
+.auditor-scope h2 { font-size: 1.15rem; margin: 2rem 0 0.75rem; }
+/* rabbit's global `th` is 12px/muted; the matrix headers (actor columns + action rows)
+   need the original's readable size/weight. Scoped so only the auditor is affected. */
+.auditor-scope th { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+/* rabbit right-aligns all th/td by default; the original matrix is left-aligned, so the
+   cell text and the rule/evidence line were being pushed to the right. Reset to left. */
+.auditor-scope th,
+.auditor-scope td { text-align: left; }
+
+:root {
+  --critical-bg: #fee2e2; --critical-fg: #b91c1c;
+  --high-bg: #ffedd5;     --high-fg: #c2410c;
+  --medium-bg: #fef9c3;   --medium-fg: #a16207;
+  --info-bg: #eef2f7;     --info-fg: #475569;
+}
+:root[data-theme="dark"] {
+  --critical-bg: #4a1620; --critical-fg: #ff8095;
+  --high-bg: #4a3312;     --high-fg: #ffc266;
+  --medium-bg: #123a44;   --medium-fg: #7fd6e6;
+  --info-bg: #16321f;     --info-fg: #8fe0a6;
 }

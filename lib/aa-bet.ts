@@ -9,7 +9,7 @@ import {
 } from "thirdweb/wallets/smart";
 import type { AaBundlerEnv } from "./aa-bundler";
 
-// Jayverse AA §6 — 배치 UserOp 전송. 설계: docs/features/jayverse-aa.md §4·§6.
+// Jayverse AA §6 — 배치 UserOp 전송. 설계: docs/features/jayverse-rabbit.md §4·§6.
 //
 // /live/aa 의 useSendBatchTransaction 을 그대로 안 쓰는 이유: 그 경로는 UserOp 해시를
 // 삼키고 온체인 tx 해시만 돌려준다(thirdweb 내부에서 영수증까지 기다린 뒤 반환).

@@ -85,3 +85,14 @@ The specifics below are a mid-2026 understanding and should be treated as **clai
 - **Link-out vs Mini App vs trade intents** — pick the commitment level deliberately per the first table; the winnings → bridge → wallet flow ([jayverse-token-bridge.md](jayverse-token-bridge.md), [jayverse-wallet.md](jayverse-wallet.md)) is what a funded passkey account most directly shortens.
 - **The measurement baseline** — capture verex's current connect → funded → first-transaction rates *now*, so the "multiple" the Mini App buys is provable later against real numbers.
 - **Numbering:** listed as design doc #9 in the hub; the umbrella plan still has L2 at §9. Reconcile the two when this gets a plan.
+
+---
+
+## Chainlink — infra we use, not build
+
+The whole thesis of this doc — **rent the rail, don't rebuild it** — is exactly the Chainlink posture: consume the oracle stack, don't reimplement it (umbrella map: [README.md](README.md)).
+
+- **Data Feeds** — if the Mini App ever surfaces prices or USD values, read them from a feed rather than hand-rolling a price source. **If wrong or late:** displayed values mislead.
+- **CCIP** — for any cross-chain hop the Mini App needs, rather than a bespoke bridge. **If a message is stuck or forged:** the transfer's invariant breaks.
+
+> Every feed is a dependency with a failure mode — keep the "if wrong / late" guard in code, not only here.

@@ -29,9 +29,12 @@ function debounced(key: string): boolean {
   return false;
 }
 
-// 알림을 보내는 시점은 딱 둘이다 — 홈 방문, 그리고 Jay Chat 대화 시작 (jay, 2026-08-05).
-// /projects 방문 알림은 제거했다: 페이지마다 알림을 붙이면 신호가 아니라 소음이 되고, 정작
-// 알아야 할 두 이벤트가 묻힌다. 새 페이지에 notifyPageView 를 추가하기 전에 이 결정을 먼저 볼 것.
+// 알림 정책이 뒤집혔다 (jay, 2026-09-10). 예전(2026-08-05)엔 "홈 방문 + Jay Chat 시작" 딱
+// 둘만 알렸다 — 페이지마다 붙이면 소음이 된다는 이유였다. 이제는 반대로 **홈을 뺀 모든
+// 상단 메뉴 페이지 진입 + Jay Chat 시작**을 알린다: 홈은 누구나 처음 닿는 곳이라 정보량이
+// 가장 낮은 신호였고, 그보다 더 깊은(projects·데모·auditor 등) 진입이 "의도를 갖고 왔다"는
+// 진짜 신호이기 때문이다. 홈의 notifyPageView 호출은 그래서 제거했다. 상단 메뉴 페이지들은
+// app/NotifyPageView.tsx(서버 컴포넌트)로 진입 시 이 함수를 부른다. (path, ip) 5분 디바운스.
 export function notifyPageView(pathname: string, ip: string) {
   const key = `page:${pathname}:${ip}`;
   if (debounced(key)) return;

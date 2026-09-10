@@ -262,3 +262,14 @@ a gap we paper over.
   enumerate arbitrary `AccessControl` roles later?
 - Do we snapshot on-chain reads at a block height so a shared report is reproducible, or always
   re-read live?
+
+---
+
+## Chainlink — infra we audit, not use
+
+The Authority Auditor is pure read / analyze, so it **consumes no Chainlink itself**. Chainlink appears here the other way round: an **oracle / price feed is an actor whose authority the matrix must capture** —
+
+- *Who can change a contract's feed address?* If a single owner key can repoint a price feed alone, that is a single point of failure the matrix should flag (an `alone` cell), exactly like `upgrade` or `pause`.
+- A wrong or late feed is therefore a **finding**, not a dependency, in this product — the Auditor's job is to surface who controls the feed and whether one actor can move it unilaterally.
+
+So for the Auditor, "if the feed is wrong" isn't a runtime guard — it's a row worth auditing. (Umbrella map: [README.md](README.md).)

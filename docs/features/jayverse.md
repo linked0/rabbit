@@ -60,3 +60,11 @@ and label the page `SIMULATED` up front.
    `/jayverse/trading-terminal`?
 2. MVP fully mock, or wire the real Hyperliquid book from day one?
 3. Is the **force-graph** centerpiece a must-have for MVP (most work), or defer to v2?
+
+---
+
+## Chainlink — infra we use, not build
+
+The showcase is **client-side, no backend** (see *Tech*), so today it uses **no Chainlink at all** — it renders panels; it doesn't price or resolve anything.
+
+**If a "make it real" v2 tie-in** (the optional section) ever reads live prices or values, it should pull them from **Data Feeds** rather than a hand-rolled source — consume the rail, don't rebuild it. (Umbrella map: [README.md](README.md).)

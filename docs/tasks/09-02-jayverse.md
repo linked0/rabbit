@@ -73,7 +73,7 @@
   - **Market (`/market`) Hyperliquid trading** — in progress; the Portfolio half is done.
   - **CI/CD** — `.github/workflows/` does not exist at all; no PR is type-checked.
 - My Comment: We start with AA which is ERC 4337. Show me the user scenario of AA here like what web app shows and the flow. You can imagine some basic feature. It would be great to cooperate with my existing services.
-  - **Design doc:** [../features/jayverse-aa.md](../features/jayverse-aa.md)
+  - **Design doc:** [../features/jayverse-rabbit.md](../features/jayverse-rabbit.md)
 
 ## 2. Verex as Prediction Market
 - **What**: the flagship — prediction market, upgraded per the diagram with AA (ERC-4337), a UMA-style optimistic oracle for resolution, and an MCP server so agents can trade it.
@@ -98,7 +98,7 @@
   - **S7–S8 AA / cross-chain, S8–S9 Stripe onboarding** — roadmap steps with no code; designs exist.
   - Exploratory designs only — markets-as-tokens · CCIP market results · Thirdweb decision.
 - My Comment: We start to implement Stripe onboarding and Market Maker. Show me the user scenario of AA in a new md file in features folder like what web app shows and the flow. You can imagine some basic feature. It would be great to cooperate with my existing services.
-  - **Design doc:** [../features/jayverse-onboarding-mm.md](../features/jayverse-onboarding-mm.md)
+  - **Design doc:** [../features/jayverse-verex.md](../features/jayverse-verex.md)
 
 ## 3. DeFi
 - **What**: yield/restaking corner of the diagram (EtherFi node) — start as a read-only dashboard over restaking positions, only later custody anything.

@@ -301,6 +301,17 @@ a per-persona sandbox) and how gating maps to that runtime.</li>
 <li>Rental during an active chat session: hard cut at expiry vs grace period.</li>
 <li>Royalty enforcement on secondary sales (ERC-2981 is a hint, not enforced by all markets).</li>
 </ul>
+<hr>
+<h2>Chainlink — infra we use, not build</h2>
+<p>Chainlink&#39;s oracle stack is settlement-rail infrastructure the persona market <em>consumes</em>, not reimplements — see the umbrella map in <a href="README.html">README.md</a>.</p>
+<ul>
+<li><strong>CCIP</strong> — cross-chain transport <em>if</em> a persona ever moves off the home chain (already noted in §5); on the home chain there is nothing to bridge. <strong>If a message is stuck or forged:</strong> an ownership transfer could double-count.</li>
+<li><strong>VRF</strong> — <em>optional</em>, only if persona drops / mints ever need provably fair randomness. <strong>If biased:</strong> the drop is riggable.</li>
+</ul>
+<p><strong>Deliberate non-use — pricing.</strong> Persona rent / purchase is a plain ERC-20 transfer priced in <strong>JYVE</strong> (via the mini-AMM), so no external price feed is involved.</p>
+<blockquote>
+<p>Every feed is a dependency with a failure mode — keep the &quot;if wrong / late&quot; guard in code, not only here.</p>
+</blockquote>
 
   </article>
 </div>

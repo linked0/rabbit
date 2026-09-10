@@ -123,7 +123,7 @@ other three rabbit-cloud APIs (Personas, Wallet, Auditor) are their own services
 Pimlico as the portable alternative) and never something we implement. Locally, where an anvil
 fork can&#39;t reach a hosted bundler, we <strong>self-relay</strong> (<code>EntryPoint.handleOps</code> from a funded
 account) instead of running one; the local-vs-Sepolia switch lives in
-<a href="jayverse-aa.html">jayverse-aa.md §7</a>. Treat other such infra the same way: rented/hosted, behind
+<a href="jayverse-rabbit.html">jayverse-rabbit.md §7</a>. Treat other such infra the same way: rented/hosted, behind
 an environment selector, outside the 4:4 count.</p>
 </blockquote>
 <h3>Concrete guidance for the burden worry</h3>
@@ -154,14 +154,14 @@ the existing services so they cooperate rather than sit alone.</p>
 <tbody><tr>
 <td>1</td>
 <td>Rabbit — Agentic AA</td>
-<td><a href="jayverse-aa.html">jayverse-aa.md</a></td>
+<td><a href="jayverse-rabbit.html">jayverse-rabbit.md</a></td>
 <td>ERC-4337 AA — user scenario, web app, flow. <strong>Start here</strong></td>
 <td>drafting</td>
 </tr>
 <tr>
 <td>2</td>
 <td>Verex — onboarding + MM</td>
-<td><a href="jayverse-onboarding-mm.html">jayverse-onboarding-mm.md</a></td>
+<td><a href="jayverse-verex.html">jayverse-verex.md</a></td>
 <td>Stripe onboarding + Market Maker — scenario, web app, flow. <strong>Start</strong></td>
 <td>drafting</td>
 </tr>
@@ -202,20 +202,39 @@ the existing services so they cooperate rather than sit alone.</p>
 </tr>
 <tr>
 <td>8</td>
-<td>Authority Auditor</td>
-<td><a href="jayverse-auditor.html">jayverse-auditor.md</a></td>
-<td>Authority-matrix report — scenario, web app, flow</td>
-<td>drafting</td>
-</tr>
-<tr>
-<td>9</td>
 <td>Base App — Mini App</td>
 <td><a href="jayverse-base-app.html">jayverse-base-app.md</a></td>
 <td>What a Base App Mini App <strong>buys</strong> (funded passkey account, inline market open) vs <strong>rents</strong> (discovery, review, jurisdiction) — strategy draft, plan later</td>
 <td>drafting</td>
 </tr>
+<tr>
+<td>9</td>
+<td>Math &amp; Investment (Number)</td>
+<td><a href="jayverse-number.html">jayverse-number.md</a></td>
+<td>Standalone <code>number.jaylabs.xyz</code> — investment information + math / economy / algorithm research. <strong>Admin-only</strong> (login-gated), split out of Rabbit&#39;s Portfolio into its own <code>jayverse-number</code> repo</td>
+<td>drafting</td>
+</tr>
 </tbody></table>
-<p><em>(#1–8 are the committed services; #9 Base App is a strategy draft jay will plan later. Tracks that are <strong>not</strong> committed services live in the Dark Horse section below.)</em></p>
+<p><em>(#1–7 and #9 are the committed services; #8 Base App is a strategy draft jay will plan later. Tracks that are <strong>not</strong> committed services live in the Dark Horse section below.)</em></p>
+<h3>Completed — built, past design</h3>
+<p>Once a service moves from design into a running build it leaves the drafting list above and
+lands here, so &quot;what&#39;s still a draft&quot; vs &quot;what actually runs&quot; stays legible at a glance.</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Design doc</th>
+<th>Where it runs</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Authority Auditor</td>
+<td><a href="jayverse-auditor.html">jayverse-auditor.md</a></td>
+<td><code>jayverse-auditor</code> repo (<code>pnpm dev</code> :3080) · ported copy live in Rabbit at <code>/live/auditor</code></td>
+<td>✅ <strong>built</strong> — Phase 1 + Phase 2 merged to <code>main</code></td>
+</tr>
+</tbody></table>
 <h2>Running each service on the terminal</h2>
 <p>Each service is its own repo (sibling folders under <code>~/work</code>), its own <code>pnpm</code>/Foundry project. The
 six study webs have their port <strong>baked into their <code>dev</code> script</strong> by the rule <code>port = 3000 + (service #) × 10</code>, so plain <code>pnpm dev</code> opens the right one and they never collide. Rabbit portal (<strong>:3100</strong>)
@@ -289,25 +308,104 @@ started first.</p>
 </tr>
 <tr>
 <td>8</td>
-<td><strong>Authority Auditor</strong></td>
-<td><code>jayverse-auditor</code></td>
-<td><code>pnpm install</code> → <code>pnpm dev</code></td>
-<td>:3080</td>
-</tr>
-<tr>
-<td>9</td>
 <td><strong>Base App — Mini App</strong></td>
 <td>—</td>
 <td>strategy draft only — nothing to run yet</td>
 <td>—</td>
 </tr>
+<tr>
+<td>9</td>
+<td><strong>Math &amp; Investment (Number)</strong></td>
+<td><code>jayverse-number</code></td>
+<td><code>pnpm install</code> → <code>pnpm dev</code> (admin login)</td>
+<td>:3090</td>
+</tr>
+<tr>
+<td>✅</td>
+<td><strong>Authority Auditor</strong> (built)</td>
+<td><code>jayverse-auditor</code></td>
+<td><code>pnpm install</code> → <code>pnpm dev</code> — also live in Rabbit at <code>/live/auditor</code></td>
+<td>:3080</td>
+</tr>
 </tbody></table>
 <blockquote>
 <p><strong>Ports:</strong> the six study webs bake their port into <code>dev</code> (<code>3000 + # × 10</code>) — DeFi :3030, Personas
-:3040, Game :3050, Wallet :3060, Token :3070, Auditor :3080 — so <code>pnpm dev</code> alone is right and they
+:3040, Game :3050, Wallet :3060, Token :3070, Auditor :3080, Number :3090 — so <code>pnpm dev</code> alone is right and they
 run side by side. Unchanged: Rabbit portal <strong>:3100</strong>, Verex web <strong>:3000</strong> / API <strong>:4000</strong>, anvil
 <strong>:8545</strong>.</p>
 </blockquote>
+<h2>Chainlink — infra Jayverse uses, not builds</h2>
+<p>Chainlink&#39;s oracle stack (Data Feeds, CCIP, Proof of Reserve, VRF, Automation) is
+settlement-rail infrastructure Jayverse <strong>consumes, not reimplements</strong>. This is the
+dependency map — where each product plugs in, and the one place an oracle deliberately
+cannot help. Not a build; a map. (Product names verified against chain.link, 2026-09-09.)</p>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Chainlink primitive</th>
+<th>Used for</th>
+<th>If the feed is wrong / late</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Verex (markets)</td>
+<td>Data Feeds</td>
+<td>resolve real-world-event markets to an objective number</td>
+<td>wrong resolution pays the wrong side</td>
+</tr>
+<tr>
+<td>DeFi study</td>
+<td>Data Feeds</td>
+<td>price inputs for the from-scratch staking-rate math</td>
+<td>accounting drifts from reality</td>
+</tr>
+<tr>
+<td>Token bridge</td>
+<td>CCIP</td>
+<td>cross-chain transport (Phase 3)</td>
+<td>a stuck / forged message breaks the 1:1 invariant</td>
+</tr>
+<tr>
+<td>JYVE price</td>
+<td><strong>none — deliberately</strong></td>
+<td>a self-made token has no external price</td>
+<td>n/a — priced by our mini-AMM</td>
+</tr>
+<tr>
+<td>Any peg / reserve</td>
+<td>Proof of Reserve</td>
+<td>attest backing so redeem can refuse unbacked units</td>
+<td>see the Liquid lesson below</td>
+</tr>
+<tr>
+<td>Games / draws</td>
+<td>VRF</td>
+<td>verifiable randomness for any draw surface</td>
+<td>a biased draw is a rigged game</td>
+</tr>
+<tr>
+<td>Schedulers</td>
+<td>Automation</td>
+<td>keeper-triggered ticks without a server timer</td>
+<td>a missed tick delays settlement</td>
+</tr>
+</tbody></table>
+<p><strong>The one deliberate non-use — pricing a self-made token.</strong> Verex prices YES/NO with LMSR,
+and JYVE is priced by a constant-product mini-AMM (<code>price = reserve ratio</code>), not a feed —
+because a token that trades only in our own market has <em>no external truth an oracle could
+report</em>. Oracles carry external facts onto the chain; where there is no external fact, an
+oracle is the wrong tool. (Rationale: <a href="jayverse-token-bridge.html">jayverse-token-bridge.md</a>.)</p>
+<p><strong>Proof of Reserve answers the Liquid class.</strong> The <code>liquid-issuance-not-authorization</code> PoC
+showed a mint bug producing valid-but-unbacked units that a correct peg-out faithfully
+honored — authorization checked the <em>actor</em>, nothing checked the <em>object&#39;s backing</em>. Proof
+of Reserve is that missing check: an external attestation of reserves a redeem path reads to
+refuse units the reserve cannot cover. It does not fix the mint bug; it stops the drain from
+being honored. A mint-invariant (conservation) test <strong>plus</strong> a PoR read (backing) covers
+both halves the incident exposed.</p>
+<p><strong>The rule:</strong> use the rail, don&#39;t rebuild it — and know the one place it doesn&#39;t reach. Every
+feed is also a dependency with a failure mode, so each cooperation above carries its &quot;if the
+feed is wrong&quot; line <strong>in code</strong> (staleness check / fallback), not just in this table.</p>
 <h2>Dark Horse — candidate tracks (#10)</h2>
 <p>Not committed services like #1–9 — <strong>candidates</strong> to pick up after the core is built. Full detail
 (steps, risks, PoC links) is in the umbrella plan

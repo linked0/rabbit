@@ -202,3 +202,15 @@ exact amount". Templates live in `jayverse-rails` so policy is reviewable, not a
   to say so.
 - Provider lock-in — how hard is migrating accounts if we later switch providers (feeds the export
   path answer).
+
+---
+
+## Chainlink — infra we use, not build
+
+Chainlink's oracle stack is settlement-rail infrastructure the Wallet *consumes*, not reimplements — see the umbrella map in [README.md](README.md).
+
+- **Data Feeds** — USD valuation for external assets (ETH, USDC) in the balance and simulate-before-sign views. **If wrong or late:** the USD figures the user checks *before signing* are misleading — worst at exactly the moment trust matters most.
+
+**Deliberate non-use — JYVE's USD.** JYVE's USD value is read from the mini-AMM (`getPrice()`), not a feed — a self-made token has no external price. (See [jayverse-token-bridge.md](jayverse-token-bridge.md).)
+
+> Every feed is a dependency with a failure mode — keep the "if wrong / late" guard (staleness check / fallback) in code, not only here.

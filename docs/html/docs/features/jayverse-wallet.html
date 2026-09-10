@@ -268,6 +268,16 @@ to say so.</li>
 <li>Provider lock-in — how hard is migrating accounts if we later switch providers (feeds the export
 path answer).</li>
 </ul>
+<hr>
+<h2>Chainlink — infra we use, not build</h2>
+<p>Chainlink&#39;s oracle stack is settlement-rail infrastructure the Wallet <em>consumes</em>, not reimplements — see the umbrella map in <a href="README.html">README.md</a>.</p>
+<ul>
+<li><strong>Data Feeds</strong> — USD valuation for external assets (ETH, USDC) in the balance and simulate-before-sign views. <strong>If wrong or late:</strong> the USD figures the user checks <em>before signing</em> are misleading — worst at exactly the moment trust matters most.</li>
+</ul>
+<p><strong>Deliberate non-use — JYVE&#39;s USD.</strong> JYVE&#39;s USD value is read from the mini-AMM (<code>getPrice()</code>), not a feed — a self-made token has no external price. (See <a href="jayverse-token-bridge.html">jayverse-token-bridge.md</a>.)</p>
+<blockquote>
+<p>Every feed is a dependency with a failure mode — keep the &quot;if wrong / late&quot; guard (staleness check / fallback) in code, not only here.</p>
+</blockquote>
 
   </article>
 </div>

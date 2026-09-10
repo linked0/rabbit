@@ -242,3 +242,15 @@ The game **only reads** the agent's journal; it never drives the agent and never
 5. **Asset licensing** — buy a low-poly city kit vs build; size budget (target a few MB).
 6. **Repo boundary** — R3F scene as an npm package Rabbit imports, a submodule, or a proxied route?
 7. **Player-trading later** — if/when added, is it a distinct mode or a toggle within the live view?
+
+---
+
+## Chainlink — infra we use, not build
+
+Chainlink's oracle stack is settlement-rail infrastructure this build would *consume*, not reimplement — see the umbrella map in [README.md](README.md).
+
+- **VRF** — verifiable randomness for any draw / loot / spawn surface. **If randomness is biased or predictable:** the draw is a rigged game.
+
+**Deliberate non-use — the world state.** The game is a read-only visualization of real chain state (both modes), so most of it needs no oracle at all — it reads what already happened; it doesn't price or resolve anything.
+
+> Every feed is a dependency with a failure mode — keep the "if wrong / late" guard in code, not only here.

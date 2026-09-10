@@ -7,7 +7,7 @@ import { aaBundlerEnv } from "@/lib/aa-bundler";
 import { LazyMarkets } from "./LazyMarkets";
 import type { MarketCard } from "./MarketsClient";
 
-// Jayverse AA — Markets 그리드 + Bet 드로어. 설계: docs/features/jayverse-aa.md §3.
+// Jayverse AA — Markets 그리드 + Bet 드로어. 설계: docs/features/jayverse-rabbit.md §3.
 //
 // 마켓 목록은 서버에서 verex REST 로 읽어 내려보낸다(콘솔과 같은 이유 — VEREX_API_URL
 // 은 서버 설정이고 CORS 도 닫혀 있다). 견적/calldata 만 /api/markets/quote 로 오간다.

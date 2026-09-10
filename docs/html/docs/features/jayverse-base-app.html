@@ -170,6 +170,16 @@ Mini App / MiniKit docs and the Base App release notes first.</p>
 <li><strong>The measurement baseline</strong> — capture verex&#39;s current connect → funded → first-transaction rates <em>now</em>, so the &quot;multiple&quot; the Mini App buys is provable later against real numbers.</li>
 <li><strong>Numbering:</strong> listed as design doc #9 in the hub; the umbrella plan still has L2 at §9. Reconcile the two when this gets a plan.</li>
 </ul>
+<hr>
+<h2>Chainlink — infra we use, not build</h2>
+<p>The whole thesis of this doc — <strong>rent the rail, don&#39;t rebuild it</strong> — is exactly the Chainlink posture: consume the oracle stack, don&#39;t reimplement it (umbrella map: <a href="README.html">README.md</a>).</p>
+<ul>
+<li><strong>Data Feeds</strong> — if the Mini App ever surfaces prices or USD values, read them from a feed rather than hand-rolling a price source. <strong>If wrong or late:</strong> displayed values mislead.</li>
+<li><strong>CCIP</strong> — for any cross-chain hop the Mini App needs, rather than a bespoke bridge. <strong>If a message is stuck or forged:</strong> the transfer&#39;s invariant breaks.</li>
+</ul>
+<blockquote>
+<p>Every feed is a dependency with a failure mode — keep the &quot;if wrong / late&quot; guard in code, not only here.</p>
+</blockquote>
 
   </article>
 </div>

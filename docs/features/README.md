@@ -73,7 +73,7 @@ its own Cloud Run service** either way, so the burden answer is unchanged: each 
 > Pimlico as the portable alternative) and never something we implement. Locally, where an anvil
 > fork can't reach a hosted bundler, we **self-relay** (`EntryPoint.handleOps` from a funded
 > account) instead of running one; the local-vs-Sepolia switch lives in
-> [jayverse-aa.md §7](jayverse-aa.md). Treat other such infra the same way: rented/hosted, behind
+> [jayverse-rabbit.md §7](jayverse-rabbit.md). Treat other such infra the same way: rented/hosted, behind
 > an environment selector, outside the 4:4 count.
 
 ### Concrete guidance for the burden worry
@@ -97,17 +97,26 @@ the existing services so they cooperate rather than sit alone.
 
 | # | Service | Design doc | Focus (from jay's comment) | Status |
 |---|---------|-----------|----------------------------|--------|
-| 1 | Rabbit — Agentic AA | [jayverse-aa.md](jayverse-aa.md) | ERC-4337 AA — user scenario, web app, flow. **Start here** | drafting |
-| 2 | Verex — onboarding + MM | [jayverse-onboarding-mm.md](jayverse-onboarding-mm.md) | Stripe onboarding + Market Maker — scenario, web app, flow. **Start** | drafting |
+| 1 | Rabbit — Agentic AA | [jayverse-rabbit.md](jayverse-rabbit.md) | ERC-4337 AA — user scenario, web app, flow. **Start here** | drafting |
+| 2 | Verex — onboarding + MM | [jayverse-verex.md](jayverse-verex.md) | Stripe onboarding + Market Maker — scenario, web app, flow. **Start** | drafting |
 | 3 | DeFi — EtherFi | [jayverse-defi.md](jayverse-defi.md) | Basic EtherFi **algorithms built from scratch** to study DeFi (no real-EtherFi integration) | drafting |
 | 4 | Persona market | [jayverse-personas.md](jayverse-personas.md) | NFT persona market — scenario, web app, flow | drafting |
 | 5 | Unity — 3D browser game | [jayverse-game.md](jayverse-game.md) | Wander a 3D street, find verex markets on boards, trade. **Start** | drafting |
 | 6 | Wallet & simulate-before-sign | [jayverse-wallet.md](jayverse-wallet.md) | Embedded wallet + tx simulation — scenario, web app, flow | drafting |
 | 7 | Token + Exchange + Bridge | [jayverse-token-bridge.md](jayverse-token-bridge.md) | **JYVE** ecosystem coin + mini-AMM price + Anvil ⇄ Sepolia bridge (one `jayverse-token` repo) | drafting |
-| 8 | Authority Auditor | [jayverse-auditor.md](jayverse-auditor.md) | Authority-matrix report — scenario, web app, flow | drafting |
-| 9 | Base App — Mini App | [jayverse-base-app.md](jayverse-base-app.md) | What a Base App Mini App **buys** (funded passkey account, inline market open) vs **rents** (discovery, review, jurisdiction) — strategy draft, plan later | drafting |
+| 8 | Base App — Mini App | [jayverse-base-app.md](jayverse-base-app.md) | What a Base App Mini App **buys** (funded passkey account, inline market open) vs **rents** (discovery, review, jurisdiction) — strategy draft, plan later | drafting |
+| 9 | Math & Investment (Number) | [jayverse-number.md](jayverse-number.md) | Standalone `number.jaylabs.xyz` — investment information + math / economy / algorithm research. **Admin-only** (login-gated), split out of Rabbit's Portfolio into its own `jayverse-number` repo | drafting |
 
-*(#1–8 are the committed services; #9 Base App is a strategy draft jay will plan later. Tracks that are **not** committed services live in the Dark Horse section below.)*
+*(#1–7 and #9 are the committed services; #8 Base App is a strategy draft jay will plan later. Tracks that are **not** committed services live in the Dark Horse section below.)*
+
+### Completed — built, past design
+
+Once a service moves from design into a running build it leaves the drafting list above and
+lands here, so "what's still a draft" vs "what actually runs" stays legible at a glance.
+
+| Service | Design doc | Where it runs | Status |
+|---|---|---|---|
+| Authority Auditor | [jayverse-auditor.md](jayverse-auditor.md) | `jayverse-auditor` repo (`pnpm dev` :3080) · ported copy live in Rabbit at `/live/auditor` | ✅ **built** — Phase 1 + Phase 2 merged to `main` |
 
 ## Running each service on the terminal
 
@@ -127,13 +136,49 @@ started first.
 | 5 | **Game** — 3D street | `jayverse-game` | `pnpm install` → `pnpm dev` (open `/street`) | :3050 |
 | 6 | **Wallet** — simulate-before-sign | `jayverse-wallet` | **t1** `anvil`; **t2** `pnpm install` → `pnpm dev` | :3060 |
 | 7 | **Token + Exchange** | `jayverse-token` | in `contracts/`: `forge test`; **t1** `anvil`; **t2** `forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast` (seed pool); then `cd ../app && pnpm install && pnpm dev` | :3070 |
-| 8 | **Authority Auditor** | `jayverse-auditor` | `pnpm install` → `pnpm dev` | :3080 |
-| 9 | **Base App — Mini App** | — | strategy draft only — nothing to run yet | — |
+| 8 | **Base App — Mini App** | — | strategy draft only — nothing to run yet | — |
+| 9 | **Math & Investment (Number)** | `jayverse-number` | `pnpm install` → `pnpm dev` (admin login) | :3090 |
+| ✅ | **Authority Auditor** (built) | `jayverse-auditor` | `pnpm install` → `pnpm dev` — also live in Rabbit at `/live/auditor` | :3080 |
 
 > **Ports:** the six study webs bake their port into `dev` (`3000 + # × 10`) — DeFi :3030, Personas
-> :3040, Game :3050, Wallet :3060, Token :3070, Auditor :3080 — so `pnpm dev` alone is right and they
+> :3040, Game :3050, Wallet :3060, Token :3070, Auditor :3080, Number :3090 — so `pnpm dev` alone is right and they
 > run side by side. Unchanged: Rabbit portal **:3100**, Verex web **:3000** / API **:4000**, anvil
 > **:8545**.
+
+## Chainlink — infra Jayverse uses, not builds
+
+Chainlink's oracle stack (Data Feeds, CCIP, Proof of Reserve, VRF, Automation) is
+settlement-rail infrastructure Jayverse **consumes, not reimplements**. This is the
+dependency map — where each product plugs in, and the one place an oracle deliberately
+cannot help. Not a build; a map. (Product names verified against chain.link, 2026-09-09.)
+
+| Product | Chainlink primitive | Used for | If the feed is wrong / late |
+|---|---|---|---|
+| Verex (markets) | Data Feeds | resolve real-world-event markets to an objective number | wrong resolution pays the wrong side |
+| DeFi study | Data Feeds | price inputs for the from-scratch staking-rate math | accounting drifts from reality |
+| Token bridge | CCIP | cross-chain transport (Phase 3) | a stuck / forged message breaks the 1:1 invariant |
+| JYVE price | **none — deliberately** | a self-made token has no external price | n/a — priced by our mini-AMM |
+| Any peg / reserve | Proof of Reserve | attest backing so redeem can refuse unbacked units | see the Liquid lesson below |
+| Games / draws | VRF | verifiable randomness for any draw surface | a biased draw is a rigged game |
+| Schedulers | Automation | keeper-triggered ticks without a server timer | a missed tick delays settlement |
+
+**The one deliberate non-use — pricing a self-made token.** Verex prices YES/NO with LMSR,
+and JYVE is priced by a constant-product mini-AMM (`price = reserve ratio`), not a feed —
+because a token that trades only in our own market has *no external truth an oracle could
+report*. Oracles carry external facts onto the chain; where there is no external fact, an
+oracle is the wrong tool. (Rationale: [jayverse-token-bridge.md](jayverse-token-bridge.md).)
+
+**Proof of Reserve answers the Liquid class.** The `liquid-issuance-not-authorization` PoC
+showed a mint bug producing valid-but-unbacked units that a correct peg-out faithfully
+honored — authorization checked the *actor*, nothing checked the *object's backing*. Proof
+of Reserve is that missing check: an external attestation of reserves a redeem path reads to
+refuse units the reserve cannot cover. It does not fix the mint bug; it stops the drain from
+being honored. A mint-invariant (conservation) test **plus** a PoR read (backing) covers
+both halves the incident exposed.
+
+**The rule:** use the rail, don't rebuild it — and know the one place it doesn't reach. Every
+feed is also a dependency with a failure mode, so each cooperation above carries its "if the
+feed is wrong" line **in code** (staleness check / fallback), not just in this table.
 
 ## Dark Horse — candidate tracks (#10)
 

@@ -35,6 +35,13 @@ export default function Card({
         <div className="value" style={{ fontSize: 16 }}>
           {pick(lang, card.titleKo, card.title)}
         </div>
+        <span style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+        {card.wip && (
+          <span className="poc-wip" title={pick(lang, "이 브랜치에서 구현 중", "Being implemented in the current branch")}>
+            <span className="poc-wip-dot" aria-hidden />
+            {pick(lang, "구현 중", "WIP")}
+          </span>
+        )}
         <span
           className={`poc-badge ${isLive ? "poc-badge-live" : isDone ? "poc-badge-done" : "poc-badge-soon"}`}
         >
@@ -43,6 +50,7 @@ export default function Card({
             : isDone
               ? pick(lang, "완료", "Done")
               : pick(lang, "준비 중", "Coming soon")}
+        </span>
         </span>
       </div>
       <div className="muted" style={{ fontSize: 13, marginTop: 6 }}>

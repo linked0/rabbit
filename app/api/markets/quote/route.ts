@@ -3,7 +3,7 @@ import { verex, quoteBet, encodeBetCalls } from "@/lib/verex-client";
 
 export const dynamic = "force-dynamic";
 
-// Jayverse AA — 베팅 견적 + 배치 calldata. 설계: docs/features/jayverse-aa.md §3·§6.
+// Jayverse AA — 베팅 견적 + 배치 calldata. 설계: docs/features/jayverse-rabbit.md §3·§6.
 //
 // 인코딩을 서버에서 하는 이유: verex 주소들(/config)은 VEREX_API_URL 뒤에 있고
 // (콘솔의 /api/agent/markets 와 같은 이유 — CORS·서버 설정), @verex/sdk 의 ABI 도
