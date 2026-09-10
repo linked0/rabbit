@@ -17,7 +17,10 @@ import { pick } from "@/lib/i18n";
 const MENU: NavItem[] = [
   { href: "/", ko: "홈", en: "Home", code: "HOME", pub: true },
   // 지식(Knowledge) 카테고리는 일시 제거 — 콘텐츠는 docs/know.html (로컬 file:// 열람). 필요 시 복원.
-  { href: "/portfolio", ko: "포트폴리오", en: "Portfolio", code: "PORTFOLIO" },
+  // 포트폴리오 메뉴 제거 (2026-09-10, jay) — Portfolio 는 rabbit 을 떠나 독립 프로젝트
+  // jayverse-number(number.jaylabs.xyz, 관리자 전용)로 분리한다. 메뉴 항목을 먼저 지우고,
+  // /portfolio·/invest·/dashboard·/simulate 라우트와 코드는 number 가 호스팅한 뒤 이전한다
+  // — 그 전까지 코드는 남겨 둔다. 설계: docs/features/jayverse-number.md.
   // 제이 챗은 홈 페이지에 통합됨 — 별도 메뉴/페이지 제거 (2026-08-01, jay).
   { href: "/projects", ko: "프로젝트", en: "Projects", code: "PROJECTS", pub: true },
   { href: "/game", ko: "게임", en: "Game", code: "GAME" },
