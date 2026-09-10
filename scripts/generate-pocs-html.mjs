@@ -138,19 +138,17 @@ const cards = [
 // 두므로 카드의 group 값과 #sec-future 앵커는 그대로다 — 바뀐 것은 표시 이름과 성격뿐.
 const CARD_GROUPS = [
   {
+    // 2026-09-10 (jay): Blockchain 과 Future/Etc 를 하나로 합쳤다 — 두 구획을 가르는 선이
+    // 카드가 늘수록 임의로워졌고(어느 쪽인지 정하는 시간 > 구분의 값어치), 이제 이 칸이
+    // Economics 를 뺀 전부의 catch-all 이다. group:'future' 카드는 여기로 흘러든다.
     id: 'blockchain',
-    title: 'Blockchain',
-    lead: 'The protocol underneath and everything standing on it &mdash; consensus, EIPs and cryptography, then the services, chains, payments, and the market and regulatory reading that decides what any of it is allowed to be.',
+    title: 'Blockchain & Tech',
+    lead: 'The protocol underneath and everything standing on it &mdash; consensus, EIPs and cryptography, then the services, chains, payments, and the market and regulatory reading that decides what any of it is allowed to be &mdash; plus robotics, embodied AI, data-science method, and anything else that does not belong under Economics.',
   },
   {
     id: 'economics',
     title: 'Economics',
     lead: 'The money logic underneath all of it &mdash; where a yield actually comes from, what a headline number is really counting, and the handful of macro facts that move every price on this list.',
-  },
-  {
-    id: 'future',
-    title: 'Future/Etc',
-    lead: 'Robotics, embodied AI and data-science method, plus anything that does not belong to a section above &mdash; the catch-all, kept honest about what is a demo and what is a cost curve.',
   },
 ];
 // group 을 안 붙인 카드가 전부 Blockchain 으로 온다 (2026-08-29 에 Protocol+Applied 를
