@@ -80,3 +80,25 @@ status `soon`+important)를 done 으로 확정. (소스 문서 없음 — 논의
 
 **Result:** #47(important)→#45(done, RECENTLY DONE 하늘색 점). 경계에서 3장만 이동
 (Base App 47→45, Censorship 45→46, MCP 46→47), 나머지 전부 고정. tsc 클린. 커밋만, 푸시 대기.
+
+### PoC 신규 6장 추가 — 2026-09-10 Trend & Tech 다이제스트에서
+
+**Cause:** jay: "add these new items" + "make some important if worth." 오늘자 트렌드
+다이제스트(사실/각도/잴것/주의 포맷)의 후보들을 카드로. (소스 문서 없음 — 붙여넣은 다이제스트.)
+
+**Reasoning:** 먼저 중복 트리아지. 컨센시스/메타마스크 분리는 기존
+`distribution-splits-from-infrastructure` 가 이미 커버 → **추가 안 함**(중복 방지, 직전 base-app
+중복 교훈). invariant·robotics 계열은 기존 카드와 각도가 달라 신규로. 나머지 넷은 기존 카드 없음.
+전이 가능한(허브) 둘만 important 로.
+
+**Change:** `lib/poc-cards.ts` 배열 맨 앞에 6장 추가(전부 `updated: 2026-09-10`, `status: soon`):
+- **important**: `op-return-is-a-shared-state-channel`(신뢰 없는 공유 상태, 강제≠합의; 598.5 BTC),
+  `an-invariant-is-a-stop-not-an-alarm`(오탐 비용 비대칭; 로그만이면 장식; 감시자 격리).
+- **new/yellow**: `which-etf-window-not-the-size`(economics), `services-ppi-is-the-bridge-to-core`
+  (economics), `lerobot-the-format-outlives-the-framework`(future), `tenderly-lower-the-cost-to-start-watching`.
+상호 참조: liquid-issuance-not-authorization, foundry-invariant-reachability, robotics-entry-decision,
+Verex 정산.
+
+**Result:** 사이드바 234→240. important #46/#47, new 은 각 섹션 내(Tenderly #64, ETF #132,
+PPI #133, LeRobot #174). tsc 클린, 6개 상세 페이지 생성, 표·제목 렌더 확인(`\n` 은 copy-json 만).
+커밋만, 푸시 대기.

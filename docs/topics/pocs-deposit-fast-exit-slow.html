@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../pocs.html">PoCs</a> &rsaquo; Deposit trusts a fast confirmation; exit waits on the rollup's own proof</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#65</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#68</span><span>PoC</span></p>
       <h1>Deposit trusts a fast confirmation; exit waits on the rollup's own proof</h1>
       <p class="lead">Ethlabs&#39; &#39;Fast Ethereum&#39; work makes the <strong>L1→L2 deposit</strong> fast: the <strong>Fast Confirmation Rule (FCR)</strong> lets bridges confirm an L1 transaction in <strong>12–24 seconds — ~30× faster than finality</strong> — a weaker-but-priceable guarantee, enough to credit a deposit. But the <strong>L2→L1 exit</strong> cannot be sped the same way: an optimistic rollup is bounded by its <strong>challenge window</strong>, a zk rollup by its <strong>proving time</strong>. That asymmetry is structural, not an implementation gap — entering a rollup only needs you to <em>trust</em> an L1 confirmation, while leaving needs the rollup to <em>prove</em> its state. The lesson the app-L2s (Lighter, Derive) named as their top pain: you can accelerate the direction you can trust weakly, not the direction that must be proven.</p>
       <p class="meta">Not a build — a two-direction latency map. For a chosen L2, measure (or model) both crossings and, more importantly, name what each <em>waits on</em>. <strong>Deposit (L1→L2):</strong> what does the sequencer wait for before crediting — N block confirmations, finality, or an FCR-style rule? FCR promises 12–24s by confirming an L1 tx under a rule weaker than finality; write down the exact failure it accepts (a reorg past the confirmed depth) and who eats it. <strong>Exit (L2→L1):</strong> what gates the withdrawal — an optimistic challenge window (days) or zk proving time (minutes-to-hours)? That gate is the rollup&#39;s <em>own</em> security mechanism; it cannot be shortcut without weakening the rollup. Then note the real-world blocker FCR hit: L2s watch L1 deposits through external RPC providers, so FCR adoption is gated on the RPC providers shipping it — a supply-chain dependency, not a protocol one. Sources: Ethlabs Week 11 (2026-09-07, via X); FCR, EIP-8198 (Quick/Fast Slots), Fast Finality. Confirm the numbers (12–24s, 30×, 12s→10s) and EIP/fork status against the post and the EIPs before citing.</p>
@@ -513,7 +513,7 @@
       
       <p><a href="../pocs.html">&larr; 전체 PoC</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-interop-os-one-network.html">&larr; 64. &quot;As if all chains are one network&quot; is the value and the risk at once</a><a href="pocs-distribution-splits-from-infrastructure.html">66. Distribution splits from infrastructure — a wallet is worth more un-captured &rarr;</a></div>
+    <div class="pager"><a href="pocs-interop-os-one-network.html">&larr; 67. &quot;As if all chains are one network&quot; is the value and the risk at once</a><a href="pocs-distribution-splits-from-infrastructure.html">69. Distribution splits from infrastructure — a wallet is worth more un-captured &rarr;</a></div>
   </div>
   </main>
 </div>
