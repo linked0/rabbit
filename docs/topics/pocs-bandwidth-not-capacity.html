@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Capacity loads the model; bandwidth serves it</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#165</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#166</span><span>PoC</span></p>
       <h1>Capacity loads the model; bandwidth serves it</h1>
       <p class="lead">A pitch for local inference on Apple silicon leads with 512GB of unified memory and 200B-parameter models. Capacity decides what you can load. Memory bandwidth decides how fast it answers, and autoregressive decoding reads the weights once per token — so the ceiling is bandwidth divided by the bytes a model actually touches. Run that division and the post&#39;s two headline promises, huge models and always-on agents, turn out to pull against each other on the same machine.</p>
       <p class="meta">Not a build — one division and one measurement, both cheap enough to do before buying anything. First the ceiling: tokens per second is bounded by memory bandwidth divided by the bytes read per token, and the bytes read is roughly the quantised size of the parameters that are actually active. Do it for three cases — a 30B dense model at 4-bit, a 200B dense model at 4-bit, and a mixture-of-experts model of similar total size where only a fraction activates — and notice that only the third stays interactive. Then measure instead of trusting the division: run one prompt on the machine you actually have, record tokens per second, then record it again with the context filled, because attention cost grows with context and an agent&#39;s context is never short. Finally price it with a denominator: cost per token is hardware divided by the tokens it generates over its life, which makes utilisation the whole argument rather than a detail. Hardware figures here come from a GenAI Works post seen 2026-08-28 — an $899 M6 Mac mini said to be 13.5× the M1 on LLM processing, an M5 Ultra Mac Studio with up to 512GB unified memory and 1.2 TB/s — and the same post closes by soliciting investment. Re-derive every number from published specifications before relying on any of it.</p>
@@ -531,7 +531,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-sub-2bit-local-llm.html">&larr; 164. Sub-2-bit LLMs, locally</a><a href="pocs-opencv-robot-vision.html">166. Pixels to millimetres — the step before the arm moves &rarr;</a></div>
+    <div class="pager"><a href="pocs-sub-2bit-local-llm.html">&larr; 165. Sub-2-bit LLMs, locally</a><a href="pocs-opencv-robot-vision.html">167. Pixels to millimetres — the step before the arm moves &rarr;</a></div>
   </div>
   </main>
 </div>

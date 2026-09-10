@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; You can SFT the shape of thinking, not the thinking</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#127</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#128</span><span>PoC</span></p>
       <h1>You can SFT the shape of thinking, not the thinking</h1>
       <p class="lead">Reproducing a reasoning model the S1 way — SFT a base model on <code>&amp;lt;think&amp;gt;…&amp;lt;/think&amp;gt;</code> traces harvested from DeepSeek R1 or Gemini — works, and that is exactly what exposes the catch: you are teaching the model to emit text that <em>looks like</em> step-by-step thought, not to think. Test-time scaling spends inference tokens on that pattern; the weights don&#39;t get smarter. The way past a frozen-weight imitator is experience — RL from environment interaction, accumulated across sessions.</p>
       <p class="meta">Not yet scoped — read-and-reproduce, then measure one thing. The recipe (Stanford S1, echoing Alpaca&#39;s instruction-tuning): collect problems + full thinking traces + answers from a strong reasoning model (DeepSeek R1, Gemini Thinking), format each as <code>&amp;lt;think&amp;gt;</code> long reasoning <code>&amp;lt;/think&amp;gt;</code> final answer, and SFT a base model on them. Implementation tip: <code>&amp;lt;think&amp;gt;</code> need not be a special token — plain text works — and prefilling <code>&amp;lt;think&amp;gt;</code> at the end of the chat template forces the model to start a long reasoning span. Then measure the only question that matters: does accuracy rise <em>because of</em> the thinking, or just because more tokens were spent looking like thinking? Source: sudoremove, &#39;Reasoning 모델 직접 만들기…&#39; (youtube.com/watch?v=FOjq2WCDPZE). Confirm claims and timings against the video before citing.</p>
@@ -521,7 +521,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-key-never-leaves-the-secure-element.html">&larr; 126. The private key never leaves the secure element</a><a href="pocs-storage-collision-admin-takeover.html">128. The code was right and the layout was wrong &rarr;</a></div>
+    <div class="pager"><a href="pocs-key-never-leaves-the-secure-element.html">&larr; 127. The private key never leaves the secure element</a><a href="pocs-storage-collision-admin-takeover.html">129. The code was right and the layout was wrong &rarr;</a></div>
   </div>
   </main>
 </div>
