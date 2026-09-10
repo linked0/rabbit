@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Simulate scaling before you need it — a load study on AWS or GCP</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#69</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#70</span><span>PoC</span></p>
       <h1>Simulate scaling before you need it — a load study on AWS or GCP</h1>
       <p class="lead">A dev study: deploy a trivial service on a general cloud (GCP Cloud Run / GKE, or AWS Fargate / EKS), drive synthetic load, and watch how the platform actually scales — where latency knees, what a request costs at scale, how cold starts and the autoscaler behave. Scaling is a property you measure, not one you assume.</p>
       <p class="meta">Not a big build — a measurement harness. 1) Deploy a trivial service (an echo or a CPU-bound endpoint) on one autoscaling target: Cloud Run (concurrency + max instances) or GKE HPA; the AWS twins are Fargate / App Runner or EKS HPA. 2) Drive load low → high RPS with k6 / Locust / vegeta. 3) Record four curves: p50/p99 latency vs RPS (find the knee), instance count vs RPS (the autoscaler&#39;s reaction and its lag), cost vs RPS (cost per 1k requests), and cold-start time. 4) Flip one knob at a time (concurrency, CPU, min instances) and re-measure. Confirm current pricing and autoscaler behavior against each provider&#39;s docs — both move.</p>
@@ -523,7 +523,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-coxon-resignation-thread-race-vs-provenance.html">&larr; 68. The Coxon resignation thread — race logic inside a safety lab, and who amplified it</a><a href="pocs-mid-level-backend-role-the-hiring-stack.html">70. A mid-level backend JD, read as a stack checklist &rarr;</a></div>
+    <div class="pager"><a href="pocs-coxon-resignation-thread-race-vs-provenance.html">&larr; 69. The Coxon resignation thread — race logic inside a safety lab, and who amplified it</a><a href="pocs-mid-level-backend-role-the-hiring-stack.html">71. A mid-level backend JD, read as a stack checklist &rarr;</a></div>
   </div>
   </main>
 </div>

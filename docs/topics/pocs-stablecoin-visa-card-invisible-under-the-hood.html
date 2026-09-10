@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gradient boosting — XGBoost wins the leaderboard and hides the reason — Notes</title>
+<title>MoneyGram's stablecoin Visa card — invisible to the user, a just-in-time conversion under the hood — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,45 +366,73 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Gradient boosting — XGBoost wins the leaderboard and hides the reason</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; MoneyGram's stablecoin Visa card — invisible to the user, a just-in-time conversion under the hood</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#228</span><span>PoC</span></p>
-      <h1>Gradient boosting — XGBoost wins the leaderboard and hides the reason</h1>
-      <p class="lead">Boosted trees are the default winner on tabular data, but their accuracy comes wrapped in opacity — a strong model whose decisions need a second tool (SHAP) just to be explained.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#64</span><span>PoC</span></p>
+      <h1>MoneyGram's stablecoin Visa card — invisible to the user, a just-in-time conversion under the hood</h1>
+      <p class="lead">MoneyGram&#39;s stablecoin Visa card went live in Colombia: users spend a dollar (stablecoin) balance anywhere Visa is accepted. To the user it is a normal card with a dollar balance; under the hood the stablecoin is converted to local fiat just-in-time at authorization, and the merchant and Visa never touch crypto. The invisibility is the product. (Two layers, as asked: how it feels, and how it works.)</p>
+      <p class="meta">Not a build — a mechanism to trace end to end. Follow one $10 purchase: the user taps a Visa card; the merchant charges pesos; behind the swipe the card program authorizes against the user&#39;s stablecoin balance, converts the needed USDC → USD → COP in real time (just-in-time funding), and settles to the merchant over Visa in fiat as always. Name the party at each seam and the one thing it is trusted for — wallet/on-ramp (MoneyGram), the asset (a USD stablecoin issuer, for the peg), the issuer/BIN sponsor (the card), a program manager, FX/liquidity (the rate), the card network (Visa, for acceptance). Confirm the actual stablecoin, issuer, and FX path against MoneyGram&#39;s own announcement before asserting specifics.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Gradient boosting — XGBoost wins the leaderboard and hides the reason\n\nBoosted trees are the default winner on tabular data, but their accuracy comes wrapped in opacity — a strong model whose decisions need a second tool (SHAP) just to be explained.\n\nNot yet scoped.\n\n## Why\n\nThe PoC pairs an XGBoost model with SHAP attributions on a credit-style dataset, and treats the gap between accuracy and explainability as the real deliverable.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# MoneyGram's stablecoin Visa card — invisible to the user, a just-in-time conversion under the hood\n\nMoneyGram's stablecoin Visa card went live in Colombia: users spend a dollar (stablecoin) balance anywhere Visa is accepted. To the user it is a normal card with a dollar balance; under the hood the stablecoin is converted to local fiat just-in-time at authorization, and the merchant and Visa never touch crypto. The invisibility is the product. (Two layers, as asked: how it feels, and how it works.)\n\nNot a build — a mechanism to trace end to end. Follow one $10 purchase: the user taps a Visa card; the merchant charges pesos; behind the swipe the card program authorizes against the user's stablecoin balance, converts the needed USDC → USD → COP in real time (just-in-time funding), and settles to the merchant over Visa in fiat as always. Name the party at each seam and the one thing it is trusted for — wallet/on-ramp (MoneyGram), the asset (a USD stablecoin issuer, for the peg), the issuer/BIN sponsor (the card), a program manager, FX/liquidity (the rate), the card network (Visa, for acceptance). Confirm the actual stablecoin, issuer, and FX path against MoneyGram's own announcement before asserting specifics.\n\n## Why\n\nThe lesson is that the winning stablecoin UX is invisibility. The user does not want 'crypto'; they want a dollar balance they can spend, and in a higher-inflation economy like Colombia's, dollar exposure without a US bank account. The card delivers exactly that feeling — tap, spend, done — and the stablecoin is plumbing, not a product the user ever thinks about.\n\nUnder the hood the system straddles two worlds it must keep apart: crypto rails on the user's side (custody, on/off-ramp, transfer) and traditional card rails on the merchant's side (Visa authorization and fiat settlement), joined by a just-in-time conversion at the moment of authorization, so neither the merchant nor Visa ever holds the stablecoin. That seam — convert exactly when the swipe happens — is the whole trick, and it is why a money-transfer company (fiat ramps, licenses, FX) plus a stablecoin (cheap dollar transfer) plus Visa (acceptance) is the natural team. For jayverse this is the same principle its payment work already follows — the AA agent and USDCx flows hide the rail and show a balance — and it is why the shortlist card lists Circle, Stripe, and x402 as payment rails: the stablecoin's job is to move value cheaply and then disappear.\n\n## How it works\n\n### What the user feels\n\nA normal Visa card and a dollar balance. They tap or swipe anywhere Visa is accepted; the charge shows in local pesos; the money comes out of their 'dollars.' No wallet address, no gas, no 'crypto' — and, in a high-inflation economy, dollar exposure without a US bank account. The stablecoin is never something they think about; that invisibility is the product.\n\n### Under the hood — one swipe, step by step\n\n1. The user holds a **USD stablecoin balance** in the MoneyGram wallet.\n2. A **Visa card** (physical or virtual) is linked to that balance via an issuer / BIN sponsor and a program manager.\n3. At the merchant, the card presents a **normal Visa authorization** in pesos — the terminal sees Visa, not crypto.\n4. Behind the swipe, the program **authorizes against the stablecoin balance** and does a **just-in-time conversion**: pull the needed stablecoin → USD → COP through an FX / liquidity provider, at authorization time.\n5. **Visa settles to the merchant in fiat**, exactly as for any card. The merchant and Visa never touch the stablecoin.\n\n### The seam that makes it work\n\nTwo worlds kept separate and joined at one point: crypto rails on the user's side, card rails on the merchant's side, bridged by the just-in-time conversion. Each party is trusted for one thing — MoneyGram for the wallet and ramps, the stablecoin issuer for the peg, the issuer bank for the BIN, Visa for acceptance, the FX provider for the rate.\n\n### Where it lands for jayverse\n\nSame lesson as the payment work here: the user should feel a balance, not a rail. Related: won-stablecoin-fee-savings, two-currencies-one-ledger, jayverse-build-on-the-shortlist (Circle / Stripe / x402 as payment rails), wallet-is-a-distribution-business. Confirm the actual stablecoin, issuer, and FX path against MoneyGram's announcement before citing.\n"</script>
       <h2>Why</h2>
-      <p>The PoC pairs an XGBoost model with SHAP attributions on a credit-style dataset, and treats the gap between accuracy and explainability as the real deliverable.</p>
+      <p>The lesson is that the winning stablecoin UX is invisibility. The user does not want &#39;crypto&#39;; they want a dollar balance they can spend, and in a higher-inflation economy like Colombia&#39;s, dollar exposure without a US bank account. The card delivers exactly that feeling — tap, spend, done — and the stablecoin is plumbing, not a product the user ever thinks about.</p>
+<p>Under the hood the system straddles two worlds it must keep apart: crypto rails on the user&#39;s side (custody, on/off-ramp, transfer) and traditional card rails on the merchant&#39;s side (Visa authorization and fiat settlement), joined by a just-in-time conversion at the moment of authorization, so neither the merchant nor Visa ever holds the stablecoin. That seam — convert exactly when the swipe happens — is the whole trick, and it is why a money-transfer company (fiat ramps, licenses, FX) plus a stablecoin (cheap dollar transfer) plus Visa (acceptance) is the natural team. For jayverse this is the same principle its payment work already follows — the AA agent and USDCx flows hide the rail and show a balance — and it is why the shortlist card lists Circle, Stripe, and x402 as payment rails: the stablecoin&#39;s job is to move value cheaply and then disappear.</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <h3>What the user feels</h3>
+<p>A normal Visa card and a dollar balance. They tap or swipe anywhere Visa is accepted; the charge shows in local pesos; the money comes out of their &#39;dollars.&#39; No wallet address, no gas, no &#39;crypto&#39; — and, in a high-inflation economy, dollar exposure without a US bank account. The stablecoin is never something they think about; that invisibility is the product.</p>
+<h3>Under the hood — one swipe, step by step</h3>
+<ol>
+<li>The user holds a <strong>USD stablecoin balance</strong> in the MoneyGram wallet.</li>
+<li>A <strong>Visa card</strong> (physical or virtual) is linked to that balance via an issuer / BIN sponsor and a program manager.</li>
+<li>At the merchant, the card presents a <strong>normal Visa authorization</strong> in pesos — the terminal sees Visa, not crypto.</li>
+<li>Behind the swipe, the program <strong>authorizes against the stablecoin balance</strong> and does a <strong>just-in-time conversion</strong>: pull the needed stablecoin → USD → COP through an FX / liquidity provider, at authorization time.</li>
+<li><strong>Visa settles to the merchant in fiat</strong>, exactly as for any card. The merchant and Visa never touch the stablecoin.</li>
+</ol>
+<h3>The seam that makes it work</h3>
+<p>Two worlds kept separate and joined at one point: crypto rails on the user&#39;s side, card rails on the merchant&#39;s side, bridged by the just-in-time conversion. Each party is trusted for one thing — MoneyGram for the wallet and ramps, the stablecoin issuer for the peg, the issuer bank for the BIN, Visa for acceptance, the FX provider for the rate.</p>
+<h3>Where it lands for jayverse</h3>
+<p>Same lesson as the payment work here: the user should feel a balance, not a rail. Related: won-stablecoin-fee-savings, two-currencies-one-ledger, jayverse-build-on-the-shortlist (Circle / Stripe / x402 as payment rails), wallet-is-a-distribution-business. Confirm the actual stablecoin, issuer, and FX path against MoneyGram&#39;s announcement before citing.</p>
       
       <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 그래디언트 부스팅 — XGBoost는 리더보드를 이기고 이유를 숨긴다\n\n부스팅 트리는 표 형식 데이터의 기본 승자이지만, 그 정확도는 불투명성에 싸여 옵니다 — 결정을 설명하려면 두 번째 도구(SHAP)가 필요한 강한 모델입니다.\n\n아직 범위 미정.\n\n## 왜\n\n이 PoC는 신용 스타일 데이터셋에서 XGBoost 모델과 SHAP 기여도를 짝지어, 정확도와 설명가능성 사이의 격차를 진짜 산출물로 다룹니다.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>그래디언트 부스팅 — XGBoost는 리더보드를 이기고 이유를 숨긴다</h1>
-      <p class="lead">부스팅 트리는 표 형식 데이터의 기본 승자이지만, 그 정확도는 불투명성에 싸여 옵니다 — 결정을 설명하려면 두 번째 도구(SHAP)가 필요한 강한 모델입니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# MoneyGram 스테이블코인 Visa 카드 — 사용자에겐 안 보이고, 밑에선 실시간 전환\n\nMoneyGram의 스테이블코인 Visa 카드가 콜롬비아에서 개시: 사용자는 Visa가 받는 곳 어디서나 달러(스테이블코인) 잔액을 씁니다. 사용자에겐 달러 잔액이 있는 평범한 카드; 밑에선 승인 시점에 스테이블코인이 현지 법정화폐로 실시간 전환되고, 가맹점과 Visa는 크립토를 만지지 않습니다. 안 보이는 것이 곧 제품. (요청대로 두 층: 어떻게 느껴지고, 어떻게 작동하는가.)\n\n구현이 아니라 끝에서 끝까지 추적할 메커니즘입니다. 한 건의 $10 결제를 따라가세요: 사용자가 Visa 카드를 탭; 가맹점은 페소로 청구; 스와이프 뒤에서 카드 프로그램이 사용자의 스테이블코인 잔액에 대해 승인하고, 필요한 USDC → USD → COP를 실시간 전환(just-in-time 펀딩)하며, 늘 그렇듯 Visa로 가맹점에 법정화폐로 정산합니다. 각 이음매의 당사자와 그가 신뢰받는 한 가지를 명명하세요 — 지갑/온램프(MoneyGram), 자산(USD 스테이블코인 발행사, 페그), 발행/BIN 스폰서(카드), 프로그램 매니저, FX/유동성(환율), 카드망(Visa, 수용). 구체 주장 전 실제 스테이블코인·발행사·FX 경로를 MoneyGram 발표로 확인.\n\n## 왜\n\n교훈은 이기는 스테이블코인 UX가 '안 보임'이라는 것입니다. 사용자는 '크립토'를 원하지 않습니다; 쓸 수 있는 달러 잔액을, 그리고 콜롬비아처럼 인플레가 높은 경제에선 미국 은행계좌 없이 달러 노출을 원합니다. 카드는 정확히 그 느낌 — 탭, 결제, 끝 — 을 주고, 스테이블코인은 사용자가 결코 생각하지 않는 배관이지 제품이 아닙니다.\n\n밑에서 시스템은 분리해야 하는 두 세계에 걸칩니다: 사용자 쪽의 크립토 레일(커스터디, 온/오프램프, 전송)과 가맹점 쪽의 전통 카드 레일(Visa 승인·법정화폐 정산), 그리고 승인 순간의 실시간 전환으로 이어져 가맹점도 Visa도 스테이블코인을 결코 쥐지 않습니다. 그 이음매 — 스와이프가 일어나는 바로 그때 전환 — 가 전체 트릭이고, 그래서 송금 회사(법정 램프·라이선스·FX) + 스테이블코인(싼 달러 전송) + Visa(수용)가 자연스러운 팀입니다. jayverse엔 이미 그 결제 작업이 따르는 원리 — AA 에이전트와 USDCx 흐름이 레일을 숨기고 잔액을 보여줌 — 이고, 그래서 shortlist 카드가 Circle·Stripe·x402를 결제 레일로 나열합니다: 스테이블코인의 임무는 가치를 싸게 옮기고 사라지는 것.\n\n## 동작 방식\n\n### 사용자가 느끼는 것\n\n평범한 Visa 카드와 달러 잔액. Visa가 받는 곳 어디서나 탭·스와이프; 청구는 현지 페소로 뜨고; 돈은 그의 '달러'에서 나갑니다. 지갑 주소 없음, 가스 없음, '크립토' 없음 — 그리고 인플레 높은 경제에선 미국 은행계좌 없이 달러 노출. 스테이블코인은 그가 결코 생각하지 않는 것; 그 안 보임이 곧 제품.\n\n### 밑에서 — 한 번의 스와이프, 단계별\n\n1. 사용자가 MoneyGram 지갑에 **USD 스테이블코인 잔액**을 보유.\n2. 발행/BIN 스폰서와 프로그램 매니저를 통해 **Visa 카드**(실물 또는 가상)가 그 잔액에 연결.\n3. 가맹점에서 카드는 페소로 **평범한 Visa 승인**을 제시 — 단말은 크립토가 아니라 Visa를 봄.\n4. 스와이프 뒤에서 프로그램이 **스테이블코인 잔액에 대해 승인**하고 **실시간 전환**: 승인 시점에 FX/유동성 제공자를 통해 필요한 스테이블코인 → USD → COP를 끌어옴.\n5. **Visa가 가맹점에 법정화폐로 정산**, 다른 카드와 똑같이. 가맹점과 Visa는 스테이블코인을 결코 만지지 않음.\n\n### 작동하게 만드는 이음매\n\n분리된 채 한 점에서 이어진 두 세계: 사용자 쪽 크립토 레일, 가맹점 쪽 카드 레일, 실시간 전환으로 다리 놓음. 각 당사자는 한 가지로 신뢰받음 — MoneyGram은 지갑·램프, 스테이블코인 발행사는 페그, 발행 은행은 BIN, Visa는 수용, FX 제공자는 환율.\n\n### jayverse에서의 자리\n\n여기 결제 작업과 같은 교훈: 사용자는 레일이 아니라 잔액을 느껴야 함. 관련: won-stablecoin-fee-savings, two-currencies-one-ledger, jayverse-build-on-the-shortlist(Circle/Stripe/x402 결제 레일), wallet-is-a-distribution-business. 인용 전 실제 스테이블코인·발행사·FX 경로를 MoneyGram 발표로 확인.\n"</script>
+      <h1>MoneyGram 스테이블코인 Visa 카드 — 사용자에겐 안 보이고, 밑에선 실시간 전환</h1>
+      <p class="lead">MoneyGram의 스테이블코인 Visa 카드가 콜롬비아에서 개시: 사용자는 Visa가 받는 곳 어디서나 달러(스테이블코인) 잔액을 씁니다. 사용자에겐 달러 잔액이 있는 평범한 카드; 밑에선 승인 시점에 스테이블코인이 현지 법정화폐로 실시간 전환되고, 가맹점과 Visa는 크립토를 만지지 않습니다. 안 보이는 것이 곧 제품. (요청대로 두 층: 어떻게 느껴지고, 어떻게 작동하는가.)</p>
+      <p class="meta">구현이 아니라 끝에서 끝까지 추적할 메커니즘입니다. 한 건의 $10 결제를 따라가세요: 사용자가 Visa 카드를 탭; 가맹점은 페소로 청구; 스와이프 뒤에서 카드 프로그램이 사용자의 스테이블코인 잔액에 대해 승인하고, 필요한 USDC → USD → COP를 실시간 전환(just-in-time 펀딩)하며, 늘 그렇듯 Visa로 가맹점에 법정화폐로 정산합니다. 각 이음매의 당사자와 그가 신뢰받는 한 가지를 명명하세요 — 지갑/온램프(MoneyGram), 자산(USD 스테이블코인 발행사, 페그), 발행/BIN 스폰서(카드), 프로그램 매니저, FX/유동성(환율), 카드망(Visa, 수용). 구체 주장 전 실제 스테이블코인·발행사·FX 경로를 MoneyGram 발표로 확인.</p>
       <h2>왜</h2>
-      <p>이 PoC는 신용 스타일 데이터셋에서 XGBoost 모델과 SHAP 기여도를 짝지어, 정확도와 설명가능성 사이의 격차를 진짜 산출물로 다룹니다.</p>
+      <p>교훈은 이기는 스테이블코인 UX가 &#39;안 보임&#39;이라는 것입니다. 사용자는 &#39;크립토&#39;를 원하지 않습니다; 쓸 수 있는 달러 잔액을, 그리고 콜롬비아처럼 인플레가 높은 경제에선 미국 은행계좌 없이 달러 노출을 원합니다. 카드는 정확히 그 느낌 — 탭, 결제, 끝 — 을 주고, 스테이블코인은 사용자가 결코 생각하지 않는 배관이지 제품이 아닙니다.</p>
+<p>밑에서 시스템은 분리해야 하는 두 세계에 걸칩니다: 사용자 쪽의 크립토 레일(커스터디, 온/오프램프, 전송)과 가맹점 쪽의 전통 카드 레일(Visa 승인·법정화폐 정산), 그리고 승인 순간의 실시간 전환으로 이어져 가맹점도 Visa도 스테이블코인을 결코 쥐지 않습니다. 그 이음매 — 스와이프가 일어나는 바로 그때 전환 — 가 전체 트릭이고, 그래서 송금 회사(법정 램프·라이선스·FX) + 스테이블코인(싼 달러 전송) + Visa(수용)가 자연스러운 팀입니다. jayverse엔 이미 그 결제 작업이 따르는 원리 — AA 에이전트와 USDCx 흐름이 레일을 숨기고 잔액을 보여줌 — 이고, 그래서 shortlist 카드가 Circle·Stripe·x402를 결제 레일로 나열합니다: 스테이블코인의 임무는 가치를 싸게 옮기고 사라지는 것.</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <h3>사용자가 느끼는 것</h3>
+<p>평범한 Visa 카드와 달러 잔액. Visa가 받는 곳 어디서나 탭·스와이프; 청구는 현지 페소로 뜨고; 돈은 그의 &#39;달러&#39;에서 나갑니다. 지갑 주소 없음, 가스 없음, &#39;크립토&#39; 없음 — 그리고 인플레 높은 경제에선 미국 은행계좌 없이 달러 노출. 스테이블코인은 그가 결코 생각하지 않는 것; 그 안 보임이 곧 제품.</p>
+<h3>밑에서 — 한 번의 스와이프, 단계별</h3>
+<ol>
+<li>사용자가 MoneyGram 지갑에 <strong>USD 스테이블코인 잔액</strong>을 보유.</li>
+<li>발행/BIN 스폰서와 프로그램 매니저를 통해 <strong>Visa 카드</strong>(실물 또는 가상)가 그 잔액에 연결.</li>
+<li>가맹점에서 카드는 페소로 <strong>평범한 Visa 승인</strong>을 제시 — 단말은 크립토가 아니라 Visa를 봄.</li>
+<li>스와이프 뒤에서 프로그램이 <strong>스테이블코인 잔액에 대해 승인</strong>하고 <strong>실시간 전환</strong>: 승인 시점에 FX/유동성 제공자를 통해 필요한 스테이블코인 → USD → COP를 끌어옴.</li>
+<li><strong>Visa가 가맹점에 법정화폐로 정산</strong>, 다른 카드와 똑같이. 가맹점과 Visa는 스테이블코인을 결코 만지지 않음.</li>
+</ol>
+<h3>작동하게 만드는 이음매</h3>
+<p>분리된 채 한 점에서 이어진 두 세계: 사용자 쪽 크립토 레일, 가맹점 쪽 카드 레일, 실시간 전환으로 다리 놓음. 각 당사자는 한 가지로 신뢰받음 — MoneyGram은 지갑·램프, 스테이블코인 발행사는 페그, 발행 은행은 BIN, Visa는 수용, FX 제공자는 환율.</p>
+<h3>jayverse에서의 자리</h3>
+<p>여기 결제 작업과 같은 교훈: 사용자는 레일이 아니라 잔액을 느껴야 함. 관련: won-stablecoin-fee-savings, two-currencies-one-ledger, jayverse-build-on-the-shortlist(Circle/Stripe/x402 결제 레일), wallet-is-a-distribution-business. 인용 전 실제 스테이블코인·발행사·FX 경로를 MoneyGram 발표로 확인.</p>
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-ds-dimensionality-pca.html">&larr; 227. PCA — compressing dimensions and the meaning that leaks out</a><a href="pocs-ds-cross-validation.html">229. Cross-validation — the honest way to fail before you ship &rarr;</a></div>
+    <div class="pager"><a href="pocs-a-faucet-is-a-payout.html">&larr; 63. A faucet without limits is a payout, not a feature</a><a href="pocs-stablepair-hook-fee-tracks-the-risk.html">65. Uniswap v4 StablePair Hook — a constant fee is the wrong setting for a stable pair &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="ds-gradient-boosting";</script>
+<script>window.__NAV_CURRENT__="stablecoin-visa-card-invisible-under-the-hood";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;
