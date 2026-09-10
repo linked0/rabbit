@@ -1689,7 +1689,8 @@ export const POC_CARDS: DemoCard[] = [
       "LayerZero moves arbitrary messages between chains and lets the application pick its own verifier set. That is the real feature and the real trap: skip the choice and you have still made one, and nothing in your codebase records who you are now trusting.",
     descriptionKo:
       "LayerZero는 체인 간 **임의 메시지**를 옮기고, **검증자 집합을 애플리케이션이 직접 고르게** 합니다. 그게 진짜 기능이자 진짜 함정입니다 — **고르지 않아도 고른 것**이고, **지금 누구를 신뢰하는지 코드 어디에도 기록되지 않습니다.**",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-10",
     important: true,
     howTo:
       "Thirty minutes, two testnets. Deploy one OApp and send a single message round trip; then run `lz:oapp:config:get` and write one line answering the only question that matters — who am I trusting right now. Paste that output into the README, because it is the trust assumption and it lives in configuration rather than code. Optional third step: take the four-way split ATLAS publishes (matching, clearing, settlement, risk) into the settlement design notes. Sources: layerzero.network and docs.layerzero.network; ATLAS announced 2026-08-26, running on the Zero L1 shipped in February, published at p50 sub-millisecond and p99 2.641ms under vendor stress testing, part of fees routed to ZRO buyback and burn, launch stated for this autumn, with Citadel Securities, DTCC, ARK Invest and ICE named. Vendor figures and an unreleased product — confirm before relying on any of it.",
