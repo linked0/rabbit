@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; The CLI leaves an artifact; the MCP holds a conversation</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#223</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#224</span><span>PoC</span></p>
       <h1>The CLI leaves an artifact; the MCP holds a conversation</h1>
       <p class="lead">Two ways to drive Blender from Codex or Claude Code: the CLI generates Blender Python and runs it headless to an output, while MCP connects to a <em>running</em> Blender and operates it interactively, reading the live scene between steps. Their capabilities overlap — either can add a cube — but the workflow differs on one axis: the CLI leaves a re-runnable, reviewable script (batch, reproducibility, server execution); the MCP holds a stateful conversation with a live process (inspect, adjust, verify, repeat). The mature move is both — CLI to generate and batch-output, MCP to refine in the middle.</p>
       <p class="meta">Not yet scoped — a workflow decomposition, not a build. Take one real task (&quot;build a classroom scene, then export GLB&quot;) and route it across the two: <strong>CLI</strong> to generate the base scene as a Python script (durable, reviewable, re-runnable — floor, walls, desks, board, lights in one pass), <strong>MCP</strong> to adjust interactively against the live scene (&quot;fewer desks,&quot; &quot;bigger blackboard,&quot; &quot;light from the window&quot;), then <strong>CLI</strong> again to batch-output (multi-camera renders, GLB export, poly-count check). The discipline the article names is worth keeping: tell the AI not just <em>what to build</em> but <em>how to verify</em> — a fixed-camera render makes before/after comparable (the CLI&#39;s reproducible check), the live viewport makes it immediate (the MCP&#39;s stateful check). Deliverable: a decision table mapping task properties (batch? reproducible? stateful? interactive?) to CLI vs MCP, plus the combined CLI -&gt; MCP -&gt; CLI pipeline for a task that needs both. Source: npaka (note.com), &quot;AIでBlenderを操作する方法 — CLIとMCPの使い分け,&quot; 2026-09-03 — a practitioner how-to; Blender is the illustration, the CLI-vs-MCP axis is the transferable part.</p>
@@ -557,7 +557,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-agent-ask-not-write.html">&larr; 222. Give the agent the right to ask, not the right to write</a><a href="pocs-ai-engineering-is-framing-non-determinism.html">224. Every AI-engineering skill is framing the same non-determinism &rarr;</a></div>
+    <div class="pager"><a href="pocs-agent-ask-not-write.html">&larr; 223. Give the agent the right to ask, not the right to write</a><a href="pocs-ai-engineering-is-framing-non-determinism.html">225. Every AI-engineering skill is framing the same non-determinism &rarr;</a></div>
   </div>
   </main>
 </div>

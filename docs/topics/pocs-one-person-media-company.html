@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Multimodal — one model that reads images and text together — Notes</title>
+<title>A one-person media company is six bots and one shared brain — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,45 +366,185 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Multimodal — one model that reads images and text together</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; A one-person media company is six bots and one shared brain</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#218</span><span>PoC</span></p>
-      <h1>Multimodal — one model that reads images and text together</h1>
-      <p class="lead">Vision-language models take pixels and tokens in the same context, enabling screenshot understanding and document parsing — and inheriting prompt-injection risk through images, not just text.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#175</span><span>PoC</span></p>
+      <h1>A one-person media company is six bots and one shared brain</h1>
+      <p class="lead">A viral how-to (&#39;build a one-person media company with six Hermes bots&#39;) buries a genuinely good multi-agent operations pattern. The claim worth keeping is not that AI writes faster — writing was never the bottleneck. The bottleneck is the loop: idea → research → angle → long-form → distribution → review → performance → updated playbooks. Six specialists each own one decision under a strict contract, a shared Obsidian &#39;content brain&#39; gives them compatible judgment, and structured handoffs on a durable board replace one fragile chat. Treat the impression numbers as marketing; steal the architecture.</p>
+      <p class="meta">Not a one-day build. Order: (1) build the shared brain first — minimum voice / audience / proof / platform files in an Obsidian graph. (2) Stand up signal scout, researcher, and editor only, and run three real ideas through find → verify → review. (3) Add the strategist once evidence packets are consistently useful; add the writer when angle briefs are tight enough to constrain a draft; add distribution after one flagship format works. (4) Keep publishing approval human until the review queue is consistently boring, then move only the predictable decisions into the playbook. (5) Once a week, have the editor compare recent campaigns and return three lists — keep / test / stop — each naming the posts that support it; you approve before the shared brain updates. Tool-agnostic: any multi-agent runtime + a plain-markdown vault + a durable task board works; the vendor &#39;Hermes&#39; is one implementation, not the requirement.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Multimodal — one model that reads images and text together\n\nVision-language models take pixels and tokens in the same context, enabling screenshot understanding and document parsing — and inheriting prompt-injection risk through images, not just text.\n\nNot yet scoped.\n\n## Why\n\nThe PoC runs a VLM on a screenshot task and shows both the capability and an image-borne injection, connecting multimodal power to its new attack surface.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# A one-person media company is six bots and one shared brain\n\nA viral how-to ('build a one-person media company with six Hermes bots') buries a genuinely good multi-agent operations pattern. The claim worth keeping is not that AI writes faster — writing was never the bottleneck. The bottleneck is the loop: idea → research → angle → long-form → distribution → review → performance → updated playbooks. Six specialists each own one decision under a strict contract, a shared Obsidian 'content brain' gives them compatible judgment, and structured handoffs on a durable board replace one fragile chat. Treat the impression numbers as marketing; steal the architecture.\n\nNot a one-day build. Order: (1) build the shared brain first — minimum voice / audience / proof / platform files in an Obsidian graph. (2) Stand up signal scout, researcher, and editor only, and run three real ideas through find → verify → review. (3) Add the strategist once evidence packets are consistently useful; add the writer when angle briefs are tight enough to constrain a draft; add distribution after one flagship format works. (4) Keep publishing approval human until the review queue is consistently boring, then move only the predictable decisions into the playbook. (5) Once a week, have the editor compare recent campaigns and return three lists — keep / test / stop — each naming the posts that support it; you approve before the shared brain updates. Tool-agnostic: any multi-agent runtime + a plain-markdown vault + a durable task board works; the vendor 'Hermes' is one implementation, not the requirement.\n\n## Why\n\n**The source is a marketing thread; the architecture is real.** The author sells a build (six vendor 'Hermes' bots = a full media company, millions of impressions) — discount the numbers as promotion and the named tool as one option, not a requirement. What survives the discount is a clean multi-agent operations pattern that generalizes well past content.\n\n**The load-bearing idea: the value is the loop, not the drafts.** Break any edge and quality drops — research that never reaches the strategist yields a generic angle; distribution that starts from a finished article ships the same shortened post to five platforms; performance that never updates the playbooks repeats every mistake forever. Six chatbots are not a company. Ownership + shared context + structured handoffs + one feedback loop are.\n\n**Why it sits in this catalogue.** It is the same shape as the agentic work here (the Settlement Agent pipeline, the mandate / console flow): specialist roles with narrow authority, a shared source of truth, inspectable handoffs, and a human at the boundary. The transferable rule — an agent team is contracts, not chat: give each agent one decision to own (owns / reads / returns / must-not / done-when) and move state through a durable board, never through one long conversation that loses its context on restart.\n\n## How it works\n\n### The loop (break any edge and quality drops)\n\n`idea → research → angle → long-form → distribution → review → performance → updated playbooks`\n\n### Three layers, each for what it is good at\n\n| Layer | Is | Job |\n| --- | --- | --- |\n| The bots | the people | make editorial decisions |\n| Shared vault (Obsidian) | the company brain | hold accepted knowledge every bot reads |\n| Durable board (Kanban / SQLite) | the production desk | move work with dependencies, review, retries — survives restarts |\n\n### Six specialists, one decision each\n\n| Bot | Owns | Returns |\n| --- | --- | --- |\n| Signal scout | is there an idea worth covering now? | candidates + a reason to reject each weak one |\n| Researcher | is it true? | a source-bound evidence packet |\n| Strategist | what is the one angle? | an angle brief, not a draft |\n| Writer | the flagship piece | the deepest reusable version |\n| Distribution | what fits each platform? | native assets, each with its own reason to exist |\n| Editor | is the whole package sound? | approve / revise / reject (cannot publish) |\n\n### The contract, and the record that travels\n\nEvery role gets `owns · reads · returns · must-not · done-when`, and one campaign record moves through the whole loop — so the next bot has predictable input and you can inspect history without reopening six chats. A missing field returns the task to the previous stage instead of being filled with a plausible guess.\n"</script>
       <h2>Why</h2>
-      <p>The PoC runs a VLM on a screenshot task and shows both the capability and an image-borne injection, connecting multimodal power to its new attack surface.</p>
+      <p><strong>The source is a marketing thread; the architecture is real.</strong> The author sells a build (six vendor &#39;Hermes&#39; bots = a full media company, millions of impressions) — discount the numbers as promotion and the named tool as one option, not a requirement. What survives the discount is a clean multi-agent operations pattern that generalizes well past content.</p>
+<p><strong>The load-bearing idea: the value is the loop, not the drafts.</strong> Break any edge and quality drops — research that never reaches the strategist yields a generic angle; distribution that starts from a finished article ships the same shortened post to five platforms; performance that never updates the playbooks repeats every mistake forever. Six chatbots are not a company. Ownership + shared context + structured handoffs + one feedback loop are.</p>
+<p><strong>Why it sits in this catalogue.</strong> It is the same shape as the agentic work here (the Settlement Agent pipeline, the mandate / console flow): specialist roles with narrow authority, a shared source of truth, inspectable handoffs, and a human at the boundary. The transferable rule — an agent team is contracts, not chat: give each agent one decision to own (owns / reads / returns / must-not / done-when) and move state through a durable board, never through one long conversation that loses its context on restart.</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <h3>The loop (break any edge and quality drops)</h3>
+<p><code>idea → research → angle → long-form → distribution → review → performance → updated playbooks</code></p>
+<h3>Three layers, each for what it is good at</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Is</th>
+<th>Job</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>The bots</td>
+<td>the people</td>
+<td>make editorial decisions</td>
+</tr>
+<tr>
+<td>Shared vault (Obsidian)</td>
+<td>the company brain</td>
+<td>hold accepted knowledge every bot reads</td>
+</tr>
+<tr>
+<td>Durable board (Kanban / SQLite)</td>
+<td>the production desk</td>
+<td>move work with dependencies, review, retries — survives restarts</td>
+</tr>
+</tbody></table></div>
+<h3>Six specialists, one decision each</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Bot</th>
+<th>Owns</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Signal scout</td>
+<td>is there an idea worth covering now?</td>
+<td>candidates + a reason to reject each weak one</td>
+</tr>
+<tr>
+<td>Researcher</td>
+<td>is it true?</td>
+<td>a source-bound evidence packet</td>
+</tr>
+<tr>
+<td>Strategist</td>
+<td>what is the one angle?</td>
+<td>an angle brief, not a draft</td>
+</tr>
+<tr>
+<td>Writer</td>
+<td>the flagship piece</td>
+<td>the deepest reusable version</td>
+</tr>
+<tr>
+<td>Distribution</td>
+<td>what fits each platform?</td>
+<td>native assets, each with its own reason to exist</td>
+</tr>
+<tr>
+<td>Editor</td>
+<td>is the whole package sound?</td>
+<td>approve / revise / reject (cannot publish)</td>
+</tr>
+</tbody></table></div>
+<h3>The contract, and the record that travels</h3>
+<p>Every role gets <code>owns · reads · returns · must-not · done-when</code>, and one campaign record moves through the whole loop — so the next bot has predictable input and you can inspect history without reopening six chats. A missing field returns the task to the previous stage instead of being filled with a plausible guess.</p>
       
       <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 멀티모달 — 이미지와 텍스트를 함께 읽는 한 모델\n\n비전-언어 모델은 픽셀과 토큰을 같은 컨텍스트에 받아 스크린샷 이해와 문서 파싱을 가능하게 하며 — 텍스트만이 아니라 이미지를 통한 프롬프트 인젝션 위험도 물려받습니다.\n\n아직 범위 미정.\n\n## 왜\n\n이 PoC는 스크린샷 과제에서 VLM을 돌려 능력과 이미지로 실린 인젝션을 함께 보이며, 멀티모달의 힘을 그 새 공격 표면으로 연결합니다.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>멀티모달 — 이미지와 텍스트를 함께 읽는 한 모델</h1>
-      <p class="lead">비전-언어 모델은 픽셀과 토큰을 같은 컨텍스트에 받아 스크린샷 이해와 문서 파싱을 가능하게 하며 — 텍스트만이 아니라 이미지를 통한 프롬프트 인젝션 위험도 물려받습니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# 1인 미디어 회사 = 전문 봇 여섯 + 공유 브레인 하나\n\n바이럴 하우투('허메스 봇 여섯으로 1인 미디어 회사를 지어라')가 사실은 쓸 만한 멀티에이전트 운영 패턴을 담고 있다. 남길 주장은 'AI가 더 빨리 쓴다'가 아니다 — 글쓰기는 애초에 병목이 아니었다. 병목은 루프다: 아이디어 → 리서치 → 앵글 → 롱폼 → 배포 → 리뷰 → 성과 → 플레이북 갱신. 전문 봇 여섯이 각자 한 결정을 엄격한 계약 아래 소유하고, 공유 옵시디언 '콘텐츠 브레인'이 호환되는 판단을 주며, 깨지기 쉬운 대화 하나를 지속되는 보드 위의 구조화된 핸드오프가 대체한다. 노출 수치는 마케팅으로 치고, 아키텍처를 훔쳐라.\n\n하루 만에 되는 빌드가 아니다. 순서: (1) 공유 브레인 먼저 — 옵시디언 그래프에 최소한의 보이스 / 오디언스 / 근거 / 플랫폼 파일. (2) 시그널 스카우트·리서처·에디터만 세우고 실제 아이디어 셋을 발견 → 검증 → 리뷰로 돌린다. (3) 증거 패킷이 꾸준히 쓸 만해지면 전략가를, 앵글 브리프가 초안을 제약할 만큼 탄탄해지면 작가를, 플래그십 포맷 하나가 돌면 배포를 추가한다. (4) 리뷰 큐가 꾸준히 지루해질 때까지 게시 승인은 사람이 쥐고, 그다음 예측 가능한 결정만 플레이북으로 옮긴다. (5) 주 1회 에디터가 최근 캠페인을 비교해 세 목록 — keep / test / stop — 을 근거 게시물과 함께 반환하고, 공유 브레인 갱신 전에 사람이 승인한다. 툴 불문: 멀티에이전트 런타임 + 순수 마크다운 볼트 + 지속 태스크 보드면 된다. 벤더 '허메스'는 필수가 아니라 한 구현일 뿐이다.\n\n## 왜\n\n**출처는 마케팅 스레드지만, 아키텍처는 진짜다.** 글쓴이는 빌드를 판다(벤더 '허메스' 봇 여섯 = 완전한 미디어 회사, 수백만 노출) — 수치는 홍보로, 지명된 툴은 필수가 아니라 한 선택지로 할인해서 본다. 할인 뒤 남는 것은 콘텐츠를 훨씬 넘어 일반화되는 깔끔한 멀티에이전트 운영 패턴이다.\n\n**핵심: 가치는 초안이 아니라 루프다.** 어느 연결이든 끊기면 품질이 떨어진다 — 리서치가 전략가에게 닿지 않으면 앵글이 뻔해지고, 완성된 글에서 시작한 배포는 다섯 플랫폼에 같은 축약본을 뿌리며, 성과가 플레이북을 갱신하지 않으면 같은 실수를 영원히 반복한다. 챗봇 여섯은 회사가 아니다. 소유권 + 공유 맥락 + 구조화된 핸드오프 + 하나의 피드백 루프가 회사다.\n\n**왜 이 카탈로그에 있나.** 여기의 에이전트 작업(Settlement Agent 파이프라인, 맨데이트 / 콘솔 흐름)과 같은 모양이다 — 좁은 권한의 전문 역할, 공유 단일 진실원, 검사 가능한 핸드오프, 경계의 사람. 이전 가능한 규칙 — 에이전트 팀은 대화가 아니라 계약이다: 각 에이전트에 한 결정을 소유시키고(owns / reads / returns / must-not / done-when), 상태를 재시작에 살아남지 못하는 긴 대화가 아니라 지속되는 보드로 나른다.\n\n## 동작 방식\n\n### 루프 (어느 연결이든 끊기면 품질 하락)\n\n`아이디어 → 리서치 → 앵글 → 롱폼 → 배포 → 리뷰 → 성과 → 플레이북 갱신`\n\n### 세 층, 각자 잘하는 일\n\n| 층 | 정체 | 역할 |\n| --- | --- | --- |\n| 봇들 | 사람 | 편집 결정을 내린다 |\n| 공유 볼트(옵시디언) | 회사의 뇌 | 모든 봇이 읽는 합의된 지식을 담는다 |\n| 지속 보드(칸반 / SQLite) | 제작 데스크 | 의존성·리뷰·재시도로 일을 나른다 — 재시작에도 살아남음 |\n\n### 전문가 여섯, 각자 한 결정\n\n| 봇 | 소유 | 반환 |\n| --- | --- | --- |\n| 시그널 스카우트 | 지금 다룰 만한 아이디어가 있나? | 후보 + 약한 것 각각의 기각 사유 |\n| 리서처 | 사실인가? | 출처에 묶인 증거 패킷 |\n| 전략가 | 유일한 앵글은? | 초안이 아니라 앵글 브리프 |\n| 작가 | 플래그십 원고 | 가장 깊고 재사용 가능한 버전 |\n| 배포 | 플랫폼마다 무엇이 맞나? | 각자 존재 이유가 있는 네이티브 자산 |\n| 에디터 | 패키지 전체가 튼튼한가? | 승인 / 수정요청 / 반려 (게시는 못 함) |\n\n### 계약, 그리고 함께 도는 기록\n\n모든 역할이 `owns · reads · returns · must-not · done-when`을 받고, 캠페인 기록 하나가 루프 전체를 돈다 — 그래서 다음 봇은 예측 가능한 입력을 받고, 여섯 대화를 다시 열지 않고도 이력을 검사할 수 있다. 빠진 필드는 그럴듯한 추측으로 채우지 않고 이전 단계로 작업을 돌려보낸다.\n"</script>
+      <h1>1인 미디어 회사 = 전문 봇 여섯 + 공유 브레인 하나</h1>
+      <p class="lead">바이럴 하우투(&#39;허메스 봇 여섯으로 1인 미디어 회사를 지어라&#39;)가 사실은 쓸 만한 멀티에이전트 운영 패턴을 담고 있다. 남길 주장은 &#39;AI가 더 빨리 쓴다&#39;가 아니다 — 글쓰기는 애초에 병목이 아니었다. 병목은 루프다: 아이디어 → 리서치 → 앵글 → 롱폼 → 배포 → 리뷰 → 성과 → 플레이북 갱신. 전문 봇 여섯이 각자 한 결정을 엄격한 계약 아래 소유하고, 공유 옵시디언 &#39;콘텐츠 브레인&#39;이 호환되는 판단을 주며, 깨지기 쉬운 대화 하나를 지속되는 보드 위의 구조화된 핸드오프가 대체한다. 노출 수치는 마케팅으로 치고, 아키텍처를 훔쳐라.</p>
+      <p class="meta">하루 만에 되는 빌드가 아니다. 순서: (1) 공유 브레인 먼저 — 옵시디언 그래프에 최소한의 보이스 / 오디언스 / 근거 / 플랫폼 파일. (2) 시그널 스카우트·리서처·에디터만 세우고 실제 아이디어 셋을 발견 → 검증 → 리뷰로 돌린다. (3) 증거 패킷이 꾸준히 쓸 만해지면 전략가를, 앵글 브리프가 초안을 제약할 만큼 탄탄해지면 작가를, 플래그십 포맷 하나가 돌면 배포를 추가한다. (4) 리뷰 큐가 꾸준히 지루해질 때까지 게시 승인은 사람이 쥐고, 그다음 예측 가능한 결정만 플레이북으로 옮긴다. (5) 주 1회 에디터가 최근 캠페인을 비교해 세 목록 — keep / test / stop — 을 근거 게시물과 함께 반환하고, 공유 브레인 갱신 전에 사람이 승인한다. 툴 불문: 멀티에이전트 런타임 + 순수 마크다운 볼트 + 지속 태스크 보드면 된다. 벤더 &#39;허메스&#39;는 필수가 아니라 한 구현일 뿐이다.</p>
       <h2>왜</h2>
-      <p>이 PoC는 스크린샷 과제에서 VLM을 돌려 능력과 이미지로 실린 인젝션을 함께 보이며, 멀티모달의 힘을 그 새 공격 표면으로 연결합니다.</p>
+      <p><strong>출처는 마케팅 스레드지만, 아키텍처는 진짜다.</strong> 글쓴이는 빌드를 판다(벤더 &#39;허메스&#39; 봇 여섯 = 완전한 미디어 회사, 수백만 노출) — 수치는 홍보로, 지명된 툴은 필수가 아니라 한 선택지로 할인해서 본다. 할인 뒤 남는 것은 콘텐츠를 훨씬 넘어 일반화되는 깔끔한 멀티에이전트 운영 패턴이다.</p>
+<p><strong>핵심: 가치는 초안이 아니라 루프다.</strong> 어느 연결이든 끊기면 품질이 떨어진다 — 리서치가 전략가에게 닿지 않으면 앵글이 뻔해지고, 완성된 글에서 시작한 배포는 다섯 플랫폼에 같은 축약본을 뿌리며, 성과가 플레이북을 갱신하지 않으면 같은 실수를 영원히 반복한다. 챗봇 여섯은 회사가 아니다. 소유권 + 공유 맥락 + 구조화된 핸드오프 + 하나의 피드백 루프가 회사다.</p>
+<p><strong>왜 이 카탈로그에 있나.</strong> 여기의 에이전트 작업(Settlement Agent 파이프라인, 맨데이트 / 콘솔 흐름)과 같은 모양이다 — 좁은 권한의 전문 역할, 공유 단일 진실원, 검사 가능한 핸드오프, 경계의 사람. 이전 가능한 규칙 — 에이전트 팀은 대화가 아니라 계약이다: 각 에이전트에 한 결정을 소유시키고(owns / reads / returns / must-not / done-when), 상태를 재시작에 살아남지 못하는 긴 대화가 아니라 지속되는 보드로 나른다.</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <h3>루프 (어느 연결이든 끊기면 품질 하락)</h3>
+<p><code>아이디어 → 리서치 → 앵글 → 롱폼 → 배포 → 리뷰 → 성과 → 플레이북 갱신</code></p>
+<h3>세 층, 각자 잘하는 일</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>층</th>
+<th>정체</th>
+<th>역할</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>봇들</td>
+<td>사람</td>
+<td>편집 결정을 내린다</td>
+</tr>
+<tr>
+<td>공유 볼트(옵시디언)</td>
+<td>회사의 뇌</td>
+<td>모든 봇이 읽는 합의된 지식을 담는다</td>
+</tr>
+<tr>
+<td>지속 보드(칸반 / SQLite)</td>
+<td>제작 데스크</td>
+<td>의존성·리뷰·재시도로 일을 나른다 — 재시작에도 살아남음</td>
+</tr>
+</tbody></table></div>
+<h3>전문가 여섯, 각자 한 결정</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>봇</th>
+<th>소유</th>
+<th>반환</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>시그널 스카우트</td>
+<td>지금 다룰 만한 아이디어가 있나?</td>
+<td>후보 + 약한 것 각각의 기각 사유</td>
+</tr>
+<tr>
+<td>리서처</td>
+<td>사실인가?</td>
+<td>출처에 묶인 증거 패킷</td>
+</tr>
+<tr>
+<td>전략가</td>
+<td>유일한 앵글은?</td>
+<td>초안이 아니라 앵글 브리프</td>
+</tr>
+<tr>
+<td>작가</td>
+<td>플래그십 원고</td>
+<td>가장 깊고 재사용 가능한 버전</td>
+</tr>
+<tr>
+<td>배포</td>
+<td>플랫폼마다 무엇이 맞나?</td>
+<td>각자 존재 이유가 있는 네이티브 자산</td>
+</tr>
+<tr>
+<td>에디터</td>
+<td>패키지 전체가 튼튼한가?</td>
+<td>승인 / 수정요청 / 반려 (게시는 못 함)</td>
+</tr>
+</tbody></table></div>
+<h3>계약, 그리고 함께 도는 기록</h3>
+<p>모든 역할이 <code>owns · reads · returns · must-not · done-when</code>을 받고, 캠페인 기록 하나가 루프 전체를 돈다 — 그래서 다음 봇은 예측 가능한 입력을 받고, 여섯 대화를 다시 열지 않고도 이력을 검사할 수 있다. 빠진 필드는 그럴듯한 추측으로 채우지 않고 이전 단계로 작업을 돌려보낸다.</p>
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-llm-structured-output.html">&larr; 217. Structured output — forcing valid JSON instead of hoping for it</a><a href="pocs-llm-context-engineering.html">219. Context engineering — the window is a budget, not a bucket &rarr;</a></div>
+    <div class="pager"><a href="pocs-the-boundary-is-the-unit.html">&larr; 174. A list of attacks does not transfer — the trust boundary does</a><a href="pocs-lerobot-the-format-outlives-the-framework.html">176. LeRobot — why the dataset format outlives the framework &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="llm-multimodal";</script>
+<script>window.__NAV_CURRENT__="one-person-media-company";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;
