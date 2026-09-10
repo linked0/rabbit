@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>An indicator adds no information — it adds a decision — Notes</title>
+<title>Why AMC's tokenized stock ran to a premium — the peg needs an open mint/redeem path — Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,213 +366,137 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; An indicator adds no information — it adds a decision</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Why AMC's tokenized stock ran to a premium — the peg needs an open mint/redeem path</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#220</span><span>PoC</span></p>
-      <h1>An indicator adds no information — it adds a decision</h1>
-      <p class="lead">A moving average is a low-pass filter over closes. Bollinger Bands are that same average plus and minus k standard deviations. Both are functions of the price series already on the screen, so neither can contain anything the chart did not. What an indicator supplies is a rule — a way to turn a continuous line into act or do not act — and its worth is that the rule is repeatable and testable, not that it predicts.</p>
-      <p class="meta">Not a build — a discipline test, and the order of operations is the whole exercise. Write the rule down before opening the chart: instrument, indicator, parameters (say 20-period bands at 2σ), entry, exit, stop, position size. Then run it over a window you have not already looked at, and record two numbers rather than one — how often it was right, and the average win divided by the average loss. Neither means anything alone: a rule right 70% of the time can lose money, and one right 35% of the time can make it. Compare the result against simply holding the asset over the same window, net of fees and, on a perp, funding. Name the trap out loud before starting: any parameter picked after seeing the chart has already been fitted to it, and a rule fitted to the past makes no claim on the future. TradingView specifics — the indicator list, Pine Script, bar replay, alerts — are conveniences around this, not the substance of it.</p>
+      <p class="topic-kicker"><span class="topic-no">#64</span><span>PoC</span></p>
+      <h1>Why AMC's tokenized stock ran to a premium — the peg needs an open mint/redeem path</h1>
+      <p class="lead">AMC&#39;s tokenized stock traded at a big premium to the real share. Binji&#39;s analogy: you invited all the guests but forgot the toilet paper — demand showed up, but the supply-side plumbing that mints new tokens against real shares was missing, so the price detached. Traced through the flow of how a stock gets tokenized, the premium is exactly where the mint/redeem loop was closed.</p>
+      <p class="meta">Not a build — trace the tokenization flow and find the missing step. A tokenized stock is a token backed 1:1 by a real share in custody, and its price stays near the real share only if a mint/redeem arbitrage loop is open: token above the share → buy the share, deposit it, mint a token, sell it (supply up, price down); token below → buy the token, redeem it for the share, sell the share (supply down, price up). Walk the five steps — buy share, custody, mint, trade, redeem — and mark which one is closed. For AMC the mint path was not freely open, so new supply could not meet demand and the premium ran. Confirm the specific issuer, custody, and mint/redeem terms against primary sources before asserting.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# An indicator adds no information — it adds a decision\n\nA moving average is a low-pass filter over closes. Bollinger Bands are that same average plus and minus k standard deviations. Both are functions of the price series already on the screen, so neither can contain anything the chart did not. What an indicator supplies is a rule — a way to turn a continuous line into act or do not act — and its worth is that the rule is repeatable and testable, not that it predicts.\n\nNot a build — a discipline test, and the order of operations is the whole exercise. Write the rule down before opening the chart: instrument, indicator, parameters (say 20-period bands at 2σ), entry, exit, stop, position size. Then run it over a window you have not already looked at, and record two numbers rather than one — how often it was right, and the average win divided by the average loss. Neither means anything alone: a rule right 70% of the time can lose money, and one right 35% of the time can make it. Compare the result against simply holding the asset over the same window, net of fees and, on a perp, funding. Name the trap out loud before starting: any parameter picked after seeing the chart has already been fitted to it, and a rule fitted to the past makes no claim on the future. TradingView specifics — the indicator list, Pine Script, bar replay, alerts — are conveniences around this, not the substance of it.\n\n## Why\n\n**Every price-derived indicator is a transformation of one column, so it cannot add information.** An SMA is a low-pass filter that lags by roughly half its window; an EMA buys back some of that lag and pays for it in noise; MACD is the difference of two EMAs, so it is a statement about change in trend; RSI is a bounded momentum ratio. Bollinger Bands are the sharpest example, because the arithmetic is explicit — mean ± k·σ over the same window — which makes the band width a **volatility readout** and nothing else. That is the same σ as `lp-is-a-short-volatility-position`, drawn on a screen instead of priced into a pool. A squeeze says volatility is low and mean-reverting: it says something is likely to happen, and says nothing whatsoever about which way. Reading direction out of it is the most common error in the whole subject.\n\n**The corollary is the part worth keeping.** If a series is *not* a function of price, it genuinely does add information: **volume**, **open interest**, and on a perpetual, the **funding rate**. Funding is the strongest of the three because somebody actually pays it — it is a price set by real money competing, which is exactly the argument in `arb-bots-are-the-peg`, where the observed basis reads out the cheapest arbitrageur's cost floor. A funding rate is evidence. A 200-day moving average is arithmetic.\n\n**And yet the popular indicators do matter, for a reason a purist would miss.** A widely watched level is a level a large amount of capital is instructed to act at, which makes it closer to a Schelling point than to a forecast — coordination, not prophecy. That cuts both ways: it is why the obvious levels are worth knowing, and it is why a level everyone watches is a level everyone can be run through. **The failure mode is not the indicator, it is the accounting.** Parameters chosen after seeing the chart, a hit rate recorded without the win/loss ratio beside it, a backtest quoted gross — that last one is `gross-over-net`, and the middle one is `priced-by-the-wrong-thing`: a real number answering a question nobody asked.\n\n## How it works\n\n### What each one actually computes\n\n| Indicator | The arithmetic | What it is a statement about |\n| --- | --- | --- |\n| **SMA(n)** | mean of the last n closes | trend, lagging by about n/2 |\n| **EMA(n)** | exponentially weighted mean | same, less lag, more noise |\n| **Bollinger(n, k)** | SMA(n) ± k·σ(n) — usually 20, 2 | **volatility** — the width is the whole reading |\n| **RSI(n)** | up-move / total-move ratio, scaled 0–100 | momentum, bounded |\n| **MACD** | EMA(fast) − EMA(slow) | change in trend |\n\nAll five can be computed from the same close column. None of them can know anything that column did not.\n\n### The line that matters: derived vs. independent\n\n| Series | A function of price? | Adds information? |\n| --- | --- | --- |\n| MA · Bollinger · RSI · MACD | **yes** | no — it restates price |\n| Volume | no | yes |\n| Open interest | no | yes — positioning |\n| **Funding rate** (perps) | no | **yes — somebody pays it** |\n\n### What a Bollinger squeeze does and does not say\n\n- **Says:** σ is low, and σ mean-reverts, so a larger move is more likely than usual.\n- **Does not say:** which direction. The bands are symmetric by construction.\n- **Therefore:** a squeeze is a sizing and timing input, never an entry direction.\n\n### The discipline, in order\n\n1. Write the rule **before** opening the chart — entry, exit, stop, size.\n2. Fix the parameters **before** choosing the test window.\n3. Test **out-of-sample**, on bars you have not read.\n4. Record **two** numbers: hit rate **and** average win ÷ average loss.\n5. Subtract fees, spread, and funding — then compare.\n6. Compare against **holding the asset** over the same window. If it does not beat that, the rule is a hobby.\n\n### Update (2026-09-07) — a non-price series in the wild\n\nOn a hawkish jobs print (August +162,000, ~3× consensus, rate-hike bets rebuilding), BTC still held ~$80,347 while spot-BTC ETFs took **$730M — a 9-month high**. Read it against the funding-rate row above: the ETF inflow is the *independent* series, the one somebody actually pays, so the flat price against a strong inflow is the reading — supply met the demand instead of chasing it. But the discipline still bites: this is **one day, one sample**, a data point and not a regime. The confirmation is the 9/11 CPI print, not this candle — declaring a trend from a single non-price observation is the same error as fitting a parameter to one chart.\n"</script>
+      <script type="application/json" id="copy-en">"# Why AMC's tokenized stock ran to a premium — the peg needs an open mint/redeem path\n\nAMC's tokenized stock traded at a big premium to the real share. Binji's analogy: you invited all the guests but forgot the toilet paper — demand showed up, but the supply-side plumbing that mints new tokens against real shares was missing, so the price detached. Traced through the flow of how a stock gets tokenized, the premium is exactly where the mint/redeem loop was closed.\n\nNot a build — trace the tokenization flow and find the missing step. A tokenized stock is a token backed 1:1 by a real share in custody, and its price stays near the real share only if a mint/redeem arbitrage loop is open: token above the share → buy the share, deposit it, mint a token, sell it (supply up, price down); token below → buy the token, redeem it for the share, sell the share (supply down, price up). Walk the five steps — buy share, custody, mint, trade, redeem — and mark which one is closed. For AMC the mint path was not freely open, so new supply could not meet demand and the premium ran. Confirm the specific issuer, custody, and mint/redeem terms against primary sources before asserting.\n\n## Why\n\nThe lesson is that a token's peg to its backing is not a property of the token — it is a property of the mint/redeem mechanism around it. The token is just a claim; what keeps its price at the value of the share behind it is an open, low-friction creation/redemption loop that lets arbitrageurs expand supply into demand and contract it into slack. That is the same mechanism that pegs an ETF (authorized-participant creation/redemption) and a stablecoin (mint/redeem at par). Take the loop away and you have invited demand into a market with a fixed float, so the price does whatever demand alone dictates.\n\nBinji's 'forgot the toilet paper' is exact: the guests (buyers) arrived, but the consumable that must be restocked on demand (mintable supply) was not stocked, so the room overflowed (premium). The uncomfortable corollary is that a premium on a tokenized real-world asset is usually not a bullish signal about the asset — it is a sign the plumbing is broken, and it can snap back the moment mint reopens. For jayverse this is the peg lesson its token bridge already lives on (the-bridge-is-inside-the-token, refill-rate-is-the-real-cap): 1:1 backing is worth nothing without an open path to mint and redeem against it, and priced-by-the-wrong-thing is the same detachment seen from the price side.\n\n## How it works\n\n### The flow — how a stock becomes a token\n\n| Step | What happens | Where |\n|---|---|---|\n| 1. **Buy the share** | acquire the real AMC share | traditional market |\n| 2. **Custody** | the share is held by a custodian | off-chain, 1:1 backing |\n| 3. **Mint** | issue one token against one custodied share | on-chain |\n| 4. **Trade** | the token trades | DEX / venue |\n| 5. **Redeem** | burn the token, get the share back | closes the loop |\n\n### What actually pegs the price\n\nNot the backing — the **loop**. Steps 3 and 5, open to arbitrageurs, are the peg:\n- Token **above** the share → buy share, custody, **mint**, sell token → supply up, price down.\n- Token **below** → buy token, **redeem** for share, sell share → supply down, price up.\n\nAn open, low-friction mint/redeem path is the only thing holding the token at the share's value — the same mechanism behind an ETF (AP creation/redemption) and a stablecoin (mint/redeem at par).\n\n### Where AMC broke — the missing toilet paper\n\nDemand arrived, but the **mint path was not freely open**, so new supply could not be created to meet it. Fixed float + rising demand → the token detached upward into a premium. The guests came; the consumable that must be restocked on demand was not stocked; the room overflowed.\n\n### The peg lesson\n\n1:1 backing is worth nothing without an open path to mint and redeem against it — and a premium on a tokenized RWA is usually a broken-plumbing signal, not a bullish one. Related: the-bridge-is-inside-the-token, refill-rate-is-the-real-cap (mint mechanics), priced-by-the-wrong-thing (detachment from the price side). Confirm the AMC issuer, custody, and mint/redeem terms against primary sources before citing.\n"</script>
       <h2>Why</h2>
-      <p><strong>Every price-derived indicator is a transformation of one column, so it cannot add information.</strong> An SMA is a low-pass filter that lags by roughly half its window; an EMA buys back some of that lag and pays for it in noise; MACD is the difference of two EMAs, so it is a statement about change in trend; RSI is a bounded momentum ratio. Bollinger Bands are the sharpest example, because the arithmetic is explicit — mean ± k·σ over the same window — which makes the band width a <strong>volatility readout</strong> and nothing else. That is the same σ as <code>lp-is-a-short-volatility-position</code>, drawn on a screen instead of priced into a pool. A squeeze says volatility is low and mean-reverting: it says something is likely to happen, and says nothing whatsoever about which way. Reading direction out of it is the most common error in the whole subject.</p>
-<p><strong>The corollary is the part worth keeping.</strong> If a series is <em>not</em> a function of price, it genuinely does add information: <strong>volume</strong>, <strong>open interest</strong>, and on a perpetual, the <strong>funding rate</strong>. Funding is the strongest of the three because somebody actually pays it — it is a price set by real money competing, which is exactly the argument in <code>arb-bots-are-the-peg</code>, where the observed basis reads out the cheapest arbitrageur&#39;s cost floor. A funding rate is evidence. A 200-day moving average is arithmetic.</p>
-<p><strong>And yet the popular indicators do matter, for a reason a purist would miss.</strong> A widely watched level is a level a large amount of capital is instructed to act at, which makes it closer to a Schelling point than to a forecast — coordination, not prophecy. That cuts both ways: it is why the obvious levels are worth knowing, and it is why a level everyone watches is a level everyone can be run through. <strong>The failure mode is not the indicator, it is the accounting.</strong> Parameters chosen after seeing the chart, a hit rate recorded without the win/loss ratio beside it, a backtest quoted gross — that last one is <code>gross-over-net</code>, and the middle one is <code>priced-by-the-wrong-thing</code>: a real number answering a question nobody asked.</p>
+      <p>The lesson is that a token&#39;s peg to its backing is not a property of the token — it is a property of the mint/redeem mechanism around it. The token is just a claim; what keeps its price at the value of the share behind it is an open, low-friction creation/redemption loop that lets arbitrageurs expand supply into demand and contract it into slack. That is the same mechanism that pegs an ETF (authorized-participant creation/redemption) and a stablecoin (mint/redeem at par). Take the loop away and you have invited demand into a market with a fixed float, so the price does whatever demand alone dictates.</p>
+<p>Binji&#39;s &#39;forgot the toilet paper&#39; is exact: the guests (buyers) arrived, but the consumable that must be restocked on demand (mintable supply) was not stocked, so the room overflowed (premium). The uncomfortable corollary is that a premium on a tokenized real-world asset is usually not a bullish signal about the asset — it is a sign the plumbing is broken, and it can snap back the moment mint reopens. For jayverse this is the peg lesson its token bridge already lives on (the-bridge-is-inside-the-token, refill-rate-is-the-real-cap): 1:1 backing is worth nothing without an open path to mint and redeem against it, and priced-by-the-wrong-thing is the same detachment seen from the price side.</p>
       <h2>How it works</h2>
-      <h3>What each one actually computes</h3>
+      <h3>The flow — how a stock becomes a token</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Indicator</th>
-<th>The arithmetic</th>
-<th>What it is a statement about</th>
+<th>Step</th>
+<th>What happens</th>
+<th>Where</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>SMA(n)</strong></td>
-<td>mean of the last n closes</td>
-<td>trend, lagging by about n/2</td>
+<td>1. <strong>Buy the share</strong></td>
+<td>acquire the real AMC share</td>
+<td>traditional market</td>
 </tr>
 <tr>
-<td><strong>EMA(n)</strong></td>
-<td>exponentially weighted mean</td>
-<td>same, less lag, more noise</td>
+<td>2. <strong>Custody</strong></td>
+<td>the share is held by a custodian</td>
+<td>off-chain, 1:1 backing</td>
 </tr>
 <tr>
-<td><strong>Bollinger(n, k)</strong></td>
-<td>SMA(n) ± k·σ(n) — usually 20, 2</td>
-<td><strong>volatility</strong> — the width is the whole reading</td>
+<td>3. <strong>Mint</strong></td>
+<td>issue one token against one custodied share</td>
+<td>on-chain</td>
 </tr>
 <tr>
-<td><strong>RSI(n)</strong></td>
-<td>up-move / total-move ratio, scaled 0–100</td>
-<td>momentum, bounded</td>
+<td>4. <strong>Trade</strong></td>
+<td>the token trades</td>
+<td>DEX / venue</td>
 </tr>
 <tr>
-<td><strong>MACD</strong></td>
-<td>EMA(fast) − EMA(slow)</td>
-<td>change in trend</td>
+<td>5. <strong>Redeem</strong></td>
+<td>burn the token, get the share back</td>
+<td>closes the loop</td>
 </tr>
 </tbody></table></div>
-<p>All five can be computed from the same close column. None of them can know anything that column did not.</p>
-<h3>The line that matters: derived vs. independent</h3>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>Series</th>
-<th>A function of price?</th>
-<th>Adds information?</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>MA · Bollinger · RSI · MACD</td>
-<td><strong>yes</strong></td>
-<td>no — it restates price</td>
-</tr>
-<tr>
-<td>Volume</td>
-<td>no</td>
-<td>yes</td>
-</tr>
-<tr>
-<td>Open interest</td>
-<td>no</td>
-<td>yes — positioning</td>
-</tr>
-<tr>
-<td><strong>Funding rate</strong> (perps)</td>
-<td>no</td>
-<td><strong>yes — somebody pays it</strong></td>
-</tr>
-</tbody></table></div>
-<h3>What a Bollinger squeeze does and does not say</h3>
+<h3>What actually pegs the price</h3>
+<p>Not the backing — the <strong>loop</strong>. Steps 3 and 5, open to arbitrageurs, are the peg:</p>
 <ul>
-<li><strong>Says:</strong> σ is low, and σ mean-reverts, so a larger move is more likely than usual.</li>
-<li><strong>Does not say:</strong> which direction. The bands are symmetric by construction.</li>
-<li><strong>Therefore:</strong> a squeeze is a sizing and timing input, never an entry direction.</li>
+<li>Token <strong>above</strong> the share → buy share, custody, <strong>mint</strong>, sell token → supply up, price down.</li>
+<li>Token <strong>below</strong> → buy token, <strong>redeem</strong> for share, sell share → supply down, price up.</li>
 </ul>
-<h3>The discipline, in order</h3>
-<ol>
-<li>Write the rule <strong>before</strong> opening the chart — entry, exit, stop, size.</li>
-<li>Fix the parameters <strong>before</strong> choosing the test window.</li>
-<li>Test <strong>out-of-sample</strong>, on bars you have not read.</li>
-<li>Record <strong>two</strong> numbers: hit rate <strong>and</strong> average win ÷ average loss.</li>
-<li>Subtract fees, spread, and funding — then compare.</li>
-<li>Compare against <strong>holding the asset</strong> over the same window. If it does not beat that, the rule is a hobby.</li>
-</ol>
-<h3>Update (2026-09-07) — a non-price series in the wild</h3>
-<p>On a hawkish jobs print (August +162,000, ~3× consensus, rate-hike bets rebuilding), BTC still held ~$80,347 while spot-BTC ETFs took <strong>$730M — a 9-month high</strong>. Read it against the funding-rate row above: the ETF inflow is the <em>independent</em> series, the one somebody actually pays, so the flat price against a strong inflow is the reading — supply met the demand instead of chasing it. But the discipline still bites: this is <strong>one day, one sample</strong>, a data point and not a regime. The confirmation is the 9/11 CPI print, not this candle — declaring a trend from a single non-price observation is the same error as fitting a parameter to one chart.</p>
+<p>An open, low-friction mint/redeem path is the only thing holding the token at the share&#39;s value — the same mechanism behind an ETF (AP creation/redemption) and a stablecoin (mint/redeem at par).</p>
+<h3>Where AMC broke — the missing toilet paper</h3>
+<p>Demand arrived, but the <strong>mint path was not freely open</strong>, so new supply could not be created to meet it. Fixed float + rising demand → the token detached upward into a premium. The guests came; the consumable that must be restocked on demand was not stocked; the room overflowed.</p>
+<h3>The peg lesson</h3>
+<p>1:1 backing is worth nothing without an open path to mint and redeem against it — and a premium on a tokenized RWA is usually a broken-plumbing signal, not a bullish one. Related: the-bridge-is-inside-the-token, refill-rate-is-the-real-cap (mint mechanics), priced-by-the-wrong-thing (detachment from the price side). Confirm the AMC issuer, custody, and mint/redeem terms against primary sources before citing.</p>
       
       <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 지표는 정보를 더하지 않는다 — 결정을 더한다\n\n이동평균은 **종가에 건 저역통과 필터**입니다. 볼린저 밴드는 **그 평균 ± k 표준편차**입니다. 둘 다 **이미 화면에 있는 가격 계열의 함수**라, **차트에 없던 것을 담을 수 없습니다.** 지표가 공급하는 것은 **규칙** — 연속된 선을 **행동한다 / 하지 않는다**로 바꾸는 방법 — 이고, 그 값어치는 **예측한다는 데 있지 않고 규칙이 반복 가능하고 검증 가능하다는 데** 있습니다.\n\n**만드는 일이 아니라 규율 테스트**이고, **순서 자체가 훈련의 전부**입니다. **차트를 열기 전에** 규칙을 적습니다 — 종목, 지표, 파라미터(예: 20기간 밴드, 2σ), 진입, 청산, 손절, 포지션 크기. 그다음 **아직 들여다보지 않은 구간**에서 돌리고, **숫자 하나가 아니라 둘**을 적습니다 — **맞은 비율**, 그리고 **평균 이익 ÷ 평균 손실.** 어느 하나만으로는 아무 뜻도 없습니다 — **70% 맞으면서 잃는 규칙**이 있고 **35% 맞으면서 버는 규칙**이 있습니다. 결과를 **같은 구간을 그냥 보유한 것**과 비교하되 **수수료, 그리고 무기한물이면 펀딩까지 뺀 뒤에** 비교합니다. 시작 전에 함정을 소리내어 이름 붙입니다 — **차트를 본 뒤에 고른 파라미터는 이미 그 차트에 맞춰진 것**이고, **과거에 맞춘 규칙은 미래에 대해 아무 주장도 하지 못합니다.** 트레이딩뷰의 세부(지표 목록, Pine Script, 바 리플레이, 알림)는 **이것을 둘러싼 편의**이지 본체가 아닙니다.\n\n## 왜\n\n**가격에서 파생된 지표는 전부 한 열(column)의 변환이므로 정보를 더할 수 없습니다.** SMA 는 **창 길이의 약 절반만큼 지연되는 저역통과 필터**이고, EMA 는 그 지연을 일부 되사면서 **잡음으로 값을 치릅니다.** MACD 는 EMA 두 개의 차이라 **추세의 변화**에 대한 진술이고, RSI 는 **경계가 있는 모멘텀 비율**입니다. **볼린저 밴드가 가장 선명한 예**인데, 산수가 대놓고 드러나기 때문입니다 — **같은 창에서의 평균 ± k·σ.** 그래서 **밴드 폭은 변동성 계기판이고 그 이상이 아닙니다.** 이것은 **`lp-is-a-short-volatility-position` 의 바로 그 σ** 가 풀에 가격으로 박히는 대신 화면에 그려진 것입니다. **스퀴즈는 변동성이 낮고 평균회귀 중이라는 말**입니다 — **무언가 일어날 가능성이 높다**고 말할 뿐 **어느 방향인지는 한마디도 하지 않습니다.** 거기서 방향을 읽어내는 것이 이 주제 전체에서 가장 흔한 오류입니다.\n\n**따름정리가 챙겨 둘 부분입니다.** 어떤 계열이 **가격의 함수가 아니라면** 그것은 **진짜로 정보를 더합니다** — **거래량**, **미결제약정**, 그리고 무기한물의 **펀딩 비율**. 셋 중 펀딩이 가장 강합니다. **누군가 실제로 지불하기 때문**입니다 — **진짜 돈이 경쟁해서 정해지는 가격**이고, 이는 **`arb-bots-are-the-peg`** 의 논지 그대로입니다(관측된 베이시스는 가장 싼 차익거래자의 비용 하한을 읽는 계기판). **펀딩 비율은 증거이고, 200일 이동평균은 산수입니다.**\n\n**그럼에도 널리 쓰이는 지표는 중요합니다 — 순수주의자가 놓치는 이유에서.** **많은 사람이 보는 수준은 많은 자본이 거기서 행동하도록 지시받은 수준**이고, 그래서 **예측보다 셸링 포인트(Schelling point)에 가깝습니다** — 예언이 아니라 **조율(coordination)** 입니다. 이건 양날입니다 — **뻔한 수준을 알아 둘 값이 있는 이유**이자, **모두가 보는 수준은 모두가 쓸려 나갈 수 있는 수준**인 이유입니다. **고장 나는 곳은 지표가 아니라 회계입니다.** 차트를 본 뒤에 고른 파라미터, **승률만 적고 손익비를 옆에 안 적은 기록**, **수수료 전(gross) 으로 인용한 백테스트** — 마지막은 **`gross-over-net`**, 가운데는 **`priced-by-the-wrong-thing`**(아무도 묻지 않은 질문에 답하는 진짜 숫자)입니다.\n\n## 동작 방식\n\n### 각각이 실제로 계산하는 것\n\n| 지표 | 산수 | 무엇에 대한 진술인가 |\n| --- | --- | --- |\n| **SMA(n)** | 최근 n 종가의 평균 | 추세, 약 n/2 만큼 지연 |\n| **EMA(n)** | 지수가중 평균 | 같음, 지연 적고 잡음 많음 |\n| **볼린저(n, k)** | SMA(n) ± k·σ(n) — 보통 20, 2 | **변동성** — 폭이 곧 전부 |\n| **RSI(n)** | 상승폭 / 전체폭 비율, 0–100 | 모멘텀, 경계 있음 |\n| **MACD** | EMA(빠름) − EMA(느림) | 추세의 변화 |\n\n**다섯 개 전부 같은 종가 열에서 계산됩니다.** 그 열이 모르는 것을 알 수 있는 지표는 하나도 없습니다.\n\n### 진짜 경계선: 파생이냐 독립이냐\n\n| 계열 | 가격의 함수인가 | 정보를 더하는가 |\n| --- | --- | --- |\n| MA · 볼린저 · RSI · MACD | **그렇다** | 아니다 — 가격을 다시 말할 뿐 |\n| 거래량 | 아니다 | 그렇다 |\n| 미결제약정 | 아니다 | 그렇다 — 포지셔닝 |\n| **펀딩 비율**(무기한물) | 아니다 | **그렇다 — 누군가 지불한다** |\n\n### 볼린저 스퀴즈가 말하는 것과 말하지 않는 것\n\n- **말한다:** σ 가 낮고, σ 는 평균회귀하므로 **평소보다 큰 움직임이 나올 확률이 높다.**\n- **말하지 않는다:** **어느 방향인지.** 밴드는 **구조상 대칭**입니다.\n- **따라서:** 스퀴즈는 **크기·타이밍의 입력**이지 **진입 방향이 아닙니다.**\n\n### 규율, 순서대로\n\n1. **차트를 열기 전에** 규칙을 적는다 — 진입·청산·손절·크기.\n2. **테스트 구간을 고르기 전에** 파라미터를 고정한다.\n3. **읽지 않은 구간**에서 검증한다(out-of-sample).\n4. **두 숫자**를 적는다 — **승률**과 **평균이익 ÷ 평균손실.**\n5. **수수료·스프레드·펀딩을 뺀 뒤** 비교한다.\n6. **같은 구간을 그냥 보유한 것**과 비교한다. **그걸 못 이기면 그 규칙은 취미입니다.**\n\n### 업데이트 (2026-09-07) — 야생의 비(非)가격 계열\n\n매파적 고용 발표(8월 +162,000, 컨센의 약 3배, 인상 베팅 재점화)에도 BTC는 ~$80,347을 지켰고, 현물 BTC ETF는 **$730M — 9개월 만의 최대**를 받았습니다. 위의 펀딩 비율 줄에 대고 읽으세요 — ETF 유입은 **독립 계열**, 누군가 실제로 지불하는 계열이고, 강한 유입에 대한 평탄한 가격이 곧 독법입니다 — **공급이 수요를 좇은 게 아니라 받아낸 것**. 다만 규율은 여전히 물립니다 — 이것은 **하루, 표본 하나**, 레짐이 아니라 데이터 포인트입니다. 확증은 이 캔들이 아니라 **9/11 CPI** 발표이고 — 비가격 관측 하나로 추세를 선언하는 것은 **차트 하나에 파라미터를 맞추는 것과 같은 오류**입니다.\n"</script>
-      <h1>지표는 정보를 더하지 않는다 — 결정을 더한다</h1>
-      <p class="lead">이동평균은 <strong>종가에 건 저역통과 필터</strong>입니다. 볼린저 밴드는 <strong>그 평균 ± k 표준편차</strong>입니다. 둘 다 <strong>이미 화면에 있는 가격 계열의 함수</strong>라, <strong>차트에 없던 것을 담을 수 없습니다.</strong> 지표가 공급하는 것은 <strong>규칙</strong> — 연속된 선을 <strong>행동한다 / 하지 않는다</strong>로 바꾸는 방법 — 이고, 그 값어치는 <strong>예측한다는 데 있지 않고 규칙이 반복 가능하고 검증 가능하다는 데</strong> 있습니다.</p>
-      <p class="meta"><strong>만드는 일이 아니라 규율 테스트</strong>이고, <strong>순서 자체가 훈련의 전부</strong>입니다. <strong>차트를 열기 전에</strong> 규칙을 적습니다 — 종목, 지표, 파라미터(예: 20기간 밴드, 2σ), 진입, 청산, 손절, 포지션 크기. 그다음 <strong>아직 들여다보지 않은 구간</strong>에서 돌리고, <strong>숫자 하나가 아니라 둘</strong>을 적습니다 — <strong>맞은 비율</strong>, 그리고 <strong>평균 이익 ÷ 평균 손실.</strong> 어느 하나만으로는 아무 뜻도 없습니다 — <strong>70% 맞으면서 잃는 규칙</strong>이 있고 <strong>35% 맞으면서 버는 규칙</strong>이 있습니다. 결과를 <strong>같은 구간을 그냥 보유한 것</strong>과 비교하되 <strong>수수료, 그리고 무기한물이면 펀딩까지 뺀 뒤에</strong> 비교합니다. 시작 전에 함정을 소리내어 이름 붙입니다 — <strong>차트를 본 뒤에 고른 파라미터는 이미 그 차트에 맞춰진 것</strong>이고, <strong>과거에 맞춘 규칙은 미래에 대해 아무 주장도 하지 못합니다.</strong> 트레이딩뷰의 세부(지표 목록, Pine Script, 바 리플레이, 알림)는 <strong>이것을 둘러싼 편의</strong>이지 본체가 아닙니다.</p>
+      <script type="application/json" id="copy-ko">"# AMC 토큰화 주식이 프리미엄으로 튄 이유 — 페그엔 열린 발행/상환 경로가 필요하다\n\nAMC 토큰화 주식이 실제 주식 대비 큰 프리미엄에 거래됐습니다. Binji의 비유: 손님은 다 초대해 놓고 화장지를 잊었다 — 수요는 왔는데 실제 주식에 대해 새 토큰을 발행하는 공급 측 배관이 없어 가격이 떨어져 나갔습니다. 주식이 토큰화되는 흐름을 따라가면, 프리미엄은 정확히 발행/상환 루프가 닫힌 자리입니다.\n\n구현이 아니라 토큰화 흐름을 추적해 빠진 단계를 찾는 것입니다. 토큰화 주식은 커스터디의 실제 주식에 1:1로 뒷받침되는 토큰이고, 가격이 실제 주식 근처에 머무는 건 발행/상환 차익 루프가 열려 있을 때뿐입니다: 토큰이 주식보다 위 → 주식 사서 예치, 토큰 발행, 매도(공급↑, 가격↓); 토큰이 아래 → 토큰 사서 주식으로 상환, 주식 매도(공급↓, 가격↑). 다섯 단계 — 주식 매수, 커스터디, 발행, 거래, 상환 — 를 따라가며 어느 것이 닫혔는지 표시하세요. AMC는 발행 경로가 자유롭게 열려 있지 않아 새 공급이 수요를 못 맞췄고 프리미엄이 튀었습니다. 구체 주장 전 발행사·커스터디·발행/상환 조건을 1차 출처로 확인.\n\n## 왜\n\n교훈은 토큰의 뒷받침에 대한 페그가 토큰의 속성이 아니라 그 주위의 발행/상환 메커니즘의 속성이라는 것입니다. 토큰은 그저 청구권이고; 그 가격을 뒤의 주식 가치에 붙들어 두는 것은 차익거래자가 공급을 수요로 확장하고 여유로 수축할 수 있게 하는 열린 저마찰 생성/상환 루프입니다. ETF를 페그하는 메커니즘(AP 생성/상환)이나 스테이블코인(액면 발행/상환)과 같습니다. 루프를 없애면, 고정된 유통량의 시장에 수요를 초대한 셈이라 가격은 수요 혼자가 시키는 대로 움직입니다.\n\nBinji의 '화장지를 잊었다'는 정확합니다: 손님(매수자)은 왔는데 수요에 따라 다시 채워야 할 소모품(발행 가능한 공급)이 비축돼 있지 않아 방이 넘쳤습니다(프리미엄). 불편한 따름정리는, 토큰화 실물자산의 프리미엄이 보통 그 자산에 대한 강세 신호가 아니라 배관이 고장 났다는 신호이며, 발행이 다시 열리는 순간 되돌아올 수 있다는 것입니다. jayverse엔 그 토큰 브리지가 이미 사는 페그 교훈(the-bridge-is-inside-the-token, refill-rate-is-the-real-cap): 1:1 뒷받침은 그것에 대해 발행·상환하는 열린 경로 없이는 아무 값어치가 없고, priced-by-the-wrong-thing은 같은 이탈을 가격 쪽에서 본 것입니다.\n\n## 동작 방식\n\n### 흐름 — 주식이 토큰이 되는 과정\n\n| 단계 | 무슨 일 | 어디 |\n|---|---|---|\n| 1. **주식 매수** | 실제 AMC 주식 취득 | 전통 시장 |\n| 2. **커스터디** | 주식을 커스터디언이 보관 | 오프체인, 1:1 뒷받침 |\n| 3. **발행** | 예치된 주식 하나에 토큰 하나 발행 | 온체인 |\n| 4. **거래** | 토큰이 거래됨 | DEX / 거래소 |\n| 5. **상환** | 토큰 소각, 주식 회수 | 루프를 닫음 |\n\n### 실제로 가격을 페그하는 것\n\n뒷받침이 아니라 **루프**. 차익거래자에게 열린 3·5단계가 페그입니다:\n- 토큰이 주식보다 **위** → 주식 사서 예치, **발행**, 토큰 매도 → 공급↑, 가격↓.\n- 토큰이 **아래** → 토큰 사서 주식으로 **상환**, 주식 매도 → 공급↓, 가격↑.\n\n열린 저마찰 발행/상환 경로가 토큰을 주식 가치에 붙드는 유일한 것 — ETF(AP 생성/상환), 스테이블코인(액면 발행/상환) 뒤의 그 메커니즘.\n\n### AMC가 깨진 곳 — 빠진 화장지\n\n수요는 왔는데 **발행 경로가 자유롭게 열려 있지 않아** 새 공급을 만들 수 없었습니다. 고정 유통량 + 늘어나는 수요 → 토큰이 위로 이탈해 프리미엄. 손님은 왔고; 수요에 따라 다시 채워야 할 소모품이 비축돼 있지 않았고; 방이 넘쳤습니다.\n\n### 페그 교훈\n\n1:1 뒷받침은 그것에 대해 발행·상환하는 열린 경로 없이는 아무 값어치가 없고 — 토큰화 RWA의 프리미엄은 보통 강세가 아니라 배관 고장 신호입니다. 관련: the-bridge-is-inside-the-token, refill-rate-is-the-real-cap(발행 메커니즘), priced-by-the-wrong-thing(가격 쪽에서 본 이탈). 인용 전 AMC 발행사·커스터디·발행/상환 조건을 1차 출처로 확인.\n"</script>
+      <h1>AMC 토큰화 주식이 프리미엄으로 튄 이유 — 페그엔 열린 발행/상환 경로가 필요하다</h1>
+      <p class="lead">AMC 토큰화 주식이 실제 주식 대비 큰 프리미엄에 거래됐습니다. Binji의 비유: 손님은 다 초대해 놓고 화장지를 잊었다 — 수요는 왔는데 실제 주식에 대해 새 토큰을 발행하는 공급 측 배관이 없어 가격이 떨어져 나갔습니다. 주식이 토큰화되는 흐름을 따라가면, 프리미엄은 정확히 발행/상환 루프가 닫힌 자리입니다.</p>
+      <p class="meta">구현이 아니라 토큰화 흐름을 추적해 빠진 단계를 찾는 것입니다. 토큰화 주식은 커스터디의 실제 주식에 1:1로 뒷받침되는 토큰이고, 가격이 실제 주식 근처에 머무는 건 발행/상환 차익 루프가 열려 있을 때뿐입니다: 토큰이 주식보다 위 → 주식 사서 예치, 토큰 발행, 매도(공급↑, 가격↓); 토큰이 아래 → 토큰 사서 주식으로 상환, 주식 매도(공급↓, 가격↑). 다섯 단계 — 주식 매수, 커스터디, 발행, 거래, 상환 — 를 따라가며 어느 것이 닫혔는지 표시하세요. AMC는 발행 경로가 자유롭게 열려 있지 않아 새 공급이 수요를 못 맞췄고 프리미엄이 튀었습니다. 구체 주장 전 발행사·커스터디·발행/상환 조건을 1차 출처로 확인.</p>
       <h2>왜</h2>
-      <p><strong>가격에서 파생된 지표는 전부 한 열(column)의 변환이므로 정보를 더할 수 없습니다.</strong> SMA 는 <strong>창 길이의 약 절반만큼 지연되는 저역통과 필터</strong>이고, EMA 는 그 지연을 일부 되사면서 <strong>잡음으로 값을 치릅니다.</strong> MACD 는 EMA 두 개의 차이라 <strong>추세의 변화</strong>에 대한 진술이고, RSI 는 <strong>경계가 있는 모멘텀 비율</strong>입니다. <strong>볼린저 밴드가 가장 선명한 예</strong>인데, 산수가 대놓고 드러나기 때문입니다 — <strong>같은 창에서의 평균 ± k·σ.</strong> 그래서 <strong>밴드 폭은 변동성 계기판이고 그 이상이 아닙니다.</strong> 이것은 <strong><code>lp-is-a-short-volatility-position</code> 의 바로 그 σ</strong> 가 풀에 가격으로 박히는 대신 화면에 그려진 것입니다. <strong>스퀴즈는 변동성이 낮고 평균회귀 중이라는 말</strong>입니다 — <strong>무언가 일어날 가능성이 높다</strong>고 말할 뿐 <strong>어느 방향인지는 한마디도 하지 않습니다.</strong> 거기서 방향을 읽어내는 것이 이 주제 전체에서 가장 흔한 오류입니다.</p>
-<p><strong>따름정리가 챙겨 둘 부분입니다.</strong> 어떤 계열이 <strong>가격의 함수가 아니라면</strong> 그것은 <strong>진짜로 정보를 더합니다</strong> — <strong>거래량</strong>, <strong>미결제약정</strong>, 그리고 무기한물의 <strong>펀딩 비율</strong>. 셋 중 펀딩이 가장 강합니다. <strong>누군가 실제로 지불하기 때문</strong>입니다 — <strong>진짜 돈이 경쟁해서 정해지는 가격</strong>이고, 이는 <strong><code>arb-bots-are-the-peg</code></strong> 의 논지 그대로입니다(관측된 베이시스는 가장 싼 차익거래자의 비용 하한을 읽는 계기판). <strong>펀딩 비율은 증거이고, 200일 이동평균은 산수입니다.</strong></p>
-<p><strong>그럼에도 널리 쓰이는 지표는 중요합니다 — 순수주의자가 놓치는 이유에서.</strong> <strong>많은 사람이 보는 수준은 많은 자본이 거기서 행동하도록 지시받은 수준</strong>이고, 그래서 <strong>예측보다 셸링 포인트(Schelling point)에 가깝습니다</strong> — 예언이 아니라 <strong>조율(coordination)</strong> 입니다. 이건 양날입니다 — <strong>뻔한 수준을 알아 둘 값이 있는 이유</strong>이자, <strong>모두가 보는 수준은 모두가 쓸려 나갈 수 있는 수준</strong>인 이유입니다. <strong>고장 나는 곳은 지표가 아니라 회계입니다.</strong> 차트를 본 뒤에 고른 파라미터, <strong>승률만 적고 손익비를 옆에 안 적은 기록</strong>, <strong>수수료 전(gross) 으로 인용한 백테스트</strong> — 마지막은 <strong><code>gross-over-net</code></strong>, 가운데는 <strong><code>priced-by-the-wrong-thing</code></strong>(아무도 묻지 않은 질문에 답하는 진짜 숫자)입니다.</p>
+      <p>교훈은 토큰의 뒷받침에 대한 페그가 토큰의 속성이 아니라 그 주위의 발행/상환 메커니즘의 속성이라는 것입니다. 토큰은 그저 청구권이고; 그 가격을 뒤의 주식 가치에 붙들어 두는 것은 차익거래자가 공급을 수요로 확장하고 여유로 수축할 수 있게 하는 열린 저마찰 생성/상환 루프입니다. ETF를 페그하는 메커니즘(AP 생성/상환)이나 스테이블코인(액면 발행/상환)과 같습니다. 루프를 없애면, 고정된 유통량의 시장에 수요를 초대한 셈이라 가격은 수요 혼자가 시키는 대로 움직입니다.</p>
+<p>Binji의 &#39;화장지를 잊었다&#39;는 정확합니다: 손님(매수자)은 왔는데 수요에 따라 다시 채워야 할 소모품(발행 가능한 공급)이 비축돼 있지 않아 방이 넘쳤습니다(프리미엄). 불편한 따름정리는, 토큰화 실물자산의 프리미엄이 보통 그 자산에 대한 강세 신호가 아니라 배관이 고장 났다는 신호이며, 발행이 다시 열리는 순간 되돌아올 수 있다는 것입니다. jayverse엔 그 토큰 브리지가 이미 사는 페그 교훈(the-bridge-is-inside-the-token, refill-rate-is-the-real-cap): 1:1 뒷받침은 그것에 대해 발행·상환하는 열린 경로 없이는 아무 값어치가 없고, priced-by-the-wrong-thing은 같은 이탈을 가격 쪽에서 본 것입니다.</p>
       <h2>동작 방식</h2>
-      <h3>각각이 실제로 계산하는 것</h3>
+      <h3>흐름 — 주식이 토큰이 되는 과정</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>지표</th>
-<th>산수</th>
-<th>무엇에 대한 진술인가</th>
+<th>단계</th>
+<th>무슨 일</th>
+<th>어디</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>SMA(n)</strong></td>
-<td>최근 n 종가의 평균</td>
-<td>추세, 약 n/2 만큼 지연</td>
+<td>1. <strong>주식 매수</strong></td>
+<td>실제 AMC 주식 취득</td>
+<td>전통 시장</td>
 </tr>
 <tr>
-<td><strong>EMA(n)</strong></td>
-<td>지수가중 평균</td>
-<td>같음, 지연 적고 잡음 많음</td>
+<td>2. <strong>커스터디</strong></td>
+<td>주식을 커스터디언이 보관</td>
+<td>오프체인, 1:1 뒷받침</td>
 </tr>
 <tr>
-<td><strong>볼린저(n, k)</strong></td>
-<td>SMA(n) ± k·σ(n) — 보통 20, 2</td>
-<td><strong>변동성</strong> — 폭이 곧 전부</td>
+<td>3. <strong>발행</strong></td>
+<td>예치된 주식 하나에 토큰 하나 발행</td>
+<td>온체인</td>
 </tr>
 <tr>
-<td><strong>RSI(n)</strong></td>
-<td>상승폭 / 전체폭 비율, 0–100</td>
-<td>모멘텀, 경계 있음</td>
+<td>4. <strong>거래</strong></td>
+<td>토큰이 거래됨</td>
+<td>DEX / 거래소</td>
 </tr>
 <tr>
-<td><strong>MACD</strong></td>
-<td>EMA(빠름) − EMA(느림)</td>
-<td>추세의 변화</td>
+<td>5. <strong>상환</strong></td>
+<td>토큰 소각, 주식 회수</td>
+<td>루프를 닫음</td>
 </tr>
 </tbody></table></div>
-<p><strong>다섯 개 전부 같은 종가 열에서 계산됩니다.</strong> 그 열이 모르는 것을 알 수 있는 지표는 하나도 없습니다.</p>
-<h3>진짜 경계선: 파생이냐 독립이냐</h3>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>계열</th>
-<th>가격의 함수인가</th>
-<th>정보를 더하는가</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>MA · 볼린저 · RSI · MACD</td>
-<td><strong>그렇다</strong></td>
-<td>아니다 — 가격을 다시 말할 뿐</td>
-</tr>
-<tr>
-<td>거래량</td>
-<td>아니다</td>
-<td>그렇다</td>
-</tr>
-<tr>
-<td>미결제약정</td>
-<td>아니다</td>
-<td>그렇다 — 포지셔닝</td>
-</tr>
-<tr>
-<td><strong>펀딩 비율</strong>(무기한물)</td>
-<td>아니다</td>
-<td><strong>그렇다 — 누군가 지불한다</strong></td>
-</tr>
-</tbody></table></div>
-<h3>볼린저 스퀴즈가 말하는 것과 말하지 않는 것</h3>
+<h3>실제로 가격을 페그하는 것</h3>
+<p>뒷받침이 아니라 <strong>루프</strong>. 차익거래자에게 열린 3·5단계가 페그입니다:</p>
 <ul>
-<li><strong>말한다:</strong> σ 가 낮고, σ 는 평균회귀하므로 <strong>평소보다 큰 움직임이 나올 확률이 높다.</strong></li>
-<li><strong>말하지 않는다:</strong> <strong>어느 방향인지.</strong> 밴드는 <strong>구조상 대칭</strong>입니다.</li>
-<li><strong>따라서:</strong> 스퀴즈는 <strong>크기·타이밍의 입력</strong>이지 <strong>진입 방향이 아닙니다.</strong></li>
+<li>토큰이 주식보다 <strong>위</strong> → 주식 사서 예치, <strong>발행</strong>, 토큰 매도 → 공급↑, 가격↓.</li>
+<li>토큰이 <strong>아래</strong> → 토큰 사서 주식으로 <strong>상환</strong>, 주식 매도 → 공급↓, 가격↑.</li>
 </ul>
-<h3>규율, 순서대로</h3>
-<ol>
-<li><strong>차트를 열기 전에</strong> 규칙을 적는다 — 진입·청산·손절·크기.</li>
-<li><strong>테스트 구간을 고르기 전에</strong> 파라미터를 고정한다.</li>
-<li><strong>읽지 않은 구간</strong>에서 검증한다(out-of-sample).</li>
-<li><strong>두 숫자</strong>를 적는다 — <strong>승률</strong>과 <strong>평균이익 ÷ 평균손실.</strong></li>
-<li><strong>수수료·스프레드·펀딩을 뺀 뒤</strong> 비교한다.</li>
-<li><strong>같은 구간을 그냥 보유한 것</strong>과 비교한다. <strong>그걸 못 이기면 그 규칙은 취미입니다.</strong></li>
-</ol>
-<h3>업데이트 (2026-09-07) — 야생의 비(非)가격 계열</h3>
-<p>매파적 고용 발표(8월 +162,000, 컨센의 약 3배, 인상 베팅 재점화)에도 BTC는 ~$80,347을 지켰고, 현물 BTC ETF는 <strong>$730M — 9개월 만의 최대</strong>를 받았습니다. 위의 펀딩 비율 줄에 대고 읽으세요 — ETF 유입은 <strong>독립 계열</strong>, 누군가 실제로 지불하는 계열이고, 강한 유입에 대한 평탄한 가격이 곧 독법입니다 — <strong>공급이 수요를 좇은 게 아니라 받아낸 것</strong>. 다만 규율은 여전히 물립니다 — 이것은 <strong>하루, 표본 하나</strong>, 레짐이 아니라 데이터 포인트입니다. 확증은 이 캔들이 아니라 <strong>9/11 CPI</strong> 발표이고 — 비가격 관측 하나로 추세를 선언하는 것은 <strong>차트 하나에 파라미터를 맞추는 것과 같은 오류</strong>입니다.</p>
+<p>열린 저마찰 발행/상환 경로가 토큰을 주식 가치에 붙드는 유일한 것 — ETF(AP 생성/상환), 스테이블코인(액면 발행/상환) 뒤의 그 메커니즘.</p>
+<h3>AMC가 깨진 곳 — 빠진 화장지</h3>
+<p>수요는 왔는데 <strong>발행 경로가 자유롭게 열려 있지 않아</strong> 새 공급을 만들 수 없었습니다. 고정 유통량 + 늘어나는 수요 → 토큰이 위로 이탈해 프리미엄. 손님은 왔고; 수요에 따라 다시 채워야 할 소모품이 비축돼 있지 않았고; 방이 넘쳤습니다.</p>
+<h3>페그 교훈</h3>
+<p>1:1 뒷받침은 그것에 대해 발행·상환하는 열린 경로 없이는 아무 값어치가 없고 — 토큰화 RWA의 프리미엄은 보통 강세가 아니라 배관 고장 신호입니다. 관련: the-bridge-is-inside-the-token, refill-rate-is-the-real-cap(발행 메커니즘), priced-by-the-wrong-thing(가격 쪽에서 본 이탈). 인용 전 AMC 발행사·커스터디·발행/상환 조건을 1차 출처로 확인.</p>
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-onchain-settlement-funding.html">&larr; 219. On-chain settlement funding — the card issuer's working capital, not the cardholder's payment</a><a href="pocs-ds-regression-ols.html">221. OLS regression — the line that assumes it caused something &rarr;</a></div>
+    <div class="pager"><a href="pocs-a-faucet-is-a-payout.html">&larr; 63. A faucet without limits is a payout, not a feature</a><a href="pocs-stablecoin-visa-card-invisible-under-the-hood.html">65. MoneyGram's stablecoin Visa card — invisible to the user, a just-in-time conversion under the hood &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="indicators-add-a-decision";</script>
+<script>window.__NAV_CURRENT__="tokenized-stock-premium-needs-a-mint-redeem-path";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;

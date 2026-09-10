@@ -368,7 +368,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; One AA spec, two execution models — or the EVM fragments</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#122</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#123</span><span>PoC</span></p>
       <h1>One AA spec, two execution models — or the EVM fragments</h1>
       <p class="lead">The Base-backed EIP-8130 and the L1-favored Frame Transactions (EIP-8141) collided over Ethereum&#39;s native account-abstraction design, acrimoniously enough that a working group formed to unify them (Ethlabs, Week 11, 2026-09). The governance drama is downstream of one technical fact: 8141 validates transactions by <em>running EVM code</em> (maximally general), while L2s validate with <em>native code</em> for speed and cannot afford EVM validation at high TPS. Every proposed fix shares one move — let the L2 recognize the validation and substitute equivalent native code, so one spec runs two ways.</p>
       <p class="meta">Not yet scoped — a comprehension and comparison exercise, not a build. Read both proposals and write, for each, exactly what it meters and how a transaction is validated; the sentence that matters is <em>what does the validator run</em> — 8141 runs EVM bytecode (a &quot;frame&quot;), an L2 wants to run native code, and that is the whole tension. Then model the three reconciliation proposals from the working group and, for each, answer one question: <strong>what can the L2 sequencer read ahead of time to know which native code to substitute?</strong> (1) Extend 7702-style delegation so an account delegates validation to named code the sequencer can swap for a native equivalent. (2) Mandate a specific account-proxy bytecode so the sequencer knows, from the frame alone, what logic will run. (3) Re-interpret a validation frame as a deterministic call to an 8130 keystore contract, which is replaceable with native code. The deliverable is a table: proposal -&gt; what the L2 recognizes -&gt; what it substitutes -&gt; what generality it loses. Facts: Ethlabs (Derek Chiang) Week 11 update, 2026-09 — a project&#39;s own framing (&quot;AA is officially solved. Actually not really&quot;), with a Base update teased; confirm 8130/8141 mechanics against the EIPs before treating any detail as settled.</p>
@@ -581,7 +581,7 @@
       
       <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-sec-fcash-maturity-window.html">&larr; 121. A heist that has to wait is one you can still stop</a><a href="pocs-agent-ask-not-write.html">123. Give the agent the right to ask, not the right to write &rarr;</a></div>
+    <div class="pager"><a href="pocs-sec-fcash-maturity-window.html">&larr; 122. A heist that has to wait is one you can still stop</a><a href="pocs-agent-ask-not-write.html">124. Give the agent the right to ask, not the right to write &rarr;</a></div>
   </div>
   </main>
 </div>
