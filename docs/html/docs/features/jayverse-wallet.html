@@ -68,6 +68,11 @@ not built. Sibling docs indexed in <a href="README.html">README.md</a>.</em></p>
 <td>4337 &amp; breadth</td>
 <td>simulate full UserOperations through the EntryPoint (incl. paymaster); richer decoders; more warning classifiers.</td>
 </tr>
+<tr>
+<td><strong>4</strong></td>
+<td>Our own dev wallet</td>
+<td>a dev-only wallet + MV3 extension that drives 7702/7710/7715 on a Sepolia fork at a <strong>distinct chainId 31337</strong> — replaces MetaMask <em>for testing only</em>. Detail in <a href="#next-phase--our-own-dev-wallet-for-testing-jay-2026-09-10">Next phase</a> below.</td>
+</tr>
 </tbody></table>
 <hr>
 <h2>1. What we build (the basic feature)</h2>
@@ -269,6 +274,53 @@ to say so.</li>
 path answer).</li>
 </ul>
 <hr>
+<h2>Next phase — our own dev wallet (for testing) (jay, 2026-09-10)</h2>
+<blockquote>
+<p><strong>DEV / TESTNET ONLY.</strong> Everything here is a <em>testing</em> wallet. It uses dedicated dev keys
+(anvil&#39;s default mnemonic), never a real or high-value key, and the extension auto-approves
+in the background for convenience — which is exactly why it must never touch anything holding
+real value. This is additive: the embedded-wallet / simulate work above stays; the extension
+becomes the <strong>default dev wallet</strong>, the embedded one stays for testing. jay: &quot;use both.&quot;</p>
+</blockquote>
+<p><strong>Why build our own.</strong> MetaMask is cumbersome for this project — constant network switching, and
+its delegation stack is pinned to Sepolia&#39;s real chainId <code>11155111</code>. For day-to-day local testing
+that friction is a tax on every iteration. Our own wallet removes it.</p>
+<p><strong>The key decision — fork Sepolia, report a <em>distinct</em> chainId <code>31337</code>.</strong> We run <code>anvil --fork-url $SEPOLIA_RPC --chain-id 31337</code>: the fork gives us Sepolia&#39;s already-deployed contracts,
+but the node reports chainId <strong>31337</strong>, not 11155111. That distinct id is doing real work:</p>
+<ul>
+<li><strong>It removes the MetaMask lock.</strong> MetaMask&#39;s delegation (7702/7715) engine only engages against
+chains it recognizes; without a fork surfaced at a chosen id, &quot;the delegation stack simply
+doesn&#39;t engage.&quot; Our own wallet just targets 31337 and drives the flow directly.</li>
+<li><strong>It removes cross-chain replay risk.</strong> EIP-712 domain separators and the EIP-7702 authorization
+both embed chainId, so a signature made on 31337 <strong>cannot</strong> be replayed onto real Sepolia. We get
+Sepolia&#39;s contract state to test against without any signature being valid on the real network.</li>
+</ul>
+<p>Net: forking Sepolia at a distinct chainId + our own wallet driving the delegation solves both the
+network-switching friction <em>and</em> the replay concern in one move — a problem MetaMask can&#39;t cleanly
+solve for us here.</p>
+<p><strong>What&#39;s implemented (Slices 1–4, in <code>jayverse-wallet</code>, on <code>claude/phase-1</code>):</strong></p>
+<ol>
+<li><strong>Local accounts</strong> — anvil&#39;s default mnemonic → 10 dev accounts (<code>mnemonicToAccount</code>, viem).</li>
+<li><strong>Distinct dev chain</strong> — <code>localTestChain</code> (chainId <strong>31337</strong>) defined alongside the existing
+Sepolia-fork chain (11155111); <code>sendTransaction</code> targets the active chain.</li>
+<li><strong>Encrypted vault</strong> — import a private key, encrypt with PBKDF2 (310k) → AES-256-GCM, persist in
+<code>localStorage</code>; unlock to sign. Works in browser and Node.</li>
+<li><strong>MV3 browser extension</strong> — a universal <strong>EIP-1193 dApp connector</strong> for the whole web: inpage
+provider (world MAIN) ↔ content bridge ↔ background service worker that holds the signer and
+proxies JSON-RPC, <strong>auto-approving</strong> (dev). esbuild IIFE bundle. This is what lets any dApp use
+our wallet the way it would use MetaMask — without the network-switching dance.</li>
+<li><strong>EIP-7702 delegation</strong> — <code>signDelegation</code> / <code>verifyDelegation</code>, <strong>scoped to chainId 31337</strong>, and
+a local-account picker in <code>&lt;JayverseSign&gt;</code>.</li>
+</ol>
+<p><strong>Deferred — needs a live anvil to finish (not yet verified):</strong></p>
+<ul>
+<li><strong>Confirm anvil&#39;s EIP-7702 support</strong> (Pectra) on the fork we run — the 7702 path assumes it.</li>
+<li><strong>ERC-7710 / 7715 framework grant + type-4 tx submit</strong> — issue the scoped session-key grant
+through the delegation framework and submit the type-4 transaction end-to-end.</li>
+</ul>
+<p>This phase is where the wallet stops being &quot;a component inside apps&quot; and becomes a <strong>standalone dev
+tool</strong> — which is also why it pairs with the Authority Auditor: the extension&#39;s auto-approve +
+session-key scope choices <em>are</em> an authority-matrix that the Auditor should be pointed at.</p>
 <h2>Chainlink — infra we use, not build</h2>
 <p>Chainlink&#39;s oracle stack is settlement-rail infrastructure the Wallet <em>consumes</em>, not reimplements — see the umbrella map in <a href="README.html">README.md</a>.</p>
 <ul>
