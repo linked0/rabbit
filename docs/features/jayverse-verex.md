@@ -256,9 +256,10 @@ Chainlink's oracle stack is settlement-rail infrastructure Verex *consumes*, not
 ## Settlement architecture — separate risk from settlement (the ATLAS split)
 
 LayerZero's **ATLAS** (announced 2026-08-26, unreleased — treat every figure as a vendor claim) is
-a *market venue*, not a library: there is nothing here to "use" or "implement." The one
-transferable asset is its published module boundary — **matching · clearing · settlement · risk** —
-and specifically the split worth copying: **risk separated from settlement.**
+a *market venue*, not a library — **don't build the framework.** (Its core *mechanism*, an intent +
+solver auction, is worth a small from-scratch study on its own — that's [jayverse-ofa.md](jayverse-ofa.md),
+#8.) The transferable asset *here* is its published module boundary — **matching · clearing ·
+settlement · risk** — and specifically the split worth copying: **risk separated from settlement.**
 
 Applied to Verex:
 

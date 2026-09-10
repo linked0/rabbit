@@ -1,6 +1,8 @@
 # Base App — what a Mini App buys, and what it rents
 
-*Jayverse service #9 (added 2026-09-08, jay). **Strategy / analysis draft** — captured from
+*Jayverse **Dark Horse candidate #10(c)** (added 2026-09-08 as a numbered service; moved to the
+Dark Horse section 2026-09-10, jay — a candidate that could become a service but isn't one yet; see
+[jayverse-darkhorse.md](jayverse-darkhorse.md)). **Strategy / analysis draft** — captured from
 jay's write-up as-is; jay will review and turn it into a build plan later, so it is **not yet a
 build task** and has no Phases table. Sibling docs indexed in
 [README.md](README.md).*

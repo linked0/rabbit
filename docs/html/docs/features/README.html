@@ -202,9 +202,9 @@ the existing services so they cooperate rather than sit alone.</p>
 </tr>
 <tr>
 <td>8</td>
-<td>Base App — Mini App</td>
-<td><a href="jayverse-base-app.html">jayverse-base-app.md</a></td>
-<td>What a Base App Mini App <strong>buys</strong> (funded passkey account, inline market open) vs <strong>rents</strong> (discovery, review, jurisdiction) — strategy draft, plan later</td>
+<td>OFA — intent + solver auction</td>
+<td><a href="jayverse-ofa.html">jayverse-ofa.md</a></td>
+<td>ATLAS&#39;s core mechanism as a from-scratch study — intent + solver auction, surplus to the user. <strong>Build the mechanism, not the framework</strong></td>
 <td>drafting</td>
 </tr>
 <tr>
@@ -215,7 +215,7 @@ the existing services so they cooperate rather than sit alone.</p>
 <td>drafting</td>
 </tr>
 </tbody></table>
-<p><em>(#1–7 and #9 are the committed services; #8 Base App is a strategy draft jay will plan later. Tracks that are <strong>not</strong> committed services live in the Dark Horse section below.)</em></p>
+<p><em>(#1–9 are the committed services. <strong>Base App moved to the Dark Horse section (#10)</strong> — a candidate that could become a service but isn&#39;t one yet. Tracks that are <strong>not</strong> committed services live in the Dark Horse section below.)</em></p>
 <h3>Completed — built, past design</h3>
 <p>Once a service moves from design into a running build it leaves the drafting list above and
 lands here, so &quot;what&#39;s still a draft&quot; vs &quot;what actually runs&quot; stays legible at a glance.</p>
@@ -308,10 +308,10 @@ started first.</p>
 </tr>
 <tr>
 <td>8</td>
-<td><strong>Base App — Mini App</strong></td>
-<td>—</td>
-<td>strategy draft only — nothing to run yet</td>
-<td>—</td>
+<td><strong>OFA</strong> — intent + solver auction</td>
+<td><code>jayverse-ofa</code></td>
+<td>in <code>contracts/</code>: <code>forge test</code>; <strong>t1</strong> <code>anvil</code>; optional tiny harness</td>
+<td>:3080†</td>
 </tr>
 <tr>
 <td>9</td>
@@ -333,6 +333,9 @@ started first.</p>
 :3040, Game :3050, Wallet :3060, Token :3070, Auditor :3080, Number :3090 — so <code>pnpm dev</code> alone is right and they
 run side by side. Unchanged: Rabbit portal <strong>:3100</strong>, Verex web <strong>:3000</strong> / API <strong>:4000</strong>, anvil
 <strong>:8545</strong>.</p>
+<p><strong>†OFA (#8)</strong> nominally maps to <code>:3080</code> too, the slot the now-<strong>completed</strong> Auditor still bakes in.
+OFA is contracts-first (Foundry + anvil), so a web harness is optional; if you add one, run it or
+the Auditor one at a time, or reassign OFA&#39;s port.</p>
 </blockquote>
 <h2>Chainlink — infra Jayverse uses, not builds</h2>
 <p>Chainlink&#39;s oracle stack (Data Feeds, CCIP, Proof of Reserve, VRF, Automation) is
@@ -407,26 +410,17 @@ both halves the incident exposed.</p>
 feed is also a dependency with a failure mode, so each cooperation above carries its &quot;if the
 feed is wrong&quot; line <strong>in code</strong> (staleness check / fallback), not just in this table.</p>
 <h2>Dark Horse — candidate tracks (#10)</h2>
-<p>Not committed services like #1–9 — <strong>candidates</strong> to pick up after the core is built. Full detail
-(steps, risks, PoC links) is in the umbrella plan
-<a href="../tasks/09-02-jayverse.html"><code>../tasks/09-02-jayverse.md</code></a> §10; summarized here.</p>
-<h3>(a) L1/L2 — our own chain (start at last)</h3>
-<p>The own-chain ambition, explicitly <strong>start-at-last</strong>, with <strong>supersim</strong> as the local on-ramp. No
-repo yet — a <code>docs/</code> research folder first, infra-as-code only if we truly commit. The single most
-expensive line in the architecture to operate, so: learn locally now, production maybe never. PoC
-links: <code>choosing-a-chain-is-a-lease</code>, <code>l2-finality-three-clocks</code>, <code>l1-data-pricing-dimensions</code>.
-(Plan §9 has the full writeup.)</p>
-<h3>(b) Security-hole research (보안 취약점 연구)</h3>
-<p>The offensive-security muscle of Jayverse — study the exploit classes that actually drain protocols
-(reentrancy, price-oracle manipulation, access-control gaps, signature/permit replay, bridge
-message-validation bugs, proxy/upgradeability pitfalls, and the one we ourselves ship: 7702/7715
-session-key scope abuse) and run them against <strong>our own contracts on a local fork before anyone else
-does</strong>. Dark horse because it compounds across every service — verex caps, the bridge&#39;s 1:1 vault
-invariant, the wallet&#39;s session keys, the agent&#39;s mandate enforcers are all attack surfaces — and it
-pairs with data-science (exploit detection is on-chain analysis). Skills: Foundry fuzz/invariant
-testing, Slither/Aderyn, Echidna, fork-based exploit reproduction, later Halmos/Certora.
-<strong>Dual-use guardrail:</strong> exploits live on local forks only; external findings go through responsible
-disclosure, always. (Plan ETC section has the full writeup.)</p>
+<p>Not committed services like #1–9 — <strong>candidates</strong> to pick up after the core is built. Each <em>could</em>
+become a service; none is one yet. The tracks and their full argument now live in their own doc:
+<strong><a href="jayverse-darkhorse.html">jayverse-darkhorse.md</a></strong> —</p>
+<ul>
+<li><strong>(a) our own L1/L2 chain</strong> (start-at-last, supersim as the local on-ramp),</li>
+<li><strong>(b) security-hole research</strong> (exploit classes run against our own contracts on a local fork), and</li>
+<li><strong>(c) Base App — Mini App</strong> (moved here from #8 on 2026-09-10 — a distribution lease to make
+deliberately, not a committed build; full write-up in <a href="jayverse-base-app.html">jayverse-base-app.md</a>).</li>
+</ul>
+<p>Full step / risk / PoC-link detail is in the umbrella plan
+<a href="../tasks/09-02-jayverse.html"><code>../tasks/09-02-jayverse.md</code></a> §10.</p>
 <p>Every doc is a <strong>design draft for review</strong>, not built work — the implementation status stays in the
 umbrella plan&#39;s Remaining sections and in each service repo.</p>
 <hr>
