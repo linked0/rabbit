@@ -396,10 +396,13 @@ const curricula = CURRICULA.map((cfg) => {
 // 출처 태그([Math]/[Algorithms]/[Economics])를 붙인다. 커리큘럼 항목은 내부 i.no(앵커·EXPLAINERS·
 // 상세 링크)를 그대로 두고 표시 번호만 fno 로 바꾼다. Economics 카드는 c.no=fno 로 바꿔 상세도 맞춘다.
 const FUNDAMENTALS_ORDER = ['math', 'algorithms'];
+// 낮은 번호 블록(worth 순서상 Math = fno 1..50)을 important(빨강 점)로 (jay, 2026-09-11:
+// "math 의 낮은 번호 항목들을 important 로"). done 항목은 그대로 done(초록/하늘)이 이긴다.
+const FUNDAMENTALS_IMPORTANT = new Set(['math']);
 const fundamentalsParts = [
   ...FUNDAMENTALS_ORDER.map((id) => {
     const cur = curricula.find((c) => c.cfg.id === id);
-    return cur ? { kind: 'cur', tag: cur.cfg.sectionTitle, cur } : null;
+    return cur ? { kind: 'cur', tag: cur.cfg.sectionTitle, cur, important: FUNDAMENTALS_IMPORTANT.has(id) } : null;
   }).filter(Boolean),
   ...(econGroup && econGroup.numbered.length
     ? [{ kind: 'cards', tag: 'Economics', cards: econGroup.numbered }]
@@ -430,8 +433,8 @@ navGroups.push({
       ? part.cur.items.map((i) => ({
           anchor: `${part.cur.cfg.id}-${i.no}`,
           text: `<span class="topic-no">${i.fno}</span>${tagChip(part.tag)}${escapeHtml(shortLabel(i.text))}`,
-          color: i.done ? DONE_COLOR : '#64748b',
-          statusLabel: i.done ? 'DONE' : 'PLANNED',
+          color: i.done ? DONE_COLOR : (part.important ? '#ef4444' : '#64748b'),
+          statusLabel: i.done ? 'DONE' : (part.important ? 'IMPORTANT' : 'PLANNED'),
         }))
       : part.cards.map((c) => ({
           anchor: c.key,
@@ -581,8 +584,8 @@ const navData = {
           ? part.cur.items.map((i) => ({
               key: `${part.cur.cfg.id}-${i.no}`,
               href: itemUrl(part.cur.cfg, i, 'topics'),
-              color: i.done ? DONE_COLOR : '#64748b',
-              label: i.done ? 'DONE' : 'PLANNED',
+              color: i.done ? DONE_COLOR : (part.important ? '#ef4444' : '#64748b'),
+              label: i.done ? 'DONE' : (part.important ? 'IMPORTANT' : 'PLANNED'),
               text: `<span class="topic-no">${i.fno}</span>${tagChip(part.tag)}${escapeHtml(shortLabel(i.text))}`,
             }))
           : part.cards.map((c) => ({
