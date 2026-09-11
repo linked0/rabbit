@@ -136,7 +136,8 @@ export const POC_CARDS: DemoCard[] = [
   {
     key: "hyperliquid-pays-for-the-public-good",
     updated: "2026-09-10",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-11",
     title: "Hyperliquid paid for a public good — the amicus brief as a regulatory moat",
     titleKo: "Hyperliquid이 공공재 값을 치렀다 — 규제 해자로서의 amicus 브리프",
     description:
