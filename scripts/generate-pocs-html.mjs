@@ -561,6 +561,8 @@ for (const [idx, c] of numbered.entries()) {
       // 안 바뀌고 _nav.js 만 갱신되면 되어 번호·제목·카운트가 낡지 않는다.
       railTitle: 'Rabbit',
       railTitleHref: '../index.html',
+      // 진척률 배지도 상세 페이지 레일에 (jay, 2026-09-11: 목록에는 있는데 상세에서 사라졌다).
+      railNote: doneNote,
       filterPlaceholder: 'Filter section',
       sharedNav: true,
       sharedNavSrc: '_nav.js',

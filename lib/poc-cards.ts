@@ -12,7 +12,8 @@ export const POC_CARDS: DemoCard[] = [
   {
     key: "nasdaq-nets-tokenization-goes-through-the-incumbent",
     updated: "2026-09-11",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-11",
     title: "Nasdaq + Kraken's NETs — the incumbent doesn't get disrupted, it builds the rail",
     titleKo: "Nasdaq + Kraken의 NETs — 기존 강자는 파괴되지 않고 레일을 직접 짓는다",
     description:
@@ -268,7 +269,8 @@ export const POC_CARDS: DemoCard[] = [
     key: "jayverse-build-on-the-shortlist",
     important: true,
     updated: "2026-09-10",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-11",
     title: "What Jayverse can build on — the shortlist of rails, by need",
     titleKo: "Jayverse가 올라탈 것들 — 필요별 레일 목록",
     description:
