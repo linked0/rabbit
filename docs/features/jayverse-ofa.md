@@ -101,6 +101,48 @@ the improvement went to **him**.
 - **Web (optional, last).** A small Next.js harness on `:3080`† that reads the auction events and
   renders the bid board; run it or the Auditor one at a time, or reassign the port.
 
+## Feature — priced in fiat, settled in tokens: the quote is a product promise
+
+A five-dollar checkout paid in a volatile token needs a quote TTL, a re-quote flow and a policy for
+who absorbs the drift. That is product design wearing an exchange-rate costume — not an oracle problem.
+
+Build a checkout that locks a token amount for a fixed fiat price for thirty seconds, expires visibly
+into a re-quote, and tabulates the three drift policies — merchant absorbs, buyer absorbs, band with
+re-quote — against a simulated price feed. (Sibling to OFA's core: the auction decides *who fills*;
+the quote decides *what price the product promised*, and both are settlement questions.)
+
+### Why
+
+Users think in their currency; chains settle in theirs. Between the price shown and the payment
+settling, the rate moves — so every fiat-priced crypto checkout is silently running a tiny FX desk,
+whether its designers noticed or not. Ignore it and either the merchant leaks margin on every dip or
+the buyer gets surprise-charged on every spike; both discoveries arrive as support tickets.
+
+The deliberate version has three knobs: how long a quote is honored (TTL), what happens at expiry
+(re-quote UX, not a silent failure), and who eats movement inside the window. None of these is an
+oracle question — the oracle only tells you the rate; the product decides what to promise about it.
+Stablecoin settlement makes the window narrow, not zero, and the structure identical.
+
+### How it works
+
+One checkout, a scripted price feed, three drift policies, and the ledger of who paid for movement.
+
+#### PoC
+
+A checkout against anvil: item priced 5 USD, paid in a mock token whose USD price a script walks ±3%
+per minute. Quote endpoint returns `{ tokenAmount, quoteId, expiresAt(+30s) }`; payment submits
+`quoteId`; the server accepts, re-quotes, or rejects per policy. Run the same 100 purchases with
+prices replayed under each policy: (A) honor expired quotes — measure merchant loss; (B) reject at
+settlement if moved — measure buyer failures; (C) 30s TTL with visible countdown and one-click
+re-quote — measure both. Print the three-row table.
+
+#### What it proves
+
+The quote is a short-dated option the product writes for free, and TTL is its expiry. Policy A prices
+the option at the merchant's expense, B at the buyer's UX, C bounds both — which is why every serious
+crypto checkout (and every FX-touching commerce API) converges on C. The interesting output is not
+the code but the table: drift cost as a product decision made visible.
+
 ## What it teaches
 
 - Order-flow / OEV auctions, MEV **redistribution**, intent signing.

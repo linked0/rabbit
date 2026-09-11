@@ -83,6 +83,12 @@ the Hyperliquid testnet integration lands cleanly.
 > [../tasks/archive/2026-08-21-current-plan-agentic-aa.md](../tasks/archive/2026-08-21-current-plan-agentic-aa.md);
 > this is the status surface, and it is what the next plan will draw from.
 
+### Ops / infra todos <a id="ops-todos"></a>
+
+Small non-feature tasks tracked here so they don't get lost:
+
+- [ ] Buy the **jayverse.io** domain (jay, 2026-09-11) — umbrella domain for the Jayverse projects.
+
 ### B1 — Agentic AA: the autonomy loop (`/live/agent`) <a id="b1"></a>
 
 > **Built through the scheduler, 2026-09-02** (first pass 2026-08-26). The loop exists as J2 —
