@@ -86,7 +86,8 @@ export const POC_CARDS: DemoCard[] = [
   {
     key: "tokenized-stock-premium-needs-a-mint-redeem-path",
     updated: "2026-09-11",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-11",
     title: "Why AMC's tokenized stock ran to a premium — the peg needs an open mint/redeem path",
     titleKo: "AMC 토큰화 주식이 프리미엄으로 튄 이유 — 페그엔 열린 발행/상환 경로가 필요하다",
     description:
