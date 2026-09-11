@@ -434,11 +434,11 @@ const doneTotals = [
 ].reduce(([a, b], [c, d]) => [a + c, b + d], [0, 0]);
 // 퍼센트 옆에 done/total 도 같이 (jay, 2026-08-31: "add done/total beside % done").
 const doneNote = `${Math.round((doneTotals[0] / doneTotals[1]) * 100)}% done &middot; ${doneTotals[0]}/${doneTotals[1]}`;
-// 배지 아래 한 줄 리마인더 (jay, 2026-09-11) — "매일 ~1%씩 올려 95% done 을 향해". 진척률을
+// 배지 아래 한 줄 리마인더 (jay, 2026-09-11) — "매일 2%씩 올려 95% done 을 향해". 진척률을
 // 그냥 두지 말고 매일 조금씩 끝내자는 스스로에게 거는 알림. project_rabbit_done_pace_goal 참고.
 // 진척률 배지와 같은 파란 알약 모양으로 (jay, 2026-09-11) — railSub(제목 아래 제 줄)를 감싸개로
 // 쓰고 그 안에 .rail-note 알약 하나를 넣어, "reminder" 글자 없이 목표 문구만 배지처럼 보인다.
-const doneReminder = '<span class="rail-note rail-note-pink">~1%/day &rarr; 95% done</span>';
+const doneReminder = '<span class="rail-note rail-note-pink">2%/day &rarr; 95% done</span>';
 
 const railJump = SECTIONS.map(
   ([id, label, all, done]) =>
