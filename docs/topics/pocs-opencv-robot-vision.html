@@ -63,9 +63,9 @@
     color:var(--accent); background:var(--accent-soft); white-space:nowrap;
   }
   /* 페이스 리마인더는 핑크 톤 (jay, 2026-09-11) — % done 배지(파랑)와 구분되는 강조. */
-  /* inline-block + 세로 패딩을 조금 더 (jay, 2026-09-11) — 인라인이라 파란 배지보다 낮게 보이던
-     상자를 배지와 비슷한(살짝 더 높은) 높이로 맞춘다. */
-  .rail-note-pink { color:#ec4899; background:rgba(236,72,153,0.14); display:inline-block; padding:3px 8px; }
+  /* inline-block 으로만 (jay, 2026-09-11) — 인라인이라 세로 패딩이 안 먹어 낮아 보였다.
+     패딩은 .rail-note 기본값(1px 7px)을 그대로 써서 파란 배지와 높이가 정확히 같아진다. */
+  .rail-note-pink { color:#ec4899; background:rgba(236,72,153,0.14); display:inline-block; }
   .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
   /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
      본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
