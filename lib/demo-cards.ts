@@ -90,7 +90,7 @@ export type DemoDiagram = {
 // 읽히고, 색과 위치가 어긋날 수 없다. live 는 done 과 같은 칸에 둔다: 돌아가는 데모가 아직
 // 안 만든 카드 뒤로 갈 이유가 없고, 네 칸에 live 자리가 따로 없다.
 // (docs/pocs.html 은 애초에 live 를 걸러내므로 그 페이지에서는 이 분기가 쓰이지 않는다.)
-export const NEW_WINDOW_DAYS = 4;
+export const NEW_WINDOW_DAYS = 3;
 
 export function newSinceDate(today: Date = new Date()): string {
   const d = new Date(today);

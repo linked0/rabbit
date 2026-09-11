@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The model is not the experiment — the split is — Dev Notes</title>
+<title>Nasdaq + Kraken's NETs — the incumbent doesn't get disrupted, it builds the rail — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -366,183 +366,107 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; The model is not the experiment — the split is</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Nasdaq + Kraken's NETs — the incumbent doesn't get disrupted, it builds the rail</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#132</span><span>PoC</span></p>
-      <h1>The model is not the experiment — the split is</h1>
-      <p class="lead">Almost every applied result that fails in production failed at the split, not at the model. On-chain data breaks two splitting rules at once — it is ordered in time and grouped by address — and the number worth reporting is the gap between the naive split and the honest one.</p>
-      <p class="meta">Not yet scoped, and the deliverable is one number rather than a model. Take a real labelled dataset from this project — an address-level question is ideal, since it violates two rules at once — and evaluate the same estimator three ways: a random split, a time-ordered split, and a time-ordered split that is also grouped by address with an embargo the length of the label horizon. Report the three scores side by side. <strong>The gap between the first and the third is the finding</strong>, because it is the amount by which you would have lied to yourself. Then move every fitted preprocessing step — scaler, imputer, target encoder, vocabulary — inside the fold and see how much of the remaining gap that alone accounts for.</p>
+      <p class="topic-kicker"><span class="topic-no">#48</span><span>PoC</span></p>
+      <h1>Nasdaq + Kraken's NETs — the incumbent doesn't get disrupted, it builds the rail</h1>
+      <p class="lead">Nasdaq is investing $100M in Payward (Kraken&#39;s parent) to build Nasdaq Equity Tokens (NETs): tokenized shares that keep the rights and investor protections of the underlying stock, tradeable on-chain, targeted for Q2 2027 and run by Nasdaq&#39;s 24/7 Digital Liquidity Network. The story isn&#39;t &#39;tokenization disrupts the exchange&#39; — it&#39;s the exchange operator building the tokenization rail itself, keeping the regulatory perimeter a retail wrapper lacks.</p>
+      <p class="meta">Not a build — a structural move to read. Trace who is doing what: an exchange operator (Nasdaq) buys a strategic stake in a crypto exchange (Kraken/Payward), and together they build tokenized equities (NETs) that preserve existing shareholder rights and investor protections and settle on Nasdaq&#39;s Digital Liquidity Network — 24/7 infrastructure meant to later carry global distribution, trading, and post-trade. Put it next to the AMC wrapper (tokenized-stock-premium-needs-a-mint-redeem-path): ask where the mint/redeem and settlement live in each. In the retail wrapper they lived outside any venue and broke; here they are being built inside the regulated exchange rail. The takeaway to write down: the durable value is the issuance + settlement + distribution rail, not the token. Confirm the $100M figure, the NETs terms, and the Q2 2027 date against Nasdaq&#39;s own release before asserting specifics.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# The model is not the experiment — the split is\n\nAlmost every applied result that fails in production failed at the split, not at the model. On-chain data breaks two splitting rules at once — it is ordered in time and grouped by address — and the number worth reporting is the gap between the naive split and the honest one.\n\nNot yet scoped, and the deliverable is one number rather than a model. Take a real labelled dataset from this project — an address-level question is ideal, since it violates two rules at once — and evaluate the same estimator three ways: a random split, a time-ordered split, and a time-ordered split that is also grouped by address with an embargo the length of the label horizon. Report the three scores side by side. **The gap between the first and the third is the finding**, because it is the amount by which you would have lied to yourself. Then move every fitted preprocessing step — scaler, imputer, target encoder, vocabulary — inside the fold and see how much of the remaining gap that alone accounts for.\n\n## Why\n\n**The reason applied results do not survive contact with production is almost never the model, and treating it as a modelling problem is how teams spend months on the wrong thing.** A leak is any path by which information that would not exist at prediction time reaches the estimator during training. It does not announce itself. It shows up as a validation score that is too good, which is the one signal nobody investigates, because a good number looks like success rather than like a bug.\n\n**Three leaks account for most of it, and they are structural rather than clever.** The first is **temporal**: data with an order was split at random, so the model was allowed to see the future while predicting the past. The second is **grouped**: the same entity appears on both sides of the split — the same user, the same document, the same address — so the model memorises the entity rather than learning the pattern, and scores brilliantly on entities it has already met. The third is **preprocessing**: a scaler, an imputer, a target encoder or a vocabulary was fitted on the whole dataset before splitting, so statistics from the test set were baked into the training features. The third is the most common and the least discussed, because it hides inside code that looks like data preparation rather than like modelling.\n\n**On-chain data triggers the first two simultaneously, which is why this belongs in this catalogue rather than in a textbook.** Every record has a block timestamp, so it is ordered; every record is attached to an address, so it is grouped. A random split violates both at once. And the labels here usually depend on a forward window — *did this address get drained within thirty days*, *did this position get liquidated before expiry* — which means a training label overlaps in time with the validation period even after a clean date cut. That is exactly the case purged cross-validation with an embargo exists for: drop the training samples whose label horizon reaches into the validation window, and leave a gap after it before training resumes.\n\n**The honest way to report any of this is a gap, not a score.** A single number from a leaky split is unfalsifiable — nobody can tell from the outside whether it is skill or contamination. Two numbers from two splits are a measurement, and the distance between them is the only part of it that carries information. **The gap is also the cheapest possible experiment**, because it needs no new data, no new features and no tuning: the same estimator, evaluated twice, honestly.\n\n**And it is worth naming what the discipline buys beyond correctness.** A pipeline that splits properly is a pipeline that can be re-run when the data changes, because the boundary between what is known and what is being predicted has been written down explicitly instead of assumed. That boundary is the same thing a backtest needs, the same thing an audit asks for, and the same thing that makes a result reproducible six months later by somebody who was not there.\n\n## How it works\n\n### Three leaks, and the split that closes each\n\n| Leak | How it gets in | What the score looks like | The fix |\n|---|---|---|---|\n| **Temporal** | Random split on ordered data | Excellent, and it degrades the moment it goes live | Split by time; never shuffle |\n| **Grouped** | The same entity on both sides | Excellent on seen entities, chance-level on new ones | Split by group (address, user, document) |\n| **Horizon overlap** | Labels depend on a forward window that reaches past the cut | Slightly too good; survives a naive date split | **Purge** the overlapping training samples, then **embargo** a gap |\n| **Preprocessing** | Scaler / imputer / encoder fitted before the split | Uniformly and mildly too good across all folds | Fit inside the fold, always |\n\nThe **horizon overlap** row is the one that survives the obvious fix, which is what makes it worth naming separately. A team that has already learned to split by date will still leak if the label looks thirty days ahead and the training data runs up to the cut — the last thirty days of training labels are partly *about* the validation period.\n\n### Why the answer is a gap and not a score\n\n| Split | What it measures | Honest use |\n|---|---|---|\n| Random | An upper bound produced by contamination | **Only** as the top of the gap |\n| Time-ordered | What the model knows about the future given the past | A real estimate, still optimistic if grouped |\n| Time + group + embargo | What it would have scored deployed | The number to report |\n\n**Report all three.** A single honest number invites the question *\"could a better model do more?\"*; three numbers answer a better question — **how much of the apparent performance was never real**. And in a portfolio or a write-up, the gap is more persuasive than the score, because it demonstrates the one thing a reader cannot verify from outside: that you went looking for your own contamination.\n\n### The step people skip, stated concretely\n\nAnything **fitted** belongs inside the fold. Not just the model — the scaler's mean and variance, the imputer's median, a target encoder's per-category averages, a vocabulary or tokenizer built from the corpus, a feature-selection step that looked at the labels, and any resampling done to balance classes. The test for whether something belongs inside is simple: **would this quantity be computable on the day of prediction, using only what existed then?** If not, computing it once over the whole table has already leaked.\n\n### Where it lands in this project\n\nThe pairing is deliberate. `the-70-has-to-be-wrong` is about scoring a probabilistic output honestly; this card is about whether the scoreboard was contaminated before scoring began. **The two failures compose badly** — a leaked split produces a model that looks well-calibrated on data it has effectively already seen, and the calibration plot will look fine right up until deployment. **Fix the split first**, because a calibration measured on a leak is a measurement of nothing.\n"</script>
+      <script type="application/json" id="copy-en">"# Nasdaq + Kraken's NETs — the incumbent doesn't get disrupted, it builds the rail\n\nNasdaq is investing $100M in Payward (Kraken's parent) to build Nasdaq Equity Tokens (NETs): tokenized shares that keep the rights and investor protections of the underlying stock, tradeable on-chain, targeted for Q2 2027 and run by Nasdaq's 24/7 Digital Liquidity Network. The story isn't 'tokenization disrupts the exchange' — it's the exchange operator building the tokenization rail itself, keeping the regulatory perimeter a retail wrapper lacks.\n\nNot a build — a structural move to read. Trace who is doing what: an exchange operator (Nasdaq) buys a strategic stake in a crypto exchange (Kraken/Payward), and together they build tokenized equities (NETs) that preserve existing shareholder rights and investor protections and settle on Nasdaq's Digital Liquidity Network — 24/7 infrastructure meant to later carry global distribution, trading, and post-trade. Put it next to the AMC wrapper (tokenized-stock-premium-needs-a-mint-redeem-path): ask where the mint/redeem and settlement live in each. In the retail wrapper they lived outside any venue and broke; here they are being built inside the regulated exchange rail. The takeaway to write down: the durable value is the issuance + settlement + distribution rail, not the token. Confirm the $100M figure, the NETs terms, and the Q2 2027 date against Nasdaq's own release before asserting specifics.\n\n## Why\n\nThe lesson is about who wins when a technology threatens to route around an incumbent. Tokenized equities looked like disruption: put a stock on-chain and you seem to bypass the exchange. Nasdaq's answer is not to fight it but to build it — take a stake in a crypto exchange for the on-chain expertise, and issue the tokens itself so the thing that trades on-chain still carries the rights and investor protections the exchange's regulatory perimeter exists to guarantee. That perimeter is exactly what a retail wrapper lacks, which is why the AMC token detached (tokenized-stock-premium-needs-a-mint-redeem-path): its mint/redeem and settlement lived nowhere trustworthy. NETs put issuance, 24/7 settlement (the Digital Liquidity Network), and later distribution and post-trade inside the venue.\n\nSo the durable value is not the token — it is the rail: creation/redemption, settlement, and distribution with the protections intact. This is the same 'use the rail, don't rebuild it' pattern seen across the catalogue, read from the incumbent's side: the exchange keeps the part that is hard to replicate (regulated issuance and settlement) and lets the chain be the transport. For jayverse the read is twofold — the peg on any tokenized asset still lives in an open mint/redeem loop (the-bridge-is-inside-the-token, refill-rate-is-the-real-cap), and the strategic move is to plug into a regulated issuance/settlement rail rather than mint a bare wrapper (jayverse-build-on-the-shortlist, distribution-splits-from-infrastructure).\n\n## How it works\n\n### The facts\n\n| | |\n|---|---|\n| **Who** | Nasdaq (exchange operator) → $100M strategic investment in **Payward**, Kraken's parent |\n| **What** | **Nasdaq Equity Tokens (NETs)** — tokenized shares that keep the underlying stock's rights and investor protections |\n| **Rail** | Nasdaq's **Digital Liquidity Network (DLN)** — 24/7 infrastructure for capital / asset / liquidity movement |\n| **When** | targeted launch **Q2 2027**; later global distribution, trading, post-trade |\n\n### Why an exchange operator does this\n\nTokenization threatens to route around the exchange — put a share on-chain and you seem to bypass the venue. Instead of being disrupted, the incumbent **builds the rail itself**: it buys the on-chain expertise (Kraken) and issues the token, so what trades on-chain still carries the rights and protections that the exchange's regulatory perimeter exists to guarantee.\n\n### Read against the AMC wrapper\n\nA retail tokenized stock (tokenized-stock-premium-needs-a-mint-redeem-path) detached into a premium because its mint/redeem and settlement lived nowhere trustworthy. NETs put **issuance, settlement (DLN), and distribution inside the regulated venue** — the perimeter is the feature.\n\n### The durable value is the rail, not the token\n\nThe token is a claim; the moat is creation/redemption + settlement + distribution with protections intact. Same 'use the rail, don't rebuild it' pattern, read from the incumbent's side. Related: tokenized-stock-premium-needs-a-mint-redeem-path (the wrapper that broke), the-bridge-is-inside-the-token / refill-rate-is-the-real-cap (mint/redeem is the peg), jayverse-build-on-the-shortlist, distribution-splits-from-infrastructure. Confirm the $100M, NETs terms, and Q2 2027 date against Nasdaq's release before citing.\n"</script>
       <h2>Why</h2>
-      <p><strong>The reason applied results do not survive contact with production is almost never the model, and treating it as a modelling problem is how teams spend months on the wrong thing.</strong> A leak is any path by which information that would not exist at prediction time reaches the estimator during training. It does not announce itself. It shows up as a validation score that is too good, which is the one signal nobody investigates, because a good number looks like success rather than like a bug.</p>
-<p><strong>Three leaks account for most of it, and they are structural rather than clever.</strong> The first is <strong>temporal</strong>: data with an order was split at random, so the model was allowed to see the future while predicting the past. The second is <strong>grouped</strong>: the same entity appears on both sides of the split — the same user, the same document, the same address — so the model memorises the entity rather than learning the pattern, and scores brilliantly on entities it has already met. The third is <strong>preprocessing</strong>: a scaler, an imputer, a target encoder or a vocabulary was fitted on the whole dataset before splitting, so statistics from the test set were baked into the training features. The third is the most common and the least discussed, because it hides inside code that looks like data preparation rather than like modelling.</p>
-<p><strong>On-chain data triggers the first two simultaneously, which is why this belongs in this catalogue rather than in a textbook.</strong> Every record has a block timestamp, so it is ordered; every record is attached to an address, so it is grouped. A random split violates both at once. And the labels here usually depend on a forward window — <em>did this address get drained within thirty days</em>, <em>did this position get liquidated before expiry</em> — which means a training label overlaps in time with the validation period even after a clean date cut. That is exactly the case purged cross-validation with an embargo exists for: drop the training samples whose label horizon reaches into the validation window, and leave a gap after it before training resumes.</p>
-<p><strong>The honest way to report any of this is a gap, not a score.</strong> A single number from a leaky split is unfalsifiable — nobody can tell from the outside whether it is skill or contamination. Two numbers from two splits are a measurement, and the distance between them is the only part of it that carries information. <strong>The gap is also the cheapest possible experiment</strong>, because it needs no new data, no new features and no tuning: the same estimator, evaluated twice, honestly.</p>
-<p><strong>And it is worth naming what the discipline buys beyond correctness.</strong> A pipeline that splits properly is a pipeline that can be re-run when the data changes, because the boundary between what is known and what is being predicted has been written down explicitly instead of assumed. That boundary is the same thing a backtest needs, the same thing an audit asks for, and the same thing that makes a result reproducible six months later by somebody who was not there.</p>
+      <p>The lesson is about who wins when a technology threatens to route around an incumbent. Tokenized equities looked like disruption: put a stock on-chain and you seem to bypass the exchange. Nasdaq&#39;s answer is not to fight it but to build it — take a stake in a crypto exchange for the on-chain expertise, and issue the tokens itself so the thing that trades on-chain still carries the rights and investor protections the exchange&#39;s regulatory perimeter exists to guarantee. That perimeter is exactly what a retail wrapper lacks, which is why the AMC token detached (tokenized-stock-premium-needs-a-mint-redeem-path): its mint/redeem and settlement lived nowhere trustworthy. NETs put issuance, 24/7 settlement (the Digital Liquidity Network), and later distribution and post-trade inside the venue.</p>
+<p>So the durable value is not the token — it is the rail: creation/redemption, settlement, and distribution with the protections intact. This is the same &#39;use the rail, don&#39;t rebuild it&#39; pattern seen across the catalogue, read from the incumbent&#39;s side: the exchange keeps the part that is hard to replicate (regulated issuance and settlement) and lets the chain be the transport. For jayverse the read is twofold — the peg on any tokenized asset still lives in an open mint/redeem loop (the-bridge-is-inside-the-token, refill-rate-is-the-real-cap), and the strategic move is to plug into a regulated issuance/settlement rail rather than mint a bare wrapper (jayverse-build-on-the-shortlist, distribution-splits-from-infrastructure).</p>
       <h2>How it works</h2>
-      <h3>Three leaks, and the split that closes each</h3>
+      <h3>The facts</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Leak</th>
-<th>How it gets in</th>
-<th>What the score looks like</th>
-<th>The fix</th>
+<th></th>
+<th></th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Temporal</strong></td>
-<td>Random split on ordered data</td>
-<td>Excellent, and it degrades the moment it goes live</td>
-<td>Split by time; never shuffle</td>
+<td><strong>Who</strong></td>
+<td>Nasdaq (exchange operator) → $100M strategic investment in <strong>Payward</strong>, Kraken&#39;s parent</td>
 </tr>
 <tr>
-<td><strong>Grouped</strong></td>
-<td>The same entity on both sides</td>
-<td>Excellent on seen entities, chance-level on new ones</td>
-<td>Split by group (address, user, document)</td>
+<td><strong>What</strong></td>
+<td><strong>Nasdaq Equity Tokens (NETs)</strong> — tokenized shares that keep the underlying stock&#39;s rights and investor protections</td>
 </tr>
 <tr>
-<td><strong>Horizon overlap</strong></td>
-<td>Labels depend on a forward window that reaches past the cut</td>
-<td>Slightly too good; survives a naive date split</td>
-<td><strong>Purge</strong> the overlapping training samples, then <strong>embargo</strong> a gap</td>
+<td><strong>Rail</strong></td>
+<td>Nasdaq&#39;s <strong>Digital Liquidity Network (DLN)</strong> — 24/7 infrastructure for capital / asset / liquidity movement</td>
 </tr>
 <tr>
-<td><strong>Preprocessing</strong></td>
-<td>Scaler / imputer / encoder fitted before the split</td>
-<td>Uniformly and mildly too good across all folds</td>
-<td>Fit inside the fold, always</td>
+<td><strong>When</strong></td>
+<td>targeted launch <strong>Q2 2027</strong>; later global distribution, trading, post-trade</td>
 </tr>
 </tbody></table></div>
-<p>The <strong>horizon overlap</strong> row is the one that survives the obvious fix, which is what makes it worth naming separately. A team that has already learned to split by date will still leak if the label looks thirty days ahead and the training data runs up to the cut — the last thirty days of training labels are partly <em>about</em> the validation period.</p>
-<h3>Why the answer is a gap and not a score</h3>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>Split</th>
-<th>What it measures</th>
-<th>Honest use</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Random</td>
-<td>An upper bound produced by contamination</td>
-<td><strong>Only</strong> as the top of the gap</td>
-</tr>
-<tr>
-<td>Time-ordered</td>
-<td>What the model knows about the future given the past</td>
-<td>A real estimate, still optimistic if grouped</td>
-</tr>
-<tr>
-<td>Time + group + embargo</td>
-<td>What it would have scored deployed</td>
-<td>The number to report</td>
-</tr>
-</tbody></table></div>
-<p><strong>Report all three.</strong> A single honest number invites the question <em>&quot;could a better model do more?&quot;</em>; three numbers answer a better question — <strong>how much of the apparent performance was never real</strong>. And in a portfolio or a write-up, the gap is more persuasive than the score, because it demonstrates the one thing a reader cannot verify from outside: that you went looking for your own contamination.</p>
-<h3>The step people skip, stated concretely</h3>
-<p>Anything <strong>fitted</strong> belongs inside the fold. Not just the model — the scaler&#39;s mean and variance, the imputer&#39;s median, a target encoder&#39;s per-category averages, a vocabulary or tokenizer built from the corpus, a feature-selection step that looked at the labels, and any resampling done to balance classes. The test for whether something belongs inside is simple: <strong>would this quantity be computable on the day of prediction, using only what existed then?</strong> If not, computing it once over the whole table has already leaked.</p>
-<h3>Where it lands in this project</h3>
-<p>The pairing is deliberate. <code>the-70-has-to-be-wrong</code> is about scoring a probabilistic output honestly; this card is about whether the scoreboard was contaminated before scoring began. <strong>The two failures compose badly</strong> — a leaked split produces a model that looks well-calibrated on data it has effectively already seen, and the calibration plot will look fine right up until deployment. <strong>Fix the split first</strong>, because a calibration measured on a leak is a measurement of nothing.</p>
+<h3>Why an exchange operator does this</h3>
+<p>Tokenization threatens to route around the exchange — put a share on-chain and you seem to bypass the venue. Instead of being disrupted, the incumbent <strong>builds the rail itself</strong>: it buys the on-chain expertise (Kraken) and issues the token, so what trades on-chain still carries the rights and protections that the exchange&#39;s regulatory perimeter exists to guarantee.</p>
+<h3>Read against the AMC wrapper</h3>
+<p>A retail tokenized stock (tokenized-stock-premium-needs-a-mint-redeem-path) detached into a premium because its mint/redeem and settlement lived nowhere trustworthy. NETs put <strong>issuance, settlement (DLN), and distribution inside the regulated venue</strong> — the perimeter is the feature.</p>
+<h3>The durable value is the rail, not the token</h3>
+<p>The token is a claim; the moat is creation/redemption + settlement + distribution with protections intact. Same &#39;use the rail, don&#39;t rebuild it&#39; pattern, read from the incumbent&#39;s side. Related: tokenized-stock-premium-needs-a-mint-redeem-path (the wrapper that broke), the-bridge-is-inside-the-token / refill-rate-is-the-real-cap (mint/redeem is the peg), jayverse-build-on-the-shortlist, distribution-splits-from-infrastructure. Confirm the $100M, NETs terms, and Q2 2027 date against Nasdaq&#39;s release before citing.</p>
       
       <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 실험은 모델이 아니라 분할이다\n\n프로덕션에서 무너지는 결과의 거의 전부는 **모델이 아니라 분할에서** 무너집니다. 온체인 데이터는 **분할 규칙 두 개를 동시에 위반합니다** — 시간순이면서 동시에 주소로 묶여 있습니다 — 그리고 보고할 값어치가 있는 숫자는 **순진한 분할과 정직한 분할 사이의 격차**입니다.\n\n아직 범위 미정이고, **결과물은 모델이 아니라 숫자 하나**입니다. 이 프로젝트의 실제 라벨 데이터 하나를 잡고 — **주소 단위 질문이 이상적입니다**, 규칙 두 개를 동시에 위반하니까요 — **같은 추정기를 세 방식으로** 평가합니다: 무작위 분할, 시간순 분할, 그리고 **주소로 그룹을 묶고 라벨 지평 길이만큼 embargo 를 둔** 시간순 분할. 세 점수를 나란히 보고합니다. **첫 번째와 세 번째의 격차가 곧 발견**입니다 — 그게 **자기 자신에게 거짓말한 양**이니까요. 그다음 **학습되는 전처리 단계를 전부**(스케일러·결측 대체·타깃 인코딩·어휘) **폴드 안으로 옮기고**, 남은 격차 중 얼마가 그것만으로 설명되는지 봅니다.\n\n## 왜\n\n**응용 결과가 프로덕션에서 살아남지 못하는 이유는 거의 언제나 모델이 아니고**, 그걸 모델링 문제로 다루는 것이 팀이 몇 달을 엉뚱한 데 쓰는 방식입니다. **누수(leak)** 란 **예측 시점에는 존재하지 않을 정보가 학습 중에 추정기에 닿는 모든 경로**입니다. 누수는 **자기를 알리지 않습니다.** **너무 좋은 검증 점수**로 나타나는데, 그건 **아무도 조사하지 않는 유일한 신호**입니다 — 좋은 숫자는 버그가 아니라 **성공처럼 생겼기** 때문입니다.\n\n**대부분은 세 가지로 설명되고, 셋 다 기발한 게 아니라 구조적입니다.** 첫째 **시간**: 순서가 있는 데이터를 무작위로 나눠서, **모델이 과거를 예측하면서 미래를 볼 수 있게** 됐습니다. 둘째 **그룹**: 같은 개체가 분할 양쪽에 나타납니다 — 같은 사용자, 같은 문서, **같은 주소** — 그래서 모델이 패턴을 배우는 대신 **개체를 외우고**, 이미 만나본 개체에서 훌륭한 점수를 냅니다. 셋째 **전처리**: 스케일러·결측 대체·타깃 인코딩·어휘를 **분할 전에 전체 데이터로 학습**시켜서, **테스트셋의 통계가 학습 피처에 구워졌습니다.** 셋째가 **가장 흔하고 가장 덜 언급됩니다** — 모델링이 아니라 **데이터 준비처럼 생긴 코드 안에 숨기** 때문입니다.\n\n**온체인 데이터는 첫 둘을 동시에 켭니다. 그게 이 카드가 교과서가 아니라 이 카탈로그에 있는 이유입니다.** 모든 레코드에 블록 타임스탬프가 있으니 **순서가 있고**, 모든 레코드가 주소에 붙어 있으니 **그룹져 있습니다.** 무작위 분할은 **둘을 한 번에** 위반합니다. 게다가 여기 라벨은 대개 **미래 창(forward window)에 의존합니다** — *이 주소가 30일 안에 털렸는가*, *이 포지션이 만기 전에 청산됐는가* — 즉 **날짜를 깨끗이 잘라도 학습 라벨이 검증 구간과 시간상 겹칩니다.** 정확히 그 경우를 위해 **purged 교차검증 + embargo** 가 있습니다: **라벨 지평이 검증 구간에 닿는 학습 표본을 버리고**, 그 뒤에 **간격을 두고** 학습을 재개합니다.\n\n**이 모든 것을 정직하게 보고하는 방법은 점수가 아니라 격차입니다.** 누수된 분할에서 나온 숫자 하나는 **반증 불가능합니다** — 바깥에서는 그게 실력인지 오염인지 알 수 없습니다. **두 분할에서 나온 두 숫자는 측정이고, 그 사이의 거리만이 정보를 담습니다.** **격차는 동시에 가능한 가장 싼 실험**이기도 합니다 — 새 데이터도, 새 피처도, 튜닝도 필요 없이 **같은 추정기를 두 번, 정직하게** 평가하면 됩니다.\n\n**그리고 이 규율이 정확성 말고 무엇을 사주는지도 적어둘 값어치가 있습니다.** 제대로 분할하는 파이프라인은 **데이터가 바뀌어도 다시 돌릴 수 있는 파이프라인**입니다 — **무엇이 알려진 것이고 무엇이 예측 대상인지의 경계가 가정이 아니라 명시적으로 적혀 있기** 때문입니다. 그 경계는 **백테스트가 필요로 하는 것과 같은 것**이고, **감사가 요구하는 것과 같은 것**이며, **여섯 달 뒤 그 자리에 없던 사람이 결과를 재현할 수 있게 하는 것과 같은 것**입니다.\n\n## 동작 방식\n\n### 누수 셋, 그리고 각각을 막는 분할\n\n| 누수 | 어떻게 들어오나 | 점수가 어떻게 보이나 | 처방 |\n|---|---|---|---|\n| **시간** | 순서 있는 데이터를 무작위 분할 | 훌륭하다가 **라이브 되는 순간 무너짐** | 시간순 분할. **절대 섞지 않음** |\n| **그룹** | 같은 개체가 양쪽에 존재 | **본 개체에서 훌륭, 새 개체에서 찍기 수준** | 그룹(주소·사용자·문서) 단위 분할 |\n| **지평 겹침** | 라벨이 **컷 너머까지 닿는 미래 창**에 의존 | 살짝 너무 좋음. **날짜 분할로도 안 잡힘** | 겹치는 학습 표본을 **purge**, 그 뒤 **embargo** 간격 |\n| **전처리** | 스케일러·대체·인코더를 분할 전에 학습 | **모든 폴드에서 고르게 조금씩** 너무 좋음 | **항상 폴드 안에서** 학습 |\n\n**\"지평 겹침\" 줄이 뻔한 처방에도 살아남는 누수**라서 따로 이름 붙일 값어치가 있습니다. **이미 날짜로 나누는 법을 배운 팀도** 라벨이 30일 앞을 보고 학습 데이터가 컷까지 차 있으면 **여전히 샙니다** — **학습 라벨의 마지막 30일은 부분적으로 검증 구간을 이야기하고 있는 셈입니다.**\n\n### 왜 답이 점수가 아니라 격차인가\n\n| 분할 | 무엇을 재나 | 정직한 용도 |\n|---|---|---|\n| 무작위 | **오염이 만들어낸 상한** | **오직** 격차의 위쪽 끝으로만 |\n| 시간순 | 과거로 미래를 아는 정도 | 실제 추정치, **그룹이 있으면 여전히 낙관적** |\n| 시간 + 그룹 + embargo | **배포됐다면 받았을 점수** | **보고할 숫자** |\n\n**셋 다 보고하십시오.** 정직한 숫자 하나는 *\"더 좋은 모델이면 더 되지 않나\"* 를 부르지만, **세 숫자는 더 나은 질문에 답합니다** — **겉보기 성능 중 얼마가 애초에 실재하지 않았는가.** 그리고 포트폴리오나 글에서는 **격차가 점수보다 설득력이 있습니다.** 바깥에서 검증할 수 없는 것 하나를 보여주기 때문입니다 — **자기 오염을 자기가 찾아 나섰다는 것.**\n\n### 다들 건너뛰는 단계, 구체적으로\n\n**학습되는 것은 전부 폴드 안에 들어갑니다.** 모델만이 아니라 — 스케일러의 평균·분산, 대체값의 중앙값, 타깃 인코더의 범주별 평균, 코퍼스로 만든 어휘·토크나이저, **라벨을 본 피처 선택 단계**, 그리고 클래스 균형을 맞추려 한 **리샘플링 전부.** 안쪽인지 판별하는 시험은 간단합니다: **이 값이 예측하는 날, 그날까지 존재한 것만으로 계산되는가?** 아니라면 **전체 표에서 한 번 계산한 순간 이미 샜습니다.**\n\n### 이 프로젝트에서의 자리\n\n짝지은 건 의도적입니다. `the-70-has-to-be-wrong` 이 **확률 출력을 정직하게 채점하는 것**이라면, 이 카드는 **채점을 시작하기 전에 채점판이 오염됐는가**입니다. **두 실패는 나쁘게 합성됩니다** — 누수된 분할은 **사실상 이미 본 데이터에서 잘 캘리브레이션된 것처럼 보이는 모델**을 만들고, **캘리브레이션 그림은 배포 직전까지 멀쩡해 보입니다.** **분할을 먼저 고치십시오.** **누수 위에서 잰 캘리브레이션은 아무것도 잰 게 아니기** 때문입니다.\n"</script>
-      <h1>실험은 모델이 아니라 분할이다</h1>
-      <p class="lead">프로덕션에서 무너지는 결과의 거의 전부는 <strong>모델이 아니라 분할에서</strong> 무너집니다. 온체인 데이터는 <strong>분할 규칙 두 개를 동시에 위반합니다</strong> — 시간순이면서 동시에 주소로 묶여 있습니다 — 그리고 보고할 값어치가 있는 숫자는 <strong>순진한 분할과 정직한 분할 사이의 격차</strong>입니다.</p>
-      <p class="meta">아직 범위 미정이고, <strong>결과물은 모델이 아니라 숫자 하나</strong>입니다. 이 프로젝트의 실제 라벨 데이터 하나를 잡고 — <strong>주소 단위 질문이 이상적입니다</strong>, 규칙 두 개를 동시에 위반하니까요 — <strong>같은 추정기를 세 방식으로</strong> 평가합니다: 무작위 분할, 시간순 분할, 그리고 <strong>주소로 그룹을 묶고 라벨 지평 길이만큼 embargo 를 둔</strong> 시간순 분할. 세 점수를 나란히 보고합니다. <strong>첫 번째와 세 번째의 격차가 곧 발견</strong>입니다 — 그게 <strong>자기 자신에게 거짓말한 양</strong>이니까요. 그다음 <strong>학습되는 전처리 단계를 전부</strong>(스케일러·결측 대체·타깃 인코딩·어휘) <strong>폴드 안으로 옮기고</strong>, 남은 격차 중 얼마가 그것만으로 설명되는지 봅니다.</p>
+      <script type="application/json" id="copy-ko">"# Nasdaq + Kraken의 NETs — 기존 강자는 파괴되지 않고 레일을 직접 짓는다\n\nNasdaq이 Payward(Kraken 모회사)에 1억 달러를 투자해 Nasdaq Equity Tokens(NETs)를 만듭니다: 기초 주식의 권리와 투자자 보호를 유지한 채 온체인에서 거래되는 토큰화 주식으로, 2027년 2분기 출시 목표, Nasdaq의 24시간 Digital Liquidity Network가 운영. 핵심은 '토큰화가 거래소를 파괴한다'가 아니라, 거래소 운영사가 토큰화 레일을 직접 짓는다는 것 — 소매용 래퍼엔 없는 규제 경계를 안에 품은 채.\n\n구현이 아니라 구조적 움직임을 읽는 것입니다. 누가 무엇을 하는지 추적하세요: 거래소 운영사(Nasdaq)가 크립토 거래소(Kraken/Payward)에 전략적 지분을 사고, 함께 기존 주주 권리와 투자자 보호를 유지하며 Nasdaq의 Digital Liquidity Network — 나중에 글로벌 유통·거래·거래후처리까지 나를 24시간 인프라 — 에서 정산되는 토큰화 주식(NETs)을 만듭니다. AMC 래퍼(tokenized-stock-premium-needs-a-mint-redeem-path) 옆에 놓고, 각각에서 발행/상환과 정산이 어디 사는지 물으세요. 소매 래퍼에선 어느 거래소 밖에 있어 깨졌고; 여기선 규제된 거래소 레일 안에 지어지고 있습니다. 적어둘 결론: 지속되는 가치는 토큰이 아니라 발행 + 정산 + 유통 레일입니다. 구체 주장 전 1억 달러 수치·NETs 조건·2027년 2분기 날짜를 Nasdaq 발표로 확인.\n\n## 왜\n\n교훈은 어떤 기술이 기존 강자를 우회하려 위협할 때 누가 이기느냐입니다. 토큰화 주식은 파괴처럼 보였습니다: 주식을 온체인에 올리면 거래소를 건너뛰는 듯합니다. Nasdaq의 답은 맞서 싸우는 게 아니라 직접 짓는 것 — 온체인 전문성을 위해 크립토 거래소 지분을 잡고, 토큰을 스스로 발행해 온체인에서 거래되는 것이 여전히 거래소 규제 경계가 보장하려 존재하는 권리와 투자자 보호를 지니게 합니다. 그 경계가 바로 소매 래퍼엔 없는 것이고, 그래서 AMC 토큰이 이탈했습니다(tokenized-stock-premium-needs-a-mint-redeem-path): 발행/상환과 정산이 신뢰할 곳에 없었습니다. NETs는 발행, 24시간 정산(Digital Liquidity Network), 나중엔 유통·거래후처리를 거래소 안에 넣습니다.\n\n그러니 지속되는 가치는 토큰이 아니라 레일입니다: 보호가 온전한 생성/상환·정산·유통. 카탈로그 전반의 '레일을 쓰라, 다시 짓지 말라' 패턴을 기존 강자 쪽에서 읽은 것 — 거래소는 복제하기 어려운 부분(규제된 발행·정산)을 쥐고, 체인은 운송이 되게 둡니다. jayverse엔 두 갈래로 읽힙니다 — 어떤 토큰화 자산이든 페그는 여전히 열린 발행/상환 루프에 삽니다(the-bridge-is-inside-the-token, refill-rate-is-the-real-cap), 그리고 전략적 움직임은 맨 래퍼를 발행하는 게 아니라 규제된 발행/정산 레일에 꽂는 것입니다(jayverse-build-on-the-shortlist, distribution-splits-from-infrastructure).\n\n## 동작 방식\n\n### 사실관계\n\n| | |\n|---|---|\n| **누가** | Nasdaq(거래소 운영사) → Kraken 모회사 **Payward**에 1억 달러 전략적 투자 |\n| **무엇** | **Nasdaq Equity Tokens(NETs)** — 기초 주식의 권리와 투자자 보호를 유지한 토큰화 주식 |\n| **레일** | Nasdaq의 **Digital Liquidity Network(DLN)** — 자본/자산/유동성 이동을 위한 24시간 인프라 |\n| **언제** | 출시 목표 **2027년 2분기**; 이후 글로벌 유통·거래·거래후처리 |\n\n### 거래소 운영사가 이걸 하는 이유\n\n토큰화는 거래소를 우회하려 위협합니다 — 주식을 온체인에 올리면 거래소를 건너뛰는 듯합니다. 파괴당하는 대신 기존 강자는 **레일을 직접 짓습니다**: 온체인 전문성(Kraken)을 사고 토큰을 발행해, 온체인에서 거래되는 것이 여전히 거래소 규제 경계가 보장하려 존재하는 권리와 보호를 지니게 합니다.\n\n### AMC 래퍼와 대조해 읽기\n\n소매 토큰화 주식(tokenized-stock-premium-needs-a-mint-redeem-path)은 발행/상환과 정산이 신뢰할 곳에 없어 프리미엄으로 이탈했습니다. NETs는 **발행·정산(DLN)·유통을 규제된 거래소 안에** 넣습니다 — 경계가 곧 기능.\n\n### 지속되는 가치는 토큰이 아니라 레일\n\n토큰은 청구권; 해자는 보호가 온전한 생성/상환 + 정산 + 유통입니다. 같은 '레일을 쓰라, 다시 짓지 말라' 패턴을 기존 강자 쪽에서 읽은 것. 관련: tokenized-stock-premium-needs-a-mint-redeem-path(깨진 래퍼), the-bridge-is-inside-the-token / refill-rate-is-the-real-cap(발행/상환이 페그), jayverse-build-on-the-shortlist, distribution-splits-from-infrastructure. 인용 전 1억 달러·NETs 조건·2027년 2분기 날짜를 Nasdaq 발표로 확인.\n"</script>
+      <h1>Nasdaq + Kraken의 NETs — 기존 강자는 파괴되지 않고 레일을 직접 짓는다</h1>
+      <p class="lead">Nasdaq이 Payward(Kraken 모회사)에 1억 달러를 투자해 Nasdaq Equity Tokens(NETs)를 만듭니다: 기초 주식의 권리와 투자자 보호를 유지한 채 온체인에서 거래되는 토큰화 주식으로, 2027년 2분기 출시 목표, Nasdaq의 24시간 Digital Liquidity Network가 운영. 핵심은 &#39;토큰화가 거래소를 파괴한다&#39;가 아니라, 거래소 운영사가 토큰화 레일을 직접 짓는다는 것 — 소매용 래퍼엔 없는 규제 경계를 안에 품은 채.</p>
+      <p class="meta">구현이 아니라 구조적 움직임을 읽는 것입니다. 누가 무엇을 하는지 추적하세요: 거래소 운영사(Nasdaq)가 크립토 거래소(Kraken/Payward)에 전략적 지분을 사고, 함께 기존 주주 권리와 투자자 보호를 유지하며 Nasdaq의 Digital Liquidity Network — 나중에 글로벌 유통·거래·거래후처리까지 나를 24시간 인프라 — 에서 정산되는 토큰화 주식(NETs)을 만듭니다. AMC 래퍼(tokenized-stock-premium-needs-a-mint-redeem-path) 옆에 놓고, 각각에서 발행/상환과 정산이 어디 사는지 물으세요. 소매 래퍼에선 어느 거래소 밖에 있어 깨졌고; 여기선 규제된 거래소 레일 안에 지어지고 있습니다. 적어둘 결론: 지속되는 가치는 토큰이 아니라 발행 + 정산 + 유통 레일입니다. 구체 주장 전 1억 달러 수치·NETs 조건·2027년 2분기 날짜를 Nasdaq 발표로 확인.</p>
       <h2>왜</h2>
-      <p><strong>응용 결과가 프로덕션에서 살아남지 못하는 이유는 거의 언제나 모델이 아니고</strong>, 그걸 모델링 문제로 다루는 것이 팀이 몇 달을 엉뚱한 데 쓰는 방식입니다. <strong>누수(leak)</strong> 란 <strong>예측 시점에는 존재하지 않을 정보가 학습 중에 추정기에 닿는 모든 경로</strong>입니다. 누수는 <strong>자기를 알리지 않습니다.</strong> <strong>너무 좋은 검증 점수</strong>로 나타나는데, 그건 <strong>아무도 조사하지 않는 유일한 신호</strong>입니다 — 좋은 숫자는 버그가 아니라 <strong>성공처럼 생겼기</strong> 때문입니다.</p>
-<p><strong>대부분은 세 가지로 설명되고, 셋 다 기발한 게 아니라 구조적입니다.</strong> 첫째 <strong>시간</strong>: 순서가 있는 데이터를 무작위로 나눠서, <strong>모델이 과거를 예측하면서 미래를 볼 수 있게</strong> 됐습니다. 둘째 <strong>그룹</strong>: 같은 개체가 분할 양쪽에 나타납니다 — 같은 사용자, 같은 문서, <strong>같은 주소</strong> — 그래서 모델이 패턴을 배우는 대신 <strong>개체를 외우고</strong>, 이미 만나본 개체에서 훌륭한 점수를 냅니다. 셋째 <strong>전처리</strong>: 스케일러·결측 대체·타깃 인코딩·어휘를 <strong>분할 전에 전체 데이터로 학습</strong>시켜서, <strong>테스트셋의 통계가 학습 피처에 구워졌습니다.</strong> 셋째가 <strong>가장 흔하고 가장 덜 언급됩니다</strong> — 모델링이 아니라 <strong>데이터 준비처럼 생긴 코드 안에 숨기</strong> 때문입니다.</p>
-<p><strong>온체인 데이터는 첫 둘을 동시에 켭니다. 그게 이 카드가 교과서가 아니라 이 카탈로그에 있는 이유입니다.</strong> 모든 레코드에 블록 타임스탬프가 있으니 <strong>순서가 있고</strong>, 모든 레코드가 주소에 붙어 있으니 <strong>그룹져 있습니다.</strong> 무작위 분할은 <strong>둘을 한 번에</strong> 위반합니다. 게다가 여기 라벨은 대개 <strong>미래 창(forward window)에 의존합니다</strong> — <em>이 주소가 30일 안에 털렸는가</em>, <em>이 포지션이 만기 전에 청산됐는가</em> — 즉 <strong>날짜를 깨끗이 잘라도 학습 라벨이 검증 구간과 시간상 겹칩니다.</strong> 정확히 그 경우를 위해 <strong>purged 교차검증 + embargo</strong> 가 있습니다: <strong>라벨 지평이 검증 구간에 닿는 학습 표본을 버리고</strong>, 그 뒤에 <strong>간격을 두고</strong> 학습을 재개합니다.</p>
-<p><strong>이 모든 것을 정직하게 보고하는 방법은 점수가 아니라 격차입니다.</strong> 누수된 분할에서 나온 숫자 하나는 <strong>반증 불가능합니다</strong> — 바깥에서는 그게 실력인지 오염인지 알 수 없습니다. <strong>두 분할에서 나온 두 숫자는 측정이고, 그 사이의 거리만이 정보를 담습니다.</strong> <strong>격차는 동시에 가능한 가장 싼 실험</strong>이기도 합니다 — 새 데이터도, 새 피처도, 튜닝도 필요 없이 <strong>같은 추정기를 두 번, 정직하게</strong> 평가하면 됩니다.</p>
-<p><strong>그리고 이 규율이 정확성 말고 무엇을 사주는지도 적어둘 값어치가 있습니다.</strong> 제대로 분할하는 파이프라인은 <strong>데이터가 바뀌어도 다시 돌릴 수 있는 파이프라인</strong>입니다 — <strong>무엇이 알려진 것이고 무엇이 예측 대상인지의 경계가 가정이 아니라 명시적으로 적혀 있기</strong> 때문입니다. 그 경계는 <strong>백테스트가 필요로 하는 것과 같은 것</strong>이고, <strong>감사가 요구하는 것과 같은 것</strong>이며, <strong>여섯 달 뒤 그 자리에 없던 사람이 결과를 재현할 수 있게 하는 것과 같은 것</strong>입니다.</p>
+      <p>교훈은 어떤 기술이 기존 강자를 우회하려 위협할 때 누가 이기느냐입니다. 토큰화 주식은 파괴처럼 보였습니다: 주식을 온체인에 올리면 거래소를 건너뛰는 듯합니다. Nasdaq의 답은 맞서 싸우는 게 아니라 직접 짓는 것 — 온체인 전문성을 위해 크립토 거래소 지분을 잡고, 토큰을 스스로 발행해 온체인에서 거래되는 것이 여전히 거래소 규제 경계가 보장하려 존재하는 권리와 투자자 보호를 지니게 합니다. 그 경계가 바로 소매 래퍼엔 없는 것이고, 그래서 AMC 토큰이 이탈했습니다(tokenized-stock-premium-needs-a-mint-redeem-path): 발행/상환과 정산이 신뢰할 곳에 없었습니다. NETs는 발행, 24시간 정산(Digital Liquidity Network), 나중엔 유통·거래후처리를 거래소 안에 넣습니다.</p>
+<p>그러니 지속되는 가치는 토큰이 아니라 레일입니다: 보호가 온전한 생성/상환·정산·유통. 카탈로그 전반의 &#39;레일을 쓰라, 다시 짓지 말라&#39; 패턴을 기존 강자 쪽에서 읽은 것 — 거래소는 복제하기 어려운 부분(규제된 발행·정산)을 쥐고, 체인은 운송이 되게 둡니다. jayverse엔 두 갈래로 읽힙니다 — 어떤 토큰화 자산이든 페그는 여전히 열린 발행/상환 루프에 삽니다(the-bridge-is-inside-the-token, refill-rate-is-the-real-cap), 그리고 전략적 움직임은 맨 래퍼를 발행하는 게 아니라 규제된 발행/정산 레일에 꽂는 것입니다(jayverse-build-on-the-shortlist, distribution-splits-from-infrastructure).</p>
       <h2>동작 방식</h2>
-      <h3>누수 셋, 그리고 각각을 막는 분할</h3>
+      <h3>사실관계</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-<th>누수</th>
-<th>어떻게 들어오나</th>
-<th>점수가 어떻게 보이나</th>
-<th>처방</th>
+<th></th>
+<th></th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>시간</strong></td>
-<td>순서 있는 데이터를 무작위 분할</td>
-<td>훌륭하다가 <strong>라이브 되는 순간 무너짐</strong></td>
-<td>시간순 분할. <strong>절대 섞지 않음</strong></td>
+<td><strong>누가</strong></td>
+<td>Nasdaq(거래소 운영사) → Kraken 모회사 <strong>Payward</strong>에 1억 달러 전략적 투자</td>
 </tr>
 <tr>
-<td><strong>그룹</strong></td>
-<td>같은 개체가 양쪽에 존재</td>
-<td><strong>본 개체에서 훌륭, 새 개체에서 찍기 수준</strong></td>
-<td>그룹(주소·사용자·문서) 단위 분할</td>
+<td><strong>무엇</strong></td>
+<td><strong>Nasdaq Equity Tokens(NETs)</strong> — 기초 주식의 권리와 투자자 보호를 유지한 토큰화 주식</td>
 </tr>
 <tr>
-<td><strong>지평 겹침</strong></td>
-<td>라벨이 <strong>컷 너머까지 닿는 미래 창</strong>에 의존</td>
-<td>살짝 너무 좋음. <strong>날짜 분할로도 안 잡힘</strong></td>
-<td>겹치는 학습 표본을 <strong>purge</strong>, 그 뒤 <strong>embargo</strong> 간격</td>
+<td><strong>레일</strong></td>
+<td>Nasdaq의 <strong>Digital Liquidity Network(DLN)</strong> — 자본/자산/유동성 이동을 위한 24시간 인프라</td>
 </tr>
 <tr>
-<td><strong>전처리</strong></td>
-<td>스케일러·대체·인코더를 분할 전에 학습</td>
-<td><strong>모든 폴드에서 고르게 조금씩</strong> 너무 좋음</td>
-<td><strong>항상 폴드 안에서</strong> 학습</td>
+<td><strong>언제</strong></td>
+<td>출시 목표 <strong>2027년 2분기</strong>; 이후 글로벌 유통·거래·거래후처리</td>
 </tr>
 </tbody></table></div>
-<p><strong>&quot;지평 겹침&quot; 줄이 뻔한 처방에도 살아남는 누수</strong>라서 따로 이름 붙일 값어치가 있습니다. <strong>이미 날짜로 나누는 법을 배운 팀도</strong> 라벨이 30일 앞을 보고 학습 데이터가 컷까지 차 있으면 <strong>여전히 샙니다</strong> — <strong>학습 라벨의 마지막 30일은 부분적으로 검증 구간을 이야기하고 있는 셈입니다.</strong></p>
-<h3>왜 답이 점수가 아니라 격차인가</h3>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>분할</th>
-<th>무엇을 재나</th>
-<th>정직한 용도</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>무작위</td>
-<td><strong>오염이 만들어낸 상한</strong></td>
-<td><strong>오직</strong> 격차의 위쪽 끝으로만</td>
-</tr>
-<tr>
-<td>시간순</td>
-<td>과거로 미래를 아는 정도</td>
-<td>실제 추정치, <strong>그룹이 있으면 여전히 낙관적</strong></td>
-</tr>
-<tr>
-<td>시간 + 그룹 + embargo</td>
-<td><strong>배포됐다면 받았을 점수</strong></td>
-<td><strong>보고할 숫자</strong></td>
-</tr>
-</tbody></table></div>
-<p><strong>셋 다 보고하십시오.</strong> 정직한 숫자 하나는 <em>&quot;더 좋은 모델이면 더 되지 않나&quot;</em> 를 부르지만, <strong>세 숫자는 더 나은 질문에 답합니다</strong> — <strong>겉보기 성능 중 얼마가 애초에 실재하지 않았는가.</strong> 그리고 포트폴리오나 글에서는 <strong>격차가 점수보다 설득력이 있습니다.</strong> 바깥에서 검증할 수 없는 것 하나를 보여주기 때문입니다 — <strong>자기 오염을 자기가 찾아 나섰다는 것.</strong></p>
-<h3>다들 건너뛰는 단계, 구체적으로</h3>
-<p><strong>학습되는 것은 전부 폴드 안에 들어갑니다.</strong> 모델만이 아니라 — 스케일러의 평균·분산, 대체값의 중앙값, 타깃 인코더의 범주별 평균, 코퍼스로 만든 어휘·토크나이저, <strong>라벨을 본 피처 선택 단계</strong>, 그리고 클래스 균형을 맞추려 한 <strong>리샘플링 전부.</strong> 안쪽인지 판별하는 시험은 간단합니다: <strong>이 값이 예측하는 날, 그날까지 존재한 것만으로 계산되는가?</strong> 아니라면 <strong>전체 표에서 한 번 계산한 순간 이미 샜습니다.</strong></p>
-<h3>이 프로젝트에서의 자리</h3>
-<p>짝지은 건 의도적입니다. <code>the-70-has-to-be-wrong</code> 이 <strong>확률 출력을 정직하게 채점하는 것</strong>이라면, 이 카드는 <strong>채점을 시작하기 전에 채점판이 오염됐는가</strong>입니다. <strong>두 실패는 나쁘게 합성됩니다</strong> — 누수된 분할은 <strong>사실상 이미 본 데이터에서 잘 캘리브레이션된 것처럼 보이는 모델</strong>을 만들고, <strong>캘리브레이션 그림은 배포 직전까지 멀쩡해 보입니다.</strong> <strong>분할을 먼저 고치십시오.</strong> <strong>누수 위에서 잰 캘리브레이션은 아무것도 잰 게 아니기</strong> 때문입니다.</p>
+<h3>거래소 운영사가 이걸 하는 이유</h3>
+<p>토큰화는 거래소를 우회하려 위협합니다 — 주식을 온체인에 올리면 거래소를 건너뛰는 듯합니다. 파괴당하는 대신 기존 강자는 <strong>레일을 직접 짓습니다</strong>: 온체인 전문성(Kraken)을 사고 토큰을 발행해, 온체인에서 거래되는 것이 여전히 거래소 규제 경계가 보장하려 존재하는 권리와 보호를 지니게 합니다.</p>
+<h3>AMC 래퍼와 대조해 읽기</h3>
+<p>소매 토큰화 주식(tokenized-stock-premium-needs-a-mint-redeem-path)은 발행/상환과 정산이 신뢰할 곳에 없어 프리미엄으로 이탈했습니다. NETs는 <strong>발행·정산(DLN)·유통을 규제된 거래소 안에</strong> 넣습니다 — 경계가 곧 기능.</p>
+<h3>지속되는 가치는 토큰이 아니라 레일</h3>
+<p>토큰은 청구권; 해자는 보호가 온전한 생성/상환 + 정산 + 유통입니다. 같은 &#39;레일을 쓰라, 다시 짓지 말라&#39; 패턴을 기존 강자 쪽에서 읽은 것. 관련: tokenized-stock-premium-needs-a-mint-redeem-path(깨진 래퍼), the-bridge-is-inside-the-token / refill-rate-is-the-real-cap(발행/상환이 페그), jayverse-build-on-the-shortlist, distribution-splits-from-infrastructure. 인용 전 1억 달러·NETs 조건·2027년 2분기 날짜를 Nasdaq 발표로 확인.</p>
       
       <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-the-70-has-to-be-wrong.html">&larr; 131. The 70% has to be wrong three times in ten</a><a href="pocs-huggingface-is-a-package-manager.html">133. Hugging Face is a package manager, and almost nobody pins the version &rarr;</a></div>
+    <div class="pager"><a href="pocs-refill-rate-is-the-real-cap.html">&larr; 47. A bridge's rate limit is not the loss cap — its refill speed is</a><a href="pocs-jayverse-build-on-the-shortlist.html">49. What Jayverse can build on — the shortlist of rails, by need &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="the-split-is-the-experiment";</script>
+<script>window.__NAV_CURRENT__="nasdaq-nets-tokenization-goes-through-the-incumbent";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;
