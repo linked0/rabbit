@@ -18,6 +18,9 @@ export default function JayVersePage() {
           )}
           <code>docs/features/jayverse.md</code>
         </p>
+        <p>
+          <a href="/jayverse/defi">DeFi — liquid-restaking study (EtherFi from scratch) &rarr;</a>
+        </p>
       </main>
     </>
   );

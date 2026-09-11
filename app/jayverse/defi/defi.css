@@ -1,0 +1,40 @@
+/* DeFi study page — adapted from jayverse-defi/web/dev/styles.css, scoped under
+   .defi-study so the harness's generic class names (.panel, .row, button…) cannot
+   leak into the rest of the portal. Deliberately keeps the harness's dark look:
+   the study page is a lab bench, not a portal page. */
+.defi-study { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px;
+  background: #0b1020; color: #e6e9f2; border-radius: 12px;
+  font-family: ui-sans-serif, system-ui, sans-serif; }
+.defi-study h1 { font-size: 20px; }
+.defi-study .badge { font-size: 11px; vertical-align: middle; margin-left: 8px;
+  padding: 2px 8px; border-radius: 999px; background: #22c55e22; color: #22c55e;
+  border: 1px solid #22c55e55; }
+.defi-study .panel { border: 1px solid #2a3354; border-radius: 10px; padding: 16px;
+  margin: 16px 0; background: #121a33; }
+.defi-study .panel h2 { margin: 0 0 12px; font-size: 15px; }
+.defi-study .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.defi-study .stat { background: #0e1530; border-radius: 8px; padding: 8px 10px; }
+.defi-study .stat-label { display: block; font-size: 11px; color: #8a93b5; }
+.defi-study .stat-value { font-size: 14px; font-variant-numeric: tabular-nums; }
+.defi-study .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+.defi-study input { background: #0e1530; color: inherit; border: 1px solid #2a3354;
+  border-radius: 6px; padding: 8px 10px; width: 110px; }
+.defi-study button { background: #22c55e; color: #06220f; border: 0; border-radius: 6px;
+  padding: 8px 12px; cursor: pointer; font-weight: 600; }
+.defi-study button:disabled { opacity: 0.4; cursor: default; }
+.defi-study button.danger { background: #ef4444; color: #2b0606; }
+.defi-study .hint { font-size: 12px; color: #8a93b5; }
+.defi-study .err { color: #f87171; font-size: 13px; }
+.defi-study .chart { margin: 14px 0 0; }
+.defi-study .chart figcaption { font-size: 11px; color: #8a93b5; margin-top: 4px; }
+.defi-study table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.defi-study th, .defi-study td { text-align: left; padding: 6px 8px; border-top: 1px solid #2a3354; }
+.defi-study .math code { display: block; background: #0e1530; padding: 8px 10px;
+  border-radius: 6px; margin: 4px 0; overflow-x: auto; }
+.defi-study .math p { font-size: 12px; color: #8a93b5; margin: 4px 0 14px; }
+.defi-study .math dt { font-weight: 600; font-size: 13px; margin-top: 10px; }
+.defi-study .math dd { margin: 0; }
+.defi-study .study { border-color: #4b3a12; background: #1a1730; }
+.defi-study .setup { background: #0e1530; border: 1px solid #2a3354; border-radius: 6px;
+  padding: 10px 12px; font-size: 12px; overflow-x: auto; }
+.defi-study code { word-break: break-all; }
