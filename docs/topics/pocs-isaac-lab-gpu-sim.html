@@ -356,7 +356,7 @@
 <div class="layout">
   <aside class="rail">
     <div class="rail-head">
-      <a class="rail-title" href="../index.html">Rabbit</a><span class="rail-note">14% done &middot; 56/406</span>
+      <a class="rail-title" href="../index.html">Rabbit</a><span class="rail-note">14% done &middot; 56/408</span>
       <span class="rail-sub"><span class="rail-note rail-note-pink">2%/day &rarr; 95% done</span></span>
       <div class="rail-jump" id="rail-jump"></div>
     </div>
@@ -374,7 +374,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Isaac Lab — the sim that gets faster when you buy a GPU</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#208</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#210</span><span>PoC</span></p>
       <h1>Isaac Lab — the sim that gets faster when you buy a GPU</h1>
       <p class="lead">NVIDIA&#39;s robot-learning framework runs thousands to tens of thousands of environments in parallel on the GPU, with RL/imitation workflows and sensor sim built in. It fills the slot the stack map left empty — large-scale sim infrastructure. If MuJoCo/MJX is the &quot;runs on a laptop&quot; side, Isaac Lab is the &quot;buy a GPU and it goes faster&quot; side, and if the sim-to-real bottleneck is data, this points straight at it — at the cost of binding hard to one hardware and software stack.</p>
       <p class="meta">Not yet scoped — the deliverable is a benchmark, not a build. Take one policy and one task you already run in MJX, port it, and measure two things: steps-per-second at a fixed environment count, and — the number that actually decides the tool — whether raising the environment count 10× makes training converge ~10× faster (it usually does not; parallelism buys throughput, not free sample efficiency). Then write down the lock-in you took on: NVIDIA hardware, drivers, and Omniverse. Escape routes to note beside it: MJX (light, free), Genesis (new), and renting cloud GPUs to get the throughput without owning the stack. Source: NVIDIA Isaac Lab (formerly Isaac Gym / Orbit), on Omniverse + PhysX with camera/LiDAR sensor simulation.</p>
@@ -555,7 +555,7 @@
       
       <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-llm-context-engineering.html">&larr; 207. Context engineering — the window is a budget, not a bucket</a><a href="pocs-temporal-durable-execution.html">209. Temporal — where 'retry, idempotency, visibility into a stuck run' actually lives &rarr;</a></div>
+    <div class="pager"><a href="pocs-llm-context-engineering.html">&larr; 209. Context engineering — the window is a budget, not a bucket</a><a href="pocs-temporal-durable-execution.html">211. Temporal — where 'retry, idempotency, visibility into a stuck run' actually lives &rarr;</a></div>
   </div>
   </main>
 </div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Distillation — a small model trained to imitate a big one — Dev Notes</title>
+<title>A crypto safety margin has a shelf life — date it, and make the signature scheme replaceable — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -372,45 +372,149 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Distillation — a small model trained to imitate a big one</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; A crypto safety margin has a shelf life — date it, and make the signature scheme replaceable</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#202</span><span>PoC</span></p>
-      <h1>Distillation — a small model trained to imitate a big one</h1>
-      <p class="lead">Distillation trains a compact student on a large teacher&#39;s outputs, capturing much of the capability at a fraction of the cost — the standard path from a frontier model to a deployable one.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#66</span><span>PoC</span></p>
+      <h1>A crypto safety margin has a shelf life — date it, and make the signature scheme replaceable</h1>
+      <p class="lead">On 2026-09-10 researchers cut the estimated quantum-attack resources for BTC/ETH by roughly 50%, with an AI agent as co-author beating Google&#39;s March result on Shor&#39;s core computation. The Ethereum Foundation has a Jan-2026 post-quantum team (pq.ethereum.org) and a 2029 quantum-resistant target. What got cut is the estimated resources, not the hardware — the gap is still orders of magnitude. So the news is not &#39;the risk arrived,&#39; it is &#39;the target moved toward us,&#39; and the durable lesson is in the method: a safety margin means &#39;X years against the best known attack,&#39; so speeding up the search for that best-known shortens every margin&#39;s shelf life — and whether 2029 is a migration or a redeploy is decided today by whether signature verification sits behind one interface.</p>
+      <p class="meta">Not a build — two 30-minute checks. (1) Date-stamp the assumption: a parameter like &#39;256-bit, safe&#39; really means &#39;safe against the best attack known as of today,&#39; so write the calculation date beside it (&#39;safe per 2026-09 estimates&#39;) and a review becomes a scheduled event, not a reaction to a headline. (2) Count where signature verification lives: scattered across many functions, a scheme swap is a redeploy; behind one interface, it is a migration. Then check whether the scattered copies have already diverged (one skips a nonce check) — divergence turns cleanup into removing a behavior difference, a different priority. Confirm the specific paper, the ~50% figure, and the EF 2029 target against pq.ethereum.org before asserting.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Distillation — a small model trained to imitate a big one\n\nDistillation trains a compact student on a large teacher's outputs, capturing much of the capability at a fraction of the cost — the standard path from a frontier model to a deployable one.\n\nNot yet scoped.\n\n## Why\n\nThe PoC distills a small model from a larger one's outputs on a narrow task and measures the capability retained versus the size saved.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# A crypto safety margin has a shelf life — date it, and make the signature scheme replaceable\n\nOn 2026-09-10 researchers cut the estimated quantum-attack resources for BTC/ETH by roughly 50%, with an AI agent as co-author beating Google's March result on Shor's core computation. The Ethereum Foundation has a Jan-2026 post-quantum team (pq.ethereum.org) and a 2029 quantum-resistant target. What got cut is the estimated resources, not the hardware — the gap is still orders of magnitude. So the news is not 'the risk arrived,' it is 'the target moved toward us,' and the durable lesson is in the method: a safety margin means 'X years against the best known attack,' so speeding up the search for that best-known shortens every margin's shelf life — and whether 2029 is a migration or a redeploy is decided today by whether signature verification sits behind one interface.\n\nNot a build — two 30-minute checks. (1) Date-stamp the assumption: a parameter like '256-bit, safe' really means 'safe against the best attack known as of today,' so write the calculation date beside it ('safe per 2026-09 estimates') and a review becomes a scheduled event, not a reaction to a headline. (2) Count where signature verification lives: scattered across many functions, a scheme swap is a redeploy; behind one interface, it is a migration. Then check whether the scattered copies have already diverged (one skips a nonce check) — divergence turns cleanup into removing a behavior difference, a different priority. Confirm the specific paper, the ~50% figure, and the EF 2029 target against pq.ethereum.org before asserting.\n\n## Why\n\nTwo lessons share one root. The epistemic one: a safety margin is a claim indexed to a moment's knowledge, and what changed here is the rate at which that knowledge advances — an AI agent co-authoring the result is the method story, not the ~50% number. Undated, a margin expires silently; dated, its review is on a calendar. The architectural one: 'we'll switch to post-quantum later' chooses nothing — it is an unmade decision wearing the costume of flexibility. The chosen state is one paragraph you can write today: 'the signature scheme lives behind this interface, and replacement follows this procedure.' And the hard part of the eventual migration is not cryptography but procedure — 'how many blocks for every user to move' is the real number.\n\nThis is the same grammar as 'a spec should pick one rather than leave both open,' turned on your own contract. For jayverse: every parameter chosen 'because it is big enough' should carry its date and the attack it is measured against, and every signature check should be reachable from one place — so the day the target moves again, the response is a paragraph and a scheduled review, not a redeploy.\n\n## How it works\n\n### What actually got cut\n\n| | Change |\n|---|---|\n| **Estimated resources** (quantum attack on BTC/ETH) | cut ~50% (2026-09-10) |\n| **Hardware** | unchanged — still orders of magnitude short |\n| **Method** | an AI agent co-authored it, beating Google's March Shor result |\n| **Context** | EF post-quantum team (Jan 2026, pq.ethereum.org), 2029 quantum-resistant target |\n\nThe estimate moved, not the machine. That is why the honest read is 'the target moved toward us,' not 'the risk arrived.'\n\n### Why the method matters — a margin has a shelf life\n\nA safety margin is really *'X years against the best known attack.'* Cutting the **estimate** moves the 'best known,' so every margin loses shelf life with no hardware moving. Undated, it expires silently; **date-stamp the parameter** and the review becomes scheduled.\n\n### The response — replaceability is a paragraph, not an architecture\n\n| Signature verification lives... | 2029 becomes |\n|---|---|\n| scattered across many functions | a **redeploy** |\n| behind **one interface** | a **migration** |\n\n'We'll switch later' chooses nothing. The chosen state is one paragraph: the scheme is behind this interface, replacement follows this procedure.\n\n### The two 30-minute checks, and the real number\n\n1. Date-stamp the security assumptions ('safe per 2026-09 estimates').\n2. Count the verification sites — and whether the copies have already **diverged** (that changes the priority from cleanup to removing a behavior difference).\n\nThe migration's hard part is the **procedure**, not the cryptography: how many blocks for every user to move. Related: which-etf-window-not-the-size (annotate with the date), sec-signature-replay (verification centralised in one place). Confirm the paper, the ~50% figure, and the 2029 target against pq.ethereum.org before citing.\n"</script>
       <h2>Why</h2>
-      <p>The PoC distills a small model from a larger one&#39;s outputs on a narrow task and measures the capability retained versus the size saved.</p>
+      <p>Two lessons share one root. The epistemic one: a safety margin is a claim indexed to a moment&#39;s knowledge, and what changed here is the rate at which that knowledge advances — an AI agent co-authoring the result is the method story, not the ~50% number. Undated, a margin expires silently; dated, its review is on a calendar. The architectural one: &#39;we&#39;ll switch to post-quantum later&#39; chooses nothing — it is an unmade decision wearing the costume of flexibility. The chosen state is one paragraph you can write today: &#39;the signature scheme lives behind this interface, and replacement follows this procedure.&#39; And the hard part of the eventual migration is not cryptography but procedure — &#39;how many blocks for every user to move&#39; is the real number.</p>
+<p>This is the same grammar as &#39;a spec should pick one rather than leave both open,&#39; turned on your own contract. For jayverse: every parameter chosen &#39;because it is big enough&#39; should carry its date and the attack it is measured against, and every signature check should be reachable from one place — so the day the target moves again, the response is a paragraph and a scheduled review, not a redeploy.</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <h3>What actually got cut</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Estimated resources</strong> (quantum attack on BTC/ETH)</td>
+<td>cut ~50% (2026-09-10)</td>
+</tr>
+<tr>
+<td><strong>Hardware</strong></td>
+<td>unchanged — still orders of magnitude short</td>
+</tr>
+<tr>
+<td><strong>Method</strong></td>
+<td>an AI agent co-authored it, beating Google&#39;s March Shor result</td>
+</tr>
+<tr>
+<td><strong>Context</strong></td>
+<td>EF post-quantum team (Jan 2026, pq.ethereum.org), 2029 quantum-resistant target</td>
+</tr>
+</tbody></table></div>
+<p>The estimate moved, not the machine. That is why the honest read is &#39;the target moved toward us,&#39; not &#39;the risk arrived.&#39;</p>
+<h3>Why the method matters — a margin has a shelf life</h3>
+<p>A safety margin is really <em>&#39;X years against the best known attack.&#39;</em> Cutting the <strong>estimate</strong> moves the &#39;best known,&#39; so every margin loses shelf life with no hardware moving. Undated, it expires silently; <strong>date-stamp the parameter</strong> and the review becomes scheduled.</p>
+<h3>The response — replaceability is a paragraph, not an architecture</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Signature verification lives...</th>
+<th>2029 becomes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>scattered across many functions</td>
+<td>a <strong>redeploy</strong></td>
+</tr>
+<tr>
+<td>behind <strong>one interface</strong></td>
+<td>a <strong>migration</strong></td>
+</tr>
+</tbody></table></div>
+<p>&#39;We&#39;ll switch later&#39; chooses nothing. The chosen state is one paragraph: the scheme is behind this interface, replacement follows this procedure.</p>
+<h3>The two 30-minute checks, and the real number</h3>
+<ol>
+<li>Date-stamp the security assumptions (&#39;safe per 2026-09 estimates&#39;).</li>
+<li>Count the verification sites — and whether the copies have already <strong>diverged</strong> (that changes the priority from cleanup to removing a behavior difference).</li>
+</ol>
+<p>The migration&#39;s hard part is the <strong>procedure</strong>, not the cryptography: how many blocks for every user to move. Related: which-etf-window-not-the-size (annotate with the date), sec-signature-replay (verification centralised in one place). Confirm the paper, the ~50% figure, and the 2029 target against pq.ethereum.org before citing.</p>
       
       <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 증류 — 큰 모델을 모방하도록 학습된 작은 모델\n\n증류는 작은 학생을 큰 교사의 출력으로 학습시켜 능력의 상당 부분을 비용의 일부로 담아냅니다 — 프런티어 모델에서 배포 가능한 모델로 가는 표준 경로입니다.\n\n아직 범위 미정.\n\n## 왜\n\n이 PoC는 좁은 과제에서 더 큰 모델의 출력으로 작은 모델을 증류하고, 유지된 능력 대 절약된 크기를 측정합니다.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>증류 — 큰 모델을 모방하도록 학습된 작은 모델</h1>
-      <p class="lead">증류는 작은 학생을 큰 교사의 출력으로 학습시켜 능력의 상당 부분을 비용의 일부로 담아냅니다 — 프런티어 모델에서 배포 가능한 모델로 가는 표준 경로입니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# 암호 안전 마진에는 유효기간이 있다 — 날짜를 병기하고, 서명 스킴을 교체 가능하게\n\n2026-09-10, 연구자들이 BTC·ETH에 대한 양자 공격 자원 추정치를 약 50% 낮췄고, AI 에이전트가 공동 저자로 Shor 알고리즘 핵심 계산에서 구글의 3월 결과를 상회했습니다. 이더리움 재단은 2026년 1월 포스트양자 전담팀(pq.ethereum.org)과 2029 양자내성 목표가 있습니다. 깎인 건 추정 자원량이지 하드웨어가 아닙니다 — 격차는 여전히 몇 자릿수. 그래서 뉴스는 '위험 도착'이 아니라 '목표 지점이 이쪽으로 움직였다'이고, 지속되는 교훈은 방법에 있습니다: 안전 마진은 '현재 알려진 최선의 공격으로 X년'이라, 그 '최선'을 찾는 속도가 빨라지면 모든 마진의 유효기간이 줄어듭니다 — 그리고 2029년이 마이그레이션이냐 재배포냐는 서명 검증이 한 인터페이스 뒤에 있는지로 오늘 결정됩니다.\n\n구현이 아니라 30분짜리 점검 둘. (1) 가정에 날짜를 병기: '256비트라 안전' 같은 파라미터는 사실 '오늘 기준 알려진 최선의 공격에 안전'이라는 뜻이니, 계산 날짜를 옆에 적으면('2026-09 추정 기준 안전') 재검토가 헤드라인에 대한 반응이 아니라 일정이 됩니다. (2) 서명 검증이 어디 사는지 센다: 여러 함수에 흩어져 있으면 스킴 교체가 재배포, 한 인터페이스 뒤면 마이그레이션. 그다음 흩어진 복사본들이 이미 어긋났는지(하나가 논스 검사를 건너뛰는 식) 확인 — 어긋나 있으면 정리가 아니라 동작 차이 제거이고 우선순위가 완전히 달라집니다. 구체 주장 전 논문·약 50% 수치·EF 2029 목표를 pq.ethereum.org로 확인.\n\n## 왜\n\n두 교훈이 한 뿌리를 공유합니다. 인식론적인 것: 안전 마진은 한 시점의 지식에 색인된 주장이고, 여기서 바뀐 건 그 지식이 나아가는 속도입니다 — AI 에이전트가 결과를 공동 저술했다는 게 방법의 이야기이지 약 50%라는 숫자가 아닙니다. 날짜가 없으면 마진은 조용히 만료되고, 날짜가 있으면 재검토가 달력에 오릅니다. 아키텍처적인 것: '나중에 포스트양자로 바꾼다'는 아무것도 고르지 않은 것 — 유연성의 옷을 입은 미결정입니다. 고른 상태는 오늘 쓸 수 있는 한 문단입니다: '서명 스킴은 이 인터페이스 뒤에 있고, 교체는 이 절차로 한다.' 그리고 결국의 마이그레이션에서 어려운 쪽은 암호학이 아니라 절차 — '모든 사용자가 옮기는 데 몇 블록인가'가 진짜 숫자입니다.\n\n이건 '명세가 둘 다 열어두기보다 하나를 골라야 한다'는 문법을 자기 컨트랙트에 돌린 것입니다. jayverse엔: '충분히 크니까' 고른 모든 파라미터는 날짜와 그것이 측정된 공격을 지녀야 하고, 모든 서명 검사는 한 곳에서 닿을 수 있어야 합니다 — 그래야 목표가 다시 움직이는 날, 대응이 재배포가 아니라 한 문단과 예정된 재검토가 됩니다.\n\n## 동작 방식\n\n### 실제로 깎인 것\n\n| | 변화 |\n|---|---|\n| **추정 자원량**(BTC·ETH 양자 공격) | 약 50% 하향 (2026-09-10) |\n| **하드웨어** | 그대로 — 여전히 몇 자릿수 부족 |\n| **방법** | AI 에이전트가 공동 저술, 구글 3월 Shor 결과 상회 |\n| **맥락** | EF 포스트양자 팀(2026-01, pq.ethereum.org), 2029 양자내성 목표 |\n\n움직인 건 추정치이지 기계가 아닙니다. 그래서 정직한 독법은 '위험 도착'이 아니라 '목표가 이쪽으로 움직였다'입니다.\n\n### 방법이 중요한 이유 — 마진엔 유효기간이 있다\n\n안전 마진은 사실 *'현재 알려진 최선의 공격으로 X년'*입니다. **추정치**를 깎으면 '최선'이 움직여, 하드웨어 하나 안 움직여도 모든 마진의 유효기간이 줄어듭니다. 날짜가 없으면 조용히 만료; **파라미터에 날짜를 병기**하면 재검토가 일정이 됩니다.\n\n### 대응 — 교체 가능성은 아키텍처가 아니라 한 문단\n\n| 서명 검증이 사는 곳 | 2029년은 |\n|---|---|\n| 여러 함수에 흩어짐 | **재배포** |\n| **한 인터페이스** 뒤 | **마이그레이션** |\n\n'나중에 바꾼다'는 아무것도 안 고른 것. 고른 상태는 한 문단: 스킴은 이 인터페이스 뒤, 교체는 이 절차로.\n\n### 30분 점검 둘, 그리고 진짜 숫자\n\n1. 보안 가정에 날짜 병기('2026-09 추정 기준 안전').\n2. 검증 위치 개수 — 그리고 복사본들이 이미 **어긋났는지**(그러면 우선순위가 정리에서 동작 차이 제거로 바뀜).\n\n마이그레이션의 어려운 쪽은 암호학이 아니라 **절차**: 모든 사용자가 옮기는 데 몇 블록인가. 관련: which-etf-window-not-the-size(날짜 병기), sec-signature-replay(검증을 한 곳에). 인용 전 논문·약 50% 수치·2029 목표를 pq.ethereum.org로 확인.\n"</script>
+      <h1>암호 안전 마진에는 유효기간이 있다 — 날짜를 병기하고, 서명 스킴을 교체 가능하게</h1>
+      <p class="lead">2026-09-10, 연구자들이 BTC·ETH에 대한 양자 공격 자원 추정치를 약 50% 낮췄고, AI 에이전트가 공동 저자로 Shor 알고리즘 핵심 계산에서 구글의 3월 결과를 상회했습니다. 이더리움 재단은 2026년 1월 포스트양자 전담팀(pq.ethereum.org)과 2029 양자내성 목표가 있습니다. 깎인 건 추정 자원량이지 하드웨어가 아닙니다 — 격차는 여전히 몇 자릿수. 그래서 뉴스는 &#39;위험 도착&#39;이 아니라 &#39;목표 지점이 이쪽으로 움직였다&#39;이고, 지속되는 교훈은 방법에 있습니다: 안전 마진은 &#39;현재 알려진 최선의 공격으로 X년&#39;이라, 그 &#39;최선&#39;을 찾는 속도가 빨라지면 모든 마진의 유효기간이 줄어듭니다 — 그리고 2029년이 마이그레이션이냐 재배포냐는 서명 검증이 한 인터페이스 뒤에 있는지로 오늘 결정됩니다.</p>
+      <p class="meta">구현이 아니라 30분짜리 점검 둘. (1) 가정에 날짜를 병기: &#39;256비트라 안전&#39; 같은 파라미터는 사실 &#39;오늘 기준 알려진 최선의 공격에 안전&#39;이라는 뜻이니, 계산 날짜를 옆에 적으면(&#39;2026-09 추정 기준 안전&#39;) 재검토가 헤드라인에 대한 반응이 아니라 일정이 됩니다. (2) 서명 검증이 어디 사는지 센다: 여러 함수에 흩어져 있으면 스킴 교체가 재배포, 한 인터페이스 뒤면 마이그레이션. 그다음 흩어진 복사본들이 이미 어긋났는지(하나가 논스 검사를 건너뛰는 식) 확인 — 어긋나 있으면 정리가 아니라 동작 차이 제거이고 우선순위가 완전히 달라집니다. 구체 주장 전 논문·약 50% 수치·EF 2029 목표를 pq.ethereum.org로 확인.</p>
       <h2>왜</h2>
-      <p>이 PoC는 좁은 과제에서 더 큰 모델의 출력으로 작은 모델을 증류하고, 유지된 능력 대 절약된 크기를 측정합니다.</p>
+      <p>두 교훈이 한 뿌리를 공유합니다. 인식론적인 것: 안전 마진은 한 시점의 지식에 색인된 주장이고, 여기서 바뀐 건 그 지식이 나아가는 속도입니다 — AI 에이전트가 결과를 공동 저술했다는 게 방법의 이야기이지 약 50%라는 숫자가 아닙니다. 날짜가 없으면 마진은 조용히 만료되고, 날짜가 있으면 재검토가 달력에 오릅니다. 아키텍처적인 것: &#39;나중에 포스트양자로 바꾼다&#39;는 아무것도 고르지 않은 것 — 유연성의 옷을 입은 미결정입니다. 고른 상태는 오늘 쓸 수 있는 한 문단입니다: &#39;서명 스킴은 이 인터페이스 뒤에 있고, 교체는 이 절차로 한다.&#39; 그리고 결국의 마이그레이션에서 어려운 쪽은 암호학이 아니라 절차 — &#39;모든 사용자가 옮기는 데 몇 블록인가&#39;가 진짜 숫자입니다.</p>
+<p>이건 &#39;명세가 둘 다 열어두기보다 하나를 골라야 한다&#39;는 문법을 자기 컨트랙트에 돌린 것입니다. jayverse엔: &#39;충분히 크니까&#39; 고른 모든 파라미터는 날짜와 그것이 측정된 공격을 지녀야 하고, 모든 서명 검사는 한 곳에서 닿을 수 있어야 합니다 — 그래야 목표가 다시 움직이는 날, 대응이 재배포가 아니라 한 문단과 예정된 재검토가 됩니다.</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <h3>실제로 깎인 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>변화</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>추정 자원량</strong>(BTC·ETH 양자 공격)</td>
+<td>약 50% 하향 (2026-09-10)</td>
+</tr>
+<tr>
+<td><strong>하드웨어</strong></td>
+<td>그대로 — 여전히 몇 자릿수 부족</td>
+</tr>
+<tr>
+<td><strong>방법</strong></td>
+<td>AI 에이전트가 공동 저술, 구글 3월 Shor 결과 상회</td>
+</tr>
+<tr>
+<td><strong>맥락</strong></td>
+<td>EF 포스트양자 팀(2026-01, pq.ethereum.org), 2029 양자내성 목표</td>
+</tr>
+</tbody></table></div>
+<p>움직인 건 추정치이지 기계가 아닙니다. 그래서 정직한 독법은 &#39;위험 도착&#39;이 아니라 &#39;목표가 이쪽으로 움직였다&#39;입니다.</p>
+<h3>방법이 중요한 이유 — 마진엔 유효기간이 있다</h3>
+<p>안전 마진은 사실 *&#39;현재 알려진 최선의 공격으로 X년&#39;*입니다. <strong>추정치</strong>를 깎으면 &#39;최선&#39;이 움직여, 하드웨어 하나 안 움직여도 모든 마진의 유효기간이 줄어듭니다. 날짜가 없으면 조용히 만료; <strong>파라미터에 날짜를 병기</strong>하면 재검토가 일정이 됩니다.</p>
+<h3>대응 — 교체 가능성은 아키텍처가 아니라 한 문단</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>서명 검증이 사는 곳</th>
+<th>2029년은</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>여러 함수에 흩어짐</td>
+<td><strong>재배포</strong></td>
+</tr>
+<tr>
+<td><strong>한 인터페이스</strong> 뒤</td>
+<td><strong>마이그레이션</strong></td>
+</tr>
+</tbody></table></div>
+<p>&#39;나중에 바꾼다&#39;는 아무것도 안 고른 것. 고른 상태는 한 문단: 스킴은 이 인터페이스 뒤, 교체는 이 절차로.</p>
+<h3>30분 점검 둘, 그리고 진짜 숫자</h3>
+<ol>
+<li>보안 가정에 날짜 병기(&#39;2026-09 추정 기준 안전&#39;).</li>
+<li>검증 위치 개수 — 그리고 복사본들이 이미 <strong>어긋났는지</strong>(그러면 우선순위가 정리에서 동작 차이 제거로 바뀜).</li>
+</ol>
+<p>마이그레이션의 어려운 쪽은 암호학이 아니라 <strong>절차</strong>: 모든 사용자가 옮기는 데 몇 블록인가. 관련: which-etf-window-not-the-size(날짜 병기), sec-signature-replay(검증을 한 곳에). 인용 전 논문·약 50% 수치·2029 목표를 pq.ethereum.org로 확인.</p>
       
       <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-llm-kv-cache.html">&larr; 201. KV cache — why the second token is cheaper than the first</a><a href="pocs-llm-constitutional-ai.html">203. Constitutional AI — alignment from written principles, not just raters &rarr;</a></div>
+    <div class="pager"><a href="pocs-a-faucet-is-a-payout.html">&larr; 65. A faucet without limits is a payout, not a feature</a><a href="pocs-a-status-page-must-outlive-the-service.html">67. A status page must outlive the service it reports on &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="llm-distillation";</script>
+<script>window.__NAV_CURRENT__="a-safety-margin-has-a-shelf-life";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;

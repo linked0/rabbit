@@ -356,7 +356,7 @@
 <div class="layout">
   <aside class="rail">
     <div class="rail-head">
-      <a class="rail-title" href="../index.html">Rabbit</a><span class="rail-note">14% done &middot; 56/406</span>
+      <a class="rail-title" href="../index.html">Rabbit</a><span class="rail-note">14% done &middot; 56/408</span>
       <span class="rail-sub"><span class="rail-note rail-note-pink">2%/day &rarr; 95% done</span></span>
       <div class="rail-jump" id="rail-jump"></div>
     </div>
@@ -374,7 +374,7 @@
   <div class="solo">
     <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Uniswap v4 StablePair Hook — a constant fee is the wrong setting for a stable pair</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#68</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#70</span><span>PoC</span></p>
       <h1>Uniswap v4 StablePair Hook — a constant fee is the wrong setting for a stable pair</h1>
       <p class="lead">Uniswap Labs shipped StablePair Hook, a v4 hook that sets liquidity-provider fees dynamically for two stable-pair pools on Ethereum instead of one constant rate. The point under the announcement: a stable-stable pool sits near 1:1 almost always (a low fee should win the volume) but occasionally depegs (the fee should rise to protect LPs). One constant fee is wrong for both regimes; a hook lets the fee track the risk.</p>
       <p class="meta">Not a build — a mechanism to understand and possibly reuse. v4 hooks run custom logic at swap time, so a pool can compute its fee from live state (volatility, imbalance, oracle deviation) instead of a fixed tier. For a stable pair the fee wants to be near-zero in calm times (win the USDC/USDT flow) and spike when the peg wobbles, so LPs are not run over by arbitrage/toxic flow during a depeg — the loss-versus-rebalancing (LVR) problem. If you touch the jayverse DeFi study or any AMM, the transferable move is: make the fee a function of risk, not a constant. Confirm the hook&#39;s actual fee formula and scope (which pairs, which triggers) against Uniswap&#39;s v4 docs before modeling it.</p>
@@ -461,7 +461,7 @@
       
       <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-stablecoin-visa-card-invisible-under-the-hood.html">&larr; 67. MoneyGram's stablecoin Visa card — invisible to the user, a just-in-time conversion under the hood</a><a href="pocs-teleoperation-is-a-latency-budget.html">69. The remote excavator — teleoperation is a latency budget, not a '6G' headline &rarr;</a></div>
+    <div class="pager"><a href="pocs-stablecoin-visa-card-invisible-under-the-hood.html">&larr; 69. MoneyGram's stablecoin Visa card — invisible to the user, a just-in-time conversion under the hood</a><a href="pocs-teleoperation-is-a-latency-budget.html">71. The remote excavator — teleoperation is a latency budget, not a '6G' headline &rarr;</a></div>
   </div>
   </main>
 </div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Distillation — a small model trained to imitate a big one — Dev Notes</title>
+<title>A status page must outlive the service it reports on — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -372,45 +372,103 @@
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Distillation — a small model trained to imitate a big one</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; A status page must outlive the service it reports on</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#202</span><span>PoC</span></p>
-      <h1>Distillation — a small model trained to imitate a big one</h1>
-      <p class="lead">Distillation trains a compact student on a large teacher&#39;s outputs, capturing much of the capability at a fraction of the cost — the standard path from a frontier model to a deployable one.</p>
-      <p class="meta">Not yet scoped.</p>
+      <p class="topic-kicker"><span class="topic-no">#67</span><span>PoC</span></p>
+      <h1>A status page must outlive the service it reports on</h1>
+      <p class="lead">Status-page SaaS (Statuspage, status.io, Better Stack) give incident notices, per-component status, and an incident history, with notice templates and subscriber alerts built in. The value is not the features — it is that there is already a place to say &#39;investigating,&#39; which buys the right to answer slowly. The catch is a hosting one: never put the status page on the same infrastructure as the service, or it dies exactly when it is needed. It is the watcher version of the invariant lesson — the thing that reports the failure must not share fate with the thing that fails.</p>
+      <p class="meta">Not a build — a channel to stand up before it is needed. Measure the real time to post a first notice; over 10 minutes and you will not use it mid-incident. Write four template sentences now — investigating, identified, monitoring, resolved. And host it on infrastructure independent of the service. Statuspage / status.io / Better Stack are interchangeable for this; the discipline matters more than the vendor.</p>
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
     </header>
     <article id="en">
       <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
-      <script type="application/json" id="copy-en">"# Distillation — a small model trained to imitate a big one\n\nDistillation trains a compact student on a large teacher's outputs, capturing much of the capability at a fraction of the cost — the standard path from a frontier model to a deployable one.\n\nNot yet scoped.\n\n## Why\n\nThe PoC distills a small model from a larger one's outputs on a narrow task and measures the capability retained versus the size saved.\n\n## How it works\n\nNot yet built.\n"</script>
+      <script type="application/json" id="copy-en">"# A status page must outlive the service it reports on\n\nStatus-page SaaS (Statuspage, status.io, Better Stack) give incident notices, per-component status, and an incident history, with notice templates and subscriber alerts built in. The value is not the features — it is that there is already a place to say 'investigating,' which buys the right to answer slowly. The catch is a hosting one: never put the status page on the same infrastructure as the service, or it dies exactly when it is needed. It is the watcher version of the invariant lesson — the thing that reports the failure must not share fate with the thing that fails.\n\nNot a build — a channel to stand up before it is needed. Measure the real time to post a first notice; over 10 minutes and you will not use it mid-incident. Write four template sentences now — investigating, identified, monitoring, resolved. And host it on infrastructure independent of the service. Statuspage / status.io / Better Stack are interchangeable for this; the discipline matters more than the vendor.\n\n## Why\n\nThis is where the 'say investigating out loud' lesson actually lives. Announcing that you are looking into it buys time — but only if there is a channel for the announcement; without one, you do not use it, and silence gets filled by other people's guesses. The non-obvious failure is architectural: a status page that shares infrastructure with the service reports 'all systems operational' right up until it goes dark with everything else, which is worse than having no page at all. So the rule is the watcher-independence rule from monitoring in general: a monitor that fails together with its target is not a monitor.\n\nFor jayverse, before the December launch, four template sentences hosted on independent infrastructure is already half the incident-comms plan — and the cheap half. The status page is not a feature you ship; it is the place your future self will be grateful already existed at 3am. Related: an-invariant-is-a-stop-not-an-alarm and refill-rate-is-the-real-cap (a watcher must be independent of what it watches).\n\n## How it works\n\n### What it is\n\nStatuspage / status.io / Better Stack — incident notices, per-component status, incident history, notice templates, subscriber alerts. Interchangeable for the job.\n\n### Why a channel, not just a habit\n\nSaying 'investigating' out loud buys the right to answer slowly — but only with somewhere to say it. No channel → you stay silent → the silence is filled by other people's guesses.\n\n### The one hosting rule\n\n| Status page on... | What happens at the outage |\n|---|---|\n| the **same** infra as the service | goes dark with it — reports 'operational' until it can't report at all |\n| **independent** infra | survives to actually report the outage |\n\nThe watcher version of the invariant lesson: a monitor that fails with its target is not a monitor.\n\n### The two-minute prep\n\n1. Four template sentences: investigating / identified / monitoring / resolved.\n2. Time-to-first-notice under 10 minutes (or it won't be used mid-incident).\n3. Independent infrastructure.\n\nRelated: an-invariant-is-a-stop-not-an-alarm, refill-rate-is-the-real-cap.\n"</script>
       <h2>Why</h2>
-      <p>The PoC distills a small model from a larger one&#39;s outputs on a narrow task and measures the capability retained versus the size saved.</p>
+      <p>This is where the &#39;say investigating out loud&#39; lesson actually lives. Announcing that you are looking into it buys time — but only if there is a channel for the announcement; without one, you do not use it, and silence gets filled by other people&#39;s guesses. The non-obvious failure is architectural: a status page that shares infrastructure with the service reports &#39;all systems operational&#39; right up until it goes dark with everything else, which is worse than having no page at all. So the rule is the watcher-independence rule from monitoring in general: a monitor that fails together with its target is not a monitor.</p>
+<p>For jayverse, before the December launch, four template sentences hosted on independent infrastructure is already half the incident-comms plan — and the cheap half. The status page is not a feature you ship; it is the place your future self will be grateful already existed at 3am. Related: an-invariant-is-a-stop-not-an-alarm and refill-rate-is-the-real-cap (a watcher must be independent of what it watches).</p>
       <h2>How it works</h2>
-      <p>Not yet built.</p>
+      <h3>What it is</h3>
+<p>Statuspage / status.io / Better Stack — incident notices, per-component status, incident history, notice templates, subscriber alerts. Interchangeable for the job.</p>
+<h3>Why a channel, not just a habit</h3>
+<p>Saying &#39;investigating&#39; out loud buys the right to answer slowly — but only with somewhere to say it. No channel → you stay silent → the silence is filled by other people&#39;s guesses.</p>
+<h3>The one hosting rule</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Status page on...</th>
+<th>What happens at the outage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>the <strong>same</strong> infra as the service</td>
+<td>goes dark with it — reports &#39;operational&#39; until it can&#39;t report at all</td>
+</tr>
+<tr>
+<td><strong>independent</strong> infra</td>
+<td>survives to actually report the outage</td>
+</tr>
+</tbody></table></div>
+<p>The watcher version of the invariant lesson: a monitor that fails with its target is not a monitor.</p>
+<h3>The two-minute prep</h3>
+<ol>
+<li>Four template sentences: investigating / identified / monitoring / resolved.</li>
+<li>Time-to-first-notice under 10 minutes (or it won&#39;t be used mid-incident).</li>
+<li>Independent infrastructure.</li>
+</ol>
+<p>Related: an-invariant-is-a-stop-not-an-alarm, refill-rate-is-the-real-cap.</p>
       
       <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
       <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
-      <script type="application/json" id="copy-ko">"# 증류 — 큰 모델을 모방하도록 학습된 작은 모델\n\n증류는 작은 학생을 큰 교사의 출력으로 학습시켜 능력의 상당 부분을 비용의 일부로 담아냅니다 — 프런티어 모델에서 배포 가능한 모델로 가는 표준 경로입니다.\n\n아직 범위 미정.\n\n## 왜\n\n이 PoC는 좁은 과제에서 더 큰 모델의 출력으로 작은 모델을 증류하고, 유지된 능력 대 절약된 크기를 측정합니다.\n\n## 동작 방식\n\n아직 만들지 않음.\n"</script>
-      <h1>증류 — 큰 모델을 모방하도록 학습된 작은 모델</h1>
-      <p class="lead">증류는 작은 학생을 큰 교사의 출력으로 학습시켜 능력의 상당 부분을 비용의 일부로 담아냅니다 — 프런티어 모델에서 배포 가능한 모델로 가는 표준 경로입니다.</p>
-      <p class="meta">아직 범위 미정.</p>
+      <script type="application/json" id="copy-ko">"# 상태 페이지는 그것이 보고하는 서비스보다 오래 살아야 한다\n\n상태 페이지 SaaS(Statuspage, status.io, Better Stack)는 장애 공지·구성요소별 상태·과거 인시던트 기록을 공지 템플릿과 구독자 알림과 함께 제공합니다. 값어치는 기능이 아니라 '확인 중'이라고 말할 자리가 이미 있다는 것 — 그게 답을 천천히 낼 권리를 삽니다. 함정은 호스팅에 있습니다: 상태 페이지를 서비스와 같은 인프라에 두지 마세요, 필요한 바로 그 순간 같이 죽습니다. 불변식 교훈의 감시자 버전입니다 — 실패를 보고하는 것은 실패하는 것과 운명을 공유해선 안 됩니다.\n\n구현이 아니라 필요하기 전에 세워둘 채널. 첫 공지를 올리는 실제 시간을 재세요; 10분을 넘으면 사고 중에는 안 씁니다. 지금 템플릿 문장 네 줄을 적어두세요 — 확인 중, 원인 파악, 모니터링, 해결. 그리고 서비스와 독립된 인프라에 호스팅하세요. Statuspage / status.io / Better Stack은 이 용도로 서로 대체 가능합니다; 벤더보다 규율이 중요합니다.\n\n## 왜\n\n'확인 중이라고 소리 내어 말하기' 교훈이 실제로 사는 곳입니다. 들여다보고 있다고 알리는 건 시간을 삽니다 — 단, 알릴 채널이 있을 때만; 없으면 안 쓰게 되고, 침묵은 남의 추측으로 채워집니다. 눈에 안 띄는 실패는 구조적입니다: 서비스와 인프라를 공유하는 상태 페이지는 모든 게 같이 꺼지기 직전까지 '전 시스템 정상'을 보고하는데, 이건 페이지가 아예 없는 것보다 나쁩니다. 그래서 규칙은 일반적 모니터링의 감시자-독립 규칙입니다: 대상과 함께 실패하는 모니터는 모니터가 아닙니다.\n\njayverse엔 12월 런칭 전, 독립 인프라에 올린 템플릿 문장 네 줄이 이미 인시던트 커뮤니케이션 계획의 절반 — 그리고 싼 절반입니다. 상태 페이지는 출하하는 기능이 아니라, 새벽 3시에 미래의 내가 '이미 있어서' 고마워할 자리입니다. 관련: an-invariant-is-a-stop-not-an-alarm, refill-rate-is-the-real-cap(감시자는 감시 대상과 독립이어야 한다).\n\n## 동작 방식\n\n### 무엇인가\n\nStatuspage / status.io / Better Stack — 장애 공지·구성요소별 상태·과거 인시던트 기록·공지 템플릿·구독자 알림. 이 용도로 서로 대체 가능.\n\n### 습관이 아니라 채널이어야 하는 이유\n\n'확인 중'이라고 소리 내어 말하는 건 답을 천천히 낼 권리를 삽니다 — 단, 말할 자리가 있을 때만. 채널이 없으면 → 침묵하게 되고 → 그 침묵을 남의 추측이 채웁니다.\n\n### 단 하나의 호스팅 규칙\n\n| 상태 페이지가 있는 곳 | 장애 때 벌어지는 일 |\n|---|---|\n| 서비스와 **같은** 인프라 | 같이 꺼짐 — 아예 보고 못 할 때까지 '정상' 보고 |\n| **독립** 인프라 | 살아남아 장애를 실제로 보고 |\n\n불변식 교훈의 감시자 버전: 대상과 함께 실패하는 모니터는 모니터가 아닙니다.\n\n### 2분 준비\n\n1. 템플릿 문장 네 줄: 확인 중 / 원인 파악 / 모니터링 / 해결.\n2. 첫 공지까지 10분 미만(아니면 사고 중에 안 씀).\n3. 독립 인프라.\n\n관련: an-invariant-is-a-stop-not-an-alarm, refill-rate-is-the-real-cap.\n"</script>
+      <h1>상태 페이지는 그것이 보고하는 서비스보다 오래 살아야 한다</h1>
+      <p class="lead">상태 페이지 SaaS(Statuspage, status.io, Better Stack)는 장애 공지·구성요소별 상태·과거 인시던트 기록을 공지 템플릿과 구독자 알림과 함께 제공합니다. 값어치는 기능이 아니라 &#39;확인 중&#39;이라고 말할 자리가 이미 있다는 것 — 그게 답을 천천히 낼 권리를 삽니다. 함정은 호스팅에 있습니다: 상태 페이지를 서비스와 같은 인프라에 두지 마세요, 필요한 바로 그 순간 같이 죽습니다. 불변식 교훈의 감시자 버전입니다 — 실패를 보고하는 것은 실패하는 것과 운명을 공유해선 안 됩니다.</p>
+      <p class="meta">구현이 아니라 필요하기 전에 세워둘 채널. 첫 공지를 올리는 실제 시간을 재세요; 10분을 넘으면 사고 중에는 안 씁니다. 지금 템플릿 문장 네 줄을 적어두세요 — 확인 중, 원인 파악, 모니터링, 해결. 그리고 서비스와 독립된 인프라에 호스팅하세요. Statuspage / status.io / Better Stack은 이 용도로 서로 대체 가능합니다; 벤더보다 규율이 중요합니다.</p>
       <h2>왜</h2>
-      <p>이 PoC는 좁은 과제에서 더 큰 모델의 출력으로 작은 모델을 증류하고, 유지된 능력 대 절약된 크기를 측정합니다.</p>
+      <p>&#39;확인 중이라고 소리 내어 말하기&#39; 교훈이 실제로 사는 곳입니다. 들여다보고 있다고 알리는 건 시간을 삽니다 — 단, 알릴 채널이 있을 때만; 없으면 안 쓰게 되고, 침묵은 남의 추측으로 채워집니다. 눈에 안 띄는 실패는 구조적입니다: 서비스와 인프라를 공유하는 상태 페이지는 모든 게 같이 꺼지기 직전까지 &#39;전 시스템 정상&#39;을 보고하는데, 이건 페이지가 아예 없는 것보다 나쁩니다. 그래서 규칙은 일반적 모니터링의 감시자-독립 규칙입니다: 대상과 함께 실패하는 모니터는 모니터가 아닙니다.</p>
+<p>jayverse엔 12월 런칭 전, 독립 인프라에 올린 템플릿 문장 네 줄이 이미 인시던트 커뮤니케이션 계획의 절반 — 그리고 싼 절반입니다. 상태 페이지는 출하하는 기능이 아니라, 새벽 3시에 미래의 내가 &#39;이미 있어서&#39; 고마워할 자리입니다. 관련: an-invariant-is-a-stop-not-an-alarm, refill-rate-is-the-real-cap(감시자는 감시 대상과 독립이어야 한다).</p>
       <h2>동작 방식</h2>
-      <p>아직 만들지 않음.</p>
+      <h3>무엇인가</h3>
+<p>Statuspage / status.io / Better Stack — 장애 공지·구성요소별 상태·과거 인시던트 기록·공지 템플릿·구독자 알림. 이 용도로 서로 대체 가능.</p>
+<h3>습관이 아니라 채널이어야 하는 이유</h3>
+<p>&#39;확인 중&#39;이라고 소리 내어 말하는 건 답을 천천히 낼 권리를 삽니다 — 단, 말할 자리가 있을 때만. 채널이 없으면 → 침묵하게 되고 → 그 침묵을 남의 추측이 채웁니다.</p>
+<h3>단 하나의 호스팅 규칙</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>상태 페이지가 있는 곳</th>
+<th>장애 때 벌어지는 일</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>서비스와 <strong>같은</strong> 인프라</td>
+<td>같이 꺼짐 — 아예 보고 못 할 때까지 &#39;정상&#39; 보고</td>
+</tr>
+<tr>
+<td><strong>독립</strong> 인프라</td>
+<td>살아남아 장애를 실제로 보고</td>
+</tr>
+</tbody></table></div>
+<p>불변식 교훈의 감시자 버전: 대상과 함께 실패하는 모니터는 모니터가 아닙니다.</p>
+<h3>2분 준비</h3>
+<ol>
+<li>템플릿 문장 네 줄: 확인 중 / 원인 파악 / 모니터링 / 해결.</li>
+<li>첫 공지까지 10분 미만(아니면 사고 중에 안 씀).</li>
+<li>독립 인프라.</li>
+</ol>
+<p>관련: an-invariant-is-a-stop-not-an-alarm, refill-rate-is-the-real-cap.</p>
       
       <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-llm-kv-cache.html">&larr; 201. KV cache — why the second token is cheaper than the first</a><a href="pocs-llm-constitutional-ai.html">203. Constitutional AI — alignment from written principles, not just raters &rarr;</a></div>
+    <div class="pager"><a href="pocs-a-safety-margin-has-a-shelf-life.html">&larr; 66. A crypto safety margin has a shelf life — date it, and make the signature scheme replaceable</a><a href="pocs-tokenized-stock-premium-needs-a-mint-redeem-path.html">68. Why AMC's tokenized stock ran to a premium — the peg needs an open mint/redeem path &rarr;</a></div>
   </div>
   </main>
 </div>
 <script src="_nav.js"></script>
-<script>window.__NAV_CURRENT__="llm-distillation";</script>
+<script>window.__NAV_CURRENT__="a-status-page-must-outlive-the-service";</script>
 <script>
 (function () {
   var data = window.__NAV__, cur = window.__NAV_CURRENT__;
