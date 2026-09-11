@@ -438,7 +438,7 @@ const doneNote = `${Math.round((doneTotals[0] / doneTotals[1]) * 100)}% done &mi
 // 그냥 두지 말고 매일 조금씩 끝내자는 스스로에게 거는 알림. project_rabbit_done_pace_goal 참고.
 // 진척률 배지와 같은 파란 알약 모양으로 (jay, 2026-09-11) — railSub(제목 아래 제 줄)를 감싸개로
 // 쓰고 그 안에 .rail-note 알약 하나를 넣어, "reminder" 글자 없이 목표 문구만 배지처럼 보인다.
-const doneReminder = '<span class="rail-note rail-note-red">~1%/day &rarr; 95% done</span>';
+const doneReminder = '<span class="rail-note rail-note-pink">~1%/day &rarr; 95% done</span>';
 
 const railJump = SECTIONS.map(
   ([id, label, all, done]) =>

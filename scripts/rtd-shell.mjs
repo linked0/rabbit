@@ -90,8 +90,8 @@ const PAGE_CSS = `
     font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
     color:var(--accent); background:var(--accent-soft); white-space:nowrap;
   }
-  /* 페이스 리마인더는 붉은 톤 (jay, 2026-09-11) — % done 배지(파랑)와 구분되는 강조. */
-  .rail-note-red { color:#ef4444; background:rgba(239,68,68,0.14); }
+  /* 페이스 리마인더는 핑크 톤 (jay, 2026-09-11) — % done 배지(파랑)와 구분되는 강조. */
+  .rail-note-pink { color:#ec4899; background:rgba(236,72,153,0.14); }
   .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
   /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
      본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
