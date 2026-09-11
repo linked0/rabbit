@@ -169,6 +169,12 @@ const numbered = grouped.flatMap((g) => g.cards).map((c, i) => ({ ...c, no: i + 
     at += g.cards.length;
   }
 }
+// 2026-09-11 (jay): Economics·Algorithms·Math 를 "Fundamentals" 한 칸으로 합친다. Blockchain & Tech
+// 는 그대로 1..X. Economics 카드는 카드 번호열에서 빠져 Fundamentals 로 옮겨가고, 그 칸은 아래에서
+// worth 순서(Math → Algorithms → Economics)로 새 1..N(fno)을 받는다. Economics 카드의 상세 페이지
+// 번호(c.no)도 그 fno 로 바꾼다. Blockchain 번호는 손대지 않는다.
+const blockchainGroup = grouped.find((g) => g.id === DEFAULT_GROUP);
+const econGroup = grouped.find((g) => g.id === 'economics');
 
 // DemoCard.tsx 와 같은 구분 — 오직 status 로만 정한다 (2026-08-12). "href 가 있으면 목업"
 // 이라는 추론은 지웠다: DVT 는 읽을 페이지가 있어도 계획이고, 게임·에이전트는 완료다.
@@ -253,12 +259,14 @@ function navItems(list) {
 }
 // 레일도 같은 두 묶음으로 나눈다 — 아래로 내린 것을 위에서 다시 만나면 내린 의미가 없다.
 // id 는 레일 바로가기가 이 그룹을 찾아 맨 위로 올릴 때 쓴다 (nav-<섹션 앵커>).
+// Blockchain & Tech 만 카드 그룹으로 레일에 그린다. Fundamentals(Economics+Algo+Math) 그룹은
+// 커리큘럼을 읽은 뒤 아래에서 push 한다 (jay, 2026-09-11).
 const navGroups = [
-  ...grouped.map((g) => ({
-    id: `nav-sec-${g.id}`,
-    label: `${g.title} (${g.numbered.length})`,
-    items: navItems(g.numbered),
-  })),
+  {
+    id: `nav-sec-blockchain`,
+    label: `${blockchainGroup.title} (${blockchainGroup.numbered.length})`,
+    items: navItems(blockchainGroup.numbered),
+  },
 ];
 
 // 원래 있던 lead(description) + Why(purpose)가 좋았다 (jay, 2026-08-13) — 코드·How it
@@ -343,7 +351,8 @@ const reviewedHow = (how, discussion, title) =>
 const copyEnOf = (c) => copyDoc(c.title, c.description, c.howTo, c.purpose, reviewedHow(c.howItWorks, c.discussion, 'Review clarification'), { why: 'Why', how: 'How it works' });
 const copyKoOf = (c) => copyDoc(c.titleKo, c.descriptionKo, c.howToKo, c.purposeKo, reviewedHow(c.howItWorksKo, c.discussionKo, '검토 후 보완'), { why: '왜', how: '동작 방식' });
 
-function rowsFor(list, sectionAnchor) {
+const tagChip = (t) => (t ? `<span class="topic-tag">${escapeHtml(t)}</span>` : '');
+function rowsFor(list, sectionAnchor, tag) {
   return list
   .map((c) => {
     // 목록 행의 DONE/PLANNED 글자 배지는 뺐다 (jay, 2026-08-29: "Only dots are sufficient").
@@ -364,7 +373,7 @@ function rowsFor(list, sectionAnchor) {
     const why = firstSentences(c.purpose, 2);
     const whyHtml = why ? `\n          <p class="topic-why"><strong>Why</strong>${mdInline(why)}</p>` : '';
     return `        <li id="${c.key}">
-          <div class="topic-head"><span class="topic-no">${c.no}</span><span class="topic-title">${escapeHtml(c.title)}</span></div>
+          <div class="topic-head"><span class="topic-no">${c.no}</span>${tagChip(tag)}<span class="topic-title">${escapeHtml(c.title)}</span></div>
           <p class="topic-summary">${mdInline(c.description)}</p>${howHtml}${whyHtml}
           <p class="topic-link">${links}</p>
         </li>`;
@@ -382,7 +391,58 @@ const curricula = CURRICULA.map((cfg) => {
   return { cfg, groups, items, done: items.filter((i) => i.done).length };
 });
 
-function curriculumRows(cfg, items) {
+// ── Fundamentals: Math + Algorithms + Economics merged into one category (jay, 2026-09-11) ──
+// worth 순서 Math → Algorithms → Economics 로 이어지는 새 통합 번호(fno) 1..N. 각 항목 제목엔
+// 출처 태그([Math]/[Algorithms]/[Economics])를 붙인다. 커리큘럼 항목은 내부 i.no(앵커·EXPLAINERS·
+// 상세 링크)를 그대로 두고 표시 번호만 fno 로 바꾼다. Economics 카드는 c.no=fno 로 바꿔 상세도 맞춘다.
+const FUNDAMENTALS_ORDER = ['math', 'algorithms'];
+const fundamentalsParts = [
+  ...FUNDAMENTALS_ORDER.map((id) => {
+    const cur = curricula.find((c) => c.cfg.id === id);
+    return cur ? { kind: 'cur', tag: cur.cfg.sectionTitle, cur } : null;
+  }).filter(Boolean),
+  ...(econGroup && econGroup.numbered.length
+    ? [{ kind: 'cards', tag: 'Economics', cards: econGroup.numbered }]
+    : []),
+];
+{
+  let fno = 0;
+  for (const part of fundamentalsParts) {
+    const list = part.kind === 'cur' ? part.cur.items : part.cards;
+    for (const it of list) {
+      fno += 1;
+      if (part.kind === 'cur') it.fno = fno;
+      else it.no = fno;
+    }
+  }
+}
+const fundamentalsCount = fundamentalsParts.reduce(
+  (n, p) => n + (p.kind === 'cur' ? p.cur.items.length : p.cards.length), 0);
+const fundamentalsDone = fundamentalsParts.reduce(
+  (n, p) => n + (p.kind === 'cur' ? p.cur.done : p.cards.filter((c) => c.status === 'done').length), 0);
+
+// Fundamentals 레일 그룹 — worth 순서로 이어진 fno + 태그.
+navGroups.push({
+  id: 'nav-sec-fundamentals',
+  label: `Fundamentals (${fundamentalsCount})`,
+  items: fundamentalsParts.flatMap((part) =>
+    part.kind === 'cur'
+      ? part.cur.items.map((i) => ({
+          anchor: `${part.cur.cfg.id}-${i.no}`,
+          text: `<span class="topic-no">${i.fno}</span>${tagChip(part.tag)}${escapeHtml(shortLabel(i.text))}`,
+          color: i.done ? DONE_COLOR : '#64748b',
+          statusLabel: i.done ? 'DONE' : 'PLANNED',
+        }))
+      : part.cards.map((c) => ({
+          anchor: c.key,
+          text: `<span class="topic-no">${c.no}</span>${tagChip(part.tag)}${escapeHtml(c.title)}`,
+          color: navDot(c).color,
+          statusLabel: navDot(c).label,
+        }))
+  ),
+});
+
+function curriculumRows(cfg, items, tag, sectionAnchor = `sec-${cfg.id}`) {
   return items
     .map((i) => {
       const href = escapeHtml(itemUrl(cfg, i));
@@ -395,8 +455,8 @@ function curriculumRows(cfg, items) {
       const howHtml = how ? `\n          <p class="topic-how"><strong>How it works</strong>${curInline(how)}</p>` : '';
       const whyHtml = ex?.why ? `\n          <p class="topic-why"><strong>Why</strong>${curInline(ex.why)}</p>` : '';
       return `        <li id="${cfg.id}-${i.no}">
-          <div class="topic-head"><span class="topic-no">${i.no}</span><span class="topic-title">${curInline(shortLabel(i.text))}</span></div>${summaryHtml}${howHtml}${whyHtml}
-          <p class="topic-link"><a href="${href}">Detail &rarr;</a> &middot; <a href="#top">Top &uarr;</a> &middot; <a href="#sec-${cfg.id}">Section top &uarr;</a></p>
+          <div class="topic-head"><span class="topic-no">${i.fno ?? i.no}</span>${tagChip(tag)}<span class="topic-title">${curInline(shortLabel(i.text))}</span></div>${summaryHtml}${howHtml}${whyHtml}
+          <p class="topic-link"><a href="${href}">Detail &rarr;</a> &middot; <a href="#top">Top &uarr;</a> &middot; <a href="#${sectionAnchor}">Section top &uarr;</a></p>
         </li>`;
     })
     .join('\n');
@@ -414,8 +474,8 @@ const CURRICULUM_LEAD = {
 const doneIn = (list) => list.filter((c) => c.status === 'done').length;
 
 const SECTIONS = [
-  ...grouped.map((g) => [`sec-${g.id}`, g.title, g.numbered.length, doneIn(g.numbered)]),
-  ...curricula.map(({ cfg, items, done }) => [`sec-${cfg.id}`, cfg.sectionTitle, items.length, done]),
+  [`sec-blockchain`, blockchainGroup.title, blockchainGroup.numbered.length, doneIn(blockchainGroup.numbered)],
+  [`sec-fundamentals`, 'Fundamentals', fundamentalsCount, fundamentalsDone],
 ];
 // 파란 숫자는 done 개수다 (jay, 2026-08-28). 2026-08-27 에는 남은 일(soon)을 셌지만,
 // 이 페이지에서 먼저 알고 싶은 것은 "얼마나 남았나"가 아니라 "얼마나 끝냈나"로 바뀌었다.
@@ -445,56 +505,50 @@ const railJump = SECTIONS.map(
     `<a href="#${id}" title="${label} &mdash; done (${done}) / all (${all})">${label}<b><span class="count-done">${done}</span><span class="count-all">/${all}</span></b></a>`
 ).join('');
 
-const curriculumHtml = curricula
-  .map(({ cfg, groups, items, done }) => {
-    const inner = groups
-      .map(
-        (g) => `      <h2>${escapeHtml(g.label)}</h2>
+// Fundamentals 본문 — 하나의 <article> 안에 Math → Algorithms → Economics 를 이어 그린다.
+// 커리큘럼은 원래의 하위 그룹 h2(태그 접두)를 유지하고, Economics 는 h2 하나 아래 카드 행으로.
+// 번호는 위에서 부여한 fno 가 세 파트를 가로질러 이어진다.
+const FUND_LEAD = 'The foundations underneath the rest of the catalogue &mdash; mathematics, then algorithms, then the money logic of economics &mdash; merged into one track and renumbered as one, each item tagged with where it came from.';
+const fundamentalsInner = fundamentalsParts
+  .map((part) => {
+    if (part.kind === 'cur') {
+      return part.cur.groups
+        .map(
+          (g) => `      <h2>${escapeHtml(part.tag)} &middot; ${escapeHtml(g.label)}</h2>
       <ul class="topics">
-${curriculumRows(cfg, g.items)}
+${curriculumRows(part.cur.cfg, g.items, part.tag, 'sec-fundamentals')}
       </ul>`
-      )
-      .join('\n');
-    return `
-    <article id="sec-${cfg.id}">
-      <h1>${escapeHtml(cfg.sectionTitle)}</h1>
-      <p class="lead">${CURRICULUM_LEAD[cfg.id] ?? ''}</p>
-      <p class="meta">${sectionMeta[`sec-${cfg.id}`]} &middot; <a href="${escapeHtml(cfg.viewAllHref)}">${escapeHtml(cfg.viewAllLabel)} &rarr;</a></p>
-${inner}
-    </article>`;
+        )
+        .join('\n');
+    }
+    return `      <h2>${escapeHtml(part.tag)}</h2>
+      <ul class="topics">
+${rowsFor(part.cards, 'sec-fundamentals', part.tag)}
+      </ul>`;
   })
   .join('\n');
-
-for (const { cfg, items } of curricula) {
-  navGroups.push({
-    id: `nav-sec-${cfg.id}`,
-    label: `${cfg.sectionTitle} (${items.length})`,
-    items: items.map((i) => ({
-      anchor: `${cfg.id}-${i.no}`,
-      text: `<span class="topic-no">${i.no}</span>${escapeHtml(shortLabel(i.text))}`,
-      color: i.done ? DONE_COLOR : '#64748b',
-      statusLabel: i.done ? 'DONE' : 'PLANNED',
-    })),
-  });
-}
+const fundamentalsHtml = `
+    <article id="sec-fundamentals">
+      <h1>Fundamentals</h1>
+      <p class="lead">${FUND_LEAD}</p>
+      <p class="meta">${sectionMeta['sec-fundamentals']}</p>
+${fundamentalsInner}
+    </article>`;
 
 // 레일 상단의 섹션 바로가기. 레일은 늘 보이니 이것이 목차이자 돌아오는 길이다 —
 // 그래서 본문에 "맨 위로" 링크를 따로 두지 않는다 (jay, 2026-08-27).
 // 카드 구획들을 한 번에 그린다 (jay, 2026-08-27) — 구획이 넷이 되면서 손으로 적을 수 없다.
-const cardSectionsHtml = grouped
-  .map(
-    (g) => `    <article id="sec-${g.id}">
-      <h1>${g.title}</h1>
-      <p class="lead">${g.lead}</p>
-      <p class="meta">${sectionMeta[`sec-${g.id}`]}</p>
+// Blockchain & Tech 만 카드 섹션으로 그린다 (Economics 는 Fundamentals 로 이동).
+const blockchainSectionHtml = `    <article id="sec-blockchain">
+      <h1>${blockchainGroup.title}</h1>
+      <p class="lead">${blockchainGroup.lead}</p>
+      <p class="meta">${sectionMeta['sec-blockchain']}</p>
       <ul class="topics">
-${rowsFor(g.numbered, `sec-${g.id}`)}
+${rowsFor(blockchainGroup.numbered, 'sec-blockchain')}
       </ul>
-    </article>`
-  )
-  .join('\n');
+    </article>`;
 
-const contentHtml = `${cardSectionsHtml}${curriculumHtml}`;
+const contentHtml = `${blockchainSectionHtml}${fundamentalsHtml}`;
 
 // 상세 페이지는 구획 정보(grouped·SECTIONS)에 의존하므로 그 뒤에서 만든다
 // (jay, 2026-08-27 에 레일이 붙으면서 순서가 중요해졌다).
@@ -507,17 +561,40 @@ fs.mkdirSync(TOPICS_DIR, { recursive: true });
 // _nav.js 하나만 다시 쓰면 되고, 기존 상세 페이지 HTML 은 바뀌지 않는다.
 const navData = {
   jump: SECTIONS.map(([id, label, all, done]) => ({ id, label, all, done })),
-  sections: grouped.map((g) => ({
-    navId: `nav-sec-${g.id}`,
-    label: `${g.title} (${g.numbered.length})`,
-    items: g.numbered.map((n) => ({
-      key: n.key,
-      href: detailHref(n).replace(/^topics\//, ''),
-      color: navDot(n).color,
-      label: navDot(n).label,
-      text: `<span class="topic-no">${n.no}</span>${escapeHtml(n.title)}`,
-    })),
-  })),
+  sections: [
+    {
+      navId: 'nav-sec-blockchain',
+      label: `${blockchainGroup.title} (${blockchainGroup.numbered.length})`,
+      items: blockchainGroup.numbered.map((n) => ({
+        key: n.key,
+        href: detailHref(n).replace(/^topics\//, ''),
+        color: navDot(n).color,
+        label: navDot(n).label,
+        text: `<span class="topic-no">${n.no}</span>${escapeHtml(n.title)}`,
+      })),
+    },
+    {
+      navId: 'nav-sec-fundamentals',
+      label: `Fundamentals (${fundamentalsCount})`,
+      items: fundamentalsParts.flatMap((part) =>
+        part.kind === 'cur'
+          ? part.cur.items.map((i) => ({
+              key: `${part.cur.cfg.id}-${i.no}`,
+              href: itemUrl(part.cur.cfg, i, 'topics'),
+              color: i.done ? DONE_COLOR : '#64748b',
+              label: i.done ? 'DONE' : 'PLANNED',
+              text: `<span class="topic-no">${i.fno}</span>${tagChip(part.tag)}${escapeHtml(shortLabel(i.text))}`,
+            }))
+          : part.cards.map((c) => ({
+              key: c.key,
+              href: detailHref(c).replace(/^topics\//, ''),
+              color: navDot(c).color,
+              label: navDot(c).label,
+              text: `<span class="topic-no">${c.no}</span>${tagChip(part.tag)}${escapeHtml(c.title)}`,
+            }))
+      ),
+    },
+  ],
 };
 fs.writeFileSync(path.join(TOPICS_DIR, '_nav.js'), `window.__NAV__=${JSON.stringify(navData)};\n`, 'utf8');
 
