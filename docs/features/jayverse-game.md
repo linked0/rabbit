@@ -11,8 +11,9 @@ scrub a stored journal of what it already did.
 > journal in 3D. Supersedes the older Unity-first idea in [game.md](./game.md) for the *browser*
 > path. Service #5 in [../tasks/09-02-jayverse.md](../tasks/09-02-jayverse.md) ("## 5. Unity").
 > Repo: `jayverse-game`; hosted inside the Rabbit portal — the real build is rendered in
-> Rabbit's **Game** top-menu (`/game`) by importing this repo as a **git submodule**, and only
-> after jay has tested it standalone first (jay, 2026-09-11). Rabbit imports, it doesn't contain.
+> Rabbit's **Game** top-menu (`/game`) by importing this repo as a **git submodule** (done
+> 2026-09-11: `vendor/jayverse-game`, statically exported into `public/jayverse-game/` via
+> `pnpm game:build`, embedded in an `<iframe>`). Rabbit imports, it doesn't contain.
 
 ---
 
@@ -96,10 +97,14 @@ blah" chatter** — so the words never get tiny in 3D. The street has **two figu
 **"space jump"** into the settlement space; to return, the settlement space has a **wormhole tunnel back
 to the street** (and a *← Back* button). A standalone `/settlement` route exists for isolated testing.
 
-**Status — built standalone, awaiting review.** Implemented in `jayverse-game` (`pnpm dev` :3050):
-`components/{SettlementFlow,Gate,SpaceJump,Jay}.tsx` + `lib/settlement.ts`, wired into the street
-via `Scene`/`GameClient` (SettlementFlow is the space/planets/spaceship scene with the return tunnel). Type-checks and builds. **Not yet imported into Rabbit's Game menu** — that
-happens as a git submodule only after jay tests and approves it. Cooperates with the Verex
+**Status — imported into Rabbit's Game menu (jay, 2026-09-11).** Implemented in `jayverse-game`
+(`pnpm dev` :3050): `components/{SettlementFlow,Gate,SpaceJump,Jay}.tsx` + `lib/settlement.ts`,
+wired into the street via `Scene`/`GameClient` (SettlementFlow is the space/planets/spaceship scene
+with the return tunnel). Type-checks and builds. **Now mounted under Rabbit's Game menu (`/game`)**:
+`jayverse-game` is a git submodule at `vendor/jayverse-game`; `pnpm game:build` statically exports
+it (Next 16 / React 19, `EXPORT_STATIC=1 NEXT_PUBLIC_BASE_PATH=/jayverse-game`) into
+`public/jayverse-game/`, and `/game` embeds `street.html` in an `<iframe>` — the iframe isolates the
+game's runtime from Rabbit's Next 14 / React 18. The old canvas coin-catcher was removed. Cooperates with the Verex
 risk/settlement split, `x402` facilitator cards, `stablecoin-visa-card`, and `two-currencies-one-ledger`.
 
 ---

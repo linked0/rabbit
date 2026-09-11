@@ -88,8 +88,11 @@ export default auth((req) => {
 });
 
 export const config = {
-  // Next 정적 리소스/아이콘(파비콘·App Router icon) 제외, 나머지 전부 미들웨어 통과
+  // Next 정적 리소스/아이콘(파비콘·App Router icon) 제외, 나머지 전부 미들웨어 통과.
+  // jayverse-game/ 는 /game 에 임베드되는 정적 게임 번들(public/jayverse-game/, 서브모듈
+  // 정적 export) — 오너 데이터가 없는 읽기 전용 데모라 profile·whitepaper 처럼 통째로 제외한다.
+  // 안 그러면 게임의 모든 에셋 요청이 인증에 걸려 /login 으로 302 된다.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|profile/|whitepaper/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|profile/|whitepaper/|jayverse-game/).*)",
   ],
 };

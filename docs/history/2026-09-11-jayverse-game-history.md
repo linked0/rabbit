@@ -78,3 +78,31 @@
   **EN / 한국어 toggle** and renders every label/step/planet/inspector string in the chosen language.
 - **Result:** `tsc` clean, `pnpm build` OK, routes 200 (`/settlement` shows the merchant scenario).
   (Jay's street dialogue stays EN for now.) Still standalone, pending jay's test + approval.
+
+### Imported into Rabbit's Game menu — git submodule + static iframe
+
+Implements: [`../features/jayverse-game.md`](../features/jayverse-game.md) §1b (jay: "put the game
+service under the game top menu … import as git submodule").
+
+- **Cause:** jay approved wiring the standalone jayverse-game (3D agent street + settlement gate)
+  under Rabbit's existing **Game** top-menu (`/game`), and to publish it.
+- **Reasoning:** a hard version wall blocks importing the game's *source* into Rabbit — the game is
+  Next 16 / React 19 / `@react-three/fiber@9` + `drei@10` (which require React 19), while Rabbit is
+  Next 14 / React 18 / fiber@8 with no drei. Upgrading Rabbit's runtime would be a large, risky
+  migration. But the game is 100% client-rendered (no API routes / server actions / fetches), so it
+  **statically exports** cleanly. Chosen path: submodule (source of truth) + static export served by
+  Rabbit + `<iframe>` embed — the iframe isolates the two React/Next runtimes, one deploy ships both,
+  and it matches jay's "git submodule" plan.
+- **Change:** (game repo) added env-gated static-export to `next.config.ts`
+  (`EXPORT_STATIC=1` + `NEXT_PUBLIC_BASE_PATH=/jayverse-game`) and pinned `turbopack.root` to the repo
+  dir (else Next 16 walks up to Rabbit's lockfile and compiles Rabbit's `middleware.ts`); pushed to
+  `jayverse-game` main. (Rabbit) added the submodule at `vendor/jayverse-game`; `scripts/build-game.mjs`
+  (+ `pnpm game:build`) exports it and copies `out/` → `public/jayverse-game/` (committed like the
+  generated docs HTML, so Docker needs no second toolchain); repointed `app/game/page.tsx` to embed
+  `/jayverse-game/street.html` in an `<iframe>` (`.game-embed` CSS) and **removed the old canvas
+  coin-catcher** (`app/game/Game.tsx`); excluded the submodule from `tsconfig` (React 19/drei source
+  would break Rabbit's typecheck) and `.dockerignore`; and added `jayverse-game/` to the middleware
+  matcher's exclusion so the game's assets don't 302 to `/login`.
+- **Result:** Rabbit `pnpm build` clean; dev server serves `/game` (200), `street.html` (200, text/html),
+  `settlement.html` (200), and the prefixed `_next` css/js chunks (200, correct MIME). Awaiting jay's
+  visual test in the browser. Game bundle is ~1.9 MB.

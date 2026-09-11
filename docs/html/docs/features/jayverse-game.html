@@ -47,8 +47,9 @@ player-trades-in-3D game to an <strong>agent visualization</strong>: the game re
 journal in 3D. Supersedes the older Unity-first idea in <a href="game.html">game.md</a> for the <em>browser</em>
 path. Service #5 in <a href="../tasks/09-02-jayverse.html">../tasks/09-02-jayverse.md</a> (&quot;## 5. Unity&quot;).
 Repo: <code>jayverse-game</code>; hosted inside the Rabbit portal — the real build is rendered in
-Rabbit&#39;s <strong>Game</strong> top-menu (<code>/game</code>) by importing this repo as a <strong>git submodule</strong>, and only
-after jay has tested it standalone first (jay, 2026-09-11). Rabbit imports, it doesn&#39;t contain.</p>
+Rabbit&#39;s <strong>Game</strong> top-menu (<code>/game</code>) by importing this repo as a <strong>git submodule</strong> (done
+2026-09-11: <code>vendor/jayverse-game</code>, statically exported into <code>public/jayverse-game/</code> via
+<code>pnpm game:build</code>, embedded in an <code>&lt;iframe&gt;</code>). Rabbit imports, it doesn&#39;t contain.</p>
 </blockquote>
 <hr>
 <h2 id="phases-build-order">Phases (build order)</h2>
@@ -143,10 +144,14 @@ bottom of the street UI (large, readable), while the <strong>balloon over his he
 blah&quot; chatter</strong> — so the words never get tiny in 3D. The street has <strong>two figures, Jay and the agent</strong>. A glowing <strong>gate at the far end</strong> plays a short
 <strong>&quot;space jump&quot;</strong> into the settlement space; to return, the settlement space has a <strong>wormhole tunnel back
 to the street</strong> (and a <em>← Back</em> button). A standalone <code>/settlement</code> route exists for isolated testing.</p>
-<p><strong>Status — built standalone, awaiting review.</strong> Implemented in <code>jayverse-game</code> (<code>pnpm dev</code> :3050):
-<code>components/{SettlementFlow,Gate,SpaceJump,Jay}.tsx</code> + <code>lib/settlement.ts</code>, wired into the street
-via <code>Scene</code>/<code>GameClient</code> (SettlementFlow is the space/planets/spaceship scene with the return tunnel). Type-checks and builds. <strong>Not yet imported into Rabbit&#39;s Game menu</strong> — that
-happens as a git submodule only after jay tests and approves it. Cooperates with the Verex
+<p><strong>Status — imported into Rabbit&#39;s Game menu (jay, 2026-09-11).</strong> Implemented in <code>jayverse-game</code>
+(<code>pnpm dev</code> :3050): <code>components/{SettlementFlow,Gate,SpaceJump,Jay}.tsx</code> + <code>lib/settlement.ts</code>,
+wired into the street via <code>Scene</code>/<code>GameClient</code> (SettlementFlow is the space/planets/spaceship scene
+with the return tunnel). Type-checks and builds. <strong>Now mounted under Rabbit&#39;s Game menu (<code>/game</code>)</strong>:
+<code>jayverse-game</code> is a git submodule at <code>vendor/jayverse-game</code>; <code>pnpm game:build</code> statically exports
+it (Next 16 / React 19, <code>EXPORT_STATIC=1 NEXT_PUBLIC_BASE_PATH=/jayverse-game</code>) into
+<code>public/jayverse-game/</code>, and <code>/game</code> embeds <code>street.html</code> in an <code>&lt;iframe&gt;</code> — the iframe isolates the
+game&#39;s runtime from Rabbit&#39;s Next 14 / React 18. The old canvas coin-catcher was removed. Cooperates with the Verex
 risk/settlement split, <code>x402</code> facilitator cards, <code>stablecoin-visa-card</code>, and <code>two-currencies-one-ledger</code>.</p>
 <hr>
 <h2 id="2-user-scenario-prose">2. User scenario (prose)</h2>
