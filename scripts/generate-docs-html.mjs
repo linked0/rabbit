@@ -7,6 +7,32 @@ import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { marked } from 'marked';
 
+// GitHub-style heading anchors (jay, 2026-09-11) — marked 18 emits bare <h2>…</h2> with no id,
+// so in-page TOC links (README's Contents list) had nothing to jump to in the rendered HTML.
+// Inject a slug id on every heading, matching github-slugger's rule so the same anchors also work
+// when the .md is viewed on GitHub. Slugs are deduped per document with a -1/-2 suffix.
+function slugifyHeading(text) {
+  return text.toLowerCase().trim()
+    .replace(/[^\p{L}\p{N} \-]+/gu, '') // drop punctuation / emoji, keep letters, digits, space, hyphen
+    .replace(/ /g, '-');                    // each space -> hyphen (no collapse — matches GitHub)
+}
+function decodeEntities(s) {
+  return s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&#x27;/gi, "'");
+}
+function addHeadingIds(html) {
+  const seen = new Map();
+  return html.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (m, lvl, inner) => {
+    const text = decodeEntities(inner.replace(/<[^>]+>/g, ''));
+    let slug = slugifyHeading(text);
+    if (!slug) return m;
+    const n = seen.get(slug) || 0;
+    seen.set(slug, n + 1);
+    if (n > 0) slug = `${slug}-${n}`;
+    return `<h${lvl} id="${slug}">${inner}</h${lvl}>`;
+  });
+}
+
 const REPO_ROOT = path.resolve(import.meta.dirname, '..');
 const OUT_ROOT = path.join(REPO_ROOT, 'docs', 'html');
 const INDEX_HTML = path.join(REPO_ROOT, 'docs', 'index.html');
@@ -223,6 +249,49 @@ ${items}
   return entries.length;
 }
 
+// docs/html/docs/history/index.html — history 폴더의 자동 색인 (jay, 2026-09-11).
+// docs/history/index.md 는 verex 에서 복붙된 Jekyll 템플릿({% ... %})이라 rabbit(Jekyll 아님)
+// 에선 실행되지 않고 Liquid 코드가 날것으로 렌더됐다 — Rabbit History 카드가 그걸 보여 줬다.
+// tasks 와 똑같이 폴더 내용에서 실제 목록을 만들어 그 출력을 덮어쓴다. index.md·README.md 는
+// 제외. 정렬은 파일명(날짜) 최신 먼저 — 파일명이 YYYY-MM-DD 로 시작하기 때문.
+function generateHistoryIndex() {
+  const HIST_DIR = path.join(REPO_ROOT, 'docs', 'history');
+  const outAbs = path.join(OUT_ROOT, 'docs', 'history', 'index.html');
+  const entries = [];
+  for (const e of fs.readdirSync(HIST_DIR, { withFileTypes: true })) {
+    if (!e.isFile() || !/\.md$/i.test(e.name)) continue;
+    if (e.name === 'index.md' || e.name === 'README.md') continue;
+    const abs = path.join(HIST_DIR, e.name);
+    const raw = fs.readFileSync(abs, 'utf8');
+    const h1 = raw.match(/^#\s+(.+)$/m);
+    const date = (e.name.match(/^(\d{4}-\d{2}-\d{2})/) || [])[1] || '';
+    entries.push({ name: e.name, title: h1 ? h1[1].trim() : e.name.replace(/\.md$/i, ''), date });
+  }
+  // 파일명(날짜) 역순 = 최신 먼저. 날짜 없는 파일(예: 통합 초기 로그)은 이름순으로 맨 아래.
+  entries.sort((a, b) => (b.date || '').localeCompare(a.date || '') || a.name.localeCompare(b.name));
+  const items = entries
+    .map(({ name, title, date }) => {
+      const href = name.replace(/\.md$/i, '.html');
+      return `<li><a href="${escapeHtml(href)}">${escapeHtml(title)}</a> <code>${escapeHtml(name)}</code>${date ? ` <small>${date}</small>` : ''}</li>`;
+    })
+    .join('\n');
+  const bodyHtml = `<h1>Rabbit — All Logs</h1>
+<blockquote><p>Every <code>docs/history/*.md</code>, newest first (by date in the filename). This page is rebuilt from the folder on every docs generation — it cannot go stale the way a hand-written list can.</p></blockquote>
+<ul>
+${items}
+</ul>
+`;
+  fs.mkdirSync(path.dirname(outAbs), { recursive: true });
+  fs.writeFileSync(outAbs, renderPage({
+    title: 'Rabbit — All Logs',
+    sourceRel: 'docs/history/ (folder listing, auto-generated)',
+    bodyHtml,
+    backHref: path.relative(path.dirname(outAbs), INDEX_HTML),
+    backLabel: 'Index',
+  }), 'utf8');
+  return entries.length;
+}
+
 // docs/html/docs/index.html — docs 폴더 전체의 자동 색인 (jay, 2026-09-09).
 // 인덱스의 "Rabbit — Docs" 카드가 여기로 온다. 렌더된 docs 트리(docs/**.md → .html)를
 // 최상위 하위폴더별로 묶어 보여 준다. tasks·history 는 날짜별 파일이 수십 개라 전부
@@ -329,6 +398,7 @@ function main() {
     const title = h1Match ? h1Match[1].trim() : path.basename(mdAbs, '.md');
 
     let bodyHtml = marked.parse(raw);
+    bodyHtml = addHeadingIds(bodyHtml);
     bodyHtml = rewriteLinks(bodyHtml, mdAbs, outAbs);
 
     const sourceRel = path.relative(REPO_ROOT, mdAbs);
@@ -358,8 +428,9 @@ function main() {
   }
 
   const taskCount = generateTasksIndex();
+  const historyCount = generateHistoryIndex();
   const docsCount = generateDocsIndex();
-  console.log(`Converted ${converted} markdown files (+ ${verbatim} verbatim, tasks index: ${taskCount} entries, docs index: ${docsCount} entries) to ${path.relative(REPO_ROOT, OUT_ROOT)}/`);
+  console.log(`Converted ${converted} markdown files (+ ${verbatim} verbatim, tasks index: ${taskCount} entries, history index: ${historyCount} entries, docs index: ${docsCount} entries) to ${path.relative(REPO_ROOT, OUT_ROOT)}/`);
   if (conflicts.length) {
     console.log(`WARNING: ${conflicts.length} output path conflicts (later file skipped):`);
     for (const [a, b] of conflicts) console.log(`  ${a}  <->  ${b}`);
