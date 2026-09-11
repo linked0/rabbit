@@ -35,6 +35,15 @@ What's buildable is this mechanism.
 the **user**, never the searcher. That's exactly an `an-invariant-is-a-stop-not-an-alarm` check —
 the contract *stops*, it doesn't merely warn.
 
+**A second invariant — `holding = issuance` (보유 = 발행).** Not tightly tied to the auction idea,
+but it lives on the **same page of the build** (same `IntentAuction`, same settle path — not a
+separate contract or page): at rest, what the contract **holds** must equal what it has
+**accounted/issued** — a settle never mints value and never strands a user's `tokenIn`. *Today's
+version records only the invariant line itself.* **What to stop on violation is deferred** — it will
+be an `an-invariant-is-a-stop-not-an-alarm` stop, the same shape as `finalOut >= minOut`, spec'd
+next. If a web harness is added, this check surfaces on the **same page** as the main auction UI,
+not on its own screen.
+
 ## What it teaches
 
 - Order-flow / OEV auctions, MEV **redistribution**, intent signing.

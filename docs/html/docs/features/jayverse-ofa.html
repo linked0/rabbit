@@ -65,6 +65,14 @@ pull <code>tokenIn</code>, run the winner, <strong>enforce <code>finalOut &gt;= 
 <p><strong>The invariant (the load-bearing check):</strong> <code>finalOut &gt;= minOut</code> <strong>always</strong>, and surplus goes to
 the <strong>user</strong>, never the searcher. That&#39;s exactly an <code>an-invariant-is-a-stop-not-an-alarm</code> check —
 the contract <em>stops</em>, it doesn&#39;t merely warn.</p>
+<p><strong>A second invariant — <code>holding = issuance</code> (보유 = 발행).</strong> Not tightly tied to the auction idea,
+but it lives on the <strong>same page of the build</strong> (same <code>IntentAuction</code>, same settle path — not a
+separate contract or page): at rest, what the contract <strong>holds</strong> must equal what it has
+<strong>accounted/issued</strong> — a settle never mints value and never strands a user&#39;s <code>tokenIn</code>. <em>Today&#39;s
+version records only the invariant line itself.</em> <strong>What to stop on violation is deferred</strong> — it will
+be an <code>an-invariant-is-a-stop-not-an-alarm</code> stop, the same shape as <code>finalOut &gt;= minOut</code>, spec&#39;d
+next. If a web harness is added, this check surfaces on the <strong>same page</strong> as the main auction UI,
+not on its own screen.</p>
 <h2>What it teaches</h2>
 <ul>
 <li>Order-flow / OEV auctions, MEV <strong>redistribution</strong>, intent signing.</li>
