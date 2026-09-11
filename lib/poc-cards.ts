@@ -6605,7 +6605,8 @@ export const POC_CARDS: DemoCard[] = [
       "A five-dollar checkout paid in a volatile token needs a quote TTL, a re-quote flow and a policy for who absorbs the drift. That is product design wearing an exchange-rate costume — not an oracle problem.",
     descriptionKo:
       "변동성 있는 토큰으로 결제하는 5달러짜리 체크아웃에는 견적 TTL, 재견적 플로우, 그리고 **변동분을 누가 흡수하는지**의 정책이 필요합니다. 오라클 문제가 아니라 **환율 의상을 입은 제품 설계**입니다.",
-    status: "soon",
+    status: "done",
+    doneAt: "2026-09-11",
     important: true,
     howTo:
       "Build a checkout that locks a token amount for a fixed fiat price for thirty seconds, expires visibly into a re-quote, and tabulates the three drift policies — merchant absorbs, buyer absorbs, band with re-quote — against a simulated price feed.",
