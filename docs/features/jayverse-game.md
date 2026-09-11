@@ -10,7 +10,9 @@ scrub a stored journal of what it already did.
 > player-trades-in-3D game to an **agent visualization**: the game renders the mandate console's
 > journal in 3D. Supersedes the older Unity-first idea in [game.md](./game.md) for the *browser*
 > path. Service #5 in [../tasks/09-02-jayverse.md](../tasks/09-02-jayverse.md) ("## 5. Unity").
-> Repo: `jayverse-game`; hosted inside the Rabbit portal.
+> Repo: `jayverse-game`; hosted inside the Rabbit portal — the real build is rendered in
+> Rabbit's **Game** top-menu (`/game`) by importing this repo as a **git submodule**, and only
+> after jay has tested it standalone first (jay, 2026-09-11). Rabbit imports, it doesn't contain.
 
 ---
 
@@ -21,6 +23,8 @@ scrub a stored journal of what it already did.
 | **1 (MVP)** | Replay | react-three-fiber street + market boards + agent character; bundled sample journal; timeline scrubber (play/pause/speed/step/drag-seek) + journal panel; buy pulses + labeled refusal barriers. Read-only, no backend. |
 | **2** | Live (synchronous) | `useAgentJournal()` delta-polling `?since=<cursor>` of the running agent; enqueue + animate new ticks in near-real-time; poll-rate vs render-rate decoupling. |
 | **3** | Polish (+ optional player-trading) | six distinct refusal visuals; follow-cam; real low-poly city assets; optional player-trading layer wired through the wallet. |
+
+*The settlement-flow visualization (§1b, added 2026-09-11) is a **parallel track** on the same engine — MVP as a stepped replay diagram, a live settlement feed later.*
 
 ---
 
@@ -54,6 +58,49 @@ money — which is a real safety and simplicity win.
 
 Scope for v1: one straight street, ~6–12 boards, one agent character, both modes, a replay
 timeline + journal panel. No multiplayer, no player trading, no physics beyond walk-and-collide.
+
+---
+
+## 1b. Second feature — settlement visualized, entity by entity (jay, 2026-09-11)
+
+Beyond watching the agent *decide*, a **second visualization**: how a payment actually **settles**,
+one entity at a time — the card-network flow (Visa / Mastercard) laid next to the on-chain flow, so
+you can see **who does what between a user tapping "pay" and value landing on the blockchain.**
+
+- **What it shows.** One payment travels left → right through the entities that touch it, each drawn
+  as a station that lights up as the payment passes and names its one job:
+  - **Card rail (Visa / Mastercard):** cardholder → merchant → **acquirer** → **card network** →
+    **issuer**, in the three beats *authorize → clear → settle* — the classic four-party model.
+  - **On-chain rail:** user / wallet → (facilitator / paymaster) → **settlement contract** → block
+    finality. Value moves by transfer or burn-and-mint, not interbank netting.
+  - **The seam:** the one point where the two rails join — a just-in-time stablecoin → fiat
+    conversion (the `stablecoin-visa-card` lesson) or an `x402` facilitator fronting gas.
+- **Two lanes: what the user feels vs. what runs underneath.** Top lane = what the user sees (one
+  tap, a balance changes); bottom lane = the entities and messages that made it happen. Same event,
+  two levels — the invisibility *is* the product.
+- **Per entity: one trust + one failure mode.** Each station carries a tag — what you must trust it
+  for, and how it can fail (issuer declines, network outage, oracle wrong, bridge over-mints). The
+  same discipline as the [rails shortlist](jayverse-rails-shortlist.md): name the trust, name the
+  failure.
+- **Why it belongs in this game.** The agent world already renders *decisions*; this renders
+  *settlement plumbing*. Together they cover both halves — **who decides**, and **who moves the
+  money** — reusing the same 3D street + stepped-timeline engine.
+
+**Scope + look (jay, 2026-09-11): game style, not a flowchart.** The view is a **space scene** — each entity is a **planet**, and a **spaceship flies planet to planet** as the payment settles, step by step (read-only, like the agent replay). A **steps list up top shows what the user feels**, with the step being done **highlighted**; click a planet for its trust + failure. The demo is a **concrete PoC** — *Mina buys a $20 hoodie from an online store (the merchant)* — with an **EN / KO toggle** (bilingual, like the rest of Rabbit). A live feed from a real Verex settlement is a later step.
+
+**How it's reached — a warp gate, and a host (jay, 2026-09-11).** Not a separate page: the **agent
+street doubles as the gate page**. A **human host named Jay** (a proper walking figure — head, torso, waving
+arm, legs) stands at the entrance, bobbing and waving; his **dialogue shows on a fixed board** at the
+bottom of the street UI (large, readable), while the **balloon over his head only shows "blah blah
+blah" chatter** — so the words never get tiny in 3D. The street has **two figures, Jay and the agent**. A glowing **gate at the far end** plays a short
+**"space jump"** into the settlement space; to return, the settlement space has a **wormhole tunnel back
+to the street** (and a *← Back* button). A standalone `/settlement` route exists for isolated testing.
+
+**Status — built standalone, awaiting review.** Implemented in `jayverse-game` (`pnpm dev` :3050):
+`components/{SettlementFlow,Gate,SpaceJump,Jay}.tsx` + `lib/settlement.ts`, wired into the street
+via `Scene`/`GameClient` (SettlementFlow is the space/planets/spaceship scene with the return tunnel). Type-checks and builds. **Not yet imported into Rabbit's Game menu** — that
+happens as a git submodule only after jay tests and approves it. Cooperates with the Verex
+risk/settlement split, `x402` facilitator cards, `stablecoin-visa-card`, and `two-currencies-one-ledger`.
 
 ---
 

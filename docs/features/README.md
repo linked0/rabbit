@@ -5,18 +5,77 @@ order) lives in [`../tasks/09-02-jayverse.md`](../tasks/09-02-jayverse.md); **th
 design hub** — it answers the cross-cutting architecture question below and indexes the per-service
 design docs.
 
-> **History.** The Rabbit feature-design index that this file used to hold lives in
-> [README-history.md](README-history.md) (split out 2026-09-09). The Jayverse hub was merged in from
-> the former `README-Jayverse.md`, which has since been removed — its links now point here.
+**See also:** [rails shortlist](jayverse-rails-shortlist.md) — a cross-cutting menu of what each Jayverse product can build on, by need (oracles, cross-chain, AA, execution, payments…).
 
-> **Naming (jay asked, 2026-09-07).** Chosen **`README-Jayverse.md`** over `Jayverse-README.md`,
-> for one reason: keeping the `README` prefix makes it sort right next to `README.md` in every file
-> listing, so the two "start here" docs sit together. Per-service design docs are named
-> `jayverse-<service>.md` so they group under one prefix and are obvious as a set.
+## Contents
+
+- [Per-service design docs](#per-service-design-docs)
+- [Phase overview](#phase-overview-at-a-glance)
+- [Open Questions](#open-questions)
+- [Running each service](#running-each-service-on-the-terminal)
+- [Chainlink — infra Jayverse uses, not builds](#chainlink--infra-jayverse-uses-not-builds)
+- [History](#history)
 
 ---
 
-## Q: should the web app and the API be separated between Rabbit and Verex?
+## Per-service design docs
+
+Each service jay commented on gets a `jayverse-<service>.md` design doc: user scenario, what the web
+app shows, the flow/user journey, a basic imaginable feature, and how to implement it — grounded in
+the existing services so they cooperate rather than sit alone.
+
+| # | Service | Design doc | Focus (from jay's comment) | Status |
+|---|---------|-----------|----------------------------|--------|
+| 1 | Rabbit — Agentic AA | [jayverse-rabbit.md](jayverse-rabbit.md) | ERC-4337 AA — user scenario, web app, flow. **Start here** | drafting |
+| 2 | Verex — onboarding + MM | [jayverse-verex.md](jayverse-verex.md) | Stripe onboarding + Market Maker — scenario, web app, flow. **Start** | drafting |
+| 3 | DeFi — EtherFi | [jayverse-defi.md](jayverse-defi.md) | Basic EtherFi **algorithms built from scratch** to study DeFi (no real-EtherFi integration) | drafting |
+| 4 | Persona market | [jayverse-personas.md](jayverse-personas.md) | NFT persona market — scenario, web app, flow | drafting |
+| 5 | Unity — 3D browser game | [jayverse-game.md](jayverse-game.md) | Wander a 3D street, find verex markets on boards, trade. **Start** | drafting |
+| 6 | Wallet & simulate-before-sign | [jayverse-wallet.md](jayverse-wallet.md) | Embedded wallet + tx simulation — scenario, web app, flow | drafting |
+| 7 | Token + Exchange + Bridge | [jayverse-token-bridge.md](jayverse-token-bridge.md) | **JYVE** ecosystem coin + mini-AMM price + Anvil ⇄ Sepolia bridge (one `jayverse-token` repo) | drafting |
+| 8 | OFA — intent + solver auction | [jayverse-ofa.md](jayverse-ofa.md) | ATLAS's core mechanism as a from-scratch study — intent + solver auction, surplus to the user. **Build the mechanism, not the framework** | drafting |
+| 9 | Math & Investment (Number) | [jayverse-number.md](jayverse-number.md) | Standalone `number.jaylabs.xyz` — investment information + math / economy / algorithm research. **Admin-only** (login-gated), split out of Rabbit's Portfolio into its own `jayverse-number` repo | drafting |
+| 10 | Dark Horse — candidate tracks | [jayverse-darkhorse.md](jayverse-darkhorse.md) | **Not committed** — candidates that *could* become services but aren't yet: (a) own L1/L2, (b) security-hole research, (c) **Base App** (moved from #8) | candidates |
+
+*(#1–9 are the committed services; **#10 Dark Horse is candidates, not committed** — including Base App, moved from #8. Detail lives in [jayverse-darkhorse.md](jayverse-darkhorse.md).)*
+
+### Completed — built, past design
+
+Once a service moves from design into a running build it leaves the drafting list above and
+lands here, so "what's still a draft" vs "what actually runs" stays legible at a glance.
+
+| Service | Design doc | Where it runs | Status |
+|---|---|---|---|
+| Authority Auditor | [jayverse-auditor.md](jayverse-auditor.md) | `jayverse-auditor` repo (`pnpm dev` :3080) · ported copy live in Rabbit at `/live/auditor` | ✅ **built** — Phase 1 + Phase 2 merged to `main` |
+
+Every doc is a **design draft for review**, not built work — the implementation status stays in the
+umbrella plan's Remaining sections and in each service repo.
+
+## Phase overview (at a glance)
+
+Each service's own `jayverse-*.md` carries its full **Phases (build order)** table; this is the
+cross-service snapshot. **Three phase columns** — where a service has more than three phases, the
+extras are **crammed into the last column** (Wallet's P3 + P4, etc.). ✅ = that phase is built.
+
+**It also doubles as a running log.** When something gets implemented that wasn't in the plan, add it to that project's **currently-ongoing phase** cell and mark it ✅ — e.g., a new Wallet capability lands under Wallet's **Phase 2**. That way the overview records what actually happened, not only the original plan (jay, 2026-09-11).
+
+| # | Service | Phase 1 | Phase 2 | Phase 3 (+ later) |
+|---|---------|---------|---------|-------------------|
+| 1 | Rabbit — Agentic AA | Gasless one-click bet | Local ↔ Sepolia bundler switch | Identity & UX breadth (shared account, ERC-20 gas, recovery → Wallet) |
+| 2 | Verex | First-bet loop (Stripe + LMSR) | Operator / admin (kill switch) | Production leg (KYC/AML, custody, x402, reconcile) |
+| 3 | DeFi — EtherFi study | Liquid-staking core | Restaking layer | Real EtherFi (read) |
+| 4 | Personas | Mint + token-gated chat | Day rentals (ERC-4907) | Revenue + market (x402, IPFS, creator flow) |
+| 5 | Game — 3D street | Replay | Live (synchronous) | Polish + optional player-trading |
+| 6 | Wallet | simulate-before-sign ✅ | Session keys & templates | 4337 breadth · **P4** own dev wallet (31337 fork) |
+| 7 | Token + Exchange + Bridge | Token + exchange (JYVE/USDC) | Intra bridge (lock-and-mint) | Real cross-chain — CCIP (arbitrary messages) + **Circle CCTP** (native USDC, burn-and-mint) + **xERC20 / ERC-7281** (JYVE as a sovereign bridged token, per-bridge rate limits) |
+| 8 | OFA | `IntentAuction` + `MockSolver`s | `AmmSolver` + two invariants | Web harness · backrun / LVR stretch |
+| 9 | Math & Investment (Number) | Admin auth gate | Portfolio migration | Deploy + math / algo research |
+| ✅ | Authority Auditor | Dogfood matrix ✅ | Rules engine ✅ | On-chain + API (viem verified cells, tier-3 provider API) |
+| 10 | Dark Horse | *candidates, not phased:* (a) own L1/L2 · (b) security research · (c) Base App | — | — |
+
+## Open Questions
+
+### Should the web app and the API be separated between Rabbit and Verex?
 
 **jay's concern:** if every app runs inside the Rabbit portal on rabbit cloud, that one instance
 carries the load of the whole ecosystem.
@@ -24,7 +83,7 @@ carries the load of the whole ecosystem.
 **Short answer: yes — separate the *APIs* into their own Cloud Run services; keep Rabbit a thin
 portal. This is already what the umbrella plan's cloud split implies; this doc makes it explicit.**
 
-### The rule: one portal, many backends
+#### The rule: one portal, many backends
 
 - **Rabbit stays a thin portal.** The plan's principle already says *"Rabbit imports, it doesn't
   contain"* — it shows a service by importing that service's UI (npm package / git submodule) or by
@@ -39,7 +98,7 @@ portal. This is already what the umbrella plan's cloud split implies; this doc m
   portal/AI/read services (Rabbit, Personas, Wallet, Auditor) to **rabbit cloud**. Separation is
   orthogonal: *within either cloud*, each API is still its own service.
 
-### Where the web (frontend) lives — the placement decision (jay, 2026-09-07)
+#### Where the web (frontend) lives — the placement decision (jay, 2026-09-07)
 
 The rule jay settled on: **web consolidates, APIs split, Verex is the one exception.**
 
@@ -76,7 +135,7 @@ its own Cloud Run service** either way, so the burden answer is unchanged: each 
 > [jayverse-rabbit.md §7](jayverse-rabbit.md). Treat other such infra the same way: rented/hosted, behind
 > an environment selector, outside the 4:4 count.
 
-### Concrete guidance for the burden worry
+#### Concrete guidance for the burden worry
 
 1. Rabbit portal = **one small Cloud Run service** (`max-instances` low; it only routes + light UI).
 2. Each service API = **its own Cloud Run service**, its own repo, its own `deploy.sh`, its own DB.
@@ -87,37 +146,6 @@ its own Cloud Run service** either way, so the burden answer is unchanged: each 
 **Net:** the portal never carries another service's compute, so "all apps in rabbit cloud" is not a
 single-instance burden — it's several small autoscaling services that happen to share a GCP project.
 
----
-
-## Per-service design docs
-
-Each service jay commented on gets a `jayverse-<service>.md` design doc: user scenario, what the web
-app shows, the flow/user journey, a basic imaginable feature, and how to implement it — grounded in
-the existing services so they cooperate rather than sit alone.
-
-| # | Service | Design doc | Focus (from jay's comment) | Status |
-|---|---------|-----------|----------------------------|--------|
-| 1 | Rabbit — Agentic AA | [jayverse-rabbit.md](jayverse-rabbit.md) | ERC-4337 AA — user scenario, web app, flow. **Start here** | drafting |
-| 2 | Verex — onboarding + MM | [jayverse-verex.md](jayverse-verex.md) | Stripe onboarding + Market Maker — scenario, web app, flow. **Start** | drafting |
-| 3 | DeFi — EtherFi | [jayverse-defi.md](jayverse-defi.md) | Basic EtherFi **algorithms built from scratch** to study DeFi (no real-EtherFi integration) | drafting |
-| 4 | Persona market | [jayverse-personas.md](jayverse-personas.md) | NFT persona market — scenario, web app, flow | drafting |
-| 5 | Unity — 3D browser game | [jayverse-game.md](jayverse-game.md) | Wander a 3D street, find verex markets on boards, trade. **Start** | drafting |
-| 6 | Wallet & simulate-before-sign | [jayverse-wallet.md](jayverse-wallet.md) | Embedded wallet + tx simulation — scenario, web app, flow | drafting |
-| 7 | Token + Exchange + Bridge | [jayverse-token-bridge.md](jayverse-token-bridge.md) | **JYVE** ecosystem coin + mini-AMM price + Anvil ⇄ Sepolia bridge (one `jayverse-token` repo) | drafting |
-| 8 | OFA — intent + solver auction | [jayverse-ofa.md](jayverse-ofa.md) | ATLAS's core mechanism as a from-scratch study — intent + solver auction, surplus to the user. **Build the mechanism, not the framework** | drafting |
-| 9 | Math & Investment (Number) | [jayverse-number.md](jayverse-number.md) | Standalone `number.jaylabs.xyz` — investment information + math / economy / algorithm research. **Admin-only** (login-gated), split out of Rabbit's Portfolio into its own `jayverse-number` repo | drafting |
-| 10 | Dark Horse — candidate tracks | [jayverse-darkhorse.md](jayverse-darkhorse.md) | **Not committed** — candidates that *could* become services but aren't yet: (a) own L1/L2, (b) security-hole research, (c) **Base App** (moved from #8) | candidates |
-
-*(#1–9 are the committed services; **#10 Dark Horse is candidates, not committed** — including Base App, moved from #8. Detail lives in [jayverse-darkhorse.md](jayverse-darkhorse.md); the section below expands it.)*
-
-### Completed — built, past design
-
-Once a service moves from design into a running build it leaves the drafting list above and
-lands here, so "what's still a draft" vs "what actually runs" stays legible at a glance.
-
-| Service | Design doc | Where it runs | Status |
-|---|---|---|---|
-| Authority Auditor | [jayverse-auditor.md](jayverse-auditor.md) | `jayverse-auditor` repo (`pnpm dev` :3080) · ported copy live in Rabbit at `/live/auditor` | ✅ **built** — Phase 1 + Phase 2 merged to `main` |
 
 ## Running each service on the terminal
 
@@ -186,27 +214,16 @@ both halves the incident exposed.
 feed is also a dependency with a failure mode, so each cooperation above carries its "if the
 feed is wrong" line **in code** (staleness check / fallback), not just in this table.
 
-## Dark Horse — candidate tracks (#10)
-
-Not committed services like #1–9 — **candidates** to pick up after the core is built. Each *could*
-become a service; none is one yet. The tracks and their full argument now live in their own doc:
-**[jayverse-darkhorse.md](jayverse-darkhorse.md)** —
-
-- **(a) our own L1/L2 chain** (start-at-last, supersim as the local on-ramp),
-- **(b) security-hole research** (exploit classes run against our own contracts on a local fork), and
-- **(c) Base App — Mini App** (moved here from #8 on 2026-09-10 — a distribution lease to make
-  deliberately, not a committed build; full write-up in [jayverse-base-app.md](jayverse-base-app.md)).
-
-Full step / risk / PoC-link detail is in the umbrella plan
-[`../tasks/09-02-jayverse.md`](../tasks/09-02-jayverse.md) §10.
-
-Every doc is a **design draft for review**, not built work — the implementation status stays in the
-umbrella plan's Remaining sections and in each service repo.
-
 ---
-# 💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎💎
 
 ## History
 
 The original **Rabbit feature-design index** (this file's pre-Jayverse content) now lives in
-[README-history.md](README-history.md).
+[README-history.md](README-history.md) — this file used to hold it; it was split out 2026-09-09.
+The Jayverse hub was merged in from the former `README-Jayverse.md`, which has since been removed —
+its links now point here.
+
+**Naming (jay asked, 2026-09-07).** Chosen `README-Jayverse.md` over `Jayverse-README.md`, for one
+reason: keeping the `README` prefix makes it sort right next to `README.md` in every file listing, so
+the two "start here" docs sit together. Per-service design docs are named `jayverse-<service>.md` so
+they group under one prefix and are obvious as a set.

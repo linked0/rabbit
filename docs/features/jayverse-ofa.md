@@ -44,6 +44,63 @@ be an `an-invariant-is-a-stop-not-an-alarm` stop, the same shape as `finalOut >=
 next. If a web harness is added, this check surfaces on the **same page** as the main auction UI,
 not on its own screen.
 
+## User scenario — "Jun swaps into a bet without feeding a searcher"
+
+Grounds the mechanism in the rest of Jayverse: OFA is the *fair swap rail* the other services call
+when a user has to convert one token into another and a naive swap would leak the surplus to a
+searcher.
+
+Jun holds **JYVE** (the [jayverse-token](jayverse-token-bridge.md) coin) but wants to bet on a
+[Verex](jayverse-verex.md) market that settles in a USDC-like unit. He needs to convert — and that
+conversion is exactly where MEV normally leaks.
+
+1. **Intent, not a swap.** In the [Wallet](jayverse-wallet.md), Jun taps *"Fund this bet."* The
+   wallet builds an **intent** — `give 100 JYVE, want >= 98 USDC, deadline 2 min` (EIP-712) — instead
+   of a market swap. **Simulate-before-sign** shows the `minOut` floor and the *expected surplus
+   range* before he commits.
+2. **One signature.** He signs the intent once; it lands at `IntentAuction.submitIntent`.
+3. **Solvers race.** Three solvers quote a fill **plus a bid** (what they kick back to Jun): the real
+   **JYVE mini-AMM solver** (wrapping jayverse-token's pool) and two `MockSolver`s at different
+   prices.
+4. **Settle picks the best, surplus to Jun.** `settle` takes the highest **effective out**
+   (`amountOut + bid`), pulls the JYVE, runs the winner, enforces **`finalOut >= minOut`** *and*
+   **`holding = issuance`**, and sends the **surplus to Jun, never the searcher**. Losing solvers
+   revert cleanly.
+5. **The bet funds itself.** The resulting USDC funds the Verex bet in the same flow;
+   [Number](jayverse-number.md) logs the fill and the realized surplus as a line in Jun's PnL.
+6. **Authority is checked, not assumed.** Had `settle` been misconfigured to pay a searcher instead
+   of Jun, the [Authority Auditor](jayverse-auditor.md) matrix would surface "who captures the
+   surplus" as a **critical** finding — the config-level guard behind the code-level invariant.
+
+Jun feels the whole point: he got a *better* price than a plain swap *because* solvers competed, and
+the improvement went to **him**.
+
+## What we implement, and how
+
+**What (the buildable pieces):**
+
+- **`IntentAuction`** — `submitIntent` / `solve` / `settle`, the mini-EntryPoint sketched above.
+- **`AmmSolver`** — the one cross-service piece: a real solver adapter wrapping jayverse-token's
+  constant-product pool, so the auction has a *genuine* competitor next to the `MockSolver`s (this is
+  what makes the "surplus to the user" lesson real, not staged).
+- **Two invariants as stops** — `finalOut >= minOut` and `holding = issuance`, both `require`-level
+  *stops* (`an-invariant-is-a-stop-not-an-alarm`), not warnings.
+- **Optional web harness** — a thin page: intent builder, a live board of solver bids, and a
+  surplus-to-user readout. Only if a UI is wanted; contracts come first.
+
+**How (the build path):**
+
+- **Contracts (Foundry, first).** `IntentAuction` + 2 `MockSolver`s + one `AmmSolver` over the
+  jayverse-token pool interface. Foundry tests assert both invariants and that the surplus lands on
+  the user across competing-solver cases; the losing solver reverts without touching state.
+- **Wallet path.** The intent is signed through [jayverse-wallet](jayverse-wallet.md)'s `simulate()`
+  flow, so the min-out and surplus preview in step 1 are the wallet's existing simulate surface, not a
+  new one.
+- **Cross-service wiring.** Shared addresses come from the `jayverse-rails` package (no service
+  hardcodes another); the local-vs-Sepolia switch follows [jayverse-rabbit.md §7](jayverse-rabbit.md).
+- **Web (optional, last).** A small Next.js harness on `:3080`† that reads the auction events and
+  renders the bid board; run it or the Auditor one at a time, or reassign the port.
+
 ## What it teaches
 
 - Order-flow / OEV auctions, MEV **redistribution**, intent signing.

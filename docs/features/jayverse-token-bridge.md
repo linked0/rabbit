@@ -14,7 +14,7 @@
 |---|---|---|
 | **1 (MVP)** | Token + exchange | `JYVE.sol` (ERC-20, `MINTER_ROLE`, per-address + global mint caps); `Exchange.sol` constant-product **`JYVE/USDC`** pool with `addLiquidity`/`removeLiquidity`/`swap`/`getPrice`, pool seeded at deploy so a price exists from block one. |
 | **2** | Intra bridge | `BridgeLock` / `BridgeMint` (or the relayer-script variant): lock-and-mint / burn-and-release between the Anvil fork and Sepolia; **idempotent relayer** keyed by transfer `id`; `processed[id]` guard; invariant + reconciliation cron. |
-| **3** | Real cross-chain | graduate to CCIP where a service truly leaves the home chain. |
+| **3** | Real cross-chain | graduate to **CCIP** for arbitrary cross-chain messages, **Circle CCTP** for native USDC (burn-and-mint, no wrapped USDC), and **xERC20 / ERC-7281** for JYVE (a sovereign bridged token with per-bridge mint/burn rate limits, instead of lock-and-mint wrapping) — where a service truly leaves the home chain. |
 
 ---
 
