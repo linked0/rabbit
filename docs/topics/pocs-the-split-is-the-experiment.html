@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The model is not the experiment — the split is — Notes</title>
+<title>The model is not the experiment — the split is — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,13 +362,13 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; The model is not the experiment — the split is</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; The model is not the experiment — the split is</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#177</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#175</span><span>PoC</span></p>
       <h1>The model is not the experiment — the split is</h1>
       <p class="lead">Almost every applied result that fails in production failed at the split, not at the model. On-chain data breaks two splitting rules at once — it is ordered in time and grouped by address — and the number worth reporting is the gap between the naive split and the honest one.</p>
       <p class="meta">Not yet scoped, and the deliverable is one number rather than a model. Take a real labelled dataset from this project — an address-level question is ideal, since it violates two rules at once — and evaluate the same estimator three ways: a random split, a time-ordered split, and a time-ordered split that is also grouped by address with an embargo the length of the label horizon. Report the three scores side by side. <strong>The gap between the first and the third is the finding</strong>, because it is the amount by which you would have lied to yourself. Then move every fitted preprocessing step — scaler, imputer, target encoder, vocabulary — inside the fold and see how much of the remaining gap that alone accounts for.</p>
@@ -452,7 +452,7 @@
 <h3>Where it lands in this project</h3>
 <p>The pairing is deliberate. <code>the-70-has-to-be-wrong</code> is about scoring a probabilistic output honestly; this card is about whether the scoreboard was contaminated before scoring began. <strong>The two failures compose badly</strong> — a leaked split produces a model that looks well-calibrated on data it has effectively already seen, and the calibration plot will look fine right up until deployment. <strong>Fix the split first</strong>, because a calibration measured on a leak is a measurement of nothing.</p>
       
-      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -535,9 +535,9 @@
 <h3>이 프로젝트에서의 자리</h3>
 <p>짝지은 건 의도적입니다. <code>the-70-has-to-be-wrong</code> 이 <strong>확률 출력을 정직하게 채점하는 것</strong>이라면, 이 카드는 <strong>채점을 시작하기 전에 채점판이 오염됐는가</strong>입니다. <strong>두 실패는 나쁘게 합성됩니다</strong> — 누수된 분할은 <strong>사실상 이미 본 데이터에서 잘 캘리브레이션된 것처럼 보이는 모델</strong>을 만들고, <strong>캘리브레이션 그림은 배포 직전까지 멀쩡해 보입니다.</strong> <strong>분할을 먼저 고치십시오.</strong> <strong>누수 위에서 잰 캘리브레이션은 아무것도 잰 게 아니기</strong> 때문입니다.</p>
       
-      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-the-70-has-to-be-wrong.html">&larr; 176. The 70% has to be wrong three times in ten</a><a href="pocs-huggingface-is-a-package-manager.html">178. Hugging Face is a package manager, and almost nobody pins the version &rarr;</a></div>
+    <div class="pager"><a href="pocs-the-70-has-to-be-wrong.html">&larr; 174. The 70% has to be wrong three times in ten</a><a href="pocs-huggingface-is-a-package-manager.html">176. Hugging Face is a package manager, and almost nobody pins the version &rarr;</a></div>
   </div>
   </main>
 </div>

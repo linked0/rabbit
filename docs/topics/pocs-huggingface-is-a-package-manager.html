@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hugging Face is a package manager, and almost nobody pins the version — Notes</title>
+<title>Hugging Face is a package manager, and almost nobody pins the version — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,13 +362,13 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Hugging Face is a package manager, and almost nobody pins the version</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Hugging Face is a package manager, and almost nobody pins the version</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#178</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#176</span><span>PoC</span></p>
       <h1>Hugging Face is a package manager, and almost nobody pins the version</h1>
       <p class="lead">Every repo is a git repo and <code>revision=</code> takes a commit SHA — but the default is a floating branch, <code>trust_remote_code=True</code> executes code from that branch, and the licence that decides whether you can ship is per-repo. The build is a five-field lockfile.</p>
       <p class="meta">Not yet scoped, and the first artifact is a file rather than a notebook. For every model and dataset this project actually loads, record five fields: repo id, the resolved commit SHA (not <code>main</code>), the licence as stated in that revision, whether loading it requires <code>trust_remote_code</code>, and the tokenizer&#39;s own repo and SHA where it is a separate artifact. Pin the SHAs in code. Then re-resolve the same list thirty days later and diff it — <strong>what changed under a name you did not change is the finding</strong>, and it is the argument for the lockfile that no amount of explaining will make on its own. Alongside it, one read: open a model card you already depend on and mark which numbers on it are self-reported and which are independently verifiable.</p>
@@ -447,7 +447,7 @@
 <h3>What to read on a model card, and what to distrust</h3>
 <p>Model cards are the good artifact here, but they are self-published. <strong>Intended use, limitations and training-data description are the valuable parts</strong> — they are claims the author had no incentive to invent, and their <em>absence</em> is itself informative. <strong>Benchmark numbers are the part to discount</strong>, since they are self-reported, frequently on evaluation code that is not published alongside them. The practical rule is the one this catalogue keeps arriving at from different directions: <strong>read the primary artifact, and treat any number you did not see produced as a claim rather than a fact.</strong></p>
       
-      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -525,9 +525,9 @@
 <h3>모델 카드에서 읽을 것과 의심할 것</h3>
 <p>모델 카드는 <strong>여기서 좋은 산출물</strong>이지만 <strong>자기 출판물</strong>입니다. <strong>의도된 용도·한계·학습 데이터 서술이 값어치 있는 부분</strong>입니다 — 저자가 <strong>지어낼 유인이 없는 주장</strong>이고, <strong>그것이 비어 있다는 사실 자체가 정보</strong>입니다. <strong>할인해서 읽을 부분은 벤치마크 숫자</strong>입니다 — <strong>자기 보고</strong>이고, 평가 코드가 함께 공개되지 않은 경우가 잦습니다. 실무 규칙은 이 카탈로그가 여러 방향에서 계속 도달하는 그것입니다: <strong>1차 산출물을 읽고, 생성되는 것을 직접 보지 않은 숫자는 사실이 아니라 주장으로 다룰 것.</strong></p>
       
-      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-the-split-is-the-experiment.html">&larr; 177. The model is not the experiment — the split is</a><a href="pocs-lead-time-is-the-product.html">179. The lead time is the product — a fault detected at failure is worth nothing &rarr;</a></div>
+    <div class="pager"><a href="pocs-the-split-is-the-experiment.html">&larr; 175. The model is not the experiment — the split is</a><a href="pocs-lead-time-is-the-product.html">177. The lead time is the product — a fault detected at failure is worth nothing &rarr;</a></div>
   </div>
   </main>
 </div>

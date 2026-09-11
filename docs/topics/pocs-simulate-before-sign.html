@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Simulation belongs before the wallet prompt — Notes</title>
+<title>Simulation belongs before the wallet prompt — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Simulation belongs before the wallet prompt</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Simulation belongs before the wallet prompt</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#34</span><span>PoC</span></p>
       <h1>Simulation belongs before the wallet prompt</h1>
@@ -406,7 +406,7 @@ const hash = await walletClient.writeContract(request)
 <p>viem decodes custom errors from the ABI it was given. A revert bubbling up from a nested third-party contract arrives as a raw selector — undecodable without that ABI. A service version needs an error-selector registry (own ABIs + a 4byte-style directory + an honest &quot;unknown reason&quot; fallback). &quot;Decoded failure&quot; quietly ranges from &quot;insufficient allowance, need 50 more&quot; to &quot;something reverted&quot; — show one of each.</p>
 <h3>The pipeline, and the KPI</h3>
 <p>This card and <code>receipt-is-not-settlement</code> are one product: the <em>monitor</em> leg of simulate → explain → sign → monitor is exactly that card&#39;s <code>detected → included → safe → finalized (+ reorged)</code> machine. Before the signature this card removes knowable failures; after it, the tier machine handles the unknowable ones. The production KPI falls out naturally: the <strong>false-promise rate</strong> — the share of transactions that passed simulation but failed on-chain, per contract and per market condition. That number is the honesty meter of the explain step, and the SLO the service should publish about itself.</p>
-      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -443,7 +443,7 @@ const hash = await walletClient.writeContract(request)
 <p>viem 은 건네받은 ABI 의 커스텀 에러만 풉니다. 중첩된 서드파티 컨트랙트에서 올라온 revert 는 날 셀렉터로 도착하고, 그 ABI 없이는 못 풉니다. 서비스 버전에는 에러 셀렉터 레지스트리(자체 ABI + 4byte 류 디렉터리 + 정직한 &quot;원인 불명&quot; 폴백)가 필요합니다. &quot;디코드된 실패&quot;는 조용히 &quot;허용량 50 부족&quot;부터 &quot;무언가 revert 됨&quot;까지 폭이 있습니다 — 각각 하나씩 보여줄 것.</p>
 <h3>파이프라인, 그리고 KPI</h3>
 <p>이 카드와 <code>receipt-is-not-settlement</code> 는 한 제품입니다: simulate → explain → sign → monitor 의 <em>monitor</em> 구간이 정확히 그 카드의 <code>detected → included → safe → finalized (+ reorged)</code> 머신입니다. 서명 전에는 이 카드가 알 수 있는 실패를 제거하고, 서명 후에는 계층 머신이 알 수 없는 실패를 처리합니다. 프로덕션 KPI 도 자연히 떨어집니다: <strong>거짓 약속률(false-promise rate)</strong> — 시뮬은 통과했는데 온체인에서 실패한 트랜잭션의 비율(컨트랙트별·시장 상황별). 이 숫자가 explain 단계의 정직성 계기판이고, 서비스가 스스로에 대해 공표해야 할 SLO 입니다.</p>
-      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-l2-finality-three-clocks.html">&larr; 33. L2 finality is three clocks</a><a href="pocs-bundler-paymaster-dependencies.html">35. Gasless is two infrastructure services &rarr;</a></div>
   </div>

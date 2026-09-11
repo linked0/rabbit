@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Give the agent the right to ask, not the right to write — Notes</title>
+<title>Give the agent the right to ask, not the right to write — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,13 +362,13 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Give the agent the right to ask, not the right to write</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Give the agent the right to ask, not the right to write</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#124</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#122</span><span>PoC</span></p>
       <h1>Give the agent the right to ask, not the right to write</h1>
       <p class="lead">Samsung Account (≈2.1B users) built a production multi-agent AIOps system on Bedrock AgentCore, and its load-bearing choice is a permission boundary, not a model: agents get no write access — they only propose an exact command, and a separate deterministic scheduler executes the approved artifact verbatim after a human reviews it. Analysis can be wrong and re-checked; execution that is wrong is irreversible. It is a shipped implementation of &quot;separate deciding from acting by something that is not a prompt.&quot;</p>
       <p class="meta">Not yet scoped — a design-pattern study you can apply to any agent that touches production. First, split your agent&#39;s actions into read (analysis) and write (execution) and confirm the write path does not run through the LLM at all. Then implement the proposal/execution split: the agent registers <em>what to run</em> — the exact command or code — a human reviews that exact artifact, and a deterministic executor runs the approved artifact verbatim, nothing regenerated. Add the maturity ladder they use: Level 1 is read-only cross-domain analysis (low risk, biggest time sink), Level 2 is plan → approve → execute, and the gate sits precisely on the read/write line. Layer in the single-entry guardrail — one Orchestrator every request converges on, where PII redaction, routing, and long-term memory live once — so adding agents does not scatter the boundary. The measurable question: what share of your operational toil is read-only analysis (safe to automate today) versus write actions (gated), and does automation grow by adding <em>executor</em> procedures rather than <em>agent</em> permissions? Source: AWS blog, Samsung Account SRE, &quot;Samsung Account AIOps&quot; Part 1, 2026-09-03 — a vendor showcase for AgentCore; weight the product framing, but the pattern is the point.</p>
@@ -466,7 +466,7 @@
 <h3>Related cards</h3>
 <p><code>agentic-intent-veto</code> and <code>simulate-before-sign</code> (a check/veto outside the model, before the irreversible act), <code>constraint-was-the-product</code> (&quot;not a prompt&quot; as the boundary; fewer tools = better judgment), <code>the-boundary-is-the-unit</code> (single-point governance), <code>a-boolean-hides-a-state-machine</code> (non-determinism: one good run proves nothing), <code>what-encryption-does-not-hide</code> (a masked+hashed audit log that isn&#39;t its own leak path).</p>
       
-      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -563,9 +563,9 @@
 <h3>관련 카드</h3>
 <p><code>agentic-intent-veto</code>·<code>simulate-before-sign</code>(돌이킬 수 없는 행동 전, 모델 밖의 검사/거부권), <code>constraint-was-the-product</code>(경계로서의 &quot;프롬프트 아님&quot;; 도구 적을수록 판단 나음), <code>the-boundary-is-the-unit</code>(단일 지점 거버넌스), <code>a-boolean-hides-a-state-machine</code>(비결정성: 한 번 잘 됐다고 증명 아님), <code>what-encryption-does-not-hide</code>(자기 유출 경로가 아닌 마스킹·해시 감사 로그).</p>
       
-      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-aa-standard-execution-split.html">&larr; 123. One AA spec, two execution models — or the EVM fragments</a><a href="pocs-cli-batch-vs-mcp-interactive.html">125. The CLI leaves an artifact; the MCP holds a conversation &rarr;</a></div>
+    <div class="pager"><a href="pocs-aa-standard-execution-split.html">&larr; 121. One AA spec, two execution models — or the EVM fragments</a><a href="pocs-cli-batch-vs-mcp-interactive.html">123. The CLI leaves an artifact; the MCP holds a conversation &rarr;</a></div>
   </div>
   </main>
 </div>

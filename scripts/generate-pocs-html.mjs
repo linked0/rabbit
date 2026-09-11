@@ -549,8 +549,8 @@ for (const [idx, c] of numbered.entries()) {
     `<p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>` +
     `\n      ${jsonBlock('copy-ko', copyKo)}`;
   const liveLink = c.href ? ` &middot; <a href="${cardUrl(c)}">Open on jaylabs.xyz &rarr;</a>` : '';
-  const openLink = `<a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a>${liveLink}`;
-  const openLinkKo = `<a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a>${liveLink}`;
+  const openLink = `<a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a>${liveLink}`;
+  const openLinkKo = `<a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a>${liveLink}`;
   // 이중언어 — 영어 먼저, 한국어 나중 (jay, 2026-08-13). 카드 데이터에 이미 있는 *Ko
   // 필드를 그대로 쓴다 — 번역을 새로 짓지 않는다.
   fs.writeFileSync(
@@ -565,9 +565,9 @@ for (const [idx, c] of numbered.entries()) {
       sharedNav: true,
       sharedNavSrc: '_nav.js',
       sharedNavCurrent: c.key,
-      railFoot: `<a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a>`,
-      title: `${c.title} — Notes`,
-      crumbHtml: `<a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; ${escapeHtml(c.title)}`,
+      railFoot: `<a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a>`,
+      title: `${c.title} — Dev Notes`,
+      crumbHtml: `<a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; ${escapeHtml(c.title)}`,
       // 표제부를 본문에서 분리한다 (jay, 2026-08-26). 예전에는 h1·요약·howTo 가 본문
       // 문단들과 같은 상자 안에 그냥 얹혀 있어서 글이 어디서 시작하는지 보이지 않았다.
       // 번호·상태·제목·요약·언어 전환을 hero 한 곳에 모으고, 본문 두 덩어리(영/한)는
@@ -627,10 +627,10 @@ for (const f of fs.readdirSync(TOPICS_DIR)) {
 fs.writeFileSync(
   OUT_HTML,
   renderRtdPage({
-    title: 'Notes — All Contents',
+    title: 'Dev Notes — All Contents',
     railTitle: 'Rabbit',
     railTitleHref: 'index.html',
-    filterPlaceholder: 'Filter Notes',
+    filterPlaceholder: 'Filter Dev Notes',
     // 진입 시 왼쪽 레일 기본값을 Important 항목으로 (jay, 2026-09-08). All 로 전환 가능.
     railTierToggle: true,
     navGroups,
@@ -644,5 +644,5 @@ fs.writeFileSync(
   'utf8'
 );
 console.log(
-  `Notes: docs/notes.html (${cards.length} in sidebar) updated`
+  `Dev Notes: docs/notes.html (${cards.length} in sidebar) updated`
 );

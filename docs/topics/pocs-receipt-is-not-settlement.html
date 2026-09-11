@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A successful receipt is not settlement — Notes</title>
+<title>A successful receipt is not settlement — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; A successful receipt is not settlement</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; A successful receipt is not settlement</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#32</span><span>PoC</span></p>
       <h1>A successful receipt is not settlement</h1>
@@ -419,7 +419,7 @@
 <p>After a reorg the removed transaction usually <em>re-lands automatically</em> — it returns to the mempool and is mined into the replacement chain. So <code>reorged → rollback + &amp;quot;payment failed&amp;quot; email</code> is the false-positive trap. The honest machine is six states: <code>reorged → pending-reinclusion → (re-included | failed after timeout)</code>. Roll back the <em>benefit</em> immediately; delay the <em>customer-facing verdict</em> through a grace window.</p>
 <h3>Test mechanics, and where Jayverse plugs in</h3>
 <p>Locally this is very runnable: anvil&#39;s snapshot/revert (or <code>anvil_reorg</code>) mines the payment, reverts, re-mines without it — then assert the indexer notices the receipt vanish. <code>ponder-reorg-indexer</code> is this card&#39;s infrastructure half: &quot;detected the removal&quot; actually happens in the indexer. Applications in this catalogue&#39;s own plans: a Verex bet credits at <code>included</code> (a reversible ledger entry), withdrawals wait for <code>finalized</code>, and <code>x402-settlement-retry</code> shares the boundary — a facilitator&#39;s &quot;settled&quot; response is also a receipt, and this card asks the follow-up: settled <em>at which tier</em>? Pairs naturally with a local supersim L2 lab: same fork, three clocks disagreeing, one state machine reacting.</p>
-      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -469,7 +469,7 @@
 <p>리오그 후 제거된 트랜잭션은 대개 <em>자동으로 다시 실립니다</em> — 멤풀로 돌아가 대체 체인에 채굴됩니다. 그래서 <code>reorged → 롤백 + &amp;quot;결제 실패&amp;quot; 이메일</code>은 오탐 함정입니다. 정직한 머신은 여섯 상태입니다: <code>reorged → 재포함 대기 → (재포함 | 타임아웃 후 실패)</code>. <em>혜택</em>은 즉시 롤백하되, <em>고객에게 보이는 판정</em>은 유예 기간을 거칠 것.</p>
 <h3>시험 방법, 그리고 Jayverse 가 꽂히는 자리</h3>
 <p>로컬에서 아주 잘 돌아갑니다: anvil 의 snapshot/revert(또는 <code>anvil_reorg</code>)로 결제를 채굴 → 되감기 → 그 트랜잭션 없이 재채굴 — 그리고 인덱서가 receipt 소멸을 알아채는지 확인합니다. <code>ponder-reorg-indexer</code>가 이 카드의 인프라 절반입니다: &quot;제거 감지&quot;는 실제로 인덱서에서 일어납니다. 이 목록 자체의 계획에 적용하면: Verex 베팅은 <code>included</code>에서 적립(되돌릴 수 있는 장부 항목), 출금은 <code>finalized</code> 대기, 그리고 <code>x402-settlement-retry</code>가 같은 경계를 공유합니다 — facilitator 의 &quot;정산됨&quot; 응답도 하나의 receipt 이고, 이 카드는 후속 질문을 던집니다: <em>몇 층에서</em> 정산됐는가? 로컬 supersim L2 실험실과 자연스럽게 짝이 됩니다: 같은 포크, 어긋나는 세 시계, 반응하는 상태 머신 하나.</p>
-      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-erc-8141.html">&larr; 31. ERC-8141</a><a href="pocs-l2-finality-three-clocks.html">33. L2 finality is three clocks &rarr;</a></div>
   </div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Connect once means authorize a session — Notes</title>
+<title>Connect once means authorize a session — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Connect once means authorize a session</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Connect once means authorize a session</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#37</span><span>PoC</span></p>
       <h1>Connect once means authorize a session</h1>
@@ -426,7 +426,7 @@
 <p>That is what &quot;assert each event narrows or invalidates application state correctly&quot; really encodes. Authority should only <em>shrink</em> or require a fresh grant; it must never quietly <em>grow</em>. A session that appears to gain a method or an account without an explicit re-proposal is a bug — or an attack. Modeling the session as an explicit state machine (proposed → established → updated → expired/disconnected/revoked → re-proposed) is what makes the invariant checkable.</p>
 <h3>Expiry and revocation are first-class, not edge cases</h3>
 <p>A session past <code>expiry</code> is not authority — treating it as connected is the authorization-domain twin of <code>receipt-is-not-settlement</code> (a thing that <em>looks</em> done but is not valid). And revocation must be <strong>visible and bidirectional</strong>: the user can <code>session_delete</code> from the wallet, and the app must surface its own revocation path. A &quot;connected&quot; you cannot cleanly observe or revoke is a lingering capability — the forgotten-OAuth-grant failure mode, which is the <code>who-holds-the-mint</code> / &quot;who can halt&quot; theme in the authorization domain.</p>
-      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -483,7 +483,7 @@
 <p>&quot;각 이벤트가 앱 상태를 올바르게 좁히거나 무효화하는지 단언&quot;이 실제로 인코딩하는 게 이것입니다. 권한은 오직 <em>줄어들거나</em> 새 승인을 요구해야지, 조용히 <em>늘어나면</em> 안 됩니다. 명시적 재제안 없이 메서드나 계정을 얻은 듯 보이는 세션은 버그 — 또는 공격입니다. 세션을 명시적 상태기계(제안됨 → 성립됨 → 갱신됨 → 만료/끊김/취소됨 → 재제안)로 모델링하는 것이 그 불변식을 검사 가능하게 합니다.</p>
 <h3>만료와 취소는 1급 개념이지 예외가 아니다</h3>
 <p><code>expiry</code> 지난 세션은 권한이 아닙니다 — 연결됨으로 취급하는 것은 <code>receipt-is-not-settlement</code> 의 인가판 쌍둥이(<em>완료처럼 보이지만</em> 유효하지 않음)입니다. 그리고 취소는 <strong>보이고 양방향</strong>이어야 합니다 — 사용자는 지갑에서 <code>session_delete</code> 할 수 있고, 앱도 자체 취소 경로를 드러내야 합니다. 깨끗이 관찰·취소할 수 없는 &quot;연결됨&quot;은 남아 있는 권한 — 잊힌 OAuth 승인 실패 유형이며, 인가 도메인의 <code>who-holds-the-mint</code> / &quot;누가 멈추나&quot; 주제입니다.</p>
-      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-private-rpc-visibility.html">&larr; 36. Private RPC changes visibility, not settlement</a><a href="pocs-foundry-invariant-reachability.html">38. An invariant test is only as good as the actions it reaches &rarr;</a></div>
   </div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The CLI leaves an artifact; the MCP holds a conversation — Notes</title>
+<title>The CLI leaves an artifact; the MCP holds a conversation — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,13 +362,13 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; The CLI leaves an artifact; the MCP holds a conversation</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; The CLI leaves an artifact; the MCP holds a conversation</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#125</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#123</span><span>PoC</span></p>
       <h1>The CLI leaves an artifact; the MCP holds a conversation</h1>
       <p class="lead">Two ways to drive Blender from Codex or Claude Code: the CLI generates Blender Python and runs it headless to an output, while MCP connects to a <em>running</em> Blender and operates it interactively, reading the live scene between steps. Their capabilities overlap — either can add a cube — but the workflow differs on one axis: the CLI leaves a re-runnable, reviewable script (batch, reproducibility, server execution); the MCP holds a stateful conversation with a live process (inspect, adjust, verify, repeat). The mature move is both — CLI to generate and batch-output, MCP to refine in the middle.</p>
       <p class="meta">Not yet scoped — a workflow decomposition, not a build. Take one real task (&quot;build a classroom scene, then export GLB&quot;) and route it across the two: <strong>CLI</strong> to generate the base scene as a Python script (durable, reviewable, re-runnable — floor, walls, desks, board, lights in one pass), <strong>MCP</strong> to adjust interactively against the live scene (&quot;fewer desks,&quot; &quot;bigger blackboard,&quot; &quot;light from the window&quot;), then <strong>CLI</strong> again to batch-output (multi-camera renders, GLB export, poly-count check). The discipline the article names is worth keeping: tell the AI not just <em>what to build</em> but <em>how to verify</em> — a fixed-camera render makes before/after comparable (the CLI&#39;s reproducible check), the live viewport makes it immediate (the MCP&#39;s stateful check). Deliverable: a decision table mapping task properties (batch? reproducible? stateful? interactive?) to CLI vs MCP, plus the combined CLI -&gt; MCP -&gt; CLI pipeline for a task that needs both. Source: npaka (note.com), &quot;AIでBlenderを操作する方法 — CLIとMCPの使い分け,&quot; 2026-09-03 — a practitioner how-to; Blender is the illustration, the CLI-vs-MCP axis is the transferable part.</p>
@@ -462,7 +462,7 @@
 <h3>Related cards</h3>
 <p><code>mcp-three-sides</code> (the protocol underneath), <code>constraint-was-the-product</code> (the same CLI-vs-MCP axis, weighed on auth/scale instead), <code>agent-ask-not-write</code> (the deterministic reviewable artifact the CLI leaves), <code>a-boolean-hides-a-state-machine</code> (stateful vs stateless, live vs reproducible), <code>simulate-before-sign</code> (&quot;what to build&quot; plus &quot;how to verify&quot;).</p>
       
-      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -555,9 +555,9 @@
 <h3>관련 카드</h3>
 <p><code>mcp-three-sides</code>(아래의 프로토콜), <code>constraint-was-the-product</code>(같은 CLI 대 MCP 축, 인증/규모로 저울질), <code>agent-ask-not-write</code>(CLI 가 남기는 결정적 검토 가능 산출물), <code>a-boolean-hides-a-state-machine</code>(상태 대 무상태, 라이브 대 재현), <code>simulate-before-sign</code>(&quot;무엇을 만들지&quot; + &quot;어떻게 검증할지&quot;).</p>
       
-      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-agent-ask-not-write.html">&larr; 124. Give the agent the right to ask, not the right to write</a><a href="pocs-ai-engineering-is-framing-non-determinism.html">126. Every AI-engineering skill is framing the same non-determinism &rarr;</a></div>
+    <div class="pager"><a href="pocs-agent-ask-not-write.html">&larr; 122. Give the agent the right to ask, not the right to write</a><a href="pocs-ai-engineering-is-framing-non-determinism.html">124. Every AI-engineering skill is framing the same non-determinism &rarr;</a></div>
   </div>
   </main>
 </div>

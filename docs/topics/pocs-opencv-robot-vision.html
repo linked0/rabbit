@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pixels to millimetres — the step before the arm moves — Notes</title>
+<title>Pixels to millimetres — the step before the arm moves — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,13 +362,13 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Pixels to millimetres — the step before the arm moves</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Pixels to millimetres — the step before the arm moves</p>
   <header class="topic-hero">
-      <p class="topic-kicker"><span class="topic-no">#175</span><span>PoC</span></p>
+      <p class="topic-kicker"><span class="topic-no">#173</span><span>PoC</span></p>
       <h1>Pixels to millimetres — the step before the arm moves</h1>
       <p class="lead">Camera calibration, ArUco pose and hand-eye alignment on a built-in webcam and a sheet of A4. The output is not a demo but two error numbers.</p>
       <p class="meta">Not yet scoped — <code>pip install opencv-python opencv-contrib-python</code>, print one DICT_4X4_50 marker from chev.me/arucogen, and check that the axes render on a webcam with rough intrinsics (fx=fy=image width, cx/cy=centre). Real calibration second. docs.opencv.org</p>
@@ -383,7 +383,7 @@
       <h2>How it works</h2>
       <p>Four steps, and only the last two are optional. Intrinsics: fifteen to twenty chessboard or ChArUco shots through <code>cv2.calibrateCamera</code> yield the matrix K (fx, fy, cx, cy) and the distortion coefficients, and reprojection RMS is the first of the two numbers this card exists to produce — under one pixel is the pass mark. Pose: an ArUco marker on the object or the gripper gives full 6-DOF position and rotation relative to the camera, and there is one version trap worth knowing before it costs half an hour — <code>cv2.aruco.estimatePoseSingleMarkers</code> was deprecated in OpenCV 4.7, so the current path is <code>cv2.aruco.ArucoDetector</code> for corners followed by <code>cv2.solvePnP</code> with SOLVEPNP_IPPE_SQUARE, which is why a large share of the tutorials online no longer run as written. Hand-eye: <code>cv2.calibrateHandEye</code> aligns the camera frame with the robot base frame, and the classic first mistake is not the algorithm choice (Tsai, Park, Horaud) but the setup — a camera mounted on the arm is eye-in-hand, a camera on a tripod is eye-to-hand, and getting that backwards produces a transform that is wrong in a way that still looks plausible. Inference: <code>cv2.dnn</code> runs an ONNX detector with no second framework, which is the natural lightweight pairing for an edge board like the Jetson Orin Nano Super and the reason that item sits next in the queue. The second number is the one that actually settles what this camera can do: put the marker at a distance measured with a ruler, compare it to tvec, and record the error as a percentage. Everything above is setup for those two figures — RMS and range error — and a card that reports them is worth more than one that reports that the axes rendered.</p>
       
-      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -397,9 +397,9 @@
       <h2>동작 방식</h2>
       <p>단계는 넷이고 뒤의 둘만 선택입니다. <strong>내부 파라미터</strong>: 체스보드나 ChArUco 보드를 15~20장 찍어 <code>cv2.calibrateCamera</code>에 넣으면 행렬 K(fx·fy·cx·cy)와 왜곡계수가 나오고, <strong>재투영 RMS</strong>가 이 카드가 만들려는 두 숫자 중 첫 번째입니다 — 1픽셀 미만이 합격선. <strong>자세추정</strong>: 물체나 그리퍼에 붙인 ArUco 마커가 카메라 기준 6DOF 위치와 회전을 바로 줍니다. 여기 30분을 잡아먹기 전에 알아둘 <strong>버전 함정</strong>이 하나 있습니다 — <code>cv2.aruco.estimatePoseSingleMarkers</code>는 OpenCV 4.7에서 폐기됐으므로, 현행 경로는 <code>cv2.aruco.ArucoDetector</code>로 코너를 검출하고 <code>cv2.solvePnP</code>(플래그 <code>SOLVEPNP_IPPE_SQUARE</code>)로 자세를 푸는 것입니다. 인터넷 예제 상당수가 적힌 대로 돌지 않는 이유가 이것입니다. <strong>hand-eye</strong>: <code>cv2.calibrateHandEye</code>가 카메라 좌표계와 로봇 베이스 좌표계를 정렬하는데, 초보의 첫 실수는 알고리즘 선택(Tsai·Park·Horaud)이 아니라 <strong>설정</strong>입니다 — 카메라가 팔에 붙어 있으면 eye-in-hand, 삼각대에 있으면 eye-to-hand이고, 이걸 반대로 잡으면 <strong>그럴듯해 보이면서 틀린</strong> 변환이 나옵니다. <strong>추론</strong>: <code>cv2.dnn</code>은 별도 프레임워크 없이 ONNX 검출 모델을 돌리는데, Jetson Orin Nano Super 같은 엣지 보드와 짝지을 때의 자연스러운 경량 조합이고 그 항목이 큐에서 다음 순서인 이유이기도 합니다. 이 카메라로 어디까지 할 수 있는지를 실제로 결정하는 것은 <strong>두 번째 숫자</strong>입니다: 마커를 자로 잰 거리에 놓고 <code>tvec</code>과 비교해 오차를 퍼센트로 기록합니다. 위의 전부는 그 두 수치 — <strong>RMS와 거리 오차율</strong> — 를 위한 준비이고, 그것을 보고하는 카드가 &quot;축이 그려졌다&quot;고 보고하는 카드보다 값어치가 큽니다.</p>
       
-      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
-    <div class="pager"><a href="pocs-bandwidth-not-capacity.html">&larr; 174. Capacity loads the model; bandwidth serves it</a><a href="pocs-the-70-has-to-be-wrong.html">176. The 70% has to be wrong three times in ten &rarr;</a></div>
+    <div class="pager"><a href="pocs-bandwidth-not-capacity.html">&larr; 172. Capacity loads the model; bandwidth serves it</a><a href="pocs-the-70-has-to-be-wrong.html">174. The 70% has to be wrong three times in ten &rarr;</a></div>
   </div>
   </main>
 </div>

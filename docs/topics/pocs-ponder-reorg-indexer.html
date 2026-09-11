@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ponder — the indexer is the reorg handler — Notes</title>
+<title>Ponder — the indexer is the reorg handler — Dev Notes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -362,11 +362,11 @@
 
       <p class="no-results" id="no-results">No match.</p>
     </nav>
-    <div class="rail-foot"><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
   </aside>
   <main class="content content-solo">
   <div class="solo">
-    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Notes</a> &rsaquo; Ponder — the indexer is the reorg handler</p>
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Ponder — the indexer is the reorg handler</p>
   <header class="topic-hero">
       <p class="topic-kicker"><span class="topic-no">#26</span><span>PoC</span></p>
       <h1>Ponder — the indexer is the reorg handler</h1>
@@ -449,7 +449,7 @@
 <p>How much rollback machinery an indexer must keep is exactly the finality lag of its chain: only the unfinalized window can be orphaned, so the undo log lives there and can be dropped once a block is final. An RPC cache never has to think about this; an indexer is defined by it.</p>
 <h3>What the card does not say</h3>
 <p>It does not say &quot;Ponder is good.&quot; The reasoning chain — we cannot avoid an indexer, and the indexer must own reorgs — is the card&#39;s setup, but the last step, <em>therefore Ponder</em>, is earned by the test, not assumed. Ponder <em>claims</em> to own the problem (its pitch against The Graph&#39;s subgraphs and Subsquid is local-first TypeScript with reorg handling built in); the PoC exists to verify that claim before a database is bet on it. Pass, and the reorg machinery came for free. One stale row, and what remains is a fast query layer that returns wrong answers.</p>
-      <p><a href="../notes.html">&larr; All Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
     </article>
     <article id="ko" lang="ko">
       <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
@@ -529,7 +529,7 @@
 <p>인덱서가 유지해야 할 rollback 장치의 깊이는 정확히 그 체인의 파이널리티 지연입니다: 미확정 구간만 고아가 될 수 있으므로 undo 로그는 그 구간에만 살고, 블록이 확정되면 버려도 됩니다. RPC 캐시는 이걸 고민할 필요가 없지만, 인덱서는 이것으로 정의됩니다.</p>
 <h3>카드가 말하지 않는 것</h3>
 <p>카드는 &quot;Ponder 가 좋다&quot;고 말하지 않습니다. 추론 사슬 — 인덱서는 피할 수 없고, 인덱서가 리오그를 소유해야 한다 — 까지는 카드의 설정이지만, 마지막 걸음인 <em>그러므로 Ponder</em> 는 가정이 아니라 테스트가 벌어다 주는 결론입니다. Ponder 는 이 문제를 소유한다고 <em>주장</em>합니다(The Graph 서브그래프·Subsquid 에 맞서는 셀링 포인트가 리오그 처리 내장 로컬 우선 TypeScript). PoC 는 DB 를 걸기 전에 그 주장을 검증하려고 존재합니다. 통과하면 리오그 장치를 공짜로 얻은 것이고, 낡은 행이 하나라도 남으면 남는 것은 틀린 답을 빨리 돌려주는 쿼리 계층입니다.</p>
-      <p><a href="../notes.html">&larr; 전체 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
     </article>
     <div class="pager"><a href="pocs-rpc-view-not-consensus.html">&larr; 25. An RPC response is a view, not consensus</a><a href="pocs-embedded-wallet-policy.html">27. The wallet disappeared into the app &rarr;</a></div>
   </div>
