@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graph &amp; Loop Engineering — route, check, repeat instead of stuffing one prompt — Dev Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 배지를 제목 아래 줄에 (jay, 2026-09-11) — 숫자가 커져도(95% done · 386/406) 제목 옆에서
+     넘치지 않도록, 제목이 첫 줄을 다 차지하고 배지는 다음 줄로 내려가 내용만큼만 차지한다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:1 0 100%; }
+  .rail-head > .rail-note { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-top:6px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
+  /* 페이스 리마인더는 핑크 톤 (jay, 2026-09-11) — % done 배지(파랑)와 구분되는 강조. */
+  /* inline-block 으로만 (jay, 2026-09-11) — 인라인이라 세로 패딩이 안 먹어 낮아 보였다.
+     패딩은 .rail-note 기본값(1px 7px)을 그대로 써서 파란 배지와 높이가 정확히 같아진다. */
+  .rail-note-pink { color:#ec4899; background:rgba(236,72,153,0.14); display:inline-block; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-done { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  /* Important/All 등급 토글 (jay, 2026-09-08) — 진입 시 기본은 Important. */
+  .rail-tier { display:flex; gap:6px; margin-bottom:8px; }
+  .rail-tier .tier-btn {
+    flex:1 1 auto; padding:6px 10px; font:inherit; font-size:0.78rem; font-weight:600;
+    color:var(--text2); background:var(--card); border:1px solid var(--border);
+    border-radius:8px; cursor:pointer;
+  }
+  .rail-tier .tier-btn:hover { color:var(--text); }
+  .rail-tier .tier-btn.on { color:var(--accent); border-color:var(--accent); background:var(--accent-soft); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; padding-right:.4em; } /* 3자리 번호가 제목에 붙던 것(146The…) — 고정 간격 (2026-09-08) */
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  /* 출처 태그 칩 — Fundamentals(Economics·Algorithms·Math) 항목이 어디서 왔는지 (jay, 2026-09-11). */
+  .topic-tag { flex:0 0 auto; font-size:0.64rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase;
+    padding:1px 6px; border-radius:999px; color:var(--text2); background:var(--accent-soft); white-space:nowrap; }
+  .nav-text .topic-tag { font-size:0.6rem; padding:0 5px; margin-right:.35em; vertical-align:middle; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
+
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  /* 목록 행 안에서는 링크들과 한 줄에 서야 하므로 더 작고 납작하게 (jay, 2026-08-28). */
+  .copy-inline { font-size:0.72rem; padding:2px 9px; margin-left:6px; vertical-align:baseline; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a><span class="rail-note">14% done &middot; 58/409</span>
+      <span class="rail-sub"><span class="rail-note rail-note-pink">2%/day &rarr; 95% done</span></span>
+      <div class="rail-jump" id="rail-jump"></div>
+    </div>
+    <div class="rail-search">
+      
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Graph &amp; Loop Engineering — route, check, repeat instead of stuffing one prompt</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#53</span><span>PoC</span></p>
+      <h1>Graph &amp; Loop Engineering — route, check, repeat instead of stuffing one prompt</h1>
+      <p class="lead">Google&#39;s free two-hour course maps the progression from one prompt to agent graphs, hundred-agent parallel fan-out, control loops, and self-improving workflows. The durable technique is not &#39;more agents&#39;: make routing, checking, retrying, and rebuilding explicit runtime control flow.</p>
+      <p class="meta">Follow the course in five checkpoints, but ship one small graph rather than copying the hundred-agent headline: 0:35 graph engineering from scratch; 31:17 first agent graph; 43:40 hundreds of agents in parallel; 1:04:58 loop engineering (route, check, repeat); 1:30:09 self-improving graphs. Build a three-node workflow — planner → worker → checker — with one typed handoff, one bounded retry, and one recorded failure reason. Only add parallel fan-out after the checker can reject bad work and the merge step can reconcile conflicting results. Course link was not supplied with the note; attach and verify the official Google source before treating the outline as a citation.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Graph & Loop Engineering — route, check, repeat instead of stuffing one prompt\n\nGoogle's free two-hour course maps the progression from one prompt to agent graphs, hundred-agent parallel fan-out, control loops, and self-improving workflows. The durable technique is not 'more agents': make routing, checking, retrying, and rebuilding explicit runtime control flow.\n\nFollow the course in five checkpoints, but ship one small graph rather than copying the hundred-agent headline: 0:35 graph engineering from scratch; 31:17 first agent graph; 43:40 hundreds of agents in parallel; 1:04:58 loop engineering (route, check, repeat); 1:30:09 self-improving graphs. Build a three-node workflow — planner → worker → checker — with one typed handoff, one bounded retry, and one recorded failure reason. Only add parallel fan-out after the checker can reject bad work and the merge step can reconcile conflicting results. Course link was not supplied with the note; attach and verify the official Google source before treating the outline as a citation.\n\n## Why\n\nMost agent systems fail by turning orchestration into prose: one prompt is asked to plan, execute, verify, recover, and decide when it is done. Every extra instruction shares the same context and the same failure surface, so a mistake in planning can quietly become the premise of verification. A graph makes those responsibilities separate nodes with explicit edges and state; a loop makes failure a transition rather than another sentence saying 'please check carefully.'\n\nThe distinction matters. A graph answers **where does work go next?** A loop answers **what evidence permits progress, and what happens when the evidence fails?** Parallelism is only a graph shape — fan-out and fan-in — and multiplying agents before defining the checker and merge policy multiplies disagreement, cost, and correlated errors. One hundred agents are useful only when their tasks are independent enough to fan out and their outputs have a deterministic or well-scoped way to merge.\n\nSelf-improvement should also be read narrowly. The safe version does not let a workflow rewrite itself without a boundary; it records failures, proposes a graph change, evaluates that candidate against a fixed harness, and promotes it only through a gate. The improvement loop is therefore graph → run → trace → evaluate → propose → gated replacement. The evaluator and budget remain outside the graph being improved, just as an agent's spend limit must remain outside the agent. The real upgrade over one giant prompt is inspectable control flow with bounded failure, not autonomy as a slogan.\n\n## How it works\n\n### Course map\n\n| Progress | Timestamp | Step |\n|---|---:|---|\n| **0%** | **0:35** | Graph engineering from scratch |\n| **30%** | **31:17** | Build your first agent graph |\n| **45%** | **43:40** | Run hundreds of agents in parallel |\n| **75%** | **1:04:58** | Loop engineering: route, check, repeat |\n| **100%** | **1:30:09** | Self-improving graphs that work while you sleep |\n\n### The minimum useful graph\n\n```text\nrequest → planner → worker → checker ──pass──→ result\n                         ↑        │\n                         └─retry───┘  (bounded)\n```\n\nEach edge carries typed state. The checker returns `pass` or a structured failure reason; the retry edge has a hard attempt and cost limit. A terminal failure is an expected state, not an infinite loop.\n\n### Scale only after the control plane exists\n\n| Addition | Required control | Otherwise |\n|---|---|---|\n| **Parallel fan-out** | independent task boundary | duplicated or conflicting work |\n| **Fan-in** | merge and conflict policy | one agent silently overwrites another |\n| **Retry loop** | exit condition + attempt/cost budget | infinite spend |\n| **Dynamic routing** | typed route reasons + trace | an uninspectable prompt in disguise |\n| **Self-improvement** | fixed evaluator + promotion gate + rollback | the graph grades its own homework |\n\n### The runtime rule\n\nDo not encode recovery as another paragraph in one agent's prompt. Encode it as an edge that can be traced, counted, bounded, and tested: **route → check → repeat or rebuild**. Related: `the-harness-not-the-model` (the deterministic control layer) and `agentic-intent-veto` (bounds remain outside the agent).\n"</script>
+      <h2>Why</h2>
+      <p>Most agent systems fail by turning orchestration into prose: one prompt is asked to plan, execute, verify, recover, and decide when it is done. Every extra instruction shares the same context and the same failure surface, so a mistake in planning can quietly become the premise of verification. A graph makes those responsibilities separate nodes with explicit edges and state; a loop makes failure a transition rather than another sentence saying &#39;please check carefully.&#39;</p>
+<p>The distinction matters. A graph answers <strong>where does work go next?</strong> A loop answers <strong>what evidence permits progress, and what happens when the evidence fails?</strong> Parallelism is only a graph shape — fan-out and fan-in — and multiplying agents before defining the checker and merge policy multiplies disagreement, cost, and correlated errors. One hundred agents are useful only when their tasks are independent enough to fan out and their outputs have a deterministic or well-scoped way to merge.</p>
+<p>Self-improvement should also be read narrowly. The safe version does not let a workflow rewrite itself without a boundary; it records failures, proposes a graph change, evaluates that candidate against a fixed harness, and promotes it only through a gate. The improvement loop is therefore graph → run → trace → evaluate → propose → gated replacement. The evaluator and budget remain outside the graph being improved, just as an agent&#39;s spend limit must remain outside the agent. The real upgrade over one giant prompt is inspectable control flow with bounded failure, not autonomy as a slogan.</p>
+      <h2>How it works</h2>
+      <h3>Course map</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Progress</th>
+<th align="right">Timestamp</th>
+<th>Step</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>0%</strong></td>
+<td align="right"><strong>0:35</strong></td>
+<td>Graph engineering from scratch</td>
+</tr>
+<tr>
+<td><strong>30%</strong></td>
+<td align="right"><strong>31:17</strong></td>
+<td>Build your first agent graph</td>
+</tr>
+<tr>
+<td><strong>45%</strong></td>
+<td align="right"><strong>43:40</strong></td>
+<td>Run hundreds of agents in parallel</td>
+</tr>
+<tr>
+<td><strong>75%</strong></td>
+<td align="right"><strong>1:04:58</strong></td>
+<td>Loop engineering: route, check, repeat</td>
+</tr>
+<tr>
+<td><strong>100%</strong></td>
+<td align="right"><strong>1:30:09</strong></td>
+<td>Self-improving graphs that work while you sleep</td>
+</tr>
+</tbody></table></div>
+<h3>The minimum useful graph</h3>
+<pre><code class="language-text">request → planner → worker → checker ──pass──→ result
+                         ↑        │
+                         └─retry───┘  (bounded)
+</code></pre>
+<p>Each edge carries typed state. The checker returns <code>pass</code> or a structured failure reason; the retry edge has a hard attempt and cost limit. A terminal failure is an expected state, not an infinite loop.</p>
+<h3>Scale only after the control plane exists</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Addition</th>
+<th>Required control</th>
+<th>Otherwise</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Parallel fan-out</strong></td>
+<td>independent task boundary</td>
+<td>duplicated or conflicting work</td>
+</tr>
+<tr>
+<td><strong>Fan-in</strong></td>
+<td>merge and conflict policy</td>
+<td>one agent silently overwrites another</td>
+</tr>
+<tr>
+<td><strong>Retry loop</strong></td>
+<td>exit condition + attempt/cost budget</td>
+<td>infinite spend</td>
+</tr>
+<tr>
+<td><strong>Dynamic routing</strong></td>
+<td>typed route reasons + trace</td>
+<td>an uninspectable prompt in disguise</td>
+</tr>
+<tr>
+<td><strong>Self-improvement</strong></td>
+<td>fixed evaluator + promotion gate + rollback</td>
+<td>the graph grades its own homework</td>
+</tr>
+</tbody></table></div>
+<h3>The runtime rule</h3>
+<p>Do not encode recovery as another paragraph in one agent&#39;s prompt. Encode it as an edge that can be traced, counted, bounded, and tested: <strong>route → check → repeat or rebuild</strong>. Related: <code>the-harness-not-the-model</code> (the deterministic control layer) and <code>agentic-intent-veto</code> (bounds remain outside the agent).</p>
+      
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# Graph & Loop Engineering — 한 프롬프트를 키우지 말고 분기·검사·반복하라\n\nGoogle의 무료 2시간 강의는 하나의 프롬프트에서 에이전트 그래프, 100개 에이전트 병렬 fan-out, 제어 루프, 자기개선 워크플로까지 이어집니다. 지속되는 기법은 '에이전트를 더 많이'가 아니라 **분기·검사·재시도·재구성을 런타임 제어 흐름으로 명시하는 것**입니다.\n\n강의를 다섯 체크포인트로 따라가되, '100개 에이전트' 헤드라인을 복제하지 말고 작은 그래프 하나를 출하합니다: 0:35 처음부터 그래프 엔지니어링, 31:17 첫 에이전트 그래프, 43:40 수백 에이전트 병렬 실행, 1:04:58 루프 엔지니어링(route, check, repeat), 1:30:09 자기개선 그래프. planner → worker → checker 세 노드로 만들고, 타입이 있는 handoff 하나, 횟수가 제한된 재시도 하나, 기록되는 실패 이유 하나를 둡니다. checker가 나쁜 결과를 거부하고 merge 단계가 충돌한 결과를 조정할 수 있게 된 뒤에만 병렬 fan-out을 추가합니다. 노트에 강의 링크가 없으므로, 인용 자료로 쓰기 전 Google 공식 출처 링크를 붙여 확인합니다.\n\n## 왜\n\n대부분의 에이전트 시스템은 오케스트레이션을 산문으로 만들어 실패합니다. 프롬프트 하나에 계획·실행·검증·복구·종료 판단을 모두 시킵니다. 지시를 더할 때마다 같은 컨텍스트와 같은 실패 표면을 공유하므로, 계획의 오류가 조용히 검증의 전제가 될 수 있습니다. 그래프는 이 책임들을 명시적인 edge와 state를 가진 별도 노드로 나누고, 루프는 실패를 '주의해서 확인해'라는 문장 하나가 아니라 **상태 전이**로 만듭니다.\n\n둘의 차이가 중요합니다. 그래프는 **다음 작업이 어디로 가는가?**에 답하고, 루프는 **어떤 증거가 진행을 허용하며, 증거가 실패하면 무슨 일이 일어나는가?**에 답합니다. 병렬 실행은 fan-out과 fan-in이라는 그래프 모양일 뿐입니다. checker와 merge 정책을 정의하기 전에 에이전트 수부터 늘리면 의견 불일치·비용·상관된 오류가 함께 늘어납니다. 100개 에이전트는 작업이 충분히 독립적이고 결과를 결정론적으로 또는 좁은 규칙으로 합칠 수 있을 때만 쓸모가 있습니다.\n\n자기개선도 좁게 읽어야 합니다. 안전한 버전은 워크플로가 경계 없이 자신을 다시 쓰게 하지 않습니다. 실패를 기록하고, 그래프 변경안을 만들고, 고정된 하네스로 후보를 평가한 뒤, 게이트를 통과한 것만 승격합니다. 즉 개선 루프는 **graph → run → trace → evaluate → propose → gated replacement**입니다. 평가기와 예산은 개선 대상 그래프 바깥에 남습니다 — 에이전트의 지출 상한이 에이전트 바깥에 있어야 하는 것과 같습니다. 거대한 프롬프트 하나보다 나은 진짜 이유는 구호로서의 자율성이 아니라 **관찰 가능한 제어 흐름과 제한된 실패**입니다.\n\n## 동작 방식\n\n### 강의 지도\n\n| 진행률 | 타임스탬프 | 단계 |\n|---|---:|---|\n| **0%** | **0:35** | 처음부터 Graph engineering |\n| **30%** | **31:17** | 첫 에이전트 그래프 만들기 |\n| **45%** | **43:40** | 수백 에이전트 병렬 실행 |\n| **75%** | **1:04:58** | Loop engineering: route, check, repeat |\n| **100%** | **1:30:09** | 자는 동안 작동하는 자기개선 그래프 |\n\n### 최소로 쓸모 있는 그래프\n\n```text\n요청 → planner → worker → checker ──통과──→ 결과\n                       ↑        │\n                       └─재시도──┘  (횟수 제한)\n```\n\n각 edge는 타입이 있는 상태를 전달합니다. checker는 `pass` 또는 구조화된 실패 이유를 반환하고, 재시도 edge에는 시도 횟수와 비용의 단단한 상한이 있습니다. 최종 실패는 무한 루프가 아니라 예상된 상태입니다.\n\n### 제어면을 만든 뒤에만 확장\n\n| 추가 요소 | 먼저 필요한 통제 | 없으면 |\n|---|---|---|\n| **병렬 fan-out** | 독립적인 작업 경계 | 중복되거나 충돌하는 작업 |\n| **Fan-in** | 병합·충돌 정책 | 한 에이전트가 다른 결과를 조용히 덮어씀 |\n| **재시도 루프** | 종료 조건 + 시도/비용 예산 | 무한 지출 |\n| **동적 라우팅** | 타입이 있는 분기 이유 + trace | 모습을 바꾼 불투명 프롬프트 |\n| **자기개선** | 고정 평가기 + 승격 게이트 + 롤백 | 그래프가 자기 숙제를 자기가 채점 |\n\n### 런타임 규칙\n\n복구를 한 에이전트 프롬프트의 문단 하나로 넣지 않습니다. 추적·계수·제한·테스트할 수 있는 edge로 만듭니다: **route → check → repeat 또는 rebuild**. 관련: `the-harness-not-the-model`(결정론적 제어 계층), `agentic-intent-veto`(경계는 에이전트 바깥에 둠).\n"</script>
+      <h1>Graph &amp; Loop Engineering — 한 프롬프트를 키우지 말고 분기·검사·반복하라</h1>
+      <p class="lead">Google의 무료 2시간 강의는 하나의 프롬프트에서 에이전트 그래프, 100개 에이전트 병렬 fan-out, 제어 루프, 자기개선 워크플로까지 이어집니다. 지속되는 기법은 &#39;에이전트를 더 많이&#39;가 아니라 <strong>분기·검사·재시도·재구성을 런타임 제어 흐름으로 명시하는 것</strong>입니다.</p>
+      <p class="meta">강의를 다섯 체크포인트로 따라가되, &#39;100개 에이전트&#39; 헤드라인을 복제하지 말고 작은 그래프 하나를 출하합니다: 0:35 처음부터 그래프 엔지니어링, 31:17 첫 에이전트 그래프, 43:40 수백 에이전트 병렬 실행, 1:04:58 루프 엔지니어링(route, check, repeat), 1:30:09 자기개선 그래프. planner → worker → checker 세 노드로 만들고, 타입이 있는 handoff 하나, 횟수가 제한된 재시도 하나, 기록되는 실패 이유 하나를 둡니다. checker가 나쁜 결과를 거부하고 merge 단계가 충돌한 결과를 조정할 수 있게 된 뒤에만 병렬 fan-out을 추가합니다. 노트에 강의 링크가 없으므로, 인용 자료로 쓰기 전 Google 공식 출처 링크를 붙여 확인합니다.</p>
+      <h2>왜</h2>
+      <p>대부분의 에이전트 시스템은 오케스트레이션을 산문으로 만들어 실패합니다. 프롬프트 하나에 계획·실행·검증·복구·종료 판단을 모두 시킵니다. 지시를 더할 때마다 같은 컨텍스트와 같은 실패 표면을 공유하므로, 계획의 오류가 조용히 검증의 전제가 될 수 있습니다. 그래프는 이 책임들을 명시적인 edge와 state를 가진 별도 노드로 나누고, 루프는 실패를 &#39;주의해서 확인해&#39;라는 문장 하나가 아니라 <strong>상태 전이</strong>로 만듭니다.</p>
+<p>둘의 차이가 중요합니다. 그래프는 <strong>다음 작업이 어디로 가는가?</strong>에 답하고, 루프는 <strong>어떤 증거가 진행을 허용하며, 증거가 실패하면 무슨 일이 일어나는가?</strong>에 답합니다. 병렬 실행은 fan-out과 fan-in이라는 그래프 모양일 뿐입니다. checker와 merge 정책을 정의하기 전에 에이전트 수부터 늘리면 의견 불일치·비용·상관된 오류가 함께 늘어납니다. 100개 에이전트는 작업이 충분히 독립적이고 결과를 결정론적으로 또는 좁은 규칙으로 합칠 수 있을 때만 쓸모가 있습니다.</p>
+<p>자기개선도 좁게 읽어야 합니다. 안전한 버전은 워크플로가 경계 없이 자신을 다시 쓰게 하지 않습니다. 실패를 기록하고, 그래프 변경안을 만들고, 고정된 하네스로 후보를 평가한 뒤, 게이트를 통과한 것만 승격합니다. 즉 개선 루프는 <strong>graph → run → trace → evaluate → propose → gated replacement</strong>입니다. 평가기와 예산은 개선 대상 그래프 바깥에 남습니다 — 에이전트의 지출 상한이 에이전트 바깥에 있어야 하는 것과 같습니다. 거대한 프롬프트 하나보다 나은 진짜 이유는 구호로서의 자율성이 아니라 <strong>관찰 가능한 제어 흐름과 제한된 실패</strong>입니다.</p>
+      <h2>동작 방식</h2>
+      <h3>강의 지도</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>진행률</th>
+<th align="right">타임스탬프</th>
+<th>단계</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>0%</strong></td>
+<td align="right"><strong>0:35</strong></td>
+<td>처음부터 Graph engineering</td>
+</tr>
+<tr>
+<td><strong>30%</strong></td>
+<td align="right"><strong>31:17</strong></td>
+<td>첫 에이전트 그래프 만들기</td>
+</tr>
+<tr>
+<td><strong>45%</strong></td>
+<td align="right"><strong>43:40</strong></td>
+<td>수백 에이전트 병렬 실행</td>
+</tr>
+<tr>
+<td><strong>75%</strong></td>
+<td align="right"><strong>1:04:58</strong></td>
+<td>Loop engineering: route, check, repeat</td>
+</tr>
+<tr>
+<td><strong>100%</strong></td>
+<td align="right"><strong>1:30:09</strong></td>
+<td>자는 동안 작동하는 자기개선 그래프</td>
+</tr>
+</tbody></table></div>
+<h3>최소로 쓸모 있는 그래프</h3>
+<pre><code class="language-text">요청 → planner → worker → checker ──통과──→ 결과
+                       ↑        │
+                       └─재시도──┘  (횟수 제한)
+</code></pre>
+<p>각 edge는 타입이 있는 상태를 전달합니다. checker는 <code>pass</code> 또는 구조화된 실패 이유를 반환하고, 재시도 edge에는 시도 횟수와 비용의 단단한 상한이 있습니다. 최종 실패는 무한 루프가 아니라 예상된 상태입니다.</p>
+<h3>제어면을 만든 뒤에만 확장</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>추가 요소</th>
+<th>먼저 필요한 통제</th>
+<th>없으면</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>병렬 fan-out</strong></td>
+<td>독립적인 작업 경계</td>
+<td>중복되거나 충돌하는 작업</td>
+</tr>
+<tr>
+<td><strong>Fan-in</strong></td>
+<td>병합·충돌 정책</td>
+<td>한 에이전트가 다른 결과를 조용히 덮어씀</td>
+</tr>
+<tr>
+<td><strong>재시도 루프</strong></td>
+<td>종료 조건 + 시도/비용 예산</td>
+<td>무한 지출</td>
+</tr>
+<tr>
+<td><strong>동적 라우팅</strong></td>
+<td>타입이 있는 분기 이유 + trace</td>
+<td>모습을 바꾼 불투명 프롬프트</td>
+</tr>
+<tr>
+<td><strong>자기개선</strong></td>
+<td>고정 평가기 + 승격 게이트 + 롤백</td>
+<td>그래프가 자기 숙제를 자기가 채점</td>
+</tr>
+</tbody></table></div>
+<h3>런타임 규칙</h3>
+<p>복구를 한 에이전트 프롬프트의 문단 하나로 넣지 않습니다. 추적·계수·제한·테스트할 수 있는 edge로 만듭니다: <strong>route → check → repeat 또는 rebuild</strong>. 관련: <code>the-harness-not-the-model</code>(결정론적 제어 계층), <code>agentic-intent-veto</code>(경계는 에이전트 바깥에 둠).</p>
+      
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-the-quote-is-a-product-promise.html">&larr; 52. Priced in fiat, settled in tokens — the quote is a product promise</a><a href="pocs-an-invariant-is-a-stop-not-an-alarm.html">54. An invariant is a stop, not an alarm — how to price a false positive &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script src="_nav.js"></script>
+<script>window.__NAV_CURRENT__="graph-and-loop-engineering";</script>
+<script>
+(function () {
+  var data = window.__NAV__, cur = window.__NAV_CURRENT__;
+  if (!data) return;
+  var jw = document.getElementById('rail-jump');
+  if (jw) {
+    jw.innerHTML = data.jump.map(function (s) {
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+    }).join('');
+  }
+  var sec = null;
+  for (var i = 0; i < data.sections.length && !sec; i++) {
+    for (var j = 0; j < data.sections[i].items.length; j++) {
+      if (data.sections[i].items[j].key === cur) { sec = data.sections[i]; break; }
+    }
+  }
+  var navEl = document.getElementById('nav');
+  if (navEl && sec) {
+    var lis = sec.items.map(function (it) {
+      var active = it.key === cur ? ' active' : '';
+      return '<li><a class="nav-link' + active + '" href="' + it.href + '" data-key="' + it.key + '"><span class="nav-dot" style="background:' + it.color + ';" title="' + it.label + '"></span><span class="nav-text">' + it.text + '</span></a></li>';
+    }).join('');
+    var group = document.createElement('div');
+    group.className = 'nav-group';
+    group.id = sec.navId;
+    group.setAttribute('data-group', '');
+    group.innerHTML = '<p class="nav-group-label">' + sec.label + '</p><ul>' + lis + '</ul>';
+    navEl.insertBefore(group, navEl.firstChild);
+  }
+})();
+
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  // 레일 필터 = 텍스트 질의 + 등급 모드(Important/All)의 합성. 등급 토글이 없는 페이지에서는
+  // tierMode 가 'all' 로 남아 예전과 완전히 동일하게 동작한다 (jay, 2026-09-08).
+  const tierBtns = [...document.querySelectorAll('.rail-tier .tier-btn')];
+  let tierMode = tierBtns.some((b) => b.dataset.tierMode === 'important') ? 'important' : 'all';
+  // "Important" 필터는 중요(빨강)뿐 아니라 "최근 완료"(하늘)와 "새 항목"(노랑)도 함께 보여 준다
+  // (jay, 2026-09-08: "even though All clicked, the recently done and important should be shown";
+  // 2026-09-09: "important button shows also new items"). 최근 완료는 방금 끝낸 강조 항목이고,
+  // 새 항목은 최근 창(NEW_WINDOW) 안에 손댄 것이라 둘 다 중요 줄에 두고 필터에서 숨기지 않는다.
+  const isImportant = (a) => { const d = a.querySelector('.nav-dot'); return !!d && (d.title === 'IMPORTANT' || d.title === 'RECENTLY DONE' || d.title === 'NEW'); };
+  function applyFilter() {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = (!q || a.textContent.toLowerCase().includes(q)) && (tierMode === 'all' || isImportant(a));
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  }
+  input.addEventListener('input', applyFilter);
+  for (const b of tierBtns) {
+    b.addEventListener('click', () => {
+      tierMode = b.dataset.tierMode;
+      for (const x of tierBtns) { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+      applyFilter();
+    });
+  }
+  // 진입 시 기본값: 등급 토글이 있으면 Important 만 보여 준다 (jay, 2026-09-08).
+  if (tierBtns.length) applyFilter();
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const observed = new Map();
+  let revealTimer;
+  // 밴드에 걸친 항목 중 "문서 순서로 첫 번째"를 고르면 언제나 한 칸 앞이 켜진다
+  // (jay, 2026-08-27: "the left pane should sync with right pane in the item's position").
+  // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
+  // 고르면 방금 도착한 항목이 켜진다.
+  function syncActive() {
+    // 상세 페이지에는 관측할 본문 항목이 없다 — 그때 돌면 서버가 표시한 active 를
+    // 첫 스크롤에 지워 버리므로, 관측 대상이 없으면 아무것도 하지 않는다 (2026-09-03).
+    if (observed.size === 0) return;
+    // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
+    // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
+    // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
+    const line = window.innerHeight * 0.1;
+    let first = null;
+    let started = -Infinity;
+    let upcoming = Infinity;
+    let firstUpcoming = null;
+    for (const k of seen) {
+      const el = observed.get(k);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top <= line) {
+        if (top > started) {
+          started = top;
+          first = k;
+        }
+      } else if (top < upcoming) {
+        upcoming = top;
+        firstUpcoming = k;
+      }
+    }
+    if (first === null) first = firstUpcoming;
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    // 사용자가 실제로 스크롤하기 전에는 끌어오지 않는다 (jay, 2026-09-02) — 로드 직후
+    // 관측자의 첫 콜백이 1번 항목으로 레일을 되감아, 초기 스크롤(첫 important 가운데
+    // 정렬)을 덮어쓰는 것을 막는다. 해시 딥링크는 브라우저 앵커 스크롤이 scroll 이벤트를
+    // 내므로 여전히 첫 프레임부터 동기화된다.
+    clearTimeout(revealTimer);
+    if (userScrolled) revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }
+
+  // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
+  // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
+  let ticking = false;
+  // 해시 딥링크는 스크롤 이벤트가 리스너 등록 전에 끝날 수 있으므로 처음부터 켠다 —
+  // 특정 항목을 열었다는 것 자체가 "그 항목을 보라"는 의도다.
+  let userScrolled = !!location.hash;
+  addEventListener(
+    'scroll',
+    () => {
+      userScrolled = true;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncActive();
+      });
+    },
+    { passive: true }
+  );
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    syncActive();
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) {
+      observed.set(key, el);
+      io.observe(el);
+    }
+  }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
+
+(function () {
+  var nav = document.querySelector('.rail-nav');
+  if (!nav) return;
+  var el = nav.querySelector('.nav-link.active');
+  if (!el && !location.hash) {
+    var dot = nav.querySelector('.nav-dot[title="IMPORTANT"]');
+    el = dot && dot.closest('a');
+  }
+  if (!el) return;
+  var r = el.getBoundingClientRect();
+  var c = nav.getBoundingClientRect();
+  nav.scrollTop += (r.top - c.top) - (c.height / 2 - r.height / 2);
+})();
+</script>
+</body>
+</html>

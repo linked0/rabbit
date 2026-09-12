@@ -45,6 +45,14 @@
 <p>Published integration commit <code>402e380</code> to <code>main</code> and deployed Cloud Build <code>312fbdaf-c250-4161-b01b-d3e226d5e226</code> as Cloud Run revision <code>rabbit-00133-nsn</code> with 100% traffic. Confirmed <code>ALLOW_GAME=true</code>, canonical <code>AUTH_URL</code>, the iframe, public Game navigation, game routes, canonical base-path redirect, and a generated JavaScript asset in production.</p>
 <h3 id="jayverse-game-stack-dialogue-into-two-rows">Jayverse game: stack dialogue into two rows</h3>
 <p>Changed the fixed dialogue card so Jay&#39;s identity and line emoji share the first row while the message uses a full-width second row. This prevents the message from collapsing into a narrow column on mobile; the isolated static-export build passed.</p>
+<h3 id="dev-notes-add-graph--loop-engineering-technique">Dev notes: add Graph &amp; Loop Engineering technique</h3>
+<p>Added Google&#39;s two-hour Graph &amp; Loop Engineering course map to <code>docs/dev.md</code>, including the progression from a first agent graph through parallel agents, control loops, and self-improving runtime graphs. Highlighted the practical <code>route → check → repeat/rebuild</code> pattern as the alternative to continually expanding one agent&#39;s prompt.</p>
+<h3 id="dev-notes-correct-target-page">Dev notes: correct target page</h3>
+<p>Removed the Graph &amp; Loop Engineering item from <code>docs/dev.md</code> after Jay clarified that the intended destination was the generated Dev Notes page at <code>docs/notes.html</code>. Confirmed that its canonical card data is maintained in <code>lib/poc-cards.ts</code>, which remains read-only under the current workspace boundary pending explicit approval.</p>
+<h3 id="dev-notes-add-graph--loop-engineering-card">Dev Notes: add Graph &amp; Loop Engineering card</h3>
+<p>After Jay approved the canonical-source edit, added an Important bilingual card covering the course timeline, graph routing, bounded checker loops, parallel fan-out/fan-in controls, and gated self-improvement. Regenerated the Dev Notes index and topic detail page from the card data.</p>
+<h3 id="dev-notes-publish-graph--loop-engineering-card">Dev Notes: publish Graph &amp; Loop Engineering card</h3>
+<p>Validated the generated Important entry, bilingual detail page, navigation, TypeScript, and whitespace checks. Prepared the scoped card and documentation outputs for publication from <code>agent-parked</code> to <code>origin/main</code> after Jay approved commit and push.</p>
 
   </article>
 </div>
