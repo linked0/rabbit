@@ -35,6 +35,11 @@ const PUBLIC_PATHS = new Set([
   // /login 으로 튀었다 (2026-08-11 발견 — oz-relayer 때와 같은 실패 유형). 자리표시자
   // 캔버스 게임이라 오너 전용 데이터가 없고, 카드가 공개면 라우트도 공개여야 한다.
   "/game",
+  // 게임 정적 번들의 루트. 하위 경로(/jayverse-game/street, /jayverse-game/_next/...)는
+  // 아래 matcher 의 `jayverse-game/` 제외로 미들웨어를 아예 안 타지만, 슬래시가 없는 이
+  // 한 경로만은 그 제외에 안 걸려 여기서 열어준다 — next.config.js 가 index.html 로 잇는
+  // 게임 랜딩이라, 빠뜨리면 방문자에게만 /login 으로 튄다.
+  "/jayverse-game",
 ]);
 
 // /poc 와 /live 아래는 전부 공개다 (2026-08-11 /poc, 2026-08-26 /live).

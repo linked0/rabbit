@@ -22,7 +22,17 @@ const nextConfig = {
     // 홈(/) = 프로필 페이지(/home, linked0.github.io 미러)를 URL 유지한 채 서빙.
     // (기존 워크스페이스 인덱스는 /know.html 에서 계속 접근 가능)
     return {
-      beforeFiles: [{ source: "/", destination: "/home" }],
+      beforeFiles: [
+        { source: "/", destination: "/home" },
+        // jayverse-game 정적 번들(public/jayverse-game/, scripts/build-game.mjs 산출물)의
+        // 확장자 없는 경로를 실제 파일로 잇는다. 게임은 자기 링크를 /jayverse-game/street
+        // 처럼 내보내는데, public/ 정적 서빙은 street.html 만 안다 — 이 규칙이 없으면
+        // 게임 안에서 페이지를 이동하는 순간 404 가 난다.
+        // `:slug([^/.]+)` 는 점도 슬래시도 없는 한 조각만 잡는다 → _next/static/... 이나
+        // favicon.ico 같은 실제 파일 요청은 그대로 통과한다.
+        { source: "/jayverse-game", destination: "/jayverse-game/index.html" },
+        { source: "/jayverse-game/:slug([^/.]+)", destination: "/jayverse-game/:slug.html" },
+      ],
     };
   },
 };
