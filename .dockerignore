@@ -1,6 +1,9 @@
 # 이미지에 들어가면 안 되는 것들 — 특히 시크릿(.env*)
 node_modules
 .next
+# 게임의 로컬 빌드 산출물 — 이미지 안에서 새로 만든다 (Dockerfile)
+games/*/out
+games/*/.next
 .env
 .env.*
 scripts/deploy.env

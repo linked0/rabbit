@@ -10,6 +10,12 @@ RUN corepack enable && pnpm install --frozen-lockfile
 COPY . .
 # Prisma 클라이언트 생성 (스키마가 있어야 하므로 소스 복사 후)
 RUN pnpm exec prisma generate
+# JayVerse 게임(games/jayverse-game 서브모듈) → public/jayverse-game/ 정적 번들.
+# 게임은 Next 16 / React 19 라 이 앱(Next 14 / React 18)과 같은 트리에서 컴파일될 수 없다.
+# 자기 node_modules 로 따로 빌드해 내보낸 정적 파일만 public/ 에 얹는다 — 이 앱의
+# `pnpm build` 는 그걸 그냥 정적 파일로 본다. 반드시 아래 `pnpm build` 보다 먼저 와야 한다.
+# 서브모듈이 비어 있으면 스크립트가 명시적으로 실패한다 (조용히 빠진 /game 방지).
+RUN pnpm game:build
 # next build 시 NextAuth 설정 평가용 더미 시크릿 — 런타임에는 Cloud Run env가 덮어씀
 ENV AUTH_SECRET=build-time-dummy-secret
 RUN pnpm build
