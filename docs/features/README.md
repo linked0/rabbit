@@ -24,18 +24,21 @@ Each service jay commented on gets a `jayverse-<service>.md` design doc: user sc
 app shows, the flow/user journey, a basic imaginable feature, and how to implement it — grounded in
 the existing services so they cooperate rather than sit alone.
 
-| # | Service | Design doc | Focus (from jay's comment) | Status |
-|---|---------|-----------|----------------------------|--------|
-| 1 | Rabbit — Agentic AA | [jayverse-rabbit.md](jayverse-rabbit.md) | ERC-4337 AA — user scenario, web app, flow. **Start here** | drafting |
-| 2 | Verex — onboarding + MM | [jayverse-verex.md](jayverse-verex.md) | Stripe onboarding + Market Maker — scenario, web app, flow. **Start** | drafting |
-| 3 | DeFi — EtherFi | [jayverse-defi.md](jayverse-defi.md) | Basic EtherFi **algorithms built from scratch** to study DeFi (no real-EtherFi integration) | drafting |
-| 4 | Persona market | [jayverse-personas.md](jayverse-personas.md) | NFT persona market — scenario, web app, flow | drafting |
-| 5 | Unity — 3D browser game | [jayverse-game.md](jayverse-game.md) | Wander a 3D street, find verex markets on boards, trade. **Start** | drafting |
-| 6 | Wallet & simulate-before-sign | [jayverse-wallet.md](jayverse-wallet.md) | Embedded wallet + tx simulation — scenario, web app, flow | drafting |
-| 7 | Token + Exchange + Bridge | [jayverse-token-bridge.md](jayverse-token-bridge.md) | **JYVE** ecosystem coin + mini-AMM price + Anvil ⇄ Sepolia bridge (one `jayverse-token` repo) | drafting |
-| 8 | OFA — intent + solver auction | [jayverse-ofa.md](jayverse-ofa.md) | ATLAS's core mechanism as a from-scratch study — intent + solver auction, surplus to the user. **Build the mechanism, not the framework** | drafting |
-| 9 | Math & Investment (Number) | [jayverse-number.md](jayverse-number.md) | Standalone `number.jaylabs.xyz` — investment information + math / economy / algorithm research. **Admin-only** (login-gated), split out of Rabbit's Portfolio into its own `jayverse-number` repo | drafting |
-| 10 | Dark Horse — candidate tracks | [jayverse-darkhorse.md](jayverse-darkhorse.md) | **Not committed** — candidates that *could* become services but aren't yet: (a) own L1/L2, (b) security-hole research, (c) **Base App** (moved from #8) | candidates |
+The last column is **where each service is deployed on GCP** (jay, 2026-09-14): *Rabbit cloud* = project
+`doubletree-498007`, Cloud Run in `asia-northeast1`; *Verex cloud* = project `verex-499205`.
+
+| # | Service | Design doc | Focus (from jay's comment) | Deployed on (GCP) |
+|---|---------|-----------|----------------------------|-------------------|
+| 1 | Rabbit — Agentic AA | [jayverse-rabbit.md](jayverse-rabbit.md) | ERC-4337 AA — user scenario, web app, flow. **Start here** | Rabbit cloud · Cloud Run `rabbit` · <https://www.jaylabs.xyz> |
+| 2 | Verex — onboarding + MM | [jayverse-verex.md](jayverse-verex.md) | Stripe onboarding + Market Maker — scenario, web app, flow. **Start** | Verex cloud · Cloud Run `verex-web-prod` + `verex-api-prod` (asia-northeast3) · <https://verex.jaylabs.xyz> |
+| 3 | DeFi — EtherFi | [jayverse-defi.md](jayverse-defi.md) | Basic EtherFi **algorithms built from scratch** to study DeFi (no real-EtherFi integration) | Verex cloud · Firebase Hosting site `jayverse-defi` · <https://defi.jaylabs.xyz> (contracts on Sepolia) |
+| 4 | Persona market | [jayverse-personas.md](jayverse-personas.md) | NFT persona market — scenario, web app, flow | — not deployed |
+| 5 | Unity — 3D browser game | [jayverse-game.md](jayverse-game.md) | Wander a 3D street, find verex markets on boards, trade. **Start** | Rabbit cloud · inside Cloud Run `rabbit` · <https://www.jaylabs.xyz/game> |
+| 6 | Wallet & simulate-before-sign | [jayverse-wallet.md](jayverse-wallet.md) | Embedded wallet + tx simulation — scenario, web app, flow | Rabbit cloud · Cloud Run `jayverse-wallet` · <https://wallet.jaylabs.xyz> (+ `/bridge`) |
+| 7 | Token + Exchange + Bridge | [jayverse-token-bridge.md](jayverse-token-bridge.md) | **JYVE** ecosystem coin + mini-AMM price + Anvil ⇄ Sepolia bridge (one `jayverse-token` repo) | Rabbit cloud · Cloud Run `jayverse-exchange` · <https://exchange.jaylabs.xyz> (contracts on Sepolia) |
+| 8 | OFA — intent + solver auction | [jayverse-ofa.md](jayverse-ofa.md) | ATLAS's core mechanism as a from-scratch study — intent + solver auction, surplus to the user. **Build the mechanism, not the framework** | — not deployed |
+| 9 | Math & Investment (Number) | [jayverse-number.md](jayverse-number.md) | Standalone `number.jaylabs.xyz` — investment information + math / economy / algorithm research. **Admin-only** (login-gated), split out of Rabbit's Portfolio into its own `jayverse-number` repo | Rabbit cloud · Cloud Run `jayverse-number` · <https://number.jaylabs.xyz> (alias `num.`) |
+| 10 | Dark Horse — candidate tracks | [jayverse-darkhorse.md](jayverse-darkhorse.md) | **Not committed** — candidates that *could* become services but aren't yet: (a) own L1/L2, (b) security-hole research, (c) **Base App** (moved from #8) | — candidates, not deployed |
 
 *(#1–9 are the committed services; **#10 Dark Horse is candidates, not committed** — including Base App, moved from #8. Detail lives in [jayverse-darkhorse.md](jayverse-darkhorse.md).)*
 
@@ -66,8 +69,8 @@ extras are **crammed into the last column** (Wallet's P3 + P4, etc.). ✅ = that
 | 3 | DeFi — EtherFi study | Liquid-staking core | Restaking layer | Real EtherFi (read) |
 | 4 | Personas | Mint + token-gated chat | Day rentals (ERC-4907) | Revenue + market (x402, IPFS, creator flow) |
 | 5 | Game — 3D street | Replay | Live (synchronous) | Polish + optional player-trading |
-| 6 | Wallet | simulate-before-sign ✅ | Session keys & templates | 4337 breadth · **P4** own dev wallet (31337 fork) |
-| 7 | Token + Exchange + Bridge | Token + exchange (JYVE/USDC) | Intra bridge (lock-and-mint) | Real cross-chain — CCIP (arbitrary messages) + **Circle CCTP** (native USDC, burn-and-mint) + **xERC20 / ERC-7281** (JYVE as a sovereign bridged token, per-bridge rate limits) |
+| 6 | Wallet | simulate-before-sign ✅ | Session keys & templates · public Sepolia wallet on Cloud Run (wallet.jaylabs.xyz) ✅ · `/bridge` route placeholder ✅ | 4337 breadth · **P4** own dev wallet (31337 fork) |
+| 7 | Token + Exchange + Bridge | Token + exchange (JYVE/USDC) ✅ live on Sepolia + exchange.jaylabs.xyz ✅ · supply-integrity sim page ✅ | Intra bridge (lock-and-mint) | Real cross-chain — CCIP (arbitrary messages) + **Circle CCTP** (native USDC, burn-and-mint) + **xERC20 / ERC-7281** (JYVE as a sovereign bridged token, per-bridge rate limits) |
 | 8 | OFA | `IntentAuction` + `MockSolver`s | `AmmSolver` + two invariants | Web harness · backrun / LVR stretch |
 | 9 | Math & Investment (Number) | Admin auth gate | Portfolio migration | Deploy + math / algo research |
 | ✅ | Authority Auditor | Dogfood matrix ✅ | Rules engine ✅ | On-chain + API (viem verified cells, tier-3 provider API) |

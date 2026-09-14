@@ -55,6 +55,8 @@ design docs.</p>
 <p>Each service jay commented on gets a <code>jayverse-&lt;service&gt;.md</code> design doc: user scenario, what the web
 app shows, the flow/user journey, a basic imaginable feature, and how to implement it — grounded in
 the existing services so they cooperate rather than sit alone.</p>
+<p>The last column is <strong>where each service is deployed on GCP</strong> (jay, 2026-09-14): <em>Rabbit cloud</em> = project
+<code>doubletree-498007</code>, Cloud Run in <code>asia-northeast1</code>; <em>Verex cloud</em> = project <code>verex-499205</code>.</p>
 <table>
 <thead>
 <tr>
@@ -62,7 +64,7 @@ the existing services so they cooperate rather than sit alone.</p>
 <th>Service</th>
 <th>Design doc</th>
 <th>Focus (from jay&#39;s comment)</th>
-<th>Status</th>
+<th>Deployed on (GCP)</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -70,70 +72,70 @@ the existing services so they cooperate rather than sit alone.</p>
 <td>Rabbit — Agentic AA</td>
 <td><a href="jayverse-rabbit.html">jayverse-rabbit.md</a></td>
 <td>ERC-4337 AA — user scenario, web app, flow. <strong>Start here</strong></td>
-<td>drafting</td>
+<td>Rabbit cloud · Cloud Run <code>rabbit</code> · <a href="https://www.jaylabs.xyz">https://www.jaylabs.xyz</a></td>
 </tr>
 <tr>
 <td>2</td>
 <td>Verex — onboarding + MM</td>
 <td><a href="jayverse-verex.html">jayverse-verex.md</a></td>
 <td>Stripe onboarding + Market Maker — scenario, web app, flow. <strong>Start</strong></td>
-<td>drafting</td>
+<td>Verex cloud · Cloud Run <code>verex-web-prod</code> + <code>verex-api-prod</code> (asia-northeast3) · <a href="https://verex.jaylabs.xyz">https://verex.jaylabs.xyz</a></td>
 </tr>
 <tr>
 <td>3</td>
 <td>DeFi — EtherFi</td>
 <td><a href="jayverse-defi.html">jayverse-defi.md</a></td>
 <td>Basic EtherFi <strong>algorithms built from scratch</strong> to study DeFi (no real-EtherFi integration)</td>
-<td>drafting</td>
+<td>Verex cloud · Firebase Hosting site <code>jayverse-defi</code> · <a href="https://defi.jaylabs.xyz">https://defi.jaylabs.xyz</a> (contracts on Sepolia)</td>
 </tr>
 <tr>
 <td>4</td>
 <td>Persona market</td>
 <td><a href="jayverse-personas.html">jayverse-personas.md</a></td>
 <td>NFT persona market — scenario, web app, flow</td>
-<td>drafting</td>
+<td>— not deployed</td>
 </tr>
 <tr>
 <td>5</td>
 <td>Unity — 3D browser game</td>
 <td><a href="jayverse-game.html">jayverse-game.md</a></td>
 <td>Wander a 3D street, find verex markets on boards, trade. <strong>Start</strong></td>
-<td>drafting</td>
+<td>Rabbit cloud · inside Cloud Run <code>rabbit</code> · <a href="https://www.jaylabs.xyz/game">https://www.jaylabs.xyz/game</a></td>
 </tr>
 <tr>
 <td>6</td>
 <td>Wallet &amp; simulate-before-sign</td>
 <td><a href="jayverse-wallet.html">jayverse-wallet.md</a></td>
 <td>Embedded wallet + tx simulation — scenario, web app, flow</td>
-<td>drafting</td>
+<td>Rabbit cloud · Cloud Run <code>jayverse-wallet</code> · <a href="https://wallet.jaylabs.xyz">https://wallet.jaylabs.xyz</a> (+ <code>/bridge</code>)</td>
 </tr>
 <tr>
 <td>7</td>
 <td>Token + Exchange + Bridge</td>
 <td><a href="jayverse-token-bridge.html">jayverse-token-bridge.md</a></td>
 <td><strong>JYVE</strong> ecosystem coin + mini-AMM price + Anvil ⇄ Sepolia bridge (one <code>jayverse-token</code> repo)</td>
-<td>drafting</td>
+<td>Rabbit cloud · Cloud Run <code>jayverse-exchange</code> · <a href="https://exchange.jaylabs.xyz">https://exchange.jaylabs.xyz</a> (contracts on Sepolia)</td>
 </tr>
 <tr>
 <td>8</td>
 <td>OFA — intent + solver auction</td>
 <td><a href="jayverse-ofa.html">jayverse-ofa.md</a></td>
 <td>ATLAS&#39;s core mechanism as a from-scratch study — intent + solver auction, surplus to the user. <strong>Build the mechanism, not the framework</strong></td>
-<td>drafting</td>
+<td>— not deployed</td>
 </tr>
 <tr>
 <td>9</td>
 <td>Math &amp; Investment (Number)</td>
 <td><a href="jayverse-number.html">jayverse-number.md</a></td>
 <td>Standalone <code>number.jaylabs.xyz</code> — investment information + math / economy / algorithm research. <strong>Admin-only</strong> (login-gated), split out of Rabbit&#39;s Portfolio into its own <code>jayverse-number</code> repo</td>
-<td>drafting</td>
+<td>Rabbit cloud · Cloud Run <code>jayverse-number</code> · <a href="https://number.jaylabs.xyz">https://number.jaylabs.xyz</a> (alias <code>num.</code>)</td>
 </tr>
 <tr>
 <td>10</td>
 <td>Dark Horse — candidate tracks</td>
 <td><a href="jayverse-darkhorse.html">jayverse-darkhorse.md</a></td>
 <td><strong>Not committed</strong> — candidates that <em>could</em> become services but aren&#39;t yet: (a) own L1/L2, (b) security-hole research, (c) <strong>Base App</strong> (moved from #8)</td>
-<td>candidates</td>
+<td>— candidates, not deployed</td>
 </tr>
 </tbody></table>
 <p><em>(#1–9 are the committed services; <strong>#10 Dark Horse is candidates, not committed</strong> — including Base App, moved from #8. Detail lives in <a href="jayverse-darkhorse.html">jayverse-darkhorse.md</a>.)</em></p>
@@ -212,13 +214,13 @@ extras are <strong>crammed into the last column</strong> (Wallet&#39;s P3 + P4, 
 <td>6</td>
 <td>Wallet</td>
 <td>simulate-before-sign ✅</td>
-<td>Session keys &amp; templates</td>
+<td>Session keys &amp; templates · public Sepolia wallet on Cloud Run (wallet.jaylabs.xyz) ✅ · <code>/bridge</code> route placeholder ✅</td>
 <td>4337 breadth · <strong>P4</strong> own dev wallet (31337 fork)</td>
 </tr>
 <tr>
 <td>7</td>
 <td>Token + Exchange + Bridge</td>
-<td>Token + exchange (JYVE/USDC)</td>
+<td>Token + exchange (JYVE/USDC) ✅ live on Sepolia + exchange.jaylabs.xyz ✅ · supply-integrity sim page ✅</td>
 <td>Intra bridge (lock-and-mint)</td>
 <td>Real cross-chain — CCIP (arbitrary messages) + <strong>Circle CCTP</strong> (native USDC, burn-and-mint) + <strong>xERC20 / ERC-7281</strong> (JYVE as a sovereign bridged token, per-bridge rate limits)</td>
 </tr>
