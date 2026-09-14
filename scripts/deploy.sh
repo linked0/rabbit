@@ -81,7 +81,18 @@ echo "▶ Cloud Run 배포"
 SECRETS="AUTH_SECRET=rabbit-auth-secret:latest,AUTH_GOOGLE_ID=rabbit-google-id:latest,AUTH_GOOGLE_SECRET=rabbit-google-secret:latest,AI_API_KEY=rabbit-ai-key:latest,MARKET_API_KEY=rabbit-market-key:latest"
 [ -n "${CLOUD_DATABASE_URL:-${DATABASE_URL:-}}" ] && SECRETS="$SECRETS,DATABASE_URL=rabbit-database-url:latest"
 [ -n "${CLOUD_AGENT_PRIVATE_KEY:-}" ] && SECRETS="$SECRETS,AGENT_PRIVATE_KEY=rabbit-agent-key:latest"
-[ -n "${CLOUD_AGENT_RPC_URL:-}" ] && SECRETS="$SECRETS,ANVIL_RPC_URL=rabbit-sepolia-rpc:latest"
+# ANVIL_RPC_URL is "the chain this deployment talks to", which is no longer the
+# same thing as "our Sepolia RPC" — since 2026-09-14 that is the Jayverse devnet
+# (313370). They shared one secret, so repointing the chain would silently have
+# repointed Sepolia too. Separate secrets, separate meanings.
+# Set CHAIN=sepolia in scripts/deploy.env to fall back to the Sepolia RPC.
+if [ -n "${CLOUD_AGENT_RPC_URL:-}" ]; then
+  if [ "${CHAIN:-devnet}" = "sepolia" ]; then
+    SECRETS="$SECRETS,ANVIL_RPC_URL=rabbit-sepolia-rpc:latest"
+  else
+    SECRETS="$SECRETS,ANVIL_RPC_URL=rabbit-devnet-rpc:latest"
+  fi
+fi
 [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && SECRETS="$SECRETS,TELEGRAM_BOT_TOKEN=rabbit-telegram-bot-token:latest"
 [ -n "${STRIPE_SECRET_KEY:-}" ] && SECRETS="$SECRETS,STRIPE_SECRET_KEY=rabbit-stripe-secret:latest"
 [ -n "${TOSS_SECRET_KEY:-}" ] && SECRETS="$SECRETS,TOSS_SECRET_KEY=rabbit-toss-secret:latest"

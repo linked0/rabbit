@@ -39,9 +39,14 @@ COPY --from=builder /app/public ./public
 # content/ — Jay Chat's RAG corpus depth (content/profile/*.md). Without this the
 # About-me feature still works from lib/home-content.ts, just without the markdown depth.
 COPY --from=builder /app/content ./content
-# docs/code/ — per-PoC-card runnable snippets that TechNotes.tsx reads at request time
-# (jay, 2026-08-13). Only this subfolder, not all of docs/ — same "exact output paths" rule.
-COPY --from=builder /app/docs/code ./docs/code
+# docs/code/ used to be copied here — per-PoC-card runnable snippets that
+# TechNotes.tsx reads at request time (jay, 2026-08-13). The directory was
+# removed in 22a8fdd ("remove docs/code and docs/topics") when the docs moved
+# to the alice repo, but this COPY stayed and broke the image build outright:
+#   COPY failed: stat app/docs/code: file does not exist
+# lib/code-snippet.ts already returns null when the file is absent, so the
+# snippet panel simply does not render. Restore both together if the snippets
+# come back.
 EXPOSE 8080
 ENV PORT=8080
 CMD ["node", "server.js"]
