@@ -45,6 +45,7 @@ design docs.</p>
 <ul>
 <li><a href="#per-service-design-docs">Per-service design docs</a></li>
 <li><a href="#phase-overview-at-a-glance">Phase overview</a></li>
+<li><a href="#three-end-to-end-scenarios--every-service-in-one-story-plus-the-service-each-story-asks-for">Three end-to-end scenarios (+ imaginary services)</a></li>
 <li><a href="#open-questions">Open Questions</a></li>
 <li><a href="#running-each-service-on-the-terminal">Running each service</a></li>
 <li><a href="#chainlink--infra-jayverse-uses-not-builds">Chainlink — infra Jayverse uses, not builds</a></li>
@@ -253,6 +254,186 @@ extras are <strong>crammed into the last column</strong> (Wallet&#39;s P3 + P4, 
 <td>—</td>
 </tr>
 </tbody></table>
+<h2 id="three-end-to-end-scenarios--every-service-in-one-story-plus-the-service-each-story-asks-for">Three end-to-end scenarios — every service in one story, plus the service each story asks for</h2>
+<p>The per-service docs each carry their <em>own</em> user scenario (Nari learns an LST, Jun swaps without
+feeding a searcher…). These three are different: each one walks <strong>all eleven services</strong> in a
+single day, in the order a real user would actually touch them — and each story ends at a gap that
+none of the existing services fills. That gap is written up as an <strong>imaginary service</strong> (jay,
+2026-09-14: &quot;imaginary services I could create&quot;) — a candidate, not a commitment, placed on the
+<a href="#where-the-web-frontend-lives--the-placement-decision-jay-2026-09-07">cloud split</a> like any other
+service would be. Service numbers are the table&#39;s (#1 Rabbit AA … #10 Dark Horse, ✅ Auditor).</p>
+<h3 id="scenario-a--minas-first-evening-on-the-street-a-newcomer-consumer-loop">Scenario A — &quot;Mina&#39;s first evening on the street&quot; (a newcomer, consumer loop)</h3>
+<p>Mina has never used a wallet. She arrives through a link a friend sent, and by the end of the
+evening she has placed a bet, earned yield on the change, and rented a persona — without ever
+seeing a seed phrase or a gas prompt.</p>
+<ol>
+<li><strong>#5 Game.</strong> The link opens the 3D street. She walks past boards showing live Verex markets and
+stops at <em>&quot;Will it rain in Seoul on Saturday?&quot;</em></li>
+<li><strong>#2 Verex.</strong> Clicking the board opens onboarding. She pays <strong>₩10,000 by card (Stripe)</strong>; the
+market-maker side already has an LMSR book, so her first bet gets a price instantly — the
+&quot;buy the first liquidity&quot; lesson from <code>lmsr-hybrid-amm</code> in practice.</li>
+<li><strong>#6 Wallet.</strong> Behind onboarding, an embedded wallet is created for her. Before her first
+on-chain action the wallet runs <strong>simulate-before-sign</strong>: she sees <em>&quot;you receive 12.4 YES
+shares; max loss ₩10,000&quot;</em> — the decoded effect, not a hex blob.</li>
+<li><strong>#1 Rabbit AA.</strong> The bet itself is a <strong>gasless one-click</strong> UserOp: a paymaster sponsors gas,
+a session key scoped to <em>Verex markets only, ≤ ₩50,000/day</em> signs it. No MetaMask popup.</li>
+<li><strong>#7 Token + Exchange.</strong> Her leftover ₩ balance is held as USDC; the street&#39;s tip jars and
+persona rentals price in <strong>JYVE</strong>, so a <strong>mini-AMM swap</strong> (USDC → JYVE) happens under a single
+&quot;top up&quot; button — the price she sees is the reserve ratio, nothing more mysterious.</li>
+<li><strong>#3 DeFi.</strong> The app offers <em>&quot;park your idle balance&quot;</em>: her unused USDC-equivalent ETH goes
+into <strong>jeETH</strong>; the position panel shows her balance rebasing up by the hour, and <em>why</em>.</li>
+<li><strong>#4 Personas.</strong> She rents <strong>&quot;Coach Han&quot;</strong> — a persona NFT — for one day (ERC-4907) to explain
+the market she just bet on; the token-gated chat opens only while the rental is live.</li>
+<li><strong>#8 OFA.</strong> When she later flips her position, the swap-into-bet is submitted as an <strong>intent</strong>
+(&quot;give X, want ≥ Y&quot;), and the solver auction returns the surplus to <em>her</em>, not a searcher.</li>
+<li><strong>#9 Number.</strong> None of this shows her Number — it is admin-only — but the operator watches the
+evening&#39;s cohort there: conversion from street → first bet, and where people dropped off.</li>
+<li><strong>✅ Auditor.</strong> Before Mina&#39;s money touched anything, the Authority matrix for <em>her</em> wallet
+was already green: no single actor (not Privy, not the backend session key) can move her funds
+alone. The badge she sees on the wallet page is that matrix, summarized.</li>
+<li><strong>#10 Dark Horse.</strong> The same street, minus the 3D, is what the <strong>Base App</strong> candidate would
+ship as a mini app — the evening is the demo script for that decision.</li>
+</ol>
+<p><strong>The gap this story finds — imaginary service: <code>jayverse-passport</code> (identity &amp; reputation).</strong>
+Mina proved who she is once (Stripe KYC in Verex), yet every other service had to re-decide what to
+trust: the AA session policy invented a spend cap, Personas had no idea she was a first-timer, the
+Game could not show her a &quot;verified&quot; badge. Passport would be a <strong>portable attestation layer</strong>
+(EAS / Sign Protocol, per the <a href="jayverse-rails-shortlist.html">rails shortlist</a>): Verex writes
+<em>KYC-passed, tier 1</em>; AA reads it to size session caps; Personas reads it to unlock creator
+rentals; the Game reads it to render the badge. <strong>It never holds funds</strong> → rabbit cloud, its own
+Cloud Run service. What it must get right: the attestation says <em>what was checked and by whom</em>,
+never the underlying data — the <code>what-encryption-does-not-hide</code> question, applied to our own users.</p>
+<h3 id="scenario-b--the-saturday-the-market-resolved-a-money-moving-day-seen-from-the-plumbing">Scenario B — &quot;The Saturday the market resolved&quot; (a money-moving day, seen from the plumbing)</h3>
+<p>The rain market resolves. Thousands of positions settle, winners withdraw across chains, and every
+invariant the catalogue talks about is tested in one afternoon. This is the same world as Scenario
+A, one layer down.</p>
+<ol>
+<li><strong>#2 Verex.</strong> A <strong>Chainlink Data Feed</strong> reports Saturday&#39;s rainfall; the market resolves YES.
+The operator&#39;s <strong>kill switch</strong> stays untouched — the point of the day is that nobody needs it.</li>
+<li><strong>✅ Auditor.</strong> Resolution is the most privileged write of the day. Auditor&#39;s matrix for the
+Verex contracts shows <em>resolve</em> needs the oracle <strong>and</strong> a timelock — no human can do it alone,
+and that is exactly what happens.</li>
+<li><strong>#1 Rabbit AA.</strong> Winners claim with <strong>gasless claims</strong> batched into UserOps; the paymaster&#39;s
+sponsored-gas bill is a <strong>cost of goods</strong> line the operator can read the next morning
+(<code>sponsored-gas-is-cogs</code>).</li>
+<li><strong>#6 Wallet.</strong> Every claim previews first: <em>&quot;you receive 1,240 USDC; this closes your
+position&quot;</em>. One user&#39;s preview shows a <strong>revert</strong> (a stale nonce) and the wallet refuses to sign
+— the failure never reaches the chain.</li>
+<li><strong>#7 Token + Exchange + Bridge.</strong> A winner wants her USDC on Base. The bridge does
+<strong>lock-and-mint</strong>; the <code>holding = issuance</code> and <strong>1:1</strong> invariants are checked on both legs.
+On the same afternoon the JYVE/USDC pool absorbs the winners&#39; swaps — the reserve-ratio price
+moves visibly, which is the mini-AMM teaching what a thin pool does.</li>
+<li><strong>#8 OFA.</strong> Large winners swapping out of JYVE go through the <strong>intent auction</strong> — three
+solvers bid, the AMM solver loses to a better route, surplus lands with the user, and the
+<code>finalOut &gt;= minOut</code> stop is hit exactly once (a solver tried to shade).</li>
+<li><strong>#3 DeFi.</strong> Payout ETH that users leave parked keeps rebasing; one user <strong>requests withdraw</strong>
+and meets the <strong>queue delay</strong> — she experiences why a jweETH secondary market would trade at a
+discount today.</li>
+<li><strong>#4 Personas.</strong> Coach Han&#39;s owner earns rental fees from the evening; the fee is paid
+per-message via <strong>x402</strong>, so the creator&#39;s revenue is a ledger, not a promise.</li>
+<li><strong>#5 Game.</strong> Through the street&#39;s <strong>warp gate</strong>, anyone can watch the settlement-flow
+visualization replay the day: user → paymaster → market → bridge, entity by entity.</li>
+<li><strong>#9 Number.</strong> The admin workbench shows the day&#39;s P&amp;L: paymaster spend vs fee income, AMM LP
+exposure (<code>lp-is-a-short-volatility-position</code>), and the bridge&#39;s locked-vs-minted balance.</li>
+<li><strong>#10 Dark Horse.</strong> The <strong>security-research</strong> candidate gets its first real target list from
+this day: every privileged write that ran, ranked by blast radius.</li>
+</ol>
+<p><strong>The gap this story finds — imaginary service: <code>jayverse-watchtower</code> (invariant monitor with a
+halt).</strong> Auditor answers <em>who may move funds</em>. Nothing today answers <em>are the equations still true
+while they move</em>. Watchtower would be the running form of <code>an-invariant-is-a-stop-not-an-alarm</code>:
+one service that recomputes, from <strong>independent</strong> sources, <code>bridge locked = minted</code>,
+<code>OFA holding = issuance</code>, <code>Verex settlement sum = per-market sum</code>, <code>DeFi reserves = issuance</code> —
+and on violation <strong>halts the specific write path</strong>, not the world. It sits <strong>outside</strong> the trust
+boundary of what it watches (the whole point), on the money side → verex cloud, with a read-only
+status page served by the rabbit portal. The hard design question is scope: a monitor that fires
+often gets muted, so each invariant names its own narrow halt.</p>
+<h3 id="scenario-c--coach-han-runs-a-tournament-a-creator-and-an-operator-over-a-week">Scenario C — &quot;Coach Han runs a tournament&quot; (a creator and an operator, over a week)</h3>
+<p>Coach Han&#39;s owner, Tae, turns the persona into a business: a week-long prediction tournament with
+entry fees, daily persona sessions, and prizes. Every service is touched by a <em>time edge</em> — a
+close, an expiry, a delay, a drip — which is what this story is really about.</p>
+<ol>
+<li><strong>#4 Personas.</strong> Tae mints a <strong>tournament persona</strong> and lists <strong>day rentals</strong>; each rental is
+a token-gated seat at Han&#39;s daily session. Rentals expire at midnight KST — the first clock.</li>
+<li><strong>#7 Token.</strong> Entry fees are paid in <strong>JYVE</strong>; the exchange&#39;s price chart becomes the
+tournament&#39;s scoreboard of demand. Tae&#39;s prize pool is escrowed — the second clock: it must
+unlock on the final day, not before.</li>
+<li><strong>#2 Verex.</strong> Han posts one market per day; each has a <strong>close time</strong> and a <strong>resolution
+time</strong> — clocks three and four. Entrants bet through the persona chat.</li>
+<li><strong>#1 Rabbit AA.</strong> Entrants get a <strong>session key that expires with the tournament</strong> — clock
+five — scoped to Han&#39;s markets only, with a daily cap sized by Passport tier (Scenario A).</li>
+<li><strong>#6 Wallet.</strong> Tae uses a <strong>transaction template</strong>: &quot;post today&#39;s market&quot; is a saved,
+pre-simulated action; the preview shows the close time it will set, so a typo&#39;d deadline is
+caught before it exists.</li>
+<li><strong>#3 DeFi.</strong> The escrowed prize pool sits in <strong>jeETH</strong> for the week. The <strong>withdrawal queue
+delay</strong> — clock six — must be shorter than the gap between final resolution and prize day, or
+the prizes are late. Tae learns this by reading <code>WITHDRAW_DELAY</code> before, not after.</li>
+<li><strong>#8 OFA.</strong> Prize distribution swaps jeETH → JYVE as <strong>one intent with a floor</strong>; the
+auction runs once, at prize time, so the batch cannot be front-run day by day.</li>
+<li><strong>#5 Game.</strong> The tournament has a <strong>street corner</strong>: a board per day, Han standing next to it,
+the leaderboard on a wall. The warp gate shows the prize flow on the final day.</li>
+<li><strong>✅ Auditor.</strong> Tae&#39;s escrow contract gets its own Authority matrix on day one: <em>release
+prizes</em> = timelock <strong>and</strong> Tae&#39;s key — Tae alone cannot pull the pool early, and entrants can
+see that.</li>
+<li><strong>#9 Number.</strong> Tae has no Number access, but the operator uses it to price the next
+tournament: fee income vs paymaster cost per entrant, and whether the persona rental or the
+markets carried the week.</li>
+<li><strong>#10 Dark Horse.</strong> Six clocks across five contracts is the argument for the <strong>own L2</strong>
+candidate: a chain whose block time and sequencer schedule <em>are</em> the tournament clock.</li>
+</ol>
+<p><strong>The gap this story finds — imaginary service: <code>jayverse-clock</code> (one scheduler for every time
+edge).</strong> Six clocks, five services, and today each one is either a server timer or a human. Clock
+would be a single <strong>Chainlink Automation</strong>-driven keeper that fires <em>market close</em>, <em>resolution
+request</em>, <em>rental expiry</em>, <em>session-key expiry</em>, <em>withdrawal-queue readiness</em>, and <em>reward drip</em>
+from <strong>one registry</strong> — with each tick recorded as a settlement event (<code>receipt-is-not-settlement</code>:
+a fired tick is a request, the on-chain effect is the receipt). It triggers money-moving writes →
+verex cloud; its calendar UI (what fires when, what missed) is a rabbit-portal page. The failure it
+must be designed around is the one Chainlink&#39;s own table names: <strong>a missed tick delays settlement</strong>
+— so every registered edge carries a <em>late-by</em> alarm and a human fallback.</p>
+<h3 id="what-the-three-stories-share">What the three stories share</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Scenario A — newcomer</th>
+<th>Scenario B — settlement day</th>
+<th>Scenario C — creator&#39;s week</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Center of gravity</td>
+<td>one user&#39;s evening</td>
+<td>one afternoon&#39;s money flow</td>
+<td>one persona&#39;s business</td>
+</tr>
+<tr>
+<td>Lens</td>
+<td>UX — never see gas</td>
+<td>invariants — never lose a unit</td>
+<td>time — never miss an edge</td>
+</tr>
+<tr>
+<td>Service asked for</td>
+<td><code>jayverse-passport</code> (identity)</td>
+<td><code>jayverse-watchtower</code> (invariants)</td>
+<td><code>jayverse-clock</code> (schedule)</td>
+</tr>
+<tr>
+<td>Cloud</td>
+<td>rabbit (no funds)</td>
+<td>verex (on the money path)</td>
+<td>verex trigger · rabbit UI</td>
+</tr>
+<tr>
+<td>Card it grows from</td>
+<td><code>what-encryption-does-not-hide</code></td>
+<td><code>an-invariant-is-a-stop-not-an-alarm</code></td>
+<td><code>receipt-is-not-settlement</code></td>
+</tr>
+</tbody></table>
+<p>None of the three imaginary services holds user funds or a new token; each reads what the existing
+eleven already produce. That is deliberate — the stories argue the next service should be <strong>glue
+the others are missing</strong>, not a twelfth product.</p>
+<hr>
 <h2 id="open-questions">Open Questions</h2>
 <h3 id="should-the-web-app-and-the-api-be-separated-between-rabbit-and-verex">Should the web app and the API be separated between Rabbit and Verex?</h3>
 <p><strong>jay&#39;s concern:</strong> if every app runs inside the Rabbit portal on rabbit cloud, that one instance
