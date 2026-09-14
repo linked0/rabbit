@@ -1,5 +1,10 @@
 # Workflow
 
+> **2026-09-14 — moved to alice.** `docs/features/`, `docs/tasks/`, and `docs/history/` now live in the
+> [alice](https://github.com/linked0/alice) repo (Jayverse designs, plans, history, tech notes). This repo
+> keeps only `docs/rabbit-design.md`, `docs/runbooks/`, and this handbook. The cycle below is unchanged —
+> the folders are simply in alice.
+
 How work flows from an idea to a shipped, recorded result — two linked processes:
 **designing features** (breaking a project into categories and features), then the
 **task cycle** (building each one and recording what was done).

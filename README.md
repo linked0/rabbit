@@ -1,7 +1,7 @@
 # rabbit
 
 > **PoC** — 암호화폐 포트폴리오 요약·전망 도구. Next.js + TypeScript + Prisma, GCP Cloud Run 배포.
-> 설계·배포 상세 → [docs/rabbit-design.md](docs/rabbit-design.md) · 기능 설계 → [docs/features/](docs/features/README.md)
+> 설계·배포 상세 → [docs/rabbit-design.md](docs/rabbit-design.md) · 기능 설계·계획·히스토리 → [alice 레포](https://github.com/linked0/alice) (`docs/features/`·`docs/tasks/`·`docs/history/`, 2026-09-14 이동)
 
 > 이 레포 **루트가 곧 앱**이다 (이전엔 `rabbit/` 하위였으나 평탄화됨).
 
@@ -42,7 +42,7 @@ pnpm start    # 빌드 결과 실행
 
 ## Test this site (수동 점검)
 
-상단 메뉴는 **Target IA**(docs/features/README.md)를 따른다. **메뉴 항목은 로그인 없이도 전부 보이며**,
+상단 메뉴는 **Target IA**(alice 레포 `docs/features/README.md`)를 따른다. **메뉴 항목은 로그인 없이도 전부 보이며**,
 로그인은 **`/portfolio` · `/chat` 진입 시에만** 필요하다.
 
 1. **홈 (`/`)** — 프로필 페이지(linked0.github.io 미러)가 뜬다: 프로필 사진 + 소개 + 프로젝트 그리드(썸네일 7개). `/home/<slug>` 상세는 **글 전체 본문**(`content/profile/<slug>.md`를 marked로 렌더 — 표·이미지 포함, 외부 링크 없음). `/`는 내부적으로 `/home`을 rewrite (URL은 `/` 유지). 상단 메뉴 전체 노출.
@@ -54,7 +54,7 @@ pnpm start    # 빌드 결과 실행
 6. **요약** — `/summary` 카드(BTC·ETH·S&P 500·KOSPI) 60초 갱신 확인.
 7. **빌드** — `pnpm build` 가 타입 에러 없이 통과.
 
-> 지식·포트폴리오·AP2·XYZ·ETC 메뉴는 현재 **자리표시(stub) 페이지**다 — 설계는 `docs/features/`.
+> 지식·포트폴리오·AP2·XYZ·ETC 메뉴는 현재 **자리표시(stub) 페이지**다 — 설계는 alice 레포의 `docs/features/`.
 
 ---
 
@@ -67,7 +67,7 @@ pnpm start    # 빌드 결과 실행
 | `prisma/` | DB 스키마 (`Trade`) |
 | `scripts/deploy.sh` | GCP Cloud Run 배포 (상세: docs/rabbit-design.md §9) |
 | `ios/` | iPhone WKWebView 래퍼 앱 |
-| `docs/` | 설계(`rabbit-design.md`)·기능(`features/`)·런북·히스토리 |
+| `docs/` | 설계(`rabbit-design.md`)·런북·핸드북 — 기능 설계·계획·히스토리는 [alice](https://github.com/linked0/alice) 레포 `docs/` |
 | `archive/` | 이전 학습·실험 자료 |
 
 ---

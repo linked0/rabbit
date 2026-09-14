@@ -208,6 +208,8 @@ ${bodyHtml}
 function generateTasksIndex() {
   const TASKS_DIR = path.join(REPO_ROOT, 'docs', 'tasks');
   const outAbs = path.join(OUT_ROOT, 'docs', 'tasks', 'index.html');
+  // docs/tasks lives in the alice repo since 2026-09-14 — no folder, no index.
+  if (!fs.existsSync(TASKS_DIR)) { fs.rmSync(outAbs, { force: true }); return 0; }
   const entries = [];
   for (const e of fs.readdirSync(TASKS_DIR, { withFileTypes: true })) {
     if (!e.isFile() || !/\.md$/i.test(e.name)) continue;
@@ -257,6 +259,8 @@ ${items}
 function generateHistoryIndex() {
   const HIST_DIR = path.join(REPO_ROOT, 'docs', 'history');
   const outAbs = path.join(OUT_ROOT, 'docs', 'history', 'index.html');
+  // docs/history also moved to alice (2026-09-14) — skip the index when the folder is absent.
+  if (!fs.existsSync(HIST_DIR)) { fs.rmSync(outAbs, { force: true }); return 0; }
   const entries = [];
   for (const e of fs.readdirSync(HIST_DIR, { withFileTypes: true })) {
     if (!e.isFile() || !/\.md$/i.test(e.name)) continue;

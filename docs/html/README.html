@@ -38,7 +38,7 @@
 <h1 id="rabbit">rabbit</h1>
 <blockquote>
 <p><strong>PoC</strong> — 암호화폐 포트폴리오 요약·전망 도구. Next.js + TypeScript + Prisma, GCP Cloud Run 배포.
-설계·배포 상세 → <a href="docs/rabbit-design.html">docs/rabbit-design.md</a> · 기능 설계 → <a href="docs/features/README.html">docs/features/</a></p>
+설계·배포 상세 → <a href="docs/rabbit-design.html">docs/rabbit-design.md</a> · 기능 설계·계획·히스토리 → <a href="https://github.com/linked0/alice">alice 레포</a> (<code>docs/features/</code>·<code>docs/tasks/</code>·<code>docs/history/</code>, 2026-09-14 이동)</p>
 </blockquote>
 <blockquote>
 <p>이 레포 <strong>루트가 곧 앱</strong>이다 (이전엔 <code>rabbit/</code> 하위였으나 평탄화됨).</p>
@@ -67,7 +67,7 @@ pnpm start    # 빌드 결과 실행
 </code></pre>
 <hr>
 <h2 id="test-this-site-수동-점검">Test this site (수동 점검)</h2>
-<p>상단 메뉴는 <strong>Target IA</strong>(docs/features/README.md)를 따른다. <strong>메뉴 항목은 로그인 없이도 전부 보이며</strong>,
+<p>상단 메뉴는 <strong>Target IA</strong>(alice 레포 <code>docs/features/README.md</code>)를 따른다. <strong>메뉴 항목은 로그인 없이도 전부 보이며</strong>,
 로그인은 <strong><code>/portfolio</code> · <code>/chat</code> 진입 시에만</strong> 필요하다.</p>
 <ol>
 <li><strong>홈 (<code>/</code>)</strong> — 프로필 페이지(linked0.github.io 미러)가 뜬다: 프로필 사진 + 소개 + 프로젝트 그리드(썸네일 7개). <code>/home/&lt;slug&gt;</code> 상세는 <strong>글 전체 본문</strong>(<code>content/profile/&lt;slug&gt;.md</code>를 marked로 렌더 — 표·이미지 포함, 외부 링크 없음). <code>/</code>는 내부적으로 <code>/home</code>을 rewrite (URL은 <code>/</code> 유지). 상단 메뉴 전체 노출.<ul>
@@ -82,7 +82,7 @@ pnpm start    # 빌드 결과 실행
 <li><strong>빌드</strong> — <code>pnpm build</code> 가 타입 에러 없이 통과.</li>
 </ol>
 <blockquote>
-<p>지식·포트폴리오·AP2·XYZ·ETC 메뉴는 현재 <strong>자리표시(stub) 페이지</strong>다 — 설계는 <code>docs/features/</code>.</p>
+<p>지식·포트폴리오·AP2·XYZ·ETC 메뉴는 현재 <strong>자리표시(stub) 페이지</strong>다 — 설계는 alice 레포의 <code>docs/features/</code>.</p>
 </blockquote>
 <hr>
 <h2 id="layout">Layout</h2>
@@ -115,7 +115,7 @@ pnpm start    # 빌드 결과 실행
 </tr>
 <tr>
 <td><code>docs/</code></td>
-<td>설계(<code>rabbit-design.md</code>)·기능(<code>features/</code>)·런북·히스토리</td>
+<td>설계(<code>rabbit-design.md</code>)·런북·핸드북 — 기능 설계·계획·히스토리는 <a href="https://github.com/linked0/alice">alice</a> 레포 <code>docs/</code></td>
 </tr>
 <tr>
 <td><code>archive/</code></td>
