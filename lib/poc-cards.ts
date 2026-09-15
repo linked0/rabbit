@@ -3,10 +3,9 @@
 
 import type { DemoCard } from "./demo-cards";
 
-// 대표로 올릴 PoC 카드 한 장 — 홈의 "대표 작업" 섹션과 /poc 상단이 같이 본다 (2026-08-06, jay).
-// 자율 결제 에이전트(/live/agent)가 실제로 돌기 시작하면 "agent"로 바꾼다. 두 화면이 이 상수
-// 하나를 보고, 제목·설명도 카드에서 직접 읽으므로 교체는 이 줄 하나로 끝난다.
-export const FEATURED_POC_KEY = "aa";
+// 대표 PoC 상수는 제거 (2026-09-15, jay) — 홈의 "대표 작업"은 "Jayverse Ecosystem" 이
+// 되었고 /live 의 피처드 섹션도 없앴으므로, 이 값을 읽는 화면이 하나도 남지 않았다.
+// 한 장을 위로 빼는 방식이 필요해지면 그때 다시 만든다.
 
 export const POC_CARDS: DemoCard[] = [
   {
@@ -959,6 +958,10 @@ export const POC_CARDS: DemoCard[] = [
       "지갑/dapp 설정을 넣으면 행동별 권한 매트릭스를 만든다: sign / recover / export-key / change-policy / pause / upgrade 각각에 대해 어떤 액터가 단독으로/협조해야만/불가능한지를 심각도 색으로, 최악부터. 프리셋 선택·폼 입력·공급자 export 붙여넣기(Privy / Dynamic / Web3Auth / Turnkey).",
     status: "live",
     href: "/live/auditor",
+    // date 가 비어 있었다 (고침: jay, 2026-09-15). live 인데 날짜가 없으면 sortDemoCards 가
+    // 날짜 있는 카드 전부 뒤로 보내서 /poc 목록 맨 끝에 묻힌다 — .claude/CLAUDE.md 가
+    // 경고하는 바로 그 경우다. 값은 rabbit 에 라이브로 포팅된 날(위 주석과 updated 와 동일).
+    date: "2026-09-10",
     updated: "2026-09-10",
     important: true,
     howTo:

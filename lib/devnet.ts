@@ -12,10 +12,16 @@
 // reintroduce exactly the stale-address problem it exists to prevent.
 
 import { createPublicClient, defineChain, http, type Address } from "viem";
+import { jayverse } from "./jayverse";
 
 export const DEVNET_URL = process.env.DEVNET_URL ?? "https://devnet.jaylabs.xyz";
 export const DEVNET_RPC = `${DEVNET_URL}/rpc`;
-export const DEVNET_EXPLORER = `${DEVNET_URL}/explorer`;
+// Otterscan lives on its own host, not at /explorer (jay, 2026-09-15): it is a
+// SPA built for the root of a domain — under a path its assets resolved to the
+// status page and its router matched nothing. /explorer still redirects here,
+// so old links work; new ones should not go through the hop.
+export const DEVNET_EXPLORER =
+  process.env.NEXT_PUBLIC_DEVNET_EXPLORER ?? "https://explorer.devnet.jaylabs.xyz";
 export const DEVNET_CHAIN_ID = 313370;
 
 const chain = defineChain({
@@ -66,31 +72,45 @@ export type BlockRow = { number: number; timestamp: number; txCount: number; has
  * the grouping lives here — the chain should not have to care how a page
  * chooses to lay its contents out.
  */
-export const CONTRACT_GROUPS: { title: string; blurb: string; names: string[] }[] = [
+export const CONTRACT_GROUPS: {
+  title: string; titleKo: string; blurb: string; blurbKo: string; names: string[];
+}[] = [
   {
     title: "Jayverse tokens & markets",
+    titleKo: "Jayverse 토큰과 마켓",
     blurb: "Deployed fresh on the devnet by the seed — never inherited from the fork.",
+    blurbKo: "시드가 데브넷에 새로 배포한다 — 포크에서 물려받은 것이 아니다.",
     names: ["JYVE", "JUSD", "Exchange", "MarketFactory", "Registry"],
   },
   {
     title: "DeFi (jeETH)",
+    titleKo: "DeFi (jeETH)",
     blurb: "The from-scratch EtherFi study: a rebasing vault and its wrapper.",
+    blurbKo: "EtherFi 를 처음부터 다시 만들어 본 것: 리베이싱 볼트와 그 래퍼.",
     names: ["LiquidityPool", "jeETH", "jweETH", "MockAVS"],
   },
   {
     title: "Delegation framework",
+    titleKo: "위임 프레임워크",
     blurb: "ERC-7710 session keys. The kit hardcodes no addresses, so services find it here.",
+    blurbKo: "ERC-7710 세션 키. 킷이 주소를 하드코딩하지 않으므로 서비스들이 여기서 찾는다.",
     names: ["DelegationManager", "SimpleFactory", "DelegationEntryPoint", "HybridDeleGatorImpl", "MultiSigDeleGatorImpl", "EIP7702StatelessDeleGatorImpl"],
   },
   {
     title: "Caveat enforcers",
+    titleKo: "Caveat 집행자",
     blurb: "What actually enforces a delegation's limits on chain.",
+    blurbKo: "위임에 걸린 한도를 온체인에서 실제로 강제하는 것들.",
     names: ["ERC20TransferAmountEnforcer", "TimestampEnforcer", "AllowedMethodsEnforcer", "AllowedTargetsEnforcer", "LimitedCallsEnforcer", "ValueLteEnforcer"],
   },
   {
+    // jUSD 를 여기서 뺐다 (jay, 2026-09-15): 이 자리에 있던 것은 Circle 의 Sepolia USDC 였고,
+    // 시드가 rails 에서 지웠다. 목록에 남겨 두면 우리 jUSD 와 같은 칸에 있는 것처럼 보인다.
     title: "Base rails (from the fork)",
+    titleKo: "기본 레일 (포크에서)",
     blurb: "Inherited from Sepolia at their real addresses — the only things not deployed by us.",
-    names: ["EntryPoint", "jUSD"],
+    blurbKo: "Sepolia 의 실제 주소 그대로 물려받는다 — 우리가 배포하지 않은 유일한 것들.",
+    names: ["EntryPoint"],
   },
 ];
 
@@ -110,62 +130,62 @@ export const CONTRACT_GROUPS: { title: string; blurb: string; names: string[] }[
 export type Service = {
   name: string;
   blurb: string;
+  blurbKo: string;
   url?: string;
   /** Registry names this service owns on the devnet. */
   contracts: string[];
   /** Something true about this service that the chain cannot tell you. */
   note?: string;
+  noteKo?: string;
 };
 
+/** Name, blurb and URL come from lib/jayverse.ts so /projects and /devnet
+ *  cannot drift; only the chain-specific half is written here. */
+function svc(key: string, chain: { contracts: string[]; note?: string; noteKo?: string }): Service {
+  const p = jayverse(key);
+  return { name: p.name, blurb: p.blurb, blurbKo: p.blurbKo, url: p.url, ...chain };
+}
+
 export const SERVICES: Service[] = [
-  {
-    name: "Rabbit — portal & Agentic AA",
-    blurb: "ERC-4337 account abstraction and the ERC-7710 session-key path.",
-    url: "https://www.jaylabs.xyz",
+  svc("rabbit", {
     contracts: ["EntryPoint", "DelegationManager", "SimpleFactory"],
     note: "UserOps go through the EntryPoint the fork carries, so the address is the one every 4337 tool already knows.",
-  },
-  {
-    name: "Verex — prediction markets",
-    blurb: "Onboarding and a market maker over conditional tokens.",
-    url: "https://verex.jaylabs.xyz",
+    noteKo:
+      "UserOp 은 포크가 실어 온 EntryPoint 를 지나가므로, 주소가 모든 4337 도구가 이미 아는 그 값이다.",
+  }),
+  svc("verex", {
     contracts: ["MarketFactory"],
     note: "Its CTF backbone (jUSD, ConditionalTokens, CTFExchange) is pinned in verex's own deployments.json rather than the Registry — it is deployed by verex's tooling, not by the devnet seed.",
-  },
-  {
-    name: "Token, Exchange & Personas",
-    blurb: "JYVE and jUSD, priced against each other by a mini-AMM.",
-    url: "https://exchange.jaylabs.xyz",
+    noteKo:
+      "CTF 백본(jUSD, ConditionalTokens, CTFExchange)은 Registry 가 아니라 verex 자체의 deployments.json 에 고정돼 있다 — 데브넷 시드가 아니라 verex 도구가 배포하기 때문이다.",
+  }),
+  svc("token", {
     contracts: ["JYVE", "JUSD", "Exchange"],
     note: "jUSD is the Jayverse dollar — our own, deployed by the seed in both node modes, not Circle's USDC.",
-  },
-  {
-    name: "DeFi — jeETH",
-    blurb: "EtherFi's mechanics rebuilt from scratch: a rebasing vault and its wrapper.",
-    url: "https://defi.jaylabs.xyz",
+    noteKo:
+      "jUSD 는 Jayverse 의 달러다 — 시드가 두 노드 모드 모두에서 배포하는 우리 것이고, Circle 의 USDC 가 아니다.",
+  }),
+  svc("defi", {
     contracts: ["LiquidityPool", "jeETH", "jweETH", "MockAVS"],
-  },
-  {
-    name: "Wallet & simulate-before-sign",
-    blurb: "Embedded wallet, MV3 extension, and transaction previews.",
-    url: "https://wallet.jaylabs.xyz",
+  }),
+  svc("wallet", {
     contracts: [],
     note: "No contracts of its own. It lists this chain as a network and its simulate API forks from the devnet, so a preview and the real thing agree.",
-  },
-  {
-    name: "Number — math & investment",
-    blurb: "Research notes, admin-only.",
-    url: "https://number.jaylabs.xyz",
+    noteKo:
+      "자체 컨트랙트는 없다. 이 체인을 네트워크로 등록해 두고, simulate API 가 데브넷을 포크하므로 미리보기와 실제가 일치한다.",
+  }),
+  svc("number", {
     contracts: [],
     note: "Reads the chain; deploys nothing to it.",
-  },
-  {
-    name: "Game — 3D street",
-    blurb: "Wander a street and find Verex markets on boards.",
-    url: "https://www.jaylabs.xyz/game",
+    noteKo:
+      "체인을 읽기만 하고, 아무것도 배포하지 않는다.",
+  }),
+  svc("game", {
     contracts: [],
     note: "Runs inside the Rabbit service and reads markets from the devnet through Verex.",
-  },
+    noteKo:
+      "Rabbit 서비스 안에서 돌고, Verex 를 통해 데브넷의 마켓을 읽는다.",
+  }),
 ];
 
 /** Is a service answering right now? Unknown beats a wrong "down". */

@@ -1,11 +1,11 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import Nav from "../Nav";
 import VerexBallLazy from "./VerexBallLazy";
-import SessionKeyMark from "./SessionKeyMark";
 import ProfileLinks from "./ProfileLinks";
 import JayChatClient from "../JayChatClient";
 import { PROFILE } from "@/lib/home-content";
-import { POC_CARDS, FEATURED_POC_KEY } from "@/lib/poc-cards";
+import { JAYVERSE, projectUrl, isLocalHost } from "@/lib/jayverse";
 import { verexUrl } from "@/lib/verex";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
@@ -18,11 +18,12 @@ export const metadata = {
 
 export default function HomePage() {
   const lang = getLang();
+  // The Host the browser actually used. On a phone over Tailscale that is
+  // 100.x.y.z:3100, and every ecosystem link has to carry the same address —
+  // "localhost" there would mean the phone (jay, 2026-09-15).
+  const host = headers().get("host");
   // Home no longer pings Telegram — everyone lands here, so it was the least informative signal.
   // Page-view pings now fire on the *other* top-menu pages via <NotifyPageView/> (jay, 2026-09-10).
-  // 대표 PoC 한 장 — 어느 카드인지는 lib/poc-cards.ts의 FEATURED_POC_KEY가 정한다(/poc 상단과
-  // 같은 출처). 없는 key여도 홈이 죽지 않도록, 못 찾으면 이 자리를 통째로 비운다.
-  const poc = POC_CARDS.find((c) => c.key === FEATURED_POC_KEY);
   return (
     <>
       <Nav />
@@ -45,13 +46,13 @@ export default function HomePage() {
           목록은 /projects로 완전히 넘겼다. */}
       <section className="panel">
         <div className="home-sec-head">
-          <h2 style={{ margin: 0 }}>{pick(lang, "대표 작업", "Featured")}</h2>
+          <h2 style={{ margin: 0 }}>{pick(lang, "제이버스 생태계", "Jayverse Ecosystem")}</h2>
         </div>
         {/* 전체 보기로 나가는 문(섹션 머리 링크 → 카드 아래 서브카드)은 둘 다 어색해서
             뺐다 — 섹션 구성은 jay가 나중에 직접 다듬는다 (2026-08-06). */}
-        <div className="home-split">
+        <div className="eco-split">
           {/* 좌: 수행 프로젝트 쪽 대표 — 라이브 앱으로 외부 링크. */}
-          <a href={verexUrl()} target="_blank" rel="noreferrer" className="kpi featured-card">
+          <a href={verexUrl(host)} target="_blank" rel="noreferrer" className="kpi featured-card">
             <div className="featured-mark-wrap">
               <VerexBallLazy />
             </div>
@@ -72,29 +73,32 @@ export default function HomePage() {
             </div>
           </a>
 
-          {/* 우: PoCs 쪽 대표 — 내부 라우트. 제목·설명은 카드가 원본이라 여기서 복사하지 않는다. */}
-          {poc?.href && (
-            <Link href={poc.href} className="kpi featured-card featured-card-poc">
-              <div className="featured-mark-wrap">
-                <SessionKeyMark />
-              </div>
-              <div style={{ flex: 1, minWidth: 200 }}>
-                <div className="label">
-                  {poc.status === "live"
-                    ? pick(lang, "PoC · 라이브", "PoC · Live")
-                    : poc.status === "done"
-                      ? pick(lang, "PoC · 완료", "PoC · Done")
-                      : pick(lang, "PoC · 준비 중", "PoC · Coming soon")}
-                </div>
-                <div className="value" style={{ fontSize: 18 }}>
-                  {pick(lang, poc.titleKo, poc.title)}
-                </div>
-                <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>
-                  {pick(lang, poc.descriptionKo, poc.description)}
-                </div>
-              </div>
-            </Link>
-          )}
+          {/* 우: 나머지 생태계 프로젝트 — 제목과 링크만. 설명을 넣으면 섹션이 길어져
+              Jay Chat 이 한 화면에서 밀려난다 (jay, 2026-09-15). 목록은
+              lib/jayverse.ts 한 곳에서 오고 /devnet 도 같은 파일을 읽는다. */}
+          <div className="eco-grid">
+            {/* verex 는 왼쪽 큰 카드로 이미 있고, rabbit 은 이 페이지 자신이다 —
+                자기 자신으로 가는 링크를 카드로 두지 않는다 (jay, 2026-09-15). */}
+            {JAYVERSE.filter((p) => p.key !== "verex" && p.key !== "rabbit").map((p) => {
+              const href = projectUrl(p, host);
+              if (!href) return null;
+              const label = (
+                <span className="eco-name">
+                  {p.name}
+                  {href.startsWith("http") && <span className="eco-ext"> ↗</span>}
+                </span>
+              );
+              return href.startsWith("http") ? (
+                <a key={p.key} href={href} target="_blank" rel="noreferrer" className="eco-card">
+                  {label}
+                </a>
+              ) : (
+                <Link key={p.key} href={href} className="eco-card">
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </section>
 

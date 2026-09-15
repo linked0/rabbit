@@ -35,7 +35,7 @@ declare global {
 // 않았다는 위험은 남아 있다 — 권한 요청이 거부되면 그 지점이 원인이다.
 const DEVNET_CHAIN_ID = 313370;
 const DEVNET_RPC = process.env.NEXT_PUBLIC_DEVNET_RPC || "https://devnet.jaylabs.xyz/rpc";
-const DEVNET_EXPLORER = process.env.NEXT_PUBLIC_DEVNET_EXPLORER || "https://devnet.jaylabs.xyz/explorer";
+const DEVNET_EXPLORER = process.env.NEXT_PUBLIC_DEVNET_EXPLORER || "https://explorer.devnet.jaylabs.xyz";
 // jUSD — Jayverse 의 달러. 시드가 배포하며, 주소는 데브넷 Registry 의 `token:JUSD` 와 같다.
 const JUSD_DEVNET = (process.env.NEXT_PUBLIC_DEVNET_JUSD ||
   "0x55F1b740d15c097eD1FfD0520540131A5B7127e6") as `0x${string}`;
