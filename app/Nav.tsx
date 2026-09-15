@@ -55,6 +55,11 @@ const MENU: NavItem[] = [
   { href: "/live/aa", ko: "AA", en: "AA", code: "AA", pub: true },
   { href: "/live/agent/console", ko: "정산 에이전트", en: "Settlement Agent", code: "AGENTCONSOLE", pub: true },
   { href: "/live/auditor", ko: "오디터", en: "Auditor", code: "AUDITOR", pub: true },
+  // Devnet (jay, 2026-09-15) — our own chain's status and its on-chain address
+  // book. Needs ALLOW_DEVNET=true in .env; deploy.sh forwards every ALLOW_* to
+  // Cloud Run, so the deploy picks it up automatically. `pub`: read-only, no
+  // keys and no transactions, so there is nothing to gate behind a login.
+  { href: "/devnet", ko: "데브넷", en: "Devnet", code: "DEVNET", pub: true },
   // 알고리즘 상단 메뉴는 제거 (2026-08-11, jay) — 수학·알고리즘 노트는 데모가 아니라 문서라,
   // 문서 색인(docs/index.html)의 Algorithms 섹션이 정본이 됐다. 카드는 /poc 로 돌아온다.
   // TIL 메뉴는 제거 — /poc 안의 섹션으로 흡수했다 (2026-08-11, jay). /til 은 /poc 로
