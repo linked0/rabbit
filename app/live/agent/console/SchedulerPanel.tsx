@@ -28,7 +28,7 @@ export default function SchedulerPanel({
 }: {
   marketSlug: string | null;
   outcome: string;
-  settings: { cooldownSec: number; edgeThreshold: number; sizeUsdc: number; newsWithinHours: number };
+  settings: { cooldownSec: number; edgeThreshold: number; sizeJusd: number; newsWithinHours: number };
   onChanged: () => void;
 }) {
   const { lang } = useLang();

@@ -54,7 +54,7 @@ export async function GET() {
 
   // DB 가 죽어도 라우트 전체를 500 으로 만들지 않는다 (jay, 2026-09-07). 예전에는 이
   // 호출이 던지면 응답이 통째로 사라져서, 패널은 에이전트 주소까지 잃고 "agent address
-  // is not loaded yet" 만 남았다 — 참여자 표(다른 라우트)는 멀쩡한데. 주소·USDC 는
+  // is not loaded yet" 만 남았다 — 참여자 표(다른 라우트)는 멀쩡한데. 주소·jUSD 는
   // env/verex 소관이므로 그대로 주고, 무엇이 빠졌는지는 mandateError 로 말한다.
   let mandate: Awaited<ReturnType<typeof prisma.mandate.findFirst>> = null;
   let mandateError: string | null = null;
@@ -77,7 +77,7 @@ export async function GET() {
   const cfg = await verex.config().catch(() => null);
 
   return NextResponse.json({
-    usdc: cfg?.usdc ?? null,
+    jusd: cfg?.jusd ?? null,
     chainId: cfg?.chainId ?? env?.chainId ?? null,
     // 브라우저에 나가는 유일한 것. 개인키는 서버에 있고, 페이지는 이 사실을
     // "testnet-grade"로 표시해야 한다 — 숨기면 데모가 정직하지 않다.
@@ -94,13 +94,13 @@ export async function GET() {
       ? {
           id: mandate.id,
           owner: mandate.owner,
-          capUsdc: Number(mandate.capUsdc),
-          drawnUsdc: Number(mandate.drawnUsdc),
-          remainingUsdc: Number(mandate.capUsdc) - Number(mandate.drawnUsdc),
+          capJusd: Number(mandate.capJusd),
+          drawnJusd: Number(mandate.drawnJusd),
+          remainingJusd: Number(mandate.capJusd) - Number(mandate.drawnJusd),
           expiresAt: mandate.expiresAt.toISOString(),
           // 만료와 소진은 **다른 상태**다. 하나로 뭉치면 화면에서 구별할 수 없다.
           expired: mandate.expiresAt.getTime() <= Date.now(),
-          exhausted: Number(mandate.drawnUsdc) >= Number(mandate.capUsdc),
+          exhausted: Number(mandate.drawnJusd) >= Number(mandate.capJusd),
           createdAt: mandate.createdAt.toISOString(),
           /// 위임이 온체인 강제를 받는가. false 면 이 mandate 는 DB 행일 뿐이고,
           /// 화면은 그렇게 말해야 한다 — "체인이 막는다"를 근거 없이 주장하면
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
 
   const body = (await req.json().catch(() => null)) as {
     owner?: string;
-    capUsdc?: number;
+    capJusd?: number;
     expiresAt?: string;
     /// 두 가지 중 하나가 온다:
     ///   • `/prepare` 가 만든 구조체 + 브라우저 서명 (31337 경로)
@@ -128,11 +128,11 @@ export async function POST(req: NextRequest) {
     delegation?: Record<string, unknown>;
   } | null;
 
-  if (!body?.owner || typeof body.capUsdc !== "number" || !body.expiresAt) {
-    return NextResponse.json({ error: "owner, capUsdc and expiresAt are required" }, { status: 400 });
+  if (!body?.owner || typeof body.capJusd !== "number" || !body.expiresAt) {
+    return NextResponse.json({ error: "owner, capJusd and expiresAt are required" }, { status: 400 });
   }
-  if (!(body.capUsdc > 0)) {
-    return NextResponse.json({ error: "capUsdc must be > 0" }, { status: 400 });
+  if (!(body.capJusd > 0)) {
+    return NextResponse.json({ error: "capJusd must be > 0" }, { status: 400 });
   }
   const expiresAt = new Date(body.expiresAt);
   if (Number.isNaN(expiresAt.getTime())) {
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
     data: {
       owner: body.owner,
       agent: agentAddress(),
-      capUsdc: body.capUsdc,
+      capJusd: body.capJusd,
       expiresAt,
       delegation: (body.delegation ?? undefined) as never,
     },

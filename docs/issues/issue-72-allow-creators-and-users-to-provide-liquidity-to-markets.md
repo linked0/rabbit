@@ -22,14 +22,14 @@ The creator configures how much of the total liquidity they personally provide v
 
 - UI wireframe already exists: `docs/images/liquidity-config-wireframe.png`
 - Fields: Total Liquidity (read-only), User Liquidity (adjustable), Platform Support (auto-calculated)
-- Minimum: 50 USDC (matches penalty deposit)
+- Minimum: 50 jUSD (matches penalty deposit)
 - Formula: `Total Liquidity = 2 × Initial Liquidity × Number of Outcomes`
 
 ### 2. User Liquidity Provision (post-creation)
 
 Any user can add liquidity to an active market and earn proportional LP revenue.
 
-- User deposits USDC → receives LP share tokens
+- User deposits jUSD → receives LP share tokens
 - Earns proportional sales proceeds from token trades
 - Can withdraw liquidity (subject to market rules)
 - Settlement splits payouts by LP share ratio

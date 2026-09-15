@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A stablecoin wallet is a distribution business, not a crypto one — Dev Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 배지를 제목 아래 줄에 (jay, 2026-09-11) — 숫자가 커져도(95% done · 386/406) 제목 옆에서
+     넘치지 않도록, 제목이 첫 줄을 다 차지하고 배지는 다음 줄로 내려가 내용만큼만 차지한다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:1 0 100%; }
+  .rail-head > .rail-note { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-top:6px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
+  /* 페이스 리마인더는 핑크 톤 (jay, 2026-09-11) — % done 배지(파랑)와 구분되는 강조. */
+  /* inline-block 으로만 (jay, 2026-09-11) — 인라인이라 세로 패딩이 안 먹어 낮아 보였다.
+     패딩은 .rail-note 기본값(1px 7px)을 그대로 써서 파란 배지와 높이가 정확히 같아진다. */
+  .rail-note-pink { color:#ec4899; background:rgba(236,72,153,0.14); display:inline-block; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-done { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  /* Important/All 등급 토글 (jay, 2026-09-08) — 진입 시 기본은 Important. */
+  .rail-tier { display:flex; gap:6px; margin-bottom:8px; }
+  .rail-tier .tier-btn {
+    flex:1 1 auto; padding:6px 10px; font:inherit; font-size:0.78rem; font-weight:600;
+    color:var(--text2); background:var(--card); border:1px solid var(--border);
+    border-radius:8px; cursor:pointer;
+  }
+  .rail-tier .tier-btn:hover { color:var(--text); }
+  .rail-tier .tier-btn.on { color:var(--accent); border-color:var(--accent); background:var(--accent-soft); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; padding-right:.4em; } /* 3자리 번호가 제목에 붙던 것(146The…) — 고정 간격 (2026-09-08) */
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  /* 출처 태그 칩 — Fundamentals(Economics·Algorithms·Math) 항목이 어디서 왔는지 (jay, 2026-09-11). */
+  .topic-tag { flex:0 0 auto; font-size:0.64rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase;
+    padding:1px 6px; border-radius:999px; color:var(--text2); background:var(--accent-soft); white-space:nowrap; }
+  .nav-text .topic-tag { font-size:0.6rem; padding:0 5px; margin-right:.35em; vertical-align:middle; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
+
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  /* 목록 행 안에서는 링크들과 한 줄에 서야 하므로 더 작고 납작하게 (jay, 2026-08-28). */
+  .copy-inline { font-size:0.72rem; padding:2px 9px; margin-left:6px; vertical-align:baseline; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a><span class="rail-note">14% done &middot; 58/409</span>
+      <span class="rail-sub"><span class="rail-note rail-note-pink">2%/day &rarr; 95% done</span></span>
+      <div class="rail-jump" id="rail-jump"></div>
+    </div>
+    <div class="rail-search">
+      
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; A stablecoin wallet is a distribution business, not a crypto one</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#211</span><span>PoC</span></p>
+      <h1>A stablecoin wallet is a distribution business, not a crypto one</h1>
+      <p class="lead">KakaoPay finished a PoC extending its <strong>43M-user prepaid KakaoPay Money wallet</strong> to hold, send, pay, and settle on-chain assets — including a KRW stablecoin — verified at its high-traffic scale. Read where the moat actually sits: not in the on-chain support (the late, small addition) but in the 43M users, the settlement infra that already carries that traffic, the payment and merchant relationships, and a regulatory posture. &quot;Add stablecoins&quot; is a feature bolted onto a distribution business. KakaoGroup is now packaging that wallet tech + consulting as a <strong>B2B product</strong> for other firms and banks — renting the distribution out. And the CEO names where value lands: <em>not at issuance, but at the usage stage where the asset is actually spent.</em></p>
+      <p class="meta">Not a build — a moat audit. For any &#39;we added a stablecoin wallet&#39; announcement, split the crypto part from the distribution part and ask which one is scarce. Draw the stack: <strong>users (43M) · high-traffic settlement infra · payment/merchant relationships · regulatory posture</strong> — then, underneath, the on-chain custody/keys. Score each layer on &#39;how long to replicate from zero&#39;: the on-chain part is weeks (SDKs exist), the 43M users and the infra are years. Then interrogate the B2B angle: when Kakao sells wallet tech + consulting to a bank, what is actually being rented — the wallet SDK (cheap, commoditized) or the distribution and the regulatory template (the real thing)? Source: KakaoPay via digitalasset.works (박재연, 2026-09-09). Confirm the figures (43M users, PoC scope: send/pay/settle + UI, KakaoBank&#39;s bank-level track) against the source before citing.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# A stablecoin wallet is a distribution business, not a crypto one\n\nKakaoPay finished a PoC extending its **43M-user prepaid KakaoPay Money wallet** to hold, send, pay, and settle on-chain assets — including a KRW stablecoin — verified at its high-traffic scale. Read where the moat actually sits: not in the on-chain support (the late, small addition) but in the 43M users, the settlement infra that already carries that traffic, the payment and merchant relationships, and a regulatory posture. \"Add stablecoins\" is a feature bolted onto a distribution business. KakaoGroup is now packaging that wallet tech + consulting as a **B2B product** for other firms and banks — renting the distribution out. And the CEO names where value lands: *not at issuance, but at the usage stage where the asset is actually spent.*\n\nNot a build — a moat audit. For any 'we added a stablecoin wallet' announcement, split the crypto part from the distribution part and ask which one is scarce. Draw the stack: **users (43M) · high-traffic settlement infra · payment/merchant relationships · regulatory posture** — then, underneath, the on-chain custody/keys. Score each layer on 'how long to replicate from zero': the on-chain part is weeks (SDKs exist), the 43M users and the infra are years. Then interrogate the B2B angle: when Kakao sells wallet tech + consulting to a bank, what is actually being rented — the wallet SDK (cheap, commoditized) or the distribution and the regulatory template (the real thing)? Source: KakaoPay via digitalasset.works (박재연, 2026-09-09). Confirm the figures (43M users, PoC scope: send/pay/settle + UI, KakaoBank's bank-level track) against the source before citing.\n\n## Why\n\n**The scarce thing in a stablecoin wallet is the distribution it already has, not the on-chain support it adds.** The on-chain layer — key custody, signing, an ERC-20 balance — is a solved, commoditized problem; SDKs ship it in weeks. What KakaoPay brings that a crypto startup cannot is the part that took a decade: **43M users, settlement infra proven at that traffic, merchant and payment relationships, and a regulatory posture.** So the honest reading of 'KakaoPay added a stablecoin wallet' is not a crypto milestone — it is a distribution business attaching a feature. The crypto is the easy 10%.\n\n**Value accrues at the usage/distribution stage, which is exactly where the incumbent already sits.** The CEO's line — *'the true value of digital assets reveals itself beyond issuance, at the stage where the asset is actually used'* — is the same claim `issuance-as-a-service` recorded from M0 on the *issuance* side ('PYUSD's lasting value comes from what others build on top of it'). Put the two together and the whole stablecoin stack has a shape: **issuers rent denomination; wallets rent distribution; and the durable positions are the reserve layer (issuance) and the distribution layer (usage).** A KRW stablecoin's issuer is replaceable; the wallet that 43M people already open every day is not.\n\n**The B2B move is the tell.** KakaoGroup is packaging the wallet tech + consulting as a product for other firms and banks, tailored to each service environment and future Korean regulation. That is `build-rent-or-own-the-rail` from the owner's chair — Kakao owns the distribution rail and rents access to everyone who wants to reach Korean users with a stablecoin. And note *what* is bundled: not just an SDK but **consulting on regulation** — because the regulatory template (bank-level KYC/AML/custody tuned to rules that don't fully exist yet) is itself a moat a newcomer can't buy. The one number worth extracting from any such PoC: of the value created, how much rides on the crypto, and how much on the 43M-user distribution the crypto is riding on.\n\n## How it works\n\nSplit the stack, score what's scarce.\n\n### The wallet stack — crypto is the thin top layer\n\n| Layer | Held by KakaoPay | Time to replicate from zero |\n|---|---|---|\n| 43M users, daily-open habit | yes | years |\n| Settlement infra at high traffic | yes (prepaid-money system) | years |\n| Merchant / payment relationships | yes | years |\n| Regulatory posture (KYC/AML/custody) | yes (KakaoBank: bank-level track) | years — and rule-dependent |\n| On-chain custody / keys / stablecoin support | newly added in the PoC | weeks (SDKs exist) |\n\nThe drain of value flows to the top four rows; the PoC verified the bottom one. That inversion — the hard part already owned, the 'crypto' part the easy add — is the whole reading.\n\n### The two-sided shape of the stablecoin stack\n\n| Side | Who rents what | Durable position | Card |\n|---|---|---|---|\n| Issuance | issuers rent denomination on a reserve | the reserve layer | `issuance-as-a-service` |\n| Distribution | apps rent reach into users | the wallet / usage layer | this card |\n\nBoth quotes (Kakao's Shin, M0) name the *usage* stage as where value lands — issuance is the commodity, distribution and reserve are the moats.\n\n### The B2B tell\n\nKakaoGroup sells wallet tech **+ consulting** to firms and banks. The SDK is commodity; the distribution and the **regulatory template** are not. Renting the rail is the owner's play (`build-rent-or-own-the-rail`).\n\nCross-refs: `issuance-as-a-service` (the issuance-side twin — same 'value at usage, not issuance' claim), `st-self-distribution` and `consortium-owns-the-rail` (economics accrue to whoever owns distribution/the rail), `the-wallet-is-not-the-user` (a wallet is a key, but a *payments* wallet is also a distribution asset), `won-stablecoin-fee-savings` and `what-needs-a-stablecoin` (the KRW-stablecoin use case), `embedded-wallet-policy` (the on-chain custody layer this bolts on).\n"</script>
+      <h2>Why</h2>
+      <p><strong>The scarce thing in a stablecoin wallet is the distribution it already has, not the on-chain support it adds.</strong> The on-chain layer — key custody, signing, an ERC-20 balance — is a solved, commoditized problem; SDKs ship it in weeks. What KakaoPay brings that a crypto startup cannot is the part that took a decade: <strong>43M users, settlement infra proven at that traffic, merchant and payment relationships, and a regulatory posture.</strong> So the honest reading of &#39;KakaoPay added a stablecoin wallet&#39; is not a crypto milestone — it is a distribution business attaching a feature. The crypto is the easy 10%.</p>
+<p><strong>Value accrues at the usage/distribution stage, which is exactly where the incumbent already sits.</strong> The CEO&#39;s line — <em>&#39;the true value of digital assets reveals itself beyond issuance, at the stage where the asset is actually used&#39;</em> — is the same claim <code>issuance-as-a-service</code> recorded from M0 on the <em>issuance</em> side (&#39;PYUSD&#39;s lasting value comes from what others build on top of it&#39;). Put the two together and the whole stablecoin stack has a shape: <strong>issuers rent denomination; wallets rent distribution; and the durable positions are the reserve layer (issuance) and the distribution layer (usage).</strong> A KRW stablecoin&#39;s issuer is replaceable; the wallet that 43M people already open every day is not.</p>
+<p><strong>The B2B move is the tell.</strong> KakaoGroup is packaging the wallet tech + consulting as a product for other firms and banks, tailored to each service environment and future Korean regulation. That is <code>build-rent-or-own-the-rail</code> from the owner&#39;s chair — Kakao owns the distribution rail and rents access to everyone who wants to reach Korean users with a stablecoin. And note <em>what</em> is bundled: not just an SDK but <strong>consulting on regulation</strong> — because the regulatory template (bank-level KYC/AML/custody tuned to rules that don&#39;t fully exist yet) is itself a moat a newcomer can&#39;t buy. The one number worth extracting from any such PoC: of the value created, how much rides on the crypto, and how much on the 43M-user distribution the crypto is riding on.</p>
+      <h2>How it works</h2>
+      <p>Split the stack, score what&#39;s scarce.</p>
+<h3>The wallet stack — crypto is the thin top layer</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Held by KakaoPay</th>
+<th>Time to replicate from zero</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>43M users, daily-open habit</td>
+<td>yes</td>
+<td>years</td>
+</tr>
+<tr>
+<td>Settlement infra at high traffic</td>
+<td>yes (prepaid-money system)</td>
+<td>years</td>
+</tr>
+<tr>
+<td>Merchant / payment relationships</td>
+<td>yes</td>
+<td>years</td>
+</tr>
+<tr>
+<td>Regulatory posture (KYC/AML/custody)</td>
+<td>yes (KakaoBank: bank-level track)</td>
+<td>years — and rule-dependent</td>
+</tr>
+<tr>
+<td>On-chain custody / keys / stablecoin support</td>
+<td>newly added in the PoC</td>
+<td>weeks (SDKs exist)</td>
+</tr>
+</tbody></table></div>
+<p>The drain of value flows to the top four rows; the PoC verified the bottom one. That inversion — the hard part already owned, the &#39;crypto&#39; part the easy add — is the whole reading.</p>
+<h3>The two-sided shape of the stablecoin stack</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Side</th>
+<th>Who rents what</th>
+<th>Durable position</th>
+<th>Card</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Issuance</td>
+<td>issuers rent denomination on a reserve</td>
+<td>the reserve layer</td>
+<td><code>issuance-as-a-service</code></td>
+</tr>
+<tr>
+<td>Distribution</td>
+<td>apps rent reach into users</td>
+<td>the wallet / usage layer</td>
+<td>this card</td>
+</tr>
+</tbody></table></div>
+<p>Both quotes (Kakao&#39;s Shin, M0) name the <em>usage</em> stage as where value lands — issuance is the commodity, distribution and reserve are the moats.</p>
+<h3>The B2B tell</h3>
+<p>KakaoGroup sells wallet tech <strong>+ consulting</strong> to firms and banks. The SDK is commodity; the distribution and the <strong>regulatory template</strong> are not. Renting the rail is the owner&#39;s play (<code>build-rent-or-own-the-rail</code>).</p>
+<p>Cross-refs: <code>issuance-as-a-service</code> (the issuance-side twin — same &#39;value at usage, not issuance&#39; claim), <code>st-self-distribution</code> and <code>consortium-owns-the-rail</code> (economics accrue to whoever owns distribution/the rail), <code>the-wallet-is-not-the-user</code> (a wallet is a key, but a <em>payments</em> wallet is also a distribution asset), <code>won-stablecoin-fee-savings</code> and <code>what-needs-a-stablecoin</code> (the KRW-stablecoin use case), <code>embedded-wallet-policy</code> (the on-chain custody layer this bolts on).</p>
+      
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# 스테이블코인 지갑은 크립토 사업이 아니라 유통 사업이다\n\n카카오페이가 **4300만 이용자의 선불충전 카카오페이머니 지갑**을 온체인 자산 — 원화 스테이블코인 포함 — 을 보관·송금·결제·정산할 수 있게 확장하는 PoC를 마쳤습니다. 대용량 트래픽 환경에서 검증했죠. 해자가 실제로 어디 있는지 읽으세요: 온체인 지원(늦고 작은 추가)이 아니라, 4300만 이용자, 그 트래픽을 이미 감당하는 정산 인프라, 결제·가맹 관계, 그리고 규제 대응 태세에. '스테이블코인 추가'는 유통 사업에 붙인 기능일 뿐입니다. 카카오그룹은 이제 그 지갑 기술 + 컨설팅을 다른 기업·은행에 **B2B 상품**으로 묶어 — 유통을 임대하려 합니다. 그리고 대표는 가치가 어디서 드러나는지 짚습니다: *발행이 아니라, 자산이 실제로 쓰이는 유통 단계에서.*\n\n구현이 아니라 해자 감사입니다. '스테이블코인 지갑을 붙였다'는 발표마다, 크립토 부분과 유통 부분을 갈라 어느 쪽이 희소한지 물으세요. 스택을 그리세요: **이용자(4300만) · 대용량 정산 인프라 · 결제·가맹 관계 · 규제 대응 태세** — 그 아래에 온체인 커스터디/키. 각 층을 '맨바닥부터 복제하는 데 걸리는 시간'으로 채점: 온체인 부분은 몇 주(SDK가 있음), 4300만 이용자와 인프라는 몇 년. 그다음 B2B 각도를 캐물으세요: 카카오가 은행에 지갑 기술 + 컨설팅을 팔 때 실제로 임대되는 건 지갑 SDK(싸고 범용화됨)인가, 아니면 유통과 규제 템플릿(진짜)인가? 출처: 카카오페이, digitalasset.works(박재연, 2026-09-09). 수치(4300만 이용자, PoC 범위: 송금·결제·정산 + UI, 카카오뱅크의 은행급 트랙)는 인용 전 출처로 확인.\n\n## 왜\n\n**스테이블코인 지갑에서 희소한 것은 새로 붙인 온체인 지원이 아니라 이미 가진 유통입니다.** 온체인 층 — 키 커스터디, 서명, ERC-20 잔액 — 은 이미 풀린 범용 문제로, SDK가 몇 주면 실어줍니다. 카카오페이가 크립토 스타트업이 못 가진 채로 들고 오는 건 10년이 걸린 부분입니다: **4300만 이용자, 그 트래픽에서 검증된 정산 인프라, 가맹·결제 관계, 규제 대응 태세.** 그러니 '카카오페이가 스테이블코인 지갑을 붙였다'의 정직한 독해는 크립토 이정표가 아니라, 유통 사업이 기능 하나를 붙인 것입니다. 크립토는 쉬운 10%.\n\n**가치는 사용/유통 단계에서 쌓이고, 바로 그 자리에 인큐번트가 이미 앉아 있습니다.** 대표의 말 — *'디지털자산의 진정한 가치는 발행을 넘어 자산이 실제로 사용되는 유통 단계에서 드러난다'* — 은 `issuance-as-a-service`가 *발행* 쪽에서 M0로부터 기록한 주장('PYUSD의 지속적 가치는 남들이 그 위에 짓는 것에서 나온다')과 같습니다. 둘을 합치면 스테이블코인 스택 전체의 형태가 보입니다: **발행자는 화폐 단위를 임대하고, 지갑은 유통을 임대하며, 지속되는 위치는 준비자산 계층(발행)과 유통 계층(사용)이다.** 원화 스테이블코인의 발행자는 교체 가능하지만, 4300만 명이 매일 여는 지갑은 아닙니다.\n\n**B2B 수가 결정적 신호입니다.** 카카오그룹은 지갑 기술 + 컨설팅을 다른 기업·은행용 상품으로, 각 서비스 환경과 향후 한국 규제에 맞춰 묶습니다. 이건 `build-rent-or-own-the-rail`을 주인의 자리에서 본 것 — 카카오가 유통 레일을 소유하고, 스테이블코인으로 한국 이용자에 닿으려는 모두에게 접근을 임대합니다. 그리고 *무엇이* 묶이는지 보세요: SDK만이 아니라 **규제 컨설팅** — 아직 온전히 존재하지 않는 규칙에 맞춘 은행급 KYC/AML/커스터디 템플릿 자체가 신규 진입자가 살 수 없는 해자이기 때문입니다. 이런 PoC에서 뽑을 한 숫자: 창출된 가치 중 얼마가 크립토에 걸려 있고, 얼마가 그 크립토가 올라탄 4300만 유통에 걸려 있는가.\n\n## 동작 방식\n\n스택을 가르고, 희소한 것을 채점.\n\n### 지갑 스택 — 크립토는 얇은 최상층\n\n| 층 | 카카오페이 보유 | 맨바닥부터 복제 시간 |\n|---|---|---|\n| 4300만 이용자, 매일 여는 습관 | 예 | 수년 |\n| 대용량 정산 인프라 | 예(선불충전 시스템) | 수년 |\n| 가맹 / 결제 관계 | 예 | 수년 |\n| 규제 대응 태세(KYC/AML/커스터디) | 예(카카오뱅크: 은행급 트랙) | 수년 — 규칙 의존 |\n| 온체인 커스터디 / 키 / 스테이블코인 지원 | PoC에서 새로 추가 | 몇 주(SDK 존재) |\n\n가치의 흐름은 위 네 행으로 가고, PoC가 검증한 건 맨 아래 행. 그 역전 — 어려운 부분은 이미 소유, '크립토' 부분이 쉬운 추가 — 이 독해 전부입니다.\n\n### 스테이블코인 스택의 양면 형태\n\n| 면 | 누가 무엇을 임대 | 지속 위치 | 카드 |\n|---|---|---|---|\n| 발행 | 발행자가 준비자산 위 화폐 단위 임대 | 준비자산 계층 | `issuance-as-a-service` |\n| 유통 | 앱이 이용자 접근을 임대 | 지갑/사용 계층 | 이 카드 |\n\n두 인용(카카오 신원근, M0) 모두 *사용* 단계를 가치가 드러나는 곳으로 지목 — 발행은 범용재, 유통과 준비자산이 해자.\n\n### B2B 신호\n\n카카오그룹은 지갑 기술 **+ 컨설팅**을 기업·은행에 판매. SDK는 범용재고, 유통과 **규제 템플릿**은 아님. 레일을 임대하는 건 주인의 수(`build-rent-or-own-the-rail`).\n\n교차: `issuance-as-a-service`(발행 쪽 쌍둥이 — 같은 '가치는 발행이 아니라 사용에서' 주장), `st-self-distribution`·`consortium-owns-the-rail`(경제학은 유통/레일 소유자에게 쌓임), `the-wallet-is-not-the-user`(지갑은 키지만, *결제* 지갑은 유통 자산이기도), `won-stablecoin-fee-savings`·`what-needs-a-stablecoin`(원화 스테이블코인 유즈케이스), `embedded-wallet-policy`(이게 붙는 온체인 커스터디 층).\n"</script>
+      <h1>스테이블코인 지갑은 크립토 사업이 아니라 유통 사업이다</h1>
+      <p class="lead">카카오페이가 <strong>4300만 이용자의 선불충전 카카오페이머니 지갑</strong>을 온체인 자산 — 원화 스테이블코인 포함 — 을 보관·송금·결제·정산할 수 있게 확장하는 PoC를 마쳤습니다. 대용량 트래픽 환경에서 검증했죠. 해자가 실제로 어디 있는지 읽으세요: 온체인 지원(늦고 작은 추가)이 아니라, 4300만 이용자, 그 트래픽을 이미 감당하는 정산 인프라, 결제·가맹 관계, 그리고 규제 대응 태세에. &#39;스테이블코인 추가&#39;는 유통 사업에 붙인 기능일 뿐입니다. 카카오그룹은 이제 그 지갑 기술 + 컨설팅을 다른 기업·은행에 <strong>B2B 상품</strong>으로 묶어 — 유통을 임대하려 합니다. 그리고 대표는 가치가 어디서 드러나는지 짚습니다: <em>발행이 아니라, 자산이 실제로 쓰이는 유통 단계에서.</em></p>
+      <p class="meta">구현이 아니라 해자 감사입니다. &#39;스테이블코인 지갑을 붙였다&#39;는 발표마다, 크립토 부분과 유통 부분을 갈라 어느 쪽이 희소한지 물으세요. 스택을 그리세요: <strong>이용자(4300만) · 대용량 정산 인프라 · 결제·가맹 관계 · 규제 대응 태세</strong> — 그 아래에 온체인 커스터디/키. 각 층을 &#39;맨바닥부터 복제하는 데 걸리는 시간&#39;으로 채점: 온체인 부분은 몇 주(SDK가 있음), 4300만 이용자와 인프라는 몇 년. 그다음 B2B 각도를 캐물으세요: 카카오가 은행에 지갑 기술 + 컨설팅을 팔 때 실제로 임대되는 건 지갑 SDK(싸고 범용화됨)인가, 아니면 유통과 규제 템플릿(진짜)인가? 출처: 카카오페이, digitalasset.works(박재연, 2026-09-09). 수치(4300만 이용자, PoC 범위: 송금·결제·정산 + UI, 카카오뱅크의 은행급 트랙)는 인용 전 출처로 확인.</p>
+      <h2>왜</h2>
+      <p><strong>스테이블코인 지갑에서 희소한 것은 새로 붙인 온체인 지원이 아니라 이미 가진 유통입니다.</strong> 온체인 층 — 키 커스터디, 서명, ERC-20 잔액 — 은 이미 풀린 범용 문제로, SDK가 몇 주면 실어줍니다. 카카오페이가 크립토 스타트업이 못 가진 채로 들고 오는 건 10년이 걸린 부분입니다: <strong>4300만 이용자, 그 트래픽에서 검증된 정산 인프라, 가맹·결제 관계, 규제 대응 태세.</strong> 그러니 &#39;카카오페이가 스테이블코인 지갑을 붙였다&#39;의 정직한 독해는 크립토 이정표가 아니라, 유통 사업이 기능 하나를 붙인 것입니다. 크립토는 쉬운 10%.</p>
+<p><strong>가치는 사용/유통 단계에서 쌓이고, 바로 그 자리에 인큐번트가 이미 앉아 있습니다.</strong> 대표의 말 — <em>&#39;디지털자산의 진정한 가치는 발행을 넘어 자산이 실제로 사용되는 유통 단계에서 드러난다&#39;</em> — 은 <code>issuance-as-a-service</code>가 <em>발행</em> 쪽에서 M0로부터 기록한 주장(&#39;PYUSD의 지속적 가치는 남들이 그 위에 짓는 것에서 나온다&#39;)과 같습니다. 둘을 합치면 스테이블코인 스택 전체의 형태가 보입니다: <strong>발행자는 화폐 단위를 임대하고, 지갑은 유통을 임대하며, 지속되는 위치는 준비자산 계층(발행)과 유통 계층(사용)이다.</strong> 원화 스테이블코인의 발행자는 교체 가능하지만, 4300만 명이 매일 여는 지갑은 아닙니다.</p>
+<p><strong>B2B 수가 결정적 신호입니다.</strong> 카카오그룹은 지갑 기술 + 컨설팅을 다른 기업·은행용 상품으로, 각 서비스 환경과 향후 한국 규제에 맞춰 묶습니다. 이건 <code>build-rent-or-own-the-rail</code>을 주인의 자리에서 본 것 — 카카오가 유통 레일을 소유하고, 스테이블코인으로 한국 이용자에 닿으려는 모두에게 접근을 임대합니다. 그리고 <em>무엇이</em> 묶이는지 보세요: SDK만이 아니라 <strong>규제 컨설팅</strong> — 아직 온전히 존재하지 않는 규칙에 맞춘 은행급 KYC/AML/커스터디 템플릿 자체가 신규 진입자가 살 수 없는 해자이기 때문입니다. 이런 PoC에서 뽑을 한 숫자: 창출된 가치 중 얼마가 크립토에 걸려 있고, 얼마가 그 크립토가 올라탄 4300만 유통에 걸려 있는가.</p>
+      <h2>동작 방식</h2>
+      <p>스택을 가르고, 희소한 것을 채점.</p>
+<h3>지갑 스택 — 크립토는 얇은 최상층</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>층</th>
+<th>카카오페이 보유</th>
+<th>맨바닥부터 복제 시간</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4300만 이용자, 매일 여는 습관</td>
+<td>예</td>
+<td>수년</td>
+</tr>
+<tr>
+<td>대용량 정산 인프라</td>
+<td>예(선불충전 시스템)</td>
+<td>수년</td>
+</tr>
+<tr>
+<td>가맹 / 결제 관계</td>
+<td>예</td>
+<td>수년</td>
+</tr>
+<tr>
+<td>규제 대응 태세(KYC/AML/커스터디)</td>
+<td>예(카카오뱅크: 은행급 트랙)</td>
+<td>수년 — 규칙 의존</td>
+</tr>
+<tr>
+<td>온체인 커스터디 / 키 / 스테이블코인 지원</td>
+<td>PoC에서 새로 추가</td>
+<td>몇 주(SDK 존재)</td>
+</tr>
+</tbody></table></div>
+<p>가치의 흐름은 위 네 행으로 가고, PoC가 검증한 건 맨 아래 행. 그 역전 — 어려운 부분은 이미 소유, &#39;크립토&#39; 부분이 쉬운 추가 — 이 독해 전부입니다.</p>
+<h3>스테이블코인 스택의 양면 형태</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>면</th>
+<th>누가 무엇을 임대</th>
+<th>지속 위치</th>
+<th>카드</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>발행</td>
+<td>발행자가 준비자산 위 화폐 단위 임대</td>
+<td>준비자산 계층</td>
+<td><code>issuance-as-a-service</code></td>
+</tr>
+<tr>
+<td>유통</td>
+<td>앱이 이용자 접근을 임대</td>
+<td>지갑/사용 계층</td>
+<td>이 카드</td>
+</tr>
+</tbody></table></div>
+<p>두 인용(카카오 신원근, M0) 모두 <em>사용</em> 단계를 가치가 드러나는 곳으로 지목 — 발행은 범용재, 유통과 준비자산이 해자.</p>
+<h3>B2B 신호</h3>
+<p>카카오그룹은 지갑 기술 <strong>+ 컨설팅</strong>을 기업·은행에 판매. SDK는 범용재고, 유통과 <strong>규제 템플릿</strong>은 아님. 레일을 임대하는 건 주인의 수(<code>build-rent-or-own-the-rail</code>).</p>
+<p>교차: <code>issuance-as-a-service</code>(발행 쪽 쌍둥이 — 같은 &#39;가치는 발행이 아니라 사용에서&#39; 주장), <code>st-self-distribution</code>·<code>consortium-owns-the-rail</code>(경제학은 유통/레일 소유자에게 쌓임), <code>the-wallet-is-not-the-user</code>(지갑은 키지만, <em>결제</em> 지갑은 유통 자산이기도), <code>won-stablecoin-fee-savings</code>·<code>what-needs-a-stablecoin</code>(원화 스테이블코인 유즈케이스), <code>embedded-wallet-policy</code>(이게 붙는 온체인 커스터디 층).</p>
+      
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-the-chain-only-checks-a-proof-exists.html">&larr; 210. The chain stops verifying — it only checks that a proof exists</a><a href="pocs-issuance-as-a-service.html">212. Issuance-as-a-service — you mint a brand, the platform keeps the money &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script src="_nav.js"></script>
+<script>window.__NAV_CURRENT__="wallet-is-a-distribution-business";</script>
+<script>
+(function () {
+  var data = window.__NAV__, cur = window.__NAV_CURRENT__;
+  if (!data) return;
+  var jw = document.getElementById('rail-jump');
+  if (jw) {
+    jw.innerHTML = data.jump.map(function (s) {
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+    }).join('');
+  }
+  var sec = null;
+  for (var i = 0; i < data.sections.length && !sec; i++) {
+    for (var j = 0; j < data.sections[i].items.length; j++) {
+      if (data.sections[i].items[j].key === cur) { sec = data.sections[i]; break; }
+    }
+  }
+  var navEl = document.getElementById('nav');
+  if (navEl && sec) {
+    var lis = sec.items.map(function (it) {
+      var active = it.key === cur ? ' active' : '';
+      return '<li><a class="nav-link' + active + '" href="' + it.href + '" data-key="' + it.key + '"><span class="nav-dot" style="background:' + it.color + ';" title="' + it.label + '"></span><span class="nav-text">' + it.text + '</span></a></li>';
+    }).join('');
+    var group = document.createElement('div');
+    group.className = 'nav-group';
+    group.id = sec.navId;
+    group.setAttribute('data-group', '');
+    group.innerHTML = '<p class="nav-group-label">' + sec.label + '</p><ul>' + lis + '</ul>';
+    navEl.insertBefore(group, navEl.firstChild);
+  }
+})();
+
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  // 레일 필터 = 텍스트 질의 + 등급 모드(Important/All)의 합성. 등급 토글이 없는 페이지에서는
+  // tierMode 가 'all' 로 남아 예전과 완전히 동일하게 동작한다 (jay, 2026-09-08).
+  const tierBtns = [...document.querySelectorAll('.rail-tier .tier-btn')];
+  let tierMode = tierBtns.some((b) => b.dataset.tierMode === 'important') ? 'important' : 'all';
+  // "Important" 필터는 중요(빨강)뿐 아니라 "최근 완료"(하늘)와 "새 항목"(노랑)도 함께 보여 준다
+  // (jay, 2026-09-08: "even though All clicked, the recently done and important should be shown";
+  // 2026-09-09: "important button shows also new items"). 최근 완료는 방금 끝낸 강조 항목이고,
+  // 새 항목은 최근 창(NEW_WINDOW) 안에 손댄 것이라 둘 다 중요 줄에 두고 필터에서 숨기지 않는다.
+  const isImportant = (a) => { const d = a.querySelector('.nav-dot'); return !!d && (d.title === 'IMPORTANT' || d.title === 'RECENTLY DONE' || d.title === 'NEW'); };
+  function applyFilter() {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = (!q || a.textContent.toLowerCase().includes(q)) && (tierMode === 'all' || isImportant(a));
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  }
+  input.addEventListener('input', applyFilter);
+  for (const b of tierBtns) {
+    b.addEventListener('click', () => {
+      tierMode = b.dataset.tierMode;
+      for (const x of tierBtns) { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+      applyFilter();
+    });
+  }
+  // 진입 시 기본값: 등급 토글이 있으면 Important 만 보여 준다 (jay, 2026-09-08).
+  if (tierBtns.length) applyFilter();
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const observed = new Map();
+  let revealTimer;
+  // 밴드에 걸친 항목 중 "문서 순서로 첫 번째"를 고르면 언제나 한 칸 앞이 켜진다
+  // (jay, 2026-08-27: "the left pane should sync with right pane in the item's position").
+  // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
+  // 고르면 방금 도착한 항목이 켜진다.
+  function syncActive() {
+    // 상세 페이지에는 관측할 본문 항목이 없다 — 그때 돌면 서버가 표시한 active 를
+    // 첫 스크롤에 지워 버리므로, 관측 대상이 없으면 아무것도 하지 않는다 (2026-09-03).
+    if (observed.size === 0) return;
+    // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
+    // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
+    // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
+    const line = window.innerHeight * 0.1;
+    let first = null;
+    let started = -Infinity;
+    let upcoming = Infinity;
+    let firstUpcoming = null;
+    for (const k of seen) {
+      const el = observed.get(k);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top <= line) {
+        if (top > started) {
+          started = top;
+          first = k;
+        }
+      } else if (top < upcoming) {
+        upcoming = top;
+        firstUpcoming = k;
+      }
+    }
+    if (first === null) first = firstUpcoming;
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    // 사용자가 실제로 스크롤하기 전에는 끌어오지 않는다 (jay, 2026-09-02) — 로드 직후
+    // 관측자의 첫 콜백이 1번 항목으로 레일을 되감아, 초기 스크롤(첫 important 가운데
+    // 정렬)을 덮어쓰는 것을 막는다. 해시 딥링크는 브라우저 앵커 스크롤이 scroll 이벤트를
+    // 내므로 여전히 첫 프레임부터 동기화된다.
+    clearTimeout(revealTimer);
+    if (userScrolled) revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }
+
+  // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
+  // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
+  let ticking = false;
+  // 해시 딥링크는 스크롤 이벤트가 리스너 등록 전에 끝날 수 있으므로 처음부터 켠다 —
+  // 특정 항목을 열었다는 것 자체가 "그 항목을 보라"는 의도다.
+  let userScrolled = !!location.hash;
+  addEventListener(
+    'scroll',
+    () => {
+      userScrolled = true;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncActive();
+      });
+    },
+    { passive: true }
+  );
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    syncActive();
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) {
+      observed.set(key, el);
+      io.observe(el);
+    }
+  }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
+
+(function () {
+  var nav = document.querySelector('.rail-nav');
+  if (!nav) return;
+  var el = nav.querySelector('.nav-link.active');
+  if (!el && !location.hash) {
+    var dot = nav.querySelector('.nav-dot[title="IMPORTANT"]');
+    el = dot && dot.closest('a');
+  }
+  if (!el) return;
+  var r = el.getBoundingClientRect();
+  var c = nav.getBoundingClientRect();
+  nav.scrollTop += (r.top - c.top) - (c.height / 2 - r.height / 2);
+})();
+</script>
+</body>
+</html>

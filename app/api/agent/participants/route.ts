@@ -39,22 +39,22 @@ export async function GET(req: Request) {
 
     const balancesOf = async (address: Address) => {
       const eth = await pub.getBalance({ address }).then((v) => Number(formatEther(v))).catch(() => null);
-      const usdc = cfg?.usdc
+      const jusd = cfg?.jusd
         ? await pub
-            .readContract({ address: cfg.usdc, abi: erc20Abi, functionName: "balanceOf", args: [address] })
+            .readContract({ address: cfg.jusd, abi: erc20Abi, functionName: "balanceOf", args: [address] })
             .then((v) => Number(v) / 1e6)
             .catch(() => null)
         : null;
-      return { eth, usdc };
+      return { eth, jusd };
     };
 
-    const rows: { role: string; address: Address | null; eth: number | null; usdc: number | null }[] = [];
+    const rows: { role: string; address: Address | null; eth: number | null; jusd: number | null }[] = [];
     rows.push(
       cfg?.operator
         ? { role: "operator", address: cfg.operator, ...(await balancesOf(cfg.operator)) }
-        : { role: "operator", address: null, eth: null, usdc: null },
+        : { role: "operator", address: null, eth: null, jusd: null },
     );
-    rows.push(owner ? { role: "user", address: owner, ...(await balancesOf(owner)) } : { role: "user", address: null, eth: null, usdc: null });
+    rows.push(owner ? { role: "user", address: owner, ...(await balancesOf(owner)) } : { role: "user", address: null, eth: null, jusd: null });
     rows.push({ role: "agent", address: agentAddress(), ...(await balancesOf(agentAddress())) });
 
     return NextResponse.json({ chainId, rows });

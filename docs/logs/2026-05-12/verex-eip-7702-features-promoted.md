@@ -10,7 +10,7 @@
 
 8개 후보 feature를 product story 일관성 + implementation 비용 기준으로 survey한 뒤 3개 선별:
 
-1. **One-click betting** (S7) — `approve(USDC)` + `fillOrder` 1 서명. 기존 "배치 tx PoC"를 production track으로 reframe.
+1. **One-click betting** (S7) — `approve(jUSD)` + `fillOrder` 1 서명. 기존 "배치 tx PoC"를 production track으로 reframe.
 2. **Auto-claim** (S7, 신규) — backend scheduler가 resolved 마켓의 `redeemPositions`를 자동 호출. 사용자 EOA에 ONLY `redeemPositions` 허용하는 audit-grade 최소 delegate.
 3. **Gasless onboarding** (S8) — Paymaster가 신규 지갑의 첫 N=5 거래 후원. Spend tracker로 N+1번째부터 후원 중단.
 

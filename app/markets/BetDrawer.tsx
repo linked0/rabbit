@@ -55,22 +55,22 @@ export default function BetDrawer({
   const [state, setState] = useState<Step>({ step: "idle" });
 
   const outcome = market.outcomes[outcomeIdx];
-  const usdc = Number(amount);
+  const jusd = Number(amount);
   // §3 "live cost/price" — 카드가 이미 아는 가격으로 즉석 계산. 확정 견적(호가 mid)은
   // 제출 시점에 /api/markets/quote 가 다시 낸다 — 화면용과 체결용을 섞지 않는다.
   const shares = useMemo(
-    () => (usdc > 0 && outcome && outcome.price > 0 ? usdc / outcome.price : 0),
-    [usdc, outcome],
+    () => (jusd > 0 && outcome && outcome.price > 0 ? jusd / outcome.price : 0),
+    [jusd, outcome],
   );
   const busy = state.step === "signing" || state.step === "bundling";
 
   async function placeBet() {
     const adminAccount = adminWallet?.getAccount();
-    if (!account || !adminAccount || !outcome || !(usdc > 0)) return;
+    if (!account || !adminAccount || !outcome || !(jusd > 0)) return;
     try {
       setState({ step: "signing" });
       const q = await fetchJson<QuoteResponse>(
-        `/api/markets/quote?slug=${encodeURIComponent(market.slug)}&outcome=${encodeURIComponent(outcome.label)}&usdc=${usdc}&account=${account.address}`,
+        `/api/markets/quote?slug=${encodeURIComponent(market.slug)}&outcome=${encodeURIComponent(outcome.label)}&jusd=${jusd}&account=${account.address}`,
       );
       if (q.error) throw new Error(q.error);
       const result = await sendAaBet({
@@ -138,7 +138,7 @@ export default function BetDrawer({
         {/* 금액 + 라이브 비용/가격 */}
         <div style={{ marginTop: 12 }}>
           <label className="sub" style={{ fontSize: 13 }}>
-            {t("금액 (USDC)", "Amount (USDC)")}
+            {t("금액 (jUSD)", "Amount (jUSD)")}
           </label>
           <input
             type="number"
@@ -149,12 +149,12 @@ export default function BetDrawer({
             onChange={(e) => setAmount(e.target.value)}
             style={{ width: "100%", marginTop: 4 }}
           />
-          {outcome && usdc > 0 && (
+          {outcome && jusd > 0 && (
             <p className="sub" style={{ marginTop: 6, fontSize: 13 }}>
               {t("예상: ", "Est.: ")}
               <b>{shares.toFixed(2)}</b> {outcome.label} @ {outcome.price.toFixed(2)} ·{" "}
               {t("비용 ", "cost ")}
-              {usdc.toFixed(2)} USDC
+              {jusd.toFixed(2)} jUSD
             </p>
           )}
         </div>
@@ -185,7 +185,7 @@ export default function BetDrawer({
               {t("다시 베팅", "Bet again")}
             </button>
           ) : (
-            <button type="button" style={{ width: "100%" }} disabled={busy || !(usdc > 0)} onClick={placeBet}>
+            <button type="button" style={{ width: "100%" }} disabled={busy || !(jusd > 0)} onClick={placeBet}>
               {state.step === "signing"
                 ? t("서명 대기 — MetaMask 를 확인하세요…", "Waiting for signature — check MetaMask…")
                 : state.step === "bundling"
@@ -207,7 +207,7 @@ export default function BetDrawer({
           <div className="panel" style={{ marginTop: 12 }}>
             <strong>
               {t("베팅 완료 — ", "Bet placed — ")}
-              {state.quote.usdc.toFixed(2)} USDC · {state.quote.outcome} @ {state.quote.price.toFixed(2)}
+              {state.quote.jusd.toFixed(2)} jUSD · {state.quote.outcome} @ {state.quote.price.toFixed(2)}
             </strong>
             <p className="sub" style={{ marginTop: 4, fontSize: 13 }}>
               {t("가스는 Jayverse 가 냈습니다.", "Gas paid by Jayverse.")}{" "}

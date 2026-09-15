@@ -20,8 +20,8 @@ export const TICK_DEFAULTS = {
   cooldownSec: 3600,
   /// |p − 체결가| 최소 edge. 퍼센트포인트가 아니라 확률 단위(0.05 = 5pp).
   edgeThreshold: 0.05,
-  /// 한 번에 걸 명목 금액(USDC).
-  sizeUsdc: 2.5,
+  /// 한 번에 걸 명목 금액(jUSD).
+  sizeJusd: 2.5,
   /// 추정이 볼 뉴스의 발행 기준 시간창.
   newsWithinHours: 48,
 };
@@ -40,8 +40,8 @@ async function record(args: {
   verdict: TickVerdict;
   reason: string;
   verexOrderId?: string | null;
-  spentUsdc?: number;
-  budgetLeftUsdc?: number | null;
+  spentJusd?: number;
+  budgetLeftJusd?: number | null;
 }) {
   return prisma.agentTick.create({
     data: {
@@ -56,8 +56,8 @@ async function record(args: {
       verdict: args.verdict,
       reason: args.reason,
       verexOrderId: args.verexOrderId ?? null,
-      spentUsdc: args.spentUsdc ?? 0,
-      budgetLeftUsdc: args.budgetLeftUsdc ?? null,
+      spentJusd: args.spentJusd ?? 0,
+      budgetLeftJusd: args.budgetLeftJusd ?? null,
     },
   });
 }
@@ -81,8 +81,8 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
     return { error: "no active mandate — grant one first", status: 400 };
   }
 
-  const cap = Number(mandate.capUsdc);
-  const drawn = Number(mandate.drawnUsdc);
+  const cap = Number(mandate.capJusd);
+  const drawn = Number(mandate.drawnJusd);
   const budgetLeft = Number((cap - drawn).toFixed(6));
   const base = { mandateId: mandate.id, marketSlug: s.marketSlug, outcome, citedNewsIds: [] as string[] };
 
@@ -95,11 +95,11 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
     let reason = `mandate expired at ${mandate.expiresAt.toISOString()} — recorded from the DB mirror (no on-chain delegation to ask)`;
     if (stored) {
       const cfg = await verex.config().catch(() => null);
-      if (cfg?.usdc) {
+      if (cfg?.jusd) {
         const probe = await simulateMandateDraw({
           mandate: stored,
-          usdc: cfg.usdc,
-          amountUsdc: Math.min(s.sizeUsdc, Math.max(budgetLeft, 0.000001)),
+          jusd: cfg.jusd,
+          amountJusd: Math.min(s.sizeJusd, Math.max(budgetLeft, 0.000001)),
         });
         reason = probe.ok
           ? `mandate expired at ${mandate.expiresAt.toISOString()} but the chain still allows a draw — block time trails the wall clock`
@@ -110,7 +110,7 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
       ...base, bestBid: null, bestAsk: null, p: null, rationale: null,
       verdict: "SKIP_EXPIRED",
       reason,
-      budgetLeftUsdc: budgetLeft,
+      budgetLeftJusd: budgetLeft,
     });
     return { tick };
   }
@@ -120,8 +120,8 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
     const tick = await record({
       ...base, bestBid: null, bestAsk: null, p: null, rationale: null,
       verdict: "SKIP_EXHAUSTED",
-      reason: `budget fully drawn (${drawn.toFixed(2)} / ${cap.toFixed(2)} USDC) → no action`,
-      budgetLeftUsdc: 0,
+      reason: `budget fully drawn (${drawn.toFixed(2)} / ${cap.toFixed(2)} jUSD) → no action`,
+      budgetLeftJusd: 0,
     });
     return { tick };
   }
@@ -139,7 +139,7 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
         ...base, bestBid: null, bestAsk: null, p: null, rationale: null,
         verdict: "SKIP_COOLDOWN",
         reason: `cooldown ${left}s remaining → no action`,
-        budgetLeftUsdc: budgetLeft,
+        budgetLeftJusd: budgetLeft,
       });
       return { tick };
     }
@@ -162,7 +162,7 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
       ...base, bestBid, bestAsk, p: null, rationale: null,
       verdict: "SKIP_NO_ESTIMATE",
       reason: `no news within ${s.newsWithinHours}h → estimate not called`,
-      budgetLeftUsdc: budgetLeft,
+      budgetLeftJusd: budgetLeft,
     });
     return { tick };
   }
@@ -197,7 +197,7 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
       ...base, bestBid, bestAsk, p: est.p, rationale: est.rationale, citedNewsIds: est.citedNewsIds,
       verdict: "SKIP_EDGE",
       reason: `no ${side === "BUY" ? "ask" : "bid"} on ${tradeOutcome} to trade against → no action`,
-      budgetLeftUsdc: budgetLeft,
+      budgetLeftJusd: budgetLeft,
     });
     return { tick };
   }
@@ -212,19 +212,19 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
         `book ${executable.toFixed(2)} (${tradeOutcome} ${side === "BUY" ? "ask" : "bid"}), ` +
         `model ${tradeP.toFixed(2)}${tradeOutcome !== outcome ? ` (1−p of ${outcome})` : ""}, ` +
         `edge ${edge.toFixed(2)} < ${s.edgeThreshold} → no action`,
-      budgetLeftUsdc: budgetLeft,
+      budgetLeftJusd: budgetLeft,
     });
     return { tick };
   }
 
   // ── 7. 규모. 남은 예산을 넘으면 하지 않는다.
-  const notional = s.sizeUsdc;
+  const notional = s.sizeJusd;
   if (notional > budgetLeft) {
     const tick = await record({
       ...base, bestBid, bestAsk, p: est.p, rationale: est.rationale, citedNewsIds: est.citedNewsIds,
       verdict: "SKIP_BUDGET",
       reason: `notional ${notional.toFixed(2)} > ${budgetLeft.toFixed(2)} remaining → no action`,
-      budgetLeftUsdc: budgetLeft,
+      budgetLeftJusd: budgetLeft,
     });
     return { tick };
   }
@@ -238,16 +238,16 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
   let drawTxHash: string | null = null;
   if (stored && side === "BUY") {
     const cfg = await verex.config();
-    if (!cfg.usdc) return { error: "verex has no USDC address", status: 503 };
+    if (!cfg.jusd) return { error: "verex has no jUSD address", status: 503 };
     try {
-      drawTxHash = await redeemMandate({ mandate: stored, usdc: cfg.usdc, amountUsdc: notional });
+      drawTxHash = await redeemMandate({ mandate: stored, jusd: cfg.jusd, amountJusd: notional });
     } catch (e) {
       // 체인이 거절했다면 그것이 결과다. 저널에 남기고 조용히 넘어가지 않는다.
       const tick = await record({
         ...base, outcome: tradeOutcome, bestBid, bestAsk, p: est.p, rationale: est.rationale, citedNewsIds: est.citedNewsIds,
         verdict: "SKIP_BUDGET",
         reason: `draw of ${notional.toFixed(2)} refused on-chain: ${String(e instanceof Error ? e.message : e).slice(0, 180)}`,
-        budgetLeftUsdc: budgetLeft,
+        budgetLeftJusd: budgetLeft,
       });
       return { tick };
     }
@@ -257,10 +257,10 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
     slug: s.marketSlug, outcome: tradeOutcome, tokenId: target.tokenId, side, size, price,
   });
 
-  const spent = placed.totalUsdc;
+  const spent = placed.totalJusd;
   await prisma.mandate.update({
     where: { id: mandate.id },
-    data: { drawnUsdc: { increment: spent } },
+    data: { drawnJusd: { increment: spent } },
   });
   const tick = await record({
     ...base, outcome: tradeOutcome, bestBid, bestAsk, p: est.p, rationale: est.rationale, citedNewsIds: est.citedNewsIds,
@@ -270,8 +270,8 @@ export async function runAgentTick(input: TickSettings): Promise<TickResult> {
       (tradeOutcome !== outcome ? ` (bearish on ${outcome}, expressed as ${tradeOutcome})` : "") +
       (drawTxHash ? ` (drawn on-chain ${drawTxHash.slice(0, 10)}…)` : " (no on-chain delegation — DB budget only)"),
     verexOrderId: placed.orderId,
-    spentUsdc: spent,
-    budgetLeftUsdc: Number((budgetLeft - spent).toFixed(6)),
+    spentJusd: spent,
+    budgetLeftJusd: Number((budgetLeft - spent).toFixed(6)),
   });
   return { tick, placed };
 }

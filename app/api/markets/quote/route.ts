@@ -14,21 +14,21 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const slug = url.searchParams.get("slug") ?? "";
   const outcome = url.searchParams.get("outcome") ?? "";
-  const usdc = Number(url.searchParams.get("usdc"));
+  const jusd = Number(url.searchParams.get("jusd"));
   const account = url.searchParams.get("account") ?? "";
-  if (!slug || !outcome || !(usdc > 0)) {
-    return NextResponse.json({ error: "slug, outcome, usdc(>0) are required" }, { status: 400 });
+  if (!slug || !outcome || !(jusd > 0)) {
+    return NextResponse.json({ error: "slug, outcome, jusd(>0) are required" }, { status: 400 });
   }
   if (!/^0x[0-9a-fA-F]{40}$/.test(account)) {
     return NextResponse.json({ error: "account must be a 0x address (the smart account)" }, { status: 400 });
   }
   try {
-    const [cfg, quote] = await Promise.all([verex.config(), quoteBet(slug, outcome, usdc)]);
+    const [cfg, quote] = await Promise.all([verex.config(), quoteBet(slug, outcome, jusd)]);
     const calls = encodeBetCalls({ cfg, quote, account: account as `0x${string}` });
     return NextResponse.json({
       quote,
       exchange: cfg.exchange,
-      usdcAddress: cfg.usdc,
+      jusdAddress: cfg.jusd,
       calls: [calls.approve, calls.placeOrder],
     });
   } catch (e) {

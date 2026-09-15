@@ -26,8 +26,8 @@ type Tick = {
   rationale: string | null;
   verdict: string;
   reason: string;
-  spentUsdc: string;
-  budgetLeftUsdc: string | null;
+  spentJusd: string;
+  budgetLeftJusd: string | null;
   cited: Cited[];
 };
 
@@ -150,8 +150,8 @@ export default function JournalPanel({
                     )}
                   </td>
                   <td style={{ padding: "6px 8px", textAlign: "right", fontFamily: "ui-monospace, monospace", fontSize: 12 }}>
-                    {Number(x.spentUsdc) > 0 && <>−{Number(x.spentUsdc).toFixed(2)} · </>}
-                    {x.budgetLeftUsdc === null ? "—" : Number(x.budgetLeftUsdc).toFixed(2)}
+                    {Number(x.spentJusd) > 0 && <>−{Number(x.spentJusd).toFixed(2)} · </>}
+                    {x.budgetLeftJusd === null ? "—" : Number(x.budgetLeftJusd).toFixed(2)}
                   </td>
                 </tr>
               );

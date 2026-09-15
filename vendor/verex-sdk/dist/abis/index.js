@@ -16,7 +16,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./CTFExchange"), exports);
 __exportStar(require("./IConditionalTokens"), exports);
-__exportStar(require("./MockUSDC"), exports);
+__exportStar(require("./JUSD"), exports);
 __exportStar(require("./UmaCtfAdapter"), exports);
 __exportStar(require("./MockOptimisticOracleV2"), exports);
 //# sourceMappingURL=index.js.map

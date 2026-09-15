@@ -90,7 +90,7 @@ export const CONTRACT_GROUPS: { title: string; blurb: string; names: string[] }[
   {
     title: "Base rails (from the fork)",
     blurb: "Inherited from Sepolia at their real addresses — the only things not deployed by us.",
-    names: ["EntryPoint", "USDC"],
+    names: ["EntryPoint", "jUSD"],
   },
 ];
 
@@ -130,7 +130,7 @@ export const SERVICES: Service[] = [
     blurb: "Onboarding and a market maker over conditional tokens.",
     url: "https://verex.jaylabs.xyz",
     contracts: ["MarketFactory"],
-    note: "Its CTF backbone (USDC, ConditionalTokens, CTFExchange) is pinned in verex's own deployments.json rather than the Registry — it is deployed by verex's tooling, not by the devnet seed.",
+    note: "Its CTF backbone (jUSD, ConditionalTokens, CTFExchange) is pinned in verex's own deployments.json rather than the Registry — it is deployed by verex's tooling, not by the devnet seed.",
   },
   {
     name: "Token, Exchange & Personas",

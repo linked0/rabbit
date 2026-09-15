@@ -142,7 +142,7 @@ export async function ownerSmartAccount(ownerEoa: Address) {
     implementation: Implementation.Hybrid,
     deployParams: [ownerEoa, [], [], []],
     // 소유자당 하나면 충분하다. 소금을 바꾸면 같은 EOA 로 계정이 여럿 생기고
-    // "내 USDC 가 어디 있지"가 즉시 헷갈린다.
+    // "내 jUSD 가 어디 있지"가 즉시 헷갈린다.
     deploySalt: "0x",
   });
 }
@@ -205,11 +205,11 @@ export function storedDelegator(raw: unknown): string | null {
 export type MandateTerms = {
   /// 위임자 = 소유자의 **스마트 계정** 주소(MetaMask EOA 가 아니다).
   delegator: Address;
-  /// 상한(USDC, 사람 단위).
-  capUsdc: number;
+  /// 상한(jUSD, 사람 단위).
+  capJusd: number;
   /// 만료(unix seconds).
   expiresAtSec: number;
-  usdc: Address;
+  jusd: Address;
 };
 
 /// 위임 구조체를 **서버가 만든다.** 브라우저는 서명만 한다.
@@ -226,8 +226,8 @@ export async function buildMandate(t: MandateTerms): Promise<Delegation> {
     // 상한: 이 위임으로 할 수 있는 일은 "이 토큰을 최대 N 만큼 transfer" 하나뿐이다.
     scope: {
       type: ScopeType.Erc20TransferAmount,
-      tokenAddress: t.usdc,
-      maxAmount: parseUnits(t.capUsdc.toFixed(6), 6),
+      tokenAddress: t.jusd,
+      maxAmount: parseUnits(t.capJusd.toFixed(6), 6),
     },
     // 만료: 계획서가 money shot 이라 부르는 것. 아무도 취소하지 않아도 이 시각이
     // 지나면 enforcer 가 계속 거절한다. **블록 시간 기준**이고 벽시계와 다르다.
@@ -267,7 +267,7 @@ export async function mandateTypedData(delegation: Delegation) {
   };
 }
 
-/// 위임을 행사한다 — 소유자 스마트 계정에서 에이전트로 USDC 를 옮긴다.
+/// 위임을 행사한다 — 소유자 스마트 계정에서 에이전트로 jUSD 를 옮긴다.
 ///
 /// **여기가 강제 지점이다.** 상한을 넘기거나 만료 뒤에 부르면 enforcer 가
 /// revert 시킨다. 서버 코드가 착해서가 아니라 컨트랙트가 산수를 해서 막는다.
@@ -295,35 +295,35 @@ const REDEEM_DELEGATIONS_ABI = [
 ] as const;
 
 /// 위임이 허락하는 유일한 행동: 이 토큰을 에이전트에게 transfer.
-function drawExecution(usdc: Address, amountUsdc: number) {
+function drawExecution(jusd: Address, amountJusd: number) {
   return createExecution({
-    target: usdc,
+    target: jusd,
     callData: encodeFunctionData({
       abi: erc20Abi,
       functionName: "transfer",
-      args: [agentAddress(), parseUnits(amountUsdc.toFixed(6), 6)],
+      args: [agentAddress(), parseUnits(amountJusd.toFixed(6), 6)],
     }),
   });
 }
 
 /// 7715 mandate 의 상환 calldata. SDK 의 wallet action 이 만드는 것과 같은 인자
 /// 순서를 쓴다(`encodeDelegations(context)`, SingleDefault, executionCallDatas).
-function redeemCalldataFor7715(context: Hex, usdc: Address, amountUsdc: number): Hex {
+function redeemCalldataFor7715(context: Hex, jusd: Address, amountJusd: number): Hex {
   return encodeFunctionData({
     abi: REDEEM_DELEGATIONS_ABI,
     functionName: "redeemDelegations",
     args: [
       [encodeDelegations(context as never)],
       [ExecutionMode.SingleDefault],
-      encodeExecutionCalldatas([[drawExecution(usdc, amountUsdc)]]),
+      encodeExecutionCalldatas([[drawExecution(jusd, amountJusd)]]),
     ],
   }) as Hex;
 }
 
 export async function simulateMandateDraw(args: {
   mandate: StoredMandate;
-  usdc: Address;
-  amountUsdc: number;
+  jusd: Address;
+  amountJusd: number;
 }): Promise<{ ok: true } | { ok: false; reason: string }> {
   const { chainId, environment } = await loadEnv();
   const manager =
@@ -339,7 +339,7 @@ export async function simulateMandateDraw(args: {
       await publicClientFor(chainId).call({
         account: agentAddress(),
         to: manager,
-        data: redeemCalldataFor7715(args.mandate.context, args.usdc, args.amountUsdc),
+        data: redeemCalldataFor7715(args.mandate.context, args.jusd, args.amountJusd),
       });
     } else {
       await DelegationManager.simulate.redeemDelegations({
@@ -347,7 +347,7 @@ export async function simulateMandateDraw(args: {
         delegationManagerAddress: manager,
         delegations: [[args.mandate.delegation]],
         modes: [ExecutionMode.SingleDefault],
-        executions: [[drawExecution(args.usdc, args.amountUsdc)]],
+        executions: [[drawExecution(args.jusd, args.amountJusd)]],
       });
     }
     return { ok: true };
@@ -359,8 +359,8 @@ export async function simulateMandateDraw(args: {
 
 export async function redeemMandate(args: {
   mandate: StoredMandate;
-  usdc: Address;
-  amountUsdc: number;
+  jusd: Address;
+  amountJusd: number;
 }): Promise<Hex> {
   const { chainId, environment } = await loadEnv();
   const chain = chainOf(chainId);
@@ -377,11 +377,11 @@ export async function redeemMandate(args: {
       const txHash = await wallet.sendTransactionWithDelegation({
         account: agentAccount(),
         chain,
-        to: args.usdc,
+        to: args.jusd,
         data: encodeFunctionData({
           abi: erc20Abi,
           functionName: "transfer",
-          args: [agentAddress(), parseUnits(args.amountUsdc.toFixed(6), 6)],
+          args: [agentAddress(), parseUnits(args.amountJusd.toFixed(6), 6)],
         }),
         permissionContext: args.mandate.context,
         delegationManager: args.mandate.delegationManager,
@@ -397,7 +397,7 @@ export async function redeemMandate(args: {
       delegationManagerAddress: manager,
       delegations: [[args.mandate.delegation]],
       modes: [ExecutionMode.SingleDefault],
-      executions: [[drawExecution(args.usdc, args.amountUsdc)]],
+      executions: [[drawExecution(args.jusd, args.amountJusd)]],
     });
     await publicClientFor(chainId).waitForTransactionReceipt({ hash: txHash });
     return txHash;

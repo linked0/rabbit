@@ -94,7 +94,7 @@ export default function AgentMockPage() {
             <code>pnpm delegation:verify</code>
             {t("):", "):")}
           </p>
-          <pre className="sub" style={{ marginTop: 8, fontSize: 12.5, overflowX: "auto" }}>{`1. draw 4 of 10 …………  agent USDC: 4
+          <pre className="sub" style={{ marginTop: 8, fontSize: 12.5, overflowX: "auto" }}>{`1. draw 4 of 10 …………  agent jUSD: 4
 2. cap exceeded ………  ERC20TransferAmountEnforcer:allowance-exceeded   (still 4)
 3. after expiry ………  TimestampEnforcer:expired-delegation             (still 4)`}</pre>
           <p className="sub" style={{ marginTop: 8, fontSize: 13 }}>
@@ -171,8 +171,8 @@ export default function AgentMockPage() {
             </li>
             <li>
               {t(
-                "「구현체(DeleGator)가 내 계정을 대신해 돈을 보낸다」 → 대신이 아니라 내 계정으로서다. 구현체는 호출되지 않는다 — EVM이 그 코드를 로드해 내 주소의 컨텍스트로 실행한다. USDC가 보는 msg.sender는 내 EOA이고, 구현체의 USDC 잔액은 영원히 0이다. 코드는 구현체에서, 정체성은 EOA에서.",
-                "“The implementation (DeleGator) sends money on my behalf” → not on your behalf — as you. It is never called; the EVM loads its code and runs it in your address's context. USDC sees msg.sender as your EOA, and the implementation's own USDC balance is zero forever. Code from the implementation, identity from the EOA."
+                "「구현체(DeleGator)가 내 계정을 대신해 돈을 보낸다」 → 대신이 아니라 내 계정으로서다. 구현체는 호출되지 않는다 — EVM이 그 코드를 로드해 내 주소의 컨텍스트로 실행한다. jUSD가 보는 msg.sender는 내 EOA이고, 구현체의 jUSD 잔액은 영원히 0이다. 코드는 구현체에서, 정체성은 EOA에서.",
+                "“The implementation (DeleGator) sends money on my behalf” → not on your behalf — as you. It is never called; the EVM loads its code and runs it in your address's context. jUSD sees msg.sender as your EOA, and the implementation's own jUSD balance is zero forever. Code from the implementation, identity from the EOA."
               )}
             </li>
             <li>
@@ -195,8 +195,8 @@ export default function AgentMockPage() {
             </li>
             <li>
               {t(
-                "「예산은 하나다」 → 셋이고, 지키는 주체가 다르다. ① 위임 한도 — enforcer가 강제. ② 실제 자금(오너의 USDC) — 토큰 컨트랙트가 강제, 위임과 독립이라 「한도는 남았는데 잔고가 없음」이 가능하다. ③ 세션 계정의 가스 — 강제하는 것이 아무것도 없다. 셋째가 떨어지면 에이전트는 revert도 저널 행도 알림도 없이 조용히 멈춘다. 무인 에이전트가 실제로 죽는 방식이라면, 잔여 가스는 비용 열이 아니라 자체 만료를 가진 두 번째 예산으로 헤더에 있어야 한다.",
-                "“There is one budget” → there are three, with different guardians. ① The mandate — enforced by a caveat contract. ② The actual funds (the owner's USDC) — enforced by the token, and independent of the mandate, so “allowance left, balance empty” is a real state. ③ The session account's gas — enforced by nothing at all. When the third runs out the agent stops silently: no revert, no journal row, no notification. If that is how unattended agents really die, remaining gas belongs in the header as a second budget with its own expiry, not as a cost column."
+                "「예산은 하나다」 → 셋이고, 지키는 주체가 다르다. ① 위임 한도 — enforcer가 강제. ② 실제 자금(오너의 jUSD) — 토큰 컨트랙트가 강제, 위임과 독립이라 「한도는 남았는데 잔고가 없음」이 가능하다. ③ 세션 계정의 가스 — 강제하는 것이 아무것도 없다. 셋째가 떨어지면 에이전트는 revert도 저널 행도 알림도 없이 조용히 멈춘다. 무인 에이전트가 실제로 죽는 방식이라면, 잔여 가스는 비용 열이 아니라 자체 만료를 가진 두 번째 예산으로 헤더에 있어야 한다.",
+                "“There is one budget” → there are three, with different guardians. ① The mandate — enforced by a caveat contract. ② The actual funds (the owner's jUSD) — enforced by the token, and independent of the mandate, so “allowance left, balance empty” is a real state. ③ The session account's gas — enforced by nothing at all. When the third runs out the agent stops silently: no revert, no journal row, no notification. If that is how unattended agents really die, remaining gas belongs in the header as a second budget with its own expiry, not as a cost column."
               )}
             </li>
           </ol>

@@ -15,9 +15,9 @@ import { fetchJson } from "./fetchJson";
 export type PreflightData = {
   // 배포 사이트(로컬 전용 콘솔을 prod 에서 연 경우) 서버가 이 플래그로 답한다.
   localOnly?: boolean;
-  agent: { address: string | null; keyIsPersistent: boolean; usdc: number | null; allowanceUsdc: number | null; ctfApproved: boolean | null };
+  agent: { address: string | null; keyIsPersistent: boolean; jusd: number | null; allowanceJusd: number | null; ctfApproved: boolean | null };
   verex:
-    | { reachable: true; chainId: number; exchange: string | null; usdc: string | null; ctf: string | null; tradingEnabled: boolean }
+    | { reachable: true; chainId: number; exchange: string | null; jusd: string | null; ctf: string | null; tradingEnabled: boolean }
     | { reachable: false; error: string };
   delegation:
     | {
@@ -29,14 +29,14 @@ export type PreflightData = {
         matchesVerexChain: boolean | null;
       }
     | { deployed: false; hint: string };
-  ownerAccount: { address: string; deployed: boolean; usdc: number | null } | null;
+  ownerAccount: { address: string; deployed: boolean; jusd: number | null } | null;
 };
 
 export function short(a?: string | null) {
   return a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "—";
 }
 
-/// 주소 복사. reset.sh 마다 exchange/USDC 주소가 바뀌어 cast·approve 명령에 붙여넣을
+/// 주소 복사. reset.sh 마다 exchange/jUSD 주소가 바뀌어 cast·approve 명령에 붙여넣을
 /// 일이 잦다 — 화면의 축약본을 눈으로 옮겨 적게 하면 이 패널의 목적(낡은 주소 잡기)과
 /// 정반대의 실수를 만든다. 클릭 한 번이 전체 주소를 복사하고, 잠깐 ✓ 로 답한다.
 export function Addr({ a }: { a?: string | null }) {
@@ -143,41 +143,41 @@ export default function Preflight({ owner, refreshKey }: { owner: string | null;
         <Cell label="verex" value={v.reachable ? `chain ${v.chainId}` : t("연결 안 됨", "unreachable")} bad={!v.reachable} />
         {/* 이 한 칸이 이 컴포넌트의 존재 이유다. */}
         <Cell label="exchange" value={v.reachable ? <Addr a={v.exchange} /> : "—"} bad={v.reachable && !v.exchange} />
-        <Cell label="usdc" value={v.reachable ? <Addr a={v.usdc} /> : "—"} />
+        <Cell label="jusd" value={v.reachable ? <Addr a={v.jusd} /> : "—"} />
         <Cell
           label="delegation"
           value={d.deployed ? <Addr a={d.delegationManager} /> : t("미배포", "not deployed")}
           bad={!d.deployed}
         />
         <Cell label="agent" value={<Addr a={data.agent.address} />} />
-        <Cell label="agent usdc" value={data.agent.usdc === null ? "—" : data.agent.usdc.toFixed(2)} />
+        <Cell label="agent jusd" value={data.agent.jusd === null ? "—" : data.agent.jusd.toFixed(2)} />
         {/* BUY 는 allowance, SELL 은 CTF operator — 서로 다른 표준의 서로 다른 승인이라
             하나가 다른 하나를 대신하지 못한다. 없는 쪽이 있으면 아래 버튼이 나타난다. */}
         <Cell
           label={t("승인", "approvals")}
           value={
-            data.agent.allowanceUsdc === null
+            data.agent.allowanceJusd === null
               ? "—"
-              : `USDC ${data.agent.allowanceUsdc.toFixed(0)} · CTF ${data.agent.ctfApproved ? "✓" : "✗"}`
+              : `jUSD ${data.agent.allowanceJusd.toFixed(0)} · CTF ${data.agent.ctfApproved ? "✓" : "✗"}`
           }
-          bad={data.agent.allowanceUsdc !== null && (data.agent.allowanceUsdc <= 0 || data.agent.ctfApproved === false)}
+          bad={data.agent.allowanceJusd !== null && (data.agent.allowanceJusd <= 0 || data.agent.ctfApproved === false)}
         />
         {data.ownerAccount && (
           <>
             <Cell label={t("소유자 계정", "owner account")} value={<Addr a={data.ownerAccount.address} />} />
-            <Cell label={t("소유자 usdc", "owner usdc")} value={data.ownerAccount.usdc?.toFixed(2) ?? "—"} />
+            <Cell label={t("소유자 jusd", "owner jusd")} value={data.ownerAccount.jusd?.toFixed(2) ?? "—"} />
           </>
         )}
       </div>
 
-      {data.agent.allowanceUsdc !== null && (data.agent.allowanceUsdc <= 0 || data.agent.ctfApproved === false) && (
+      {data.agent.allowanceJusd !== null && (data.agent.allowanceJusd <= 0 || data.agent.ctfApproved === false) && (
         <p className="sub" style={{ marginTop: 10, fontSize: 13 }}>
           <button onClick={approve} disabled={approving}>
             {approving ? "…" : t("거래소 승인", "Approve exchange")}
           </button>{" "}
           {t(
-            "에이전트가 직접 내는 유일한 온체인 tx — USDC approve(BUY)와 CTF operator(SELL). 없으면 모든 주문이 400 으로 거절됩니다.",
-            "The one on-chain tx the agent pays for itself — USDC approve (BUY) and CTF operator (SELL). Without them every order is refused with a 400.",
+            "에이전트가 직접 내는 유일한 온체인 tx — jUSD approve(BUY)와 CTF operator(SELL). 없으면 모든 주문이 400 으로 거절됩니다.",
+            "The one on-chain tx the agent pays for itself — jUSD approve (BUY) and CTF operator (SELL). Without them every order is refused with a 400.",
           )}
           {approveErr && (
             <span className="err" style={{ display: "block", marginTop: 6 }}>

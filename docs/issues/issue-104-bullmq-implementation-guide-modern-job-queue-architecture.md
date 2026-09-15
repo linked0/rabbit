@@ -318,7 +318,7 @@ await tradeQueue.add('execute-trade', {
   side: 'BUY',
   shares: 100,
   price: 0.65,  // $0.65 per share
-  totalCost: 65  // 100 shares × $0.65 = $65 USDC
+  totalCost: 65  // 100 shares × $0.65 = $65 jUSD
 }, {
   priority: 1,        // Urgent! Trades are highest priority
   attempts: 3,        // Retry 3 times if blockchain tx fails

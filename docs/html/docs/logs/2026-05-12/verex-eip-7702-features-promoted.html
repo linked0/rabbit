@@ -44,7 +44,7 @@
 <h2 id="what-was-done-요약">What was done (요약)</h2>
 <p>8개 후보 feature를 product story 일관성 + implementation 비용 기준으로 survey한 뒤 3개 선별:</p>
 <ol>
-<li><strong>One-click betting</strong> (S7) — <code>approve(USDC)</code> + <code>fillOrder</code> 1 서명. 기존 &quot;배치 tx PoC&quot;를 production track으로 reframe.</li>
+<li><strong>One-click betting</strong> (S7) — <code>approve(jUSD)</code> + <code>fillOrder</code> 1 서명. 기존 &quot;배치 tx PoC&quot;를 production track으로 reframe.</li>
 <li><strong>Auto-claim</strong> (S7, 신규) — backend scheduler가 resolved 마켓의 <code>redeemPositions</code>를 자동 호출. 사용자 EOA에 ONLY <code>redeemPositions</code> 허용하는 audit-grade 최소 delegate.</li>
 <li><strong>Gasless onboarding</strong> (S8) — Paymaster가 신규 지갑의 첫 N=5 거래 후원. Spend tracker로 N+1번째부터 후원 중단.</li>
 </ol>

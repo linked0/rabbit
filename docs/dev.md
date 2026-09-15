@@ -3041,7 +3041,7 @@ forge-std/=lib/forge-std/src/
 import {Test, console} from "forge-std/src/Test.sol";
 ---
 console.log(string.concat("fee: ", vm.toString(fee)));
-console.log("USDC:", address(USDC));
+console.log("jUSD:", address(jUSD));
 ```
 
 💎 fastest python dev

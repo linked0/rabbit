@@ -30,7 +30,7 @@ export type VerexConfig = {
   /// 절대 하드코딩하면 안 된다 — 낡은 주소는 유효하지만 틀린 서명을 만든다.
   exchange: `0x${string}` | null;
   ctf: `0x${string}` | null;
-  usdc: `0x${string}` | null;
+  jusd: `0x${string}` | null;
   /// verex 배포자·MM·faucet 서명자. 참여자 패널이 잔고를 보여주는 데 쓴다.
   operator: `0x${string}` | null;
   tradingEnabled: boolean;
@@ -55,7 +55,7 @@ export type VerexBook = {
 export type VerexWallet = {
   accountIndex: number | null;
   address: string;
-  usdc: number;
+  jusd: number;
   positions: {
     slug: string;
     outcome: string;
@@ -77,14 +77,14 @@ export const verex = {
     call<VerexBook>(`/markets/${slug}/book?outcome=${encodeURIComponent(outcome)}`),
   wallet: (address = agentAddress()) => call<VerexWallet>(`/wallet/${address}`),
   faucet: (address = agentAddress()) =>
-    call<{ address: string; usdc: number }>("/faucet", {
+    call<{ address: string; jusd: number }>("/faucet", {
       method: "POST",
       body: JSON.stringify({ address }),
     }),
   /// V-D: 에이전트가 스스로 redeem 한 뒤 그 사실을 보고한다. verex 는 영수증을
   /// 검증한 뒤에야 기록한다 — 말을 믿고 쓰는 것이 아니다.
   reportRedeem: (slug: string, txHash: string, address = agentAddress()) =>
-    call<{ slug: string; usdcReceived: number; recorded: boolean }>("/redeem", {
+    call<{ slug: string; jusdReceived: number; recorded: boolean }>("/redeem", {
       method: "POST",
       body: JSON.stringify({ slug, address, txHash }),
     }),
@@ -104,7 +104,7 @@ export async function signLimitOrder(args: {
   side: "BUY" | "SELL";
   /// outcome tokens, human units
   size: number;
-  /// USDC per share, 0.01..0.99
+  /// jUSD per share, 0.01..0.99
   price: number;
   chainId: number;
   exchange: `0x${string}`;
@@ -114,7 +114,7 @@ export async function signLimitOrder(args: {
   const priceE6 = parseUnits(args.price.toFixed(6), 6);
   // verex 의 `limitAmountsE6` 와 **같은 반올림**이어야 한다. BUY 는 올림, SELL 은
   // 내림 — 어긋나면 서명은 유효한데 서버의 금액 검사에서 400 이 난다.
-  const usdcE6 = args.side === "BUY" ? (sizeE6 * priceE6 + 999_999n) / 1_000_000n : (sizeE6 * priceE6) / 1_000_000n;
+  const jusdE6 = args.side === "BUY" ? (sizeE6 * priceE6 + 999_999n) / 1_000_000n : (sizeE6 * priceE6) / 1_000_000n;
 
   const order: SignedOrder = {
     salt: randomSalt(),
@@ -122,8 +122,8 @@ export async function signLimitOrder(args: {
     signer: account.address,
     taker: "0x0000000000000000000000000000000000000000",
     tokenId: BigInt(args.tokenId),
-    makerAmount: args.side === "BUY" ? usdcE6 : sizeE6,
-    takerAmount: args.side === "BUY" ? sizeE6 : usdcE6,
+    makerAmount: args.side === "BUY" ? jusdE6 : sizeE6,
+    takerAmount: args.side === "BUY" ? sizeE6 : jusdE6,
     expiration: 0n,
     nonce: 0n,
     feeRateBps: 0n,
@@ -157,7 +157,7 @@ export type PlaceResult = {
   orderId: string;
   status: string;
   totalTokens: number;
-  totalUsdc: number;
+  totalJusd: number;
   avgPrice: number | null;
   jobId: string | null;
 };
@@ -196,24 +196,24 @@ export async function placeSignedLimitOrder(args: {
 // (lib/verex.ts 는 verexUrl() 링크 헬퍼라 이름만 겹치는 다른 파일이다.)
 
 import { encodeFunctionData } from "viem";
-import { CTFExchangeAbi, MockUSDCAbi } from "@verex/sdk";
+import { CTFExchangeAbi, JUSDAbi } from "@verex/sdk";
 import type { EncodedCall } from "./aa-bet";
 
 export type VerexQuote = {
   slug: string;
   outcome: string;
   tokenId: string;
-  /// USDC per share, 시장가 스냅샷 (book mid 우선, 없으면 outcome price)
+  /// jUSD per share, 시장가 스냅샷 (book mid 우선, 없으면 outcome price)
   price: number;
-  /// 사용자가 태우는 USDC (human units)
-  usdc: number;
-  /// usdc / price — 받게 될 outcome tokens (human units)
+  /// 사용자가 태우는 jUSD (human units)
+  jusd: number;
+  /// jusd / price — 받게 될 outcome tokens (human units)
   shares: number;
 };
 
-/// 베팅 견적 — 마켓의 outcome 가격(호가 mid 우선)으로 USDC → shares 를 계산한다.
+/// 베팅 견적 — 마켓의 outcome 가격(호가 mid 우선)으로 jUSD → shares 를 계산한다.
 /// v1 은 스냅샷 견적이다: 체결 시점의 슬리피지 경계는 open question 3 과 함께 온다.
-export async function quoteBet(slug: string, outcome: string, usdc: number): Promise<VerexQuote> {
+export async function quoteBet(slug: string, outcome: string, jusd: number): Promise<VerexQuote> {
   const market = await verex.market(slug);
   const o = market.outcomes.find((x) => x.label.toLowerCase() === outcome.toLowerCase());
   if (!o) throw new Error(`market ${slug} has no outcome "${outcome}"`);
@@ -225,10 +225,10 @@ export async function quoteBet(slug: string, outcome: string, usdc: number): Pro
     // 호가가 없으면 outcome price 로 견적 — 견적 실패가 베팅 자체를 막을 이유는 없다.
   }
   if (!(price > 0 && price < 1)) throw new Error(`no usable price for ${slug}/${outcome}`);
-  return { slug, outcome: o.label, tokenId: o.tokenId, price, usdc, shares: usdc / price };
+  return { slug, outcome: o.label, tokenId: o.tokenId, price, jusd, shares: jusd / price };
 }
 
-/// executeBatch 의 두 콜을 인코딩한다: [approve(USDC→exchange, 정확히 cost), placeOrder].
+/// executeBatch 의 두 콜을 인코딩한다: [approve(jUSD→exchange, 정확히 cost), placeOrder].
 ///
 /// approve 는 **정확한 금액**이다 (open question 4 의 v1 답: 매번 배치에 exact approve —
 /// 원자적이고 blast radius 가 없다; 무한 allowance 는 나중 문제).
@@ -248,19 +248,19 @@ export function encodeBetCalls(args: {
   account: `0x${string}`;
 }): { approve: EncodedCall; placeOrder: EncodedCall } {
   const { cfg, quote, account } = args;
-  if (!cfg.exchange || !cfg.usdc) throw new Error("verex config has no exchange/usdc address");
+  if (!cfg.exchange || !cfg.jusd) throw new Error("verex config has no exchange/jusd address");
 
-  const usdcE6 = parseUnits(quote.usdc.toFixed(6), 6);
+  const jusdE6 = parseUnits(quote.jusd.toFixed(6), 6);
   const priceE6 = parseUnits(quote.price.toFixed(6), 6);
   // BUY 올림 — 위 signLimitOrder 의 반올림 규약과 동일해야 한다.
-  const sharesE6 = (usdcE6 * 1_000_000n) / priceE6;
+  const sharesE6 = (jusdE6 * 1_000_000n) / priceE6;
 
   const approve: EncodedCall = {
-    to: cfg.usdc,
+    to: cfg.jusd,
     data: encodeFunctionData({
-      abi: MockUSDCAbi,
+      abi: JUSDAbi,
       functionName: "approve",
-      args: [cfg.exchange, usdcE6],
+      args: [cfg.exchange, jusdE6],
     }),
   };
 
@@ -270,7 +270,7 @@ export function encodeBetCalls(args: {
     signer: account,
     taker: "0x0000000000000000000000000000000000000000" as const,
     tokenId: BigInt(quote.tokenId),
-    makerAmount: usdcE6,
+    makerAmount: jusdE6,
     takerAmount: sharesE6,
     expiration: 0n,
     nonce: 0n,
@@ -284,7 +284,7 @@ export function encodeBetCalls(args: {
     data: encodeFunctionData({
       abi: CTFExchangeAbi,
       functionName: "fillOrder",
-      args: [order, usdcE6],
+      args: [order, jusdE6],
     }),
   };
   return { approve, placeOrder };

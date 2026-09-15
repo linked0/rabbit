@@ -25,12 +25,12 @@
 
 - [ ] `script/DeployCTF.s.sol` — 배포 순서/권한 부여(operator, approval)가 데모와 일치하는지
 - [ ] `script/DemoMarket.s.sol`, `EmitOrderHash.s.sol` — 하드코딩된 주소/키가 없는지
-- [ ] `src/MockUSDC.sol` — 테스트 전용임이 명확한지(운영 배포 경로에 안 섞이게)
+- [ ] `src/JUSD.sol` — 테스트 전용임이 명확한지(운영 배포 경로에 안 섞이게)
 - [ ] `lib/ctf-exchange` 서브모듈 핀 커밋이 신뢰 가능한 버전인지
 
 ## 3. SDK surface
 
-신규 모듈: `ct.ts`, `exchange.ts`, `orders.ts`, `usdc.ts`, `clients.ts`, `conditions.ts` / 제거: `factory.ts`, `market.ts`
+신규 모듈: `ct.ts`, `exchange.ts`, `orders.ts`, `jusd.ts`, `clients.ts`, `conditions.ts` / 제거: `factory.ts`, `market.ts`
 
 - [ ] `index.ts` re-export가 의도한 public API만 노출하는지 (내부 헬퍼 누출 여부)
 - [ ] `ct.ts`의 split/merge/redeem/report 인자 인코딩이 binary market 가정과 맞는지
@@ -41,7 +41,7 @@
 ## 4. CLI
 
 - [ ] `packages/cli/src/index.ts` 10개 CTF 커맨드 — 입력 검증, 에러 메시지
-- [ ] `demo.ts` E2E 흐름(deploy → setup → sign+fill → resolve → redeem)이 문서(alice 100→140 USDC)와 재현되는지
+- [ ] `demo.ts` E2E 흐름(deploy → setup → sign+fill → resolve → redeem)이 문서(alice 100→140 jUSD)와 재현되는지
 
 ## 5. 테스트 & 회귀
 

@@ -7,10 +7,10 @@
 //     `AccountConfig` — no env-var reading here, that's each consumer's own
 //     call (see packages/api/src/chain.ts and packages/cli/src/clients.ts).
 //   - Flat helpers: `signOrder`, `hashOrder`, `getConditionId`, plus thin
-//     wrappers around CTFExchange / IConditionalTokens / MockUSDC. Useful
+//     wrappers around CTFExchange / IConditionalTokens / JUSD. Useful
 //     for one-off calls and tests.
 //   - Small clients: `createCTClient`, `createExchangeClient`,
-//     `createUsdcClient` pre-bind an address + viem clients. Useful when
+//     `createJusdClient` pre-bind an address + viem clients. Useful when
 //     the same address gets passed around (CLI, MM agent).
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -49,7 +49,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MockOptimisticOracleV2Abi = exports.UMA_REQUEST_STATES = exports.createUmaOracleClient = exports.UMA_SEPOLIA = exports.UMA_UNRESOLVABLE = exports.UMA_NO = exports.UMA_YES = exports.umaConditionId = exports.umaQuestionId = exports.buildAncillaryData = exports.createUmaAdapterClient = exports.UmaCtfAdapterAbi = exports.MockUSDCAbi = exports.IConditionalTokensAbi = exports.CTFExchangeAbi = exports.createUsdcClient = exports.createExchangeClient = exports.createCTClient = exports.usdc = exports.exchange = exports.ct = exports.recoverOrderSigner = exports.hashOrder = exports.signOrder = exports.getConditionId = void 0;
+exports.MockOptimisticOracleV2Abi = exports.UMA_REQUEST_STATES = exports.createUmaOracleClient = exports.UMA_SEPOLIA = exports.UMA_UNRESOLVABLE = exports.UMA_NO = exports.UMA_YES = exports.umaConditionId = exports.umaQuestionId = exports.buildAncillaryData = exports.createUmaAdapterClient = exports.UmaCtfAdapterAbi = exports.JUSDAbi = exports.IConditionalTokensAbi = exports.CTFExchangeAbi = exports.createJusdClient = exports.createExchangeClient = exports.createCTClient = exports.jusd = exports.exchange = exports.ct = exports.recoverOrderSigner = exports.hashOrder = exports.signOrder = exports.getConditionId = void 0;
 __exportStar(require("./types"), exports);
 __exportStar(require("./chain"), exports);
 // Off-chain primitives
@@ -62,17 +62,17 @@ Object.defineProperty(exports, "recoverOrderSigner", { enumerable: true, get: fu
 // Contract-call helpers
 exports.ct = __importStar(require("./ct"));
 exports.exchange = __importStar(require("./exchange"));
-exports.usdc = __importStar(require("./usdc"));
+exports.jusd = __importStar(require("./jusd"));
 // Pre-bound clients
 var clients_1 = require("./clients");
 Object.defineProperty(exports, "createCTClient", { enumerable: true, get: function () { return clients_1.createCTClient; } });
 Object.defineProperty(exports, "createExchangeClient", { enumerable: true, get: function () { return clients_1.createExchangeClient; } });
-Object.defineProperty(exports, "createUsdcClient", { enumerable: true, get: function () { return clients_1.createUsdcClient; } });
+Object.defineProperty(exports, "createJusdClient", { enumerable: true, get: function () { return clients_1.createJusdClient; } });
 // ABIs (escape hatch for callers that need raw contract access)
 var abis_1 = require("./abis");
 Object.defineProperty(exports, "CTFExchangeAbi", { enumerable: true, get: function () { return abis_1.CTFExchangeAbi; } });
 Object.defineProperty(exports, "IConditionalTokensAbi", { enumerable: true, get: function () { return abis_1.IConditionalTokensAbi; } });
-Object.defineProperty(exports, "MockUSDCAbi", { enumerable: true, get: function () { return abis_1.MockUSDCAbi; } });
+Object.defineProperty(exports, "JUSDAbi", { enumerable: true, get: function () { return abis_1.JUSDAbi; } });
 Object.defineProperty(exports, "UmaCtfAdapterAbi", { enumerable: true, get: function () { return abis_1.UmaCtfAdapterAbi; } });
 // UMA oracle adapter — optional per-market resolver (see src/uma.ts).
 var uma_1 = require("./uma");

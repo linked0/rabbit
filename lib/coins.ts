@@ -22,7 +22,7 @@ export const SYMBOL_TO_ID: Record<string, string> = {
   TRX: "tron",
   BNB: "binancecoin",
   USDT: "tether",
-  USDC: "usd-coin",
+  jUSD: "usd-coin",
 };
 
 export function symbolToId(symbol: string): string {

@@ -35,10 +35,10 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCTClient = createCTClient;
 exports.createExchangeClient = createExchangeClient;
-exports.createUsdcClient = createUsdcClient;
+exports.createJusdClient = createJusdClient;
 const ct = __importStar(require("./ct"));
 const exchange = __importStar(require("./exchange"));
-const usdc = __importStar(require("./usdc"));
+const jusd = __importStar(require("./jusd"));
 function createCTClient(args) {
     const { address, publicClient, walletClient } = args;
     const requireWallet = () => {
@@ -79,7 +79,7 @@ function createExchangeClient(args) {
         getDomainSeparator: () => exchange.getDomainSeparator(publicClient, address),
     };
 }
-function createUsdcClient(args) {
+function createJusdClient(args) {
     const { address, publicClient, walletClient } = args;
     const requireWallet = () => {
         if (!walletClient)
@@ -88,10 +88,10 @@ function createUsdcClient(args) {
     };
     return {
         address,
-        balanceOf: (account) => usdc.getBalance(publicClient, address, account),
-        allowance: (owner, spender) => usdc.getAllowance(publicClient, address, owner, spender),
-        mint: (to, amount) => usdc.mint(publicClient, requireWallet(), address, to, amount),
-        approve: (spender, amount) => usdc.approve(publicClient, requireWallet(), address, spender, amount),
+        balanceOf: (account) => jusd.getBalance(publicClient, address, account),
+        allowance: (owner, spender) => jusd.getAllowance(publicClient, address, owner, spender),
+        mint: (to, amount) => jusd.mint(publicClient, requireWallet(), address, to, amount),
+        approve: (spender, amount) => jusd.approve(publicClient, requireWallet(), address, spender, amount),
     };
 }
 //# sourceMappingURL=clients.js.map

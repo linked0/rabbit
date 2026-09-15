@@ -25,7 +25,7 @@ type Prepared = {
   error?: string;
   typedData: unknown;
   delegation: Record<string, unknown>;
-  smartAccount: { address: string; justDeployed: boolean; usdc: number | null };
+  smartAccount: { address: string; justDeployed: boolean; jusd: number | null };
 };
 
 type Eip1193 = { request: (a: { method: string; params?: unknown[] }) => Promise<unknown> };
@@ -38,9 +38,9 @@ const eth = () => {
 type Mandate = {
   id: string;
   owner: string;
-  capUsdc: number;
-  drawnUsdc: number;
-  remainingUsdc: number;
+  capJusd: number;
+  drawnJusd: number;
+  remainingJusd: number;
   expiresAt: string;
   expired: boolean;
   exhausted: boolean;
@@ -65,7 +65,7 @@ export default function MandatePanel({
   const [owner, setOwner] = useState<string | null>(null);
   const [agent, setAgent] = useState<string | null>(null);
   /// 상한이 걸리는 토큰. ERC-7715 요청에 필요하고, 출처는 언제나 verex 다.
-  const [usdc, setUsdc] = useState<string | null>(null);
+  const [jusd, setJusd] = useState<string | null>(null);
   const [mandate, setMandate] = useState<Mandate | null>(null);
   const [cap, setCap] = useState("10");
   const [minutes, setMinutes] = useState("60");
@@ -85,15 +85,15 @@ export default function MandatePanel({
       const r = await fetchJson<{
         error?: string;
         agentAddress: string;
-        usdc: string | null;
+        jusd: string | null;
         mandate: Mandate | null;
         mandateError?: string | null;
       }>("/api/agent/mandate");
       if (r.error) return setLoadErr(r.error);
       setAgent(r.agentAddress);
-      setUsdc(r.usdc);
+      setJusd(r.jusd);
       setMandate(r.mandate);
-      // DB 만 죽은 경우 라우트는 주소·USDC 는 주고 mandateError 로 사정을 말한다 —
+      // DB 만 죽은 경우 라우트는 주소·jUSD 는 주고 mandateError 로 사정을 말한다 —
       // 화면도 같은 만큼만 죽어야 한다: 부여는 되게 두고, 왜 진행률이 안 보이는지만 밝힌다.
       setLoadErr(r.mandateError ?? null);
     } catch (e) {
@@ -130,9 +130,9 @@ export default function MandatePanel({
     // 참여자 표에는 에이전트 주소가 있는데 여기만 "not loaded yet"). 상태에 없으면 지금
     // 한 번 직접 읽는다 — 그래도 없으면 막연한 문장 대신 GET 이 말한 이유를 그대로 던진다.
     let agentAddr = agent;
-    let usdcAddr = usdc;
-    if (!agentAddr || !usdcAddr) {
-      const r = await fetchJson<{ error?: string; agentAddress?: string; usdc?: string | null }>(
+    let jusdAddr = jusd;
+    if (!agentAddr || !jusdAddr) {
+      const r = await fetchJson<{ error?: string; agentAddress?: string; jusd?: string | null }>(
         "/api/agent/mandate",
       );
       if (r.error) {
@@ -141,15 +141,15 @@ export default function MandatePanel({
         );
       }
       agentAddr = r.agentAddress ?? null;
-      usdcAddr = r.usdc ?? null;
+      jusdAddr = r.jusd ?? null;
       if (agentAddr) setAgent(agentAddr);
-      if (usdcAddr) setUsdc(usdcAddr);
+      if (jusdAddr) setJusd(jusdAddr);
     }
     if (!agentAddr)
       throw new Error(
         "agent address missing from /api/agent/mandate — is AGENT_PRIVATE_KEY set on the server?",
       );
-    if (!usdcAddr) throw new Error("no USDC address from verex — is the market API up?");
+    if (!jusdAddr) throw new Error("no jUSD address from verex — is the market API up?");
 
     const client = createWalletClient({ transport: custom(window.ethereum as never) }).extend(
       erc7715ProviderActions(),
@@ -171,10 +171,10 @@ export default function MandatePanel({
         permission: {
           type: "erc20-token-allowance",
           data: {
-            tokenAddress: usdcAddr as `0x${string}`,
+            tokenAddress: jusdAddr as `0x${string}`,
             allowanceAmount: BigInt(Math.round(Number(cap) * 1e6)),
             startTime: now,
-            justification: `rabbit agent mandate — up to ${cap} USDC until ${expiresAt}`,
+            justification: `rabbit agent mandate — up to ${cap} jUSD until ${expiresAt}`,
           },
           isAdjustmentAllowed: false,
         },
@@ -186,7 +186,7 @@ export default function MandatePanel({
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         owner,
-        capUsdc: Number(cap),
+        capJusd: Number(cap),
         expiresAt,
         delegation: {
           kind: "erc7715",
@@ -218,7 +218,7 @@ export default function MandatePanel({
       // 지갑이 이 체인에서 ERC-7715 를 제공하는가로 갈린다. 31337 에는 MetaMask 의
       // 표준 배포가 없어 지갑이 답하지 않고(2026-08-31 측정: 지원 목록에 31337 없음),
       // 표준 배포가 있는 체인에서는 **지갑이 직접** 권한을 만들고 자기 UI 로 보여 준다
-      // — 사용자가 날것의 EIP-712 구조체 대신 "최대 10 USDC, 60분"을 읽게 되는 지점.
+      // — 사용자가 날것의 EIP-712 구조체 대신 "최대 10 jUSD, 60분"을 읽게 되는 지점.
       const chainIdHex = (await eth().request({ method: "eth_chainId" })) as string;
       const chainId = parseInt(chainIdHex, 16);
       if (chainId !== 31337) {
@@ -230,7 +230,7 @@ export default function MandatePanel({
       const prep = await fetchJson<Prepared>("/api/agent/mandate/prepare", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ owner, capUsdc: Number(cap), expiresAt }),
+        body: JSON.stringify({ owner, capJusd: Number(cap), expiresAt }),
       });
       if (prep.error) throw new Error(prep.error);
 
@@ -246,7 +246,7 @@ export default function MandatePanel({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           owner,
-          capUsdc: Number(cap),
+          capJusd: Number(cap),
           expiresAt,
           delegation: { ...prep.delegation, signature },
         }),
@@ -255,8 +255,8 @@ export default function MandatePanel({
 
       setNote(
         t(
-          `소유자 스마트 계정 ${short(prep.smartAccount.address)}${prep.smartAccount.justDeployed ? " (방금 배포됨)" : ""}, 잔고 ${prep.smartAccount.usdc ?? "?"} USDC`,
-          `Owner smart account ${short(prep.smartAccount.address)}${prep.smartAccount.justDeployed ? " (just deployed)" : ""}, balance ${prep.smartAccount.usdc ?? "?"} USDC`,
+          `소유자 스마트 계정 ${short(prep.smartAccount.address)}${prep.smartAccount.justDeployed ? " (방금 배포됨)" : ""}, 잔고 ${prep.smartAccount.jusd ?? "?"} jUSD`,
+          `Owner smart account ${short(prep.smartAccount.address)}${prep.smartAccount.justDeployed ? " (just deployed)" : ""}, balance ${prep.smartAccount.jusd ?? "?"} jUSD`,
         ),
       );
       await reload();
@@ -299,7 +299,7 @@ export default function MandatePanel({
   }
 
   const secsLeft = mandate ? Math.floor((new Date(mandate.expiresAt).getTime() - Date.now()) / 1000) : 0;
-  const pctDrawn = mandate && mandate.capUsdc > 0 ? Math.min(100, (mandate.drawnUsdc / mandate.capUsdc) * 100) : 0;
+  const pctDrawn = mandate && mandate.capJusd > 0 ? Math.min(100, (mandate.drawnJusd / mandate.capJusd) * 100) : 0;
 
   return (
     <div className="panel" style={{ marginTop: 24 }}>
@@ -320,7 +320,7 @@ export default function MandatePanel({
           </div>
         )}
         <label className="field">
-          <span>{t("상한 (USDC)", "Cap (USDC)")}</span>
+          <span>{t("상한 (jUSD)", "Cap (jUSD)")}</span>
           <input value={cap} onChange={(e) => setCap(e.target.value)} style={{ width: 90 }} />
         </label>
         <label className="field">
@@ -355,7 +355,7 @@ export default function MandatePanel({
         <div style={{ marginTop: 14 }}>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
             <span>
-              <strong>{mandate.drawnUsdc.toFixed(2)}</strong> / {mandate.capUsdc.toFixed(2)} USDC
+              <strong>{mandate.drawnJusd.toFixed(2)}</strong> / {mandate.capJusd.toFixed(2)} jUSD
             </span>
             {/* 만료와 소진은 서로 다른 경계다. 같은 배지로 그리면 데모의 주장이 사라진다. */}
             {mandate.expired ? (

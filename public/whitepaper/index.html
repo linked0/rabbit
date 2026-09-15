@@ -549,7 +549,7 @@ Cross-market selling adds MORE losses, not compensation.</pre>
 
             <div class="box box-success">
                 <span class="box-title">CTF Multi-Outcome allows merging complete sets</span>
-                <pre style="font-size: 0.85rem; background: transparent; margin: 0; padding: 0; color: inherit;">100 A + 100 B + 100 C + 100 D + 100 E → $100 USDC
+                <pre style="font-size: 0.85rem; background: transparent; margin: 0; padding: 0; color: inherit;">100 A + 100 B + 100 C + 100 D + 100 E → $100 jUSD
 
 No counterparty needed!
 Always can exit via merge.
@@ -1391,7 +1391,7 @@ $10.00000000000000000000
 mapping(address => uint256) public balances;</pre>
                 <p style="margin-top: 0.5rem;">When you buy 18.181818181818181818 shares for $10:</p>
                 <ul style="margin-top: 0.5rem; font-size: 0.9rem;">
-                    <li><strong>You pay:</strong> $10.000000 USDC (transferred to CTFExchange)</li>
+                    <li><strong>You pay:</strong> $10.000000 jUSD (transferred to CTFExchange)</li>
                     <li><strong>You receive:</strong> 18181818181818181818 shares (in 18 decimals)</li>
                     <li><strong>Dust:</strong> ~$0.00000000000000000001 stays in CTFExchange</li>
                 </ul>
@@ -1749,7 +1749,7 @@ Expected at 15¢: 66,667 shares
 Provided: YES side $5,000, NO side $5,000 (total $10,000)
 
 <span class="code-comment">// Trading occurs: Users buy Spain YES heavily</span>
-Result: Charlie sells Spain YES and receives USDC
+Result: Charlie sells Spain YES and receives jUSD
 Position: Holding $8,000 Spain NO (skewed inventory)
 
 <span class="code-comment">// After Spain is eliminated</span>
@@ -1926,7 +1926,7 @@ Cannot move to other countries!</span></pre>
 <span style="color: #15803d;">// Market Maker rebalances:</span>
 Collect 200 NO from each of 5 countries
 = 200 complete "NO sets" (5 tokens each)
-= 200 × $4 = <span style="color: #16a34a; font-weight: 600;">$800 USDC</span>
+= 200 × $4 = <span style="color: #16a34a; font-weight: 600;">$800 jUSD</span>
 
 Mint 400 new Spain YES+NO pairs
 <span style="color: #166534; font-weight: 600;">→ Spain liquidity restored! ✓</span></pre>
@@ -1948,14 +1948,14 @@ Mint 400 new Spain YES+NO pairs
                     <ul style="font-size: 0.875rem;">
                         <li>Spain YES: <strong style="color: var(--success);">1,300</strong> (restored)</li>
                         <li>Slippage: <strong style="color: var(--success);">LOW (normal)</strong></li>
-                        <li>Excess NO: <strong>CONVERTED to USDC</strong></li>
+                        <li>Excess NO: <strong>CONVERTED to jUSD</strong></li>
                     </ul>
                 </div>
             </div>
 
             <div class="box box-success" style="margin-top: 1.5rem;">
                 <span class="box-title">Why This Works</span>
-                <p><strong>The Magic:</strong> In NegRisk, all NO tokens can be combined and converted back to USDC
+                <p><strong>The Magic:</strong> In NegRisk, all NO tokens can be combined and converted back to jUSD
                     (because one of them MUST win). This "unlocks" the stuck inventory and allows market makers to
                     continuously rebalance liquidity where it's needed most.</p>
                 <p style="margin-top: 0.75rem;"><strong>Result:</strong> Even with many outcomes, liquidity stays
@@ -1998,7 +1998,7 @@ Mint 400 new Spain YES+NO pairs
                     <div class="func">convertPosition()</div>
                 </div>
                 <p style="text-align: center; margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">
-                    Core: USDC ↔ NO tokens ↔ YES tokens conversion</p>
+                    Core: jUSD ↔ NO tokens ↔ YES tokens conversion</p>
             </div>
 
             <div class="arch-arrow">↓</div>
@@ -2042,7 +2042,7 @@ Mint 400 new Spain YES+NO pairs
                         </tr>
                         <tr>
                             <td><strong>WrappedCollateral</strong></td>
-                            <td>Wrapped USDC for atomic operations</td>
+                            <td>Wrapped jUSD for atomic operations</td>
                             <td><span class="label label-danger">No</span></td>
                         </tr>
                         <tr>
@@ -2075,7 +2075,7 @@ Mint 400 new Spain YES+NO pairs
                     <span class="impl-number">1</span>
                     <div class="impl-content">
                         <strong>WrappedCollateral.sol</strong>
-                        <small>ERC20 wrapper around USDC for internal accounting</small>
+                        <small>ERC20 wrapper around jUSD for internal accounting</small>
                     </div>
                     <span class="difficulty difficulty-easy">Easy</span>
                 </li>
@@ -2435,7 +2435,7 @@ Mint 400 new Spain YES+NO pairs
             <h4>Integration Logic in Nostra</h4>
             <ul style="font-size: 0.9rem;">
                 <li><strong>Assertion:</strong> We call <code>assertTruthWithDefaults</code>. This pulls the
-                    <strong>Minimum Bond</strong> (usually WETH or USDC) from the asserter.
+                    <strong>Minimum Bond</strong> (usually WETH or jUSD) from the asserter.
                 </li>
                 <li><strong>Liveness Period:</strong> Defaults to <strong>7200 seconds (2 hours)</strong>. During this
                     window, any
@@ -3235,7 +3235,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                 </div>
                 <div class="card">
                     <h4>High Liquidity</h4>
-                    <p>Deployment on a chain with existing USDC liquidity reduces friction for user onboarding.</p>
+                    <p>Deployment on a chain with existing jUSD liquidity reduces friction for user onboarding.</p>
                 </div>
                 <div class="card">
                     <h4>EVM Compatibility</h4>
@@ -3486,7 +3486,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                             <td>
                                 <ul>
                                     <li>Highest L2 TVL</li>
-                                    <li>Deep USDC liquidity</li>
+                                    <li>Deep jUSD liquidity</li>
                                     <li><strong>Used by PrismX / Rain</strong></li>
                                 </ul>
                             </td>
@@ -3562,7 +3562,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                 <ul>
                     <li><strong>Singular Codebase:</strong> We use the exact same Solidity smart contracts for either
                         network.</li>
-                    <li><strong>Configuration Only:</strong> The only differences are deployment parameters (e.g., USDC
+                    <li><strong>Configuration Only:</strong> The only differences are deployment parameters (e.g., jUSD
                         address, Chainlink Oracle address), which are handled by config files, not code changes.</li>
                     <li><strong>Flexibility:</strong> We can switch between them or deploy to the other later with zero
                         engineering overhead.</li>
@@ -3590,12 +3590,12 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                 <div style="text-align: center; padding: 1.5rem; font-family: var(--font-mono); line-height: 1.8;">
                     [User on Ethereum Mainnet] <br>
                     ↓ <br>
-                    Sends USDC + "Bet on Brazil" Msg via CCIP<br>
+                    Sends jUSD + "Bet on Brazil" Msg via CCIP<br>
                     ↓<br>
                     <strong>Network of Chainlink Nodes</strong> (Secure Transport)<br>
                     ↓<br>
                     [Nostra Contract on Base]<br>
-                    Receives USDC → Mints YES Tokens for User
+                    Receives jUSD → Mints YES Tokens for User
                 </div>
             </div>
 
@@ -3618,7 +3618,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                             <ol>
                                 <li>Verify sender</li>
                                 <li>Decode "Bet on Brazil" message</li>
-                                <li>Use received USDC to buy positions</li>
+                                <li>Use received jUSD to buy positions</li>
                                 <li>Credit user address (mapped)</li>
                             </ol>
                         </li>
@@ -3663,7 +3663,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                     ↓<br>
                     1. <strong>Blockchain Creation Loop</strong>: Deploys each binary market to MarketFactory<br>
                     2. <strong>Database Sync</strong>: Records Condition IDs & Token IDs<br>
-                    3. <strong>Liquidity Minting</strong>: Mints USDC → Splits into Yes/No positions<br>
+                    3. <strong>Liquidity Minting</strong>: Mints jUSD → Splits into Yes/No positions<br>
                     4. <strong>Auto-Seeding</strong>: Places initial Ask/Bid orders on OrderBook<br>
                     ↓<br>
                     [Websocket]<br>
@@ -3721,7 +3721,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                     <ul>
                         <li><strong>Source:</strong> Server Wallet (Operator)</li>
                         <li><strong>Action:</strong> Calls <code>splitPosition()</code> on CTF</li>
-                        <li><strong>Transfer In:</strong> Sends <strong>USDC</strong> (Collateral) to CTF Contract.</li>
+                        <li><strong>Transfer In:</strong> Sends <strong>jUSD</strong> (Collateral) to CTF Contract.</li>
                         <li><strong>Transfer Out:</strong> Receives newly minted <strong>Position Tokens</strong>
                             (YES/NO shares) to Server Wallet.</li>
                     </ul>
@@ -3756,7 +3756,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                     <ul>
                         <li><strong>From:</strong> CTF Core Contract</li>
                         <li><strong>To:</strong> User's Wallet</li>
-                        <li><strong>Action:</strong> Burns winning position tokens and releases the collateral (USDC)
+                        <li><strong>Action:</strong> Burns winning position tokens and releases the collateral (jUSD)
                             directly to the user's wallet.</li>
                     </ul>
                 </div>
@@ -3766,7 +3766,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                     <ul>
                         <li><strong>From:</strong> User's Wallet</li>
                         <li><strong>To:</strong> CTF Exchange Contract</li>
-                        <li><strong>Action:</strong> Moves the just-claimed USDC back into the Exchange balance so it
+                        <li><strong>Action:</strong> Moves the just-claimed jUSD back into the Exchange balance so it
                             can be immediately used for new trades.</li>
                     </ul>
                 </div>

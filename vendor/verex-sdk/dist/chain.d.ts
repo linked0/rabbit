@@ -1,7 +1,9 @@
 import { type Chain, type PublicClient, type WalletClient } from "viem";
+import { jayverseDevnet, JAYVERSE_DEVNET_ID } from "./jayverse-devnet";
 import type { Address, Hex } from "./types";
 export declare const ANVIL_MNEMONIC = "test test test test test test test test test test test junk";
 export declare const CHAINS: Record<number, Chain>;
+export { jayverseDevnet, JAYVERSE_DEVNET_ID };
 export interface AccountConfig {
     rpcUrl: string;
     chain: Chain;

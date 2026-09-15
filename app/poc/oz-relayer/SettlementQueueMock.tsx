@@ -27,18 +27,18 @@ type Job = {
 };
 
 const JOBS: Job[] = [
-  { id: "j1", type: "SETTLE_MATCH", label: "match — BTC 100k? · 240 USDC", labelKo: "체결 — BTC 10만? · 240 USDC" },
-  { id: "j2", type: "SETTLE_MATCH", label: "match — Fed cut? · 55 USDC", labelKo: "체결 — 연준 인하? · 55 USDC" },
+  { id: "j1", type: "SETTLE_MATCH", label: "match — BTC 100k? · 240 jUSD", labelKo: "체결 — BTC 10만? · 240 jUSD" },
+  { id: "j2", type: "SETTLE_MATCH", label: "match — Fed cut? · 55 jUSD", labelKo: "체결 — 연준 인하? · 55 jUSD" },
   {
     id: "j3",
     type: "SETTLE_MATCH",
-    label: "match — World Cup · 1,200 USDC",
-    labelKo: "체결 — 월드컵 · 1,200 USDC",
+    label: "match — World Cup · 1,200 jUSD",
+    labelKo: "체결 — 월드컵 · 1,200 jUSD",
     failsOnce: true,
   },
-  { id: "j4", type: "SETTLE_MATCH", label: "match — ETH ETF? · 18 USDC", labelKo: "체결 — ETH ETF? · 18 USDC" },
+  { id: "j4", type: "SETTLE_MATCH", label: "match — ETH ETF? · 18 jUSD", labelKo: "체결 — ETH ETF? · 18 jUSD" },
   { id: "j5", type: "RESOLVE", label: "resolve — Fed cut? → No", labelKo: "확정 — 연준 인하? → 아니오" },
-  { id: "j6", type: "REDEEM", label: "redeem — 0x9f3d, 55 USDC", labelKo: "상환 — 0x9f3d, 55 USDC" },
+  { id: "j6", type: "REDEEM", label: "redeem — 0x9f3d, 55 jUSD", labelKo: "상환 — 0x9f3d, 55 jUSD" },
 ];
 
 /// 각 잡이 "몇 번째 블록에 확정되는가". 두 레인의 차이는 오직 동시성이다 —

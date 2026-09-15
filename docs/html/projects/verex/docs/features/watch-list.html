@@ -47,7 +47,7 @@
 <li><strong>결정 항목</strong>: BAL이 채택되면, Verex CTF 컨트랙트의 hot path(<code>fillOrder</code>, <code>splitPosition</code>, <code>mergePositions</code>, <code>redeemPositions</code>)와 그 호출 시퀀스를 BAL-friendly한 storage 접근 패턴으로 재검토할지 — 그리고 한다면 어느 슬라이스(S6 production-grade infra 즈음?)에서 수행할지.</li>
 <li><strong>왜 중요</strong>:<ul>
 <li>BAL은 트랜잭션이 건드릴 storage slot을 사전 선언해 검증자가 병렬 실행 가능하게 함. 정확한 access list가 throughput과 inclusion 우선순위에 영향.</li>
-<li>Verex 한 거래는 CTFExchange + ConditionalTokens + USDC(Polygon 기준) 슬롯을 다수 접근. 슬롯 접근이 동적·분기 의존적일수록 BAL 힌트 정확도 하락.</li>
+<li>Verex 한 거래는 CTFExchange + ConditionalTokens + jUSD(Polygon 기준) 슬롯을 다수 접근. 슬롯 접근이 동적·분기 의존적일수록 BAL 힌트 정확도 하락.</li>
 <li>Polymarket의 CTFExchange는 BAL 이전 설계 — 그대로 쓸지, fork해서 storage 평탄화/순서 고정할지 판단 필요.</li>
 </ul>
 </li>
@@ -70,7 +70,7 @@
 <li><strong>트리거</strong>: Native AA가 메인넷 활성화된 시점 (현재 EIP-7702 후보 — Pectra에서 활성, Glamsterdam 이후 확산 예상). 또는 Polygon/L2 측에서 native AA 동등 기능 활성.</li>
 <li><strong>현재 가정 (Phase 2 / S2.x)</strong>:<ul>
 <li><code>Order.signatureType</code> 필드는 <code>EOA = 0</code>만 지원 (<code>POLY_PROXY = 1</code>, <code>POLY_GNOSIS_SAFE = 2</code>는 enum에 정의되어 있으나 SDK·MM이 안 씀).</li>
-<li>사용자는 EOA → CTFExchange <code>fillOrder</code>로 직접 진입. 거래소가 maker EOA에서 USDC를 pull하므로 <code>approve(exchange, USDC)</code>가 사전 조건.</li>
+<li>사용자는 EOA → CTFExchange <code>fillOrder</code>로 직접 진입. 거래소가 maker EOA에서 jUSD를 pull하므로 <code>approve(exchange, jUSD)</code>가 사전 조건.</li>
 <li>별도 smart-account wallet (Polymarket Proxy / Gnosis Safe 변형 등) 가정 없음. 즉 &quot;1 user = 1 EOA&quot; 모델.</li>
 </ul>
 </li>

@@ -46,7 +46,7 @@ Body:
   // OrderSeedService.ts line 63
   shares: liquidityUSDC * 0.30 / (price + 0.01)
 
-  This tries to maintain "$30 USDC worth" at each price level:
+  This tries to maintain "$30 jUSD worth" at each price level:
   - 51¢: $30 / 0.51 = 58.82 shares
   - 52¢: $25 / 0.52 = 48.08 shares
   - 53¢: $20 / 0.53 = 37.74 shares
@@ -54,7 +54,7 @@ Body:
   - 55¢: $10 / 0.55 = 18.18 shares
   - Total: 190.6 shares needed
 
-  But server only has 100 tokens from splitting 100 USDC.
+  But server only has 100 tokens from splitting 100 jUSD.
 
   Impact
 
@@ -72,11 +72,11 @@ Body:
 
   Change from value-based to token-based distribution (industry standard):
 
-  // Distribute X% of available tokens (not X% of USDC value)
+  // Distribute X% of available tokens (not X% of jUSD value)
   shares: availableTokens * 0.30  // 30% of 100 tokens = 30 shares
 
   This ensures:
-  - 100 USDC → 100 tokens → 100 shares distributed (1:1 ratio)
+  - 100 jUSD → 100 tokens → 100 shares distributed (1:1 ratio)
   - No ERC1155InsufficientBalance errors
   - Ready for user-provided liquidity (no hidden 2x requirement)
 
@@ -106,7 +106,7 @@ Changed from **value-based** to **token-based** distribution in `OrderSeedServic
 
 ### Before (Value-Based) - Caused ERC1155InsufficientBalance
 ```typescript
-// Distributed by USDC value, creating MORE shares than available tokens
+// Distributed by jUSD value, creating MORE shares than available tokens
 shares: liquidityUSDC * 0.30 / (price + 0.01)
 // At 51¢: $100 * 0.30 / 0.51 = 58.82 shares
 // Total SELL orders: ~190 shares (but only 100 tokens exist!)

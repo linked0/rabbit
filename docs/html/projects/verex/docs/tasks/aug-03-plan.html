@@ -459,7 +459,7 @@ workflow itself is the next deliverable.</p>
 <h3 id="g1-result--phase-b-dropped-jay-2026-08-04">G1 result — Phase B dropped (jay, 2026-08-04)</h3>
 <p>Phase A ships; the on-chain pool does not. The reasoning that decided it: every benefit Phase B
 provides — surviving operator downtime, censorship resistance, letting anyone verify the quote —
-is a benefit of <em>not having to trust the operator</em>. On Sepolia with test USDC there is no
+is a benefit of <em>not having to trust the operator</em>. On Sepolia with test jUSD there is no
 adversary to resist and nobody who can lose money, so those guarantees buy nothing yet. They
 become real on mainnet, and that is when to build it.</p>
 <p><strong>Knock-on effect, and it is the useful part: G5 stopped being a blocker.</strong> The ~0.5 ETH target
@@ -520,7 +520,7 @@ the address (<code>defaultLiveness() = 7200</code>, <code>finder()</code> matchi
 No chain migration; risk 3 is closed.</p>
 <p><strong>New constraint found while verifying — the bond currency cannot be Verex&#39;s own collateral.</strong>
 <code>OptimisticOracleV2.requestPrice</code> requires the bond currency to be on UMA&#39;s <code>AddressWhitelist</code>,
-and Verex&#39;s staging MockUSDC (<code>0xF0AB…3edD</code>) returns <code>isOnWhitelist = false</code>. So
+and Verex&#39;s staging JUSD (<code>0xF0AB…3edD</code>) returns <code>isOnWhitelist = false</code>. So
 <code>UMAOptimisticOracleAdapter</code> must hold and post a <strong>whitelisted</strong> token, separate from the
 collateral the markets themselves trade in. Usable options on Sepolia:</p>
 <table>
@@ -532,7 +532,7 @@ collateral the markets themselves trade in. Usable options on Sepolia:</p>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>USDC (UMA&#39;s)</strong> ✅ recommended</td>
+<td><strong>jUSD (UMA&#39;s)</strong> ✅ recommended</td>
 <td><code>0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238</code></td>
 <td><strong>0</strong></td>
 </tr>
@@ -542,7 +542,7 @@ collateral the markets themselves trade in. Usable options on Sepolia:</p>
 <td>0.001</td>
 </tr>
 </tbody></table>
-<p>UMA&#39;s own Sepolia USDC has a <strong>zero final fee</strong>, so the adapter&#39;s per-request cost is just the
+<p>UMA&#39;s own Sepolia jUSD has a <strong>zero final fee</strong>, so the adapter&#39;s per-request cost is just the
 proposer bond we choose (settable, and can be small on testnet). Design consequence: the adapter
 gains a bond-currency address + a funded balance, and &quot;who pays adapter gas&quot; (already an open
 decision) extends to &quot;who funds the bond&quot;. This would have surfaced mid-wave-2 otherwise.</p>
@@ -588,7 +588,7 @@ A5 (operator-SPOF) closes on UMA alone.</p>
 <h3 id="bond-currency--deposit-spec-for-uma-on-sepolia">Bond currency — deposit spec for UMA on Sepolia</h3>
 <p>UMA charges two things per price request: a <strong>final fee</strong> (fixed, set by UMA per currency) and a
 <strong>proposer bond</strong> (we choose). Both must be paid in a currency on UMA&#39;s <code>AddressWhitelist</code> —
-which Verex&#39;s own MockUSDC is not on.</p>
+which Verex&#39;s own JUSD is not on.</p>
 <table>
 <thead>
 <tr>
@@ -598,7 +598,7 @@ which Verex&#39;s own MockUSDC is not on.</p>
 </tr>
 </thead>
 <tbody><tr>
-<td>UMA&#39;s test USDC <code>0x1c7D4B19…9C7238</code></td>
+<td>UMA&#39;s test jUSD <code>0x1c7D4B19…9C7238</code></td>
 <td><strong>0</strong></td>
 <td>❌ operator balance 0; <code>mint</code>/<code>allocateTo</code> both revert — needs an external UMA faucet</td>
 </tr>
@@ -608,7 +608,7 @@ which Verex&#39;s own MockUSDC is not on.</p>
 <td>✅ <strong>yes</strong> — canonical WETH9, <code>deposit()</code> is callable, wraps Sepolia ETH 1:1</td>
 </tr>
 </tbody></table>
-<p><strong>WETH wins on self-service</strong>, not on price: UMA&#39;s USDC is cheaper (zero final fee) but we cannot
+<p><strong>WETH wins on self-service</strong>, not on price: UMA&#39;s jUSD is cheaper (zero final fee) but we cannot
 mint it and would be blocked on an external faucet. WETH we create ourselves from the Sepolia ETH
 jay is funding anyway, so it adds <strong>no new token to acquire</strong> — the adapter&#39;s bond currency
 becomes a wrapping step, not a dependency.</p>

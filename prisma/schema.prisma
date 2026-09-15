@@ -86,9 +86,9 @@ model Mandate {
   owner String // MetaMask 주소 — 위임한 쪽
   agent String // 에이전트 EOA — 위임받은 쪽. 키는 서버에 있고 브라우저엔 주소만 간다
 
-  /// 상한(USDC). 에이전트는 이만큼만 **풀려받을 수** 있다. 잃을 수 있는 최대치가
+  /// 상한(jUSD). 에이전트는 이만큼만 **풀려받을 수** 있다. 잃을 수 있는 최대치가
   /// 아니라 가질 수 있는 최대치이며, 그 둘이 같아지는 것이 논지의 핵심이다.
-  capUsdc Decimal @db.Decimal(20, 6)
+  capJusd Decimal @db.Decimal(20, 6)
 
   /// 만료. 계획서의 "money shot" — 이 시각이 지나면 아무도 취소하지 않아도
   /// 체인이 계속 거절한다. 블록 시간 기준이고 벽시계와 다르다.
@@ -102,7 +102,7 @@ model Mandate {
   delegation Json?
 
   /// 지금까지 실제로 풀려난 금액. 상한과의 차이가 남은 예산이다.
-  drawnUsdc Decimal @default(0) @db.Decimal(20, 6)
+  drawnJusd Decimal @default(0) @db.Decimal(20, 6)
 
   ticks AgentTick[]
 
@@ -143,11 +143,11 @@ model AgentTick {
 
   /// 거래한 틱에만 있음.
   verexOrderId String?
-  spentUsdc    Decimal @default(0) @db.Decimal(20, 6)
+  spentJusd    Decimal @default(0) @db.Decimal(20, 6)
 
   /// 이 틱 시점의 예산 상태 — 나중에 계산하지 않고 찍어 둔다. mandate 가
   /// 바뀌어도 그때 무엇을 보고 판단했는지가 남아야 한다.
-  budgetLeftUsdc Decimal? @db.Decimal(20, 6)
+  budgetLeftJusd Decimal? @db.Decimal(20, 6)
 
   @@index([marketSlug, createdAt])
   @@index([mandateId, createdAt])

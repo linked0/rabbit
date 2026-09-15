@@ -19,7 +19,7 @@
 | Token Name | Details |
 |------------|---------|
 | **Point Token** | • DB-based points for user activity (not ERC token)<br>• Points awarded bi-weekly based on activity: logins, trades, etc.<br>• Convertible to Governance Token at fixed ratio before TGE<br>• Total Point Token value = 20~30% of Governance Token value |
-| **Stable Token (Alea, $ALEA)** | • Settlement token used like cash in prediction markets<br>• Can be pegged to real USDC<br>• Shares TVL (Total Value Locked) as platform revenue info<br>• Burns Governance Tokens equal to TVL value to increase token value |
+| **Stable Token (Alea, $ALEA)** | • Settlement token used like cash in prediction markets<br>• Can be pegged to real jUSD<br>• Shares TVL (Total Value Locked) as platform revenue info<br>• Burns Governance Tokens equal to TVL value to increase token value |
 | **Governance Token (Nostra, $NSTR)** | • Represents the Nostra ecosystem<br>• Platform governance and decision-making |
 
 ### Use Cases for Alea ($ALEA)

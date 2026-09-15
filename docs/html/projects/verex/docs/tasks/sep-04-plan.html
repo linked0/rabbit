@@ -219,7 +219,7 @@ execution detail lives here and the cross-repo plan links to it):</p>
 <tbody><tr>
 <td>1</td>
 <td><strong>Fund the reward token.</strong> <code>deposit()</code> on Sepolia WETH <code>0x7b79995e…98E7f9</code>; make sure the adapter holds it / has approval for the reward</td>
-<td><strong>MockUSDC will not work</strong> — it is not on UMA&#39;s <code>AddressWhitelist</code>, and <code>UmaCtfAdapter</code>&#39;s own <code>@param rewardToken</code> docblock says so. Whether <code>reward: 0</code> sidesteps the whitelist entirely is <strong>unverified</strong> — check it during the smoke probe</td>
+<td><strong>JUSD will not work</strong> — it is not on UMA&#39;s <code>AddressWhitelist</code>, and <code>UmaCtfAdapter</code>&#39;s own <code>@param rewardToken</code> docblock says so. Whether <code>reward: 0</code> sidesteps the whitelist entirely is <strong>unverified</strong> — check it during the smoke probe</td>
 </tr>
 <tr>
 <td>2</td>
@@ -265,7 +265,7 @@ and can fail here:</p>
 <tbody><tr>
 <td><strong>Collateral</strong></td>
 <td><code>requestPrice</code> just does a <code>transferFrom</code> — no check</td>
-<td>Reward token must be on UMA&#39;s <code>AddressWhitelist</code>. <strong>MockUSDC is not</strong>; Sepolia WETH <code>0x7b79995e…98E7f9</code> is. <code>UmaCtfAdapter</code>&#39;s own docblock says so. Whether <code>reward: 0</code> sidesteps it is <strong>unverified</strong></td>
+<td>Reward token must be on UMA&#39;s <code>AddressWhitelist</code>. <strong>JUSD is not</strong>; Sepolia WETH <code>0x7b79995e…98E7f9</code> is. <code>UmaCtfAdapter</code>&#39;s own docblock says so. Whether <code>reward: 0</code> sidesteps it is <strong>unverified</strong></td>
 </tr>
 <tr>
 <td><strong>Final fee</strong></td>
@@ -342,12 +342,12 @@ required it.</p>
 <tr>
 <td><strong>W6.4</strong></td>
 <td>External redeem</td>
-<td>Verex holds no key for the holder, so it <strong>cannot send</strong> <code>redeemPositions</code> — the endpoint records instead of executing. The holder redeems for itself and reports the tx; verex verifies the receipt&#39;s <code>PayoutRedemption</code> (redeemer + conditionId) before writing the REDEEM row. <code>/config</code> gained <code>ctf</code> + <code>usdc</code> so the holder can build the call. Note the asymmetry: <strong>trading costs an external maker no gas</strong> (<code>book.ts:694</code> — the operator sends <code>matchOrders</code>), but <strong>redeeming does</strong></td>
+<td>Verex holds no key for the holder, so it <strong>cannot send</strong> <code>redeemPositions</code> — the endpoint records instead of executing. The holder redeems for itself and reports the tx; verex verifies the receipt&#39;s <code>PayoutRedemption</code> (redeemer + conditionId) before writing the REDEEM row. <code>/config</code> gained <code>ctf</code> + <code>jusd</code> so the holder can build the call. Note the asymmetry: <strong>trading costs an external maker no gas</strong> (<code>book.ts:694</code> — the operator sends <code>matchOrders</code>), but <strong>redeeming does</strong></td>
 </tr>
 </tbody></table>
 <p><strong>W6.5 — the gap W6 creates, still open (2026-08-25).</strong> Funds are checked <strong>at placement</strong>.
 A demo wallet cannot betray that check because verex holds its key; an external maker can — place
-a resting limit order, withdraw the USDC, and leave a book entry that looks live and can never
+a resting limit order, withdraw the jUSD, and leave a book entry that looks live and can never
 settle. Two sizes of fix: <strong>re-check funds at match time</strong> (cheap, inside the existing
 transaction), or let <a href="#w5">W5</a> catch it after the fact. Not fixed yet — recorded so it is a
 decision rather than a surprise. Also the reason <a href="../features/README.html#v3">V3.2</a>&#39;s drop rationale

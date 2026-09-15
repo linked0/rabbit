@@ -3,7 +3,7 @@
 // Hyperliquid 테스트넷 거래 패널 — 설계: docs/tasks/jun-30-rabbit-design.md §3 Task 3-P2.
 // 퍼프(Perp) + 스팟(Spot) 모두 거래. 서명 모델: 사용자 MetaMask 직접 서명(주문마다 팝업),
 // 키 저장 없음. 클라이언트 사이드 전용 — 브라우저가 HL 테스트넷 API와 직접 통신한다.
-// 표시용 오더북(/api/orderbook)은 서버·메인넷 그대로, 거래만 테스트넷(mock USDC).
+// 표시용 오더북(/api/orderbook)은 서버·메인넷 그대로, 거래만 테스트넷(mock jUSD).
 //
 // 스팟 주문의 asset id = 10000 + spotMeta.universe[i].index (HL 규약). 퍼프는 meta.universe 인덱스.
 
@@ -22,17 +22,17 @@ declare global {
 type Side = "buy" | "sell";
 type Mode = "perp" | "spot";
 type OpenOrder = { coin: string; oid: number; side: string; limitPx: string; sz: string };
-// USDC 견적(quote) 스팟 페어. assetId = 10000 + universe index.
+// jUSD 견적(quote) 스팟 페어. assetId = 10000 + universe index.
 type SpotPair = { label: string; assetId: number; baseName: string; szDecimals: number; mid: number };
 type Account = {
-  perp: number; // 퍼프 증거금 (withdrawable USDC)
-  spot: number; // 스팟 USDC 잔고 (faucet이 입금하는 곳)
+  perp: number; // 퍼프 증거금 (withdrawable jUSD)
+  spot: number; // 스팟 jUSD 잔고 (faucet이 입금하는 곳)
   szi: number; // 퍼프 포지션 수량
   entryPx: number | null;
   upnl: number | null;
 };
 
-// 거래는 항상 테스트넷(mock USDC). SDK가 테스트넷 엔드포인트를 캡슐화한다.
+// 거래는 항상 테스트넷(mock jUSD). SDK가 테스트넷 엔드포인트를 캡슐화한다.
 const transport = new hl.HttpTransport({ isTestnet: true });
 const info = new hl.InfoClient({ transport });
 
@@ -125,10 +125,10 @@ export default function TradePanel({ coin = "ETH" }: { coin?: string }) {
           info.frontendOpenOrders({ user: addr as `0x${string}` }),
         ]);
         const pos = state.assetPositions.find((p: any) => p.position.coin === coin)?.position;
-        const spotUsdc = (spot.balances as any[]).find((b) => b.coin === "USDC")?.total ?? "0";
+        const spotJusd = (spot.balances as any[]).find((b) => b.coin === "jUSD")?.total ?? "0";
         setAccount({
           perp: Number(state.withdrawable),
-          spot: Number(spotUsdc),
+          spot: Number(spotJusd),
           szi: pos ? Number(pos.szi) : 0,
           entryPx: pos?.entryPx != null ? Number(pos.entryPx) : null,
           upnl: pos?.unrealizedPnl != null ? Number(pos.unrealizedPnl) : null,
@@ -177,7 +177,7 @@ export default function TradePanel({ coin = "ETH" }: { coin?: string }) {
       setOnlyIsolated(!!pu.onlyIsolated);
       setLeverage(String(Math.min(3, pu.maxLeverage ?? 3)));
 
-      // 스팟 유니버스 + 시세 → USDC 견적 페어만, 시세가 있는(거래 가능한) 것만.
+      // 스팟 유니버스 + 시세 → jUSD 견적 페어만, 시세가 있는(거래 가능한) 것만.
       try {
         const [sMeta, sCtxs] = await info.spotMetaAndAssetCtxs();
         const tokens = sMeta.tokens as any[];
@@ -192,19 +192,19 @@ export default function TradePanel({ coin = "ETH" }: { coin?: string }) {
           const quote = byIdx[u.tokens[1]];
           const assetId = 10000 + u.index;
           nameMap[u.name] = assetId; // 스팟 미체결 주문 취소용
-          if (quote?.name !== "USDC" || !base) return;
+          if (quote?.name !== "jUSD" || !base) return;
           const ctx = (sCtxs as any[])[i];
           const mid = Number(ctx?.midPx ?? ctx?.markPx ?? 0);
           if (!(mid > 0)) return; // 시세 없는 페어 제외
           const disp = UNIT[base.name] ?? base.name;
-          pairs.push({ label: `${disp}/USDC`, assetId, baseName: disp, szDecimals: base.szDecimals, mid });
+          pairs.push({ label: `${disp}/jUSD`, assetId, baseName: disp, szDecimals: base.szDecimals, mid });
         });
         pairs.sort((a, b) => a.label.localeCompare(b.label));
         setSpotPairs(pairs);
-        // 기본 선택: ETH/USDC → HYPE/USDC → 첫 페어.
+        // 기본 선택: ETH/jUSD → HYPE/jUSD → 첫 페어.
         setSpotSel(
-          pairs.find((p) => p.label === "ETH/USDC") ??
-            pairs.find((p) => p.label === "HYPE/USDC") ??
+          pairs.find((p) => p.label === "ETH/jUSD") ??
+            pairs.find((p) => p.label === "HYPE/jUSD") ??
             pairs[0] ??
             null
         );
@@ -407,7 +407,7 @@ export default function TradePanel({ coin = "ETH" }: { coin?: string }) {
 
   const marketLabel = mode === "spot" ? spotSel?.label ?? "—" : `${coin} ${t("퍼프", "Perp")}`;
   const baseUnit = mode === "spot" ? spotSel?.baseName ?? "" : coin;
-  // Unified 계정이면 Spot USDC도 퍼프 담보 → 퍼프 모드 사용가능액은 Perp + Spot 합산.
+  // Unified 계정이면 Spot jUSD도 퍼프 담보 → 퍼프 모드 사용가능액은 Perp + Spot 합산.
   const usable =
     mode === "spot" ? account?.spot ?? 0 : (account?.perp ?? 0) + (account?.spot ?? 0);
 
@@ -424,8 +424,8 @@ export default function TradePanel({ coin = "ETH" }: { coin?: string }) {
       </h2>
       <p className="sub" style={{ marginTop: 0 }}>
         {t(
-          "MetaMask로 서명하는 테스트넷 거래(mock USDC). 주문마다 서명 팝업이 뜨며, 키는 저장되지 않습니다.",
-          "MetaMask-signed testnet trading (mock USDC). Each order opens a signature popup; no key is stored."
+          "MetaMask로 서명하는 테스트넷 거래(mock jUSD). 주문마다 서명 팝업이 뜨며, 키는 저장되지 않습니다.",
+          "MetaMask-signed testnet trading (mock jUSD). Each order opens a signature popup; no key is stored."
         )}
       </p>
 
@@ -464,7 +464,7 @@ export default function TradePanel({ coin = "ETH" }: { coin?: string }) {
                 <span style={mode === "spot" ? { color: "var(--foreground)" } : undefined}>
                   Spot {num(account.spot, 2)}
                 </span>{" "}
-                USDC
+                jUSD
                 {mode === "perp" && account.szi !== 0 && (
                   <>
                     {" · "}
@@ -481,12 +481,12 @@ export default function TradePanel({ coin = "ETH" }: { coin?: string }) {
             )}
           </p>
 
-          {/* Unified 계정: Spot USDC가 퍼프 담보로도 쓰이므로 이체 불필요. */}
+          {/* Unified 계정: Spot jUSD가 퍼프 담보로도 쓰이므로 이체 불필요. */}
           {mode === "perp" && account && account.perp < 1 && account.spot > 1 && (
             <p className="muted" style={{ marginTop: 0, marginBottom: 8 }}>
               {t(
-                "Unified 계정에서는 Spot USDC가 퍼프 담보로도 쓰입니다 — 이체 없이 바로 주문할 수 있습니다.",
-                "With a Unified account, your Spot USDC also collateralizes perps — you can order without transferring."
+                "Unified 계정에서는 Spot jUSD가 퍼프 담보로도 쓰입니다 — 이체 없이 바로 주문할 수 있습니다.",
+                "With a Unified account, your Spot jUSD also collateralizes perps — you can order without transferring."
               )}
             </p>
           )}
@@ -582,7 +582,7 @@ export default function TradePanel({ coin = "ETH" }: { coin?: string }) {
               />
             </label>
             <label style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <span className="muted">{t("지정가", "Limit price")} (USDC)</span>
+              <span className="muted">{t("지정가", "Limit price")} (jUSD)</span>
               <input
                 type="number"
                 inputMode="decimal"

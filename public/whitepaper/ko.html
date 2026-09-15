@@ -546,7 +546,7 @@ A가 이길 경우:
 
             <div class="box box-success">
                 <span class="box-title">CTF 다중 결과는 완전한 세트 병합을 허용함</span>
-                <pre style="font-size: 0.85rem; background: transparent; margin: 0; padding: 0; color: inherit;">100 A + 100 B + 100 C + 100 D + 100 E → $100 USDC
+                <pre style="font-size: 0.85rem; background: transparent; margin: 0; padding: 0; color: inherit;">100 A + 100 B + 100 C + 100 D + 100 E → $100 jUSD
 
 상대방 불필요!
 언제든지 병합을 통해 탈출 가능.
@@ -1077,7 +1077,7 @@ $10.00000000000000000000
 mapping(address => uint256) public balances;</pre>
                 <p style="margin-top: 0.5rem;">$10로 18.181818181818181818 shares를 구매할 때:</p>
                 <ul style="margin-top: 0.5rem; font-size: 0.9rem;">
-                    <li><strong>지불:</strong> $10.000000 USDC (CTFExchange로 전송됨)</li>
+                    <li><strong>지불:</strong> $10.000000 jUSD (CTFExchange로 전송됨)</li>
                     <li><strong>수령:</strong> 18181818181818181818 shares (18자리 소수점)</li>
                     <li><strong>더스트:</strong> ~$0.00000000000000000001가 CTFExchange에 남음</li>
                 </ul>
@@ -1427,7 +1427,7 @@ $3,570 @ 19¢ = 18,789 shares
 제공: YES 측 $5,000, NO 측 $5,000 (총 $10,000)
 
 <span class="code-comment">// 거래 발생: 사용자들이 Spain YES를 대량 매수</span>
-결과: Charlie는 Spain YES를 팔고 USDC를 받음
+결과: Charlie는 Spain YES를 팔고 jUSD를 받음
 포지션: Spain NO $8,000 보유 (편향된 재고)
 
 <span class="code-comment">// Spain 탈락 후</span>
@@ -1598,7 +1598,7 @@ Spain YES 500개만 남음
 <span style="color: #15803d;">// 마켓 메이커가 과잉 NO를 변환</span>
 5개 국가에서 각 200 NO 수집
 = 200개의 완전한 NO 세트 (5개 토큰씩)
-= 200 × $4 = <span style="color: #16a34a; font-weight: 600;">$800 USDC로 환원!</span>
+= 200 × $4 = <span style="color: #16a34a; font-weight: 600;">$800 jUSD로 환원!</span>
 
 → 400개의 새 Spain YES+NO 쌍 발행</pre>
                 </div>
@@ -1619,14 +1619,14 @@ Spain YES 500개만 남음
                     <ul style="font-size: 0.875rem;">
                         <li>Spain YES 잔량: <strong style="color: var(--success);">1,300</strong> (복구됨)</li>
                         <li>슬리피지: <strong style="color: var(--success);">낮음 (정상)</strong></li>
-                        <li>과잉 NO: <strong>USDC로 변환됨</strong></li>
+                        <li>과잉 NO: <strong>jUSD로 변환됨</strong></li>
                     </ul>
                 </div>
             </div>
 
             <div class="box box-success" style="margin-top: 1.5rem;">
                 <span class="box-title">왜 작동하는가?</span>
-                <p><strong>핵심:</strong> NegRisk에서는 모든 NO 토큰을 결합하여 USDC로 환원할 수 있습니다 (그 중 하나는 반드시 승리하므로). 이것이 "고립된"
+                <p><strong>핵심:</strong> NegRisk에서는 모든 NO 토큰을 결합하여 jUSD로 환원할 수 있습니다 (그 중 하나는 반드시 승리하므로). 이것이 "고립된"
                     재고를
                     해제하여 마켓 메이커가 지속적으로 유동성을 가장 필요한 곳으로 재배치할 수 있게 합니다.</p>
             </div>
@@ -1666,7 +1666,7 @@ Spain YES 500개만 남음
                     <div class="func">convertPosition()</div>
                 </div>
                 <p style="text-align: center; margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">
-                    핵심: USDC ↔ NO 토큰 ↔ YES 토큰 변환</p>
+                    핵심: jUSD ↔ NO 토큰 ↔ YES 토큰 변환</p>
             </div>
 
             <div class="arch-arrow">↓</div>
@@ -1709,7 +1709,7 @@ Spain YES 500개만 남음
                         </tr>
                         <tr>
                             <td><strong>WrappedCollateral</strong></td>
-                            <td>내부 회계용 Wrapped USDC</td>
+                            <td>내부 회계용 Wrapped jUSD</td>
                             <td><span class="label label-danger">아니오</span></td>
                         </tr>
                         <tr>
@@ -1742,7 +1742,7 @@ Spain YES 500개만 남음
                     <span class="impl-number">1</span>
                     <div class="impl-content">
                         <strong>WrappedCollateral.sol</strong>
-                        <small>내부 회계를 위한 USDC의 ERC20 래퍼</small>
+                        <small>내부 회계를 위한 jUSD의 ERC20 래퍼</small>
                     </div>
                     <span class="difficulty difficulty-easy">쉬움</span>
                 </li>
@@ -2091,7 +2091,7 @@ Spain YES 500개만 남음
             <ul style="font-size: 0.9rem;">
                 <li><strong>주장 (Assertion):</strong> 우리는 <code>assertTruthWithDefaults</code>를 호출합니다. 이는 주장자로부터
                     <strong>최소 채권(Minimum
-                        Bond)</strong>(보통 WETH 또는 USDC)을 예치하게 합니다.
+                        Bond)</strong>(보통 WETH 또는 jUSD)을 예치하게 합니다.
                 </li>
                 <li><strong>활동 기간 (Liveness Period):</strong> 기본값은 <strong>7200초(2시간)</strong>입니다. 이 기간 동안 모든 봇은
                     `disputeAssertion`을 호출할 수 있습니다.</li>
@@ -2459,7 +2459,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                 </div>
                 <div class="card">
                     <h4>높은 유동성</h4>
-                    <p>USDC 유동성이 존재하는 체인에 배포하면 사용자 온보딩 마찰을 줄일 수 있습니다.</p>
+                    <p>jUSD 유동성이 존재하는 체인에 배포하면 사용자 온보딩 마찰을 줄일 수 있습니다.</p>
                 </div>
                 <div class="card">
                     <h4>EVM 호환성</h4>
@@ -2702,7 +2702,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                             <td>
                                 <ul>
                                     <li>가장 높은 L2 TVL</li>
-                                    <li>깊은 USDC 유동성</li>
+                                    <li>깊은 jUSD 유동성</li>
                                     <li><strong>PrismX / Rain 사용</strong></li>
                                 </ul>
                             </td>
@@ -2769,7 +2769,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                 </p>
                 <ul>
                     <li><strong>단일 코드베이스:</strong> 어느 네트워크를 선택하든 100% 동일한 Solidity 스마트 컨트랙트를 사용합니다.</li>
-                    <li><strong>구성(Config)만 변경:</strong> 유일한 차이점은 배포 매개변수(예: USDC 주소, 체인링크 오라클 주소)뿐이며, 이는 코드가 아닌 설정
+                    <li><strong>구성(Config)만 변경:</strong> 유일한 차이점은 배포 매개변수(예: jUSD 주소, 체인링크 오라클 주소)뿐이며, 이는 코드가 아닌 설정
                         파일로
                         관리됩니다.</li>
                     <li><strong>유연성:</strong> 엔지니어링 오버헤드 없이 언제든지 네트워크를 전환하거나 나중에 다른 곳에 배포할 수 있습니다.</li>
@@ -2797,12 +2797,12 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                 <div style="text-align: center; padding: 1.5rem; font-family: var(--font-mono); line-height: 1.8;">
                     [이더리움 메인넷의 사용자] <br>
                     ↓ <br>
-                    USDC + "브라질에 베팅" 메시지를 CCIP로 전송<br>
+                    jUSD + "브라질에 베팅" 메시지를 CCIP로 전송<br>
                     ↓<br>
                     <strong>체인링크 노드 네트워크</strong> (보안 전송)<br>
                     ↓<br>
                     [Base의 Nostra 컨트랙트]<br>
-                    USDC 수신 → 사용자를 위해 YES 토큰 발행
+                    jUSD 수신 → 사용자를 위해 YES 토큰 발행
                 </div>
             </div>
 
@@ -2824,7 +2824,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                             <ol>
                                 <li>전송자 검증</li>
                                 <li>"브라질에 베팅" 메시지 디코딩</li>
-                                <li>수신된 USDC로 포지션 구매</li>
+                                <li>수신된 jUSD로 포지션 구매</li>
                                 <li>사용자 주소에 크레딧 기록 (매핑)</li>
                             </ol>
                         </li>
@@ -2868,7 +2868,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                     ↓<br>
                     1. <strong>블록체인 생성 루프</strong>: 각 바이너리 마켓을 MarketFactory에 배포<br>
                     2. <strong>데이터베이스 동기화</strong>: Condition ID 및 Token ID 기록<br>
-                    3. <strong>유동성 민팅</strong>: USDC 민팅 → Yes/No 포지션으로 분할 (Split)<br>
+                    3. <strong>유동성 민팅</strong>: jUSD 민팅 → Yes/No 포지션으로 분할 (Split)<br>
                     4. <strong>자동 시딩 (Auto-Seeding)</strong>: 오더북에 초기 매수/매도 주문 배치<br>
                     ↓<br>
                     [웹소켓]<br>
@@ -2926,7 +2926,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                     <ul>
                         <li><strong>출처 (Source):</strong> 서버 지갑 (운영자)</li>
                         <li><strong>동작:</strong> CTF 컨트랙트의 <code>splitPosition()</code> 호출</li>
-                        <li><strong>전송 (In):</strong> <strong>USDC</strong> (담보)를 CTF 컨트랙트로 전송합니다.</li>
+                        <li><strong>전송 (In):</strong> <strong>jUSD</strong> (담보)를 CTF 컨트랙트로 전송합니다.</li>
                         <li><strong>수신 (Out):</strong> 새로 발행된 <strong>포지션 토큰</strong> (YES/NO 주식)을 서버 지갑이 수령합니다.</li>
                     </ul>
                 </div>
@@ -2957,7 +2957,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                     <ul>
                         <li><strong>From:</strong> CTF 코어 컨트랙트</li>
                         <li><strong>To:</strong> 사용자 지갑</li>
-                        <li><strong>동작:</strong> 당첨 포지션 토큰을 소각하고 담보(USDC)를 사용자 지갑으로 직접 해제합니다.</li>
+                        <li><strong>동작:</strong> 당첨 포지션 토큰을 소각하고 담보(jUSD)를 사용자 지갑으로 직접 해제합니다.</li>
                     </ul>
                 </div>
                 <div class="card">
@@ -2966,7 +2966,7 @@ ETH/USD: 0xF0d50568e3A7e8259E16663972b11910F89BD8e7</pre>
                     <ul>
                         <li><strong>From:</strong> 사용자 지갑</li>
                         <li><strong>To:</strong> CTF 거래소 컨트랙트</li>
-                        <li><strong>동작:</strong> 청구된 USDC를 거래소 잔액으로 다시 이동시켜 즉시 새로운 거래에 사용할 수 있게 합니다.</li>
+                        <li><strong>동작:</strong> 청구된 jUSD를 거래소 잔액으로 다시 이동시켜 즉시 새로운 거래에 사용할 수 있게 합니다.</li>
                     </ul>
                 </div>
             </div>

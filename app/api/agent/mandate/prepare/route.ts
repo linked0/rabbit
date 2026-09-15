@@ -22,15 +22,15 @@ export async function POST(req: NextRequest) {
 
   const body = (await req.json().catch(() => null)) as {
     owner?: string;
-    capUsdc?: number;
+    capJusd?: number;
     expiresAt?: string;
   } | null;
 
   if (!body?.owner || !isAddress(body.owner)) {
     return NextResponse.json({ error: "owner must be an address" }, { status: 400 });
   }
-  if (!(typeof body.capUsdc === "number" && body.capUsdc > 0)) {
-    return NextResponse.json({ error: "capUsdc must be > 0" }, { status: 400 });
+  if (!(typeof body.capJusd === "number" && body.capJusd > 0)) {
+    return NextResponse.json({ error: "capJusd must be > 0" }, { status: 400 });
   }
   const expiresAt = new Date(body.expiresAt ?? "");
   if (Number.isNaN(expiresAt.getTime())) {
@@ -48,8 +48,8 @@ export async function POST(req: NextRequest) {
   }
 
   const config = await verex.config().catch(() => null);
-  if (!config?.usdc) {
-    return NextResponse.json({ error: "verex is unreachable or unseeded — no USDC address" }, { status: 503 });
+  if (!config?.jusd) {
+    return NextResponse.json({ error: "verex is unreachable or unseeded — no jUSD address" }, { status: 503 });
   }
   // 체인이 다르면 상한은 다른 체인의 토큰을 지키고 거래는 여기서 일어난다.
   // 그 조합에서는 "체인이 막는다"가 거짓이므로 아예 시작하지 않는다.
@@ -78,9 +78,9 @@ export async function POST(req: NextRequest) {
 
     const delegation = await buildMandate({
       delegator: account.address,
-      capUsdc: body.capUsdc,
+      capJusd: body.capJusd,
       expiresAtSec: Math.floor(expiresAt.getTime() / 1000),
-      usdc: config.usdc,
+      jusd: config.jusd,
     });
 
     return NextResponse.json({
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
         address: account.address,
         justDeployed: !account.deployed,
         deployTxHash: account.txHash,
-        usdc: funded?.usdc ?? null,
+        jusd: funded?.jusd ?? null,
       },
       delegation,
       // 브라우저는 이걸 그대로 `eth_signTypedData_v4` 에 넣는다.

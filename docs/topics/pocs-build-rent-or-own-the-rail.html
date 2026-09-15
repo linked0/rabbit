@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build the rail, rent it, or own it together — three answers in one month — Dev Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 배지를 제목 아래 줄에 (jay, 2026-09-11) — 숫자가 커져도(95% done · 386/406) 제목 옆에서
+     넘치지 않도록, 제목이 첫 줄을 다 차지하고 배지는 다음 줄로 내려가 내용만큼만 차지한다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:1 0 100%; }
+  .rail-head > .rail-note { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-top:6px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
+  /* 페이스 리마인더는 핑크 톤 (jay, 2026-09-11) — % done 배지(파랑)와 구분되는 강조. */
+  /* inline-block 으로만 (jay, 2026-09-11) — 인라인이라 세로 패딩이 안 먹어 낮아 보였다.
+     패딩은 .rail-note 기본값(1px 7px)을 그대로 써서 파란 배지와 높이가 정확히 같아진다. */
+  .rail-note-pink { color:#ec4899; background:rgba(236,72,153,0.14); display:inline-block; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-done { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  /* Important/All 등급 토글 (jay, 2026-09-08) — 진입 시 기본은 Important. */
+  .rail-tier { display:flex; gap:6px; margin-bottom:8px; }
+  .rail-tier .tier-btn {
+    flex:1 1 auto; padding:6px 10px; font:inherit; font-size:0.78rem; font-weight:600;
+    color:var(--text2); background:var(--card); border:1px solid var(--border);
+    border-radius:8px; cursor:pointer;
+  }
+  .rail-tier .tier-btn:hover { color:var(--text); }
+  .rail-tier .tier-btn.on { color:var(--accent); border-color:var(--accent); background:var(--accent-soft); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; padding-right:.4em; } /* 3자리 번호가 제목에 붙던 것(146The…) — 고정 간격 (2026-09-08) */
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  /* 출처 태그 칩 — Fundamentals(Economics·Algorithms·Math) 항목이 어디서 왔는지 (jay, 2026-09-11). */
+  .topic-tag { flex:0 0 auto; font-size:0.64rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase;
+    padding:1px 6px; border-radius:999px; color:var(--text2); background:var(--accent-soft); white-space:nowrap; }
+  .nav-text .topic-tag { font-size:0.6rem; padding:0 5px; margin-right:.35em; vertical-align:middle; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
+
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  /* 목록 행 안에서는 링크들과 한 줄에 서야 하므로 더 작고 납작하게 (jay, 2026-08-28). */
+  .copy-inline { font-size:0.72rem; padding:2px 9px; margin-left:6px; vertical-align:baseline; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a><span class="rail-note">14% done &middot; 58/409</span>
+      <span class="rail-sub"><span class="rail-note rail-note-pink">2%/day &rarr; 95% done</span></span>
+      <div class="rail-jump" id="rail-jump"></div>
+    </div>
+    <div class="rail-search">
+      
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; Build the rail, rent it, or own it together — three answers in one month</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#87</span><span>PoC</span></p>
+      <h1>Build the rail, rent it, or own it together — three answers in one month</h1>
+      <p class="lead">Thirty-nine US state bankers associations launched a network the industry would own. Days later a Korean group signed to verify issuance on Visa&#39;s platform. Visa is what the last bank-owned consortium became — and whichever answer you pick, a reversible card message still has to meet an irreversible settlement.</p>
+      <p class="meta">Two tasks, neither of them a build. First, history: take four bank-owned networks that already ran this play — the card associations, the shared ATM networks, the bankers&#39; banks, the ACH operators — and for each record two dates, when it launched under industry ownership and when that ownership ended or was diluted. The gap is the number. Second, classification: read the Shinhan announcement against the three product families in <code>tokenized-money-banks</code> and decide which it is, because that single unstated fact decides the Basel treatment. Sources: BankChain Alliance launch statement 2026-08-25 (39 state associations, 2027 target, technology partner not yet selected, interoperability planned, ownership open to banks nationwide, interim chair Kathy Kraninger of the Florida Bankers Association); Digital Asset 2026-08-26 on the Shinhan-Visa MOU signed 2026-08-24 covering digital assets, AI-based payments and B2B, with Shinhan Bank, Shinhan Card and Jeju Bank linked to Visa&#39;s global network; docs/features/kb-hybrid-payment-flow.md — all to confirm against primary releases.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# Build the rail, rent it, or own it together — three answers in one month\n\nThirty-nine US state bankers associations launched a network the industry would own. Days later a Korean group signed to verify issuance on Visa's platform. Visa is what the last bank-owned consortium became — and whichever answer you pick, a reversible card message still has to meet an irreversible settlement.\n\nTwo tasks, neither of them a build. First, history: take four bank-owned networks that already ran this play — the card associations, the shared ATM networks, the bankers' banks, the ACH operators — and for each record two dates, when it launched under industry ownership and when that ownership ended or was diluted. The gap is the number. Second, classification: read the Shinhan announcement against the three product families in `tokenized-money-banks` and decide which it is, because that single unstated fact decides the Basel treatment. Sources: BankChain Alliance launch statement 2026-08-25 (39 state associations, 2027 target, technology partner not yet selected, interoperability planned, ownership open to banks nationwide, interim chair Kathy Kraninger of the Florida Bankers Association); Digital Asset 2026-08-26 on the Shinhan-Visa MOU signed 2026-08-24 covering digital assets, AI-based payments and B2B, with Shinhan Bank, Shinhan Card and Jeju Bank linked to Visa's global network; docs/features/kb-hybrid-payment-flow.md — all to confirm against primary releases.\n\n## Why\n\n**Two banking systems answered the same question in one week and picked opposite sides.** Thirty-nine US state bankers associations launched a network the industry would own, precisely so member banks would not depend on somebody else's rail. Shinhan signed to verify issuance, remittance and redemption **on Visa's platform**. Neither is wrong. What makes the pair worth one card is that **Visa is the finished form of the choice the American banks are making** — it began as a bank-owned association and ended as the company banks now pay. **The Korean group is renting from the outcome; the American associations are re-running the beginning.**\n\n**The consortium answer exists because of a cost that has nothing to do with Basel.** `tokenized-money-banks` works out what each product family costs a bank's balance sheet — tokenized deposits cheapest, first-party stablecoins expensive, third-party cheapest of all because the claim leaves entirely. What it does not ask is whether a bank with four branches can issue **any** of them. The answer has never been about capital treatment. **It is that the fixed cost of building and running the infrastructure does not scale down**, and a consortium is the only structure that has ever solved that for small banks.\n\n**So the interesting part is not the technology, it is the ownership clause — and that clause has a track record.** A consortium forms because no member can afford the rail alone, the rail succeeds, the rail's economics stop resembling its members' economics, and ownership separates. Visa and Mastercard are the loudest case. **That is not a cynical prediction about this alliance; it is the base rate**, and a card that writes down the base rate is more useful than one that repeats the press release.\n\n**The detail that says how early this is: no technology partner has been selected.** What launched is a **governance structure, not a system** — thirty-nine associations agreeing on who owns the thing before anyone has decided what the thing is. For a network whose entire premise is *industry-owned*, that order is arguably correct, and it also means the 2027 target is a target for something not yet specified.\n\n**On the renting side, the three verbs in the Korean announcement are the demo and card settlement is the business.** Issuance, remittance and redemption are what every stablecoin pilot verifies, and verifying them proves almost nothing. The line worth reading twice is the pilot for **card settlement**, because that is where a card issuer's money and float actually sit: a multi-party, multi-day netting chain from acquirer to network to issuer, much of it cross-border. **If stablecoins do anything measurable to a bank's P&L in the near term, it is there and not in retail payments.** Note the shape shared with `japan-t0-settlement`: the value is in compressing a settlement interval, and the cost is whatever netting that interval was providing.\n\n**And the timing is a legal fact, not a strategic one.** Who may issue a won stablecoin is one of the contested clauses `korea-digital-asset-act` is built around. **Verifying issuance on someone else's platform is what a bank does while waiting to learn whether it will be allowed to issue on its own** — a position taken before a rule exists, which is the only kind available right now.\n\n**Underneath all three answers sits the same unglamorous mismatch.** An ISO 8583 authorization is decades old, message-based and **reversible**; on-chain settlement is **final**. Mapping where the two meet is mapping where the reversibility gap has to be absorbed by somebody — **and that somebody is a business decision, not a technical one.** Build, rent or own, you inherit it either way.\n\n## How it works\n\n### Three answers, one question\n\n| Answer | Who | What it costs | What it risks |\n|---|---|---|---|\n| **Own it together** | 39 US state bankers associations, BankChain Alliance | Building a rail from nothing, 2027 target, **partner not yet chosen** | Ownership historically **does not stay** where it started |\n| **Rent it** | Shinhan × Visa, MOU 2026-08-24 | Nothing to build | The rail's economics are set by someone whose interests **diverge over time** |\n| **Build it yourself** | The implicit third option | Fixed cost that **does not scale down** | Only available to large institutions |\n\n**Each side's risk is the other side's premise.** Filling in the two-date table below is what turns that sentence from a slogan into an estimate.\n\n### The two-date table, and why it is the whole card\n\n| Network | Launched industry-owned | Ownership ended or diluted | Years |\n|---|---|---|---|\n| Card associations (Visa, Mastercard) | | | |\n| Shared ATM networks | | | |\n| Bankers' banks | | | |\n| ACH operators | | | |\n\n**An afternoon of reading produces a number nobody publishes:** how long industry ownership has historically lasted once the rail succeeded. It is not a prediction — **it is the prior a prediction would have to argue against**, and it applies to every consortium chain, not only this one.\n\n### What the alliance says it will carry\n\n| Service | What it needs that a single community bank lacks | Where it lands in `tokenized-money-banks` |\n|---|---|---|\n| **Tokenized deposits** | A ledger other banks also honour | Cheapest Basel treatment, narrowest reach — **reach is exactly what a consortium adds** |\n| **Stablecoins** | Reserve management, redemption ops, an issuer entity | The expensive conversion: the claim stops being a deposit |\n| **Smart payments** | Counterparties on the same rail | New ground |\n| **Automated settlement** | Shared timing and dispute rules | The plumbing half, and the part nobody demos |\n\n### The unstated fact that decides the Korean side's cost\n\n| If it turns out to be | The claim becomes | Basel treatment | Who holds the reserve |\n|---|---|---|---|\n| **A tokenized deposit** | Still a deposit, wrapped | Cheapest — **25% LCR runoff, 50% NSFR ASF** (permissioned form) | The bank |\n| **A first-party stablecoin** | A redemption contract | Expensive — **LCR runoff 100%, NSFR ASF 0%** | A segregated pool |\n| **A third-party stablecoin via a partner** | Leaves the balance sheet entirely | No issuance cost, no claim either | Someone else |\n\n**The announcement is compatible with all three**, which is why classification is the first task rather than a formality.\n\n### Why card settlement is the line to watch\n\n| Leg of a card transaction | Where the delay is | What a stablecoin could compress |\n|---|---|---|\n| Authorization | Seconds | Nothing — already instant |\n| Clearing | Same day to next day | Little; this is messaging |\n| **Interchange and settlement between acquirer, network and issuer** | **Days, netted in batches** | **The float, and the prefunding held against it** |\n| Cross-border leg | Correspondent banking and FX | The part with the largest spread |\n\nThe measurable question is the one `cross-border-rail-interop` asks of corridors: **how much prefunded balance does the current arrangement require, and what does compressing the interval free up.** A group that owns both a bank and a card company can see both ends of the chain.\n\n### The mismatch all three inherit\n\n| | Card rail (ISO 8583) | On-chain settlement |\n|---|---|---|\n| Age | Decades | New |\n| Model | Message-based | State-based |\n| **Reversibility** | **Authorization, capture, chargeback windows** | **Final** |\n| Who absorbs the gap | **A business decision, not a technical one** | — |\n\nA flow map of where the card leg meets an on-chain settlement leg, with the touch points marked, is the concrete artefact here — no development item attached, and useful under any of the three answers above.\n\n### The confidentiality problem the consortium answer creates\n\nOn a shared ledger among thousands of institutions, keeping existing bank regulation and security standards bites in one place: **a bank's balances and counterparties must not be visible to its competitors**, and a naive shared chain publishes exactly that. So the real engineering question is not throughput — **it is which parties see which fields**, which is the subject `what-encryption-does-not-hide` circles. Any answer here will be an answer to that, whether or not the announcement frames it that way. Read alongside `cross-border-rail-interop`, where the same lesson appears in a different costume: **governance, not throughput, decides which rail wins.**\n"</script>
+      <h2>Why</h2>
+      <p><strong>Two banking systems answered the same question in one week and picked opposite sides.</strong> Thirty-nine US state bankers associations launched a network the industry would own, precisely so member banks would not depend on somebody else&#39;s rail. Shinhan signed to verify issuance, remittance and redemption <strong>on Visa&#39;s platform</strong>. Neither is wrong. What makes the pair worth one card is that <strong>Visa is the finished form of the choice the American banks are making</strong> — it began as a bank-owned association and ended as the company banks now pay. <strong>The Korean group is renting from the outcome; the American associations are re-running the beginning.</strong></p>
+<p><strong>The consortium answer exists because of a cost that has nothing to do with Basel.</strong> <code>tokenized-money-banks</code> works out what each product family costs a bank&#39;s balance sheet — tokenized deposits cheapest, first-party stablecoins expensive, third-party cheapest of all because the claim leaves entirely. What it does not ask is whether a bank with four branches can issue <strong>any</strong> of them. The answer has never been about capital treatment. <strong>It is that the fixed cost of building and running the infrastructure does not scale down</strong>, and a consortium is the only structure that has ever solved that for small banks.</p>
+<p><strong>So the interesting part is not the technology, it is the ownership clause — and that clause has a track record.</strong> A consortium forms because no member can afford the rail alone, the rail succeeds, the rail&#39;s economics stop resembling its members&#39; economics, and ownership separates. Visa and Mastercard are the loudest case. <strong>That is not a cynical prediction about this alliance; it is the base rate</strong>, and a card that writes down the base rate is more useful than one that repeats the press release.</p>
+<p><strong>The detail that says how early this is: no technology partner has been selected.</strong> What launched is a <strong>governance structure, not a system</strong> — thirty-nine associations agreeing on who owns the thing before anyone has decided what the thing is. For a network whose entire premise is <em>industry-owned</em>, that order is arguably correct, and it also means the 2027 target is a target for something not yet specified.</p>
+<p><strong>On the renting side, the three verbs in the Korean announcement are the demo and card settlement is the business.</strong> Issuance, remittance and redemption are what every stablecoin pilot verifies, and verifying them proves almost nothing. The line worth reading twice is the pilot for <strong>card settlement</strong>, because that is where a card issuer&#39;s money and float actually sit: a multi-party, multi-day netting chain from acquirer to network to issuer, much of it cross-border. <strong>If stablecoins do anything measurable to a bank&#39;s P&amp;L in the near term, it is there and not in retail payments.</strong> Note the shape shared with <code>japan-t0-settlement</code>: the value is in compressing a settlement interval, and the cost is whatever netting that interval was providing.</p>
+<p><strong>And the timing is a legal fact, not a strategic one.</strong> Who may issue a won stablecoin is one of the contested clauses <code>korea-digital-asset-act</code> is built around. <strong>Verifying issuance on someone else&#39;s platform is what a bank does while waiting to learn whether it will be allowed to issue on its own</strong> — a position taken before a rule exists, which is the only kind available right now.</p>
+<p><strong>Underneath all three answers sits the same unglamorous mismatch.</strong> An ISO 8583 authorization is decades old, message-based and <strong>reversible</strong>; on-chain settlement is <strong>final</strong>. Mapping where the two meet is mapping where the reversibility gap has to be absorbed by somebody — <strong>and that somebody is a business decision, not a technical one.</strong> Build, rent or own, you inherit it either way.</p>
+      <h2>How it works</h2>
+      <h3>Three answers, one question</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Answer</th>
+<th>Who</th>
+<th>What it costs</th>
+<th>What it risks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Own it together</strong></td>
+<td>39 US state bankers associations, BankChain Alliance</td>
+<td>Building a rail from nothing, 2027 target, <strong>partner not yet chosen</strong></td>
+<td>Ownership historically <strong>does not stay</strong> where it started</td>
+</tr>
+<tr>
+<td><strong>Rent it</strong></td>
+<td>Shinhan × Visa, MOU 2026-08-24</td>
+<td>Nothing to build</td>
+<td>The rail&#39;s economics are set by someone whose interests <strong>diverge over time</strong></td>
+</tr>
+<tr>
+<td><strong>Build it yourself</strong></td>
+<td>The implicit third option</td>
+<td>Fixed cost that <strong>does not scale down</strong></td>
+<td>Only available to large institutions</td>
+</tr>
+</tbody></table></div>
+<p><strong>Each side&#39;s risk is the other side&#39;s premise.</strong> Filling in the two-date table below is what turns that sentence from a slogan into an estimate.</p>
+<h3>The two-date table, and why it is the whole card</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Network</th>
+<th>Launched industry-owned</th>
+<th>Ownership ended or diluted</th>
+<th>Years</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Card associations (Visa, Mastercard)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Shared ATM networks</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Bankers&#39; banks</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>ACH operators</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table></div>
+<p><strong>An afternoon of reading produces a number nobody publishes:</strong> how long industry ownership has historically lasted once the rail succeeded. It is not a prediction — <strong>it is the prior a prediction would have to argue against</strong>, and it applies to every consortium chain, not only this one.</p>
+<h3>What the alliance says it will carry</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Service</th>
+<th>What it needs that a single community bank lacks</th>
+<th>Where it lands in <code>tokenized-money-banks</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Tokenized deposits</strong></td>
+<td>A ledger other banks also honour</td>
+<td>Cheapest Basel treatment, narrowest reach — <strong>reach is exactly what a consortium adds</strong></td>
+</tr>
+<tr>
+<td><strong>Stablecoins</strong></td>
+<td>Reserve management, redemption ops, an issuer entity</td>
+<td>The expensive conversion: the claim stops being a deposit</td>
+</tr>
+<tr>
+<td><strong>Smart payments</strong></td>
+<td>Counterparties on the same rail</td>
+<td>New ground</td>
+</tr>
+<tr>
+<td><strong>Automated settlement</strong></td>
+<td>Shared timing and dispute rules</td>
+<td>The plumbing half, and the part nobody demos</td>
+</tr>
+</tbody></table></div>
+<h3>The unstated fact that decides the Korean side&#39;s cost</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>If it turns out to be</th>
+<th>The claim becomes</th>
+<th>Basel treatment</th>
+<th>Who holds the reserve</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A tokenized deposit</strong></td>
+<td>Still a deposit, wrapped</td>
+<td>Cheapest — <strong>25% LCR runoff, 50% NSFR ASF</strong> (permissioned form)</td>
+<td>The bank</td>
+</tr>
+<tr>
+<td><strong>A first-party stablecoin</strong></td>
+<td>A redemption contract</td>
+<td>Expensive — <strong>LCR runoff 100%, NSFR ASF 0%</strong></td>
+<td>A segregated pool</td>
+</tr>
+<tr>
+<td><strong>A third-party stablecoin via a partner</strong></td>
+<td>Leaves the balance sheet entirely</td>
+<td>No issuance cost, no claim either</td>
+<td>Someone else</td>
+</tr>
+</tbody></table></div>
+<p><strong>The announcement is compatible with all three</strong>, which is why classification is the first task rather than a formality.</p>
+<h3>Why card settlement is the line to watch</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Leg of a card transaction</th>
+<th>Where the delay is</th>
+<th>What a stablecoin could compress</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Authorization</td>
+<td>Seconds</td>
+<td>Nothing — already instant</td>
+</tr>
+<tr>
+<td>Clearing</td>
+<td>Same day to next day</td>
+<td>Little; this is messaging</td>
+</tr>
+<tr>
+<td><strong>Interchange and settlement between acquirer, network and issuer</strong></td>
+<td><strong>Days, netted in batches</strong></td>
+<td><strong>The float, and the prefunding held against it</strong></td>
+</tr>
+<tr>
+<td>Cross-border leg</td>
+<td>Correspondent banking and FX</td>
+<td>The part with the largest spread</td>
+</tr>
+</tbody></table></div>
+<p>The measurable question is the one <code>cross-border-rail-interop</code> asks of corridors: <strong>how much prefunded balance does the current arrangement require, and what does compressing the interval free up.</strong> A group that owns both a bank and a card company can see both ends of the chain.</p>
+<h3>The mismatch all three inherit</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Card rail (ISO 8583)</th>
+<th>On-chain settlement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Age</td>
+<td>Decades</td>
+<td>New</td>
+</tr>
+<tr>
+<td>Model</td>
+<td>Message-based</td>
+<td>State-based</td>
+</tr>
+<tr>
+<td><strong>Reversibility</strong></td>
+<td><strong>Authorization, capture, chargeback windows</strong></td>
+<td><strong>Final</strong></td>
+</tr>
+<tr>
+<td>Who absorbs the gap</td>
+<td><strong>A business decision, not a technical one</strong></td>
+<td>—</td>
+</tr>
+</tbody></table></div>
+<p>A flow map of where the card leg meets an on-chain settlement leg, with the touch points marked, is the concrete artefact here — no development item attached, and useful under any of the three answers above.</p>
+<h3>The confidentiality problem the consortium answer creates</h3>
+<p>On a shared ledger among thousands of institutions, keeping existing bank regulation and security standards bites in one place: <strong>a bank&#39;s balances and counterparties must not be visible to its competitors</strong>, and a naive shared chain publishes exactly that. So the real engineering question is not throughput — <strong>it is which parties see which fields</strong>, which is the subject <code>what-encryption-does-not-hide</code> circles. Any answer here will be an answer to that, whether or not the announcement frames it that way. Read alongside <code>cross-border-rail-interop</code>, where the same lesson appears in a different costume: <strong>governance, not throughput, decides which rail wins.</strong></p>
+      
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# 레일을 만들까, 빌릴까, 같이 소유할까 — 한 달 안에 나온 세 답\n\n미국 39개 주 은행협회가 **업계가 소유할 네트워크**를 출범시켰습니다. 며칠 뒤 한국 금융지주는 **Visa 플랫폼에서 발행을 검증**하기로 서명했습니다. **Visa 는 지난번 은행 소유 컨소시엄이 결국 무엇이 됐는지**입니다 — 그리고 어느 답을 고르든, **되돌릴 수 있는 카드 메시지가 되돌릴 수 없는 정산과 만나야** 합니다.\n\n**작업 둘, 둘 다 개발이 아닙니다.** 첫째, **역사**: 이 수를 이미 둔 은행 소유 네트워크 넷 — 카드 협회, 공동 ATM 망, 뱅커스뱅크, ACH 운영사 — 을 놓고 각각 **두 날짜**를 적습니다. **업계 소유로 출범한 날**과 **그 소유가 끝나거나 희석된 날.** 그 간격이 숫자입니다. 둘째, **분류**: 신한 발표를 `tokenized-money-banks` 의 세 상품군에 대고 읽어 **어느 것인지 정합니다.** 적히지 않은 그 사실 하나가 **바젤 처리를 결정**하기 때문입니다. 출처: BankChain Alliance 출범 발표 2026-08-25(39개 주 협회, 2027년 목표, **기술 파트너 미선정**, 상호운용성 계획, 전국 은행에 소유 개방, 임시 의장 Kathy Kraninger — 플로리다 은행협회); 디지털애셋 2026-08-26, 2026-08-24 체결된 신한-Visa 전략적 MOU(디지털자산·AI 기반 결제·B2B, 신한은행·신한카드·제주은행을 Visa 글로벌 네트워크에 연결); docs/features/kb-hybrid-payment-flow.md — 전부 원문으로 확인 필요.\n\n## 왜\n\n**두 금융 시스템이 같은 질문에 한 주 만에 정반대로 답했습니다.** 미국 39개 주 은행협회는 **업계가 소유할 네트워크**를 출범시켰습니다 — 회원 은행이 **남의 레일에 의존하지 않도록.** 신한은 **Visa 플랫폼에서** 발행·송금·상환을 검증하기로 서명했습니다. 어느 쪽도 틀리지 않았습니다. 둘을 한 카드로 묶을 값이 있는 이유는 **Visa 가 바로 지금 미국 은행들이 하려는 그 선택의 완성형**이기 때문입니다 — **은행 소유 협회로 시작해, 이제 은행들이 돈을 내는 회사로 끝났습니다.** **한국 금융지주는 그 결과물에서 빌리고 있고, 미국 협회들은 그 시작을 다시 돌리고 있습니다.**\n\n**컨소시엄이라는 답이 존재하는 이유는 바젤과 무관한 비용 때문입니다.** `tokenized-money-banks` 는 상품군마다 은행 대차대조표에 얼마가 드는지 계산합니다 — 토큰화 예금이 가장 싸고, 1자 스테이블코인이 비싸고, 3자가 가장 싼데 **청구권이 아예 떠나기** 때문입니다. 그 카드가 묻지 않는 것은 **지점 네 개짜리 은행이 그중 무엇이라도 발행할 수 있는가**입니다. 답은 자본 규제가 아니었습니다. **인프라를 만들고 운영하는 고정비가 규모에 따라 줄지 않는다**는 것이고, **작은 은행에게 그것을 풀어 준 유일한 구조가 컨소시엄**이었습니다.\n\n**그래서 흥미로운 것은 기술이 아니라 소유 조항이고, 그 조항에는 전적이 있습니다.** 아무도 혼자 레일을 감당 못 해서 컨소시엄이 생기고, 레일이 성공하고, **레일의 경제가 회원들의 경제와 닮지 않게 되고**, 소유가 분리됩니다. Visa 와 Mastercard 가 가장 시끄러운 사례입니다. **이 연합에 대한 냉소적 예측이 아니라 기저율(base rate)** 이고, **기저율을 적어 두는 카드가 보도자료를 반복하는 카드보다 쓸모 있습니다.**\n\n**얼마나 초기인지 말해 주는 디테일: 기술 파트너가 아직 선정되지 않았습니다.** 출범한 것은 **시스템이 아니라 지배구조**입니다 — **그것이 무엇인지 아무도 정하기 전에 누가 소유하는지에 39개 협회가 합의한 것.** 전제 자체가 *업계 소유* 인 네트워크라면 **그 순서가 오히려 맞을 수 있고**, 동시에 **2027년 목표는 아직 규정되지 않은 것에 대한 목표**라는 뜻이기도 합니다.\n\n**빌리는 쪽에서는, 한국 발표의 동사 셋이 데모이고 카드 정산이 사업입니다.** 발행·송금·상환은 **모든 스테이블코인 파일럿이 검증하는 것**이고, 검증해 봐야 거의 아무것도 증명하지 못합니다. 두 번 읽을 값이 있는 줄은 **카드 정산 파일럿**입니다. **카드 발행사의 돈과 플로트가 실제로 거기 앉아 있기** 때문입니다 — 매입사 → 네트워크 → 발행사로 이어지는 **다자·수일 네팅 사슬**이고, 상당 부분이 국경을 넘습니다. **스테이블코인이 가까운 시일에 은행 손익에 측정 가능한 무언가를 한다면 그건 거기이지 리테일 결제가 아닙니다.** `japan-t0-settlement` 과 같은 모양임을 적어 둡니다 — **가치는 정산 간격을 압축하는 데 있고, 비용은 그 간격이 제공하던 네팅**입니다.\n\n**그리고 시점은 전략이 아니라 법률적 사실입니다.** 원화 스테이블코인을 누가 발행할 수 있는가는 `korea-digital-asset-act` 가 다루는 쟁점 조문 중 하나입니다. **남의 플랫폼에서 발행을 검증하는 것은, 자기가 발행해도 되는지 알게 될 때까지 은행이 하는 일**입니다 — **규칙이 생기기 전에 잡는 포지션**이고, 지금 가능한 유일한 종류입니다.\n\n**세 답 밑에는 똑같이 멋없는 불일치가 깔려 있습니다.** ISO 8583 승인은 수십 년 된 **메시지 기반**이고 **되돌릴 수 있습니다.** 온체인 정산은 **최종적**입니다. 둘이 만나는 지점을 그리는 것은 **그 가역성 격차를 누가 흡수해야 하는지를 그리는 것**이고, **그 누군가는 기술이 아니라 사업상의 결정**입니다. 만들든, 빌리든, 같이 소유하든 **어느 쪽이든 물려받습니다.**\n\n## 동작 방식\n\n### 세 답, 하나의 질문\n\n| 답 | 주체 | 비용 | 위험 |\n|---|---|---|---|\n| **같이 소유** | 미국 39개 주 은행협회, BankChain Alliance | 무에서 레일 구축, 2027 목표, **파트너 미선정** | 소유는 역사적으로 **시작한 자리에 머물지 않음** |\n| **빌리기** | 신한 × Visa, MOU 2026-08-24 | 만들 것 없음 | 레일의 경제를 **이해가 시간이 갈수록 갈라지는** 쪽이 정함 |\n| **직접 구축** | 암묵적 세 번째 선택지 | **규모에 따라 줄지 않는 고정비** | 큰 기관에만 가능 |\n\n**각 편의 위험이 다른 편의 전제입니다.** 아래 두 날짜 표를 채우는 것이 **이 문장을 구호에서 추정치로** 바꿉니다.\n\n### 두 날짜 표, 그리고 그것이 카드 전부인 이유\n\n| 네트워크 | 업계 소유로 출범 | 소유 종료·희석 | 연수 |\n|---|---|---|---|\n| 카드 협회(Visa, Mastercard) | | | |\n| 공동 ATM 망 | | | |\n| 뱅커스뱅크 | | | |\n| ACH 운영사 | | | |\n\n**반나절 읽기로 아무도 발표하지 않는 숫자가 나옵니다** — **레일이 성공한 뒤 업계 소유가 역사적으로 얼마나 지속됐는가.** 예측이 아니라 **예측이 반박해야 할 사전 확률**이고, 이 연합만이 아니라 **모든 컨소시엄 체인**에 적용됩니다.\n\n### 연합이 나르겠다고 말한 것\n\n| 서비스 | 단일 지역은행에 없는 것 | `tokenized-money-banks` 상 위치 |\n|---|---|---|\n| **토큰화 예금** | 다른 은행도 인정하는 원장 | 바젤 처리 최저, 도달 범위 최소 — **컨소시엄이 더해 주는 것이 정확히 도달 범위** |\n| **스테이블코인** | 준비금 관리, 상환 운영, 발행 주체 | 비싼 전환: 청구권이 예금이기를 그만둠 |\n| **스마트 결제** | 같은 레일 위의 거래상대 | 새 영역 |\n| **자동 정산** | 공유되는 타이밍·분쟁 규칙 | 배관 절반, 아무도 데모하지 않는 부분 |\n\n### 한국 쪽 비용을 결정하는, 적히지 않은 사실\n\n| 만약 이것이 | 청구권은 | 바젤 처리 | 준비금 보유자 |\n|---|---|---|---|\n| **토큰화 예금** | 여전히 예금, 감싼 것 | 최저 — **LCR 유출 25%, NSFR ASF 50%**(퍼미션드) | 은행 |\n| **1자 스테이블코인** | 상환 계약 | 비쌈 — **LCR 유출 100%, NSFR ASF 0%** | 분리 준비금 풀 |\n| **파트너 경유 3자 스테이블코인** | 대차대조표를 완전히 떠남 | 발행 비용 없음, 청구권도 없음 | 남 |\n\n**발표문은 셋 다와 양립합니다.** 그래서 분류가 형식이 아니라 **첫 작업**입니다.\n\n### 왜 카드 정산이 지켜볼 줄인가\n\n| 카드 거래의 구간 | 지연이 있는 곳 | 스테이블코인이 압축할 수 있는 것 |\n|---|---|---|\n| 승인 | 초 | 없음 — 이미 즉시 |\n| 청산 | 당일~익일 | 거의 없음. 이건 메시징 |\n| **매입사·네트워크·발행사 간 정산과 인터체인지** | **수일, 배치 네팅** | **플로트, 그리고 그에 대비해 묶어 둔 선예치** |\n| 국경 구간 | 중계은행과 FX | **스프레드가 가장 큰 부분** |\n\n측정할 질문은 `cross-border-rail-interop` 가 코리도에 던지는 것과 같습니다 — **지금 방식이 요구하는 선예치 잔액은 얼마이고, 간격을 압축하면 무엇이 풀리는가.** 은행과 카드사를 함께 가진 그룹은 **사슬의 양 끝을 볼 수 있습니다.**\n\n### 세 답이 모두 물려받는 불일치\n\n| | 카드 레일(ISO 8583) | 온체인 정산 |\n|---|---|---|\n| 나이 | 수십 년 | 새것 |\n| 모델 | 메시지 기반 | 상태 기반 |\n| **가역성** | **승인·매입·차지백 기간** | **최종** |\n| 격차를 누가 흡수하나 | **기술이 아니라 사업상의 결정** | — |\n\n카드 구간이 온체인 정산 구간과 만나는 지점을 **접점 표시와 함께 그린 흐름도**가 여기서의 구체 산출물입니다 — **개발 항목은 붙지 않고**, 위 세 답 어느 쪽에서든 쓸모가 있습니다.\n\n### 컨소시엄이라는 답이 만들어 내는 기밀성 문제\n\n수천 개 기관이 공유하는 원장에서 기존 은행 규제·보안 기준을 유지한다는 제약은 **한 지점에서 물어뜯습니다** — **한 은행의 잔액과 거래상대가 경쟁 은행에 보이면 안 되는데**, 순진한 공유 체인은 정확히 그것을 공개합니다. 그래서 진짜 엔지니어링 질문은 처리량이 아니라 **어느 당사자가 어느 필드를 보는가**이고, `what-encryption-does-not-hide` 가 도는 주제입니다. **여기서 나올 어떤 답이든 그 질문에 대한 답**이 될 것입니다. 발표가 그렇게 프레이밍하든 아니든. **같은 교훈이 다른 옷을 입고 나오는** `cross-border-rail-interop` 와 함께 읽습니다 — **처리량이 아니라 지배구조가 어느 레일이 이길지 정합니다.**\n"</script>
+      <h1>레일을 만들까, 빌릴까, 같이 소유할까 — 한 달 안에 나온 세 답</h1>
+      <p class="lead">미국 39개 주 은행협회가 <strong>업계가 소유할 네트워크</strong>를 출범시켰습니다. 며칠 뒤 한국 금융지주는 <strong>Visa 플랫폼에서 발행을 검증</strong>하기로 서명했습니다. <strong>Visa 는 지난번 은행 소유 컨소시엄이 결국 무엇이 됐는지</strong>입니다 — 그리고 어느 답을 고르든, <strong>되돌릴 수 있는 카드 메시지가 되돌릴 수 없는 정산과 만나야</strong> 합니다.</p>
+      <p class="meta"><strong>작업 둘, 둘 다 개발이 아닙니다.</strong> 첫째, <strong>역사</strong>: 이 수를 이미 둔 은행 소유 네트워크 넷 — 카드 협회, 공동 ATM 망, 뱅커스뱅크, ACH 운영사 — 을 놓고 각각 <strong>두 날짜</strong>를 적습니다. <strong>업계 소유로 출범한 날</strong>과 <strong>그 소유가 끝나거나 희석된 날.</strong> 그 간격이 숫자입니다. 둘째, <strong>분류</strong>: 신한 발표를 <code>tokenized-money-banks</code> 의 세 상품군에 대고 읽어 <strong>어느 것인지 정합니다.</strong> 적히지 않은 그 사실 하나가 <strong>바젤 처리를 결정</strong>하기 때문입니다. 출처: BankChain Alliance 출범 발표 2026-08-25(39개 주 협회, 2027년 목표, <strong>기술 파트너 미선정</strong>, 상호운용성 계획, 전국 은행에 소유 개방, 임시 의장 Kathy Kraninger — 플로리다 은행협회); 디지털애셋 2026-08-26, 2026-08-24 체결된 신한-Visa 전략적 MOU(디지털자산·AI 기반 결제·B2B, 신한은행·신한카드·제주은행을 Visa 글로벌 네트워크에 연결); docs/features/kb-hybrid-payment-flow.md — 전부 원문으로 확인 필요.</p>
+      <h2>왜</h2>
+      <p><strong>두 금융 시스템이 같은 질문에 한 주 만에 정반대로 답했습니다.</strong> 미국 39개 주 은행협회는 <strong>업계가 소유할 네트워크</strong>를 출범시켰습니다 — 회원 은행이 <strong>남의 레일에 의존하지 않도록.</strong> 신한은 <strong>Visa 플랫폼에서</strong> 발행·송금·상환을 검증하기로 서명했습니다. 어느 쪽도 틀리지 않았습니다. 둘을 한 카드로 묶을 값이 있는 이유는 <strong>Visa 가 바로 지금 미국 은행들이 하려는 그 선택의 완성형</strong>이기 때문입니다 — <strong>은행 소유 협회로 시작해, 이제 은행들이 돈을 내는 회사로 끝났습니다.</strong> <strong>한국 금융지주는 그 결과물에서 빌리고 있고, 미국 협회들은 그 시작을 다시 돌리고 있습니다.</strong></p>
+<p><strong>컨소시엄이라는 답이 존재하는 이유는 바젤과 무관한 비용 때문입니다.</strong> <code>tokenized-money-banks</code> 는 상품군마다 은행 대차대조표에 얼마가 드는지 계산합니다 — 토큰화 예금이 가장 싸고, 1자 스테이블코인이 비싸고, 3자가 가장 싼데 <strong>청구권이 아예 떠나기</strong> 때문입니다. 그 카드가 묻지 않는 것은 <strong>지점 네 개짜리 은행이 그중 무엇이라도 발행할 수 있는가</strong>입니다. 답은 자본 규제가 아니었습니다. <strong>인프라를 만들고 운영하는 고정비가 규모에 따라 줄지 않는다</strong>는 것이고, <strong>작은 은행에게 그것을 풀어 준 유일한 구조가 컨소시엄</strong>이었습니다.</p>
+<p><strong>그래서 흥미로운 것은 기술이 아니라 소유 조항이고, 그 조항에는 전적이 있습니다.</strong> 아무도 혼자 레일을 감당 못 해서 컨소시엄이 생기고, 레일이 성공하고, <strong>레일의 경제가 회원들의 경제와 닮지 않게 되고</strong>, 소유가 분리됩니다. Visa 와 Mastercard 가 가장 시끄러운 사례입니다. <strong>이 연합에 대한 냉소적 예측이 아니라 기저율(base rate)</strong> 이고, <strong>기저율을 적어 두는 카드가 보도자료를 반복하는 카드보다 쓸모 있습니다.</strong></p>
+<p><strong>얼마나 초기인지 말해 주는 디테일: 기술 파트너가 아직 선정되지 않았습니다.</strong> 출범한 것은 <strong>시스템이 아니라 지배구조</strong>입니다 — <strong>그것이 무엇인지 아무도 정하기 전에 누가 소유하는지에 39개 협회가 합의한 것.</strong> 전제 자체가 <em>업계 소유</em> 인 네트워크라면 <strong>그 순서가 오히려 맞을 수 있고</strong>, 동시에 <strong>2027년 목표는 아직 규정되지 않은 것에 대한 목표</strong>라는 뜻이기도 합니다.</p>
+<p><strong>빌리는 쪽에서는, 한국 발표의 동사 셋이 데모이고 카드 정산이 사업입니다.</strong> 발행·송금·상환은 <strong>모든 스테이블코인 파일럿이 검증하는 것</strong>이고, 검증해 봐야 거의 아무것도 증명하지 못합니다. 두 번 읽을 값이 있는 줄은 <strong>카드 정산 파일럿</strong>입니다. <strong>카드 발행사의 돈과 플로트가 실제로 거기 앉아 있기</strong> 때문입니다 — 매입사 → 네트워크 → 발행사로 이어지는 <strong>다자·수일 네팅 사슬</strong>이고, 상당 부분이 국경을 넘습니다. <strong>스테이블코인이 가까운 시일에 은행 손익에 측정 가능한 무언가를 한다면 그건 거기이지 리테일 결제가 아닙니다.</strong> <code>japan-t0-settlement</code> 과 같은 모양임을 적어 둡니다 — <strong>가치는 정산 간격을 압축하는 데 있고, 비용은 그 간격이 제공하던 네팅</strong>입니다.</p>
+<p><strong>그리고 시점은 전략이 아니라 법률적 사실입니다.</strong> 원화 스테이블코인을 누가 발행할 수 있는가는 <code>korea-digital-asset-act</code> 가 다루는 쟁점 조문 중 하나입니다. <strong>남의 플랫폼에서 발행을 검증하는 것은, 자기가 발행해도 되는지 알게 될 때까지 은행이 하는 일</strong>입니다 — <strong>규칙이 생기기 전에 잡는 포지션</strong>이고, 지금 가능한 유일한 종류입니다.</p>
+<p><strong>세 답 밑에는 똑같이 멋없는 불일치가 깔려 있습니다.</strong> ISO 8583 승인은 수십 년 된 <strong>메시지 기반</strong>이고 <strong>되돌릴 수 있습니다.</strong> 온체인 정산은 <strong>최종적</strong>입니다. 둘이 만나는 지점을 그리는 것은 <strong>그 가역성 격차를 누가 흡수해야 하는지를 그리는 것</strong>이고, <strong>그 누군가는 기술이 아니라 사업상의 결정</strong>입니다. 만들든, 빌리든, 같이 소유하든 <strong>어느 쪽이든 물려받습니다.</strong></p>
+      <h2>동작 방식</h2>
+      <h3>세 답, 하나의 질문</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>답</th>
+<th>주체</th>
+<th>비용</th>
+<th>위험</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>같이 소유</strong></td>
+<td>미국 39개 주 은행협회, BankChain Alliance</td>
+<td>무에서 레일 구축, 2027 목표, <strong>파트너 미선정</strong></td>
+<td>소유는 역사적으로 <strong>시작한 자리에 머물지 않음</strong></td>
+</tr>
+<tr>
+<td><strong>빌리기</strong></td>
+<td>신한 × Visa, MOU 2026-08-24</td>
+<td>만들 것 없음</td>
+<td>레일의 경제를 <strong>이해가 시간이 갈수록 갈라지는</strong> 쪽이 정함</td>
+</tr>
+<tr>
+<td><strong>직접 구축</strong></td>
+<td>암묵적 세 번째 선택지</td>
+<td><strong>규모에 따라 줄지 않는 고정비</strong></td>
+<td>큰 기관에만 가능</td>
+</tr>
+</tbody></table></div>
+<p><strong>각 편의 위험이 다른 편의 전제입니다.</strong> 아래 두 날짜 표를 채우는 것이 <strong>이 문장을 구호에서 추정치로</strong> 바꿉니다.</p>
+<h3>두 날짜 표, 그리고 그것이 카드 전부인 이유</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>네트워크</th>
+<th>업계 소유로 출범</th>
+<th>소유 종료·희석</th>
+<th>연수</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>카드 협회(Visa, Mastercard)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>공동 ATM 망</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>뱅커스뱅크</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>ACH 운영사</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table></div>
+<p><strong>반나절 읽기로 아무도 발표하지 않는 숫자가 나옵니다</strong> — <strong>레일이 성공한 뒤 업계 소유가 역사적으로 얼마나 지속됐는가.</strong> 예측이 아니라 <strong>예측이 반박해야 할 사전 확률</strong>이고, 이 연합만이 아니라 <strong>모든 컨소시엄 체인</strong>에 적용됩니다.</p>
+<h3>연합이 나르겠다고 말한 것</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>서비스</th>
+<th>단일 지역은행에 없는 것</th>
+<th><code>tokenized-money-banks</code> 상 위치</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>토큰화 예금</strong></td>
+<td>다른 은행도 인정하는 원장</td>
+<td>바젤 처리 최저, 도달 범위 최소 — <strong>컨소시엄이 더해 주는 것이 정확히 도달 범위</strong></td>
+</tr>
+<tr>
+<td><strong>스테이블코인</strong></td>
+<td>준비금 관리, 상환 운영, 발행 주체</td>
+<td>비싼 전환: 청구권이 예금이기를 그만둠</td>
+</tr>
+<tr>
+<td><strong>스마트 결제</strong></td>
+<td>같은 레일 위의 거래상대</td>
+<td>새 영역</td>
+</tr>
+<tr>
+<td><strong>자동 정산</strong></td>
+<td>공유되는 타이밍·분쟁 규칙</td>
+<td>배관 절반, 아무도 데모하지 않는 부분</td>
+</tr>
+</tbody></table></div>
+<h3>한국 쪽 비용을 결정하는, 적히지 않은 사실</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>만약 이것이</th>
+<th>청구권은</th>
+<th>바젤 처리</th>
+<th>준비금 보유자</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>토큰화 예금</strong></td>
+<td>여전히 예금, 감싼 것</td>
+<td>최저 — <strong>LCR 유출 25%, NSFR ASF 50%</strong>(퍼미션드)</td>
+<td>은행</td>
+</tr>
+<tr>
+<td><strong>1자 스테이블코인</strong></td>
+<td>상환 계약</td>
+<td>비쌈 — <strong>LCR 유출 100%, NSFR ASF 0%</strong></td>
+<td>분리 준비금 풀</td>
+</tr>
+<tr>
+<td><strong>파트너 경유 3자 스테이블코인</strong></td>
+<td>대차대조표를 완전히 떠남</td>
+<td>발행 비용 없음, 청구권도 없음</td>
+<td>남</td>
+</tr>
+</tbody></table></div>
+<p><strong>발표문은 셋 다와 양립합니다.</strong> 그래서 분류가 형식이 아니라 <strong>첫 작업</strong>입니다.</p>
+<h3>왜 카드 정산이 지켜볼 줄인가</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>카드 거래의 구간</th>
+<th>지연이 있는 곳</th>
+<th>스테이블코인이 압축할 수 있는 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>승인</td>
+<td>초</td>
+<td>없음 — 이미 즉시</td>
+</tr>
+<tr>
+<td>청산</td>
+<td>당일~익일</td>
+<td>거의 없음. 이건 메시징</td>
+</tr>
+<tr>
+<td><strong>매입사·네트워크·발행사 간 정산과 인터체인지</strong></td>
+<td><strong>수일, 배치 네팅</strong></td>
+<td><strong>플로트, 그리고 그에 대비해 묶어 둔 선예치</strong></td>
+</tr>
+<tr>
+<td>국경 구간</td>
+<td>중계은행과 FX</td>
+<td><strong>스프레드가 가장 큰 부분</strong></td>
+</tr>
+</tbody></table></div>
+<p>측정할 질문은 <code>cross-border-rail-interop</code> 가 코리도에 던지는 것과 같습니다 — <strong>지금 방식이 요구하는 선예치 잔액은 얼마이고, 간격을 압축하면 무엇이 풀리는가.</strong> 은행과 카드사를 함께 가진 그룹은 <strong>사슬의 양 끝을 볼 수 있습니다.</strong></p>
+<h3>세 답이 모두 물려받는 불일치</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>카드 레일(ISO 8583)</th>
+<th>온체인 정산</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>나이</td>
+<td>수십 년</td>
+<td>새것</td>
+</tr>
+<tr>
+<td>모델</td>
+<td>메시지 기반</td>
+<td>상태 기반</td>
+</tr>
+<tr>
+<td><strong>가역성</strong></td>
+<td><strong>승인·매입·차지백 기간</strong></td>
+<td><strong>최종</strong></td>
+</tr>
+<tr>
+<td>격차를 누가 흡수하나</td>
+<td><strong>기술이 아니라 사업상의 결정</strong></td>
+<td>—</td>
+</tr>
+</tbody></table></div>
+<p>카드 구간이 온체인 정산 구간과 만나는 지점을 <strong>접점 표시와 함께 그린 흐름도</strong>가 여기서의 구체 산출물입니다 — <strong>개발 항목은 붙지 않고</strong>, 위 세 답 어느 쪽에서든 쓸모가 있습니다.</p>
+<h3>컨소시엄이라는 답이 만들어 내는 기밀성 문제</h3>
+<p>수천 개 기관이 공유하는 원장에서 기존 은행 규제·보안 기준을 유지한다는 제약은 <strong>한 지점에서 물어뜯습니다</strong> — <strong>한 은행의 잔액과 거래상대가 경쟁 은행에 보이면 안 되는데</strong>, 순진한 공유 체인은 정확히 그것을 공개합니다. 그래서 진짜 엔지니어링 질문은 처리량이 아니라 <strong>어느 당사자가 어느 필드를 보는가</strong>이고, <code>what-encryption-does-not-hide</code> 가 도는 주제입니다. <strong>여기서 나올 어떤 답이든 그 질문에 대한 답</strong>이 될 것입니다. 발표가 그렇게 프레이밍하든 아니든. <strong>같은 교훈이 다른 옷을 입고 나오는</strong> <code>cross-border-rail-interop</code> 와 함께 읽습니다 — <strong>처리량이 아니라 지배구조가 어느 레일이 이길지 정합니다.</strong></p>
+      
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-float-not-the-paperwork.html">&larr; 86. The stablecoin replaces the float, not the paperwork</a><a href="pocs-the-only-commitment-is-the-issuer.html">88. Every verb is &quot;explore&quot; — the one commitment is which stablecoin &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script src="_nav.js"></script>
+<script>window.__NAV_CURRENT__="build-rent-or-own-the-rail";</script>
+<script>
+(function () {
+  var data = window.__NAV__, cur = window.__NAV_CURRENT__;
+  if (!data) return;
+  var jw = document.getElementById('rail-jump');
+  if (jw) {
+    jw.innerHTML = data.jump.map(function (s) {
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+    }).join('');
+  }
+  var sec = null;
+  for (var i = 0; i < data.sections.length && !sec; i++) {
+    for (var j = 0; j < data.sections[i].items.length; j++) {
+      if (data.sections[i].items[j].key === cur) { sec = data.sections[i]; break; }
+    }
+  }
+  var navEl = document.getElementById('nav');
+  if (navEl && sec) {
+    var lis = sec.items.map(function (it) {
+      var active = it.key === cur ? ' active' : '';
+      return '<li><a class="nav-link' + active + '" href="' + it.href + '" data-key="' + it.key + '"><span class="nav-dot" style="background:' + it.color + ';" title="' + it.label + '"></span><span class="nav-text">' + it.text + '</span></a></li>';
+    }).join('');
+    var group = document.createElement('div');
+    group.className = 'nav-group';
+    group.id = sec.navId;
+    group.setAttribute('data-group', '');
+    group.innerHTML = '<p class="nav-group-label">' + sec.label + '</p><ul>' + lis + '</ul>';
+    navEl.insertBefore(group, navEl.firstChild);
+  }
+})();
+
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  // 레일 필터 = 텍스트 질의 + 등급 모드(Important/All)의 합성. 등급 토글이 없는 페이지에서는
+  // tierMode 가 'all' 로 남아 예전과 완전히 동일하게 동작한다 (jay, 2026-09-08).
+  const tierBtns = [...document.querySelectorAll('.rail-tier .tier-btn')];
+  let tierMode = tierBtns.some((b) => b.dataset.tierMode === 'important') ? 'important' : 'all';
+  // "Important" 필터는 중요(빨강)뿐 아니라 "최근 완료"(하늘)와 "새 항목"(노랑)도 함께 보여 준다
+  // (jay, 2026-09-08: "even though All clicked, the recently done and important should be shown";
+  // 2026-09-09: "important button shows also new items"). 최근 완료는 방금 끝낸 강조 항목이고,
+  // 새 항목은 최근 창(NEW_WINDOW) 안에 손댄 것이라 둘 다 중요 줄에 두고 필터에서 숨기지 않는다.
+  const isImportant = (a) => { const d = a.querySelector('.nav-dot'); return !!d && (d.title === 'IMPORTANT' || d.title === 'RECENTLY DONE' || d.title === 'NEW'); };
+  function applyFilter() {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = (!q || a.textContent.toLowerCase().includes(q)) && (tierMode === 'all' || isImportant(a));
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  }
+  input.addEventListener('input', applyFilter);
+  for (const b of tierBtns) {
+    b.addEventListener('click', () => {
+      tierMode = b.dataset.tierMode;
+      for (const x of tierBtns) { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+      applyFilter();
+    });
+  }
+  // 진입 시 기본값: 등급 토글이 있으면 Important 만 보여 준다 (jay, 2026-09-08).
+  if (tierBtns.length) applyFilter();
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const observed = new Map();
+  let revealTimer;
+  // 밴드에 걸친 항목 중 "문서 순서로 첫 번째"를 고르면 언제나 한 칸 앞이 켜진다
+  // (jay, 2026-08-27: "the left pane should sync with right pane in the item's position").
+  // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
+  // 고르면 방금 도착한 항목이 켜진다.
+  function syncActive() {
+    // 상세 페이지에는 관측할 본문 항목이 없다 — 그때 돌면 서버가 표시한 active 를
+    // 첫 스크롤에 지워 버리므로, 관측 대상이 없으면 아무것도 하지 않는다 (2026-09-03).
+    if (observed.size === 0) return;
+    // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
+    // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
+    // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
+    const line = window.innerHeight * 0.1;
+    let first = null;
+    let started = -Infinity;
+    let upcoming = Infinity;
+    let firstUpcoming = null;
+    for (const k of seen) {
+      const el = observed.get(k);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top <= line) {
+        if (top > started) {
+          started = top;
+          first = k;
+        }
+      } else if (top < upcoming) {
+        upcoming = top;
+        firstUpcoming = k;
+      }
+    }
+    if (first === null) first = firstUpcoming;
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    // 사용자가 실제로 스크롤하기 전에는 끌어오지 않는다 (jay, 2026-09-02) — 로드 직후
+    // 관측자의 첫 콜백이 1번 항목으로 레일을 되감아, 초기 스크롤(첫 important 가운데
+    // 정렬)을 덮어쓰는 것을 막는다. 해시 딥링크는 브라우저 앵커 스크롤이 scroll 이벤트를
+    // 내므로 여전히 첫 프레임부터 동기화된다.
+    clearTimeout(revealTimer);
+    if (userScrolled) revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }
+
+  // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
+  // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
+  let ticking = false;
+  // 해시 딥링크는 스크롤 이벤트가 리스너 등록 전에 끝날 수 있으므로 처음부터 켠다 —
+  // 특정 항목을 열었다는 것 자체가 "그 항목을 보라"는 의도다.
+  let userScrolled = !!location.hash;
+  addEventListener(
+    'scroll',
+    () => {
+      userScrolled = true;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncActive();
+      });
+    },
+    { passive: true }
+  );
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    syncActive();
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) {
+      observed.set(key, el);
+      io.observe(el);
+    }
+  }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
+
+(function () {
+  var nav = document.querySelector('.rail-nav');
+  if (!nav) return;
+  var el = nav.querySelector('.nav-link.active');
+  if (!el && !location.hash) {
+    var dot = nav.querySelector('.nav-dot[title="IMPORTANT"]');
+    el = dot && dot.closest('a');
+  }
+  if (!el) return;
+  var r = el.getBoundingClientRect();
+  var c = nav.getBoundingClientRect();
+  nav.scrollTop += (r.top - c.top) - (c.height / 2 - r.height / 2);
+})();
+</script>
+</body>
+</html>

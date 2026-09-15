@@ -37,16 +37,16 @@ export declare function createExchangeClient(args: {
     publicClient: PublicClient;
     walletClient?: WalletClient;
 }): ExchangeClient;
-export interface UsdcClient {
+export interface JusdClient {
     address: Address;
     balanceOf: (account: Address) => Promise<bigint>;
     allowance: (owner: Address, spender: Address) => Promise<bigint>;
     mint: (to: Address, amount: bigint) => Promise<Hex>;
     approve: (spender: Address, amount: bigint) => Promise<Hex>;
 }
-export declare function createUsdcClient(args: {
+export declare function createJusdClient(args: {
     address: Address;
     publicClient: PublicClient;
     walletClient?: WalletClient;
-}): UsdcClient;
+}): JusdClient;
 //# sourceMappingURL=clients.d.ts.map

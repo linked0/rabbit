@@ -9,7 +9,7 @@
 // 만료 이후 화면이 어떻게 되는지. 값이 마음에 안 들면 SCRIPT만 고치면 된다.
 //
 // **2026-08-27 전면 개작 (jay).** 이전 각본은 "ETH 가격이 2% 움직이면 세션 키로
-// 2.50 USDC 를 지출한다"는 **결제** 이야기였다 — verex 연동 이전, Chainlink 가격
+// 2.50 jUSD 를 지출한다"는 **결제** 이야기였다 — verex 연동 이전, Chainlink 가격
 // 신호 설계의 잔존물이다. 그 사이 실제 에이전트는 **뉴스 → LLM 추정 → 결정론적
 // 규칙 → verex CTF 주문**으로 바뀌었고, 목업만 옛 이야기를 하고 있었다. 방문자가
 // 이 페이지를 읽고 조작판을 열면 서로 다른 두 에이전트를 보게 되는 상태였다.
@@ -31,7 +31,7 @@ const MARKET = {
 };
 
 const MANDATE = {
-  cap: 10.0, // USDC 총 한도
+  cap: 10.0, // jUSD 총 한도
   deadline: "16:00", // 만료 (블록 시간 기준)
   owner: "0xA1b2…9F3d",
   agent: "0x7C4e…21aB",
@@ -92,8 +92,8 @@ const SCRIPT: Tick[] = [
     verdict: "TRADED",
     cited: "Spot ETH ETFs post record $1.2B weekly inflow",
     citedKo: "현물 ETH ETF, 주간 12억 달러 사상 최대 순유입",
-    note: "book 0.45, model 0.58, edge 0.13 ≥ 0.05 → BUY 2.50 USDC of Yes. Signed with the agent's own key; verex's operator sent the match.",
-    noteKo: "호가 0.45, 모델 0.58, edge 0.13 ≥ 0.05 → Yes 2.50 USDC 매수. 에이전트 자기 키로 서명했고, 체결 트랜잭션은 verex operator 가 보냈다.",
+    note: "book 0.45, model 0.58, edge 0.13 ≥ 0.05 → BUY 2.50 jUSD of Yes. Signed with the agent's own key; verex's operator sent the match.",
+    noteKo: "호가 0.45, 모델 0.58, edge 0.13 ≥ 0.05 → Yes 2.50 jUSD 매수. 에이전트 자기 키로 서명했고, 체결 트랜잭션은 verex operator 가 보냈다.",
     spent: 2.5,
     tx: "0x9f31…c40e",
   },
@@ -124,8 +124,8 @@ const SCRIPT: Tick[] = [
     verdict: "SKIP_BUDGET",
     cited: "Second ETF issuer files for staking-enabled ETH product",
     citedKo: "두 번째 ETF 발행사, 스테이킹 포함 ETH 상품 신청",
-    note: "Size dial raised to 6.00, but only 5.00 USDC of the mandate remains → no action. The order is not shrunk to fit: shrinking would erase why this size was chosen.",
-    noteKo: "주문 크기 손잡이를 6.00 으로 올렸지만 위임 잔액이 5.00 USDC 뿐 → 행동 없음. 맞춰서 줄이지 않는다 — 줄이면 왜 이 크기였는지가 저널에서 사라진다.",
+    note: "Size dial raised to 6.00, but only 5.00 jUSD of the mandate remains → no action. The order is not shrunk to fit: shrinking would erase why this size was chosen.",
+    noteKo: "주문 크기 손잡이를 6.00 으로 올렸지만 위임 잔액이 5.00 jUSD 뿐 → 행동 없음. 맞춰서 줄이지 않는다 — 줄이면 왜 이 크기였는지가 저널에서 사라진다.",
   },
   {
     time: "13:00",
@@ -156,8 +156,8 @@ const SCRIPT: Tick[] = [
     ask: null,
     p: null,
     verdict: "SKIP_EXHAUSTED",
-    note: "budget fully drawn (10.00 / 10.00 USDC) → no action. Note this is not the same event as expiry, and it does not look like it either.",
-    noteKo: "예산 전액 인출됨 (10.00 / 10.00 USDC) → 행동 없음. 만료와 같은 사건이 아니고, 화면에서도 같아 보이지 않는다.",
+    note: "budget fully drawn (10.00 / 10.00 jUSD) → no action. Note this is not the same event as expiry, and it does not look like it either.",
+    noteKo: "예산 전액 인출됨 (10.00 / 10.00 jUSD) → 행동 없음. 만료와 같은 사건이 아니고, 화면에서도 같아 보이지 않는다.",
   },
   {
     time: "16:05",
@@ -210,7 +210,7 @@ export default function AgentJournalMock() {
           <div className="kpi">
             <div className="label">{t("남은 한도", "Budget left")}</div>
             <div className="value">
-              {remaining.toFixed(2)} <span style={{ fontSize: 13, fontWeight: 400 }}>/ {MANDATE.cap.toFixed(2)} USDC</span>
+              {remaining.toFixed(2)} <span style={{ fontSize: 13, fontWeight: 400 }}>/ {MANDATE.cap.toFixed(2)} jUSD</span>
             </div>
           </div>
           <div className="kpi">
@@ -232,8 +232,8 @@ export default function AgentJournalMock() {
         </div>
         <p className="sub" style={{ marginTop: 12, fontSize: 13 }}>
           {t(
-            `오너 ${MANDATE.owner}가 부여 — 최대 ${MANDATE.cap.toFixed(2)} USDC, ${MANDATE.deadline}까지. 한도와 기한 모두 에이전트 코드가 아니라 컨트랙트가 강제한다. 무엇을 살지는 강제하지 않는다 — **얼마나 가질 수 있는지**만 강제한다.`,
-            `Granted by owner ${MANDATE.owner} — up to ${MANDATE.cap.toFixed(2)} USDC, until ${MANDATE.deadline}. Both bounds are enforced by contracts, not by the agent's own code. What it may buy is not bounded — **only how much it can ever hold**.`
+            `오너 ${MANDATE.owner}가 부여 — 최대 ${MANDATE.cap.toFixed(2)} jUSD, ${MANDATE.deadline}까지. 한도와 기한 모두 에이전트 코드가 아니라 컨트랙트가 강제한다. 무엇을 살지는 강제하지 않는다 — **얼마나 가질 수 있는지**만 강제한다.`,
+            `Granted by owner ${MANDATE.owner} — up to ${MANDATE.cap.toFixed(2)} jUSD, until ${MANDATE.deadline}. Both bounds are enforced by contracts, not by the agent's own code. What it may buy is not bounded — **only how much it can ever hold**.`
           )}
         </p>
       </div>

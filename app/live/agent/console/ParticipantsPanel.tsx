@@ -1,16 +1,16 @@
 "use client";
 
-// J2 — 참여자 패널 (jay, 2026-09-02). Operator · User · Agent 의 ETH/USDC 잔고와
+// J2 — 참여자 패널 (jay, 2026-09-02). Operator · User · Agent 의 ETH/jUSD 잔고와
 // 자금 버튼. 세 역할이 한 화면에 없으면 "돈이 어디 있지"가 매번 cast 조회였다.
 // ETH 는 ANVIL_FIRST_PRIVATE_KEY(anvil #0, .env §17)가 실제 전송으로 보내고,
-// USDC 는 verex faucet 이 발행한다.
+// jUSD 는 verex faucet 이 발행한다.
 import { useCallback, useEffect, useState } from "react";
 import { useLang } from "../../../LangContext";
 import { pick } from "@/lib/i18n";
 import { fetchJson } from "./fetchJson";
 import { Addr } from "./Preflight";
 
-type Row = { role: string; address: string | null; eth: number | null; usdc: number | null };
+type Row = { role: string; address: string | null; eth: number | null; jusd: number | null };
 
 export default function ParticipantsPanel({
   owner,
@@ -37,7 +37,7 @@ export default function ParticipantsPanel({
     void load();
   }, [load, refreshKey]);
 
-  async function fund(row: Row, what: "eth" | "usdc") {
+  async function fund(row: Row, what: "eth" | "jusd") {
     if (!row.address) return;
     setBusy(`${row.role}:${what}`);
     setErr(null);
@@ -67,8 +67,8 @@ export default function ParticipantsPanel({
       <strong>{t("참여자", "Participants")}</strong>
       <p className="sub" style={{ marginTop: 4, fontSize: 13 }}>
         {t(
-          "누가 무엇을 들고 있나 — 오퍼레이터(verex 배포자·MM), 사용자(위임하는 소유자), 에이전트. ETH 는 anvil #0(자금 출처, .env 의 ANVIL_FIRST_PRIVATE_KEY)이 보내고, USDC 는 verex faucet 이 발행합니다.",
-          "Who holds what — the operator (verex deployer & MM), the user (the owner who grants), and the agent. ETH is sent by anvil #0 (the fund source, ANVIL_FIRST_PRIVATE_KEY in .env), USDC by the verex faucet.",
+          "누가 무엇을 들고 있나 — 오퍼레이터(verex 배포자·MM), 사용자(위임하는 소유자), 에이전트. ETH 는 anvil #0(자금 출처, .env 의 ANVIL_FIRST_PRIVATE_KEY)이 보내고, jUSD 는 verex faucet 이 발행합니다.",
+          "Who holds what — the operator (verex deployer & MM), the user (the owner who grants), and the agent. ETH is sent by anvil #0 (the fund source, ANVIL_FIRST_PRIVATE_KEY in .env), jUSD by the verex faucet.",
         )}
       </p>
       {err && <p className="err" style={{ marginTop: 8 }}>{err}</p>}
@@ -82,7 +82,7 @@ export default function ParticipantsPanel({
                 <th style={{ padding: "4px 16px 4px 0" }}>{t("역할", "role")}</th>
                 <th style={{ padding: "4px 16px 4px 0" }}>{t("주소", "address")}</th>
                 <th style={{ padding: "4px 16px 4px 0" }}>ETH</th>
-                <th style={{ padding: "4px 16px 4px 0" }}>USDC</th>
+                <th style={{ padding: "4px 16px 4px 0" }}>jUSD</th>
                 <th style={{ padding: "4px 0" }} />
               </tr>
             </thead>
@@ -94,13 +94,13 @@ export default function ParticipantsPanel({
                     {r.address ? <Addr a={r.address} /> : r.role === "user" ? t("USER_PRIVATE_KEY 설정 또는 지갑 연결 필요", "set USER_PRIVATE_KEY or connect MetaMask") : "—"}
                   </td>
                   <td style={{ padding: "4px 16px 4px 0" }}>{r.eth === null ? "—" : r.eth.toFixed(4)}</td>
-                  <td style={{ padding: "4px 16px 4px 0" }}>{r.usdc === null ? "—" : r.usdc.toFixed(2)}</td>
+                  <td style={{ padding: "4px 16px 4px 0" }}>{r.jusd === null ? "—" : r.jusd.toFixed(2)}</td>
                   <td style={{ padding: "4px 0", whiteSpace: "nowrap" }}>
                     <button onClick={() => fund(r, "eth")} disabled={!r.address || busy !== null} style={{ marginRight: 6 }}>
                       {busy === `${r.role}:eth` ? "…" : "+1 ETH"}
                     </button>
-                    <button onClick={() => fund(r, "usdc")} disabled={!r.address || busy !== null}>
-                      {busy === `${r.role}:usdc` ? "…" : "+1000 USDC"}
+                    <button onClick={() => fund(r, "jusd")} disabled={!r.address || busy !== null}>
+                      {busy === `${r.role}:jusd` ? "…" : "+1000 jUSD"}
                     </button>
                   </td>
                 </tr>

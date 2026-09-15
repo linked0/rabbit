@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The wallet disappeared into the app — Dev Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f8fafc; --card:#fff; --rail:#f1f5f9; --text:#0f172a; --text2:#475569;
+    --accent:#0ea5e9; --accent-soft:#0ea5e91a; --border:#e2e8f0;
+    /* 상세 페이지 본문용 토큰 (jay, 2026-08-26: "너무 밋밋하고 구조가 없어 읽히지 않는다").
+       표·인라인 코드·인용은 그동안 스타일이 아예 없어서 마크다운이 날것으로 떨어졌다. */
+    --accent-2:#6366f1;              /* 보조 강조 — h3 점, 인용 막대, 언어 라벨 */
+    --hair:#e2e8f099;                /* 표 안쪽 얇은 선 — 바깥 테두리보다 흐리게 */
+    --chip-bg:#0ea5e914; --chip-fg:#0369a1;
+    --table-head:#f1f5f9; --table-zebra:#f8fafcd9;
+    --shadow-sm:0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md:0 10px 30px -18px rgb(15 23 42 / 0.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1220; --card:#111a2b; --rail:#0f1728; --text:#e2e8f0; --text2:#94a3b8;
+      --accent:#38bdf8; --accent-soft:#38bdf826; --border:#1e293b;
+      --accent-2:#818cf8;
+      --hair:#1e293bcc;
+      --chip-bg:#38bdf81f; --chip-fg:#7dd3fc;
+      --table-head:#16223a; --table-zebra:#ffffff08;
+      --shadow-sm:0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-md:0 10px 30px -18px rgb(0 0 0 / 0.8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  /* 본문을 키운다 (jay, 2026-08-12) — 이 페이지는 훑는 목록이 아니라 읽는 문서다.
+     17px/1.75 는 긴 문단을 오래 읽을 때의 기준값이고, 본문 폭도 그에 맞춰 넓혔다. */
+  body { font-family:'Inter',sans-serif; font-size:17px; background:var(--bg); color:var(--text); line-height:1.75; margin:0; }
+  a { color: var(--accent); word-break: break-word; }
+  img { max-width:100%; height:auto; }
+
+  .layout { display:flex; align-items:flex-start; }
+
+  /* ── 좌측 레일: 전체 목록 ── */
+  .rail {
+    flex: 0 0 288px; width:288px; position:sticky; top:0; height:100vh;
+    background:var(--rail); border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+  }
+  .rail-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
+  .rail-title { display:block; font-size:1.1rem; font-weight:700; color:var(--text); text-decoration:none; line-height:1.2; }
+  /* 제목 옆 진척률 (jay, 2026-08-27) — 여섯 구획을 다 합친 done ÷ all. 구획별 숫자는
+     알약이 이미 말하므로, 여기 있는 하나는 "전체가 얼마나 끝났나" 만 말한다. */
+  /* 배지를 제목 아래 줄에 (jay, 2026-09-11) — 숫자가 커져도(95% done · 386/406) 제목 옆에서
+     넘치지 않도록, 제목이 첫 줄을 다 차지하고 배지는 다음 줄로 내려가 내용만큼만 차지한다. */
+  .rail-head { display:flex; flex-wrap:wrap; align-items:baseline; }
+  .rail-head > .rail-title { flex:1 0 100%; }
+  .rail-head > .rail-note { flex:0 0 auto; }
+  .rail-head > .rail-sub, .rail-head > .rail-jump { flex:1 0 100%; }
+  .rail-note {
+    margin-top:6px; padding:1px 7px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; letter-spacing:0.02em;
+    color:var(--accent); background:var(--accent-soft); white-space:nowrap;
+  }
+  /* 페이스 리마인더는 핑크 톤 (jay, 2026-09-11) — % done 배지(파랑)와 구분되는 강조. */
+  /* inline-block 으로만 (jay, 2026-09-11) — 인라인이라 세로 패딩이 안 먹어 낮아 보였다.
+     패딩은 .rail-note 기본값(1px 7px)을 그대로 써서 파란 배지와 높이가 정확히 같아진다. */
+  .rail-note-pink { color:#ec4899; background:rgba(236,72,153,0.14); display:inline-block; }
+  .rail-sub { display:block; margin-top:3px; font-size:0.76rem; color:var(--text2); }
+  /* 섹션 바로가기 (jay, 2026-08-27) — 레일은 항상 보이므로 이 줄이 곧 목차이자 돌아오는 길이다.
+     본문에 "맨 위로" 링크를 따로 두지 않는 이유가 이것. */
+  .rail-jump { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .rail-jump a {
+    padding:2px 9px; border:1px solid var(--border); border-radius:999px;
+    font-size:0.72rem; font-weight:600; color:var(--text2); text-decoration:none;
+    background:var(--card); white-space:nowrap;
+  }
+  .rail-jump a:hover { color:var(--accent); border-color:var(--accent); }
+  .rail-jump a b { font-weight:600; margin-left:4px; }
+  /* planned 를 파랗게 (jay, 2026-08-27) — 남은 일의 크기가 먼저 읽히게 하고, 전체는
+     맥락이라 흐리게 둔다. 순서도 planned/all 이다. */
+  .count-done { color:var(--accent); font-weight:600; }
+  .count-all { opacity:0.5; }
+  .rail-search { padding:14px 16px 8px; }
+  .rail-search input {
+    width:100%; padding:8px 12px; font:inherit; font-size:0.85rem;
+    color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:9px;
+  }
+  .rail-search input:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+  /* Important/All 등급 토글 (jay, 2026-09-08) — 진입 시 기본은 Important. */
+  .rail-tier { display:flex; gap:6px; margin-bottom:8px; }
+  .rail-tier .tier-btn {
+    flex:1 1 auto; padding:6px 10px; font:inherit; font-size:0.78rem; font-weight:600;
+    color:var(--text2); background:var(--card); border:1px solid var(--border);
+    border-radius:8px; cursor:pointer;
+  }
+  .rail-tier .tier-btn:hover { color:var(--text); }
+  .rail-tier .tier-btn.on { color:var(--accent); border-color:var(--accent); background:var(--accent-soft); }
+  .rail-nav { flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 10px 20px; }
+  .nav-group + .nav-group { margin-top:14px; }
+  .nav-group-label {
+    margin:10px 8px 6px; font-size:0.7rem; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text2);
+  }
+  .rail-nav ul { list-style:none; margin:0; padding:0; }
+  .nav-link {
+    display:flex; align-items:flex-start; gap:8px; padding:7px 10px; border-radius:8px;
+    font-size:0.9rem; line-height:1.4; color:var(--text2); text-decoration:none;
+  }
+  .nav-link:hover { background:var(--card); color:var(--text); }
+  .nav-link.active { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  /* 점이 상태를 말하는 유일한 표지라 크게 (jay, 2026-08-12) — 6px 은 색 구분이 어려웠다. */
+  .nav-dot { flex:0 0 auto; width:10px; height:10px; margin-top:6px; border-radius:999px; }
+  .nav-text { min-width:0; flex:1 1 auto; }
+  .rail-foot { padding:12px 16px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--text2); }
+  .no-results { display:none; padding:10px; font-size:0.82rem; color:var(--text2); }
+
+  /* ── 본문 ── */
+  .content { flex:1 1 auto; min-width:0; max-width:960px; margin:0 auto; padding:34px 30px 100px; }
+  /* 상세 페이지를 레일 옆에 둘 때 (jay, 2026-08-27) — .solo 가 이미 자기 여백을 갖고 있으니
+     감싸는 .content 의 여백은 뺀다. width:100% 가 없으면 align-items:flex-start 때문에
+     좁은 화면에서 본문이 가장 넓은 자식(표·코드) 폭으로 부풀어 가로 스크롤이 생긴다. */
+  .content-solo { padding:0; width:100%; }
+  .content-solo > .solo { max-width:900px; }
+  .src { font-family: ui-monospace, monospace; font-size:0.8rem; color:var(--text2); margin-bottom:24px; word-break:break-all; }
+  .group-heading { font-size:0.84rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2); margin:38px 0 16px; scroll-margin-top:20px; }
+  .group-heading:first-child { margin-top:0; }
+  .group-count { font-weight:600; opacity:0.7; }
+  article {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:28px 26px; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06); margin-bottom:24px;
+    scroll-margin-top:20px;
+  }
+  article h1 { margin-top:0; font-size:1.55rem; line-height:1.3; }
+  article h2 { font-size:1.15rem; line-height:1.3; margin:22px 0 8px; }
+  p { margin:10px 0; word-wrap:break-word; }
+  .lead { font-size:1.05rem; color:var(--text2); font-style:italic; }
+  .meta { font-size:0.92rem; color:var(--text2); }
+  .lead strong, .meta strong { color:var(--text); }
+  .badge { font-size:0.62em; font-weight:700; padding:2px 8px; border-radius:999px; vertical-align:middle; letter-spacing:0.04em; }
+
+  /* 항목별 "관련 코드" 스니펫 (jay, 2026-08-13 요청 — docs/code/ 에서 그대로 읽어 온다). */
+  pre {
+    background:#0f172a; color:#e2e8f0; border-radius:8px; padding:14px 16px;
+    font-family: ui-monospace, monospace; font-size:0.82rem; line-height:1.55;
+    overflow-x:auto; white-space:pre; margin:10px 0;
+  }
+  .code-link { font-family: ui-monospace, monospace; font-size:0.82rem; }
+
+  /* 커리큘럼 항목 목록 (algorithms.html·math.html) — PoCs 카드 article 과 같은 모양:
+     번호·제목·상태 한 줄 + 요약 + 상세 페이지 링크 (jay, 2026-08-13). */
+  .topics { list-style:none; margin:0; padding:0; }
+  .topics li { padding:14px 0; border-top:1px solid var(--border); scroll-margin-top:20px; }
+  .topics li:first-child { border-top:0; }
+  /* Logs 목록은 항목 사이 구분선이 없는 편이 낫고, 줄 간격도 더 좁아야 한다 (jay, 2026-08-13). */
+  .topics.no-divider li { border-top:0; padding:6px 0; }
+  .topics.no-divider .meta { margin:2px 0 0; }
+  .topics.no-divider .topic-brief { margin:3px 0 0; }
+  .topics.no-divider .topic-brief li { margin:0; padding:1px 0; }
+  .topics.no-divider .topic-link { margin:3px 0 0; }
+  .topic-head { display:flex; gap:10px; align-items:baseline; }
+  .topic-no { flex:0 0 auto; min-width:2.4em; font-variant-numeric:tabular-nums; font-size:0.86rem; color:var(--text2); }
+  /* 레일·제목 안에 인라인으로 들어가는 번호 (pocs.html) — flex 자식이 아니라 글 흐름 위에 놓인다. */
+  .nav-text .topic-no, article h1 .topic-no { display:inline-block; min-width:1.9em; padding-right:.4em; } /* 3자리 번호가 제목에 붙던 것(146The…) — 고정 간격 (2026-09-08) */
+  article h1 .topic-no { font-size:0.72em; }
+  .topic-title { flex:1 1 auto; min-width:0; font-weight:600; }
+  /* 출처 태그 칩 — Fundamentals(Economics·Algorithms·Math) 항목이 어디서 왔는지 (jay, 2026-09-11). */
+  .topic-tag { flex:0 0 auto; font-size:0.64rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase;
+    padding:1px 6px; border-radius:999px; color:var(--text2); background:var(--accent-soft); white-space:nowrap; }
+  .nav-text .topic-tag { font-size:0.6rem; padding:0 5px; margin-right:.35em; vertical-align:middle; }
+  .topic-done { flex:0 0 auto; }
+  .topic-summary { margin:4px 0 0; color:var(--text2); font-size:0.94rem; }
+  /* 로그 항목의 그날 작업 목록 — 한 줄로 이어붙이면 읽기 어려워 각자 줄로 둔다 (jay, 2026-08-13). */
+  .topic-brief { margin:6px 0 0; padding-left:18px; color:var(--text2); font-size:0.9rem; }
+  .topic-brief li { margin:2px 0; }
+  /* How / Why 요약 (jay, 2026-08-27: "make it a little more stylish and neat").
+     전에는 굵은 라벨이 문장 안에 섞여 어디서 끝나는지 안 보였다. 라벨을 대문자 마이크로
+     라벨로 빼서 자기 줄에 세우고, 두 블록을 얇은 세로선 하나로 묶어 카드 요약이 설명문과
+     구분되게 한다. Why 는 판단이라 강조색, How 는 사실이라 중립색. */
+  .topic-how, .topic-why {
+    margin:8px 0 0; padding:2px 0 2px 12px;
+    border-left:2px solid var(--line);
+    color:var(--text2); font-size:0.9rem; line-height:1.6;
+  }
+  .topic-why { border-left-color:var(--accent-2, var(--accent)); }
+  .topic-how > strong:first-child, .topic-why > strong:first-child {
+    display:block; margin-bottom:1px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text3, var(--text2)); font-style:normal;
+  }
+  .topic-why > strong:first-child { color:var(--accent-2, var(--accent)); }
+  .topic-how strong, .topic-why strong { color:var(--text); }
+  .topic-why em { font-style:normal; }
+  .topic-link { margin:6px 0 0; font-size:0.88rem; }
+
+  /* ══ 항목 상세 페이지 (docs/topics/*.html) — 레일 없이 읽는 한 편 ══════════
+     2026-08-26 전면 손질 (jay: "상세 페이지가 반응형이 아니고, 스타일이 밋밋하며
+     구조가 없어 읽기 어렵다"). 고친 것 넷:
+       1) 표에 CSS 가 아예 없었다 — 카드 본문은 표가 핵심 자료인데 날것으로 떨어졌다.
+          이제 감싼 상자 안에서 가로 스크롤하므로, 좁은 화면에서 표가 짜부라지지도
+          페이지 전체를 옆으로 밀지도 않는다.
+       2) h2·h3 에 시각적 위계가 없어 한 덩어리로 읽혔다 — 색 막대와 점을 붙였다.
+       3) 인라인 코드·인용·목록에 스타일이 없었다.
+       4) 폭·여백이 고정값이라 모바일에서 답답했다 — clamp() 로 화면 폭을 따라간다. */
+  .solo {
+    max-width:860px; margin:0 auto;
+    padding: clamp(18px, 3.5vw, 36px) clamp(14px, 4vw, 28px) clamp(64px, 9vw, 96px);
+  }
+  .crumb { font-size:0.85rem; color:var(--text2); margin-bottom:18px; line-height:1.6; }
+
+  /* 표제부 — 번호·상태·제목·요약을 한 상자에 모은다. 예전에는 h1 이 본문 문단 사이에
+     그냥 얹혀 있어서 "어디부터가 이 글인지"가 보이지 않았다. */
+  .topic-hero {
+    margin-bottom:24px; padding: clamp(20px, 3.4vw, 32px) clamp(18px, 3.2vw, 30px);
+    border:1px solid var(--border); border-radius:18px;
+    background: radial-gradient(130% 150% at 0% 0%, var(--accent-soft), transparent 62%), var(--card);
+    box-shadow: var(--shadow-md);
+  }
+  .topic-kicker {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 12px;
+    font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text2);
+  }
+  .topic-kicker .topic-no { min-width:0; font-size:0.72rem; color:var(--accent); }
+  .topic-hero h1 {
+    margin:0; font-size: clamp(1.4rem, 1.05rem + 1.5vw, 2rem);
+    line-height:1.25; letter-spacing:-0.02em;
+  }
+  .topic-hero .lead { margin:12px 0 0; font-style:normal; font-size: clamp(1rem, 0.96rem + 0.3vw, 1.08rem); }
+  .topic-hero .meta { margin:10px 0 0; }
+
+  /* 언어 전환 — 이중언어 페이지에서 위아래로 스크롤해 찾지 않게 한다. */
+  .lang-switch { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 0; }
+  .lang-switch a {
+    padding:6px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); font-size:0.8rem; font-weight:600; text-decoration:none;
+  }
+  .lang-switch a:hover { border-color:var(--accent); color:var(--accent); }
+  /* 지금 보고 있는 언어 (jay, 2026-08-26) — 두 덩어리 각각의 머리에도 같은 전환을 둔다.
+     한국어 본문에서 영어로 돌아갈 길이 hero 까지 올라가는 것뿐이었다. */
+  .lang-switch a.on { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  .solo article .lang-switch { margin:0 0 6px; }
+  .solo article .copy-row { margin:0 0 16px; }
+
+  /* 본문 통째로 복사 (jay, 2026-08-28) — 렌더된 글이 아니라 원본 마크다운을 넘긴다.
+     읽으려고 만든 페이지에서 가져간 글을 다른 곳에 붙일 때 서식이 살아 있어야 한다.
+     모양은 .lang-switch 알약과 같게 — 바로 위에 붙어 한 벌로 읽히게. */
+  .copy-row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+  .copy-btn {
+    font:inherit; font-size:0.8rem; font-weight:600; padding:6px 14px;
+    border-radius:999px; border:1px solid var(--border);
+    background:var(--card); color:var(--text2); cursor:pointer;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .copy-btn.ok { background:var(--accent-soft); border-color:transparent; color:var(--accent); }
+  /* 목록 행 안에서는 링크들과 한 줄에 서야 하므로 더 작고 납작하게 (jay, 2026-08-28). */
+  .copy-inline { font-size:0.72rem; padding:2px 9px; margin-left:6px; vertical-align:baseline; }
+
+  .solo article { padding: clamp(20px, 3.2vw, 32px) clamp(18px, 3vw, 30px); border-radius:16px; }
+  .solo article > :first-child { margin-top:0; }
+  .solo article h1 {
+    font-size: clamp(1.3rem, 1.05rem + 1.1vw, 1.7rem); letter-spacing:-0.02em;
+    margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  /* h2 = 카드 데이터의 고정 절 제목(Why / How it works). 색 막대로 절의 시작을 표시한다. */
+  .solo article h2 {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem); line-height:1.35;
+    margin:34px 0 10px; padding:2px 0 2px 13px; border-left:4px solid var(--accent);
+  }
+  .solo article .lang-label + h2, .solo article .lang-switch + h2 { margin-top:14px; }
+  /* h3 = 본문 안에서 필자가 직접 쓴 소제목(### ...). h2 와 구분되게 점으로. */
+  .solo article h3 {
+    font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.08rem); line-height:1.4;
+    margin:28px 0 8px; padding-left:16px; position:relative;
+  }
+  .solo article h3::before {
+    content:""; position:absolute; left:0; top:0.62em;
+    width:7px; height:7px; border-radius:999px; background:var(--accent-2);
+  }
+  .solo article h4 { font-size:0.98rem; margin:20px 0 6px; color:var(--text2); }
+  .solo article p { margin:12px 0; overflow-wrap:anywhere; }
+  .solo article ul, .solo article ol { margin:12px 0; padding-left:24px; }
+  .solo article li { margin:6px 0; }
+  .solo article li::marker { color:var(--accent); }
+  .solo article hr { border:0; border-top:1px solid var(--border); margin:26px 0; }
+  .solo blockquote {
+    margin:16px 0; padding:12px 18px; color:var(--text2);
+    border-left:3px solid var(--accent-2); background:var(--accent-soft); border-radius:0 12px 12px 0;
+  }
+  .solo blockquote > :first-child { margin-top:0; }
+  .solo blockquote > :last-child { margin-bottom:0; }
+  .solo code {
+    font-family: ui-monospace, monospace; font-size:0.88em;
+    background:var(--chip-bg); color:var(--chip-fg); padding:1px 6px; border-radius:6px;
+    word-break:break-word;
+  }
+  .solo pre code { background:none; color:inherit; padding:0; font-size:1em; }
+
+  /* 표 — 카드 본문에서 가장 정보 밀도가 높은 자리인데 스타일이 하나도 없었다.
+     감싼 상자만 가로로 스크롤하므로 페이지 본문은 절대 옆으로 밀리지 않는다. */
+  .table-wrap {
+    margin:18px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-sm);
+  }
+  .table-wrap table { width:100%; min-width:520px; border-collapse:collapse; }
+  .solo table { font-size:0.9rem; line-height:1.6; }
+  .solo th {
+    text-align:left; padding:11px 14px; background:var(--table-head); color:var(--text2);
+    font-size:0.74rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .solo td { padding:12px 14px; border-top:1px solid var(--hair); vertical-align:top; }
+  .solo tbody tr:nth-child(even) { background:var(--table-zebra); }
+  .solo td:first-child { color:var(--text); }
+  /* 표 알고리즘이 첫 열을 너무 좁게 잡아 날짜가 하이픈에서 끊겼다 — 하한만 준다. */
+  .solo th:first-child, .solo td:first-child { min-width:8.5em; }
+  /* 감싸지 못한 표가 남아 있어도 페이지를 넘치게 하지는 않도록 (커리큘럼 생성기 등) */
+  .solo article > table { display:block; max-width:100%; overflow-x:auto; }
+
+  .pager { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; font-size:0.9rem; }
+  .pager a, .pager span { flex:1 1 240px; min-width:0; }
+  .pager a {
+    display:block; padding:14px 16px; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600; text-decoration:none;
+    box-shadow:var(--shadow-sm);
+  }
+  .pager a:hover { border-color:var(--accent); color:var(--accent); }
+  .pager a:last-child { text-align:right; }
+  .stub { border-left:4px solid var(--accent); background:var(--card); border-radius:0 12px 12px 0; padding:14px 18px; }
+
+  /* 상세 페이지 이중언어 — 영어가 먼저, 한국어가 뒤 (jay, 2026-08-13). */
+  .lang-divider { border:0; border-top:1px dashed var(--border); margin:30px 0; }
+  .lang-label {
+    display:inline-block; margin:0 0 14px; padding:3px 11px; border-radius:999px;
+    background:var(--accent-soft); color:var(--accent);
+    font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  }
+
+  /* 좁은 화면: 레일이 위로 접히고 자기 높이만큼만 차지한다 (100vh 레일이 화면을 다 먹지 않게) */
+  @media (max-width: 900px) {
+    .layout { flex-direction:column; align-items:stretch; }
+    .content, .content-solo { width:100%; max-width:100%; }
+    .content-solo > .solo { max-width:100%; }
+    .rail { position:static; width:100%; flex:none; height:auto; max-height:none; border-right:0; border-bottom:1px solid var(--border); }
+    .rail-nav { max-height:320px; }
+    .content { padding:24px 18px 70px; }
+  }
+  /* 휴대폰 — 본문 글자를 한 단계 줄이고, 앞뒤 이동은 한 줄에 하나씩 (jay, 2026-08-26). */
+  @media (max-width: 640px) {
+    body { font-size:16px; }
+    .topic-hero { border-radius:14px; }
+    .solo article { border-radius:14px; }
+    .pager a, .pager span { flex-basis:100%; }
+    .pager a:last-child { text-align:left; }
+    /* 이 폭에서는 표가 반드시 가로로 잘리므로, 더 있다는 것을 오른쪽 그림자로 알린다. */
+    .table-wrap { box-shadow: var(--shadow-sm), inset -16px 0 14px -14px rgb(15 23 42 / 0.3); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="rail">
+    <div class="rail-head">
+      <a class="rail-title" href="../index.html">Rabbit</a><span class="rail-note">14% done &middot; 58/409</span>
+      <span class="rail-sub"><span class="rail-note rail-note-pink">2%/day &rarr; 95% done</span></span>
+      <div class="rail-jump" id="rail-jump"></div>
+    </div>
+    <div class="rail-search">
+      
+      <input id="filter" type="search" placeholder="Filter section" aria-label="Filter section" autocomplete="off">
+    </div>
+    <nav class="rail-nav" id="nav">
+
+      <p class="no-results" id="no-results">No match.</p>
+    </nav>
+    <div class="rail-foot"><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a></div>
+  </aside>
+  <main class="content content-solo">
+  <div class="solo">
+    <p class="crumb"><a href="../index.html">Workspace Index</a> &rsaquo; <a href="../notes.html">Dev Notes</a> &rsaquo; The wallet disappeared into the app</p>
+  <header class="topic-hero">
+      <p class="topic-kicker"><span class="topic-no">#27</span><span>PoC</span></p>
+      <h1>The wallet disappeared into the app</h1>
+      <p class="lead">Embedded wallets and passkeys remove the seed phrase from onboarding, but the trust question moves into recovery, export, app signers, and transaction policies.</p>
+      <p class="meta">Build one login-to-first-transaction flow with an embedded wallet provider (e.g. Privy), then run the four failure paths — new device, lost authentication factor, key export, scoped app signer — and fill in the authority matrix before comparing click counts.</p>
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko">한국어</a></nav>
+    </header>
+    <article id="en">
+      <nav class="lang-switch" aria-label="Language"><a href="#en" class="on">English</a><a href="#ko">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-en" data-done="Copied &#10003;">Copy English</button></p>
+      <script type="application/json" id="copy-en">"# The wallet disappeared into the app\n\nEmbedded wallets and passkeys remove the seed phrase from onboarding, but the trust question moves into recovery, export, app signers, and transaction policies.\n\nBuild one login-to-first-transaction flow with an embedded wallet provider (e.g. Privy), then run the four failure paths — new device, lost authentication factor, key export, scoped app signer — and fill in the authority matrix before comparing click counts.\n\n## Why\n\nThe trend is not \"wallets became easy.\" Wallet responsibilities moved into the application. The PoC measures whether the user has an exit and whether the app can act beyond what the UI implies.\n\nEmbedded wallets and passkeys remove the seed phrase from onboarding. They do not remove custody and authorization questions; those questions move into recovery, export, additional signers, and policies controlled through the application stack.\n\n## How it works\n\nBuild one login-to-first-transaction flow with an embedded wallet, then test device loss, key export, MFA recovery, and a scoped app signer. Draw the authority matrix before judging the UX.\n\n### PoC\n\nBuild login-to-first-transaction with an embedded wallet. Then test four paths: a new device, lost authentication factor, key export, and a scoped application signer. Produce the authority matrix before comparing click counts.\n\n| Actor | Can sign? | Can recover? | Can export? |\n| --- | --- | --- | --- |\n| User | Under configured authentication | Test explicitly | Verify the escape hatch |\n| Application signer | Only within policy — or the policy is cosmetic | No | No |\n| Provider | Depends on custody and key architecture | Document the exact role | Document the exact role |\n\nReference: [Privy embedded-wallet overview](https://docs.privy.io/wallets/overview/embedded).\n\n## Notes — background for the PoC (2026-09-02)\n\n### What an embedded wallet is\n\nA conventional wallet (MetaMask) is *external*: a separate app or extension the user installs, holding a seed phrase, that websites connect to. An **embedded wallet** lives inside the application. Logging in with email, Google, or a passkey silently provisions a real on-chain wallet — no extension, no seed-phrase ceremony, no visible \"wallet\" concept at all. The wallet becomes an implementation detail instead of a prerequisite, which is why this is now the default onboarding pattern for consumer crypto apps.\n\nThe technical trick is that no single place ever holds the whole private key: either **MPC** (the key never exists in one piece; parties co-sign) or **Shamir key sharding** (split into shares, reassembled briefly at signing time), with signing inside an isolated environment — a sandboxed iframe on the client, or a TEE on a server.\n\n### Privy specifically\n\n- **Shamir 3-share model** — a *device share* (browser/app storage), an *auth share* (held by Privy, released after login), and a *recovery share*. Any two reconstruct the key briefly inside an isolated iframe; Privy's servers never see the full key.\n- **Recovery** — the recovery share sits with Privy (default \"automatic\" mode) or is user-controlled (password-encrypted, or in iCloud/Google Drive). This choice *is* the custody decision — it is the answer to the lost-auth-factor path.\n- **Export** — users can export the full private key through a Privy-hosted flow; the app configures whether this is exposed.\n- **Server wallets & session signers** — TEE-based server-side wallets plus scoped signers with a policy engine (\"this signer may only call this contract, up to this amount\"). That is the fourth path.\n- **Context** — Stripe acquired Privy in June 2025 (paired with its stablecoin acquisition, Bridge): embedded wallets are becoming mainstream payments plumbing. Farcaster and Hyperliquid ship on it. Competitors — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — differ exactly along the authority-matrix dimensions: who holds which share, how recovery works, who can change policy.\n\n### What each of the four paths measures\n\n1. **New device** — a fresh device has no device share, so login requires Privy's servers to participate. The uncomfortable question: if Privy is down or deplatforms you, can you sign at all? Expected answer: not without a prior export. Privy holds an *availability veto* — it cannot take the assets, but it can block access.\n2. **Lost authentication factor** — recovery is where the real custodian reveals itself: whoever can approve recovery can, in effect, take the wallet. If recovery is \"email a support team,\" the custody story is weaker than the marketing.\n3. **Key export** — the exit door, and the strongest evidence for the self-custody claim. Test more than existence: the friction, whether the app developer can disable it, and whether the exported key is complete (it should reconstruct the same address in a vanilla wallet).\n4. **Scoped app signer** — the delegation boundary: what can the app do without the user, and who can widen that scope later? A policy the developer can rotate silently is a different object from one the user must re-approve.\n\n### The matrix before click counts\n\nClick counts measure onboarding friction; the matrix measures the trust model. Comparing UX first is how \"2 clicks to a wallet\" hides that several parties can act on the funds. Expanded matrix — rows are actions, columns are actors; fill each cell as *alone / needs cooperation / cannot*, from observation, not docs. Expected values to verify:\n\n| Action | User | Privy | App developer |\n| --- | --- | --- | --- |\n| Sign a transaction | Alone, after login | Cooperation — releases the auth share | Within signer policy only |\n| Export the key | Alone, if exposed | Cooperation — hosts the flow | Can gate exposure — verify |\n| Approve recovery | Depends on recovery mode | Default holder of the recovery share | Chooses the recovery mode |\n| Add / scope a signer | Consent per config — verify | Executes policy | Initiates |\n| Change policy | Re-approval? — verify | Enforces | Often alone — verify |\n| Block access (availability) | — | Auth-share veto | Can remove the UI |\n\nThe most interesting cells are usually \"approve recovery\" and \"change policy\" — that is where authority quietly concentrates in the app stack. Prediction to test: the app developer holds more authority than users assume, and Privy holds the availability veto. Neither appears in a click-count comparison.\n\n### The developer is the auditor\n\nThe end user never sees any of this — that is the point of embedded wallets, and the risk. Whatever the integrator configures becomes the custody reality users silently inherit. And the answers are configuration choices, not fixed properties: \"Privy is non-custodial\" is a marketing sentence, and two apps on the same Privy SDK can have genuinely different custody models. Run the four paths by hand because docs describe the design; the paths reveal deployed behavior — unnoticed defaults, failing flows, support-team backdoors. That is also why the matrix comes first: it forces \"who can do what\" onto paper as observed facts before any UX judgment.\n"</script>
+      <h2>Why</h2>
+      <p>The trend is not &quot;wallets became easy.&quot; Wallet responsibilities moved into the application. The PoC measures whether the user has an exit and whether the app can act beyond what the UI implies.</p>
+<p>Embedded wallets and passkeys remove the seed phrase from onboarding. They do not remove custody and authorization questions; those questions move into recovery, export, additional signers, and policies controlled through the application stack.</p>
+      <h2>How it works</h2>
+      <p>Build one login-to-first-transaction flow with an embedded wallet, then test device loss, key export, MFA recovery, and a scoped app signer. Draw the authority matrix before judging the UX.</p>
+<h3>PoC</h3>
+<p>Build login-to-first-transaction with an embedded wallet. Then test four paths: a new device, lost authentication factor, key export, and a scoped application signer. Produce the authority matrix before comparing click counts.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Actor</th>
+<th>Can sign?</th>
+<th>Can recover?</th>
+<th>Can export?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>User</td>
+<td>Under configured authentication</td>
+<td>Test explicitly</td>
+<td>Verify the escape hatch</td>
+</tr>
+<tr>
+<td>Application signer</td>
+<td>Only within policy — or the policy is cosmetic</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Provider</td>
+<td>Depends on custody and key architecture</td>
+<td>Document the exact role</td>
+<td>Document the exact role</td>
+</tr>
+</tbody></table></div>
+<p>Reference: <a href="https://docs.privy.io/wallets/overview/embedded">Privy embedded-wallet overview</a>.</p>
+<h2>Notes — background for the PoC (2026-09-02)</h2>
+<h3>What an embedded wallet is</h3>
+<p>A conventional wallet (MetaMask) is <em>external</em>: a separate app or extension the user installs, holding a seed phrase, that websites connect to. An <strong>embedded wallet</strong> lives inside the application. Logging in with email, Google, or a passkey silently provisions a real on-chain wallet — no extension, no seed-phrase ceremony, no visible &quot;wallet&quot; concept at all. The wallet becomes an implementation detail instead of a prerequisite, which is why this is now the default onboarding pattern for consumer crypto apps.</p>
+<p>The technical trick is that no single place ever holds the whole private key: either <strong>MPC</strong> (the key never exists in one piece; parties co-sign) or <strong>Shamir key sharding</strong> (split into shares, reassembled briefly at signing time), with signing inside an isolated environment — a sandboxed iframe on the client, or a TEE on a server.</p>
+<h3>Privy specifically</h3>
+<ul>
+<li><strong>Shamir 3-share model</strong> — a <em>device share</em> (browser/app storage), an <em>auth share</em> (held by Privy, released after login), and a <em>recovery share</em>. Any two reconstruct the key briefly inside an isolated iframe; Privy&#39;s servers never see the full key.</li>
+<li><strong>Recovery</strong> — the recovery share sits with Privy (default &quot;automatic&quot; mode) or is user-controlled (password-encrypted, or in iCloud/Google Drive). This choice <em>is</em> the custody decision — it is the answer to the lost-auth-factor path.</li>
+<li><strong>Export</strong> — users can export the full private key through a Privy-hosted flow; the app configures whether this is exposed.</li>
+<li><strong>Server wallets &amp; session signers</strong> — TEE-based server-side wallets plus scoped signers with a policy engine (&quot;this signer may only call this contract, up to this amount&quot;). That is the fourth path.</li>
+<li><strong>Context</strong> — Stripe acquired Privy in June 2025 (paired with its stablecoin acquisition, Bridge): embedded wallets are becoming mainstream payments plumbing. Farcaster and Hyperliquid ship on it. Competitors — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — differ exactly along the authority-matrix dimensions: who holds which share, how recovery works, who can change policy.</li>
+</ul>
+<h3>What each of the four paths measures</h3>
+<ol>
+<li><strong>New device</strong> — a fresh device has no device share, so login requires Privy&#39;s servers to participate. The uncomfortable question: if Privy is down or deplatforms you, can you sign at all? Expected answer: not without a prior export. Privy holds an <em>availability veto</em> — it cannot take the assets, but it can block access.</li>
+<li><strong>Lost authentication factor</strong> — recovery is where the real custodian reveals itself: whoever can approve recovery can, in effect, take the wallet. If recovery is &quot;email a support team,&quot; the custody story is weaker than the marketing.</li>
+<li><strong>Key export</strong> — the exit door, and the strongest evidence for the self-custody claim. Test more than existence: the friction, whether the app developer can disable it, and whether the exported key is complete (it should reconstruct the same address in a vanilla wallet).</li>
+<li><strong>Scoped app signer</strong> — the delegation boundary: what can the app do without the user, and who can widen that scope later? A policy the developer can rotate silently is a different object from one the user must re-approve.</li>
+</ol>
+<h3>The matrix before click counts</h3>
+<p>Click counts measure onboarding friction; the matrix measures the trust model. Comparing UX first is how &quot;2 clicks to a wallet&quot; hides that several parties can act on the funds. Expanded matrix — rows are actions, columns are actors; fill each cell as <em>alone / needs cooperation / cannot</em>, from observation, not docs. Expected values to verify:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Action</th>
+<th>User</th>
+<th>Privy</th>
+<th>App developer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sign a transaction</td>
+<td>Alone, after login</td>
+<td>Cooperation — releases the auth share</td>
+<td>Within signer policy only</td>
+</tr>
+<tr>
+<td>Export the key</td>
+<td>Alone, if exposed</td>
+<td>Cooperation — hosts the flow</td>
+<td>Can gate exposure — verify</td>
+</tr>
+<tr>
+<td>Approve recovery</td>
+<td>Depends on recovery mode</td>
+<td>Default holder of the recovery share</td>
+<td>Chooses the recovery mode</td>
+</tr>
+<tr>
+<td>Add / scope a signer</td>
+<td>Consent per config — verify</td>
+<td>Executes policy</td>
+<td>Initiates</td>
+</tr>
+<tr>
+<td>Change policy</td>
+<td>Re-approval? — verify</td>
+<td>Enforces</td>
+<td>Often alone — verify</td>
+</tr>
+<tr>
+<td>Block access (availability)</td>
+<td>—</td>
+<td>Auth-share veto</td>
+<td>Can remove the UI</td>
+</tr>
+</tbody></table></div>
+<p>The most interesting cells are usually &quot;approve recovery&quot; and &quot;change policy&quot; — that is where authority quietly concentrates in the app stack. Prediction to test: the app developer holds more authority than users assume, and Privy holds the availability veto. Neither appears in a click-count comparison.</p>
+<h3>The developer is the auditor</h3>
+<p>The end user never sees any of this — that is the point of embedded wallets, and the risk. Whatever the integrator configures becomes the custody reality users silently inherit. And the answers are configuration choices, not fixed properties: &quot;Privy is non-custodial&quot; is a marketing sentence, and two apps on the same Privy SDK can have genuinely different custody models. Run the four paths by hand because docs describe the design; the paths reveal deployed behavior — unnoticed defaults, failing flows, support-team backdoors. That is also why the matrix comes first: it forces &quot;who can do what&quot; onto paper as observed facts before any UX judgment.</p>
+      
+      <p><a href="../notes.html">&larr; All Dev Notes</a> &middot; <a href="../index.html">Workspace Index</a> &middot; <a href="#top">Top &uarr;</a></p>
+    </article>
+    <article id="ko" lang="ko">
+      <nav class="lang-switch" aria-label="Language"><a href="#en">English</a><a href="#ko" class="on">한국어</a></nav>
+      <p class="copy-row"><button type="button" class="copy-btn" data-copy="copy-ko" data-done="복사됨 &#10003;">Copy 한국어</button></p>
+      <script type="application/json" id="copy-ko">"# 지갑이 앱 속으로 사라졌다\n\n임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없애지만, 신뢰 문제는 복구·내보내기·앱 서명자·트랜잭션 정책으로 옮겨 갑니다.\n\n임베디드 지갑 제공자(예: Privy)로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 네 가지 경로 — 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자 — 를 실행합니다. 클릭 수를 비교하기 전에 권한표부터 채웁니다.\n\n## 왜\n\n이 흐름의 본질은 \"지갑이 쉬워졌다\"가 아닙니다. 지갑의 책임이 애플리케이션 안으로 옮겨 간 것입니다. 이 PoC 는 사용자에게 출구가 있는지, 그리고 앱이 UI 가 암시하는 것 이상으로 행동할 수 있는지를 측정합니다.\n\n임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없앱니다. 하지만 수탁과 인가의 문제를 없애지는 않습니다 — 그 문제들은 복구, 내보내기, 추가 서명자, 애플리케이션 스택으로 제어되는 정책 속으로 옮겨 갑니다.\n\n## 동작 방식\n\n임베디드 지갑으로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 기기 분실, 키 내보내기, MFA 복구, 범위가 제한된 앱 서명자를 시험합니다. UX 를 평가하기 전에 권한표부터 그립니다.\n\n### PoC\n\n임베디드 지갑으로 로그인→첫 트랜잭션을 만듭니다. 그다음 네 경로를 시험합니다: 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자. 클릭 수를 비교하기 전에 권한표를 만듭니다.\n\n| 행위자 | 서명 가능? | 복구 가능? | 내보내기 가능? |\n| --- | --- | --- | --- |\n| 사용자 | 설정된 인증 아래에서 | 명시적으로 시험할 것 | 탈출구가 실재하는지 확인할 것 |\n| 앱 서명자 | 정책 안에서만 — 아니면 그 정책은 장식 | 불가 | 불가 |\n| 제공자 | 수탁·키 구조에 따라 다름 | 정확한 역할을 문서화할 것 | 정확한 역할을 문서화할 것 |\n\n참고: [Privy 임베디드 지갑 개요](https://docs.privy.io/wallets/overview/embedded).\n\n## 노트 — PoC 를 위한 배경 (2026-09-02)\n\n### 임베디드 지갑이란\n\nMetaMask 같은 일반 지갑은 *외부형*입니다: 사용자가 따로 설치하는 앱/확장 프로그램이 시드 문구를 보관하고, 웹사이트가 거기에 연결합니다. **임베디드 지갑**은 애플리케이션 안에 삽입됩니다. 이메일·구글·패스키로 로그인하면 앱이 백그라운드에서 실제 온체인 지갑을 조용히 만들어 줍니다 — 확장 프로그램도, 시드 문구 의식도, 눈에 보이는 \"지갑\" 개념 자체도 없습니다. 지갑이 전제조건이 아니라 구현 세부사항이 되고, 그래서 지금 소비자용 크립토 앱의 기본 온보딩 패턴이 됐습니다.\n\n기술적 핵심은 개인키 전체를 한 곳에 두지 않는 것: **MPC**(키가 한 조각으로 존재한 적 없이 여러 당사자가 공동 서명) 또는 **Shamir 키 분할**(조각으로 나눠 서명 순간에만 잠깐 재조합). 서명은 격리된 환경 — 클라이언트의 샌드박스 iframe 이나 서버의 TEE — 에서 일어납니다.\n\n### Privy 는 구체적으로\n\n- **Shamir 3조각 모델** — *기기 조각*(브라우저/앱 저장소), *인증 조각*(Privy 보관, 로그인 후 제공), *복구 조각*. 셋 중 둘만 있으면 격리된 iframe 안에서 키가 잠깐 재조합되고, Privy 서버는 전체 키를 본 적이 없습니다.\n- **복구** — 복구 조각을 Privy 가 보관(기본 \"자동\" 모드)하거나 사용자가 통제(비밀번호 암호화, iCloud/Google Drive)합니다. 이 선택이 *곧* 수탁 결정 — 인증수단 분실 경로의 답이 여기 있습니다.\n- **내보내기** — Privy 가 호스팅하는 절차로 전체 개인키를 내보낼 수 있고, 이 기능의 노출 여부는 앱이 설정합니다.\n- **서버 지갑과 세션 서명자** — TEE 기반 서버 지갑, 그리고 정책 엔진이 붙은 범위 제한 서명자(\"이 서명자는 이 컨트랙트만, 이 금액까지만\"). 네 번째 경로가 이것입니다.\n- **맥락** — 2025년 6월 Stripe 가 Privy 를 인수했습니다(스테이블코인 회사 Bridge 인수와 짝): 임베디드 지갑이 주류 결제 인프라가 되고 있다는 신호. Farcaster, Hyperliquid 가 사용 중입니다. 경쟁사 — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — 의 차이가 정확히 권한표의 차원들입니다: 누가 어떤 조각을 쥐고, 복구가 어떻게 되고, 정책을 누가 바꾸는가.\n\n### 네 경로가 각각 측정하는 것\n\n1. **새 기기** — 새 기기에는 기기 조각이 없으므로 로그인에 Privy 서버의 참여가 필수입니다. 불편한 질문: Privy 가 다운되거나 나를 차단하면 서명이 가능한가? 예상 답: 사전에 내보내기를 하지 않았다면 불가능. Privy 는 *가용성 거부권*을 쥡니다 — 자산을 뺏을 수는 없지만 접근을 막을 수는 있습니다.\n2. **인증수단 분실** — 복구야말로 진짜 수탁자가 드러나는 지점: 복구를 승인할 수 있는 자가 사실상 지갑을 가져갈 수 있습니다. 복구가 \"지원팀에 이메일\" 수준이라면 수탁 스토리는 마케팅보다 약한 겁니다.\n3. **키 내보내기** — 비상구이자 셀프 커스터디 주장의 가장 강력한 증거. 존재 여부만이 아니라 마찰의 정도, 앱 개발자가 비활성화할 수 있는지, 내보낸 키가 완전한지(일반 지갑에서 같은 주소가 복원되는지)까지 시험합니다.\n4. **범위 제한 앱 서명자** — 위임의 경계: 앱이 사용자 없이 무엇을 할 수 있고, 그 범위를 누가 나중에 넓힐 수 있는가? 개발자가 조용히 바꿀 수 있는 정책과 사용자가 재승인해야 하는 정책은 전혀 다른 물건입니다.\n\n### 클릭 수보다 권한표가 먼저인 이유\n\n클릭 수는 온보딩 마찰을 재고, 권한표는 신뢰 모델을 잽니다. UX 부터 비교하면 \"2클릭이면 지갑 생성\"이 여러 당사자가 자금에 손댈 수 있다는 사실을 가립니다. 확장된 권한표 — 행은 행위, 열은 주체, 각 칸은 *단독 가능 / 협조 필요 / 불가* 를 문서가 아니라 관찰로 채웁니다. 검증할 예상값:\n\n| 행위 | 사용자 | Privy | 앱 개발자 |\n| --- | --- | --- | --- |\n| 트랜잭션 서명 | 로그인 후 단독 | 협조 — 인증 조각 제공 | 서명자 정책 안에서만 |\n| 키 내보내기 | 노출돼 있다면 단독 | 협조 — 절차 호스팅 | 노출 차단 가능 — 검증 |\n| 복구 승인 | 복구 모드에 따라 다름 | 복구 조각의 기본 보관자 | 복구 모드를 선택 |\n| 서명자 추가/범위 지정 | 설정에 따른 동의 — 검증 | 정책 실행 | 주도 |\n| 정책 변경 | 재승인 필요? — 검증 | 집행 | 단독인 경우 많음 — 검증 |\n| 접근 차단 (가용성) | — | 인증 조각 거부권 | UI 제거 가능 |\n\n가장 흥미로운 칸은 보통 \"복구 승인\"과 \"정책 변경\" — 권한이 앱 스택 쪽으로 조용히 집중되는 지점입니다. 시험할 예측: 앱 개발자는 사용자 생각보다 많은 권한을 쥐고, Privy 는 가용성 거부권을 쥔다. 둘 다 클릭 수 비교에는 나타나지 않습니다.\n\n### 개발자가 곧 감사인이다\n\n최종 사용자는 이 어떤 것도 보지 못합니다 — 그게 임베디드 지갑의 존재 이유이자 위험입니다. 도입자가 설정한 그대로가 사용자들이 조용히 물려받는 수탁 현실이 됩니다. 그리고 답들은 고정된 성질이 아니라 설정 선택입니다: \"Privy 는 논커스터디얼\"은 마케팅 문장이고, 같은 Privy SDK 로 만든 두 앱이 진짜로 다른 수탁 모델을 가질 수 있습니다. 문서는 설계를 설명할 뿐이므로 네 경로를 직접 실행합니다 — 미처 못 본 기본값, 실패하는 플로우, 지원팀 뒷문은 배포된 동작에서만 드러납니다. 권한표를 먼저 만드는 이유도 같습니다: UX 판단에 앞서 \"누가 무엇을 할 수 있는가\"를 관찰된 사실로 종이에 강제하는 산출물이기 때문입니다.\n"</script>
+      <h1>지갑이 앱 속으로 사라졌다</h1>
+      <p class="lead">임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없애지만, 신뢰 문제는 복구·내보내기·앱 서명자·트랜잭션 정책으로 옮겨 갑니다.</p>
+      <p class="meta">임베디드 지갑 제공자(예: Privy)로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 네 가지 경로 — 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자 — 를 실행합니다. 클릭 수를 비교하기 전에 권한표부터 채웁니다.</p>
+      <h2>왜</h2>
+      <p>이 흐름의 본질은 &quot;지갑이 쉬워졌다&quot;가 아닙니다. 지갑의 책임이 애플리케이션 안으로 옮겨 간 것입니다. 이 PoC 는 사용자에게 출구가 있는지, 그리고 앱이 UI 가 암시하는 것 이상으로 행동할 수 있는지를 측정합니다.</p>
+<p>임베디드 지갑과 패스키는 온보딩에서 시드 문구를 없앱니다. 하지만 수탁과 인가의 문제를 없애지는 않습니다 — 그 문제들은 복구, 내보내기, 추가 서명자, 애플리케이션 스택으로 제어되는 정책 속으로 옮겨 갑니다.</p>
+      <h2>동작 방식</h2>
+      <p>임베디드 지갑으로 로그인부터 첫 트랜잭션까지 플로우 하나를 만들고, 기기 분실, 키 내보내기, MFA 복구, 범위가 제한된 앱 서명자를 시험합니다. UX 를 평가하기 전에 권한표부터 그립니다.</p>
+<h3>PoC</h3>
+<p>임베디드 지갑으로 로그인→첫 트랜잭션을 만듭니다. 그다음 네 경로를 시험합니다: 새 기기, 인증수단 분실, 키 내보내기, 범위가 제한된 앱 서명자. 클릭 수를 비교하기 전에 권한표를 만듭니다.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>행위자</th>
+<th>서명 가능?</th>
+<th>복구 가능?</th>
+<th>내보내기 가능?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>사용자</td>
+<td>설정된 인증 아래에서</td>
+<td>명시적으로 시험할 것</td>
+<td>탈출구가 실재하는지 확인할 것</td>
+</tr>
+<tr>
+<td>앱 서명자</td>
+<td>정책 안에서만 — 아니면 그 정책은 장식</td>
+<td>불가</td>
+<td>불가</td>
+</tr>
+<tr>
+<td>제공자</td>
+<td>수탁·키 구조에 따라 다름</td>
+<td>정확한 역할을 문서화할 것</td>
+<td>정확한 역할을 문서화할 것</td>
+</tr>
+</tbody></table></div>
+<p>참고: <a href="https://docs.privy.io/wallets/overview/embedded">Privy 임베디드 지갑 개요</a>.</p>
+<h2>노트 — PoC 를 위한 배경 (2026-09-02)</h2>
+<h3>임베디드 지갑이란</h3>
+<p>MetaMask 같은 일반 지갑은 <em>외부형</em>입니다: 사용자가 따로 설치하는 앱/확장 프로그램이 시드 문구를 보관하고, 웹사이트가 거기에 연결합니다. <strong>임베디드 지갑</strong>은 애플리케이션 안에 삽입됩니다. 이메일·구글·패스키로 로그인하면 앱이 백그라운드에서 실제 온체인 지갑을 조용히 만들어 줍니다 — 확장 프로그램도, 시드 문구 의식도, 눈에 보이는 &quot;지갑&quot; 개념 자체도 없습니다. 지갑이 전제조건이 아니라 구현 세부사항이 되고, 그래서 지금 소비자용 크립토 앱의 기본 온보딩 패턴이 됐습니다.</p>
+<p>기술적 핵심은 개인키 전체를 한 곳에 두지 않는 것: <strong>MPC</strong>(키가 한 조각으로 존재한 적 없이 여러 당사자가 공동 서명) 또는 <strong>Shamir 키 분할</strong>(조각으로 나눠 서명 순간에만 잠깐 재조합). 서명은 격리된 환경 — 클라이언트의 샌드박스 iframe 이나 서버의 TEE — 에서 일어납니다.</p>
+<h3>Privy 는 구체적으로</h3>
+<ul>
+<li><strong>Shamir 3조각 모델</strong> — <em>기기 조각</em>(브라우저/앱 저장소), <em>인증 조각</em>(Privy 보관, 로그인 후 제공), <em>복구 조각</em>. 셋 중 둘만 있으면 격리된 iframe 안에서 키가 잠깐 재조합되고, Privy 서버는 전체 키를 본 적이 없습니다.</li>
+<li><strong>복구</strong> — 복구 조각을 Privy 가 보관(기본 &quot;자동&quot; 모드)하거나 사용자가 통제(비밀번호 암호화, iCloud/Google Drive)합니다. 이 선택이 <em>곧</em> 수탁 결정 — 인증수단 분실 경로의 답이 여기 있습니다.</li>
+<li><strong>내보내기</strong> — Privy 가 호스팅하는 절차로 전체 개인키를 내보낼 수 있고, 이 기능의 노출 여부는 앱이 설정합니다.</li>
+<li><strong>서버 지갑과 세션 서명자</strong> — TEE 기반 서버 지갑, 그리고 정책 엔진이 붙은 범위 제한 서명자(&quot;이 서명자는 이 컨트랙트만, 이 금액까지만&quot;). 네 번째 경로가 이것입니다.</li>
+<li><strong>맥락</strong> — 2025년 6월 Stripe 가 Privy 를 인수했습니다(스테이블코인 회사 Bridge 인수와 짝): 임베디드 지갑이 주류 결제 인프라가 되고 있다는 신호. Farcaster, Hyperliquid 가 사용 중입니다. 경쟁사 — Dynamic, Web3Auth, Magic, Turnkey, Coinbase Embedded Wallets, thirdweb — 의 차이가 정확히 권한표의 차원들입니다: 누가 어떤 조각을 쥐고, 복구가 어떻게 되고, 정책을 누가 바꾸는가.</li>
+</ul>
+<h3>네 경로가 각각 측정하는 것</h3>
+<ol>
+<li><strong>새 기기</strong> — 새 기기에는 기기 조각이 없으므로 로그인에 Privy 서버의 참여가 필수입니다. 불편한 질문: Privy 가 다운되거나 나를 차단하면 서명이 가능한가? 예상 답: 사전에 내보내기를 하지 않았다면 불가능. Privy 는 <em>가용성 거부권</em>을 쥡니다 — 자산을 뺏을 수는 없지만 접근을 막을 수는 있습니다.</li>
+<li><strong>인증수단 분실</strong> — 복구야말로 진짜 수탁자가 드러나는 지점: 복구를 승인할 수 있는 자가 사실상 지갑을 가져갈 수 있습니다. 복구가 &quot;지원팀에 이메일&quot; 수준이라면 수탁 스토리는 마케팅보다 약한 겁니다.</li>
+<li><strong>키 내보내기</strong> — 비상구이자 셀프 커스터디 주장의 가장 강력한 증거. 존재 여부만이 아니라 마찰의 정도, 앱 개발자가 비활성화할 수 있는지, 내보낸 키가 완전한지(일반 지갑에서 같은 주소가 복원되는지)까지 시험합니다.</li>
+<li><strong>범위 제한 앱 서명자</strong> — 위임의 경계: 앱이 사용자 없이 무엇을 할 수 있고, 그 범위를 누가 나중에 넓힐 수 있는가? 개발자가 조용히 바꿀 수 있는 정책과 사용자가 재승인해야 하는 정책은 전혀 다른 물건입니다.</li>
+</ol>
+<h3>클릭 수보다 권한표가 먼저인 이유</h3>
+<p>클릭 수는 온보딩 마찰을 재고, 권한표는 신뢰 모델을 잽니다. UX 부터 비교하면 &quot;2클릭이면 지갑 생성&quot;이 여러 당사자가 자금에 손댈 수 있다는 사실을 가립니다. 확장된 권한표 — 행은 행위, 열은 주체, 각 칸은 <em>단독 가능 / 협조 필요 / 불가</em> 를 문서가 아니라 관찰로 채웁니다. 검증할 예상값:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>행위</th>
+<th>사용자</th>
+<th>Privy</th>
+<th>앱 개발자</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>트랜잭션 서명</td>
+<td>로그인 후 단독</td>
+<td>협조 — 인증 조각 제공</td>
+<td>서명자 정책 안에서만</td>
+</tr>
+<tr>
+<td>키 내보내기</td>
+<td>노출돼 있다면 단독</td>
+<td>협조 — 절차 호스팅</td>
+<td>노출 차단 가능 — 검증</td>
+</tr>
+<tr>
+<td>복구 승인</td>
+<td>복구 모드에 따라 다름</td>
+<td>복구 조각의 기본 보관자</td>
+<td>복구 모드를 선택</td>
+</tr>
+<tr>
+<td>서명자 추가/범위 지정</td>
+<td>설정에 따른 동의 — 검증</td>
+<td>정책 실행</td>
+<td>주도</td>
+</tr>
+<tr>
+<td>정책 변경</td>
+<td>재승인 필요? — 검증</td>
+<td>집행</td>
+<td>단독인 경우 많음 — 검증</td>
+</tr>
+<tr>
+<td>접근 차단 (가용성)</td>
+<td>—</td>
+<td>인증 조각 거부권</td>
+<td>UI 제거 가능</td>
+</tr>
+</tbody></table></div>
+<p>가장 흥미로운 칸은 보통 &quot;복구 승인&quot;과 &quot;정책 변경&quot; — 권한이 앱 스택 쪽으로 조용히 집중되는 지점입니다. 시험할 예측: 앱 개발자는 사용자 생각보다 많은 권한을 쥐고, Privy 는 가용성 거부권을 쥔다. 둘 다 클릭 수 비교에는 나타나지 않습니다.</p>
+<h3>개발자가 곧 감사인이다</h3>
+<p>최종 사용자는 이 어떤 것도 보지 못합니다 — 그게 임베디드 지갑의 존재 이유이자 위험입니다. 도입자가 설정한 그대로가 사용자들이 조용히 물려받는 수탁 현실이 됩니다. 그리고 답들은 고정된 성질이 아니라 설정 선택입니다: &quot;Privy 는 논커스터디얼&quot;은 마케팅 문장이고, 같은 Privy SDK 로 만든 두 앱이 진짜로 다른 수탁 모델을 가질 수 있습니다. 문서는 설계를 설명할 뿐이므로 네 경로를 직접 실행합니다 — 미처 못 본 기본값, 실패하는 플로우, 지원팀 뒷문은 배포된 동작에서만 드러납니다. 권한표를 먼저 만드는 이유도 같습니다: UX 판단에 앞서 &quot;누가 무엇을 할 수 있는가&quot;를 관찰된 사실로 종이에 강제하는 산출물이기 때문입니다.</p>
+      
+      <p><a href="../notes.html">&larr; 전체 개발 노트</a> &middot; <a href="../index.html">워크스페이스 인덱스</a> &middot; <a href="#top">맨 위 &uarr;</a></p>
+    </article>
+    <div class="pager"><a href="pocs-ponder-reorg-indexer.html">&larr; 26. Ponder — the indexer is the reorg handler</a><a href="pocs-x402-settlement-retry.html">28. HTTP 402 is the easy part — settlement owns the retry &rarr;</a></div>
+  </div>
+  </main>
+</div>
+<script src="_nav.js"></script>
+<script>window.__NAV_CURRENT__="embedded-wallet-policy";</script>
+<script>
+(function () {
+  var data = window.__NAV__, cur = window.__NAV_CURRENT__;
+  if (!data) return;
+  var jw = document.getElementById('rail-jump');
+  if (jw) {
+    jw.innerHTML = data.jump.map(function (s) {
+      return '<a href="../notes.html#' + s.id + '" title="' + s.label + ' — done (' + s.done + ') / all (' + s.all + ')">' + s.label + '<b><span class="count-done">' + s.done + '</span><span class="count-all">/' + s.all + '</span></b></a>';
+    }).join('');
+  }
+  var sec = null;
+  for (var i = 0; i < data.sections.length && !sec; i++) {
+    for (var j = 0; j < data.sections[i].items.length; j++) {
+      if (data.sections[i].items[j].key === cur) { sec = data.sections[i]; break; }
+    }
+  }
+  var navEl = document.getElementById('nav');
+  if (navEl && sec) {
+    var lis = sec.items.map(function (it) {
+      var active = it.key === cur ? ' active' : '';
+      return '<li><a class="nav-link' + active + '" href="' + it.href + '" data-key="' + it.key + '"><span class="nav-dot" style="background:' + it.color + ';" title="' + it.label + '"></span><span class="nav-text">' + it.text + '</span></a></li>';
+    }).join('');
+    var group = document.createElement('div');
+    group.className = 'nav-group';
+    group.id = sec.navId;
+    group.setAttribute('data-group', '');
+    group.innerHTML = '<p class="nav-group-label">' + sec.label + '</p><ul>' + lis + '</ul>';
+    navEl.insertBefore(group, navEl.firstChild);
+  }
+})();
+
+  // 필터: 사이드바 항목만 걸러낸다 — 본문은 그대로 두어 링크(#anchor)가 항상 살아 있게.
+  const input = document.getElementById('filter');
+  const links = [...document.querySelectorAll('.nav-link')];
+  const groups = [...document.querySelectorAll('[data-group]')];
+  const noResults = document.getElementById('no-results');
+  // 레일 필터 = 텍스트 질의 + 등급 모드(Important/All)의 합성. 등급 토글이 없는 페이지에서는
+  // tierMode 가 'all' 로 남아 예전과 완전히 동일하게 동작한다 (jay, 2026-09-08).
+  const tierBtns = [...document.querySelectorAll('.rail-tier .tier-btn')];
+  let tierMode = tierBtns.some((b) => b.dataset.tierMode === 'important') ? 'important' : 'all';
+  // "Important" 필터는 중요(빨강)뿐 아니라 "최근 완료"(하늘)와 "새 항목"(노랑)도 함께 보여 준다
+  // (jay, 2026-09-08: "even though All clicked, the recently done and important should be shown";
+  // 2026-09-09: "important button shows also new items"). 최근 완료는 방금 끝낸 강조 항목이고,
+  // 새 항목은 최근 창(NEW_WINDOW) 안에 손댄 것이라 둘 다 중요 줄에 두고 필터에서 숨기지 않는다.
+  const isImportant = (a) => { const d = a.querySelector('.nav-dot'); return !!d && (d.title === 'IMPORTANT' || d.title === 'RECENTLY DONE' || d.title === 'NEW'); };
+  function applyFilter() {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const a of links) {
+      const hit = (!q || a.textContent.toLowerCase().includes(q)) && (tierMode === 'all' || isImportant(a));
+      a.parentElement.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    }
+    for (const g of groups) {
+      const any = [...g.querySelectorAll('.nav-link')].some((a) => a.parentElement.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    }
+    noResults.style.display = shown ? 'none' : 'block';
+  }
+  input.addEventListener('input', applyFilter);
+  for (const b of tierBtns) {
+    b.addEventListener('click', () => {
+      tierMode = b.dataset.tierMode;
+      for (const x of tierBtns) { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+      applyFilter();
+    });
+  }
+  // 진입 시 기본값: 등급 토글이 있으면 Important 만 보여 준다 (jay, 2026-09-08).
+  if (tierBtns.length) applyFilter();
+
+  // 레일이 본문을 따라가게 한다 (jay, 2026-08-27: "when a user clicks the link, the focus
+  // on left pane should be moving"). 항목이 200개를 넘으면 활성 표시만으로는 부족하다 —
+  // 표시된 항목이 레일 밖에 있으면 보이지 않으니까. 두 경로로 옮긴다:
+  //   · 섹션 바로가기 클릭 → 해당 그룹을 레일 맨 위로 (즉시, 관측자를 기다리지 않는다)
+  //   · 그냥 스크롤       → 활성 항목이 레일 밖으로 나갔을 때만 살짝 끌어온다
+  const railNav = document.querySelector('.rail-nav');
+
+  function revealInRail(el, mode) {
+    if (!railNav || !el) return;
+    const r = el.getBoundingClientRect();
+    const c = railNav.getBoundingClientRect();
+    if (mode === 'top') {
+      railNav.scrollTo({ top: railNav.scrollTop + r.top - c.top - 8, behavior: 'smooth' });
+      return;
+    }
+    // 이미 보이면 건드리지 않는다 — 읽는 중에 레일이 흔들리지 않게.
+    if (r.top >= c.top + 4 && r.bottom <= c.bottom - 4) return;
+    railNav.scrollTop += r.top - c.top - c.height / 3;
+  }
+
+  for (const a of document.querySelectorAll('a[href^="#sec-"]')) {
+    a.addEventListener('click', () => {
+      const g = document.getElementById('nav-' + a.getAttribute('href').slice(1));
+      if (g) revealInRail(g, 'top');
+    });
+  }
+
+  // 스크롤 위치에 따라 현재 항목을 표시 (읽던 자리를 목록에서 잃지 않게).
+  const spied = links.filter((a) => a.dataset.key);
+  const order = spied.map((a) => a.dataset.key);
+  const seen = new Set();
+  const observed = new Map();
+  let revealTimer;
+  // 밴드에 걸친 항목 중 "문서 순서로 첫 번째"를 고르면 언제나 한 칸 앞이 켜진다
+  // (jay, 2026-08-27: "the left pane should sync with right pane in the item's position").
+  // 앞 항목의 꼬리가 밴드 위쪽에 아직 남아 있기 때문이다. 밴드 상단에 가장 가까운 것을
+  // 고르면 방금 도착한 항목이 켜진다.
+  function syncActive() {
+    // 상세 페이지에는 관측할 본문 항목이 없다 — 그때 돌면 서버가 표시한 active 를
+    // 첫 스크롤에 지워 버리므로, 관측 대상이 없으면 아무것도 하지 않는다 (2026-09-03).
+    if (observed.size === 0) return;
+    // 읽는 선(뷰포트 10%) 을 이미 지난 항목 중 가장 아래 것이 지금 읽고 있는 항목이다.
+    // "선에 가장 가까운 것"으로 고르면 아직 시작도 안 한 다음 항목이 켜진다 — 앞 항목이
+    // 선을 덮고 있는데도. 아직 아무것도 선을 지나지 않았다면 가장 먼저 올 것을 켠다.
+    const line = window.innerHeight * 0.1;
+    let first = null;
+    let started = -Infinity;
+    let upcoming = Infinity;
+    let firstUpcoming = null;
+    for (const k of seen) {
+      const el = observed.get(k);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top;
+      if (top <= line) {
+        if (top > started) {
+          started = top;
+          first = k;
+        }
+      } else if (top < upcoming) {
+        upcoming = top;
+        firstUpcoming = k;
+      }
+    }
+    if (first === null) first = firstUpcoming;
+    let activeEl = null;
+    for (const a of spied) {
+      const on = a.dataset.key === first;
+      a.classList.toggle('active', on);
+      if (on) activeEl = a;
+    }
+    // 긴 점프 중에는 활성 항목이 초당 수십 번 바뀐다 — 멈춘 뒤에 한 번만 끌어온다.
+    // 사용자가 실제로 스크롤하기 전에는 끌어오지 않는다 (jay, 2026-09-02) — 로드 직후
+    // 관측자의 첫 콜백이 1번 항목으로 레일을 되감아, 초기 스크롤(첫 important 가운데
+    // 정렬)을 덮어쓰는 것을 막는다. 해시 딥링크는 브라우저 앵커 스크롤이 scroll 이벤트를
+    // 내므로 여전히 첫 프레임부터 동기화된다.
+    clearTimeout(revealTimer);
+    if (userScrolled) revealTimer = setTimeout(() => revealInRail(activeEl), 120);
+  }
+
+  // 관측자는 항목이 밴드를 드나들 때만 깨어난다. 그 사이에도 기하는 계속 바뀌므로,
+  // 스크롤 중에는 프레임마다 한 번 다시 계산한다 — 빠르게 굴릴 때 한 칸 밀리는 것을 막는다.
+  let ticking = false;
+  // 해시 딥링크는 스크롤 이벤트가 리스너 등록 전에 끝날 수 있으므로 처음부터 켠다 —
+  // 특정 항목을 열었다는 것 자체가 "그 항목을 보라"는 의도다.
+  let userScrolled = !!location.hash;
+  addEventListener(
+    'scroll',
+    () => {
+      userScrolled = true;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        syncActive();
+      });
+    },
+    { passive: true }
+  );
+
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) seen.add(e.target.id);
+      else seen.delete(e.target.id);
+    }
+    syncActive();
+  }, { rootMargin: '-10% 0px -70% 0px' });
+  for (const key of order) {
+    const el = document.getElementById(key);
+    if (el) {
+      observed.set(key, el);
+      io.observe(el);
+    }
+  }
+
+(function () {
+  // 원본 마크다운은 <script type="application/json"> 안에 들어 있다 — 렌더된 DOM 을
+  // 긁으면 표·코드블록이 뭉개지고, 붙여넣은 쪽에서 다시 서식을 만들 수 없다.
+  const flash = (btn, msg) => {
+    const keep = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = keep; btn.classList.remove('ok'); }, 1400);
+  };
+  for (const btn of document.querySelectorAll('.copy-btn')) {
+    btn.addEventListener('click', async () => {
+      const src = document.getElementById(btn.dataset.copy);
+      if (!src) return;
+      let text;
+      try { text = JSON.parse(src.textContent); } catch (e) { return; }
+      try {
+        await navigator.clipboard.writeText(text);
+        flash(btn, btn.dataset.done || 'Copied');
+        return;
+      } catch (e) { /* file:// 이나 권한 거부 — 아래로 폴백 */ }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      flash(btn, ok ? (btn.dataset.done || 'Copied') : 'Copy failed');
+    });
+  }
+})();
+
+(function () {
+  var nav = document.querySelector('.rail-nav');
+  if (!nav) return;
+  var el = nav.querySelector('.nav-link.active');
+  if (!el && !location.hash) {
+    var dot = nav.querySelector('.nav-dot[title="IMPORTANT"]');
+    el = dot && dot.closest('a');
+  }
+  if (!el) return;
+  var r = el.getBoundingClientRect();
+  var c = nav.getBoundingClientRect();
+  nav.scrollTop += (r.top - c.top) - (c.height / 2 - r.height / 2);
+})();
+</script>
+</body>
+</html>

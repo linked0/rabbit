@@ -71,7 +71,7 @@ export const AGENT_SCENARIOS: AgentScenario[] = [
       },
     ],
     relation: `flowchart LR
-    U["You<br/>funds live here"] -->|"one signed budget<br/>5 USDC, 1 hour"| A["Agent<br/>decides what to buy"]
+    U["You<br/>funds live here"] -->|"one signed budget<br/>5 jUSD, 1 hour"| A["Agent<br/>decides what to buy"]
     A -->|"redeem, per order"| DM["DelegationManager<br/>+ enforcers"]
     DM -->|"execute as you"| U
     U -->|"payment"| P1["Provider A"]
@@ -85,18 +85,18 @@ export const AGENT_SCENARIOS: AgentScenario[] = [
     participant P1 as Provider A
     participant P2 as Provider B
 
-    U->>A: grant a budget once (5 USDC, 1 hour)
+    U->>A: grant a budget once (5 jUSD, 1 hour)
     Note over U: you are done — no further approvals
 
     A->>A: decide: buy from A and B together
     A->>DM: redeem, one atomic order (pay A, pay B)
     DM->>DM: within budget? before the deadline?
-    DM->>P1: pay 2 USDC
-    DM->>P2: pay 2 USDC
+    DM->>P1: pay 2 jUSD
+    DM->>P2: pay 2 jUSD
     Note over DM,P2: if paying B failed, paying A reverts too
 
-    A->>DM: redeem again (pay 2 USDC)
-    DM-->>A: rejected — would exceed the 5 USDC budget
+    A->>DM: redeem again (pay 2 jUSD)
+    DM-->>A: rejected — would exceed the 5 jUSD budget
     Note over A: the agent stops itself`,
     guarantee:
       "Your funds never move to the agent, only out of your account under a rule it cannot change. A multi-provider order either completes fully or leaves no trace — you never end up having paid provider A for half a dataset.",

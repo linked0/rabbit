@@ -52,7 +52,7 @@ export default function LmsrPage() {
 
 pᵢ(q) = e^(qᵢ/b) / Σⱼ e^(qⱼ/b)      →  Σ pᵢ = 1  ${t("(항상)", "(always)")}
 
-${t("최악 손실", "worst-case loss")} = b · ln(n)      →  b=250, n=2  ⇒  ≈ 173 USDC`}</pre>
+${t("최악 손실", "worst-case loss")} = b · ln(n)      →  b=250, n=2  ⇒  ≈ 173 jUSD`}</pre>
           <p className="sub" style={{ marginTop: 8, fontSize: 13.5 }}>
             {t(
               "여기서 중요한 건 세 번째 줄입니다. b·ln(n)은 리스크 추정치가 아니라 최댓값입니다 — 예산 항목에 적을 수 있는 숫자죠. b는 깊이와 슬리피지를 맞바꾸는 손잡이입니다: b가 크면 호가가 두꺼워지고 가격이 덜 밀리지만, 그만큼 최대 보조금도 커집니다.",
@@ -194,8 +194,8 @@ ${t("정보", "informed")} 40%  →  ${t("어떤 스프레드로도 불가능", 
             <li>
               <strong>{t("보조금은 상장 수에 비례한다.", "The subsidy scales with listings.")}</strong>{" "}
               {t(
-                "b=250 이진 마켓 하나당 최악 ≈173 USDC. 10개면 괜찮고, 수천 개면 구조적 비용 센터입니다. 게다가 돌아오는 수수료가 아니라 손실입니다. 그들의 경제 구조는 수수료·리워드 기반이고 이건 보조금 기반이라, 규모가 커지면 잘 섞이지 않습니다.",
-                "≈173 USDC worst case per binary market at b=250. Fine across 10 markets; across thousands it is a structural cost center — and it is a loss, not a fee that comes back. Their economics are fee- and rewards-based; this one is subsidy-based, and the two don't mix well at scale."
+                "b=250 이진 마켓 하나당 최악 ≈173 jUSD. 10개면 괜찮고, 수천 개면 구조적 비용 센터입니다. 게다가 돌아오는 수수료가 아니라 손실입니다. 그들의 경제 구조는 수수료·리워드 기반이고 이건 보조금 기반이라, 규모가 커지면 잘 섞이지 않습니다.",
+                "≈173 jUSD worst case per binary market at b=250. Fine across 10 markets; across thousands it is a structural cost center — and it is a loss, not a fee that comes back. Their economics are fee- and rewards-based; this one is subsidy-based, and the two don't mix well at scale."
               )}
             </li>
             <li>

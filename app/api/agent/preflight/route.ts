@@ -28,7 +28,7 @@ export async function GET(req: Request) {
   if (!agentAddr) {
     return NextResponse.json({
       localOnly: true,
-      agent: { address: null, keyIsPersistent: false, usdc: null, allowanceUsdc: null, ctfApproved: null },
+      agent: { address: null, keyIsPersistent: false, jusd: null, allowanceJusd: null, ctfApproved: null },
       verex: { reachable: false, error: "this console is local-only — no agent key on the deployed site" },
       delegation: { deployed: false, hint: "run the console locally: anvil + verex API + node scripts/deploy-delegation.mjs" },
       ownerAccount: null,
@@ -43,28 +43,28 @@ export async function GET(req: Request) {
     .catch((e: unknown) => ({ ok: false as const, error: String(e instanceof Error ? e.message : e) }));
 
   const env = await delegationEnvOrNull();
-  let ownerAccount: { address: string; deployed: boolean; usdc: number | null } | null = null;
-  let agentUsdc: number | null = null;
+  let ownerAccount: { address: string; deployed: boolean; jusd: number | null } | null = null;
+  let agentJusd: number | null = null;
   // 승인 두 개의 상태 (jay, 2026-09-02). 가장 흔한 400 두 가지("allowance 부족",
   // "CTF operator 아님")를 실패한 주문이 아니라 이 패널이 먼저 말하게 한다.
-  let allowanceUsdc: number | null = null;
+  let allowanceJusd: number | null = null;
   let ctfApproved: boolean | null = null;
 
-  if (env && verexResult.ok && verexResult.config.usdc) {
+  if (env && verexResult.ok && verexResult.config.jusd) {
     const client = publicClientFor(env.chainId);
-    const usdcAddr = verexResult.config.usdc;
+    const jusdAddr = verexResult.config.jusd;
     const read = (who: Address) =>
       client
-        .readContract({ address: usdcAddr, abi: erc20Abi, functionName: "balanceOf", args: [who] })
+        .readContract({ address: jusdAddr, abi: erc20Abi, functionName: "balanceOf", args: [who] })
         .then((v) => Number(v) / 1e6)
         .catch(() => null);
 
-    agentUsdc = await read(agentAddr);
+    agentJusd = await read(agentAddr);
 
     if (verexResult.config.exchange) {
       const exchange = verexResult.config.exchange as Address;
-      allowanceUsdc = await client
-        .readContract({ address: usdcAddr, abi: erc20Abi, functionName: "allowance", args: [agentAddr, exchange] })
+      allowanceJusd = await client
+        .readContract({ address: jusdAddr, abi: erc20Abi, functionName: "allowance", args: [agentAddr, exchange] })
         .then((v) => Number(v) / 1e6)
         .catch(() => null);
       if (verexResult.config.ctf) {
@@ -87,7 +87,7 @@ export async function GET(req: Request) {
       ownerAccount = {
         address: sa.address,
         deployed: Boolean(code && code !== "0x"),
-        usdc: await read(sa.address),
+        jusd: await read(sa.address),
       };
     }
   }
@@ -98,8 +98,8 @@ export async function GET(req: Request) {
       // 키가 휘발성이면 이미 부여된 mandate 가 재시작과 함께 고아가 된다.
       // 숨기면 데모가 조용히 거짓말을 하므로 화면이 이걸 봐야 한다.
       keyIsPersistent: agentKeyIsPersistent(),
-      usdc: agentUsdc,
-      allowanceUsdc,
+      jusd: agentJusd,
+      allowanceJusd,
       ctfApproved,
     },
     verex: verexResult.ok
@@ -107,7 +107,7 @@ export async function GET(req: Request) {
           reachable: true,
           chainId: verexResult.config.chainId,
           exchange: verexResult.config.exchange,
-          usdc: verexResult.config.usdc,
+          jusd: verexResult.config.jusd,
           ctf: verexResult.config.ctf,
           tradingEnabled: verexResult.config.tradingEnabled,
         }

@@ -37,15 +37,15 @@
  Each maker order in the order book has a **different price**, which means a different `makerAmount/takerAmount` ratio. Our implementation creates **separate taker orders** for each maker order because:
 
  1. **Exact Ratio Matching**: Each taker order needs an exact ratio that crosses with its specific maker order
-    - Maker order at 33.8¢: ratio = 0.338 USDC per share
-    - Maker order at 34.8¢: ratio = 0.348 USDC per share
+    - Maker order at 33.8¢: ratio = 0.338 jUSD per share
+    - Maker order at 34.8¢: ratio = 0.348 jUSD per share
     - These cannot share the same taker order signature
 
  2. **EIP-712 Signature Integrity**: Each taker order is a cryptographically signed message containing:
     ```typescript
     {
       salt: timestamp + index,           // Unique identifier
-      makerAmount: exactUSDCAmount,      // Exact USDC to pay
+      makerAmount: exactUSDCAmount,      // Exact jUSD to pay
       takerAmount: exactSharesReceived,  // Exact shares to receive
       // ... other order parameters
     }
@@ -82,7 +82,7 @@
      signer: user.walletAddress,
      taker: makerOrder.maker,
      tokenId: outcome.tokenId,
-     makerAmount: (fillAmount * price).toString(),  // Exact USDC amount
+     makerAmount: (fillAmount * price).toString(),  // Exact jUSD amount
      takerAmount: fillAmount.toString(),            // Exact share amount
      // ... other parameters
    };

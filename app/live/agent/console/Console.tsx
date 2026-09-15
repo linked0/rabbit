@@ -36,7 +36,7 @@ export default function Console() {
 
   const [cooldownSec, setCooldownSec] = useState(60);
   const [edgeThreshold, setEdgeThreshold] = useState(0.05);
-  const [sizeUsdc, setSizeUsdc] = useState(2.5);
+  const [sizeJusd, setSizeJusd] = useState(2.5);
   const [newsWithinHours, setNewsWithinHours] = useState(48);
 
   const bump = useCallback(() => setRefreshKey((n) => n + 1), []);
@@ -99,8 +99,8 @@ export default function Console() {
             <input type="number" step="0.01" value={edgeThreshold} onChange={(e) => setEdgeThreshold(Number(e.target.value))} style={{ width: 90 }} />
           </label>
           <label className="field">
-            <span>{t("주문 규모 (USDC)", "Order size (USDC)")}</span>
-            <input type="number" step="0.5" value={sizeUsdc} onChange={(e) => setSizeUsdc(Number(e.target.value))} style={{ width: 90 }} />
+            <span>{t("주문 규모 (jUSD)", "Order size (jUSD)")}</span>
+            <input type="number" step="0.5" value={sizeJusd} onChange={(e) => setSizeJusd(Number(e.target.value))} style={{ width: 90 }} />
           </label>
           <label className="field">
             <span>{t("뉴스 창 (시간)", "News window (h)")}</span>
@@ -120,7 +120,7 @@ export default function Console() {
       <SchedulerPanel
         marketSlug={slug}
         outcome={outcome}
-        settings={{ cooldownSec, edgeThreshold, sizeUsdc, newsWithinHours }}
+        settings={{ cooldownSec, edgeThreshold, sizeJusd, newsWithinHours }}
         onChanged={bump}
       />
       <JournalPanel refreshKey={refreshKey} />
