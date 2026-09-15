@@ -94,6 +94,95 @@ export const CONTRACT_GROUPS: { title: string; blurb: string; names: string[] }[
   },
 ];
 
+/**
+ * The Jayverse services, and what each one has on this chain.
+ *
+ * `contracts` names Registry entries, so a service's row fills itself in from
+ * the chain rather than from a list maintained here — if the seed stops
+ * deploying something, the row goes quiet instead of lying.
+ *
+ * `live` is checked at render time. It is genuinely useful (a demo estate's
+ * question is usually "is it up right now"), but it is also the slowest thing
+ * on the page, so every check is short-timeout and failure means "unknown"
+ * rather than "down" — we cannot distinguish a sleeping Cloud Run instance
+ * from a broken one, and claiming the second would be wrong.
+ */
+export type Service = {
+  name: string;
+  blurb: string;
+  url?: string;
+  /** Registry names this service owns on the devnet. */
+  contracts: string[];
+  /** Something true about this service that the chain cannot tell you. */
+  note?: string;
+};
+
+export const SERVICES: Service[] = [
+  {
+    name: "Rabbit — portal & Agentic AA",
+    blurb: "ERC-4337 account abstraction and the ERC-7710 session-key path.",
+    url: "https://www.jaylabs.xyz",
+    contracts: ["EntryPoint", "DelegationManager", "SimpleFactory"],
+    note: "UserOps go through the EntryPoint the fork carries, so the address is the one every 4337 tool already knows.",
+  },
+  {
+    name: "Verex — prediction markets",
+    blurb: "Onboarding and a market maker over conditional tokens.",
+    url: "https://verex.jaylabs.xyz",
+    contracts: ["MarketFactory"],
+    note: "Its CTF backbone (USDC, ConditionalTokens, CTFExchange) is pinned in verex's own deployments.json rather than the Registry — it is deployed by verex's tooling, not by the devnet seed.",
+  },
+  {
+    name: "Token, Exchange & Personas",
+    blurb: "JYVE and jUSD, priced against each other by a mini-AMM.",
+    url: "https://exchange.jaylabs.xyz",
+    contracts: ["JYVE", "JUSD", "Exchange"],
+    note: "jUSD is the Jayverse dollar — our own, deployed by the seed in both node modes, not Circle's USDC.",
+  },
+  {
+    name: "DeFi — jeETH",
+    blurb: "EtherFi's mechanics rebuilt from scratch: a rebasing vault and its wrapper.",
+    url: "https://defi.jaylabs.xyz",
+    contracts: ["LiquidityPool", "jeETH", "jweETH", "MockAVS"],
+  },
+  {
+    name: "Wallet & simulate-before-sign",
+    blurb: "Embedded wallet, MV3 extension, and transaction previews.",
+    url: "https://wallet.jaylabs.xyz",
+    contracts: [],
+    note: "No contracts of its own. It lists this chain as a network and its simulate API forks from the devnet, so a preview and the real thing agree.",
+  },
+  {
+    name: "Number — math & investment",
+    blurb: "Research notes, admin-only.",
+    url: "https://number.jaylabs.xyz",
+    contracts: [],
+    note: "Reads the chain; deploys nothing to it.",
+  },
+  {
+    name: "Game — 3D street",
+    blurb: "Wander a street and find Verex markets on boards.",
+    url: "https://www.jaylabs.xyz/game",
+    contracts: [],
+    note: "Runs inside the Rabbit service and reads markets from the devnet through Verex.",
+  },
+];
+
+/** Is a service answering right now? Unknown beats a wrong "down". */
+export async function probe(url?: string): Promise<"up" | "unknown"> {
+  if (!url) return "unknown";
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 4000);
+    const res = await fetch(url, { method: "GET", cache: "no-store", signal: ctl.signal, redirect: "manual" });
+    clearTimeout(t);
+    // A redirect is a live server answering, so anything below 500 counts.
+    return res.status < 500 ? "up" : "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
 export async function fetchStatus(): Promise<DevnetStatus> {
   try {
     const res = await fetch(`${DEVNET_URL}/status`, { cache: "no-store" });

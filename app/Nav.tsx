@@ -23,6 +23,12 @@ const MENU: NavItem[] = [
   // — 그 전까지 코드는 남겨 둔다. 설계: docs/features/jayverse-number.md.
   // 제이 챗은 홈 페이지에 통합됨 — 별도 메뉴/페이지 제거 (2026-08-01, jay).
   { href: "/projects", ko: "프로젝트", en: "Projects", code: "PROJECTS", pub: true },
+  // Devnet — 우리 체인의 상태와 온체인 주소록 (jay, 2026-09-15). 위치는 Projects 바로
+  // 뒤 — 프로젝트들이 "무엇을 만들었나"라면 데브넷은 "그것들이 지금 어디서 돌고 있나"라,
+  // 둘이 붙어 있는 편이 읽힌다. `ALLOW_DEVNET=true` 가 있어야 뜨고(.env 에 있음),
+  // deploy.sh 가 ALLOW_* 를 전부 Cloud Run env 로 넘기므로 배포 시 따라간다.
+  // `pub`: 읽기 전용이라 키도 서명도 트랜잭션도 없다 — 로그인 뒤에 둘 이유가 없다.
+  { href: "/devnet", ko: "데브넷", en: "Devnet", code: "DEVNET", pub: true },
   // 게임 — 내용은 별도 저장소(games/jayverse-game 서브모듈)의 3D 저널 재생.
   // `pub`: /game 라우트는 이미 middleware 의 PUBLIC_PATHS 에 있는데(2026-08-11) 메뉴만
   // 오너 전용이라, 방문자에겐 탭 자체가 없고 오너에게만 보이는 상태였다. 관전 전용이고
@@ -55,11 +61,6 @@ const MENU: NavItem[] = [
   { href: "/live/aa", ko: "AA", en: "AA", code: "AA", pub: true },
   { href: "/live/agent/console", ko: "정산 에이전트", en: "Settlement Agent", code: "AGENTCONSOLE", pub: true },
   { href: "/live/auditor", ko: "오디터", en: "Auditor", code: "AUDITOR", pub: true },
-  // Devnet (jay, 2026-09-15) — our own chain's status and its on-chain address
-  // book. Needs ALLOW_DEVNET=true in .env; deploy.sh forwards every ALLOW_* to
-  // Cloud Run, so the deploy picks it up automatically. `pub`: read-only, no
-  // keys and no transactions, so there is nothing to gate behind a login.
-  { href: "/devnet", ko: "데브넷", en: "Devnet", code: "DEVNET", pub: true },
   // 알고리즘 상단 메뉴는 제거 (2026-08-11, jay) — 수학·알고리즘 노트는 데모가 아니라 문서라,
   // 문서 색인(docs/index.html)의 Algorithms 섹션이 정본이 됐다. 카드는 /poc 로 돌아온다.
   // TIL 메뉴는 제거 — /poc 안의 섹션으로 흡수했다 (2026-08-11, jay). /til 은 /poc 로

@@ -1,8 +1,8 @@
 import Nav from "../Nav";
 import NotifyPageView from "@/app/NotifyPageView";
 import {
-  fetchStatus, fetchRegistry, fetchRecentBlocks,
-  CONTRACT_GROUPS, DEVNET_URL, DEVNET_RPC, DEVNET_EXPLORER, DEVNET_CHAIN_ID,
+  fetchStatus, fetchRegistry, fetchRecentBlocks, probe,
+  CONTRACT_GROUPS, SERVICES, DEVNET_URL, DEVNET_RPC, DEVNET_EXPLORER, DEVNET_CHAIN_ID,
 } from "@/lib/devnet";
 import type { Address } from "viem";
 
@@ -49,12 +49,16 @@ export default async function DevnetPage() {
   // The Registry address comes from the status payload, but the CONTENTS are
   // read from the contract — see the note in lib/devnet.ts.
   const registryAddress = status.registry?.registry as Address | undefined;
-  const wanted = CONTRACT_GROUPS.flatMap((g) => g.names);
-  const [{ book, count }, blocks] = await Promise.all([
+  // Every name any section wants, asked for once.
+  const wanted = Array.from(
+    new Set([...CONTRACT_GROUPS.flatMap((g) => g.names), ...SERVICES.flatMap((s) => s.contracts)]),
+  );
+  const [{ book, count }, blocks, liveness] = await Promise.all([
     registryAddress
       ? fetchRegistry(registryAddress, wanted)
       : Promise.resolve({ book: {} as Record<string, Address>, count: null as number | null }),
     fetchRecentBlocks(8),
+    Promise.all(SERVICES.map((svc) => probe(svc.url))),
   ]);
 
   const now = Math.floor(Date.now() / 1000);
@@ -116,6 +120,70 @@ export default async function DevnetPage() {
               </>
             )}
           </dl>
+        </section>
+
+        {/* ---- services ---- */}
+        <section style={{ margin: "2rem 0" }}>
+          <h2 style={{ fontSize: "1rem", textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.6 }}>
+            Services on this chain
+          </h2>
+          <p className="small muted">
+            Every Jayverse service targets chain {DEVNET_CHAIN_ID}. Sepolia is kept only for the
+            oracle-dependent tests and the MetaMask 7715 popup, which engage only on chains
+            MetaMask recognises.
+          </p>
+
+          <div style={{ display: "grid", gap: "14px", marginTop: "1rem" }}>
+            {SERVICES.map((svc, i) => {
+              const owned = svc.contracts.filter((n) => book[n]);
+              return (
+                <div key={svc.name} style={{ border: "1px solid rgba(128,128,128,0.25)", borderRadius: "10px", padding: "12px 14px" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "baseline", justifyContent: "space-between" }}>
+                    <strong style={{ fontSize: "0.95rem" }}>{svc.name}</strong>
+                    {svc.url && (
+                      <span className="small">
+                        <a href={svc.url} target="_blank" rel="noreferrer">
+                          {svc.url.replace(/^https?:\/\//, "")}
+                        </a>
+                        <span
+                          title={liveness[i] === "up" ? "answered just now" : "no answer — may be scaled to zero rather than broken"}
+                          style={{
+                            marginLeft: "8px", fontSize: "0.75rem", padding: "1px 7px", borderRadius: "99px",
+                            background: liveness[i] === "up" ? "rgba(23,128,61,0.15)" : "rgba(128,128,128,0.18)",
+                            color: liveness[i] === "up" ? "#17803d" : "inherit",
+                          }}
+                        >
+                          {liveness[i] === "up" ? "answering" : "no answer"}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="small muted" style={{ margin: "4px 0 0" }}>{svc.blurb}</p>
+                  {svc.note && <p className="small muted" style={{ margin: "6px 0 0", opacity: 0.85 }}>{svc.note}</p>}
+                  {owned.length > 0 && (
+                    <div style={{ marginTop: "8px", display: "grid", gap: "2px" }}>
+                      {owned.map((n) => (
+                        <div key={n} className="small">
+                          <span style={{ display: "inline-block", minWidth: "10.5rem", fontWeight: 600 }}>{n}</span>
+                          <Addr address={book[n]} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {svc.contracts.length > 0 && owned.length === 0 && (
+                    <p className="small muted" style={{ margin: "6px 0 0" }}>
+                      Its contracts are not in the Registry right now — the chain may have reset
+                      since the last seed.
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p className="small muted" style={{ marginTop: "10px" }}>
+            &ldquo;No answer&rdquo; does not mean broken: most of these scale to zero when nobody is
+            using them, and a sleeping service looks identical to a stopped one from out here.
+          </p>
         </section>
 
         {/* ---- address book ---- */}
