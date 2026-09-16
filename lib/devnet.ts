@@ -1,37 +1,41 @@
-// Reading the Jayverse devnet (chain 313370) for the /devnet status page.
+// The Jayverse devnet (chain 313370) — the half that only the devnet has.
 //
 // Two sources, deliberately:
 //   - the devnet's own /status endpoint, which knows things the chain cannot
 //     report about itself (fork pin, node mode, faucet budget, proxy uptime)
 //   - the chain itself, for anything that must be true on-chain rather than
-//     reported — the Registry's contents, and the latest blocks
+//     reported — the Registry's contents
 //
 // The address book is read from the Registry CONTRACT, not from the status
 // endpoint's copy of deployments.json. The whole point of the Registry is that
 // it is the authority after a reset; trusting a JSON file beside it would
 // reintroduce exactly the stale-address problem it exists to prevent.
+//
+// Anything that is true of more than one chain — the chain list, block reads,
+// the capability matrix — lives in lib/chains.ts since the page became
+// /chains (jay, 2026-09-16). What stays here is what has no counterpart on
+// the local fork or on Sepolia: a /status endpoint and a seeded Registry.
 
-import { createPublicClient, defineChain, http, type Address } from "viem";
+import { createPublicClient, http, type Address } from "viem";
 import { jayverse } from "./jayverse";
+import { chainDef, type ChainKey } from "./chains";
+
+const devnet = chainDef("devnet");
 
 export const DEVNET_URL = process.env.DEVNET_URL ?? "https://devnet.jaylabs.xyz";
-export const DEVNET_RPC = `${DEVNET_URL}/rpc`;
-// Otterscan lives on its own host, not at /explorer (jay, 2026-09-15): it is a
-// SPA built for the root of a domain — under a path its assets resolved to the
-// status page and its router matched nothing. /explorer still redirects here,
-// so old links work; new ones should not go through the hop.
-export const DEVNET_EXPLORER =
-  process.env.NEXT_PUBLIC_DEVNET_EXPLORER ?? "https://explorer.devnet.jaylabs.xyz";
-export const DEVNET_CHAIN_ID = 313370;
+export const DEVNET_RPC = devnet.rpc;
+export const DEVNET_EXPLORER = devnet.explorer!;
+export const DEVNET_CHAIN_ID = devnet.chainId;
 
-const chain = defineChain({
-  id: DEVNET_CHAIN_ID,
-  name: "Jayverse Devnet",
-  nativeCurrency: { name: "Test Ether", symbol: "ETH", decimals: 18 },
-  rpcUrls: { default: { http: [DEVNET_RPC] } },
+const client = createPublicClient({
+  chain: {
+    id: DEVNET_CHAIN_ID,
+    name: devnet.name,
+    nativeCurrency: { name: "Test Ether", symbol: "ETH", decimals: 18 },
+    rpcUrls: { default: { http: [DEVNET_RPC] } },
+  },
+  transport: http(DEVNET_RPC, { timeout: 4000, retryCount: 0 }),
 });
-
-const client = createPublicClient({ chain, transport: http(DEVNET_RPC) });
 
 const registryAbi = [
   { type: "function", name: "count", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
@@ -64,8 +68,6 @@ export type DevnetStatus = {
   };
   error?: string;
 };
-
-export type BlockRow = { number: number; timestamp: number; txCount: number; hash: string };
 
 /**
  * Groups for the address book. The Registry is a flat name -> address map, so
@@ -134,6 +136,10 @@ export type Service = {
   url?: string;
   /** Registry names this service owns on the devnet. */
   contracts: string[];
+  /** Which chains this service actually targets today. Not a wish list: each
+   *  entry below cites where it is configured, because guessing here would
+   *  produce a table that looks authoritative and is wrong. */
+  chains: ChainKey[];
   /** Something true about this service that the chain cannot tell you. */
   note?: string;
   noteKo?: string;
@@ -141,7 +147,10 @@ export type Service = {
 
 /** Name, blurb and URL come from lib/jayverse.ts so /projects and /devnet
  *  cannot drift; only the chain-specific half is written here. */
-function svc(key: string, chain: { contracts: string[]; note?: string; noteKo?: string }): Service {
+function svc(
+  key: string,
+  chain: { contracts: string[]; chains: ChainKey[]; note?: string; noteKo?: string },
+): Service {
   const p = jayverse(key);
   return { name: p.name, blurb: p.blurb, blurbKo: p.blurbKo, url: p.url, ...chain };
 }
@@ -149,39 +158,50 @@ function svc(key: string, chain: { contracts: string[]; note?: string; noteKo?: 
 export const SERVICES: Service[] = [
   svc("rabbit", {
     contracts: ["EntryPoint", "DelegationManager", "SimpleFactory"],
+    // scripts/deploy.env: CHAIN=devnet, ANVIL_RPC_URL=<devnet>/rpc. Sepolia is
+    // still reached by app/api/bundle (SEPOLIA_RPC) and /live/7702.
+    chains: ["devnet", "sepolia", "local"],
     note: "UserOps go through the EntryPoint the fork carries, so the address is the one every 4337 tool already knows.",
     noteKo:
       "UserOp 은 포크가 실어 온 EntryPoint 를 지나가므로, 주소가 모든 4337 도구가 이미 아는 그 값이다.",
   }),
   svc("verex", {
     contracts: ["MarketFactory"],
+    // packages/contracts/deployments.json: a devnet entry (313370) and the
+    // staging/prod entries, both still on Sepolia (11155111).
+    chains: ["devnet", "sepolia"],
     note: "Its CTF backbone (jUSD, ConditionalTokens, CTFExchange) is pinned in verex's own deployments.json rather than the Registry — it is deployed by verex's tooling, not by the devnet seed.",
     noteKo:
       "CTF 백본(jUSD, ConditionalTokens, CTFExchange)은 Registry 가 아니라 verex 자체의 deployments.json 에 고정돼 있다 — 데브넷 시드가 아니라 verex 도구가 배포하기 때문이다.",
   }),
   svc("token", {
     contracts: ["JYVE", "JUSD", "Exchange"],
+    chains: ["devnet"],
     note: "jUSD is the Jayverse dollar — our own, deployed by the seed in both node modes, not Circle's USDC.",
     noteKo:
       "jUSD 는 Jayverse 의 달러다 — 시드가 두 노드 모드 모두에서 배포하는 우리 것이고, Circle 의 USDC 가 아니다.",
   }),
   svc("defi", {
     contracts: ["LiquidityPool", "jeETH", "jweETH", "MockAVS"],
+    chains: ["devnet"],
   }),
   svc("wallet", {
     contracts: [],
+    chains: ["devnet", "local"],
     note: "No contracts of its own. It lists this chain as a network and its simulate API forks from the devnet, so a preview and the real thing agree.",
     noteKo:
       "자체 컨트랙트는 없다. 이 체인을 네트워크로 등록해 두고, simulate API 가 데브넷을 포크하므로 미리보기와 실제가 일치한다.",
   }),
   svc("number", {
     contracts: [],
+    chains: ["devnet"],
     note: "Reads the chain; deploys nothing to it.",
     noteKo:
       "체인을 읽기만 하고, 아무것도 배포하지 않는다.",
   }),
   svc("game", {
     contracts: [],
+    chains: ["devnet"],
     note: "Runs inside the Rabbit service and reads markets from the devnet through Verex.",
     noteKo:
       "Rabbit 서비스 안에서 돌고, Verex 를 통해 데브넷의 마켓을 읽는다.",
@@ -242,23 +262,4 @@ export async function fetchRegistry(
     }
   });
   return { book, count };
-}
-
-/** The last `n` blocks, newest first — the chain's recent activity at a glance. */
-export async function fetchRecentBlocks(n = 8): Promise<BlockRow[]> {
-  try {
-    const head = await client.getBlockNumber();
-    const numbers = Array.from({ length: n }, (_, i) => head - BigInt(i)).filter((b) => b >= 0n);
-    const blocks = await Promise.all(
-      numbers.map((b) => client.getBlock({ blockNumber: b, includeTransactions: false })),
-    );
-    return blocks.map((b) => ({
-      number: Number(b.number),
-      timestamp: Number(b.timestamp),
-      txCount: b.transactions.length,
-      hash: b.hash,
-    }));
-  } catch {
-    return [];
-  }
 }

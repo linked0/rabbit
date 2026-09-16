@@ -8,6 +8,10 @@ const nextConfig = {
     // 순서 주의: /ap2 규칙이 먼저여야 /etc/:path* 와 무관하게 확실히 잡힌다.
     return [
       { source: "/ap2", destination: "/live/ap2", permanent: true },
+      // /devnet → /chains (2026-09-16). 데브넷 한 체인만 보여 주던 페이지가 세 체인
+      // (로컬 Anvil·데브넷·Sepolia)을 함께 보여 주는 페이지가 됐다. 공유된 링크와
+      // 북마크가 살아 있도록 영구 리다이렉트를 남긴다 — /etc → /poc 와 같은 처리.
+      { source: "/devnet", destination: "/chains", permanent: true },
       { source: "/etc", destination: "/poc", permanent: true },
       { source: "/etc/:path*", destination: "/poc/:path*", permanent: true },
       // live 상세 5개(ap2·7702·aa·agent·toss)가 /poc → /live 로 옮겨졌다 (2026-08-26, jay).

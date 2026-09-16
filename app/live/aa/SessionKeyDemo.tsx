@@ -392,7 +392,7 @@ export default function SessionKeyDemo() {
             {t("jUSD — Jayverse 달러", "jUSD — the Jayverse dollar")} ↗
           </a>{" "}
           — {t("소수점 6자리, 실제 가치 없음.", "6 decimals, no real value.")}{" "}
-          <a href="/devnet">{t("데브넷 상태", "Devnet status")}</a>
+          <a href="/chains">{t("체인 상태", "Chain status")}</a>
         </p>
       </div>
 

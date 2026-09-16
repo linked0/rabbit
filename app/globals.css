@@ -934,6 +934,91 @@ a.ghost:hover {
 }
 .gf-note { font-size: 11.5px; opacity: 0.6; margin: 8px 0 0; }
 
+/* ── Chains 페이지 (/chains) ──
+   데브넷 한 체인 대시보드가 세 체인 비교 화면이 되면서 추가된 것들 (jay, 2026-09-16).
+   비교가 목적이므로 세 칸은 **같은 모양**이어야 한다 — 어느 칸이 비어 있는지가
+   정보이기 때문에, 내용이 없다고 레이아웃이 달라지면 안 된다. */
+.gf-chains {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+  margin: 14px 0 26px;
+}
+.gf-chaincard {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 13px 12px;
+  min-width: 0;
+}
+.gf-chaincard > header {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.gf-chainname { font-size: 14px; font-weight: 650; }
+.gf-chainstate {
+  margin-left: auto;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.55;
+  white-space: nowrap;
+}
+.gf-role { font-size: 11.5px; opacity: 0.62; margin: 5px 0 9px; line-height: 1.45; }
+.gf-facts { display: grid; gap: 2px; }
+.gf-fact {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.gf-fact-k { opacity: 0.55; white-space: nowrap; }
+.gf-fact-v { font-weight: 600; text-align: right; min-width: 0; word-break: break-word; }
+
+/* 세 체인의 최근 블록을 나란히. 좁아지면 한 줄씩 쌓인다. */
+.gf-blockgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 6px 22px;
+}
+.gf-subhead { font-size: 12.5px; font-weight: 600; margin-top: 8px; }
+
+/* 기능 매트릭스. "—"(없음)과 "예정"은 초록 점을 받지 않는다 — 계획을 기능처럼
+   보이게 하는 것이 이 표가 막으려는 바로 그 일이다. */
+.gf-matrix td, .gf-matrix th { padding-right: 16px; }
+.gf-matrix td:first-child { white-space: normal; }
+.gf-cell { font-size: 11.5px; line-height: 1.4; }
+.gf-cell-none { opacity: 0.45; }
+.gf-cell-planned { opacity: 0.6; }
+.gf-cell-vendor span:last-child { opacity: 0.9; }
+.gf-dash { margin-right: 5px; }
+.gf-tag {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 0 5px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  vertical-align: 1px;
+}
+
+/* 서비스가 어느 체인을 보는지. 색이 아니라 테두리로 구분한다 — 세 개가 한 줄에
+   붙어 나오는 경우가 많아 색 세 가지는 시끄럽다. */
+.gf-badge {
+  display: inline-block;
+  margin: 0 4px 3px 0;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.gf-badge-devnet { border-color: color-mix(in srgb, #17803d 55%, var(--border)); }
+
 /* ── Jayverse Ecosystem (홈) ──
    "대표 작업"이 생태계 전체를 담는 섹션이 되면서(jay, 2026-09-15), Verex 카드는
    그대로 두되 폭만 줄이고 남은 자리에 나머지 프로젝트를 작은 카드로 채운다.

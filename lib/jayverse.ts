@@ -50,13 +50,16 @@ export const JAYVERSE: JayverseProject[] = [
     localPort: 3100,
   },
   {
+    // Renamed from "Jayverse Devnet" (jay, 2026-09-16): the page behind this
+    // card now covers all three networks, and a card that names one of them
+    // would send readers looking for the other two somewhere else.
     key: "devnet",
-    name: "Jayverse Devnet",
+    name: "Jayverse Chains",
     blurb:
-      "Our own chain — an always-on Anvil fork at chain id 313370, behind a method-allowlist proxy, a budgeted faucet and a block explorer.",
+      "Three networks, side by side — the local Anvil fork, our always-on devnet at chain id 313370, and Sepolia.",
     blurbKo:
-      "우리 체인 — 체인 아이디 313370의 상시 가동 Anvil 포크. 메서드 허용목록 프록시, 예산이 있는 포싯, 블록 탐색기까지.",
-    url: "/devnet",
+      "세 네트워크를 나란히 — 로컬 Anvil 포크, 체인 아이디 313370의 상시 가동 데브넷, 그리고 Sepolia.",
+    url: "/chains",
   },
   {
     key: "token",

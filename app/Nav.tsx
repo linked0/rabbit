@@ -23,12 +23,20 @@ const MENU: NavItem[] = [
   // — 그 전까지 코드는 남겨 둔다. 설계: docs/features/jayverse-number.md.
   // 제이 챗은 홈 페이지에 통합됨 — 별도 메뉴/페이지 제거 (2026-08-01, jay).
   { href: "/projects", ko: "프로젝트", en: "Projects", code: "PROJECTS", pub: true },
-  // Devnet — 우리 체인의 상태와 온체인 주소록 (jay, 2026-09-15). 위치는 Projects 바로
-  // 뒤 — 프로젝트들이 "무엇을 만들었나"라면 데브넷은 "그것들이 지금 어디서 돌고 있나"라,
-  // 둘이 붙어 있는 편이 읽힌다. `ALLOW_DEVNET=true` 가 있어야 뜨고(.env 에 있음),
-  // deploy.sh 가 ALLOW_* 를 전부 Cloud Run env 로 넘기므로 배포 시 따라간다.
+  // Chains — 세 체인(로컬 Anvil · 데브넷 · Sepolia)의 상태와 온체인 주소록.
+  // 위치는 Projects 바로 뒤 — 프로젝트들이 "무엇을 만들었나"라면 이 페이지는
+  // "그것들이 지금 어디서 돌고 있나"라, 둘이 붙어 있는 편이 읽힌다.
   // `pub`: 읽기 전용이라 키도 서명도 트랜잭션도 없다 — 로그인 뒤에 둘 이유가 없다.
-  { href: "/devnet", ko: "데브넷", en: "Devnet", code: "DEVNET", pub: true },
+  //
+  // **데브넷 → 체인 (jay, 2026-09-16.)** Jayverse 는 세 네트워크 위에서 돌아간다:
+  // 로컬 Anvil(개발 루프), 데브넷(클라우드 서비스의 공유 상태), Sepolia(살아 있는
+  // 오라클과 MetaMask ERC-7715 팝업). 메뉴가 그중 하나만 가리키고 있었다.
+  //
+  // ⚠️ `ALLOW_CHAINS=true` 가 있어야 뜬다 — .env 에 넣었고, deploy.sh 가 ALLOW_* 를
+  // 전부 Cloud Run env 로 넘기므로 배포 시 따라간다. `ALLOW_DEVNET` 은 배포가 확인될
+  // 때까지 .env 에 남겨 둔다(어느 메뉴도 제어하지 않지만, 롤백 시 이 줄만 되돌리면
+  // 되도록). /devnet 은 next.config.js 에서 /chains 로 리다이렉트된다.
+  { href: "/chains", ko: "체인", en: "Chains", code: "CHAINS", pub: true },
   // 게임 — 내용은 별도 저장소(games/jayverse-game 서브모듈)의 3D 저널 재생.
   // `pub`: /game 라우트는 이미 middleware 의 PUBLIC_PATHS 에 있는데(2026-08-11) 메뉴만
   // 오너 전용이라, 방문자에겐 탭 자체가 없고 오너에게만 보이는 상태였다. 관전 전용이고

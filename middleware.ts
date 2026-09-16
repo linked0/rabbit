@@ -15,7 +15,10 @@ const PUBLIC_PATHS = new Set([
   "/api/relay", // /xyz 용 공개 relay 프록시 (키 불필요)
   "/api/indices", // /market 의 지수 카드용 — 공개 시세, 업스트림 60초 캐시
   "/api/orderbook", // /market 의 Hyperliquid L2 북용 — 공개 info API
-  "/devnet", // 데브넷 상태 + 온체인 주소록 — 읽기 전용(키·서명·트랜잭션 없음), Nav pub (2026-09-15)
+  "/chains", // 세 체인의 상태 + 온체인 주소록 — 읽기 전용(키·서명·트랜잭션 없음), Nav pub (2026-09-16)
+  // /devnet 은 /chains 로 리다이렉트되지만(next.config.js) 목록에 남겨 둔다 — 빼면
+  // 공유된 옛 링크가 리다이렉트 대신 /login 으로 튄다.
+  "/devnet",
   "/projects", // 수행 프로젝트 — 홈에 있던 피처드/프로젝트 전체 (Nav pub, 로그인 불필요)
   "/api/jay-chat", // 홈에 통합된 Jay Chat 의 API — 시간당 토큰 예산 + 버스트 가드로 보호됨
   "/live/ap2", // AP2 — Stripe 정산 데모 (test mode) — 메뉴에선 PoCs 허브 카드로만 노출 (라우트는 공개)
