@@ -27,7 +27,7 @@ const MENU: NavItem[] = [
   // `pub`: /game 라우트는 이미 middleware 의 PUBLIC_PATHS 에 있는데(2026-08-11) 메뉴만
   // 오너 전용이라, 방문자에겐 탭 자체가 없고 오너에게만 보이는 상태였다. 관전 전용이고
   // 서명도 지갑도 없는 화면이라 라우트 쪽 결정에 메뉴를 맞춘다.
-  { href: "/game", ko: "게임", en: "Game", code: "GAME", pub: true },
+  { href: "/game", ko: "jayverse-game", en: "jayverse-game", code: "GAME", pub: true },
   // 마켓·XYZ 는 별도 메뉴에서 PoCs 허브 카드로 통합 (2026-08-03, jay) — 라우트(/market, /xyz)는
   // 그대로 살아있고 진입점만 바뀜. 설계: docs/tasks/current-plan.md §7.
   // 라우트는 /etc → /poc 로 옮겼지만(2026-08-05) `code` 는 URL 이 아니라 env 키(`ALLOW_ETC`)다.
