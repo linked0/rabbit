@@ -344,22 +344,9 @@ export const CAPABILITIES: CapabilityRow[] = [
   },
 ];
 
-// ── Base rails on Sepolia ────────────────────────────────────────────────
-// The devnet's address book is read from the Registry contract, which is the
-// whole point of having one. Sepolia has no Registry of ours, so this short
-// static list stands in — only the rails the fork inherits, at their real
-// addresses. Keep it short: anything we deploy belongs on the devnet.
-export const SEPOLIA_RAILS: { name: string; address: string; note: string; noteKo: string }[] = [
-  {
-    name: "EntryPoint v0.7",
-    address: "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
-    note: "The same address on every chain — the devnet inherits this one from the fork.",
-    noteKo: "모든 체인에서 같은 주소 — 데브넷은 포크를 통해 이것을 물려받는다.",
-  },
-  {
-    name: "ETH / USD feed",
-    address: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
-    note: "Chainlink. Live here; frozen at the fork block on our two chains.",
-    noteKo: "Chainlink. 여기서는 살아 있고, 우리 두 체인에서는 포크 시점에 멈춰 있다.",
-  },
-];
+// Sepolia's base rails used to be listed here, for a panel that grouped
+// contracts by kind. They moved into lib/devnet.ts's SERVICES when jay asked
+// for addresses to sit with the service that owns them (2026-09-16): the
+// EntryPoint belongs to rabbit's account-abstraction work and the Chainlink
+// feed to verex's resolution tests, and saying so is more use than filing
+// both under "rails".

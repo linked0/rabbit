@@ -3,10 +3,11 @@ import NotifyPageView from "@/app/NotifyPageView";
 import AutoRefresh from "./AutoRefresh";
 import {
   fetchStatus, fetchRegistry, probe,
-  CONTRACT_GROUPS, SERVICES, DEVNET_URL, DEVNET_EXPLORER,
+  SERVICES, REGISTRY_NAMES, DEVNET_URL, DEVNET_EXPLORER,
+  type ContractSet,
 } from "@/lib/devnet";
 import {
-  CHAINS, CAPABILITIES, SEPOLIA_RAILS, chainDef, readChains, IN_CLOUD,
+  CHAINS, CAPABILITIES, chainDef, readChains, IN_CLOUD,
   type ChainDef, type ChainKey, type ChainReading, type Cell,
 } from "@/lib/chains";
 import { getLang } from "@/lib/lang";
@@ -31,6 +32,12 @@ import type { Address } from "viem";
 //     (jay, 2026-09-15: "grafana style, simpler");
 //   - the devnet's address book is read from the Registry CONTRACT, never from
 //     a JSON file beside it.
+//
+// Contract addresses live inside the Services section, not in a panel of
+// their own (jay, 2026-09-16). "Which contracts does Verex have, and where"
+// is the question people arrive with; answering it from a separate
+// address-book panel meant reading a service row, scrolling, and matching
+// names by eye. Grouped by owner and then by chain, the answer is in one place.
 //
 // What it adds is the comparison. Three chains that all answer
 // eth_getBlockByNumber look interchangeable from a status page, and they are
@@ -122,12 +129,9 @@ export default async function ChainsPage() {
   // The Registry address comes from the status payload, but the CONTENTS are
   // read from the contract — see the note in lib/devnet.ts.
   const registryAddress = status.registry?.registry as Address | undefined;
-  const wanted = Array.from(
-    new Set([...CONTRACT_GROUPS.flatMap((g) => g.names), ...SERVICES.flatMap((s) => s.contracts)]),
-  );
   const [{ book, count }, liveness] = await Promise.all([
     registryAddress
-      ? fetchRegistry(registryAddress, wanted)
+      ? fetchRegistry(registryAddress, REGISTRY_NAMES)
       : Promise.resolve({ book: {} as Record<string, Address>, count: null as number | null }),
     Promise.all(SERVICES.map((svc) => probe(svc.url))),
   ]);
@@ -460,100 +464,22 @@ export default async function ChainsPage() {
           </p>
         </Panel>
 
-        {/* ---- services ---- */}
-        <Panel title={pick(lang, "서비스와 바라보는 체인", "Services, and the chains they target")}>
-          <table className="gf-table">
-            <thead>
-              <tr>
-                <th>{pick(lang, "서비스", "Service")}</th>
-                <th>{pick(lang, "체인", "Chains")}</th>
-                <th>{pick(lang, "응답", "Reachable")}</th>
-                <th>{pick(lang, "데브넷의 컨트랙트", "Contracts on the devnet")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {SERVICES.map((svc, i) => {
-                const owned = svc.contracts.filter((n) => book[n]);
-                const up = liveness[i] === "up";
-                return (
-                  <tr key={svc.name}>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{svc.name}</div>
-                      {svc.url && (
-                        <a href={svc.url} target="_blank" rel="noreferrer" style={{ fontSize: 11.5 }}>
-                          {svc.url.replace(/^https?:\/\//, "")}
-                        </a>
-                      )}
-                      <div className="gf-note" style={{ marginTop: 2 }}>
-                        {pick(lang, svc.blurbKo, svc.blurb)}
-                      </div>
-                      {svc.note && (
-                        <div className="gf-note">{pick(lang, svc.noteKo ?? svc.note, svc.note)}</div>
-                      )}
-                    </td>
-                    <td>
-                      {svc.chains.map((k) => (
-                        <span key={k} className={`gf-badge gf-badge-${k}`}>
-                          {chainName(chainDef(k))}
-                        </span>
-                      ))}
-                    </td>
-                    <td style={{ whiteSpace: "nowrap" }}>
-                      {svc.url ? (
-                        <>
-                          <span
-                            className="gf-dot"
-                            style={{ background: up ? "#17803d" : "rgba(128,128,128,0.55)" }}
-                          />
-                          {up ? pick(lang, "응답함", "yes") : pick(lang, "무응답", "no answer")}
-                        </>
-                      ) : (
-                        <span style={{ opacity: 0.4 }}>—</span>
-                      )}
-                    </td>
-                    <td>
-                      {owned.length > 0 ? (
-                        owned.map((n) => (
-                          <div key={n} style={{ marginBottom: 2 }}>
-                            <span style={{ display: "inline-block", minWidth: "10rem", fontWeight: 600, fontSize: 11.5 }}>
-                              {n}
-                            </span>
-                            <Addr address={book[n]} explorer={DEVNET_EXPLORER} />
-                          </div>
-                        ))
-                      ) : svc.contracts.length > 0 ? (
-                        <span className="gf-note">
-                          {pick(
-                            lang,
-                            "Registry 에 없음 — 마지막 시드 이후 체인이 초기화됐을 수 있습니다.",
-                            "Not in the Registry — the chain may have reset since the last seed.",
-                          )}
-                        </span>
-                      ) : (
-                        <span style={{ opacity: 0.4 }}>—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <p className="gf-note">
+        {/* ---- services, and everything each one has deployed ----
+             Addresses used to be a panel of their own; jay moved them here
+             (2026-09-16). Each service is a block rather than a table row,
+             because a row with thirteen addresses in one cell is not a row
+             any more. ---- */}
+        <Panel title={pick(lang, "서비스와 배포된 컨트랙트", "Services and their contracts")}>
+          <p className="gf-note" style={{ margin: "6px 0 4px" }}>
+            {pick(lang, "데브넷 주소는 온체인 ", "Devnet addresses are read live from the on-chain ")}
+            <code>Registry</code>
+            {pick(lang, " 에서 매번 새로 읽습니다", "")}
+            {registryAddress && <> — <Addr address={registryAddress} explorer={DEVNET_EXPLORER} /></>}
             {pick(
               lang,
-              "“무응답”이 고장을 뜻하지는 않습니다 — 대부분 아무도 안 쓰면 0 으로 줄어들고, 자고 있는 서비스와 멈춘 서비스는 밖에서 구분되지 않습니다. 체인 뱃지는 각 서비스의 배포 env 와 deployments.json 에서 온 것이고 추측이 아닙니다.",
-              "“No answer” does not mean broken: most of these scale to zero when nobody is using them, and a sleeping service looks identical to a stopped one from out here. The chain badges come from each service's deployed env and deployments.json — they are read, not guessed.",
+              ". Registry 에 없는 주소는 손으로 옮겨 적은 것이고, 그런 항목에는 출처를 적어 두었습니다.",
+              ". Anything not in the Registry is copied by hand, and those entries say where from.",
             )}
-          </p>
-        </Panel>
-
-        {/* ---- address book ---- */}
-        <Panel title={pick(lang, "생태계 컨트랙트", "Ecosystem contracts")}>
-          <p className="gf-note" style={{ margin: "6px 0 10px" }}>
-            {pick(lang, "데브넷은 온체인 ", "On the devnet these are read live from the on-chain ")}
-            <code>Registry</code>
-            {pick(lang, " 에서 직접 읽습니다", "")}
-            {registryAddress && <> — <Addr address={registryAddress} explorer={DEVNET_EXPLORER} /></>}
           </p>
           {!registryAddress && (
             <p className="small gf-bad">
@@ -564,65 +490,130 @@ export default async function ChainsPage() {
               )}
             </p>
           )}
-          {CONTRACT_GROUPS.map((group) => {
-            const rows = group.names.filter((n) => book[n]);
-            if (!rows.length) return null;
+          {/* The status endpoint reports the address the seed last wrote, but
+              the CONTRACT is the authority — and after a chain reset there is
+              nothing at that address. Saying so once, here, beats repeating it
+              beside every name below. */}
+          {registryAddress && count == null && (
+            <p className="small gf-bad">
+              {pick(
+                lang,
+                `데브넷의 Registry 주소(${registryAddress.slice(0, 10)}…)에 코드가 없습니다 — 마지막 시드 이후 체인이 초기화됐습니다. 아래 데브넷 주소들은 scripts/seed.ts 를 다시 돌려야 채워집니다. 손으로 적어 둔 주소(아래 “출처” 표시가 있는 것들)는 영향받지 않습니다.`,
+                `There is no code at the devnet's Registry address (${registryAddress.slice(0, 10)}…) — the chain has been reset since the last seed. The devnet addresses below will fill in once scripts/seed.ts runs again. The hand-copied ones are unaffected.`,
+              )}
+            </p>
+          )}
+
+          {SERVICES.map((svc, i) => {
+            const up = liveness[i] === "up";
+            // Group this service's contract sets by chain, in the page's chain
+            // order, so every service reads the same way top to bottom.
+            const byChain = CHAINS.map((c) => ({
+              chain: c,
+              sets: svc.contracts.filter((set) => set.chain === c.key),
+            })).filter((g) => g.sets.length > 0);
+
             return (
-              <div key={group.title} style={{ marginTop: 14 }}>
-                <div className="gf-subhead">{pick(lang, group.titleKo, group.title)}</div>
-                <div className="gf-note" style={{ marginBottom: 4 }}>{pick(lang, group.blurbKo, group.blurb)}</div>
-                <table className="gf-table">
-                  <tbody>
-                    {rows.map((name) => (
-                      <tr key={name}>
-                        <td style={{ width: "14rem", fontWeight: 600, whiteSpace: "nowrap" }}>{name}</td>
-                        <td><Addr address={book[name]} explorer={DEVNET_EXPLORER} /></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div key={svc.name} className="svc">
+                <div className="svc-head">
+                  <span className="svc-name">{svc.name}</span>
+                  {svc.url && (
+                    <a href={svc.url} target="_blank" rel="noreferrer" className="svc-url">
+                      {svc.url.replace(/^https?:\/\//, "")}
+                    </a>
+                  )}
+                  {svc.chains.map((k) => (
+                    <span key={k} className={`gf-badge gf-badge-${k}`}>
+                      {chainName(chainDef(k))}
+                    </span>
+                  ))}
+                  <span className="svc-live">
+                    {svc.url ? (
+                      <>
+                        <span className="gf-dot" style={{ background: up ? "#17803d" : "rgba(128,128,128,0.55)" }} />
+                        {up ? pick(lang, "응답함", "up") : pick(lang, "무응답", "no answer")}
+                      </>
+                    ) : (
+                      <span style={{ opacity: 0.4 }}>—</span>
+                    )}
+                  </span>
+                </div>
+                <div className="gf-note" style={{ marginTop: 2 }}>{pick(lang, svc.blurbKo, svc.blurb)}</div>
+                {svc.note && <div className="gf-note">{pick(lang, svc.noteKo ?? svc.note, svc.note)}</div>}
+
+                {byChain.length === 0 ? (
+                  <div className="gf-note" style={{ marginTop: 6, opacity: 0.45 }}>
+                    {pick(lang, "배포한 컨트랙트 없음.", "No contracts of its own.")}
+                  </div>
+                ) : (
+                  byChain.map(({ chain: c, sets }) => (
+                    <div key={c.key} className="svc-chain">
+                      <div className="svc-chain-head">
+                        <span className={`gf-badge gf-badge-${c.key}`}>{chainName(c)}</span>
+                      </div>
+                      {sets.map((set: ContractSet, j: number) => (
+                        <div key={j} className="ctr-set">
+                          {set.title && (
+                            <div className="ctr-title">{pick(lang, set.titleKo ?? set.title, set.title)}</div>
+                          )}
+                          {set.note && (
+                            <div className="gf-note" style={{ margin: "2px 0 5px" }}>
+                              {pick(lang, set.noteKo ?? set.note, set.note)}
+                            </div>
+                          )}
+                          {/* Registry-backed. A name the chain no longer has
+                              is reported as missing rather than quietly
+                              dropped — that is the whole point of reading the
+                              contract instead of a JSON file beside it. But
+                              after a reset EVERY name is missing, and one line
+                              per name turns a single fact ("the chain was
+                              reset") into twenty-one alarms. So the misses are
+                              collapsed into one line. */}
+                          {set.names?.filter((n) => book[n]).map((n) => (
+                            <div key={n} className="ctr-row">
+                              <span className="ctr-name">{n}</span>
+                              <Addr address={book[n]} explorer={DEVNET_EXPLORER} />
+                            </div>
+                          ))}
+                          {(() => {
+                            const missing = (set.names ?? []).filter((n) => !book[n]);
+                            if (!missing.length) return null;
+                            return (
+                              <div className="ctr-missing">
+                                <span className="gf-note" style={{ margin: 0 }}>
+                                  {pick(
+                                    lang,
+                                    `Registry 에 없음 (${missing.length}): `,
+                                    `Not in the Registry (${missing.length}): `,
+                                  )}
+                                  {missing.join(", ")}
+                                </span>
+                              </div>
+                            );
+                          })()}
+                          {set.fixed?.map((f) => (
+                            <div key={f.name} className="ctr-row">
+                              <span className="ctr-name">{f.name}</span>
+                              <Addr address={f.address} explorer={c.explorer} />
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  ))
+                )}
               </div>
             );
           })}
 
-          {/* Sepolia has no Registry of ours, so this is a short static list —
-              only the rails the fork inherits, at their real addresses. Anything
-              we deploy belongs on the devnet, where the Registry can be the
-              authority for it. */}
-          <div style={{ marginTop: 18 }}>
-            <div className="gf-subhead">{pick(lang, "Sepolia 의 기본 레일", "Base rails on Sepolia")}</div>
-            <div className="gf-note" style={{ marginBottom: 4 }}>
-              {pick(
-                lang,
-                "데브넷과 로컬 포크가 물려받는 것들 — 우리가 배포한 것이 아니라 포크가 실어 온 것입니다. 여기엔 우리 Registry 가 없으므로 이 목록은 손으로 관리합니다.",
-                "What the devnet and the local fork inherit — carried in by the fork, not deployed by us. We have no Registry here, so this short list is maintained by hand.",
-              )}
-            </div>
-            <table className="gf-table">
-              <tbody>
-                {SEPOLIA_RAILS.map((rail) => (
-                  <tr key={rail.name}>
-                    <td style={{ width: "14rem", fontWeight: 600 }}>
-                      {rail.name}
-                      <div className="gf-note" style={{ margin: 0, fontWeight: 400 }}>
-                        {pick(lang, rail.noteKo, rail.note)}
-                      </div>
-                    </td>
-                    <td><Addr address={rail.address} explorer={chainDef("sepolia").explorer} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
           <p className="gf-note">
             {pick(
               lang,
-              `로컬 포크는 시드를 돌린 뒤에는 데브넷과 같은 주소록을 갖습니다 — 같은 스크립트가 같은 순서로 배포하기 때문입니다. 시드 전에는 위의 기본 레일만 있습니다.${
-                devnetRead.reachable ? "" : " (지금 데브넷을 읽지 못해 주소록이 비어 있습니다.)"
+              `“무응답”이 고장을 뜻하지는 않습니다 — 대부분 아무도 안 쓰면 0 으로 줄어들고, 자고 있는 서비스와 멈춘 서비스는 밖에서 구분되지 않습니다. 로컬 포크는 시드를 돌린 뒤 데브넷과 같은 주소록을 갖습니다 — 같은 스크립트가 같은 순서로 배포하기 때문입니다.${
+                devnetRead.reachable ? "" : " 지금 데브넷을 읽지 못해 Registry 주소가 비어 있습니다."
               }`,
-              `After the seed has run, the local fork carries the same address book as the devnet — the same script deploys the same things in the same order. Before the seed it has only the base rails above.${
-                devnetRead.reachable ? "" : " (The devnet is not answering right now, so the book above is empty.)"
+              `“No answer” does not mean broken: most of these scale to zero when nobody is using them, and a sleeping service looks identical to a stopped one from out here. After the seed has run, the local fork carries the same address book as the devnet — the same script deploys the same things in the same order.${
+                devnetRead.reachable ? "" : " The devnet is not answering right now, so the Registry addresses are empty."
               }`,
             )}
           </p>
