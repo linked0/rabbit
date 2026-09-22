@@ -251,7 +251,7 @@ the archive.</p>
 <tbody><tr>
 <td><strong>V3.1</strong></td>
 <td><strong>LMSR phase B</strong> — on-chain pool + smart routing + slo-mo fallback</td>
-<td>G1 closed <strong>NO</strong> (jay, 2026-08-04): every benefit is a benefit of <em>not trusting the operator</em>, and on Sepolia with test jUSD there is no adversary and nobody who can lose money</td>
+<td>G1 closed <strong>NO</strong> (jay, 2026-08-04): every benefit is a benefit of <em>not trusting the operator</em>, and on Sepolia with test USDC there is no adversary and nobody who can lose money</td>
 <td>mainnet</td>
 </tr>
 <tr>
@@ -276,7 +276,7 @@ the archive.</p>
 <p><strong>One open question that survives from wave 2 and is not written down anywhere else:</strong> who pays
 adapter gas, and who funds the bond. The bond currency is settled — <strong>Sepolia WETH</strong>
 <code>0x7b79995e…98E7f9</code>, chosen for self-service (we wrap it ourselves) over UMA&#39;s zero-final-fee
-jUSD, which we cannot mint. Bond size (0.01 WETH) is an arbitrary demo knob.</p>
+USDC, which we cannot mint. Bond size (0.01 WETH) is an arbitrary demo knob.</p>
 <h3 id="v4--roadmap-steps-with-no-code-at-all-">V4 — roadmap steps with no code at all ⬜ <a id="v4"></a></h3>
 <p>Re-confirmed 2026-08-21 against <code>packages/*/src</code>. These are roadmap items, not owed work; they
 are here so a cold session does not have to re-grep to learn they are empty.</p>
@@ -390,7 +390,7 @@ are here so a cold session does not have to re-grep to learn they are empty.</p>
 </tr>
 <tr>
 <td><strong>Phase 1 — Core (CTF v2)</strong> · <strong>S2</strong></td>
-<td>- [ ] <strong>Gnosis CTF 분석 (~2일)</strong> — <code>IConditionalTokens</code> 인터페이스 + 5 핵심 함수 (<code>prepareCondition</code> / <code>splitPosition</code> / <code>mergePositions</code> / <code>redeemPositions</code> / <code>reportPayouts</code>) + position ID 수학 + Polymarket Exchange가 CTF를 어떻게 호출하는지 → reading note <code>docs/analysis/gnosis-ctf-research.md</code><br>- [ ] <a href="https://github.com/Polymarket/ctf-exchange">Polymarket CTF Exchange</a> import + Gnosis CTF (ERC-1155) 통합<br>- [ ] jUSD mock collateral (anvil)<br>- [ ] <strong>Manual oracle (Stage 1 of 3)</strong> — operator EOA가 <code>prepareCondition(ourEOA, ...)</code> + <code>reportPayouts(...)</code> 직접 호출. Chainlink/UMA 도입 전까지 모든 마켓의 resolve 경로 (§2.2.7)<br>- [ ] SDK 표면 전환 — <code>buyYes/buyNo</code> → <code>fillOrder/fillOrders</code> + <code>signOrder</code> (EIP-712)<br>- [ ] MM Agent v0 (paper-trading) — CLOB가 동작할 최소 maker<br>- [ ] CLI을 order-based flow로 갱신</td>
+<td>- [ ] <strong>Gnosis CTF 분석 (~2일)</strong> — <code>IConditionalTokens</code> 인터페이스 + 5 핵심 함수 (<code>prepareCondition</code> / <code>splitPosition</code> / <code>mergePositions</code> / <code>redeemPositions</code> / <code>reportPayouts</code>) + position ID 수학 + Polymarket Exchange가 CTF를 어떻게 호출하는지 → reading note <code>docs/analysis/gnosis-ctf-research.md</code><br>- [ ] <a href="https://github.com/Polymarket/ctf-exchange">Polymarket CTF Exchange</a> import + Gnosis CTF (ERC-1155) 통합<br>- [ ] USDC mock collateral (anvil)<br>- [ ] <strong>Manual oracle (Stage 1 of 3)</strong> — operator EOA가 <code>prepareCondition(ourEOA, ...)</code> + <code>reportPayouts(...)</code> 직접 호출. Chainlink/UMA 도입 전까지 모든 마켓의 resolve 경로 (§2.2.7)<br>- [ ] SDK 표면 전환 — <code>buyYes/buyNo</code> → <code>fillOrder/fillOrders</code> + <code>signOrder</code> (EIP-712)<br>- [ ] MM Agent v0 (paper-trading) — CLOB가 동작할 최소 maker<br>- [ ] CLI을 order-based flow로 갱신</td>
 <td>- [ ] <strong>CTF mint → split → merge → redeem 한 사이클이 Foundry 테스트로 통과</strong><br>- [ ] CTF order fill end-to-end on anvil<br>- [ ] MM v0가 양방향 quote 유지<br>- [ ] Manual operator가 마켓을 resolve해서 winner가 redeem</td>
 </tr>
 <tr>
@@ -415,8 +415,8 @@ are here so a cold session does not have to re-grep to learn they are empty.</p>
 </tr>
 <tr>
 <td><strong>Phase 3 — Advanced</strong> · <strong>S7</strong></td>
-<td>- [ ] <strong>AA 전략 결정 — ERC-4337 / EIP-7702 / hybrid (§11.4 B2)</strong> → ADR <code>0002-aa-strategy.md</code><br>- [ ] AA wallet 구현 + Web AA 통합<br>- [ ] <strong>session key 권한 모델 확정</strong> (§11.1 미결 1번)<br>- [ ] <strong>One-click betting (production)</strong> — <code>approve(jUSD)</code> + <code>fillOrder</code> 1 서명 (§11.4 B3)<br>- [ ] <strong>Auto-claim delegate 컨트랙트 + scheduler</strong> (§11.4 B6) — 사용자 EOA에 대해 ONLY <code>redeemPositions</code> 허용하는 최소 delegate; backend scheduler가 resolved 마켓 watch하고 자동 트리거</td>
-<td>- [ ] 사용자가 AA wallet으로 베팅<br>- [ ] 1 서명으로 approve+fill 동작<br>- [ ] resolved 마켓의 winner가 수동 호출 없이 jUSD 수령</td>
+<td>- [ ] <strong>AA 전략 결정 — ERC-4337 / EIP-7702 / hybrid (§11.4 B2)</strong> → ADR <code>0002-aa-strategy.md</code><br>- [ ] AA wallet 구현 + Web AA 통합<br>- [ ] <strong>session key 권한 모델 확정</strong> (§11.1 미결 1번)<br>- [ ] <strong>One-click betting (production)</strong> — <code>approve(USDC)</code> + <code>fillOrder</code> 1 서명 (§11.4 B3)<br>- [ ] <strong>Auto-claim delegate 컨트랙트 + scheduler</strong> (§11.4 B6) — 사용자 EOA에 대해 ONLY <code>redeemPositions</code> 허용하는 최소 delegate; backend scheduler가 resolved 마켓 watch하고 자동 트리거</td>
+<td>- [ ] 사용자가 AA wallet으로 베팅<br>- [ ] 1 서명으로 approve+fill 동작<br>- [ ] resolved 마켓의 winner가 수동 호출 없이 USDC 수령</td>
 </tr>
 <tr>
 <td><strong>Phase 3 — Advanced</strong> · <strong>S8</strong></td>
@@ -425,7 +425,7 @@ are here so a cold session does not have to re-grep to learn they are empty.</p>
 </tr>
 <tr>
 <td><strong>Phase 3 — Advanced</strong> · <strong>S9</strong></td>
-<td>- [ ] Stripe checkout → backend → mock jUSD 지급<br>- [ ] GCP Cloud Run 배포 (API + MM Agent)<br>- [ ] GitHub Actions CI/CD</td>
+<td>- [ ] Stripe checkout → backend → mock USDC 지급<br>- [ ] GCP Cloud Run 배포 (API + MM Agent)<br>- [ ] GitHub Actions CI/CD</td>
 <td>- [ ] Stripe 결제 → 베팅 가능<br>- [ ] staging 환경 가동</td>
 </tr>
 <tr>
@@ -513,7 +513,7 @@ are here so a cold session does not have to re-grep to learn they are empty.</p>
 <ul>
 <li><strong><a href="https://github.com/Polymarket/ctf-exchange">Polymarket CTF Exchange</a></strong> — off-chain match · on-chain settle, EIP-712 signed orders</li>
 <li><strong><a href="https://docs.gnosis.io/conditionaltokens/">Gnosis Conditional Tokens Framework</a> (CTF)</strong> — outcome 토큰을 ERC-1155로 발행/병합/지급</li>
-<li><strong>jUSD</strong> (또는 동급 ERC-20) — collateral</li>
+<li><strong>USDC</strong> (또는 동급 ERC-20) — collateral</li>
 <li><strong>UMA optimistic oracle</strong> (S6 통합) — owner manual resolve 대체</li>
 </ul>
 <p>핵심 기능:</p>
@@ -613,7 +613,7 @@ GET /positions/:user
 <p><strong>EIP-7702 기반 사용자 대면 기능 (S7~S8 산출)</strong>:</p>
 <p>선택된 AA 전략이 EIP-7702 또는 hybrid일 때 활성화:</p>
 <ul>
-<li><strong>One-click betting</strong> (S7) — <code>approve(jUSD)</code> + <code>fillOrder</code> 1 서명. 기존 2~3 팝업 흐름 → 1 서명.</li>
+<li><strong>One-click betting</strong> (S7) — <code>approve(USDC)</code> + <code>fillOrder</code> 1 서명. 기존 2~3 팝업 흐름 → 1 서명.</li>
 <li><strong>Auto-claim</strong> (S7) — resolved 마켓의 <code>redeemPositions</code>를 사용자가 잊어도 backend scheduler가 자동 호출. 사용자 EOA에 ONLY <code>redeemPositions</code> 허용하는 최소 delegate (audit-grade) 사용.</li>
 <li><strong>Gasless onboarding</strong> (S8) — 신규 사용자의 첫 N=5 거래를 Paymaster가 후원. ETH 0으로 첫 베팅 가능. Per-wallet spend tracker로 N번째 후 후원 중단.</li>
 </ul>
@@ -625,7 +625,7 @@ GET /positions/:user
 </ul>
 <h4 id="2210-payment-stripe">2.2.10 Payment (Stripe)</h4>
 <ul>
-<li>Stripe → Backend → Test jUSD 지급</li>
+<li>Stripe → Backend → Test USDC 지급</li>
 <li>목적: Web2 UX 제공</li>
 </ul>
 <h4 id="2211-mm-agent-market-maker-신규-subproject">2.2.11 MM Agent (Market Maker, <strong>신규 subproject</strong>)</h4>
@@ -685,7 +685,7 @@ GET /positions/:user
 <h3 id="phase-1-core-step-13">Phase 1: Core (Step 1~3)</h3>
 <ul>
 <li><strong>S1 (scaffold)</strong> — parimutuel <code>Market</code>/<code>MarketFactory</code> + SDK + CLI. SDK/CLI 구조 검증을 위한 학습 패스. (<code>planning</code> 브랜치 history.)</li>
-<li><strong>S2 (CTF v2 백본)</strong> — <a href="https://github.com/Polymarket/ctf-exchange">Polymarket CTF Exchange</a> + Gnosis CTF (ERC-1155) + jUSD mock + MM Agent v0 (paper) + SDK 표면 전환 (<code>fillOrder</code>)</li>
+<li><strong>S2 (CTF v2 백본)</strong> — <a href="https://github.com/Polymarket/ctf-exchange">Polymarket CTF Exchange</a> + Gnosis CTF (ERC-1155) + USDC mock + MM Agent v0 (paper) + SDK 표면 전환 (<code>fillOrder</code>)</li>
 <li><strong>S3</strong> — Web MVP (Polymarket-style 실데이터) + <code>packages/mcp-server</code> 스캐폴딩</li>
 </ul>
 <h3 id="phase-2-infra--data-step-46">Phase 2: Infra + Data (Step 4~6)</h3>
@@ -711,7 +711,7 @@ GET /positions/:user
 </ul>
 <h3 id="45-백엔드-버전-분리-v1--v2">4.5 백엔드 버전 분리 (v1 / v2)</h3>
 <blockquote>
-<p><strong>Historical note (2026-05-11 갱신)</strong>: 이전 plan은 Phase 1 (S1~3)을 v1 (fixed-price escrow), Phase 2 S6에 v2 (CTF) 전환으로 두었음. 운영자 prior CTF 경험을 반영해 <strong>v2를 S2부터 메인 백본</strong>으로 당김. S1의 parimutuel <code>Market</code>/<code>MarketFactory</code> 코드는 SDK/CLI 모양 검증용 학습 패스로 <code>planning</code> 브랜치 history에 보존 — 메인 라인은 S2의 CTF Exchange + Gnosis CTF + jUSD.</p>
+<p><strong>Historical note (2026-05-11 갱신)</strong>: 이전 plan은 Phase 1 (S1~3)을 v1 (fixed-price escrow), Phase 2 S6에 v2 (CTF) 전환으로 두었음. 운영자 prior CTF 경험을 반영해 <strong>v2를 S2부터 메인 백본</strong>으로 당김. S1의 parimutuel <code>Market</code>/<code>MarketFactory</code> 코드는 SDK/CLI 모양 검증용 학습 패스로 <code>planning</code> 브랜치 history에 보존 — 메인 라인은 S2의 CTF Exchange + Gnosis CTF + USDC.</p>
 </blockquote>
 <p><strong>무엇이 S1에서 S2로 carry over하나</strong></p>
 <ul>
@@ -994,7 +994,7 @@ GET /positions/:user
 </tr>
 <tr>
 <td>B3</td>
-<td>배치 트랜잭션 PoC — jUSD <code>approve</code> + <code>createPosition</code> 1 서명</td>
+<td>배치 트랜잭션 PoC — USDC <code>approve</code> + <code>createPosition</code> 1 서명</td>
 <td>MEDIUM</td>
 <td>S7 PoC 단계</td>
 <td><code>packages/contracts/src/BatchExecutor.sol</code> (또는 외부 audited contract 채택)</td>

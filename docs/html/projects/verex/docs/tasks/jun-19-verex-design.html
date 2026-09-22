@@ -298,11 +298,11 @@ Recharts probability chart, market grid, hot-markets sidebar. Detail page: chart
 rules + conditionId, recent activity, sticky Buy/Sell trade panel.</li>
 <li><strong>Real contracts</strong>: every market is an on-chain CTF condition on anvil (seed deploys the
 backbone via <code>DeployCTF.s.sol</code>, then <code>prepareCondition</code> → <code>registerToken</code> → operator splits
-10k jUSD inventory per market). Addresses live in the DB (<code>ChainConfig</code>) — no env coordination.</li>
+10k USDC inventory per market). Addresses live in the DB (<code>ChainConfig</code>) — no env coordination.</li>
 <li><strong>Trading</strong>: every Buy/Sell is a real <code>CTFExchange.fillOrder</code> tx — the user (demo anvil
 account 1–5, keys server-side) signs the maker order, the operator (account 0) fills from its
 inventory. Auto-faucet keeps the flow one-click. DB mirrors each fill: price impact (linear,
-L=2000 jUSD), volume, trade log, chart point. Production wallet path (MetaMask → AA session
+L=2000 USDC), volume, trade log, chart point. Production wallet path (MetaMask → AA session
 keys) stays the S7 track.</li>
 <li><strong>Run locally</strong>: <code>anvil</code> → <code>pnpm --filter @verex/api db:reset</code> (migrate + deploy + seed) →
 <code>pnpm --filter @verex/api dev</code> → <code>pnpm --filter @verex/web dev</code>.</li>
