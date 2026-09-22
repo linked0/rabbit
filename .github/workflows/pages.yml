@@ -1,0 +1,46 @@
+# Publish docs/ to GitHub Pages (jay, 2026-09-22).
+#
+# Why this file exists: the legacy Pages builder clones the repository *with its submodules*, and
+# games/jayverse-game is private. It cannot authenticate, so every build since 2026-09-11 failed with
+# "Page build failed" and the site kept serving the 2026-09-11 copy — which is how a README edited on
+# the 22nd still showed September-11 content on linked0.github.io/rabbit.
+#
+# actions/checkout does not fetch submodules unless asked, so simply not asking fixes it. The game is
+# not part of the docs site and never needed to be checked out to publish it.
+#
+# Jekyll is not run. Every .md in this repo is already rendered to docs/html/ by
+# scripts/generate-docs-html.mjs, and every link in the site points at that output — nothing links to
+# Jekyll's rendering of the loose .md files. Uploading docs/ as-is therefore produces the same site
+# with one less thing that can break. docs/.nojekyll makes that explicit to Pages.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false      # let a running deploy finish rather than publishing a half-built site
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false      # the point of this workflow — see the note above
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deployment
+        uses: actions/deploy-pages@v4
