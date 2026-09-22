@@ -375,6 +375,14 @@ again. Both repos publish GitHub Pages, so nothing went dark:
   `linked0.github.io/alice/html/docs/…`, which never resolved: alice serves from its repo root,
   so the working prefix is `/docs/html/docs/…`. Those cards are local again, so the bad URL is
   simply gone.
+- **The card *labels* were wrong too, not just the hrefs** (jay spotted it from the rendered
+  page). Three cards still read `docs/features/README.md`, `docs/tasks/`, `docs/history/` — paths
+  that no longer exist in alice. They now read `rabbit · docs/…`, with the full URL on hover,
+  following the `·` separator the Eng card already uses. The **"Rabbit — Docs"** card went the
+  same way: it was titled Rabbit but pointed at alice's own docs index. One consequence to
+  note — alice's own 1516-page docs index now has no card pointing at it; Knowledge Notes, Eng
+  and Memo cover the parts jay actually opens, but a dedicated "Alice — Docs" card would close
+  the gap if he wants one.
 - **alice has two index pages that must be hand-synced.** `alice/index.html` is what Pages
   actually serves (it carries `<base href="docs/">`); `alice/docs/index.html` is a near-copy.
   Both were updated. A change to one that misses the other goes unnoticed.

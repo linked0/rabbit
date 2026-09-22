@@ -495,6 +495,14 @@ from <code>docs/history/*.md</code> and nothing else, so with the folder gone it
 <code>linked0.github.io/alice/html/docs/…</code>, which never resolved: alice serves from its repo root,
 so the working prefix is <code>/docs/html/docs/…</code>. Those cards are local again, so the bad URL is
 simply gone.</li>
+<li><strong>The card <em>labels</em> were wrong too, not just the hrefs</strong> (jay spotted it from the rendered
+page). Three cards still read <code>docs/features/README.md</code>, <code>docs/tasks/</code>, <code>docs/history/</code> — paths
+that no longer exist in alice. They now read <code>rabbit · docs/…</code>, with the full URL on hover,
+following the <code>·</code> separator the Eng card already uses. The <strong>&quot;Rabbit — Docs&quot;</strong> card went the
+same way: it was titled Rabbit but pointed at alice&#39;s own docs index. One consequence to
+note — alice&#39;s own 1516-page docs index now has no card pointing at it; Knowledge Notes, Eng
+and Memo cover the parts jay actually opens, but a dedicated &quot;Alice — Docs&quot; card would close
+the gap if he wants one.</li>
 <li><strong>alice has two index pages that must be hand-synced.</strong> <code>alice/index.html</code> is what Pages
 actually serves (it carries <code>&lt;base href=&quot;docs/&quot;&gt;</code>); <code>alice/docs/index.html</code> is a near-copy.
 Both were updated. A change to one that misses the other goes unnoticed.</li>
