@@ -9,27 +9,39 @@ open, across repos. The sections below are the Chains brief, which is only one o
 |---|---|---|
 | **Docs move** — `features/`, `tasks/`, `history/` back from alice | **Done.** Pushed both repos; alice's cards verified live | [§8](#docsmove) — jay: the `CLAUDE.md` path, below |
 | **Chains menu** (this brief) | **Shipped.** `www.jaylabs.xyz/chains` returns 200; the work is on `main` (`3150f9c`, `e558625`) | §0's "nothing committed" is stale — see the note under it |
-| **Verex tradable** ← *the actual goal* | **Blocked.** Devnet is healthy, but Verex's DB has no markets | jay: run the seed, or approve a Cloud Run job |
-| **Jayverse devnet** | **Stable.** `e2-standard-2`, 6000 MiB cap, healthy, block 11,710,497 on fork 11,701,069 | jay: `DEVNET_DATA=/data` needs an *instance-metadata* edit |
+| **Verex tradable** ← *the actual goal* | **Blocked.** Devnet is healthy, but Verex's DB has no markets | **[D1](#decide)** |
+| **Jayverse devnet** | **Stable.** `e2-standard-2`, 6000 MiB cap, healthy, block 11,710,497 on fork 11,701,069 | **[D3](#decide)** |
 | **JYVE exchange** | **Fixed and deployed** — `swapJusdForJyve` → `swapUsdcForJyve`, revision `00003-98l` | none |
-| **Burrow** (Unity WebGL) | **Built, not deployed.** `burrow.jaylabs.xyz` does not resolve, and alice's Game chip points at it | jay: decide how the 5 MB bundle reaches the rabbit image |
+| **Burrow** (Unity WebGL) | **Built, not deployed.** `burrow.jaylabs.xyz` does not resolve, and alice's Game chip points at it | **[D2](#decide)** |
 
-### What is jay's, in order
+### Decisions waiting on jay <a id="decide"></a>
+
+Each of these is a fork in the road that an agent should not pick for jay. Recommendation given,
+because "your call" with no opinion is not help.
+
+| # | Decision | Options | Recommended | If left undecided |
+|---|---|---|---|---|
+| **D1** | **How to seed Verex** — the goal, *"make the verex tradable"* | **(a)** jay runs the ready command himself, holding the secrets · **(b)** a Cloud Run job from the verex-api image with the same `secretKeyRef` entries — GCP injects the secrets, this session never sees them | **(b)** — repeatable, auditable, and nothing is pasted into a terminal. Cost is one job execution, cents | Verex stays untradable. Nothing else unblocks it |
+| **D2** | **How the 5 MB Burrow bundle reaches the rabbit image** | **(a)** commit `Build/WebGL/` into rabbit · **(b)** push it to a GCS bucket and serve from there · **(c)** its own Cloud Run service | **(a)** — the deploy is `--source .`, so a committed bundle just ships. +5 MB to the repo, once | `burrow.jaylabs.xyz` does not resolve, and the Game chip on both portals stays a dead link |
+| **D3** | **Whether to move anvil onto the durable disk** (`DEVNET_DATA=/data`, via **instance metadata**, not a file edit) | **(a)** do it in a maintenance window · **(b)** leave it | **(b) for now.** The next boot would load the 829 MB `/data/anvil.json` — a *different* chain — and may OOM. The devnet is stable today; do not trade that for durability without a window | Anvil keeps running off a Docker named volume. Survives restarts, would not survive the VM being recreated |
+
+**Not decisions, just jay's to do** — in order:
 
 1. **`~/.claude/CLAUDE.md` still names `~/work/alice/docs/history/`** as the central history
    folder. It is `~/work/rabbit/docs/history/` now. Every fresh session will misfile the day's
-   log until that line changes — this is the only item that quietly corrupts *future* work, so
-   it goes first. Same fix in `feedback_per_project_history_files.md` and
+   log until that line changes — the only item here that quietly corrupts *future* work, so it
+   goes first. Same fix in `feedback_per_project_history_files.md` and
    `feedback_rabbit_work_folder.md`.
-2. **Seed Verex against the devnet.** The backbone Verex needs is already live there via the
-   Sepolia fork — confirmed today: jUSD `0xAc0328f4…` (3260 bytes of code), CTF `0xEB100D76…`
-   (29544), Exchange `0xcB2271f5…` (28272). Seeding onto *those* addresses rather than freshly
-   deployed ones makes Verex immune to the next devnet state loss. The command is ready; it
-   needs two secrets this session is not allowed to read. The alternative, which exposes them to
-   nobody, is a Cloud Run job built from the verex-api image with the same `secretKeyRef`
-   entries — say the word.
-3. **Burrow's §1a decision** — how the WebGL bundle reaches the rabbit image. Until then the
-   Game chip on both portals is a dead link.
+2. **Install `node` on the devnet VM**, then re-enable `jayverse-devnet-reseed.timer`. It is
+   `systemctl disable`d today because the VM has no node runtime, so the reseed check cannot run.
+
+**Minor, whenever** — an "Alice — Docs" card to replace the entry point alice lost; a custom
+domain for rabbit's docs (they are only on `linked0.github.io/rabbit`); the four dangling
+`../topics/…` links inside the moved folders; and the **Rabbit — Current Plan** card, below.
+
+**Cost note** (standing instruction): the devnet VM is the one line that moved. `e2-small` →
+`e2-standard-2` takes it from roughly $20 to **$50–70/mo**, against a ~$120 estate. Nothing else
+in this list changes the bill; D1 and D2 are cents.
 
 ### Known-stale elsewhere
 

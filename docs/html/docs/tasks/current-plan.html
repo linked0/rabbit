@@ -60,12 +60,12 @@ open, across repos. The sections below are the Chains brief, which is only one o
 <tr>
 <td><strong>Verex tradable</strong> ← <em>the actual goal</em></td>
 <td><strong>Blocked.</strong> Devnet is healthy, but Verex&#39;s DB has no markets</td>
-<td>jay: run the seed, or approve a Cloud Run job</td>
+<td><strong><a href="#decide">D1</a></strong></td>
 </tr>
 <tr>
 <td><strong>Jayverse devnet</strong></td>
 <td><strong>Stable.</strong> <code>e2-standard-2</code>, 6000 MiB cap, healthy, block 11,710,497 on fork 11,701,069</td>
-<td>jay: <code>DEVNET_DATA=/data</code> needs an <em>instance-metadata</em> edit</td>
+<td><strong><a href="#decide">D3</a></strong></td>
 </tr>
 <tr>
 <td><strong>JYVE exchange</strong></td>
@@ -75,26 +75,60 @@ open, across repos. The sections below are the Chains brief, which is only one o
 <tr>
 <td><strong>Burrow</strong> (Unity WebGL)</td>
 <td><strong>Built, not deployed.</strong> <code>burrow.jaylabs.xyz</code> does not resolve, and alice&#39;s Game chip points at it</td>
-<td>jay: decide how the 5 MB bundle reaches the rabbit image</td>
+<td><strong><a href="#decide">D2</a></strong></td>
 </tr>
 </tbody></table>
-<h3 id="what-is-jays-in-order">What is jay&#39;s, in order</h3>
+<h3 id="decisions-waiting-on-jay">Decisions waiting on jay <a id="decide"></a></h3>
+<p>Each of these is a fork in the road that an agent should not pick for jay. Recommendation given,
+because &quot;your call&quot; with no opinion is not help.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Options</th>
+<th>Recommended</th>
+<th>If left undecided</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>D1</strong></td>
+<td><strong>How to seed Verex</strong> — the goal, <em>&quot;make the verex tradable&quot;</em></td>
+<td><strong>(a)</strong> jay runs the ready command himself, holding the secrets · <strong>(b)</strong> a Cloud Run job from the verex-api image with the same <code>secretKeyRef</code> entries — GCP injects the secrets, this session never sees them</td>
+<td><strong>(b)</strong> — repeatable, auditable, and nothing is pasted into a terminal. Cost is one job execution, cents</td>
+<td>Verex stays untradable. Nothing else unblocks it</td>
+</tr>
+<tr>
+<td><strong>D2</strong></td>
+<td><strong>How the 5 MB Burrow bundle reaches the rabbit image</strong></td>
+<td><strong>(a)</strong> commit <code>Build/WebGL/</code> into rabbit · <strong>(b)</strong> push it to a GCS bucket and serve from there · <strong>(c)</strong> its own Cloud Run service</td>
+<td><strong>(a)</strong> — the deploy is <code>--source .</code>, so a committed bundle just ships. +5 MB to the repo, once</td>
+<td><code>burrow.jaylabs.xyz</code> does not resolve, and the Game chip on both portals stays a dead link</td>
+</tr>
+<tr>
+<td><strong>D3</strong></td>
+<td><strong>Whether to move anvil onto the durable disk</strong> (<code>DEVNET_DATA=/data</code>, via <strong>instance metadata</strong>, not a file edit)</td>
+<td><strong>(a)</strong> do it in a maintenance window · <strong>(b)</strong> leave it</td>
+<td><strong>(b) for now.</strong> The next boot would load the 829 MB <code>/data/anvil.json</code> — a <em>different</em> chain — and may OOM. The devnet is stable today; do not trade that for durability without a window</td>
+<td>Anvil keeps running off a Docker named volume. Survives restarts, would not survive the VM being recreated</td>
+</tr>
+</tbody></table>
+<p><strong>Not decisions, just jay&#39;s to do</strong> — in order:</p>
 <ol>
 <li><strong><code>~/.claude/CLAUDE.md</code> still names <code>~/work/alice/docs/history/</code></strong> as the central history
 folder. It is <code>~/work/rabbit/docs/history/</code> now. Every fresh session will misfile the day&#39;s
-log until that line changes — this is the only item that quietly corrupts <em>future</em> work, so
-it goes first. Same fix in <code>feedback_per_project_history_files.md</code> and
+log until that line changes — the only item here that quietly corrupts <em>future</em> work, so it
+goes first. Same fix in <code>feedback_per_project_history_files.md</code> and
 <code>feedback_rabbit_work_folder.md</code>.</li>
-<li><strong>Seed Verex against the devnet.</strong> The backbone Verex needs is already live there via the
-Sepolia fork — confirmed today: jUSD <code>0xAc0328f4…</code> (3260 bytes of code), CTF <code>0xEB100D76…</code>
-(29544), Exchange <code>0xcB2271f5…</code> (28272). Seeding onto <em>those</em> addresses rather than freshly
-deployed ones makes Verex immune to the next devnet state loss. The command is ready; it
-needs two secrets this session is not allowed to read. The alternative, which exposes them to
-nobody, is a Cloud Run job built from the verex-api image with the same <code>secretKeyRef</code>
-entries — say the word.</li>
-<li><strong>Burrow&#39;s §1a decision</strong> — how the WebGL bundle reaches the rabbit image. Until then the
-Game chip on both portals is a dead link.</li>
+<li><strong>Install <code>node</code> on the devnet VM</strong>, then re-enable <code>jayverse-devnet-reseed.timer</code>. It is
+<code>systemctl disable</code>d today because the VM has no node runtime, so the reseed check cannot run.</li>
 </ol>
+<p><strong>Minor, whenever</strong> — an &quot;Alice — Docs&quot; card to replace the entry point alice lost; a custom
+domain for rabbit&#39;s docs (they are only on <code>linked0.github.io/rabbit</code>); the four dangling
+<code>../topics/…</code> links inside the moved folders; and the <strong>Rabbit — Current Plan</strong> card, below.</p>
+<p><strong>Cost note</strong> (standing instruction): the devnet VM is the one line that moved. <code>e2-small</code> →
+<code>e2-standard-2</code> takes it from roughly $20 to <strong>$50–70/mo</strong>, against a ~$120 estate. Nothing else
+in this list changes the bill; D1 and D2 are cents.</p>
 <h3 id="known-stale-elsewhere">Known-stale elsewhere</h3>
 <ul>
 <li><code>../features/jayverse-devnet.md</code> and <code>../features/cloud-ops.md</code> still describe the devnet as
