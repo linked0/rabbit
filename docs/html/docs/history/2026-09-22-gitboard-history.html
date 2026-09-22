@@ -57,6 +57,13 @@ one: <code>alice port=4173 state=up open=http://localhost:4173</code> while <cod
 <code>http://100.111.162.0:…</code>. &quot;down&quot; on this row means the preview is not being served, which is its
 normal state.</li>
 </ul>
+<h3 id="service-cards-sort-by-name-and-the-chain-is-renamed-to-sort-with-them">Service cards sort by name, and the chain is renamed to sort with them</h3>
+<ul>
+<li><strong>Cause:</strong> jay, looking at the row with alice newly added: &quot;It should sort alphabetically&quot;, and &quot;Not Local Anvil — Anvil - Local&quot;.</li>
+<li><strong>Reasoning:</strong> the two are one request. Sorting by name only helps if the names are the ones you would look under, and &quot;Local Anvil&quot; files the chain under L, away from everything. Renaming it puts it where the eye goes. The sort belongs in <code>services()</code>, not in a reordered <code>SERVICES</code> array: that array is grouped editorially and its comments explain why each entry sits where it does — the anvil entry carries a paragraph about being probed as a chain rather than a web page. Sorting the output keeps both the comments and a scannable list. <code>localeCompare</code> rather than <code>&lt;</code>, so neither capitalisation nor the em dash decides the order: <code>gitboard</code> lands between Game and Number, where you would look for it, instead of after every capitalised name.</li>
+<li><strong>Change:</strong> <code>byName</code> comparator applied to both the local and remote lists in <code>services()</code>; <code>Local Anvil</code> → <code>Anvil — Local</code>, with the repo&#39;s existing em dash rather than the hyphen jay typed, to match <code>DeFi — jeETH</code>.</li>
+<li><strong>Result:</strong> Alice notes, Anvil — Local, DeFi — jeETH, Game, gitboard, Number, Rabbit, Token/Exchange, Verex API, Verex web, Wallet. Verified on a scratch instance on 4399 before touching the launchd one.</li>
+</ul>
 
   </article>
 </div>

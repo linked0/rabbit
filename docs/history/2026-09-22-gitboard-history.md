@@ -21,3 +21,10 @@ Source: no task or design doc — a one-line request from jay while working on a
   one: `alice port=4173 state=up open=http://localhost:4173` while `defi` and `gitboard` keep
   `http://100.111.162.0:…`. "down" on this row means the preview is not being served, which is its
   normal state.
+
+### Service cards sort by name, and the chain is renamed to sort with them
+
+- **Cause:** jay, looking at the row with alice newly added: "It should sort alphabetically", and "Not Local Anvil — Anvil - Local".
+- **Reasoning:** the two are one request. Sorting by name only helps if the names are the ones you would look under, and "Local Anvil" files the chain under L, away from everything. Renaming it puts it where the eye goes. The sort belongs in `services()`, not in a reordered `SERVICES` array: that array is grouped editorially and its comments explain why each entry sits where it does — the anvil entry carries a paragraph about being probed as a chain rather than a web page. Sorting the output keeps both the comments and a scannable list. `localeCompare` rather than `<`, so neither capitalisation nor the em dash decides the order: `gitboard` lands between Game and Number, where you would look for it, instead of after every capitalised name.
+- **Change:** `byName` comparator applied to both the local and remote lists in `services()`; `Local Anvil` → `Anvil — Local`, with the repo's existing em dash rather than the hyphen jay typed, to match `DeFi — jeETH`.
+- **Result:** Alice notes, Anvil — Local, DeFi — jeETH, Game, gitboard, Number, Rabbit, Token/Exchange, Verex API, Verex web, Wallet. Verified on a scratch instance on 4399 before touching the launchd one.
