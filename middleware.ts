@@ -35,15 +35,6 @@ const PUBLIC_PATHS = new Set([
   "/poc/oz-relayer",
   // TIL 상세 — LMSR/하이브리드 AMM 정독 노트. 읽기 전용 정적 페이지라 /til 과 함께 공개.
   "/til/lmsr-hybrid-amm",
-  // 게임 카드는 /poc 에서 비로그인 방문자에게도 보이는데 라우트가 막혀 있어 클릭하면
-  // /login 으로 튀었다 (2026-08-11 발견 — oz-relayer 때와 같은 실패 유형). 자리표시자
-  // 캔버스 게임이라 오너 전용 데이터가 없고, 카드가 공개면 라우트도 공개여야 한다.
-  "/game",
-  // 게임 정적 번들의 루트. 하위 경로(/jayverse-game/street, /jayverse-game/_next/...)는
-  // 아래 matcher 의 `jayverse-game/` 제외로 미들웨어를 아예 안 타지만, 슬래시가 없는 이
-  // 한 경로만은 그 제외에 안 걸려 여기서 열어준다 — next.config.js 가 index.html 로 잇는
-  // 게임 랜딩이라, 빠뜨리면 방문자에게만 /login 으로 튄다.
-  "/jayverse-game",
 ]);
 
 // /poc 와 /live 아래는 전부 공개다 (2026-08-11 /poc, 2026-08-26 /live).
@@ -98,10 +89,9 @@ export default auth((req) => {
 
 export const config = {
   // Next 정적 리소스/아이콘(파비콘·App Router icon) 제외, 나머지 전부 미들웨어 통과.
-  // jayverse-game/ 는 /game 에 임베드되는 정적 게임 번들(public/jayverse-game/, 서브모듈
-  // 정적 export) — 오너 데이터가 없는 읽기 전용 데모라 profile·whitepaper 처럼 통째로 제외한다.
-  // 안 그러면 게임의 모든 에셋 요청이 인증에 걸려 /login 으로 302 된다.
+  // 게임 번들 제외는 2026-09-22 에 빠졌다 — 게임이 서브모듈 임베드를 그만두고
+  // game.jaylabs.xyz 로 나갔으므로 이 앱이 게임 에셋을 서빙할 일이 없다.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|profile/|whitepaper/|jayverse-game/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|profile/|whitepaper/).*)",
   ],
 };

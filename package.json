@@ -2,7 +2,7 @@
   "name": "rabbit",
   "version": "0.1.0",
   "private": true,
-  "description": "PoC — crypto portfolio summary & forecast (connects to Verex, deploys to GCP Cloud Run)",
+  "description": "PoC \u2014 crypto portfolio summary & forecast (connects to Verex, deploys to GCP Cloud Run)",
   "packageManager": "pnpm@11.5.1",
   "scripts": {
     "dev": "next dev -p 3100",
@@ -21,8 +21,7 @@
     "docs:html": "node scripts/sync-verex-docs.mjs && node scripts/generate-docs-html.mjs",
     "docs:pocs": "POCS_HTML=1 node scripts/generate-pocs-html.mjs",
     "docs:curriculum": "node scripts/generate-curriculum-html.mjs && POCS_HTML=1 node scripts/generate-pocs-html.mjs",
-    "docs:logs": "node scripts/generate-logs-html.mjs",
-    "game:build": "node scripts/build-game.mjs"
+    "docs:logs": "node scripts/generate-logs-html.mjs"
   },
   "dependencies": {
     "@metamask/smart-accounts-kit": "^1.7.0",
