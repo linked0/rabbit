@@ -1,5 +1,47 @@
 # Rabbit portal — "Chains" menu: one page for the three Jayverse networks (task brief)
 
+## Current status <a id="status"></a>
+
+*Last updated 2026-09-22 (KST). Read this first — it is the state of every thread currently
+open, across repos. The sections below are the Chains brief, which is only one of them.*
+
+| Thread | State | Next move, and whose |
+|---|---|---|
+| **Docs move** — `features/`, `tasks/`, `history/` back from alice | **Done.** Pushed both repos; alice's cards verified live | [§8](#docsmove) — jay: the `CLAUDE.md` path, below |
+| **Chains menu** (this brief) | **Shipped.** `www.jaylabs.xyz/chains` returns 200; the work is on `main` (`3150f9c`, `e558625`) | §0's "nothing committed" is stale — see the note under it |
+| **Verex tradable** ← *the actual goal* | **Blocked.** Devnet is healthy, but Verex's DB has no markets | jay: run the seed, or approve a Cloud Run job |
+| **Jayverse devnet** | **Stable.** `e2-standard-2`, 6000 MiB cap, healthy, block 11,710,497 on fork 11,701,069 | jay: `DEVNET_DATA=/data` needs an *instance-metadata* edit |
+| **JYVE exchange** | **Fixed and deployed** — `swapJusdForJyve` → `swapUsdcForJyve`, revision `00003-98l` | none |
+| **Burrow** (Unity WebGL) | **Built, not deployed.** `burrow.jaylabs.xyz` does not resolve, and alice's Game chip points at it | jay: decide how the 5 MB bundle reaches the rabbit image |
+
+### What is jay's, in order
+
+1. **`~/.claude/CLAUDE.md` still names `~/work/alice/docs/history/`** as the central history
+   folder. It is `~/work/rabbit/docs/history/` now. Every fresh session will misfile the day's
+   log until that line changes — this is the only item that quietly corrupts *future* work, so
+   it goes first. Same fix in `feedback_per_project_history_files.md` and
+   `feedback_rabbit_work_folder.md`.
+2. **Seed Verex against the devnet.** The backbone Verex needs is already live there via the
+   Sepolia fork — confirmed today: jUSD `0xAc0328f4…` (3260 bytes of code), CTF `0xEB100D76…`
+   (29544), Exchange `0xcB2271f5…` (28272). Seeding onto *those* addresses rather than freshly
+   deployed ones makes Verex immune to the next devnet state loss. The command is ready; it
+   needs two secrets this session is not allowed to read. The alternative, which exposes them to
+   nobody, is a Cloud Run job built from the verex-api image with the same `secretKeyRef`
+   entries — say the word.
+3. **Burrow's §1a decision** — how the WebGL bundle reaches the rabbit image. Until then the
+   Game chip on both portals is a dead link.
+
+### Known-stale elsewhere
+
+- `../features/jayverse-devnet.md` and `../features/cloud-ops.md` still describe the devnet as
+  "planned, not deployed" / "no VMs — Compute Engine API not enabled". Both stopped being true
+  on 2026-09-14. The cost column in `../features/README.md` says `$0 / not deployed` for that
+  row; it is an `e2-standard-2` now, roughly $50–70/mo against a ~$120 estate.
+- The **Rabbit — Current Plan** card points at the `tasks/` folder index, not at this file. That
+  was deliberate on 2026-09-03 (pinning one filename goes stale when the next task starts
+  elsewhere); jay raised reversing it on 2026-09-22 and then set it aside.
+
+
 > **Written for:** the agent that will implement this in `~/work/rabbit`. jay decided on
 > 2026-09-16 that Jayverse runs on **three networks** — the local Anvil fork, the hosted Jayverse
 > devnet, and public Sepolia — and that the portal's **Devnet** top menu becomes **Chains**, one
@@ -11,7 +53,8 @@
 
 ## 0. Summary <a id="s0"></a>
 
-- **Status:** §3.1–§3.5 built and verified locally; **nothing committed** (jay reviews first).
+- **Status:** *(stale — this shipped; see [Current status](#status) above)* §3.1–§3.5 built
+  and verified locally; **nothing committed** (jay reviews first).
   All of §5's acceptance criteria pass except the deploy-time ones, which need jay's go-ahead.
   [§6](#open) now carries ten open questions — the brief's four plus six found while
   building — each with the default I took and what is still yours to decide.
