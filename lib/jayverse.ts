@@ -103,10 +103,11 @@ export const JAYVERSE: JayverseProject[] = [
     name: "Game — 3D street",
     blurb: "Walk a street in the browser and find live Verex markets on the boards.",
     blurbKo: "브라우저에서 거리를 걸으며 게시판에 붙은 실시간 Verex 마켓을 찾는다.",
-    // The Unity (WebGL) build at burrow.jaylabs.xyz, not the in-app Next.js
-    // street at /jayverse-game. Absolute, so the chip renders the external
-    // arrow like the other hosted services.
-    url: "https://burrow.jaylabs.xyz",
+    // Hosted at game.jaylabs.xyz like every other service (jay, 2026-09-22).
+    // It used to point at burrow.jaylabs.xyz, which was never created in the DNS
+    // zone — the chip had been a dead link. The in-app /game embed is gone with
+    // the submodule it was built from.
+    url: "https://game.jaylabs.xyz",
   },
 ];
 
