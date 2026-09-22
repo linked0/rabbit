@@ -103,7 +103,10 @@ export const JAYVERSE: JayverseProject[] = [
     name: "Game — 3D street",
     blurb: "Walk a street in the browser and find live Verex markets on the boards.",
     blurbKo: "브라우저에서 거리를 걸으며 게시판에 붙은 실시간 Verex 마켓을 찾는다.",
-    url: "/game",
+    // The Unity (WebGL) build at burrow.jaylabs.xyz, not the in-app Next.js
+    // street at /jayverse-game. Absolute, so the chip renders the external
+    // arrow like the other hosted services.
+    url: "https://burrow.jaylabs.xyz",
   },
 ];
 
