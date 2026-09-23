@@ -102,7 +102,7 @@ because &quot;your call&quot; with no opinion is not help.</p>
 <td><strong>D2</strong></td>
 <td><strong>Where the Unity build is hosted.</strong> Rewritten 2026-09-23: the old framing (&quot;how the bundle reaches the rabbit image&quot;) died when another session shipped the three.js game to <strong>Firebase Hosting</strong> and made that the house pattern — <code>game.jaylabs.xyz</code> → <code>jayverse-game.web.app</code>, beside <code>defi.</code> and <code>verex.</code></td>
 <td><strong>(a)</strong> Firebase Hosting at <code>hole.jaylabs.xyz</code>, following the pattern · <strong>(b)</strong> commit <code>Build/WebGL/</code> into rabbit and serve from the existing Cloud Run service</td>
-<td><strong>(a)</strong> — it is a static export, which is exactly what the other three do. Needs a DNS record jay must add; <code>burrow.jaylabs.xyz</code> never had one, which is why that chip was dead for a week</td>
+<td><strong>(a)</strong> — it is a static export, which is exactly what the other three do. It also means the 5.8 MB bundle never enters a repo: <code>/Build/</code> stays gitignored and the deploy reads the local build. Needs a DNS record jay must add; <code>burrow.jaylabs.xyz</code> never had one, which is why that chip was dead for a week</td>
 <td>Nothing serves the Unity build. Note it is <strong>not</strong> blocking a chip any more — the Game chip moved to <code>game.jaylabs.xyz</code> and works</td>
 </tr>
 <tr>
@@ -113,8 +113,9 @@ because &quot;your call&quot; with no opinion is not help.</p>
 <td>Anvil keeps running off a Docker named volume. Survives restarts, would not survive the VM being recreated</td>
 </tr>
 </tbody></table>
-<p><strong>D2a, still open:</strong> does the Unity build <strong>sit beside</strong> the three.js game or eventually <strong>replace
-it</strong> at <code>game.jaylabs.xyz</code>? If it replaces it, <code>hole.jaylabs.xyz</code> is a waypoint, not a home.</p>
+<p><strong>D2a, settled 2026-09-23:</strong> jay — <em>&quot;game and hole are for different purposes.&quot;</em> The two coexist;
+the Unity build does <strong>not</strong> replace the three.js game. So <code>hole.jaylabs.xyz</code> is a home, not a
+waypoint, and the portal needs a <strong>ninth</strong> ecosystem card rather than a repointed <code>game</code> one.</p>
 <p><strong>Naming, settled 2026-09-23:</strong> jay chose <code>hole.jaylabs.xyz</code> over <code>burrow.jaylabs.xyz</code>, so the
 repo and the site finally share a word. The concerns raised against <code>hole</code> — it carries none of
 the &quot;rabbit hole&quot; idiom on its own — jay has parked rather than rejected. <strong>&quot;Burrow&quot; as a product
