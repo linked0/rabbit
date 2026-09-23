@@ -37,8 +37,10 @@
   <article>
 <h1 id="rabbit-portal--chains-menu-one-page-for-the-three-jayverse-networks-task-brief">Rabbit portal — &quot;Chains&quot; menu: one page for the three Jayverse networks (task brief)</h1>
 <h2 id="current-status">Current status <a id="status"></a></h2>
-<p><em>Last updated 2026-09-22 (KST). Read this first — it is the state of every thread currently
+<p><em>Last updated 2026-09-23 (KST). Read this first — it is the state of every thread currently
 open, across repos. The sections below are the Chains brief, which is only one of them.</em></p>
+<p><strong>Today, in one line:</strong> the Unity street went live at
+<a href="https://hole.jaylabs.xyz">hole.jaylabs.xyz</a>, and every repo but alice is committed and pushed.</p>
 <table>
 <thead>
 <tr>
@@ -74,8 +76,13 @@ open, across repos. The sections below are the Chains brief, which is only one o
 </tr>
 <tr>
 <td><strong>Rabbit Hole</strong> (Unity WebGL)</td>
-<td><strong>Built, not deployed.</strong> <code>hole.jaylabs.xyz</code> has no DNS record yet. The three.js game shipped separately and holds <code>game.jaylabs.xyz</code></td>
-<td><strong><a href="#decide">D2</a></strong></td>
+<td><strong>Live.</strong> <a href="https://hole.jaylabs.xyz">hole.jaylabs.xyz</a> 200, cert issued in ~1 min. Verified in headless Chrome: playback to tick 22/22, <strong>0 console errors</strong>. Repo <code>linked0/rabbit-hole</code> has its first real commit; portal card is the ninth</td>
+<td><strong>D2 closed</strong></td>
+</tr>
+<tr>
+<td><strong>Repo hygiene</strong></td>
+<td><strong>Done 2026-09-23.</strong> <code>jayverse-defi</code>, <code>jayverse-game</code>, <code>jayverse-token</code>, <code>jayverse-devnet</code> committed, merged to <code>main</code>, pushed. alice untouched per jay</td>
+<td><code>nostra-server</code> — see below</td>
 </tr>
 </tbody></table>
 <h3 id="decisions-waiting-on-jay">Decisions waiting on jay <a id="decide"></a></h3>
@@ -99,8 +106,8 @@ because &quot;your call&quot; with no opinion is not help.</p>
 <td>Verex stays untradable. Nothing else unblocks it</td>
 </tr>
 <tr>
-<td><strong>D2</strong></td>
-<td><strong>Where the Unity build is hosted.</strong> Rewritten 2026-09-23: the old framing (&quot;how the bundle reaches the rabbit image&quot;) died when another session shipped the three.js game to <strong>Firebase Hosting</strong> and made that the house pattern — <code>game.jaylabs.xyz</code> → <code>jayverse-game.web.app</code>, beside <code>defi.</code> and <code>verex.</code></td>
+<td><del><strong>D2</strong></del> <strong>CLOSED 2026-09-23</strong></td>
+<td><strong>Where the Unity build is hosted.</strong> Chosen: (a), Firebase Hosting, and it is live. Rewritten 2026-09-23: the old framing (&quot;how the bundle reaches the rabbit image&quot;) died when another session shipped the three.js game to <strong>Firebase Hosting</strong> and made that the house pattern — <code>game.jaylabs.xyz</code> → <code>jayverse-game.web.app</code>, beside <code>defi.</code> and <code>verex.</code></td>
 <td><strong>(a)</strong> Firebase Hosting at <code>hole.jaylabs.xyz</code>, following the pattern · <strong>(b)</strong> commit <code>Build/WebGL/</code> into rabbit and serve from the existing Cloud Run service</td>
 <td><strong>(a)</strong> — it is a static export, which is exactly what the other three do. It also means the 5.8 MB bundle never enters a repo: <code>/Build/</code> stays gitignored and the deploy reads the local build. Needs a DNS record jay must add; <code>burrow.jaylabs.xyz</code> never had one, which is why that chip was dead for a week</td>
 <td>Nothing serves the Unity build. Note it is <strong>not</strong> blocking a chip any more — the Game chip moved to <code>game.jaylabs.xyz</code> and works</td>
@@ -128,6 +135,9 @@ folder. It is <code>~/work/rabbit/docs/history/</code> now. Every fresh session 
 log until that line changes — the only item here that quietly corrupts <em>future</em> work, so it
 goes first. Same fix in <code>feedback_per_project_history_files.md</code> and
 <code>feedback_rabbit_work_folder.md</code>.</li>
+<li><strong><code>nostra-server</code> cannot be pushed</strong> — its remote <code>AimondLabs/nostra-server</code> returns
+&quot;Repository not found&quot;. Two commits (a docs/images consolidation) sit unpushed on <code>main</code>.
+Either the repo moved, was deleted, or this account lost access; nothing local is lost.</li>
 <li><strong>Install <code>node</code> on the devnet VM</strong>, then re-enable <code>jayverse-devnet-reseed.timer</code>. It is
 <code>systemctl disable</code>d today because the VM has no node runtime, so the reseed check cannot run.</li>
 </ol>
