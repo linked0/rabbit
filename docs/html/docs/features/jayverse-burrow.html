@@ -38,7 +38,7 @@
 <h1 id="burrow--the-unity-webgl-build-of-the-3d-street">Burrow — the Unity (WebGL) build of the 3D street</h1>
 <p>*Service #7&#39;s second surface. The Next.js + react-three-fiber street stays as it is and keeps
 living inside Cloud Run <code>rabbit</code> at <code>/jayverse-game</code>; <strong>Burrow</strong> is the same run rendered by
-Unity, aimed at <strong><code>burrow.jaylabs.xyz</code></strong>. Product and scenario design for #7 lives in
+Unity, aimed at <strong><code>hole.jaylabs.xyz</code></strong>. Product and scenario design for #7 lives in
 <a href="jayverse-game.html">jayverse-game.md</a> — that file is still authoritative for what the street means.
 This one is only about the Unity port: what exists, what it cost to get working, and what is left.*</p>
 <p><em>Started 2026-09-21 (jay + session). Naming settled the same day: the <strong>GitHub repo stays
@@ -61,7 +61,7 @@ clean console, driven by the same <code>sample-journal.json</code> the web build
 </tr>
 <tr>
 <td>Site (planned)</td>
-<td><code>burrow.jaylabs.xyz</code></td>
+<td><code>hole.jaylabs.xyz</code></td>
 </tr>
 <tr>
 <td>Editor</td>
@@ -111,21 +111,21 @@ build image, which is a heavy thing to add for a demo estate. Three workable opt
 </tr>
 <tr>
 <td>Serve separately</td>
-<td>its own Cloud Run service or a GCS bucket behind <code>burrow.jaylabs.xyz</code></td>
+<td>its own Cloud Run service or a GCS bucket behind <code>hole.jaylabs.xyz</code></td>
 <td>one more service in an estate we are trying to shrink</td>
 </tr>
 </tbody></table>
 <p>Recommendation is <strong>commit the build output</strong>: under decision 0 (demo estate) it is the cheapest
-path to a working URL, and it keeps <code>burrow.jaylabs.xyz</code> inside the existing <code>rabbit</code> service so
+path to a working URL, and it keeps <code>hole.jaylabs.xyz</code> inside the existing <code>rabbit</code> service so
 the cost stays at zero. Say the word and the <code>.gitignore</code> line comes back out.</p>
-<p><strong>b. A DNS record + Cloud Run domain mapping for <code>burrow.jaylabs.xyz</code></strong> in <code>doubletree-498007</code>,
+<p><strong>b. A DNS record + Cloud Run domain mapping for <code>hole.jaylabs.xyz</code></strong> in <code>doubletree-498007</code>,
 zone <code>jaylabs-xyz</code>, region asia-northeast1, pointing at the existing <code>rabbit</code> service — the same
 shape as the other five Cloud Run hostnames. <code>gcloud</code> <strong>is</strong> authenticated here
 (<code>linked0@gmail.com</code>, currently pointed at <code>verex-499205</code>), so this is a decision to approve
 rather than access to arrange — but there is no point mapping a hostname until (a) puts something
 behind it.</p>
 <p><strong>c. Confirm the <code>rabbit</code> app should serve it.</strong> The chip change in <code>lib/jayverse.ts</code> already
-points &quot;Game — 3D street&quot; at <code>https://burrow.jaylabs.xyz</code>, so <strong>the chip is a dead link until (b)
+points &quot;Game — 3D street&quot; at <code>https://hole.jaylabs.xyz</code>, so <strong>the chip is a dead link until (b)
 is done</strong>. If the answer is &quot;not yet&quot;, revert that one line and nothing else moves.</p>
 <p><strong>d. Push rights / a decision on the 5 MB.</strong> Nothing is committed anywhere yet — in
 <code>rabbit-hole</code>, in <code>rabbit</code>, or here.</p>
@@ -136,7 +136,7 @@ is done</strong>. If the answer is &quot;not yet&quot;, revert that one line and
 add the two <code>next.config.js</code> rewrites the existing street already needs for extensionless paths.</li>
 <li><strong>Deploy to Cloud Run <code>rabbit</code></strong> and attach the domain mapping.</li>
 <li><strong>Verify the live URL the same way it was verified locally</strong> — headless Chrome against
-<code>burrow.jaylabs.xyz</code>, asserting the street renders, the replay advances, and the console is
+<code>hole.jaylabs.xyz</code>, asserting the street renders, the replay advances, and the console is
 clean. A build report saying &quot;OK&quot; is not evidence the page works; see §4.</li>
 <li><strong>Set gzip headers properly.</strong> The build ships gzip with <code>decompressionFallback</code> on, which
 works from any host but wastes a decompress in JS. Once Cloud Run is confirmed to send
@@ -197,7 +197,7 @@ passed while the actual WebGL build was still broken:</p>
 </tbody></table>
 <p><strong>The lesson worth keeping:</strong> an editor-side check proves the data and the maths, and proves
 nothing about the build. Two of the four above would have shipped a black screen to
-<code>burrow.jaylabs.xyz</code>. The verification loop that caught them — build WebGL headless, serve it,
+<code>hole.jaylabs.xyz</code>. The verification loop that caught them — build WebGL headless, serve it,
 drive it in real Chrome, and <strong>count console errors across more than one repaint</strong> — is the one to
 reuse. The single-screenshot version of that harness reported &quot;0 errors&quot; on a build that was
 throwing 4,000; it took repeated repaints to surface the IMGUI bug.</p>

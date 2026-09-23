@@ -12,7 +12,7 @@ open, across repos. The sections below are the Chains brief, which is only one o
 | **Verex tradable** ← *the actual goal* | **Blocked.** Devnet is healthy, but Verex's DB has no markets | **[D1](#decide)** |
 | **Jayverse devnet** | **Stable.** `e2-standard-2`, 6000 MiB cap, healthy, block 11,710,497 on fork 11,701,069 | **[D3](#decide)** |
 | **JYVE exchange** | **Fixed and deployed** — `swapJusdForJyve` → `swapUsdcForJyve`, revision `00003-98l` | none |
-| **Burrow** (Unity WebGL) | **Built, not deployed.** `burrow.jaylabs.xyz` does not resolve, and alice's Game chip points at it | **[D2](#decide)** |
+| **Rabbit Hole** (Unity WebGL) | **Built, not deployed.** `hole.jaylabs.xyz` has no DNS record yet. The three.js game shipped separately and holds `game.jaylabs.xyz` | **[D2](#decide)** |
 
 ### Decisions waiting on jay <a id="decide"></a>
 
@@ -22,8 +22,17 @@ because "your call" with no opinion is not help.
 | # | Decision | Options | Recommended | If left undecided |
 |---|---|---|---|---|
 | **D1** | **How to seed Verex** — the goal, *"make the verex tradable"* | **(a)** jay runs the ready command himself, holding the secrets · **(b)** a Cloud Run job from the verex-api image with the same `secretKeyRef` entries — GCP injects the secrets, this session never sees them | **(b)** — repeatable, auditable, and nothing is pasted into a terminal. Cost is one job execution, cents | Verex stays untradable. Nothing else unblocks it |
-| **D2** | **How the 5 MB Burrow bundle reaches the rabbit image** | **(a)** commit `Build/WebGL/` into rabbit · **(b)** push it to a GCS bucket and serve from there · **(c)** its own Cloud Run service | **(a)** — the deploy is `--source .`, so a committed bundle just ships. +5 MB to the repo, once | `burrow.jaylabs.xyz` does not resolve, and the Game chip on both portals stays a dead link |
+| **D2** | **Where the Unity build is hosted.** Rewritten 2026-09-23: the old framing ("how the bundle reaches the rabbit image") died when another session shipped the three.js game to **Firebase Hosting** and made that the house pattern — `game.jaylabs.xyz` → `jayverse-game.web.app`, beside `defi.` and `verex.` | **(a)** Firebase Hosting at `hole.jaylabs.xyz`, following the pattern · **(b)** commit `Build/WebGL/` into rabbit and serve from the existing Cloud Run service | **(a)** — it is a static export, which is exactly what the other three do. Needs a DNS record jay must add; `burrow.jaylabs.xyz` never had one, which is why that chip was dead for a week | Nothing serves the Unity build. Note it is **not** blocking a chip any more — the Game chip moved to `game.jaylabs.xyz` and works |
 | **D3** | **Whether to move anvil onto the durable disk** (`DEVNET_DATA=/data`, via **instance metadata**, not a file edit) | **(a)** do it in a maintenance window · **(b)** leave it | **(b) for now.** The next boot would load the 829 MB `/data/anvil.json` — a *different* chain — and may OOM. The devnet is stable today; do not trade that for durability without a window | Anvil keeps running off a Docker named volume. Survives restarts, would not survive the VM being recreated |
+
+**D2a, still open:** does the Unity build **sit beside** the three.js game or eventually **replace
+it** at `game.jaylabs.xyz`? If it replaces it, `hole.jaylabs.xyz` is a waypoint, not a home.
+
+**Naming, settled 2026-09-23:** jay chose `hole.jaylabs.xyz` over `burrow.jaylabs.xyz`, so the
+repo and the site finally share a word. The concerns raised against `hole` — it carries none of
+the "rabbit hole" idiom on its own — jay has parked rather than rejected. **"Burrow" as a product
+name now has nothing pointing at it**; the docs still say Burrow in prose and this file is still
+called `jayverse-burrow.md`. Renaming those to Rabbit Hole is a one-word go from jay.
 
 **Not decisions, just jay's to do** — in order:
 

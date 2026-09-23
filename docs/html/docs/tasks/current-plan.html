@@ -73,8 +73,8 @@ open, across repos. The sections below are the Chains brief, which is only one o
 <td>none</td>
 </tr>
 <tr>
-<td><strong>Burrow</strong> (Unity WebGL)</td>
-<td><strong>Built, not deployed.</strong> <code>burrow.jaylabs.xyz</code> does not resolve, and alice&#39;s Game chip points at it</td>
+<td><strong>Rabbit Hole</strong> (Unity WebGL)</td>
+<td><strong>Built, not deployed.</strong> <code>hole.jaylabs.xyz</code> has no DNS record yet. The three.js game shipped separately and holds <code>game.jaylabs.xyz</code></td>
 <td><strong><a href="#decide">D2</a></strong></td>
 </tr>
 </tbody></table>
@@ -100,10 +100,10 @@ because &quot;your call&quot; with no opinion is not help.</p>
 </tr>
 <tr>
 <td><strong>D2</strong></td>
-<td><strong>How the 5 MB Burrow bundle reaches the rabbit image</strong></td>
-<td><strong>(a)</strong> commit <code>Build/WebGL/</code> into rabbit · <strong>(b)</strong> push it to a GCS bucket and serve from there · <strong>(c)</strong> its own Cloud Run service</td>
-<td><strong>(a)</strong> — the deploy is <code>--source .</code>, so a committed bundle just ships. +5 MB to the repo, once</td>
-<td><code>burrow.jaylabs.xyz</code> does not resolve, and the Game chip on both portals stays a dead link</td>
+<td><strong>Where the Unity build is hosted.</strong> Rewritten 2026-09-23: the old framing (&quot;how the bundle reaches the rabbit image&quot;) died when another session shipped the three.js game to <strong>Firebase Hosting</strong> and made that the house pattern — <code>game.jaylabs.xyz</code> → <code>jayverse-game.web.app</code>, beside <code>defi.</code> and <code>verex.</code></td>
+<td><strong>(a)</strong> Firebase Hosting at <code>hole.jaylabs.xyz</code>, following the pattern · <strong>(b)</strong> commit <code>Build/WebGL/</code> into rabbit and serve from the existing Cloud Run service</td>
+<td><strong>(a)</strong> — it is a static export, which is exactly what the other three do. Needs a DNS record jay must add; <code>burrow.jaylabs.xyz</code> never had one, which is why that chip was dead for a week</td>
+<td>Nothing serves the Unity build. Note it is <strong>not</strong> blocking a chip any more — the Game chip moved to <code>game.jaylabs.xyz</code> and works</td>
 </tr>
 <tr>
 <td><strong>D3</strong></td>
@@ -113,6 +113,13 @@ because &quot;your call&quot; with no opinion is not help.</p>
 <td>Anvil keeps running off a Docker named volume. Survives restarts, would not survive the VM being recreated</td>
 </tr>
 </tbody></table>
+<p><strong>D2a, still open:</strong> does the Unity build <strong>sit beside</strong> the three.js game or eventually <strong>replace
+it</strong> at <code>game.jaylabs.xyz</code>? If it replaces it, <code>hole.jaylabs.xyz</code> is a waypoint, not a home.</p>
+<p><strong>Naming, settled 2026-09-23:</strong> jay chose <code>hole.jaylabs.xyz</code> over <code>burrow.jaylabs.xyz</code>, so the
+repo and the site finally share a word. The concerns raised against <code>hole</code> — it carries none of
+the &quot;rabbit hole&quot; idiom on its own — jay has parked rather than rejected. <strong>&quot;Burrow&quot; as a product
+name now has nothing pointing at it</strong>; the docs still say Burrow in prose and this file is still
+called <code>jayverse-burrow.md</code>. Renaming those to Rabbit Hole is a one-word go from jay.</p>
 <p><strong>Not decisions, just jay&#39;s to do</strong> — in order:</p>
 <ol>
 <li><strong><code>~/.claude/CLAUDE.md</code> still names <code>~/work/alice/docs/history/</code></strong> as the central history

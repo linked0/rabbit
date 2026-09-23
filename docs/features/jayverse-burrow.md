@@ -2,7 +2,7 @@
 
 *Service #7's second surface. The Next.js + react-three-fiber street stays as it is and keeps
 living inside Cloud Run `rabbit` at `/jayverse-game`; **Burrow** is the same run rendered by
-Unity, aimed at **`burrow.jaylabs.xyz`**. Product and scenario design for #7 lives in
+Unity, aimed at **`hole.jaylabs.xyz`**. Product and scenario design for #7 lives in
 [jayverse-game.md](jayverse-game.md) — that file is still authoritative for what the street means.
 This one is only about the Unity port: what exists, what it cost to get working, and what is left.*
 
@@ -20,7 +20,7 @@ clean console, driven by the same `sample-journal.json` the web build ships, byt
 | | |
 |---|---|
 | Repo | `linked0/rabbit-hole` (private) · local `~/work/rabbit-hole` |
-| Site (planned) | `burrow.jaylabs.xyz` |
+| Site (planned) | `hole.jaylabs.xyz` |
 | Editor | Unity **6000.4.3f1**, Built-in Render Pipeline, legacy Input Manager |
 | Build | WebGL, **5 MB**, ~20 s, gzip + `decompressionFallback` |
 | Verified | headless Chrome against the real build: street renders, replay runs, **0 console errors** |
@@ -46,13 +46,13 @@ build image, which is a heavy thing to add for a demo estate. Three workable opt
 |---|---|---|
 | **Commit the build output** (recommended) | `Build/WebGL/` stops being gitignored in `rabbit-hole`; `rabbit` copies it from the submodule like today | 5 MB of binaries per rebuild in git history |
 | Build in CI | GitHub Actions with a Unity licence secret, publishes the bundle as an artifact or to GCS | a licence in CI, a new pipeline to maintain |
-| Serve separately | its own Cloud Run service or a GCS bucket behind `burrow.jaylabs.xyz` | one more service in an estate we are trying to shrink |
+| Serve separately | its own Cloud Run service or a GCS bucket behind `hole.jaylabs.xyz` | one more service in an estate we are trying to shrink |
 
 Recommendation is **commit the build output**: under decision 0 (demo estate) it is the cheapest
-path to a working URL, and it keeps `burrow.jaylabs.xyz` inside the existing `rabbit` service so
+path to a working URL, and it keeps `hole.jaylabs.xyz` inside the existing `rabbit` service so
 the cost stays at zero. Say the word and the `.gitignore` line comes back out.
 
-**b. A DNS record + Cloud Run domain mapping for `burrow.jaylabs.xyz`** in `doubletree-498007`,
+**b. A DNS record + Cloud Run domain mapping for `hole.jaylabs.xyz`** in `doubletree-498007`,
 zone `jaylabs-xyz`, region asia-northeast1, pointing at the existing `rabbit` service — the same
 shape as the other five Cloud Run hostnames. `gcloud` **is** authenticated here
 (`linked0@gmail.com`, currently pointed at `verex-499205`), so this is a decision to approve
@@ -60,7 +60,7 @@ rather than access to arrange — but there is no point mapping a hostname until
 behind it.
 
 **c. Confirm the `rabbit` app should serve it.** The chip change in `lib/jayverse.ts` already
-points "Game — 3D street" at `https://burrow.jaylabs.xyz`, so **the chip is a dead link until (b)
+points "Game — 3D street" at `https://hole.jaylabs.xyz`, so **the chip is a dead link until (b)
 is done**. If the answer is "not yet", revert that one line and nothing else moves.
 
 **d. Push rights / a decision on the 5 MB.** Nothing is committed anywhere yet — in
@@ -73,7 +73,7 @@ is done**. If the answer is "not yet", revert that one line and nothing else mov
    add the two `next.config.js` rewrites the existing street already needs for extensionless paths.
 2. **Deploy to Cloud Run `rabbit`** and attach the domain mapping.
 3. **Verify the live URL the same way it was verified locally** — headless Chrome against
-   `burrow.jaylabs.xyz`, asserting the street renders, the replay advances, and the console is
+   `hole.jaylabs.xyz`, asserting the street renders, the replay advances, and the console is
    clean. A build report saying "OK" is not evidence the page works; see §4.
 4. **Set gzip headers properly.** The build ships gzip with `decompressionFallback` on, which
    works from any host but wastes a decompress in JS. Once Cloud Run is confirmed to send
@@ -122,7 +122,7 @@ passed while the actual WebGL build was still broken:
 
 **The lesson worth keeping:** an editor-side check proves the data and the maths, and proves
 nothing about the build. Two of the four above would have shipped a black screen to
-`burrow.jaylabs.xyz`. The verification loop that caught them — build WebGL headless, serve it,
+`hole.jaylabs.xyz`. The verification loop that caught them — build WebGL headless, serve it,
 drive it in real Chrome, and **count console errors across more than one repaint** — is the one to
 reuse. The single-screenshot version of that harness reported "0 errors" on a build that was
 throwing 4,000; it took repeated repaints to surface the IMGUI bug.
