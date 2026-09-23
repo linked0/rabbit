@@ -109,6 +109,20 @@ export const JAYVERSE: JayverseProject[] = [
     // the submodule it was built from.
     url: "https://game.jaylabs.xyz",
   },
+  {
+    // A ninth card rather than a second URL on the one above (jay, 2026-09-23:
+    // "game and hole are for different purposes"). Same journal, same street,
+    // rebuilt in Unity — so the two are siblings, not a migration. Repo is
+    // linked0/rabbit-hole; the site kept the repo's own word after jay dropped
+    // the "Burrow" name for the URL on 2026-09-23.
+    key: "hole",
+    name: "Rabbit Hole — Unity",
+    blurb:
+      "The same street, rebuilt in Unity and compiled to WebGL — a second renderer over one journal.",
+    blurbKo:
+      "같은 거리를 Unity로 다시 만들어 WebGL로 컴파일 — 하나의 저널 위에 놓인 두 번째 렌더러.",
+    url: "https://hole.jaylabs.xyz",
+  },
 ];
 
 /** Look one up by key. Throws rather than returning undefined: every caller

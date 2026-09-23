@@ -59,6 +59,28 @@ its old framing (&quot;how the bundle reaches the rabbit image&quot;) died when 
 Firebase Hosting at <code>game.jaylabs.xyz</code>, making that the house pattern alongside <code>defi.</code> and
 <code>verex.</code>. Still open — whether the Unity build sits beside that game or replaces it, and whether
 the product name &quot;Burrow&quot; follows the URL into retirement, since nothing points at it now.</p>
+<h3 id="live-at-rabbit-holewebapp-custom-domain-validating">Live at rabbit-hole.web.app, custom domain validating</h3>
+<p><strong>Cause:</strong> jay, 2026-09-23: &quot;go&quot; — the full green light, DNS included.</p>
+<p><strong>Reasoning:</strong> followed yesterday&#39;s <code>jayverse-game</code> recipe rather than inventing a second one —
+same GCP project (<code>doubletree-498007</code>), Firebase Hosting site, deploy through the Hosting REST
+API, custom domain with CNAME + <code>_acme-challenge</code> TXT in the <code>jaylabs-xyz</code> zone. The one place
+Unity differs from a Next export is compression, and it cost a prediction: <code>.unityweb</code> files are
+already gzip, so the version config asked for <code>Content-Encoding: gzip</code> on them. <strong>Firebase strips
+that header</strong> — it manages transport encoding itself and will not let a config set it. The
+<code>Content-Type</code> rules in the same block did apply.</p>
+<p><strong>Change:</strong> repo <code>linked0/rabbit-hole</code> got its first real commit (54 files, 123 KB — <code>/Build/</code>
+stays ignored) rebased onto the empty <code>Initial commit</code> GitHub made in June. Firebase site
+<code>rabbit-hole</code> created; 18 files deployed; <code>hole.jaylabs.xyz</code> registered as a custom domain and
+both DNS records added. <code>lib/jayverse.ts</code> gained a <strong>ninth</strong> card — a sibling of the <code>game</code> one,
+not a replacement, per D2a.</p>
+<p><strong>Result:</strong> <code>rabbit-hole.web.app</code> returns 200 and the game runs — headless Chrome shows the
+street, the boards, the agent, the journal panel, playback reaching tick 22/22, and <strong>0 console
+errors</strong>. Unity logs three &quot;you can reduce startup time&quot; notices and falls back to decompressing
+in JavaScript, which is the cost of the stripped header: it works, it is just slower to start.
+Worth knowing before optimising: the fix is a Unity rebuild with compression <strong>disabled</strong>, letting
+Firebase apply its own gzip, not a header config — that avenue is closed. The certificate for
+<code>hole.jaylabs.xyz</code> was still validating at the time of writing. Also still true: the Unity player
+name is <code>burrow</code>, so the browser tab reads &quot;Unity Web Player | burrow&quot;.</p>
 
   </article>
 </div>

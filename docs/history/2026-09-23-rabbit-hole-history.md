@@ -28,3 +28,30 @@ its old framing ("how the bundle reaches the rabbit image") died when the three.
 Firebase Hosting at `game.jaylabs.xyz`, making that the house pattern alongside `defi.` and
 `verex.`. Still open — whether the Unity build sits beside that game or replaces it, and whether
 the product name "Burrow" follows the URL into retirement, since nothing points at it now.
+
+### Live at rabbit-hole.web.app, custom domain validating
+
+**Cause:** jay, 2026-09-23: "go" — the full green light, DNS included.
+
+**Reasoning:** followed yesterday's `jayverse-game` recipe rather than inventing a second one —
+same GCP project (`doubletree-498007`), Firebase Hosting site, deploy through the Hosting REST
+API, custom domain with CNAME + `_acme-challenge` TXT in the `jaylabs-xyz` zone. The one place
+Unity differs from a Next export is compression, and it cost a prediction: `.unityweb` files are
+already gzip, so the version config asked for `Content-Encoding: gzip` on them. **Firebase strips
+that header** — it manages transport encoding itself and will not let a config set it. The
+`Content-Type` rules in the same block did apply.
+
+**Change:** repo `linked0/rabbit-hole` got its first real commit (54 files, 123 KB — `/Build/`
+stays ignored) rebased onto the empty `Initial commit` GitHub made in June. Firebase site
+`rabbit-hole` created; 18 files deployed; `hole.jaylabs.xyz` registered as a custom domain and
+both DNS records added. `lib/jayverse.ts` gained a **ninth** card — a sibling of the `game` one,
+not a replacement, per D2a.
+
+**Result:** `rabbit-hole.web.app` returns 200 and the game runs — headless Chrome shows the
+street, the boards, the agent, the journal panel, playback reaching tick 22/22, and **0 console
+errors**. Unity logs three "you can reduce startup time" notices and falls back to decompressing
+in JavaScript, which is the cost of the stripped header: it works, it is just slower to start.
+Worth knowing before optimising: the fix is a Unity rebuild with compression **disabled**, letting
+Firebase apply its own gzip, not a header config — that avenue is closed. The certificate for
+`hole.jaylabs.xyz` was still validating at the time of writing. Also still true: the Unity player
+name is `burrow`, so the browser tab reads "Unity Web Player | burrow".
