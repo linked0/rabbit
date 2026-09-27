@@ -87,6 +87,14 @@ the existing services so they cooperate rather than sit alone.</p>
 </tr>
 <tr>
 <td>3</td>
+<td>Wallet &amp; simulate-before-sign</td>
+<td><a href="jayverse-wallet.html">jayverse-wallet.md</a></td>
+<td>Embedded wallet + tx simulation — scenario, web app, flow. <strong>Owns the bridge screen</strong> (<code>/bridge</code>; jay, 2026-09-14) — the UI for #3&#39;s lock-and-mint</td>
+<td>Rabbit cloud · Cloud Run <code>jayverse-wallet</code> · <a href="https://wallet.jaylabs.xyz">https://wallet.jaylabs.xyz</a> (+ <code>/bridge</code>)</td>
+<td><strong>~$0</strong> — Cloud Run scales to zero</td>
+</tr>
+<tr>
+<td>4</td>
 <td>Token + Exchange + Bridge + Personas</td>
 <td><a href="jayverse-token-bridge.html">jayverse-token-bridge.md</a> · <a href="jayverse-personas.html">jayverse-personas.md</a></td>
 <td><strong>JYVE</strong> ecosystem coin + mini-AMM price + Anvil ⇄ Sepolia bridge <strong>contracts + relayer</strong> (the bridge <em>screen</em> is in Wallet #5) + the <strong>persona NFT market</strong> (moved in from #6, jay 2026-09-14) — one <code>jayverse-token</code> repo, one project</td>
@@ -94,20 +102,12 @@ the existing services so they cooperate rather than sit alone.</p>
 <td><strong>~$0</strong> — Cloud Run scales to zero; contracts are on Sepolia</td>
 </tr>
 <tr>
-<td>4</td>
+<td>5</td>
 <td>DeFi — EtherFi</td>
 <td><a href="jayverse-defi.html">jayverse-defi.md</a></td>
 <td>Basic EtherFi <strong>algorithms built from scratch</strong> to study DeFi (no real-EtherFi integration)</td>
 <td>Verex cloud · Firebase Hosting site <code>jayverse-defi</code> · <a href="https://defi.jaylabs.xyz">https://defi.jaylabs.xyz</a> (contracts on Sepolia)</td>
 <td><strong>~$0</strong> — Firebase Hosting, static</td>
-</tr>
-<tr>
-<td>5</td>
-<td>Wallet &amp; simulate-before-sign</td>
-<td><a href="jayverse-wallet.html">jayverse-wallet.md</a></td>
-<td>Embedded wallet + tx simulation — scenario, web app, flow. <strong>Owns the bridge screen</strong> (<code>/bridge</code>; jay, 2026-09-14) — the UI for #3&#39;s lock-and-mint</td>
-<td>Rabbit cloud · Cloud Run <code>jayverse-wallet</code> · <a href="https://wallet.jaylabs.xyz">https://wallet.jaylabs.xyz</a> (+ <code>/bridge</code>)</td>
-<td><strong>~$0</strong> — Cloud Run scales to zero</td>
 </tr>
 <tr>
 <td>6</td>
@@ -158,7 +158,7 @@ the existing services so they cooperate rather than sit alone.</p>
 </ul>
 <p>Three decisions that cut across the rows above.</p>
 <ul>
-<li><strong>Personas moved into #3 Token + Exchange.</strong> First floated as an umbrella over two services, then
+<li><strong>Personas moved into #4 Token + Exchange.</strong> First floated as an umbrella over two services, then
 decided outright: the persona NFT market is a package of the <code>jayverse-token</code> repo and ships inside
 the <code>jayverse-exchange</code> Cloud Run service — token market and NFT market as one project, personas
 priced in JYVE through the pool. Open: whether personas keep a second domain mapping
@@ -167,7 +167,7 @@ priced in JYVE through the pool. Open: whether personas keep a second domain map
 is planned and phased like the other services. Phase 1 is deliberately small: a hosted Anvil in
 the Rabbit cloud, forked from Sepolia, that the cloud services use instead of Sepolia — the own
 chain comes later, still &quot;start at last&quot;. Design: <a href="jayverse-devnet.html">jayverse-devnet.md</a>.</li>
-<li><strong>Bridge split: screen in #5 Wallet, plumbing in #3 Token.</strong> The Wallet owns the bridge UI at
+<li><strong>Bridge split: screen in #3 Wallet, plumbing in #4 Token.</strong> The Wallet owns the bridge UI at
 <code>/bridge</code> (it was already a placeholder) because a bridge is the scariest signature and
 simulate-before-sign is the wallet&#39;s core. The <code>BridgeLock</code> / <code>BridgeMint</code> contracts, the relayer,
 and the supply invariant stay in <code>jayverse-token</code>: the bridge mints and burns JYVE, so it is part
@@ -226,24 +226,24 @@ extras are <strong>crammed into the last column</strong> (Wallet&#39;s P3 + P4, 
 </tr>
 <tr>
 <td>3</td>
+<td>Wallet</td>
+<td>simulate-before-sign ✅</td>
+<td>Session keys &amp; templates · public Sepolia wallet on Cloud Run (wallet.jaylabs.xyz) ✅ · <code>/bridge</code> route placeholder ✅ → <strong>bridge screen</strong> for #3&#39;s lock-and-mint (jay, 2026-09-14)</td>
+<td>4337 breadth · <strong>P4</strong> own dev wallet (31337 fork)</td>
+</tr>
+<tr>
+<td>4</td>
 <td>Token + Exchange + Bridge + Personas</td>
 <td>Token + exchange (JYVE/jUSD) ✅ live on Sepolia + exchange.jaylabs.xyz ✅ · supply-integrity sim page ✅ · Personas: mint + token-gated chat</td>
 <td>Intra bridge (lock-and-mint) — contracts + relayer; UI in Wallet #5 · Personas: day rentals (ERC-4907)</td>
 <td>Real cross-chain — CCIP (arbitrary messages) + <strong>Circle CCTP</strong> (native jUSD, burn-and-mint) + <strong>xERC20 / ERC-7281</strong> (JYVE as a sovereign bridged token, per-bridge rate limits) · Personas: revenue + market (x402, IPFS, creator flow)</td>
 </tr>
 <tr>
-<td>4</td>
+<td>5</td>
 <td>DeFi — EtherFi study</td>
 <td>Liquid-staking core</td>
 <td>Restaking layer</td>
 <td>Real EtherFi (read)</td>
-</tr>
-<tr>
-<td>5</td>
-<td>Wallet</td>
-<td>simulate-before-sign ✅</td>
-<td>Session keys &amp; templates · public Sepolia wallet on Cloud Run (wallet.jaylabs.xyz) ✅ · <code>/bridge</code> route placeholder ✅ → <strong>bridge screen</strong> for #3&#39;s lock-and-mint (jay, 2026-09-14)</td>
-<td>4337 breadth · <strong>P4</strong> own dev wallet (31337 fork)</td>
 </tr>
 <tr>
 <td>6</td>
@@ -306,17 +306,17 @@ stops at <em>&quot;Will it rain in Seoul on Saturday?&quot;</em></li>
 <li><strong>#2 Verex.</strong> Clicking the board opens onboarding. She pays <strong>₩10,000 by card (Stripe)</strong>; the
 market-maker side already has an LMSR book, so her first bet gets a price instantly — the
 &quot;buy the first liquidity&quot; lesson from <code>lmsr-hybrid-amm</code> in practice.</li>
-<li><strong>#5 Wallet.</strong> Behind onboarding, an embedded wallet is created for her. Before her first
+<li><strong>#3 Wallet.</strong> Behind onboarding, an embedded wallet is created for her. Before her first
 on-chain action the wallet runs <strong>simulate-before-sign</strong>: she sees <em>&quot;you receive 12.4 YES
 shares; max loss ₩10,000&quot;</em> — the decoded effect, not a hex blob.</li>
 <li><strong>#1 Rabbit AA.</strong> The bet itself is a <strong>gasless one-click</strong> UserOp: a paymaster sponsors gas,
 a session key scoped to <em>Verex markets only, ≤ ₩50,000/day</em> signs it. No MetaMask popup.</li>
-<li><strong>#3 Token + Exchange.</strong> Her leftover ₩ balance is held as jUSD; the street&#39;s tip jars and
+<li><strong>#4 Token + Exchange.</strong> Her leftover ₩ balance is held as jUSD; the street&#39;s tip jars and
 persona rentals price in <strong>JYVE</strong>, so a <strong>mini-AMM swap</strong> (jUSD → JYVE) happens under a single
 &quot;top up&quot; button — the price she sees is the reserve ratio, nothing more mysterious.</li>
-<li><strong>#4 DeFi.</strong> The app offers <em>&quot;park your idle balance&quot;</em>: her unused jUSD-equivalent ETH goes
+<li><strong>#5 DeFi.</strong> The app offers <em>&quot;park your idle balance&quot;</em>: her unused jUSD-equivalent ETH goes
 into <strong>jeETH</strong>; the position panel shows her balance rebasing up by the hour, and <em>why</em>.</li>
-<li><strong>#3 Personas (Token + Exchange).</strong> She rents <strong>&quot;Coach Han&quot;</strong> — a persona NFT — for one day (ERC-4907) to explain
+<li><strong>#4 Personas (Token + Exchange).</strong> She rents <strong>&quot;Coach Han&quot;</strong> — a persona NFT — for one day (ERC-4907) to explain
 the market she just bet on; the token-gated chat opens only while the rental is live.</li>
 <li><strong>#6 OFA.</strong> When she later flips her position, the swap-into-bet is submitted as an <strong>intent</strong>
 (&quot;give X, want ≥ Y&quot;), and the solver auction returns the surplus to <em>her</em>, not a searcher.</li>
@@ -350,20 +350,20 @@ and that is exactly what happens.</li>
 <li><strong>#1 Rabbit AA.</strong> Winners claim with <strong>gasless claims</strong> batched into UserOps; the paymaster&#39;s
 sponsored-gas bill is a <strong>cost of goods</strong> line the operator can read the next morning
 (<code>sponsored-gas-is-cogs</code>).</li>
-<li><strong>#5 Wallet.</strong> Every claim previews first: <em>&quot;you receive 1,240 jUSD; this closes your
+<li><strong>#3 Wallet.</strong> Every claim previews first: <em>&quot;you receive 1,240 jUSD; this closes your
 position&quot;</em>. One user&#39;s preview shows a <strong>revert</strong> (a stale nonce) and the wallet refuses to sign
 — the failure never reaches the chain.</li>
-<li><strong>#3 Token + Exchange + Bridge.</strong> A winner wants her jUSD on Base. The bridge does
+<li><strong>#4 Token + Exchange + Bridge.</strong> A winner wants her jUSD on Base. The bridge does
 <strong>lock-and-mint</strong>; the <code>holding = issuance</code> and <strong>1:1</strong> invariants are checked on both legs.
 On the same afternoon the JYVE/jUSD pool absorbs the winners&#39; swaps — the reserve-ratio price
 moves visibly, which is the mini-AMM teaching what a thin pool does.</li>
 <li><strong>#6 OFA.</strong> Large winners swapping out of JYVE go through the <strong>intent auction</strong> — three
 solvers bid, the AMM solver loses to a better route, surplus lands with the user, and the
 <code>finalOut &gt;= minOut</code> stop is hit exactly once (a solver tried to shade).</li>
-<li><strong>#4 DeFi.</strong> Payout ETH that users leave parked keeps rebasing; one user <strong>requests withdraw</strong>
+<li><strong>#5 DeFi.</strong> Payout ETH that users leave parked keeps rebasing; one user <strong>requests withdraw</strong>
 and meets the <strong>queue delay</strong> — she experiences why a jweETH secondary market would trade at a
 discount today.</li>
-<li><strong>#3 Personas (Token + Exchange).</strong> Coach Han&#39;s owner earns rental fees from the evening; the fee is paid
+<li><strong>#4 Personas (Token + Exchange).</strong> Coach Han&#39;s owner earns rental fees from the evening; the fee is paid
 per-message via <strong>x402</strong>, so the creator&#39;s revenue is a ledger, not a promise.</li>
 <li><strong>#8 Game.</strong> Through the street&#39;s <strong>warp gate</strong>, anyone can watch the settlement-flow
 visualization replay the day: user → paymaster → market → bridge, entity by entity.</li>
@@ -386,19 +386,19 @@ often gets muted, so each invariant names its own narrow halt.</p>
 entry fees, daily persona sessions, and prizes. Every service is touched by a <em>time edge</em> — a
 close, an expiry, a delay, a drip — which is what this story is really about.</p>
 <ol>
-<li><strong>#3 Personas (Token + Exchange).</strong> Tae mints a <strong>tournament persona</strong> and lists <strong>day rentals</strong>; each rental is
+<li><strong>#4 Personas (Token + Exchange).</strong> Tae mints a <strong>tournament persona</strong> and lists <strong>day rentals</strong>; each rental is
 a token-gated seat at Han&#39;s daily session. Rentals expire at midnight KST — the first clock.</li>
-<li><strong>#3 Token.</strong> Entry fees are paid in <strong>JYVE</strong>; the exchange&#39;s price chart becomes the
+<li><strong>#4 Token.</strong> Entry fees are paid in <strong>JYVE</strong>; the exchange&#39;s price chart becomes the
 tournament&#39;s scoreboard of demand. Tae&#39;s prize pool is escrowed — the second clock: it must
 unlock on the final day, not before.</li>
 <li><strong>#2 Verex.</strong> Han posts one market per day; each has a <strong>close time</strong> and a <strong>resolution
 time</strong> — clocks three and four. Entrants bet through the persona chat.</li>
 <li><strong>#1 Rabbit AA.</strong> Entrants get a <strong>session key that expires with the tournament</strong> — clock
 five — scoped to Han&#39;s markets only, with a daily cap sized by Passport tier (Scenario A).</li>
-<li><strong>#5 Wallet.</strong> Tae uses a <strong>transaction template</strong>: &quot;post today&#39;s market&quot; is a saved,
+<li><strong>#3 Wallet.</strong> Tae uses a <strong>transaction template</strong>: &quot;post today&#39;s market&quot; is a saved,
 pre-simulated action; the preview shows the close time it will set, so a typo&#39;d deadline is
 caught before it exists.</li>
-<li><strong>#4 DeFi.</strong> The escrowed prize pool sits in <strong>jeETH</strong> for the week. The <strong>withdrawal queue
+<li><strong>#5 DeFi.</strong> The escrowed prize pool sits in <strong>jeETH</strong> for the week. The <strong>withdrawal queue
 delay</strong> — clock six — must be shorter than the gap between final resolution and prize day, or
 the prizes are late. Tae learns this by reading <code>WITHDRAW_DELAY</code> before, not after.</li>
 <li><strong>#6 OFA.</strong> Prize distribution swaps jeETH → JYVE as <strong>one intent with a floor</strong>; the
@@ -591,24 +591,24 @@ started first.</p>
 </tr>
 <tr>
 <td>3</td>
+<td><strong>Wallet</strong> — simulate-before-sign</td>
+<td><code>jayverse-wallet</code></td>
+<td><strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>pnpm install</code> → <code>pnpm dev</code></td>
+<td>:3060</td>
+</tr>
+<tr>
+<td>4</td>
 <td><strong>Token + Exchange + Personas</strong></td>
 <td><code>jayverse-token</code></td>
 <td>in <code>contracts/</code>: <code>forge test</code>; <strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast</code> (seed pool, mints 2 personas); then <code>cd ../app &amp;&amp; pnpm install &amp;&amp; pnpm dev</code> — personas at <code>/personas</code> (the standalone :3040 dev port retires)</td>
 <td>:3070</td>
 </tr>
 <tr>
-<td>4</td>
+<td>5</td>
 <td><strong>DeFi</strong> — EtherFi study</td>
 <td><code>jayverse-defi</code></td>
 <td><strong>t1</strong> <code>anvil</code>; <code>forge test</code>; <code>npm run deploy</code> (writes <code>addresses.json</code>); <code>npm run study</code> (CLI walk-through); <code>npm run dev</code> (Vite)</td>
 <td>:3030</td>
-</tr>
-<tr>
-<td>5</td>
-<td><strong>Wallet</strong> — simulate-before-sign</td>
-<td><code>jayverse-wallet</code></td>
-<td><strong>t1</strong> <code>anvil</code>; <strong>t2</strong> <code>pnpm install</code> → <code>pnpm dev</code></td>
-<td>:3060</td>
 </tr>
 <tr>
 <td>6</td>
