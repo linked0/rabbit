@@ -111,6 +111,14 @@ the existing services so they cooperate rather than sit alone.</p>
 </tr>
 <tr>
 <td>6</td>
+<td>OFA — intent + solver auction</td>
+<td><a href="jayverse-ofa.html">jayverse-ofa.md</a></td>
+<td>ATLAS&#39;s core mechanism as a from-scratch study — intent + solver auction, surplus to the user. <strong>Build the mechanism, not the framework</strong></td>
+<td>— not deployed</td>
+<td><strong>$0</strong> — not deployed</td>
+</tr>
+<tr>
+<td>7</td>
 <td>Devnet — own L1 / L2</td>
 <td><a href="jayverse-devnet.html">jayverse-devnet.md</a></td>
 <td><strong>Promoted from Dark Horse (a)</strong> (jay, 2026-09-14): starts as a hosted <strong>Anvil</strong> forked from Sepolia (its own chainId <code>313370</code>; <code>31337</code> stays local) that every service targets <strong>instead of Sepolia</strong>, with <strong>every Jayverse contract deployed on it by the seed</strong> (nothing inherited from the fork); later <code>supersim</code> → an OP-Stack L2 settling on it. Scenario C&#39;s argument: a chain whose block time and sequencer schedule <em>are</em> the app&#39;s clock</td>
@@ -118,20 +126,12 @@ the existing services so they cooperate rather than sit alone.</p>
 <td><strong>$0 today</strong> — not deployed; ~$20/mo once the <code>e2-small</code> VM is up (always-on, a VM cannot scale to zero)</td>
 </tr>
 <tr>
-<td>7</td>
+<td>8</td>
 <td>Unity — 3D browser game</td>
 <td><a href="jayverse-game.html">jayverse-game.md</a> · <a href="jayverse-burrow.html">jayverse-burrow.md</a></td>
 <td>Wander a 3D street, find verex markets on boards, trade. <strong>Start</strong> — two surfaces since 2026-09-21: the Next.js street, plus <strong>Burrow</strong>, the Unity (WebGL) port (repo <code>linked0/rabbit-hole</code>, built and verified, <strong>not deployed</strong>)</td>
 <td>Rabbit cloud · inside Cloud Run <code>rabbit</code> · <a href="https://www.jaylabs.xyz/jayverse-game">https://www.jaylabs.xyz/jayverse-game</a> · Burrow → <a href="https://hole.jaylabs.xyz">https://hole.jaylabs.xyz</a> (planned)</td>
 <td><strong>~$0</strong> — static files inside the existing <code>rabbit</code> service; Burrow adds a domain mapping, not a service</td>
-</tr>
-<tr>
-<td>8</td>
-<td>OFA — intent + solver auction</td>
-<td><a href="jayverse-ofa.html">jayverse-ofa.md</a></td>
-<td>ATLAS&#39;s core mechanism as a from-scratch study — intent + solver auction, surplus to the user. <strong>Build the mechanism, not the framework</strong></td>
-<td>— not deployed</td>
-<td><strong>$0</strong> — not deployed</td>
 </tr>
 <tr>
 <td>9</td>
@@ -150,7 +150,7 @@ the existing services so they cooperate rather than sit alone.</p>
 <td><strong>$0</strong> — candidates, not deployed</td>
 </tr>
 </tbody></table>
-<p><em>(#1–9 are the committed services; <strong>#10 Dark Horse is candidates, not committed</strong> — including Base App, moved from #8. Detail lives in <a href="jayverse-darkhorse.html">jayverse-darkhorse.md</a>.)</em></p>
+<p><em>(#1–9 are the committed services; <strong>#10 Dark Horse is candidates, not committed</strong> — including Base App, which held #8 under the 2026-09-10 numbering. Detail lives in <a href="jayverse-darkhorse.html">jayverse-darkhorse.md</a>.)</em></p>
 <p><em>The cost column (added 2026-09-21) apportions the estate estimate in <a href="cloud-ops.html#1-cost-posture--pay-for-what-is-being-watched-park-the-rest">cloud-ops.md §1</a> to the service that causes it. It is <strong>derived from resource configuration, not from billing data</strong> — the same caveat that file carries, and roughly $30/month of the real ~$120 bill is still unaccounted for. Read it as &quot;which service is the expensive one&quot;, not as an invoice.</em></p>
 <h3 id="ownership-changes-jay-2026-09-14">Ownership changes (jay, 2026-09-14)</h3>
 <ul>
@@ -163,7 +163,7 @@ decided outright: the persona NFT market is a package of the <code>jayverse-toke
 the <code>jayverse-exchange</code> Cloud Run service — token market and NFT market as one project, personas
 priced in JYVE through the pool. Open: whether personas keep a second domain mapping
 (<code>personas.jaylabs.xyz</code>) onto the same service, or live only at <code>/personas</code>.</li>
-<li><strong>Own L1/L2 promoted from Dark Horse (a) to #6, as <code>jayverse-devnet</code>.</strong> It takes the freed row so it
+<li><strong>Own L1/L2 promoted from Dark Horse (a) to #7, as <code>jayverse-devnet</code>.</strong> It takes the freed row so it
 is planned and phased like the other services. Phase 1 is deliberately small: a hosted Anvil in
 the Rabbit cloud, forked from Sepolia, that the cloud services use instead of Sepolia — the own
 chain comes later, still &quot;start at last&quot;. Design: <a href="jayverse-devnet.html">jayverse-devnet.md</a>.</li>
@@ -247,24 +247,24 @@ extras are <strong>crammed into the last column</strong> (Wallet&#39;s P3 + P4, 
 </tr>
 <tr>
 <td>6</td>
+<td>OFA</td>
+<td><code>IntentAuction</code> + <code>MockSolver</code>s</td>
+<td><code>AmmSolver</code> + two invariants</td>
+<td>Web harness · backrun / LVR stretch</td>
+</tr>
+<tr>
+<td>7</td>
 <td>Devnet — own L1 / L2</td>
 <td>Hosted Anvil (Sepolia fork, chainId 313370) on a Rabbit-cloud VM · allowlist proxy · faucet · explorer</td>
 <td>Services switch from Sepolia to devnet · bridge becomes devnet ⇄ Sepolia · reset/snapshot ops</td>
 <td><code>supersim</code> → OP-Stack L2 settling on the devnet</td>
 </tr>
 <tr>
-<td>7</td>
+<td>8</td>
 <td>Game — 3D street</td>
 <td>Replay</td>
 <td>Live (synchronous)</td>
 <td>Polish + optional player-trading</td>
-</tr>
-<tr>
-<td>8</td>
-<td>OFA</td>
-<td><code>IntentAuction</code> + <code>MockSolver</code>s</td>
-<td><code>AmmSolver</code> + two invariants</td>
-<td>Web harness · backrun / LVR stretch</td>
 </tr>
 <tr>
 <td>9</td>
@@ -283,7 +283,7 @@ extras are <strong>crammed into the last column</strong> (Wallet&#39;s P3 + P4, 
 <tr>
 <td>10</td>
 <td>Dark Horse</td>
-<td><em>candidates, not phased:</em> (b) security research · (c) Base App — (a) own L1/L2 promoted to #6</td>
+<td><em>candidates, not phased:</em> (b) security research · (c) Base App — (a) own L1/L2 promoted to #7</td>
 <td>—</td>
 <td>—</td>
 </tr>
@@ -301,7 +301,7 @@ service would be. Service numbers are the table&#39;s (#1 Rabbit AA … #10 Dark
 evening she has placed a bet, earned yield on the change, and rented a persona — without ever
 seeing a seed phrase or a gas prompt.</p>
 <ol>
-<li><strong>#7 Game.</strong> The link opens the 3D street. She walks past boards showing live Verex markets and
+<li><strong>#8 Game.</strong> The link opens the 3D street. She walks past boards showing live Verex markets and
 stops at <em>&quot;Will it rain in Seoul on Saturday?&quot;</em></li>
 <li><strong>#2 Verex.</strong> Clicking the board opens onboarding. She pays <strong>₩10,000 by card (Stripe)</strong>; the
 market-maker side already has an LMSR book, so her first bet gets a price instantly — the
@@ -318,7 +318,7 @@ persona rentals price in <strong>JYVE</strong>, so a <strong>mini-AMM swap</stro
 into <strong>jeETH</strong>; the position panel shows her balance rebasing up by the hour, and <em>why</em>.</li>
 <li><strong>#3 Personas (Token + Exchange).</strong> She rents <strong>&quot;Coach Han&quot;</strong> — a persona NFT — for one day (ERC-4907) to explain
 the market she just bet on; the token-gated chat opens only while the rental is live.</li>
-<li><strong>#8 OFA.</strong> When she later flips her position, the swap-into-bet is submitted as an <strong>intent</strong>
+<li><strong>#6 OFA.</strong> When she later flips her position, the swap-into-bet is submitted as an <strong>intent</strong>
 (&quot;give X, want ≥ Y&quot;), and the solver auction returns the surplus to <em>her</em>, not a searcher.</li>
 <li><strong>#9 Number.</strong> None of this shows her Number — it is admin-only — but the operator watches the
 evening&#39;s cohort there: conversion from street → first bet, and where people dropped off.</li>
@@ -357,7 +357,7 @@ position&quot;</em>. One user&#39;s preview shows a <strong>revert</strong> (a s
 <strong>lock-and-mint</strong>; the <code>holding = issuance</code> and <strong>1:1</strong> invariants are checked on both legs.
 On the same afternoon the JYVE/jUSD pool absorbs the winners&#39; swaps — the reserve-ratio price
 moves visibly, which is the mini-AMM teaching what a thin pool does.</li>
-<li><strong>#8 OFA.</strong> Large winners swapping out of JYVE go through the <strong>intent auction</strong> — three
+<li><strong>#6 OFA.</strong> Large winners swapping out of JYVE go through the <strong>intent auction</strong> — three
 solvers bid, the AMM solver loses to a better route, surplus lands with the user, and the
 <code>finalOut &gt;= minOut</code> stop is hit exactly once (a solver tried to shade).</li>
 <li><strong>#4 DeFi.</strong> Payout ETH that users leave parked keeps rebasing; one user <strong>requests withdraw</strong>
@@ -365,7 +365,7 @@ and meets the <strong>queue delay</strong> — she experiences why a jweETH seco
 discount today.</li>
 <li><strong>#3 Personas (Token + Exchange).</strong> Coach Han&#39;s owner earns rental fees from the evening; the fee is paid
 per-message via <strong>x402</strong>, so the creator&#39;s revenue is a ledger, not a promise.</li>
-<li><strong>#7 Game.</strong> Through the street&#39;s <strong>warp gate</strong>, anyone can watch the settlement-flow
+<li><strong>#8 Game.</strong> Through the street&#39;s <strong>warp gate</strong>, anyone can watch the settlement-flow
 visualization replay the day: user → paymaster → market → bridge, entity by entity.</li>
 <li><strong>#9 Number.</strong> The admin workbench shows the day&#39;s P&amp;L: paymaster spend vs fee income, AMM LP
 exposure (<code>lp-is-a-short-volatility-position</code>), and the bridge&#39;s locked-vs-minted balance.</li>
@@ -401,9 +401,9 @@ caught before it exists.</li>
 <li><strong>#4 DeFi.</strong> The escrowed prize pool sits in <strong>jeETH</strong> for the week. The <strong>withdrawal queue
 delay</strong> — clock six — must be shorter than the gap between final resolution and prize day, or
 the prizes are late. Tae learns this by reading <code>WITHDRAW_DELAY</code> before, not after.</li>
-<li><strong>#8 OFA.</strong> Prize distribution swaps jeETH → JYVE as <strong>one intent with a floor</strong>; the
+<li><strong>#6 OFA.</strong> Prize distribution swaps jeETH → JYVE as <strong>one intent with a floor</strong>; the
 auction runs once, at prize time, so the batch cannot be front-run day by day.</li>
-<li><strong>#7 Game.</strong> The tournament has a <strong>street corner</strong>: a board per day, Han standing next to it,
+<li><strong>#8 Game.</strong> The tournament has a <strong>street corner</strong>: a board per day, Han standing next to it,
 the leaderboard on a wall. The warp gate shows the prize flow on the final day.</li>
 <li><strong>✅ Auditor.</strong> Tae&#39;s escrow contract gets its own Authority matrix on day one: <em>release
 prizes</em> = timelock <strong>and</strong> Tae&#39;s key — Tae alone cannot pull the pool early, and entrants can
@@ -411,7 +411,7 @@ see that.</li>
 <li><strong>#9 Number.</strong> Tae has no Number access, but the operator uses it to price the next
 tournament: fee income vs paymaster cost per entrant, and whether the persona rental or the
 markets carried the week.</li>
-<li><strong>#6 Own L1 / L2.</strong> Six clocks across five contracts is the argument for the <strong>own L2</strong>
+<li><strong>#7 Own L1 / L2.</strong> Six clocks across five contracts is the argument for the <strong>own L2</strong>
 (promoted from Dark Horse on 2026-09-14): a chain whose block time and sequencer schedule <em>are</em> the tournament clock.</li>
 </ol>
 <p><strong>The gap this story finds — imaginary service: <code>jayverse-clock</code> (one scheduler for every time
@@ -612,24 +612,24 @@ started first.</p>
 </tr>
 <tr>
 <td>6</td>
+<td><strong>OFA</strong> — intent + solver auction</td>
+<td><code>jayverse-ofa</code></td>
+<td>in <code>contracts/</code>: <code>forge test</code>; <strong>t1</strong> <code>anvil</code>; optional tiny harness</td>
+<td>:3080†</td>
+</tr>
+<tr>
+<td>7</td>
 <td><strong>Devnet</strong> — hosted Anvil</td>
 <td><code>jayverse-devnet</code></td>
 <td><code>docker compose up</code> in <code>infra/</code> (anvil + proxy + explorer + status page); same stack as the cloud VM</td>
 <td>:8545 (RPC) · :3040 (status)</td>
 </tr>
 <tr>
-<td>7</td>
+<td>8</td>
 <td><strong>Game</strong> — 3D street</td>
 <td><code>jayverse-game</code></td>
 <td><code>pnpm install</code> → <code>pnpm dev</code> (open <code>/street</code>)</td>
 <td>:3050</td>
-</tr>
-<tr>
-<td>8</td>
-<td><strong>OFA</strong> — intent + solver auction</td>
-<td><code>jayverse-ofa</code></td>
-<td>in <code>contracts/</code>: <code>forge test</code>; <strong>t1</strong> <code>anvil</code>; optional tiny harness</td>
-<td>:3080†</td>
 </tr>
 <tr>
 <td>9</td>
@@ -658,7 +658,7 @@ started first.</p>
 :3040 (folded into Token :3070 on 2026-09-14), Game :3050, Wallet :3060, Token :3070, Auditor :3080, Number :3090 — so <code>pnpm dev</code> alone is right and they
 run side by side. Unchanged: Rabbit portal <strong>:3100</strong>, Verex web <strong>:3000</strong> / API <strong>:4000</strong>, anvil
 <strong>:8545</strong>.</p>
-<p><strong>†OFA (#8)</strong> nominally maps to <code>:3080</code> too, the slot the now-<strong>completed</strong> Auditor still bakes in.
+<p><strong>†OFA (#6)</strong> nominally maps to <code>:3080</code> too, the slot the now-<strong>completed</strong> Auditor still bakes in.
 OFA is contracts-first (Foundry + anvil), so a web harness is optional; if you add one, run it or
 the Auditor one at a time, or reassign OFA&#39;s port.</p>
 </blockquote>
