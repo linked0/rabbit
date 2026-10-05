@@ -149,8 +149,16 @@ the existing services so they cooperate rather than sit alone.</p>
 <td>— candidates, not deployed</td>
 <td><strong>$0</strong> — candidates, not deployed</td>
 </tr>
+<tr>
+<td>11</td>
+<td>Base — L2 integration</td>
+<td><a href="jayverse-base.html">jayverse-base.md</a></td>
+<td><strong>Planned</strong> (jay, 2026-10-05: &quot;Rabbit feature에 l2 base 연동 추가&quot;): <strong>Base Sepolia</strong> (chainId <code>84532</code>) as a chain every service can target, next to Sepolia — AA bets on Base, JYVE + a Sepolia ⇄ Base Sepolia bridge path, Verex settling in Base USDC, later Cobalt&#39;s validity transactions. Cross-service, not a new app; the Base App Mini App stays Dark Horse (c)</td>
+<td>— not deployed (contracts on Base Sepolia, no new GCP service)</td>
+<td><strong>$0</strong> — testnet + public/free-tier RPC</td>
+</tr>
 </tbody></table>
-<p><em>(#1–9 are the committed services; <strong>#10 Dark Horse is candidates, not committed</strong> — including Base App, which held #8 under the 2026-09-10 numbering. Detail lives in <a href="jayverse-darkhorse.html">jayverse-darkhorse.md</a>.)</em></p>
+<p><em>(#1–9 are the committed services; <strong>#11 Base</strong> is a planned cross-service integration (a chain, not an app); <strong>#10 Dark Horse is candidates, not committed</strong> — including Base App, which held #8 under the 2026-09-10 numbering. Detail lives in <a href="jayverse-darkhorse.html">jayverse-darkhorse.md</a>.)</em></p>
 <p><em>The cost column (added 2026-09-21) apportions the estate estimate in <a href="cloud-ops.html#1-cost-posture--pay-for-what-is-being-watched-park-the-rest">cloud-ops.md §1</a> to the service that causes it. It is <strong>derived from resource configuration, not from billing data</strong> — the same caveat that file carries, and roughly $30/month of the real ~$120 bill is still unaccounted for. Read it as &quot;which service is the expensive one&quot;, not as an invoice.</em></p>
 <h3 id="ownership-changes-jay-2026-09-14">Ownership changes (jay, 2026-09-14)</h3>
 <ul>
@@ -286,6 +294,13 @@ extras are <strong>crammed into the last column</strong> (Wallet&#39;s P3 + P4, 
 <td><em>candidates, not phased:</em> (b) security research · (c) Base App — (a) own L1/L2 promoted to #7</td>
 <td>—</td>
 <td>—</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Base — L2 integration</td>
+<td>Shared Base Sepolia chain config · JYVE + AA account on Base Sepolia · gasless bet on Base</td>
+<td>Sepolia ⇄ Base Sepolia bridge (ours vs standard bridge) · Verex test market in Base USDC</td>
+<td>Base-only features after a client-gate check (validity transactions for order expiry · B20 issuer checks)</td>
 </tr>
 </tbody></table>
 <h2 id="three-end-to-end-scenarios--every-service-in-one-story-plus-the-service-each-story-asks-for">Three end-to-end scenarios — every service in one story, plus the service each story asks for</h2>
