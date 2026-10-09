@@ -20,6 +20,7 @@ export const PROFILE = {
   links: [
     { label: "GitHub", handle: "linked0", url: "https://github.com/linked0" },
     { label: "LinkedIn", handle: "feelsogood", url: "https://www.linkedin.com/in/feelsogood/" },
+    { label: "Telegram", handle: "@readyjay", url: "https://t.me/readyjay" },
   ],
 };
 
