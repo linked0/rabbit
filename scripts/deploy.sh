@@ -39,7 +39,11 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
 RUN_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 
-# 시크릿 upsert — 있으면 새 버전 추가, 없으면 생성
+# 시크릿 upsert — 값이 바뀌었을 때만 새 버전 추가, 없으면 생성.
+# 예전엔 배포마다 무조건 새 버전을 추가했다. Secret Manager 는 **활성 버전 하나하나**에
+# 월 $0.06 을 받고, 비활성(disabled) 버전도 똑같이 받는다 — 2026-10-09 에 12개 시크릿이
+# 버전 864개(~$52/월, 하루 ~₩2.2K)로 불어나 청구서에서 Cloud Run 보다 큰 줄이 돼 있었다.
+# 그날 latest 만 남기고 나머지는 destroy 했다. 같은 값이면 버전을 만들지 않는다 (jay).
 upsert_secret() {
   local name=$1 value=$2
   if [ -z "$value" ]; then
@@ -47,6 +51,10 @@ upsert_secret() {
     return
   fi
   if gcloud secrets describe "$name" --project "$PROJECT_ID" >/dev/null 2>&1; then
+    if [ "$(gcloud secrets versions access latest --secret "$name" --project "$PROJECT_ID" 2>/dev/null)" = "$value" ]; then
+      echo "  - $name: 변경 없음"
+      return
+    fi
     printf '%s' "$value" | gcloud secrets versions add "$name" --project "$PROJECT_ID" --data-file=- >/dev/null
   else
     printf '%s' "$value" | gcloud secrets create "$name" --project "$PROJECT_ID" --replication-policy=automatic --data-file=- >/dev/null
