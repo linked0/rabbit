@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import Nav from "../Nav";
-import NotifyPageView from "@/app/NotifyPageView";
 import VerexBallLazy from "../home/VerexBallLazy";
 import { PROFILE, PROJECTS } from "@/lib/home-content";
 import { verexUrl } from "@/lib/verex";
@@ -26,7 +25,6 @@ export default function ProjectsPage() {
   return (
     <>
       <Nav />
-      <NotifyPageView path="/projects" />
       <main>
         <h1>{pick(lang, "프로젝트", "Projects")}</h1>
 

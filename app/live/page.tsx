@@ -1,5 +1,4 @@
 import Nav from "../Nav";
-import NotifyPageView from "@/app/NotifyPageView";
 import Card from "../DemoCard";
 import { POC_CARDS } from "@/lib/poc-cards";
 import { TIL_CARDS } from "@/lib/til-cards";
@@ -40,7 +39,6 @@ export default function LivePage() {
   return (
     <>
       <Nav />
-      <NotifyPageView path="/live" />
       <main>
         <h1>{pick(lang, "데모", "Demo")}</h1>
         <p className="sub">

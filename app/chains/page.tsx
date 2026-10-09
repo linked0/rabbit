@@ -1,5 +1,4 @@
 import Nav from "../Nav";
-import NotifyPageView from "@/app/NotifyPageView";
 import AutoRefresh from "./AutoRefresh";
 import {
   fetchStatus, fetchRegistry, probe,
@@ -182,7 +181,6 @@ export default async function ChainsPage() {
   return (
     <>
       <Nav />
-      <NotifyPageView path="/chains" />
       {/* 블록이 늘어나는 것이 "살아 있다"의 유일한 신호라, 멈춰 있는 숫자는 멈춘 체인과 구별되지 않는다.
           Sepolia 는 12 초에 한 블록이라 lib/chains.ts 의 캐시가 그쪽 호출만 걸러 준다. */}
       <AutoRefresh seconds={5} />

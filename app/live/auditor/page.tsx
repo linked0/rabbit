@@ -1,5 +1,4 @@
 import Nav from "../../Nav";
-import NotifyPageView from "@/app/NotifyPageView";
 import { Auditor } from "@/components/auditor/Auditor";
 
 // Authority Auditor, ported into rabbit as a live demo (jay, 2026-09-10).
@@ -15,7 +14,6 @@ export default function AuditorPage() {
   return (
     <>
       <Nav />
-      <NotifyPageView path="/live/auditor" />
       <main className="auditor-scope">
         <h1>Authority Auditor</h1>
         <p className="muted">

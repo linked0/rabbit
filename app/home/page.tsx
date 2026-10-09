@@ -9,6 +9,7 @@ import { JAYVERSE, projectUrl, isLocalHost } from "@/lib/jayverse";
 import { verexUrl } from "@/lib/verex";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
+import { notifyHomeVisit } from "@/lib/visitor-notify";
 
 // Task 5 — www.jaylabs.xyz 홈 (공개). linked0.github.io 미러 + verex 링크.
 export const metadata = {
@@ -22,8 +23,10 @@ export default function HomePage() {
   // 100.x.y.z:3100, and every ecosystem link has to carry the same address —
   // "localhost" there would mean the phone (jay, 2026-09-15).
   const host = headers().get("host");
-  // Home no longer pings Telegram — everyone lands here, so it was the least informative signal.
-  // Page-view pings now fire on the *other* top-menu pages via <NotifyPageView/> (jay, 2026-09-10).
+  // Telegram 은 홈 방문과 Jay Chat 만 알린다 (jay, 2026-10-09). 2026-09-10 에는 반대로
+  // 홈을 빼고 다른 상단 메뉴 페이지들을 알렸는데, 그건 데모를 돌리는 우리 자신의 클릭까지
+  // 울려서 소음이 됐다. 같은 방문자는 1시간에 한 번만 (lib/visitor-notify.ts).
+  notifyHomeVisit(headers().get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown");
   return (
     <>
       <Nav />

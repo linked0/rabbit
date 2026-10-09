@@ -21,9 +21,10 @@ function send(text: string): Promise<void> {
     .catch((e) => console.error("visitor-notify telegram error:", e));
 }
 
-// Light per-(page, visitor) debounce so refreshes/soft-navigations within a few minutes
-// don't spam Telegram with duplicate notifications for the same visit.
-const DEBOUNCE_MS = 5 * 60 * 1000;
+// Per-visitor debounce: the same visitor within an hour is one visit, not several
+// (jay, 2026-10-09; was 5 minutes). Applies to home visits and Jay Chat starts alike.
+// In-memory, which is exact here: rabbit runs a single Cloud Run instance (--max-instances 1).
+const DEBOUNCE_MS = 60 * 60 * 1000;
 const lastSeen = new Map<string, number>();
 
 function debounced(key: string): boolean {
@@ -34,16 +35,14 @@ function debounced(key: string): boolean {
   return false;
 }
 
-// 알림 정책이 뒤집혔다 (jay, 2026-09-10). 예전(2026-08-05)엔 "홈 방문 + Jay Chat 시작" 딱
-// 둘만 알렸다 — 페이지마다 붙이면 소음이 된다는 이유였다. 이제는 반대로 **홈을 뺀 모든
-// 상단 메뉴 페이지 진입 + Jay Chat 시작**을 알린다: 홈은 누구나 처음 닿는 곳이라 정보량이
-// 가장 낮은 신호였고, 그보다 더 깊은(projects·데모·auditor 등) 진입이 "의도를 갖고 왔다"는
-// 진짜 신호이기 때문이다. 홈의 notifyPageView 호출은 그래서 제거했다. 상단 메뉴 페이지들은
-// app/NotifyPageView.tsx(서버 컴포넌트)로 진입 시 이 함수를 부른다. (path, ip) 5분 디바운스.
-export function notifyPageView(pathname: string, ip: string) {
-  const key = `page:${pathname}:${ip}`;
-  if (debounced(key)) return;
-  send(`🐰 👀 Rabbit — visitor on ${pathname} (${ip})`);
+// 알림 정책 (jay, 2026-10-09): **홈 방문 + Jay Chat** 만 알린다. 2026-08-05 에는 이 둘이었고,
+// 2026-09-10 에 "홈을 빼고 다른 상단 메뉴 페이지 전부"로 뒤집었다가, 그게 데모를 돌리는
+// 우리 자신의 클릭까지 울리는 소음이 되어 다시 이 둘로 돌아왔다. 다른 페이지에 핑을
+// 붙이고 싶어지면 이 이력부터 볼 것. (장애 알림 — notifyAiLimit / notifyJayChatDown /
+// notifyDevnetDown — 은 방문 알림이 아니라 이 정책 밖이다.)
+export function notifyHomeVisit(ip: string) {
+  if (debounced(`home:${ip}`)) return;
+  send(`🐰 👀 Rabbit — home page visit (${ip})`);
 }
 
 export function notifyChatStart(ip: string) {
