@@ -106,3 +106,10 @@ export function notifyJayChatDown(args: { host: string; model: string; status: n
       `Not a quota issue — check the key (401) or the provider (5xx).`,
   );
 }
+
+// Jayverse Devnet 상태 (jay, 2026-10-09). 같은 날 devnet VM 부트 디스크가 가득 차서
+// anvil 이 5일 동안 재시작만 반복했는데, 아무도 몰랐다 — /chains 페이지는 "unreachable"
+// 을 보여 줬지만 아무도 그 페이지를 보지 않았다. Jay Chat 과 같은 매시간 점검이 부른다.
+export function notifyDevnetDown(problem: string, statusUrl: string): Promise<void> {
+  return send(`🐰 ⛓️ Rabbit — Jayverse Devnet health check failed\n${problem}\n${statusUrl}`);
+}

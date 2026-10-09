@@ -156,8 +156,10 @@ export type ChainReading = {
   head: number | null;
   headTime: number | null;
   /** How far the chain's clock sits behind the real one, in seconds.
-   *  A fork continues the forked block's timestamp, so this is large and
-   *  growing on local and devnet, and ~0 on Sepolia. */
+   *  Anvil's clock only advances while it mines, so this grows with every
+   *  stretch of downtime: large on local, ~0 on Sepolia, and ~0 on devnet
+   *  unless the node was down or stalled — the hourly health check
+   *  (app/api/jay-chat/health) alerts when it passes 10 minutes. */
   skew: number;
   /** Why we have nothing, when we have nothing. */
   error?: string;
