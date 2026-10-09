@@ -4,16 +4,21 @@
 // affect a real page load or chat request. Reuses the same bot (@ClaudeAgentJayBot,
 // same token value as verex/the Claude Code channel) — one bot, multiple use-cases.
 
-function send(text: string) {
+// 프라미스를 돌려준다 — 대부분의 호출부는 무시하지만(fire-and-forget), 한도 점검
+// 프로브는 기다려야 한다. Cloud Run 은 응답을 보낸 뒤 CPU 를 거둬 가서, 기다리지 않은
+// 텔레그램 요청은 끝나지 못할 수 있다 (2026-10-09).
+function send(text: string): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return;
+  if (!token || !chatId) return Promise.resolve();
 
-  fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  return fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ chat_id: chatId, text }),
-  }).catch((e) => console.error("visitor-notify telegram error:", e));
+  })
+    .then(() => undefined)
+    .catch((e) => console.error("visitor-notify telegram error:", e));
 }
 
 // Light per-(page, visitor) debounce so refreshes/soft-navigations within a few minutes
@@ -72,19 +77,19 @@ export function notifyAiLimit(args: {
   model: string;
   status: number;
   detail: string;
-}) {
+}): Promise<void> {
   // 소진 상태는 몇 시간씩 이어진다. 5분 디바운스로는 틱마다 같은 비명을 지른다.
   const key = `ai:${args.kind}:${args.host}`;
   const now = Date.now();
   const prev = lastLimit.get(key);
-  if (prev !== undefined && now - prev < LIMIT_DEBOUNCE_MS) return;
+  if (prev !== undefined && now - prev < LIMIT_DEBOUNCE_MS) return Promise.resolve();
   lastLimit.set(key, now);
 
   const head =
     args.kind === "quota"
       ? `🐰 🚨 Rabbit — ${args.host} quota exhausted (top up)`
       : `🐰 ⏳ Rabbit — ${args.host} rate limited (will recover)`;
-  send(
+  return send(
     `${head}\nmodel ${args.model} · HTTP ${args.status}\n${args.detail.slice(0, 300)}\n` +
       `Jay Chat and the agent tick are both down until this clears.`,
   );

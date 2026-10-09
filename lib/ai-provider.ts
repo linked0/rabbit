@@ -58,11 +58,14 @@ export function classifyLimit(status: number, body: string): "quota" | "rate" | 
 
 /// 실패 응답 하나를 보고, 한도라면 텔레그램으로 알린다. 던지지 않는다 —
 /// 호출부는 원래의 에러를 그대로 던져야 하고, 알림 실패가 그것을 가리면 안 된다.
-export function reportIfLimited(llm: AiProvider, status: number, body: string) {
+///
+/// 프라미스를 돌려주지만 거부(reject)하지 않는다. 방문자 경로는 기다리지 않고,
+/// 한도 점검 프로브(/api/jay-chat/health)는 텔레그램 전송이 끝날 때까지 기다린다.
+export async function reportIfLimited(llm: AiProvider, status: number, body: string): Promise<void> {
   const kind = classifyLimit(status, body);
   if (!kind) return;
   try {
-    notifyAiLimit({ kind, host: llm.host, model: llm.model, status, detail: body });
+    await notifyAiLimit({ kind, host: llm.host, model: llm.model, status, detail: body });
   } catch (e) {
     console.error("ai-provider: limit notify failed", e);
   }

@@ -21,6 +21,7 @@ const PUBLIC_PATHS = new Set([
   "/devnet",
   "/projects", // 수행 프로젝트 — 홈에 있던 피처드/프로젝트 전체 (Nav pub, 로그인 불필요)
   "/api/jay-chat", // 홈에 통합된 Jay Chat 의 API — 시간당 토큰 예산 + 버스트 가드로 보호됨
+  "/api/jay-chat/health", // 한도 점검 프로브 (Cloud Scheduler) — 로그인 대신 X-Health-Secret 헤더로 막힌다
   "/live/ap2", // AP2 — Stripe 정산 데모 (test mode) — 메뉴에선 PoCs 허브 카드로만 노출 (라우트는 공개)
   "/api/ap2/checkout", // /live/ap2 용 Stripe Checkout 세션 생성 — 공개(로그인 불필요, 테스트 결제만)
   "/live/toss", // Toss Payments — KRW 정산 데모 (test mode) — /live/ap2와 동일하게 PoCs 허브 카드로만 노출

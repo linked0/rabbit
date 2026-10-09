@@ -3,7 +3,7 @@
 // Always-on About-me persona (never general-purpose) + its own cost/abuse guardrails,
 // since this endpoint is reachable by anyone with no login.
 
-import { aiProvider, reportIfLimited } from "./ai-provider";
+import { aiProvider, classifyLimit, reportIfLimited } from "./ai-provider";
 
 export type ChatMessage = {
   role: "user" | "assistant" | "system";
@@ -135,4 +135,50 @@ export async function streamJayChat(
       },
     })
   );
+}
+
+// --- 한도 점검 프로브 (jay, 2026-10-09) ---
+// 위 스트림 경로의 reportIfLimited 는 **방문자가 이미 실패한 뒤에야** 울린다. 아무도
+// 채팅하지 않는 동안 크레딧이 떨어지면, 첫 방문자가 깨진 채팅을 보는 순간까지 아무도
+// 모른다. 그래서 Cloud Scheduler 가 매시간 이 함수를 불러 같은 키·엔드포인트·모델로
+// 1토큰짜리 요청을 보낸다 — 한 번에 ~15토큰, 하루 ~360토큰이라 비용은 사실상 0이다.
+// 한도(소진·스로틀)면 방문자 경로와 **같은** 텔레그램 알림이 나간다.
+export type ProbeResult =
+  | { ok: true; model: string; host: string; tokens: number }
+  | { ok: false; model: string; host: string; status: number; limit: "quota" | "rate" | null; detail: string };
+
+export async function probeJayChat(): Promise<ProbeResult> {
+  const llm = aiProvider();
+  if (!llm.key) {
+    return { ok: false, model: llm.model, host: llm.host, status: 0, limit: null, detail: "AI_API_KEY 없음" };
+  }
+  const res = await fetch(llm.endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${llm.key}` },
+    body: JSON.stringify({
+      model: llm.model,
+      messages: [{ role: "user", content: "ping" }],
+      max_tokens: 1,
+    }),
+  });
+  const body = await res.text().catch(() => "");
+  if (!res.ok) {
+    await reportIfLimited(llm, res.status, body);
+    return {
+      ok: false,
+      model: llm.model,
+      host: llm.host,
+      status: res.status,
+      limit: classifyLimit(res.status, body),
+      detail: body.slice(0, 300),
+    };
+  }
+  let tokens = 0;
+  try {
+    tokens = JSON.parse(body)?.usage?.total_tokens ?? 0;
+  } catch {
+    // 200 인데 JSON 이 아니면 토큰 수만 모른다 — 프로브는 성공이다.
+  }
+  if (tokens) recordTokenUsage(tokens);
+  return { ok: true, model: llm.model, host: llm.host, tokens };
 }

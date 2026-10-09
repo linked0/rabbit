@@ -32,7 +32,8 @@ echo "▶ 배포 대상: $SERVICE ($REGION)"
 # 없는 리비전이 떴다. 전역 config 는 건드리지 않는다.
 echo "▶ gcloud API 설정 ($PROJECT_ID)"
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
-  artifactregistry.googleapis.com secretmanager.googleapis.com --project "$PROJECT_ID"
+  artifactregistry.googleapis.com secretmanager.googleapis.com \
+  cloudscheduler.googleapis.com --project "$PROJECT_ID"
 
 # Cloud Run 리비전이 사용하는 기본 컴퓨트 서비스 계정 — 시크릿 읽기 권한 부여 대상
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
@@ -76,6 +77,17 @@ upsert_secret rabbit-telegram-bot-token "${TELEGRAM_BOT_TOKEN:-}"
 upsert_secret rabbit-stripe-secret "${STRIPE_SECRET_KEY:-}"
 upsert_secret rabbit-toss-secret   "${TOSS_SECRET_KEY:-}"
 
+# Jay Chat 한도 점검 프로브의 공유 비밀 (jay, 2026-10-09). .env 에 두지 않고 처음 한 번만
+# 여기서 만든다 — 값은 Cloud Run(env)과 Cloud Scheduler(헤더) 사이에서만 오가고 사람은 몰라도
+# 된다. upsert_secret 처럼 매번 새 버전을 만들지 않는 이유: 돌릴 필요가 없는 값이다.
+if ! gcloud secrets describe rabbit-health-secret --project "$PROJECT_ID" >/dev/null 2>&1; then
+  openssl rand -hex 24 | tr -d '\n' | gcloud secrets create rabbit-health-secret --project "$PROJECT_ID" \
+    --replication-policy=automatic --data-file=- >/dev/null
+fi
+gcloud secrets add-iam-policy-binding rabbit-health-secret --project "$PROJECT_ID" \
+  --member="serviceAccount:$RUN_SA" --role=roles/secretmanager.secretAccessor >/dev/null
+echo "  - rabbit-health-secret: OK (+accessor)"
+
 echo "▶ Cloud Run 배포"
 # 시크릿 목록 — DATABASE_URL은 설정됐을 때만 추가 (Task 1 DB)
 SECRETS="AUTH_SECRET=rabbit-auth-secret:latest,AUTH_GOOGLE_ID=rabbit-google-id:latest,AUTH_GOOGLE_SECRET=rabbit-google-secret:latest,AI_API_KEY=rabbit-ai-key:latest,MARKET_API_KEY=rabbit-market-key:latest"
@@ -96,6 +108,7 @@ fi
 [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && SECRETS="$SECRETS,TELEGRAM_BOT_TOKEN=rabbit-telegram-bot-token:latest"
 [ -n "${STRIPE_SECRET_KEY:-}" ] && SECRETS="$SECRETS,STRIPE_SECRET_KEY=rabbit-stripe-secret:latest"
 [ -n "${TOSS_SECRET_KEY:-}" ] && SECRETS="$SECRETS,TOSS_SECRET_KEY=rabbit-toss-secret:latest"
+SECRETS="$SECRETS,HEALTH_CHECK_SECRET=rabbit-health-secret:latest"
 
 # 공개 클라이언트 키는 시크릿이 아니라 평범한 env 로 넘긴다 — 어차피 브라우저로 전달되는 값이다.
 # NEXT_PUBLIC_* 를 쓰지 않는 이유: 그 접두어는 빌드 시점에 코드에 박히는데, Cloud Run 은 소스에서
@@ -170,6 +183,20 @@ if [ "$LIVE_AUTH_URL" != "$URL" ]; then
   echo "   이 상태로 두면 Google 로그인이 깨집니다. 수동 복구:"
   echo "   gcloud run services update $SERVICE --project $PROJECT_ID --region $REGION --update-env-vars AUTH_URL=$URL"
   exit 1
+fi
+
+# Jay Chat 한도 점검 — 매시간 정각 /api/jay-chat/health 를 부른다 (jay, 2026-10-09).
+# 크레딧 소진·스로틀이면 그 라우트가 텔레그램으로 알린다. 있으면 갱신, 없으면 생성.
+echo "▶ Cloud Scheduler: rabbit-jay-chat-health (매시간)"
+HEALTH_SECRET=$(gcloud secrets versions access latest --secret rabbit-health-secret --project "$PROJECT_ID")
+if gcloud scheduler jobs describe rabbit-jay-chat-health --project "$PROJECT_ID" --location "$REGION" >/dev/null 2>&1; then
+  gcloud scheduler jobs update http rabbit-jay-chat-health --project "$PROJECT_ID" --location "$REGION" \
+    --schedule "0 * * * *" --time-zone "Asia/Seoul" --uri "$URL/api/jay-chat/health" --http-method POST \
+    --update-headers "X-Health-Secret=$HEALTH_SECRET" --attempt-deadline 60s >/dev/null
+else
+  gcloud scheduler jobs create http rabbit-jay-chat-health --project "$PROJECT_ID" --location "$REGION" \
+    --schedule "0 * * * *" --time-zone "Asia/Seoul" --uri "$URL/api/jay-chat/health" --http-method POST \
+    --headers "X-Health-Secret=$HEALTH_SECRET" --attempt-deadline 60s >/dev/null
 fi
 
 echo
