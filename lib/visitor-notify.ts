@@ -94,3 +94,15 @@ export function notifyAiLimit(args: {
       `Jay Chat and the agent tick are both down until this clears.`,
   );
 }
+
+// 한도가 아닌 실패 — 키 오류(401), 제공자 장애(5xx), 네트워크 오류 (jay, 2026-10-09).
+// 방문자 경로에선 이걸 알리지 않는다(소음). 매시간 도는 한도 점검 프로브만 부른다 —
+// 한 시간에 한 번이라 디바운스 없이도 조용하고, 고쳐질 때까지 매시간 다시 울리는 게 맞다.
+export function notifyJayChatDown(args: { host: string; model: string; status: number; detail: string }): Promise<void> {
+  const what = args.status === 0 ? "unreachable" : `HTTP ${args.status}`;
+  return send(
+    `🐰 🛑 Rabbit — Jay Chat health check failed (${what})\n` +
+      `${args.host} · model ${args.model}\n${args.detail.slice(0, 300)}\n` +
+      `Not a quota issue — check the key (401) or the provider (5xx).`,
+  );
+}
