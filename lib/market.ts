@@ -4,9 +4,18 @@
 export type IndexQuote = {
   key: string;
   name: string;
+  nameEn?: string;
   price: number;
-  changePct: number; // 전일 종가 대비 %
+  /** 24h(또는 전일 종가) 대비 %. **못 구하면 undefined** — 0 으로 꾸미지 않는다. */
+  changePct?: number;
   currency: string;
+  /** 피드가 이 값을 발표한 시각(unix 초). Pyth 카드만 채운다. */
+  publishTime?: number;
+  /** 장이 닫혀 값이 멈춘 상태. 피드가 죽은 것이 아니다. */
+  stale?: boolean;
+  source?: "pyth" | "yahoo";
+  /** 실제로 쓰인 Pyth 심볼 — 카드가 어느 피드에서 왔는지 추적용. */
+  symbol?: string;
 };
 
 export async function fetchIndexQuote(

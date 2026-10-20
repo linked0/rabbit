@@ -38,7 +38,10 @@ export default function NavLinks({ items, fromLive = false }: { items: NavItem[]
               m.href === "/live"
             : m.href === "/"
               ? pathname === "/"
-              : pathname.startsWith(m.href));
+              : // 경계까지 보고 판정한다 (2026-10-20). startsWith 만 쓰면 접두사가 겹치는
+                // 형제 경로에서 둘 다 켜진다 — /market 메뉴가 /markets(예측 마켓)에서도
+                // 켜져 있었다. 같은 세그먼트이거나 그 아래일 때만 활성.
+                pathname === m.href || pathname.startsWith(`${m.href}/`));
         return m.external ? (
           <a key={m.href} href={m.href} target="_blank" rel="noreferrer" className="nav-cta">
             {label}

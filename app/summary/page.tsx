@@ -16,7 +16,7 @@ export default function SummaryPage() {
         <p className="sub">
           {pick(lang, "BTC · ETH · S&P 500 · KOSPI — 60초마다 자동 갱신", "BTC · ETH · S&P 500 · KOSPI — auto-refresh every 60s")}
         </p>
-        <IndexCards />
+        <IndexCards only={["btc", "eth", "us500", "kr200"]} />
       </main>
     </>
   );
