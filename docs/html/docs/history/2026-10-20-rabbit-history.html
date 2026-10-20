@@ -77,6 +77,24 @@ SyntaxError 로 터진다 — 항상 text 로 먼저 읽는다. ② <code>NavLin
 보였다. <code>/summary</code> 는 원래의 네 장만 유지하도록 <code>only</code> prop 을 받는다(요약 화면이 갑자기 10장이
 되지 않게).</li>
 </ul>
+<h3 id="유료-확인-그리고-무료-경로-탐색-결과">유료 확인, 그리고 무료 경로 탐색 결과</h3>
+<ul>
+<li><strong>Pyth Hermes 는 유료다.</strong> jay 의 app.pyth.com 대시보드가 &quot;Upgrade to a paid plan to generate a
+Pyth Pro API key&quot; 라고 직접 말한다(My Feeds 0). 우리가 받은 <code>403 Not entitled (no grant accepts this feed)</code> 와 정확히 일치한다 — 키는 있는데 플랜이 없어 grant 가 0 이다. <strong>검색 엔드포인트는
+열려 있어서 키만 보면 멀쩡해 보인다</strong>는 점이 이 문제를 늦게 알아차리게 만든다.</li>
+<li><strong>이더리움 메인넷 온체인 읽기는 대안이 못 된다</strong> (측정함, Pyth <code>0x4305FB66…</code>, <code>getPriceUnsafe</code>):
+BTC 는 마지막 푸시가 <strong>2,122시간 전</strong>($64,735 — 실제 $81,889), ETH 1,524시간, SOL 14,462시간,
+XAU 8,816시간. US500 · KR200 · 005930 은 아예 revert(그 체인에 없다). Pyth 는 pull 방식이라
+아무도 안 밀면 값이 그대로 늙는다. 직접 밀려면 Hermes 업데이트 데이터가 필요하고 — 그건 또
+유료다. 순환이다.</li>
+<li><strong>L2(Base/Arbitrum/Optimism)는 아직 모른다.</strong> 이더리움 주소를 그대로 썼는데 그 체인들에는
+해당 주소에 바이트코드가 없다(확인함). 즉 &quot;L2 에 없다&quot;가 아니라 <strong>측정 실패</strong>다. 체인별 주소를
+받아 다시 재야 한다. 퍼프 DEX 들이 L2 에서 Pyth 를 계속 밀기 때문에 crypto 메이저는 신선할
+가능성이 있다 — 다만 equity · KR200 은 어느 체인에서도 안 밀릴 것으로 본다.</li>
+<li><strong>지금 상태로 기능은 완전하다.</strong> 열 장 모두 Yahoo 로 실데이터가 나온다(무료, 키 없음,
+코스피 200 · 삼성전자 · SK하이닉스 포함). Pyth 코드는 잠들어 있다가 플랜이 생기면 코드 변경
+없이 켜진다.</li>
+</ul>
 
   </article>
 </div>
