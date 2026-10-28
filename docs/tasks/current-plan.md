@@ -1,6 +1,213 @@
-# Rabbit portal — "Chains" menu: one page for the three Jayverse networks (task brief)
+# Rabbit — current plan: Claude API · EIP-7702 · x402 · bot accounts
 
-## Current status <a id="status"></a>
+> **Written for:** the agent (or jay) who picks this up in `~/work/rabbit`, possibly on another
+> machine with no conversation history. This file is the resumable state. The four tasks come
+> from jay's Wonderland todo list (2026-10-28):
+>
+> 1. Change the API of Rabbit to Claude
+> 2. 7702 한번 구현해보자 (implement EIP-7702 ourselves)
+> 3. x402.org facilitator는 개발·테스트넷 전용이다 — 활용해보기 (use the x402.org facilitator)
+> 4. X나 Discord 봇계정 연동해보기 (connect an X or Discord bot account)
+>
+> **The earlier plan** (Chains menu brief and the 2026-09-23 status board) is kept unchanged at
+> the end of this file under [Earlier plan (archived)](#archive).
+
+## 0. Summary <a id="now"></a>
+
+*Last updated 2026-10-28 (KST).*
+
+| # | Task | State | Next step |
+|---|---|---|---|
+| **T1** | [Rabbit's LLM → Claude](#t1) | **Planned.** Facts checked; nothing built | jay picks the model ([D1](#t-decide)), then build §1.4 |
+| **T2** | [EIP-7702, done by us](#t2) | **Planned.** The delegator contract is on the devnet (checked 2026-10-28) | build §2.4 steps 1–4 |
+| **T3** | [x402 with the x402.org facilitator](#t3) | **Planned.** Facilitator networks checked; `@x402/*` 2.20 installed but unused | jay decides the paid resource ([D3](#t-decide)), then §3.4 |
+| **T4** | [Discord (then X) bot](#t4) | **Planned.** Nothing exists | jay creates the Discord application (§4.4 step 1) |
+
+- **Repo / branch:** `~/work/rabbit`. This plan was written on `claude/plan-claude-7702-x402-bots` (off `main` at `462909f`). Give each task its own branch: `claude/claude-api`, `claude/eip7702-diy`, `claude/x402-facilitator`, `claude/discord-bot`.
+- **Suggested order:** T1 → T2 → T3 → T4. T1 changes the one paid dependency every other feature talks through. T2 and T3 are independent demos. T4 reuses T1's chat and the health check, so it goes last.
+- **History:** the planning session is logged in [`../history/2026-10-28-rabbit-history.md`](../history/2026-10-28-rabbit-history.md). The groundwork it builds on (the Jay Chat health check, Telegram alerts, devnet recovery) is in alice's `docs/history/2026-10-09-rabbit-history.md`.
+- **Not touched by this plan:** the parked `claude/markets-pyth` branch (Markets menu on Pyth, last commit 2026-10-20, not merged to `main`).
+
+### Decisions waiting on jay <a id="t-decide"></a>
+
+| # | Decision | Options | Recommended | If left undecided |
+|---|---|---|---|---|
+| **D1** | **Which Claude model Jay Chat uses** | **(a)** `claude-opus-5-5`, $4 / $20 per 1M tokens · **(b)** `claude-haiku-5-5`, $0.10 / $0.50 | No pick for jay: this is a cost call. The house default is (a). See the cost table in [§1.2](#t1-cost). If (a), the hourly token budget must drop (§1.4 step 6) | Build with (a) and the lowered budget |
+| **D2** | **Where the bot lives first** | **(a)** Discord · **(b)** X | **(a)** Discord: free API, slash commands over HTTP, fits Cloud Run. X's API pricing must be checked first ([§4.2](#t4-x)) | Discord |
+| **D3** | **What the x402 demo sells** | **(a)** a signed price quote ("the agent pays for its price feed") · **(b)** an aphorism for $0.01 (ap2-test's old idea) | **(a)**: it is the story already written in `../features/README-history.md` (item 2) and reuses Markets/Pyth data | (a) |
+
+## 1. T1 — Rabbit's LLM → Claude <a id="t1"></a>
+
+### 1.1 What exists today
+
+Every LLM call goes through **one provider definition**, `lib/ai-provider.ts`: an OpenAI-compatible `chat/completions` endpoint plus key plus model, read from `AI_API_ENDPOINT` / `AI_API_KEY` / `AI_API_MODEL`. Production is currently **OpenAI `gpt-4o-mini`**; DashScope `qwen-flash` is the code default. Three call sites:
+
+| Call site | File | How it calls | What changes |
+|---|---|---|---|
+| Jay Chat (public, streaming) | `lib/jay-chat.ts` → `streamJayChat()` | raw `fetch`, SSE, `stream_options.include_usage`; the route returns a plain-text stream to `JayChatClient` | SDK stream; keep the route's plain-text contract |
+| Hourly health probe | `lib/jay-chat.ts` → `probeJayChat()`, called by `app/api/jay-chat/health/route.ts` | 1-token `fetch` | SDK call; quota/rate classification moves to typed errors |
+| Agent estimate (R-D) | `lib/agent-estimate.ts`, used by `lib/agent-tick.ts` | `fetch`, `temperature: 0`, regex-extracts JSON from the text | **`temperature` must go** (see 1.3); use structured outputs instead of regex |
+
+Supporting pieces: `classifyLimit()` / `reportIfLimited()` in `lib/ai-provider.ts` (OpenAI and DashScope error words) and the Telegram alerts in `lib/visitor-notify.ts`. `scripts/deploy.sh` uploads the key as the secret `rabbit-ai-key` and passes the endpoint and model as plain env. The hourly in-memory token budget is `JAY_CHAT_HOURLY_TOKEN_BUDGET` (450k).
+
+### 1.2 Cost — the reason D1 is jay's <a id="t1-cost"></a>
+
+Prices from the Claude API reference, cached 2026-10-06. A Jay Chat question is about 2,000 input + 300 output tokens after the route's history trimming; thinking tokens bill as output.
+
+| Model | Per question (≈) | Worst case at the current 450k tokens/hour budget, 24/7 |
+|---|---|---|
+| `gpt-4o-mini` (today) | ~$0.0005 | ~$70 / month |
+| `claude-haiku-5-5` | ~$0.0004 | ~$50 / month |
+| `claude-opus-5-5` | ~$0.014 | ~$2,100 / month → **lower the budget to ~60k/hour** (~$280 worst case) |
+
+The worst case only happens if someone hammers the endpoint for a month. The budget is the cap, and the provider-side spend limit in the Anthropic Console is the real backstop: set one either way.
+
+### 1.3 Facts that shape the build
+
+- **Use the native Messages API with `@anthropic-ai/sdk`**, not Anthropic's OpenAI-compatible shim. That retires the "endpoint + key + model always move together" trio in `ai-provider.ts`.
+- **Opus 5.5 rejects sampling parameters** (`temperature`/`top_p`/`top_k` → 400) and **thinking cannot be turned off** (`{type: "disabled"}` → 400). Control depth with `output_config: { effort: "low" }` for chat and the estimate.
+- **System prompt:** `buildAboutMeSystemMessage()` returns a `{role: "system"}` message. With Claude it becomes the top-level `system` param. Put the stable persona text first with `cache_control` and the per-question RAG context after it, so the persona is cached. Check that `usage.cache_read_input_tokens` is above 0 on the second question.
+- **Streaming:** `client.messages.stream(...)`; `stream.on("text", …)` for deltas; `await stream.finalMessage()` gives `usage` (input + output) for `recordTokenUsage()`.
+- **Errors by type, not by words:** `Anthropic.RateLimitError` (429) → "rate"; status **402 `billing_error`** → "quota"; 529 `overloaded_error` and 5xx → provider down; `AuthenticationError` (401) → key. Verify on the first real failure whether credit exhaustion arrives as 402 or as a 400 "credit balance" message, and classify both as quota.
+- **Refusals:** check `stop_reason === "refusal"` before reading text. For Opus 5.5 the house default is the server-side fallback (`betas: ["server-side-fallback-2026-07-01"]`, `fallbacks: "default"`).
+
+### 1.4 Steps
+
+1. `pnpm add @anthropic-ai/sdk`. Rewrite `lib/ai-provider.ts`: export one `anthropic()` client factory (key from `ANTHROPIC_API_KEY`), `AI_MODEL` (default per D1), and `classifyLimit(error)` working on SDK error types. Keep `reportIfLimited()`'s contract: never throws, awaited by the probe.
+2. `streamJayChat()`: SDK stream → the same `ReadableStream<Uint8Array>` of plain text. Usage comes from `finalMessage()`. Keep `MAX_OUTPUT_TOKENS` (1,500), and at effort `low` check that it still leaves room for thinking plus the answer (raise it if answers truncate).
+3. `probeJayChat()`: a minimal `messages.create` (small `max_tokens`, effort `low`). Any 200 is "alive". Confirm that a tiny `max_tokens` is accepted with thinking always on; if not, use 16.
+4. `lib/agent-estimate.ts`: drop `temperature`. Replace the regex JSON extraction with `output_config.format` (a JSON schema for the estimate) and keep `max_tokens` modest.
+5. `scripts/deploy.sh`: new secret `rabbit-anthropic-key` via `upsert_secret` (it only adds a version when the value changes), mounted as `ANTHROPIC_API_KEY`. Drop `AI_API_ENDPOINT`/`AI_API_MODEL` from `AI_ENV`, and pass `AI_MODEL` as plain env. Delete the `rabbit-ai-key` binding only after the new revision is verified.
+6. If D1 = Opus: set `JAY_CHAT_HOURLY_TOKEN_BUDGET` to ~60000 in `.env` (deploy forwards it). Set a monthly spend limit in the Anthropic Console either way.
+7. Update `docs/features/ai-chat.md` (provider, cost, budget) and the comments in `ai-provider.ts`, which still say the trio must "always move together".
+
+### 1.5 Acceptance
+
+- Local: `pnpm dev`, ask Jay Chat three questions in a row. Text streams, the second answer reads cache (log `cache_read_input_tokens`), and nothing in the UI changed.
+- `npx tsc --noEmit` clean. The agent console's estimate returns valid JSON at least 5 times out of 5.
+- Deployed: `POST /api/jay-chat/health` with the secret → `{"ok":true, "jayChat":{"ok":true,"model":"claude-…"}, "devnet":{…}}`.
+- Break the key on a scratch revision (or call with a bad key locally) and confirm the 🛑 Telegram alert. Quota can't be forced, so check that the code path maps 402 to 🚨.
+
+## 2. T2 — EIP-7702, done by us <a id="t2"></a>
+
+### 2.1 What exists today
+
+- **`/live/aa`** (`app/live/aa/SessionKeyDemo.tsx`): ERC-7715 Advanced Permissions on the devnet. **MetaMask performs the 7702 upgrade inside the wallet**; the page only observes it ("Check my account" reads the code slot).
+- **`/live/7702`** (`AccountInspector.tsx`): read-only. Paste an address and it reads `eth_getCode` and reports a delegation designator.
+- **`lib/delegation.ts`**: server-side MetaMask delegation framework (caveat enforcers for amount and expiry) for the J2 agent.
+
+What is missing is the thing itself: **we sign a 7702 authorization and send the type-4 transaction ourselves**, then use the upgraded EOA, then undo it.
+
+### 2.2 Facts checked 2026-10-28
+
+- The MetaMask Smart Accounts Kit (installed, `^1.7.0`) gives Sepolia's addresses: **`EIP7702StatelessDeleGatorImpl` `0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B`**, `DelegationManager` `0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3`.
+- **Both have code on the Jayverse devnet** (11,185 and 11,503 bytes; the devnet forks Sepolia), so nothing needs deploying.
+- **Browser wallets won't sign a raw 7702 authorization for a dapp.** MetaMask keeps upgrades to itself. So the "do it ourselves" demo uses a **burner key** created in the page (viem `generatePrivateKey`), funded by the devnet faucet. That's honest and safe: worthless chain, throwaway key.
+
+### 2.3 The demo in one sentence
+
+An ordinary EOA becomes a smart account for as long as we like: **sign authorization → send type-4 tx → code slot shows `0xef0100‖impl` → batch two calls in one tx → revoke → plain EOA again.**
+
+### 2.4 Steps
+
+1. **Burner + funding.** On a new panel in `/live/7702` ("Do it yourself"), generate a burner, keep it in `sessionStorage` (never `localStorage`), and fund it from the devnet faucet. jUSD's `mint` is open on the devnet.
+2. **Authorize and upgrade.** viem: `walletClient.signAuthorization({ contractAddress: EIP7702StatelessDeleGatorImpl, chainId: 313370 })`, then send the type-4 transaction with `authorizationList: [auth]`.
+   - **Nonce gotcha:** when the sender *is* the authority, the authorization nonce is the account nonce + 1. viem's `executor: "self"` handles it; use it.
+   - Never use `chainId: 0`. That makes the authorization replayable on every chain.
+3. **Show it.** Reuse `AccountInspector`'s logic: the code slot now reads `0xef0100` + the implementation address.
+4. **Use it: one tx, two calls.** `toMetaMaskSmartAccount({ implementation: Implementation.Stateless7702, address: burner, signer })`, then execute `approve` + `transfer` (jUSD) atomically. Show one tx hash, two effects.
+5. **Revoke.** Sign an authorization to `0x0000…0000` and send it. The code slot is empty again; show that.
+6. *(Stretch)* **Sponsored upgrade.** The burner signs only the authorization; a funded relayer (the existing agent wallet) sends the type-4 tx. This is the "gasless onboarding" story: the authority and the gas payer are different accounts.
+7. Add a `POC_CARDS` entry, or update the 7702 card, in `lib/poc-cards.ts`, then run `pnpm docs:pocs`. A new catalogue item needs EN/KO + copy buttons per `docs/AGENTS.md`.
+
+### 2.5 Acceptance and risks
+
+- On the devnet: steps 2–5 each produce a tx hash, and the inspector shows designator → empty. `npx tsc --noEmit` clean.
+- **Risk:** the devnet clock or state can reset on an OOM restart (memory leak still open, see the 2026-10-09 history). The demo must survive a fresh chain: re-fund and re-upgrade, no stored assumptions.
+- **Risk:** anvil must run Prague rules for type-4 transactions. The fork inherits Sepolia's hardfork; if a type-4 tx is rejected, that is the first thing to check.
+
+## 3. T3 — x402 with the x402.org facilitator <a id="t3"></a>
+
+### 3.1 What exists today
+
+- `@x402/core`, `@x402/evm`, `@x402/svm` **2.20** are in `package.json` but **imported nowhere**. Useful exports: `@x402/core/server`, `@x402/core/http`, `@x402/core/client`, `@x402/evm/exact/server`, `@x402/evm/exact/client`.
+- Design notes exist: `../features/ap2-test.md` (the request → 402 → pay → retry loop; the "rabbit-provider" idea) and `../features/README-history.md` item 2 ("the agent pays for the price feed").
+
+### 3.2 Facts checked 2026-10-28 (`GET https://x402.org/facilitator/supported`)
+
+- **x402 v2:** `exact`, `upto` and `batch-settlement` on **`eip155:84532` (Base Sepolia)**, plus `exact` on Solana devnet, Algorand, Aptos, Stellar and Hedera testnets, and XRPL. **v1:** `exact` on `base-sepolia`, `solana-devnet`.
+- **Not supported:** the Jayverse devnet (313370) and jUSD. jay's note is right: this facilitator is for development and testnets only. So **the demo is priced in Base Sepolia USDC**, not jUSD. Mainnet would need a different facilitator (e.g. Coinbase CDP, with API keys); that is out of scope.
+- Extensions advertised: `eip2612GasSponsoring`, `erc20ApprovalGasSponsoring`.
+
+### 3.3 The flow
+
+`GET /api/x402/quote` → **402** with payment requirements (scheme `exact`, network `eip155:84532`, asset Base Sepolia USDC, amount $0.01, `payTo` = jay's address) → client signs the EIP-3009 `transferWithAuthorization` → retries with the payment header → server asks the facilitator to **verify**, serves the resource, then **settles** → response carries the settlement tx hash (visible on Base Sepolia's explorer).
+
+### 3.4 Steps
+
+1. **Server route** `app/api/x402/quote/route.ts` using `@x402/core/server` + `@x402/evm/exact/server`, with the facilitator URL `https://x402.org/facilitator`. Look up the Base Sepolia USDC address in x402's network config, don't hard-code from memory. `PAY_TO` comes from env (a public address, not a secret). Add the path to `middleware.ts` `PUBLIC_PATHS`.
+2. **Paid resource** (per D3): a signed price quote (symbol, price, timestamp, server signature) from the Markets data.
+3. **Client page** `/live/x402`: a burner on Base Sepolia, a link to Circle's test-USDC faucet, and a "Buy one quote" button driven by `@x402/evm/exact/client`. Show the 402 body, the signed payment, the settled tx hash and the quote, step by step. The point is to make the protocol visible.
+4. **Agent variant:** the J2 agent wallet pays for its own quote inside `agent-tick` (machine payment, no human). Gate it behind a flag so a tick loop can't drain the wallet; cap at N calls per hour.
+5. Telegram: none. A paid call is not a homepage visit or Jay Chat (2026-10-09 notification policy).
+6. Card in `lib/poc-cards.ts` + `pnpm docs:pocs`, linked from the AP2 card.
+
+### 3.5 Acceptance and risks
+
+- One full loop on Base Sepolia: 402 → pay → 200 + quote + settlement tx hash, verified on the explorer. A replayed payment header is rejected.
+- **Risk:** the facilitator is a shared public testnet service with no SLA. Show a clear "facilitator unavailable" state, not a spinner.
+- **Risk:** x402 v2 vs v1 header names differ. Use the 2.20 helpers end to end on both sides, never hand-built headers.
+
+## 4. T4 — Discord (then X) bot account <a id="t4"></a>
+
+### 4.1 Discord — why first, and the one design trap
+
+- Free. **Slash commands can be served over plain HTTP** (an "Interactions Endpoint URL"), so no always-on gateway socket is needed. That fits Cloud Run's scale-to-zero.
+- **The trap:** Discord requires an answer within **3 seconds**, and an LLM answer takes longer. The usual move is to reply "deferred" and finish later, but **Cloud Run throttles CPU once the response is sent** (the same reason the health probe awaits its Telegram call). The follow-up must run in its own request: enqueue a **Cloud Tasks** task (or a second internal call) that runs the chat and PATCHes the deferred message. Do not turn on always-on CPU for this; that is the verex-api cost line.
+
+### 4.2 X — check before building <a id="t4-x"></a>
+
+- X's API access and pricing have changed repeatedly. **Check the current tiers and the cost of posting before writing code.** Posting as a bot account needs a developer app with user-context OAuth for the bot account, and the account should carry X's "Automated" label.
+- Useful scope once checked: **post-only announcements** (a Verex market resolved, a new Jayverse release). Replying to mentions with Jay Chat is a later, costlier step.
+
+### 4.3 What the Discord bot does (v1)
+
+| Command | Does | Reuses |
+|---|---|---|
+| `/ask <question>` | Jay Chat answer, as the About-Jay persona | T1's chat code, the hourly token budget, the burst guard (per Discord user id) |
+| `/status` | Jay Chat + Devnet health in one embed | `app/api/jay-chat/health` logic |
+| *(channel webhook, no bot needed)* | mirror the 🚨/🛑/⛓️ outage alerts into a private channel | `lib/visitor-notify.ts` `send()` gets a second sink |
+
+### 4.4 Steps
+
+1. **jay:** create the application in the Discord Developer Portal and add a bot user. Copy the **application id**, **public key** and **bot token** into `.env` (`DISCORD_APP_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`). Invite the bot to a test server with the `applications.commands` scope.
+2. `scripts/register-discord-commands.mjs`: PUT the command list to the application (guild-scoped while testing, global later).
+3. `app/api/discord/interactions/route.ts`:
+   - verify the **Ed25519 signature** (`X-Signature-Ed25519` + `X-Signature-Timestamp` over the raw body; `node:crypto` can verify ed25519) and reject anything unsigned,
+   - answer PING (type 1) with PONG,
+   - for `/ask`, reply type 5 (deferred) and enqueue the follow-up.
+   - Add it to `PUBLIC_PATHS`: the signature is the guard.
+4. `app/api/discord/followup/route.ts` (called by Cloud Tasks with a shared secret): run the chat, then PATCH `/webhooks/{app_id}/{token}/messages/@original`.
+5. `deploy.sh`: secrets for the token and public key (`upsert_secret`), a Cloud Tasks queue, and the Interactions Endpoint URL set to `https://www.jaylabs.xyz/api/discord/interactions` (Discord sends a test PING when you save it).
+6. Telegram: per the 2026-10-09 policy, only Jay Chat events notify. A Discord `/ask` is a Jay Chat conversation, so reuse `notifyChatStart` with a `discord:<user>` key.
+
+### 4.5 Acceptance and risks
+
+- `/ask` in the test server returns a persona answer within ~15 s. A request with a bad signature gets 401. `/status` matches the health endpoint.
+- **Risk:** the public bot spends the same LLM budget as the web chat, so it shares the hourly budget (one pool), not a second one.
+- **Risk:** a leaked bot token can post as the bot anywhere it's invited. It lives only in Secret Manager and `.env`; rotate it in the portal if it ever appears in a log.
+
+---
+
+## Earlier plan (archived 2026-10-28) <a id="archive"></a>
+
+*Everything below is the previous content of this file, unchanged except that its title became
+the bold line below and every other heading moved down one level. It covers the Chains menu brief (shipped) and the 2026-09-23 status board. Some
+of its "decisions waiting on jay" were settled later; read it as history, not as current state.*
+
+**Rabbit portal — "Chains" menu: one page for the three Jayverse networks (task brief)** — the file's title until 2026-10-28.
+
+### Current status <a id="status"></a>
 
 *Last updated 2026-09-23 (KST). Read this first — it is the state of every thread currently
 open, across repos. The sections below are the Chains brief, which is only one of them.*
@@ -18,7 +225,7 @@ open, across repos. The sections below are the Chains brief, which is only one o
 | **Rabbit Hole** (Unity WebGL) | **Live.** [hole.jaylabs.xyz](https://hole.jaylabs.xyz) 200, cert issued in ~1 min. Verified in headless Chrome: playback to tick 22/22, **0 console errors**. Repo `linked0/rabbit-hole` has its first real commit; portal card is the ninth | **D2 closed** |
 | **Repo hygiene** | **Done 2026-09-23.** `jayverse-defi`, `jayverse-game`, `jayverse-token`, `jayverse-devnet` committed, merged to `main`, pushed. alice untouched per jay | `nostra-server` — see below |
 
-### Decisions waiting on jay <a id="decide"></a>
+#### Decisions waiting on jay <a id="decide"></a>
 
 Each of these is a fork in the road that an agent should not pick for jay. Recommendation given,
 because "your call" with no opinion is not help.
@@ -60,7 +267,7 @@ domain for rabbit's docs (they are only on `linked0.github.io/rabbit`); the four
 `e2-standard-2` takes it from roughly $20 to **$50–70/mo**, against a ~$120 estate. Nothing else
 in this list changes the bill; D1 and D2 are cents.
 
-### Known-stale elsewhere
+#### Known-stale elsewhere
 
 - `../features/jayverse-devnet.md` and `../features/cloud-ops.md` still describe the devnet as
   "planned, not deployed" / "no VMs — Compute Engine API not enabled". Both stopped being true
@@ -80,7 +287,7 @@ in this list changes the bill; D1 and D2 are cents.
 > preserved verbatim in [09-16-plan.md](09-16-plan.md)
 > and is not superseded by this brief — only displaced from this filename.
 
-## 0. Summary <a id="s0"></a>
+### 0. Summary <a id="s0"></a>
 
 - **Status:** *(stale — this shipped; see [Current status](#status) above)* §3.1–§3.5 built
   and verified locally; **nothing committed** (jay reviews first).
@@ -115,7 +322,7 @@ in this list changes the bill; D1 and D2 are cents.
   [`../history/2026-09-16.md`](../history/2026-09-16.md) (alice); the build itself is logged in
   [`../history/2026-09-16-rabbit-history.md`](../history/2026-09-16-rabbit-history.md).
 
-## 1. The decision and why <a id="why"></a>
+### 1. The decision and why <a id="why"></a>
 
 jay's words: *"We use three networks — Anvil, devnet, Sepolia. Change the name of the Devnet top
 menu to Chains and make it show all the information for the three chains."*
@@ -139,7 +346,7 @@ Two consequences the page must reflect:
 - **Two Alchemy keys stay.** Local fork upstream and devnet fork upstream use separate Alchemy
   apps (jay, 2026-09-16: keep as is). The page may name the app *role*, never the key.
 
-## 2. What exists today (read before building) <a id="exists"></a>
+### 2. What exists today (read before building) <a id="exists"></a>
 
 All paths relative to `~/work/rabbit`.
 
@@ -171,11 +378,11 @@ All paths relative to `~/work/rabbit`.
   `anvil --chain-id 11155111 --state ./anvil-sepolia-state.json --state-interval 60`, listening on
   `127.0.0.1:8545` only. See §4 and §6.
 
-## 3. What to build <a id="build"></a>
+### 3. What to build <a id="build"></a>
 
 Order matters; each step is shippable on its own.
 
-### 3.1 Rename the menu and route, keep the old URL
+#### 3.1 Rename the menu and route, keep the old URL
 - `app/Nav.tsx`: the item becomes `{ href: "/chains", ko: "체인", en: "Chains", code: "CHAINS", pub: true }`.
   Because the menu is env-gated, **`ALLOW_CHAINS=true` must be added to `.env` in the same
   change**, and the Cloud Run env must receive it on deploy (`deploy.sh` forwards `ALLOW_*`).
@@ -189,7 +396,7 @@ Order matters; each step is shippable on its own.
   card since the page now covers three chains.
 - Page `metadata.title` → "Chains — Jayverse".
 
-### 3.2 A chain model instead of devnet constants
+#### 3.2 A chain model instead of devnet constants
 - New `lib/chains.ts` (or extend `lib/devnet.ts` and rename) exporting a `CHAINS` array with one
   entry per network: `key` (`local` | `devnet` | `sepolia`), display names ko/en, `chainId`,
   `rpc` (server-side URL), `ws?`, `explorer?` (Otterscan / Etherscan Sepolia), `role` (one-line
@@ -203,7 +410,7 @@ Order matters; each step is shippable on its own.
   reads apply to the devnet only, unless the local fork has been seeded (detect: Registry address
   known and has code).
 
-### 3.3 The page: three columns of the same facts
+#### 3.3 The page: three columns of the same facts
 - **Stat row per chain** (one card each, same layout so the eye can compare): status
   (healthy / unreachable), chain id, latest block, block time, and one chain-specific line:
   devnet → fork block + edge uptime + faucet left (from `/status`); Sepolia → finalized block or
@@ -224,7 +431,7 @@ Order matters; each step is shippable on its own.
 - Keep `AutoRefresh` at 5 s; probing three chains is still cheap, but **skip the local RPC on the
   server when `process.env.K_SERVICE` is set** (Cloud Run) to avoid a 2 s timeout per refresh.
 
-### 3.4 Capability matrix panel (the Alchemy point, made visible)
+#### 3.4 Capability matrix panel (the Alchemy point, made visible)
 One table, capabilities as rows, chains as columns — this is what makes "Chains" more than three
 copies of the devnet page:
 
@@ -244,14 +451,14 @@ copies of the devnet page:
 Render the "—" and "planned" cells honestly; a planned row is a link to the devnet doc's phase
 table, not a green dot.
 
-### 3.5 Docs and history
+#### 3.5 Docs and history
 - Update `docs/features/README.md` in alice only if the service table mentions the `/devnet` URL.
 - Append a Cause → Reasoning → Change → Result block to
   `~/work/alice/docs/history/2026-09-16-rabbit-history.md` (create the file if absent; cite this
   brief at the top).
 - Keep this file's §0 current as steps land (branch, what is merged, what is next).
 
-## 4. Reaching the local Anvil from other devices (Tailscale) <a id="tailscale"></a>
+### 4. Reaching the local Anvil from other devices (Tailscale) <a id="tailscale"></a>
 
 Yes — with one change. jay's machine is on the tailnet at `100.111.162.0` (gitboard is already
 served that way on :4321). Anvil, however, **binds to `127.0.0.1` by default**, so today
@@ -271,7 +478,7 @@ served that way on :4321). Anvil, however, **binds to `127.0.0.1` by default**, 
   tailnet to localhost with TLS (`https://<machine>.<tailnet>.ts.net`). Mention both on the page;
   recommend `--host 0.0.0.0` for simplicity.
 
-## 5. Acceptance <a id="accept"></a>
+### 5. Acceptance <a id="accept"></a>
 
 - Menu reads **Chains** (ko: 체인) at the same position; `/devnet` redirects to `/chains`; both
   public without login.
@@ -283,13 +490,13 @@ served that way on :4321). Anvil, however, **binds to `127.0.0.1` by default**, 
   to render other than `ALLOW_CHAINS=true`.
 - History entry written; this file's §0 updated; nothing committed to `main`.
 
-## 6. Open questions for jay <a id="open"></a>
+### 6. Open questions for jay <a id="open"></a>
 
 > **How to read this (2026-09-16):** every item has a working default in the code, so the page
 > ships either way. None of them is *decided* — a default is what I did so the work could
 > finish, not an answer. 1–4 were in the brief; 5–10 came out of building it.
 
-### Answered with a default, still yours to decide
+#### Answered with a default, still yours to decide
 
 1. **Local chain id — displayed, not fixed.** Confirmed live: the node reports `11155111`
    (Sepolia's id) because it was started as a Sepolia fork with the default id. The design
@@ -318,7 +525,7 @@ served that way on :4321). Anvil, however, **binds to `127.0.0.1` by default**, 
    so it costs nothing. The three-column layout is the point of the page; dropping a column in
    production would make the cloud page a different page. Say so if you would rather hide it.
 
-### New — found while building
+#### New — found while building
 
 5. **rails is copied, not imported, and nothing enforces the copy.** §2 said "import these; do
    not redefine chains in rabbit". rabbit cannot: `scripts/deploy.sh` uses
@@ -384,7 +591,7 @@ served that way on :4321). Anvil, however, **binds to `127.0.0.1` by default**, 
     duplication started. Same fix as 5 — publish, or accept the hand-sync and say so in the
     comments (done).
 
-## 7. Policies (jay's, non-negotiable) <a id="policy"></a>
+### 7. Policies (jay's, non-negotiable) <a id="policy"></a>
 
 - Never `git reset --hard`; never commit before jay's review; never commit to `main`; one branch
   for this whole request (`claude/chains-menu`).
@@ -393,7 +600,7 @@ served that way on :4321). Anvil, however, **binds to `127.0.0.1` by default**, 
   conversation.
 - Reply format per `~/.claude/CLAUDE.md` (English check, Answer, Today's phrases, Korean).
 
-## 8. Docs move: alice → rabbit (2026-09-22) <a id="docsmove"></a>
+### 8. Docs move: alice → rabbit (2026-09-22) <a id="docsmove"></a>
 
 **This file's own address changed.** `docs/features/`, `docs/tasks/` and `docs/history/` moved
 back from `~/work/alice` to `~/work/rabbit` on 2026-09-22 (jay). They moved as one unit because
@@ -409,7 +616,7 @@ again. Both repos publish GitHub Pages, so nothing went dark:
 | **rabbit** | `main` → `/docs` | `https://linked0.github.io/rabbit/html/docs/…` |
 | **alice** | `main` → `/` (root), custom domain | `https://alice.jaylabs.xyz/docs/html/docs/…` |
 
-### What jay should do next <a id="docsmove-next"></a>
+#### What jay should do next <a id="docsmove-next"></a>
 
 1. **Update `~/.claude/CLAUDE.md`.** The "Daily action log" rule still names
    `~/work/alice/docs/history/` as the central history folder. It is now
@@ -434,7 +641,7 @@ again. Both repos publish GitHub Pages, so nothing went dark:
    resolve here and dangle in alice's copy. The duplicate pair is older than this move; flagging
    it, not fixing it.
 
-### What was changed to make the move work
+#### What was changed to make the move work
 
 - **Both docs generators gained absent-folder guards.** alice's `generate-docs-html.mjs` would
   have crashed on the missing folders (rabbit's already had the guards from the 2026-09-14 move
