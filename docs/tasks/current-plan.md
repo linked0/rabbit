@@ -113,7 +113,7 @@ Whether a new grant appears each month is not shown on that page. Treat it as on
 - **UI:** the label under Jay Chat comes from `aiModelLabel()` (it used to be a stale hardcoded "Qwen Flash"). Assistant bubbles render `**bold**` as `<strong>` via React nodes, never `innerHTML`.
 - **`scripts/deploy.sh`:** `rabbit-anthropic-key` comes only from `CLOUD_ANTHROPIC_API_KEY`. Production uses Claude only if `AI_PROVIDER=anthropic` **and** that key is set; otherwise it stays on `openai` (it prints `▶ LLM 제공자: …`). The budget var is passed through and no longer forced to 450000.
 - **Smoke test:** `scripts/smoke-claude.ts` (instructions in its header). Results 2026-10-28: label `Claude Opus 5.5`, probe ok (26 tokens), Korean answer 7.6 s, English 9.3 s, cache read 900 tokens per call, estimate `{"p":0.995,…}`.
-- **Not checked yet:** the UI in a browser (jay's `next dev` on :3100 was hung and was left alone), and the deployed path.
+- **Browser check (2026-10-28, `AI_PROVIDER=anthropic pnpm dev`):** the label reads "… — Claude Opus 5.5 + 이력 기반 RAG", `/api/jay-chat` answers in 5.3 s, and assistant bubbles show bold as `<strong>` (5 tags, no `**` left). **Still raw:** single-asterisk italics (`*x*`) and markdown links (`[GitHub](https://…)`). Either render them too (links restricted to `http(s)`) or tell the model to write plain text. **Not checked yet:** the deployed path.
 
 ## 2. T2 — EIP-7702, done by us <a id="t2"></a>
 
