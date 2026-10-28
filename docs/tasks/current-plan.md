@@ -91,6 +91,10 @@ Whether a new grant appears each month is not shown on that page. Treat it as on
 4. `lib/agent-estimate.ts`: drop `temperature`. Replace the regex JSON extraction with `output_config.format` (a JSON schema for the estimate) and keep `max_tokens` modest.
 5. `scripts/deploy.sh`: new secret `rabbit-anthropic-key` via `upsert_secret` (it only adds a version when the value changes), mounted as `ANTHROPIC_API_KEY`. Drop `AI_API_ENDPOINT`/`AI_API_MODEL` from `AI_ENV`, and pass `AI_MODEL` as plain env. Delete the `rabbit-ai-key` binding only after the new revision is verified.
 6. If D1 = Opus: set `JAY_CHAT_HOURLY_TOKEN_BUDGET` to ~60000 in `.env` (deploy forwards it). Set a monthly spend limit in the Anthropic Console either way.
+8. **Later (T1.1): drop the cloud key for Workload Identity Federation.** The Console offers "identity federation" when you create a key. On Cloud Run, rabbit's service account would get a short-lived Google identity token, and Anthropic would exchange it for API access, so there is no `rabbit-cloud` key in Secret Manager to leak or rotate. The SDK switches to it when `ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID`, `ANTHROPIC_SERVICE_ACCOUNT_ID` and `ANTHROPIC_IDENTITY_TOKEN_FILE` (or `ANTHROPIC_IDENTITY_TOKEN`) are set, and **only if `ANTHROPIC_API_KEY` is unset** (the key outranks federation).
+   - **Open question:** Cloud Run does not write that token file by itself. Something must fetch it from the metadata server (`…/service-accounts/default/identity?audience=…`) and keep it fresh, because it expires in about an hour. Check the SDK docs for a token-provider hook before building a refresher.
+   - Local dev keeps the `rabbit-local` key: the dialog itself says local scripts still need one.
+   - Not before the 2026-11-05 deadline: ship T1 with the key first.
 7. Update `docs/features/ai-chat.md` (provider, cost, budget) and the comments in `ai-provider.ts`, which still say the trio must "always move together".
 
 ### 1.5 Acceptance

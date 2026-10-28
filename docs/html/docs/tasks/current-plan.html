@@ -232,6 +232,12 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 <li><code>lib/agent-estimate.ts</code>: drop <code>temperature</code>. Replace the regex JSON extraction with <code>output_config.format</code> (a JSON schema for the estimate) and keep <code>max_tokens</code> modest.</li>
 <li><code>scripts/deploy.sh</code>: new secret <code>rabbit-anthropic-key</code> via <code>upsert_secret</code> (it only adds a version when the value changes), mounted as <code>ANTHROPIC_API_KEY</code>. Drop <code>AI_API_ENDPOINT</code>/<code>AI_API_MODEL</code> from <code>AI_ENV</code>, and pass <code>AI_MODEL</code> as plain env. Delete the <code>rabbit-ai-key</code> binding only after the new revision is verified.</li>
 <li>If D1 = Opus: set <code>JAY_CHAT_HOURLY_TOKEN_BUDGET</code> to ~60000 in <code>.env</code> (deploy forwards it). Set a monthly spend limit in the Anthropic Console either way.</li>
+<li><strong>Later (T1.1): drop the cloud key for Workload Identity Federation.</strong> The Console offers &quot;identity federation&quot; when you create a key. On Cloud Run, rabbit&#39;s service account would get a short-lived Google identity token, and Anthropic would exchange it for API access, so there is no <code>rabbit-cloud</code> key in Secret Manager to leak or rotate. The SDK switches to it when <code>ANTHROPIC_FEDERATION_RULE_ID</code>, <code>ANTHROPIC_ORGANIZATION_ID</code>, <code>ANTHROPIC_SERVICE_ACCOUNT_ID</code> and <code>ANTHROPIC_IDENTITY_TOKEN_FILE</code> (or <code>ANTHROPIC_IDENTITY_TOKEN</code>) are set, and <strong>only if <code>ANTHROPIC_API_KEY</code> is unset</strong> (the key outranks federation).<ul>
+<li><strong>Open question:</strong> Cloud Run does not write that token file by itself. Something must fetch it from the metadata server (<code>…/service-accounts/default/identity?audience=…</code>) and keep it fresh, because it expires in about an hour. Check the SDK docs for a token-provider hook before building a refresher.</li>
+<li>Local dev keeps the <code>rabbit-local</code> key: the dialog itself says local scripts still need one.</li>
+<li>Not before the 2026-11-05 deadline: ship T1 with the key first.</li>
+</ul>
+</li>
 <li>Update <code>docs/features/ai-chat.md</code> (provider, cost, budget) and the comments in <code>ai-provider.ts</code>, which still say the trio must &quot;always move together&quot;.</li>
 </ol>
 <h3 id="15-acceptance">1.5 Acceptance</h3>
