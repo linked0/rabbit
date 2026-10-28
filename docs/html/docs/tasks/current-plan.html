@@ -63,8 +63,8 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 <tbody><tr>
 <td><strong>T1</strong></td>
 <td><a href="#t1">Rabbit&#39;s LLM → Claude</a></td>
-<td><strong>Built + tested 2026-10-28</strong> (smoke test + browser) on <code>main</code>, default model <strong>Sonnet 5.5</strong> (D1 decided), <strong>not deployed</strong>: production still runs OpenAI. <strong>$200 promo API credit expires 2026-11-05 UTC</strong> (<a href="#t1-cost">§1.2</a>)</td>
-<td>jay: create the <code>rabbit-cloud</code> key → <code>CLOUD_ANTHROPIC_API_KEY</code> + <code>AI_PROVIDER=anthropic</code> in <code>.env</code>, then <code>./scripts/deploy.sh</code> (<a href="#t1-done">§1.6</a>)</td>
+<td><strong>LIVE 2026-10-28</strong> on revision <code>rabbit-00170-fhk</code>, model <strong>Sonnet 5.5</strong>. Health check <code>claude-sonnet-5-5</code> ok, label correct, chat 2.3 s. <strong>$200 promo credit expires 2026-11-05 UTC</strong> (<a href="#t1-cost">§1.2</a>)</td>
+<td>Hardening from the pre-deploy review (<a href="#t1-review">§1.7</a>): bump Next.js, reserve budget before the call, fix the XFF key</td>
 </tr>
 <tr>
 <td><strong>T2</strong></td>
@@ -258,6 +258,29 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 <li><strong>Smoke test:</strong> <code>scripts/smoke-claude.ts</code> (instructions in its header). Results 2026-10-28: label <code>Claude Opus 5.5</code>, probe ok (26 tokens), Korean answer 7.6 s, English 9.3 s, cache read 900 tokens per call, estimate <code>{&quot;p&quot;:0.995,…}</code>.</li>
 <li><strong>Browser check (2026-10-28, <code>AI_PROVIDER=anthropic pnpm dev</code>):</strong> the label reads &quot;… — Claude Opus 5.5 + 이력 기반 RAG&quot;, <code>/api/jay-chat</code> answers in 5.3 s, and assistant bubbles show bold as <code>&lt;strong&gt;</code> (5 tags, no <code>**</code> left). <strong>Still raw:</strong> single-asterisk italics (<code>*x*</code>) and markdown links (<code>[GitHub](https://…)</code>). Either render them too (links restricted to <code>http(s)</code>) or tell the model to write plain text. <strong>Not checked yet:</strong> the deployed path.</li>
 </ul>
+<h3 id="17-pre-deploy-security-review-2026-10-28">1.7 Pre-deploy security review (2026-10-28) <a id="t1-review"></a></h3>
+<p>A workflow review: 5 lenses, 2 adversarial verifiers per finding, plus a completeness critic. 28 findings, <strong>21 upheld, 7 refuted</strong>. Nothing critical. The ones worth fixing, in order:</p>
+<ol>
+<li><strong>Next.js 14.2.18 → 14.2.35</strong> (pre-existing; verifiers: medium).<ul>
+<li>CVE-2025-29927: the <code>x-middleware-subrequest</code> header skips <code>middleware.ts</code>, confirmed with read-only GETs on the live site (<code>/dashboard</code> 302 → 200).</li>
+<li>Only page <strong>shells</strong> are exposed. Every owner-data API re-checks <code>auth()</code> in its handler and still returns 401. <code>/api/prices</code> and <code>/api/markets/quote</code> rely on middleware alone.</li>
+<li>The same version also carries the 2025-12-11 App Router DoS advisories, and with <code>--max-instances 1</code> one hung instance takes the whole site down.</li>
+<li>Fix: <code>pnpm add next@14.2.35</code>, build, smoke test, deploy. Defense in depth: an owner check in those pages and the two routes.</li>
+</ul>
+</li>
+<li><strong>The hourly budget can be overspent by concurrent requests</strong> (new with T1; medium). Usage is recorded only after a stream ends, so ~80 parallel questions on one instance all pass the check. That is ~5–20× the Sonnet 120k budget per wave, which drains the $200 credit. Fix: reserve an estimate (input + <code>max_tokens</code>) <strong>before</strong> the call, settle with the real usage after, and cap in-flight Claude calls (e.g. 4).</li>
+<li><strong>The burst guard keys on the first <code>X-Forwarded-For</code> entry</strong>, which the client controls (pre-existing; medium). Spoofing it defeats the 15/min cap and lets anyone send jay unlimited Telegram &quot;chat started&quot; pings. Fix: use the <strong>last</strong> entry (appended by Google&#39;s front end), and evict old entries from the map.</li>
+<li><strong>Lockout:</strong> about 4–5 requests with long forged assistant turns can exhaust the hourly budget and shut Jay Chat for everyone until the hour resets (new; low). Fixes 2–3 plus a smaller cap on total history size reduce it.</li>
+<li><strong>Lower priority:</strong><ul>
+<li>Forged assistant turns can steer the persona or use it as a free Claude proxy (low).</li>
+<li>No Origin/Content-Type check, so other sites can make their visitors call <code>/api/jay-chat</code> (low).</li>
+<li>All four Cloud Run services share the default compute SA, which has <code>roles/editor</code> (low; use a dedicated <code>rabbit-run</code> SA).</li>
+<li>The Telegram bot token is shared with the Claude Code channel (low).</li>
+<li>The retired secret <code>rabbit-jay-chat-key</code> still exists (info).</li>
+</ul>
+</li>
+</ol>
+<p>Refuted, among others: the <code>.env.example</code> budget override, the <code>server-only</code> guard, the <code>@anthropic-ai/sdk</code> supply chain (clean), the next-auth advisories (not reachable in this config). The full results are in this session&#39;s workflow transcript (<code>wf_a2356c3c-17f</code>).</p>
 <h2 id="2-t2--eip-7702-done-by-us">2. T2 — EIP-7702, done by us <a id="t2"></a></h2>
 <h3 id="21-what-exists-today">2.1 What exists today</h3>
 <ul>

@@ -18,7 +18,7 @@
 
 | # | Task | State | Next step |
 |---|---|---|---|
-| **T1** | [Rabbit's LLM → Claude](#t1) | **Built + tested 2026-10-28** (smoke test + browser) on `main`, default model **Sonnet 5.5** (D1 decided), **not deployed**: production still runs OpenAI. **$200 promo API credit expires 2026-11-05 UTC** ([§1.2](#t1-cost)) | jay: create the `rabbit-cloud` key → `CLOUD_ANTHROPIC_API_KEY` + `AI_PROVIDER=anthropic` in `.env`, then `./scripts/deploy.sh` ([§1.6](#t1-done)) |
+| **T1** | [Rabbit's LLM → Claude](#t1) | **LIVE 2026-10-28** on revision `rabbit-00170-fhk`, model **Sonnet 5.5**. Health check `claude-sonnet-5-5` ok, label correct, chat 2.3 s. **$200 promo credit expires 2026-11-05 UTC** ([§1.2](#t1-cost)) | Hardening from the pre-deploy review ([§1.7](#t1-review)): bump Next.js, reserve budget before the call, fix the XFF key |
 | **T2** | [EIP-7702, done by us](#t2) | **Planned.** The delegator contract is on the devnet (checked 2026-10-28) | build §2.4 steps 1–4 |
 | **T3** | [x402 with the x402.org facilitator](#t3) | **Planned.** Facilitator networks checked; `@x402/*` 2.20 installed but unused | jay decides the paid resource ([D3](#t-decide)), then §3.4 |
 | **T4** | [Discord (then X) bot](#t4) | **Planned.** Nothing exists | jay creates the Discord application (§4.4 step 1) |
@@ -114,6 +114,27 @@ Whether a new grant appears each month is not shown on that page. Treat it as on
 - **`scripts/deploy.sh`:** `rabbit-anthropic-key` comes only from `CLOUD_ANTHROPIC_API_KEY`. Production uses Claude only if `AI_PROVIDER=anthropic` **and** that key is set; otherwise it stays on `openai` (it prints `▶ LLM 제공자: …`). The budget var is passed through and no longer forced to 450000.
 - **Smoke test:** `scripts/smoke-claude.ts` (instructions in its header). Results 2026-10-28: label `Claude Opus 5.5`, probe ok (26 tokens), Korean answer 7.6 s, English 9.3 s, cache read 900 tokens per call, estimate `{"p":0.995,…}`.
 - **Browser check (2026-10-28, `AI_PROVIDER=anthropic pnpm dev`):** the label reads "… — Claude Opus 5.5 + 이력 기반 RAG", `/api/jay-chat` answers in 5.3 s, and assistant bubbles show bold as `<strong>` (5 tags, no `**` left). **Still raw:** single-asterisk italics (`*x*`) and markdown links (`[GitHub](https://…)`). Either render them too (links restricted to `http(s)`) or tell the model to write plain text. **Not checked yet:** the deployed path.
+
+### 1.7 Pre-deploy security review (2026-10-28) <a id="t1-review"></a>
+
+A workflow review: 5 lenses, 2 adversarial verifiers per finding, plus a completeness critic. 28 findings, **21 upheld, 7 refuted**. Nothing critical. The ones worth fixing, in order:
+
+1. **Next.js 14.2.18 → 14.2.35** (pre-existing; verifiers: medium).
+   - CVE-2025-29927: the `x-middleware-subrequest` header skips `middleware.ts`, confirmed with read-only GETs on the live site (`/dashboard` 302 → 200).
+   - Only page **shells** are exposed. Every owner-data API re-checks `auth()` in its handler and still returns 401. `/api/prices` and `/api/markets/quote` rely on middleware alone.
+   - The same version also carries the 2025-12-11 App Router DoS advisories, and with `--max-instances 1` one hung instance takes the whole site down.
+   - Fix: `pnpm add next@14.2.35`, build, smoke test, deploy. Defense in depth: an owner check in those pages and the two routes.
+2. **The hourly budget can be overspent by concurrent requests** (new with T1; medium). Usage is recorded only after a stream ends, so ~80 parallel questions on one instance all pass the check. That is ~5–20× the Sonnet 120k budget per wave, which drains the $200 credit. Fix: reserve an estimate (input + `max_tokens`) **before** the call, settle with the real usage after, and cap in-flight Claude calls (e.g. 4).
+3. **The burst guard keys on the first `X-Forwarded-For` entry**, which the client controls (pre-existing; medium). Spoofing it defeats the 15/min cap and lets anyone send jay unlimited Telegram "chat started" pings. Fix: use the **last** entry (appended by Google's front end), and evict old entries from the map.
+4. **Lockout:** about 4–5 requests with long forged assistant turns can exhaust the hourly budget and shut Jay Chat for everyone until the hour resets (new; low). Fixes 2–3 plus a smaller cap on total history size reduce it.
+5. **Lower priority:**
+   - Forged assistant turns can steer the persona or use it as a free Claude proxy (low).
+   - No Origin/Content-Type check, so other sites can make their visitors call `/api/jay-chat` (low).
+   - All four Cloud Run services share the default compute SA, which has `roles/editor` (low; use a dedicated `rabbit-run` SA).
+   - The Telegram bot token is shared with the Claude Code channel (low).
+   - The retired secret `rabbit-jay-chat-key` still exists (info).
+
+Refuted, among others: the `.env.example` budget override, the `server-only` guard, the `@anthropic-ai/sdk` supply chain (clean), the next-auth advisories (not reachable in this config). The full results are in this session's workflow transcript (`wf_a2356c3c-17f`).
 
 ## 2. T2 — EIP-7702, done by us <a id="t2"></a>
 

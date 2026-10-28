@@ -43,6 +43,8 @@
 </ul>
 <h2 id="done">Done</h2>
 <ul>
+<li>T1 deployed by jay: revision rabbit-00170-fhk runs Claude Sonnet 5.5 (health check, label and a live chat verified)</li>
+<li>Pre-deploy security review: 21 upheld findings, none critical; top three are Next.js CVE-2025-29927, budget overspend by concurrency, spoofable XFF burst key</li>
 <li>Jay Chat auto-scrolls to the new question when a suggestion button (or Send) is used; the stream follows only when the reader is at the bottom</li>
 <li>T1 built and smoke-tested locally (Opus, Haiku and Sonnet 5.5; default Sonnet per jay, final) (provider switch, streaming, probe, estimate, dynamic label, bold rendering); not deployed</li>
 <li>(planning only; nothing built)</li>
@@ -125,6 +127,21 @@
 <strong>Reasoning:</strong> The old code scrolled only inside the stream loop, right after <code>setMessages</code>, which is before React draws the new text. It always landed one chunk short, and it never scrolled when the question itself was added. Scrolling in a <code>useEffect</code> after the render measures the real height. Following the stream unconditionally would yank a reader who has scrolled up, so it sticks only when the reader is within 80 px of the bottom.
 <strong>Change:</strong> <code>app/JayChatClient.tsx</code>: <code>useEffect</code> on <code>messages</code>. A new turn always scrolls the log to the bottom and <code>scrollIntoView({block: &quot;nearest&quot;})</code> brings the chat box on screen; while streaming, it scrolls only if <code>stickRef</code> is set (updated by <code>onScroll</code>). The per-chunk <code>scrollTo</code> is gone. Branch <code>claude/chat-autoscroll</code>.
 <strong>Result:</strong> Playwright on :3100 (Sonnet), three suggestion clicks: the log is at the bottom (gap 0 px) right after each click and after each answer, and the newest message is on screen. Scrolling to the top mid-answer stays at the top (<code>scrollTop</code> 0 after the answer ends). Not deployed. The fix is provider-independent and ships with the next deploy.</p>
+<h3 id="t1-live-and-what-the-security-review-found">T1 live, and what the security review found</h3>
+<p><strong>Cause:</strong> jay asked &quot;Is there vulnerability to deploy to cloud&quot;, set <code>CLOUD_ANTHROPIC_API_KEY</code> + <code>AI_PROVIDER=anthropic</code>, and ran <code>./scripts/deploy.sh</code> while the review was still running.
+<strong>Reasoning:</strong> The review covered exactly what ships: <code>462909f..main</code> plus the live Cloud Run config. It ran as a workflow: 5 lenses (secrets, abuse/cost, injection, client/routing, dependencies), 2 skeptics per finding (one on reachability, one on impact), then a completeness critic. Only findings that at least half the skeptics failed to refute were kept.
+<strong>Change:</strong> none to code yet. <code>current-plan.md</code> §1.7 lists the ranked fixes; the T1 row says live.
+<strong>Result:</strong></p>
+<ul>
+<li>Production: revision <code>rabbit-00170-fhk</code>. The health check returns <code>{&quot;jayChat&quot;:{&quot;ok&quot;:true,&quot;model&quot;:&quot;claude-sonnet-5-5&quot;},&quot;devnet&quot;:{&quot;ok&quot;:true}}</code>. The homepage label reads &quot;Claude Sonnet 5.5&quot;. A Korean question was answered in 2.3 s.</li>
+<li>Review: 62 agents, 28 findings, 21 upheld, 7 refuted, nothing critical.<ul>
+<li>Top issue, pre-existing: Next.js 14.2.18 is open to CVE-2025-29927. A header skips the middleware, verified with read-only GETs (<code>/dashboard</code> 302 → 200). Only page shells are exposed, since the data APIs re-check auth.</li>
+<li>Top new issue: the hourly budget is charged after the stream, so concurrency overshoots it.</li>
+<li>Also: the burst guard trusts the first XFF entry, which a client can spoof.</li>
+</ul>
+</li>
+<li>Fixes are proposed, not applied.</li>
+</ul>
 
   </article>
 </div>

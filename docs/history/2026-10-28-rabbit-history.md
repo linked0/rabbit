@@ -8,6 +8,8 @@ Source doc: [`../tasks/current-plan.md`](../tasks/current-plan.md) — rewritten
 
 ## Done
 
+- T1 deployed by jay: revision rabbit-00170-fhk runs Claude Sonnet 5.5 (health check, label and a live chat verified)
+- Pre-deploy security review: 21 upheld findings, none critical; top three are Next.js CVE-2025-29927, budget overspend by concurrency, spoofable XFF burst key
 - Jay Chat auto-scrolls to the new question when a suggestion button (or Send) is used; the stream follows only when the reader is at the bottom
 - T1 built and smoke-tested locally (Opus, Haiku and Sonnet 5.5; default Sonnet per jay, final) (provider switch, streaming, probe, estimate, dynamic label, bold rendering); not deployed
 - (planning only; nothing built)
@@ -78,3 +80,16 @@ All three passed the probe, KO/EN answers, the 900-token cache read and the sche
 **Reasoning:** The old code scrolled only inside the stream loop, right after `setMessages`, which is before React draws the new text. It always landed one chunk short, and it never scrolled when the question itself was added. Scrolling in a `useEffect` after the render measures the real height. Following the stream unconditionally would yank a reader who has scrolled up, so it sticks only when the reader is within 80 px of the bottom.
 **Change:** `app/JayChatClient.tsx`: `useEffect` on `messages`. A new turn always scrolls the log to the bottom and `scrollIntoView({block: "nearest"})` brings the chat box on screen; while streaming, it scrolls only if `stickRef` is set (updated by `onScroll`). The per-chunk `scrollTo` is gone. Branch `claude/chat-autoscroll`.
 **Result:** Playwright on :3100 (Sonnet), three suggestion clicks: the log is at the bottom (gap 0 px) right after each click and after each answer, and the newest message is on screen. Scrolling to the top mid-answer stays at the top (`scrollTop` 0 after the answer ends). Not deployed. The fix is provider-independent and ships with the next deploy.
+
+### T1 live, and what the security review found
+
+**Cause:** jay asked "Is there vulnerability to deploy to cloud", set `CLOUD_ANTHROPIC_API_KEY` + `AI_PROVIDER=anthropic`, and ran `./scripts/deploy.sh` while the review was still running.
+**Reasoning:** The review covered exactly what ships: `462909f..main` plus the live Cloud Run config. It ran as a workflow: 5 lenses (secrets, abuse/cost, injection, client/routing, dependencies), 2 skeptics per finding (one on reachability, one on impact), then a completeness critic. Only findings that at least half the skeptics failed to refute were kept.
+**Change:** none to code yet. `current-plan.md` §1.7 lists the ranked fixes; the T1 row says live.
+**Result:**
+- Production: revision `rabbit-00170-fhk`. The health check returns `{"jayChat":{"ok":true,"model":"claude-sonnet-5-5"},"devnet":{"ok":true}}`. The homepage label reads "Claude Sonnet 5.5". A Korean question was answered in 2.3 s.
+- Review: 62 agents, 28 findings, 21 upheld, 7 refuted, nothing critical.
+  - Top issue, pre-existing: Next.js 14.2.18 is open to CVE-2025-29927. A header skips the middleware, verified with read-only GETs (`/dashboard` 302 → 200). Only page shells are exposed, since the data APIs re-check auth.
+  - Top new issue: the hourly budget is charged after the stream, so concurrency overshoots it.
+  - Also: the burst guard trusts the first XFF entry, which a client can spoof.
+- Fixes are proposed, not applied.
