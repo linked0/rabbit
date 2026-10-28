@@ -9,6 +9,7 @@ Source doc: [`../tasks/current-plan.md`](../tasks/current-plan.md) — rewritten
 ## Done
 
 - (planning only; nothing built)
+- current-plan T1: recorded jay's Console credit ($200 promo, expires 2026-11-05 UTC, no card) and added step 0, a provider switch for rollback
 
 ### current-plan.md: four new tasks on top, the old plan archived below
 
@@ -20,3 +21,10 @@ Source doc: [`../tasks/current-plan.md`](../tasks/current-plan.md) — rewritten
 - **T4:** Discord goes first (free, slash commands over HTTP). The 3-second reply limit plus Cloud Run's CPU throttling after a response means the deferred follow-up needs its own request (Cloud Tasks). X's API pricing must be checked before any X work.
 **Change:** `docs/tasks/current-plan.md`: new §0 Summary (status, branch per task, order T1→T4), decisions D1–D3, and §1–§4, each with what exists, facts, steps, acceptance and risks. The old 460 lines follow unchanged under `## Earlier plan (archived 2026-10-28)`: its title became a bold line, other headings moved down one level, and all its `<a id>` anchors are kept. Branch `claude/plan-claude-7702-x402-bots` off `main` (462909f).
 **Result:** 667 lines; every in-file anchor and `../` link resolves. Next step: jay answers D1 (model) and D3 (what x402 sells), then T1 starts on `claude/claude-api`.
+
+### T1: the $200 API credit is promotional and expires 2026-11-05
+
+**Cause:** jay shared the Console Billing page ("check this"), after saying the API credit matches his $200 Max subscription.
+**Reasoning:** The page settles what I could not verify earlier. It shows a one-off **promotional** grant ($200 of $200, granted 2026-10-19, expires 2026-11-05 UTC) for Agent SDK, API, Batch, Playground and Managed Agents (not Claude Code). The purchased balance is $0, auto-reload is off and there is no payment method, so nothing can be charged and the API stops when the credit is gone. Two consequences: the test is free, and a Claude-only Jay Chat would go down on 11/5 unless credits are bought.
+**Change:** `current-plan.md` §0 T1 row (the deadline), §1.2 (a credit table), §1.4 step 0 (build behind `AI_PROVIDER=anthropic|openai` so one env change rolls back).
+**Result:** The plan now has a hard date. Build and test T1 before 2026-11-05 09:00 KST.

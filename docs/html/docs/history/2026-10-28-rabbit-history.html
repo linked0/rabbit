@@ -44,6 +44,7 @@
 <h2 id="done">Done</h2>
 <ul>
 <li>(planning only; nothing built)</li>
+<li>current-plan T1: recorded jay&#39;s Console credit ($200 promo, expires 2026-11-05 UTC, no card) and added step 0, a provider switch for rollback</li>
 </ul>
 <h3 id="current-planmd-four-new-tasks-on-top-the-old-plan-archived-below">current-plan.md: four new tasks on top, the old plan archived below</h3>
 <p><strong>Cause:</strong> jay sent a screenshot of four unchecked todos (Change the API of Rabbit to Claude · 7702 한번 구현해보자 · x402.org facilitator 활용해보기 · X나 Discord 봇계정 연동해보기) and asked for a detailed plan of what to do in <code>current-plan.md</code>, with the old content moved later in the document.
@@ -56,6 +57,11 @@
 <strong>Change:</strong> <code>docs/tasks/current-plan.md</code>: new §0 Summary (status, branch per task, order T1→T4), decisions D1–D3, and §1–§4, each with what exists, facts, steps, acceptance and risks. The old 460 lines follow unchanged under <code>## Earlier plan (archived 2026-10-28)</code>: its title became a bold line, other headings moved down one level, and all its <code>&lt;a id&gt;</code> anchors are kept. Branch <code>claude/plan-claude-7702-x402-bots</code> off <code>main</code> (462909f).
 <strong>Result:</strong> 667 lines; every in-file anchor and <code>../</code> link resolves. Next step: jay answers D1 (model) and D3 (what x402 sells), then T1 starts on <code>claude/claude-api</code>.</li>
 </ul>
+<h3 id="t1-the-200-api-credit-is-promotional-and-expires-2026-11-05">T1: the $200 API credit is promotional and expires 2026-11-05</h3>
+<p><strong>Cause:</strong> jay shared the Console Billing page (&quot;check this&quot;), after saying the API credit matches his $200 Max subscription.
+<strong>Reasoning:</strong> The page settles what I could not verify earlier. It shows a one-off <strong>promotional</strong> grant ($200 of $200, granted 2026-10-19, expires 2026-11-05 UTC) for Agent SDK, API, Batch, Playground and Managed Agents (not Claude Code). The purchased balance is $0, auto-reload is off and there is no payment method, so nothing can be charged and the API stops when the credit is gone. Two consequences: the test is free, and a Claude-only Jay Chat would go down on 11/5 unless credits are bought.
+<strong>Change:</strong> <code>current-plan.md</code> §0 T1 row (the deadline), §1.2 (a credit table), §1.4 step 0 (build behind <code>AI_PROVIDER=anthropic|openai</code> so one env change rolls back).
+<strong>Result:</strong> The plan now has a hard date. Build and test T1 before 2026-11-05 09:00 KST.</p>
 
   </article>
 </div>

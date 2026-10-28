@@ -18,7 +18,7 @@
 
 | # | Task | State | Next step |
 |---|---|---|---|
-| **T1** | [Rabbit's LLM → Claude](#t1) | **Planned.** Facts checked; nothing built | jay picks the model ([D1](#t-decide)), then build §1.4 |
+| **T1** | [Rabbit's LLM → Claude](#t1) | **Planned.** Facts checked; nothing built. **$200 promo API credit expires 2026-11-05 UTC** ([§1.2](#t1-cost)) | jay puts `ANTHROPIC_API_KEY` in `.env` and picks the model ([D1](#t-decide)), then build §1.4 |
 | **T2** | [EIP-7702, done by us](#t2) | **Planned.** The delegator contract is on the devnet (checked 2026-10-28) | build §2.4 steps 1–4 |
 | **T3** | [x402 with the x402.org facilitator](#t3) | **Planned.** Facilitator networks checked; `@x402/*` 2.20 installed but unused | jay decides the paid resource ([D3](#t-decide)), then §3.4 |
 | **T4** | [Discord (then X) bot](#t4) | **Planned.** Nothing exists | jay creates the Discord application (§4.4 step 1) |
@@ -62,6 +62,17 @@ Prices from the Claude API reference, cached 2026-10-06. A Jay Chat question is 
 
 The worst case only happens if someone hammers the endpoint for a month. The budget is the cap, and the provider-side spend limit in the Anthropic Console is the real backstop: set one either way.
 
+**jay's API credit, read from the Console Billing page on 2026-10-28:**
+
+| Item | Value | What it means for T1 |
+|---|---|---|
+| Purchased balance | **$0.00**, auto-reload **off**, **no payment method** | Nothing can be charged to a card. When the credit runs out, API calls stop with a billing error → the hourly check sends 🚨 quota |
+| Promotional credit | **$200.00 of $200.00**, granted 2026-10-19 | Free money for the test, so D1 costs nothing during it |
+| Promo applies to | Agent SDK, API, Batch API, Playground, Managed Agents (**not Claude Code**) | Covers Jay Chat, the probe and the agent estimate |
+| **Promo expires** | **2026-11-05 (UTC)** = 11/5 09:00 KST | **Deadline:** after this, a Claude-backed Jay Chat goes down unless credits are bought. Hence §1.4 step 0 |
+
+Whether a new grant appears each month is not shown on that page. Treat it as one-time until a second grant shows up.
+
 ### 1.3 Facts that shape the build
 
 - **Use the native Messages API with `@anthropic-ai/sdk`**, not Anthropic's OpenAI-compatible shim. That retires the "endpoint + key + model always move together" trio in `ai-provider.ts`.
@@ -73,6 +84,7 @@ The worst case only happens if someone hammers the endpoint for a month. The bud
 
 ### 1.4 Steps
 
+0. **Keep a way back (because the promo credit expires 2026-11-05).** Build T1 behind `AI_PROVIDER=anthropic|openai`, keeping the current OpenAI path, so one env change reverts Jay Chat without a code deploy if the credit runs out or expires. Remove the OpenAI path only once jay has paid credits or a recurring grant.
 1. `pnpm add @anthropic-ai/sdk`. Rewrite `lib/ai-provider.ts`: export one `anthropic()` client factory (key from `ANTHROPIC_API_KEY`), `AI_MODEL` (default per D1), and `classifyLimit(error)` working on SDK error types. Keep `reportIfLimited()`'s contract: never throws, awaited by the probe.
 2. `streamJayChat()`: SDK stream → the same `ReadableStream<Uint8Array>` of plain text. Usage comes from `finalMessage()`. Keep `MAX_OUTPUT_TOKENS` (1,500), and at effort `low` check that it still leaves room for thinking plus the answer (raise it if answers truncate).
 3. `probeJayChat()`: a minimal `messages.create` (small `max_tokens`, effort `low`). Any 200 is "alive". Confirm that a tiny `max_tokens` is accepted with thinking always on; if not, use 16.

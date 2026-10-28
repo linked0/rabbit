@@ -63,8 +63,8 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 <tbody><tr>
 <td><strong>T1</strong></td>
 <td><a href="#t1">Rabbit&#39;s LLM → Claude</a></td>
-<td><strong>Planned.</strong> Facts checked; nothing built</td>
-<td>jay picks the model (<a href="#t-decide">D1</a>), then build §1.4</td>
+<td><strong>Planned.</strong> Facts checked; nothing built. <strong>$200 promo API credit expires 2026-11-05 UTC</strong> (<a href="#t1-cost">§1.2</a>)</td>
+<td>jay puts <code>ANTHROPIC_API_KEY</code> in <code>.env</code> and picks the model (<a href="#t-decide">D1</a>), then build §1.4</td>
 </tr>
 <tr>
 <td><strong>T2</strong></td>
@@ -183,6 +183,37 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 </tr>
 </tbody></table>
 <p>The worst case only happens if someone hammers the endpoint for a month. The budget is the cap, and the provider-side spend limit in the Anthropic Console is the real backstop: set one either way.</p>
+<p><strong>jay&#39;s API credit, read from the Console Billing page on 2026-10-28:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+<th>What it means for T1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Purchased balance</td>
+<td><strong>$0.00</strong>, auto-reload <strong>off</strong>, <strong>no payment method</strong></td>
+<td>Nothing can be charged to a card. When the credit runs out, API calls stop with a billing error → the hourly check sends 🚨 quota</td>
+</tr>
+<tr>
+<td>Promotional credit</td>
+<td><strong>$200.00 of $200.00</strong>, granted 2026-10-19</td>
+<td>Free money for the test, so D1 costs nothing during it</td>
+</tr>
+<tr>
+<td>Promo applies to</td>
+<td>Agent SDK, API, Batch API, Playground, Managed Agents (<strong>not Claude Code</strong>)</td>
+<td>Covers Jay Chat, the probe and the agent estimate</td>
+</tr>
+<tr>
+<td><strong>Promo expires</strong></td>
+<td><strong>2026-11-05 (UTC)</strong> = 11/5 09:00 KST</td>
+<td><strong>Deadline:</strong> after this, a Claude-backed Jay Chat goes down unless credits are bought. Hence §1.4 step 0</td>
+</tr>
+</tbody></table>
+<p>Whether a new grant appears each month is not shown on that page. Treat it as one-time until a second grant shows up.</p>
 <h3 id="13-facts-that-shape-the-build">1.3 Facts that shape the build</h3>
 <ul>
 <li><strong>Use the native Messages API with <code>@anthropic-ai/sdk</code></strong>, not Anthropic&#39;s OpenAI-compatible shim. That retires the &quot;endpoint + key + model always move together&quot; trio in <code>ai-provider.ts</code>.</li>
@@ -193,7 +224,8 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 <li><strong>Refusals:</strong> check <code>stop_reason === &quot;refusal&quot;</code> before reading text. For Opus 5.5 the house default is the server-side fallback (<code>betas: [&quot;server-side-fallback-2026-07-01&quot;]</code>, <code>fallbacks: &quot;default&quot;</code>).</li>
 </ul>
 <h3 id="14-steps">1.4 Steps</h3>
-<ol>
+<ol start="0">
+<li><strong>Keep a way back (because the promo credit expires 2026-11-05).</strong> Build T1 behind <code>AI_PROVIDER=anthropic|openai</code>, keeping the current OpenAI path, so one env change reverts Jay Chat without a code deploy if the credit runs out or expires. Remove the OpenAI path only once jay has paid credits or a recurring grant.</li>
 <li><code>pnpm add @anthropic-ai/sdk</code>. Rewrite <code>lib/ai-provider.ts</code>: export one <code>anthropic()</code> client factory (key from <code>ANTHROPIC_API_KEY</code>), <code>AI_MODEL</code> (default per D1), and <code>classifyLimit(error)</code> working on SDK error types. Keep <code>reportIfLimited()</code>&#39;s contract: never throws, awaited by the probe.</li>
 <li><code>streamJayChat()</code>: SDK stream → the same <code>ReadableStream&lt;Uint8Array&gt;</code> of plain text. Usage comes from <code>finalMessage()</code>. Keep <code>MAX_OUTPUT_TOKENS</code> (1,500), and at effort <code>low</code> check that it still leaves room for thinking plus the answer (raise it if answers truncate).</li>
 <li><code>probeJayChat()</code>: a minimal <code>messages.create</code> (small <code>max_tokens</code>, effort <code>low</code>). Any 200 is &quot;alive&quot;. Confirm that a tiny <code>max_tokens</code> is accepted with thinking always on; if not, use 16.</li>
