@@ -8,6 +8,7 @@ Source doc: [`../tasks/current-plan.md`](../tasks/current-plan.md) — rewritten
 
 ## Done
 
+- Jay Chat auto-scrolls to the new question when a suggestion button (or Send) is used; the stream follows only when the reader is at the bottom
 - T1 built and smoke-tested locally (Opus, Haiku and Sonnet 5.5; default Sonnet per jay, final) (provider switch, streaming, probe, estimate, dynamic label, bold rendering); not deployed
 - (planning only; nothing built)
 - current-plan T1: recorded jay's Console credit ($200 promo, expires 2026-11-05 UTC, no card) and added step 0, a provider switch for rollback
@@ -70,3 +71,10 @@ All three passed the probe, KO/EN answers, the 900-token cache read and the sche
 **Reasoning:** Sonnet 5.5 had already passed every live check that day (probe, KO/EN answers, cache read, schema JSON). It sits between Haiku and Opus on both price (~$0.014/question) and answer quality, and its 120k/h budget default was already in place.
 **Change:** `claudeModel()` default is `claude-sonnet-5-5`; the D1 row, §1.6 and `ai-chat.md` were updated to match.
 **Result:** The running dev server (:3100) shows "Claude Sonnet 5.5" in the chat label. Not deployed.
+
+### Jay Chat: scroll to the new question, follow the answer only from the bottom
+
+**Cause:** jay (screenshot): clicking a suggested question did not scroll the chat box down, so the new turn stayed out of sight.
+**Reasoning:** The old code scrolled only inside the stream loop, right after `setMessages`, which is before React draws the new text. It always landed one chunk short, and it never scrolled when the question itself was added. Scrolling in a `useEffect` after the render measures the real height. Following the stream unconditionally would yank a reader who has scrolled up, so it sticks only when the reader is within 80 px of the bottom.
+**Change:** `app/JayChatClient.tsx`: `useEffect` on `messages`. A new turn always scrolls the log to the bottom and `scrollIntoView({block: "nearest"})` brings the chat box on screen; while streaming, it scrolls only if `stickRef` is set (updated by `onScroll`). The per-chunk `scrollTo` is gone. Branch `claude/chat-autoscroll`.
+**Result:** Playwright on :3100 (Sonnet), three suggestion clicks: the log is at the bottom (gap 0 px) right after each click and after each answer, and the newest message is on screen. Scrolling to the top mid-answer stays at the top (`scrollTop` 0 after the answer ends). Not deployed. The fix is provider-independent and ships with the next deploy.

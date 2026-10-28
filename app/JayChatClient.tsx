@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLang } from "./LangContext";
 import { pick } from "@/lib/i18n";
 
@@ -24,6 +24,15 @@ export default function JayChatClient({ modelLabel }: { modelLabel: string }) {
   const [error, setError] = useState<string | null>(null);
   const [asked, setAsked] = useState<string[]>([]); // prompts already used, hidden from the list
   const logRef = useRef<HTMLDivElement>(null);
+  // 자동 스크롤 (jay, 2026-10-28: "예시 질문 버튼을 누르면 채팅창이 자동으로 내려가야").
+  // 예전엔 스트림 청크마다 scrollTo 했는데 setMessages 가 그려지기 *전에* 높이를 재서 늘
+  // 한 청크 모자랐고, 질문을 보낸 순간에는 아예 스크롤하지 않았다. 이제 그린 *뒤에*
+  // (useEffect) 스크롤한다.
+  // - 새 질문이 들어오면: 무조건 맨 아래로 + 채팅창이 화면 밖이면 페이지도 살짝 끌어온다.
+  // - 답이 스트리밍되는 동안: 사용자가 바닥 근처(80px)에 있을 때만 따라간다 — 위로 올려
+  //   읽는 중인 사람을 끌어내리지 않는다.
+  const stickRef = useRef(true);
+  const turnCountRef = useRef(0);
 
   // 예시 질문 버튼은 입력창을 채우는 대신 곧바로 전송한다 (2026-08-01, jay) —
   // 그래서 전송할 문장을 인자로 받는다. 폼 제출은 입력창 값을 넘긴다.
@@ -61,7 +70,6 @@ export default function JayChatClient({ modelLabel }: { modelLabel: string }) {
           next[next.length - 1] = { role: "assistant", content: last.content + chunk };
           return next;
         });
-        logRef.current?.scrollTo(0, logRef.current.scrollHeight);
       }
     } catch (e) {
       setError(String(e));
@@ -70,6 +78,19 @@ export default function JayChatClient({ modelLabel }: { modelLabel: string }) {
       setBusy(false);
     }
   }
+
+  useEffect(() => {
+    const el = logRef.current;
+    if (!el) return;
+    if (messages.length > turnCountRef.current) {
+      stickRef.current = true;
+      el.scrollTop = el.scrollHeight;
+      el.lastElementChild?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    } else if (stickRef.current) {
+      el.scrollTop = el.scrollHeight;
+    }
+    turnCountRef.current = messages.length;
+  }, [messages]);
 
   // A pool rather than a fixed trio: once a question has been asked it drops out and the next
   // one from the pool takes its place, so the suggestions stay useful for the whole
@@ -166,7 +187,14 @@ export default function JayChatClient({ modelLabel }: { modelLabel: string }) {
           ))}
         </div>
       )}
-      <div ref={logRef} className="chat-log">
+      <div
+        ref={logRef}
+        className="chat-log"
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+        }}
+      >
         {messages.map((m, i) => (
           <div key={i} className={`msg ${m.role}`}>
             <div className="who">{m.role === "user" ? pick(lang, "나", "You") : "Jay Chat"}</div>
