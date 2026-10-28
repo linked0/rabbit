@@ -63,7 +63,7 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 <tbody><tr>
 <td><strong>T1</strong></td>
 <td><a href="#t1">Rabbit&#39;s LLM → Claude</a></td>
-<td><strong>Built + tested 2026-10-28</strong> (smoke test + browser) on <code>main</code>, default model <strong>Haiku 5.5</strong> (D1 decided), <strong>not deployed</strong>: production still runs OpenAI. <strong>$200 promo API credit expires 2026-11-05 UTC</strong> (<a href="#t1-cost">§1.2</a>)</td>
+<td><strong>Built + tested 2026-10-28</strong> (smoke test + browser) on <code>main</code>, default model <strong>Sonnet 5.5</strong> (D1 decided), <strong>not deployed</strong>: production still runs OpenAI. <strong>$200 promo API credit expires 2026-11-05 UTC</strong> (<a href="#t1-cost">§1.2</a>)</td>
 <td>jay: create the <code>rabbit-cloud</code> key → <code>CLOUD_ANTHROPIC_API_KEY</code> + <code>AI_PROVIDER=anthropic</code> in <code>.env</code>, then <code>./scripts/deploy.sh</code> (<a href="#t1-done">§1.6</a>)</td>
 </tr>
 <tr>
@@ -106,7 +106,7 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 <td><del><strong>D1</strong></del> <strong>DECIDED 2026-10-28</strong></td>
 <td><strong>Which Claude model Jay Chat uses</strong></td>
 <td>Opus 5.5 · Sonnet 5.5 · Haiku 5.5 (all three smoke-tested live)</td>
-<td>jay: <strong>Haiku 5.5</strong> (after Opus → Haiku → Sonnet → Haiku the same day). ~$0.001/question, answers in ~1–4 s</td>
+<td>jay: <strong>Sonnet 5.5</strong> (final, after Opus → Haiku → Sonnet → Haiku → Sonnet the same day). ~$0.014/question, ~2–7 s, budget default 120k/h</td>
 <td>—</td>
 </tr>
 <tr>
@@ -172,7 +172,7 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 <td>~$70 / month</td>
 </tr>
 <tr>
-<td><code>claude-haiku-5-5</code> <strong>(chosen)</strong></td>
+<td><code>claude-haiku-5-5</code></td>
 <td>~$0.0004 (estimate) → ~$0.001 at the measured token counts</td>
 <td>~$50 / month</td>
 </tr>
@@ -249,7 +249,7 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 </ul>
 <h3 id="16-what-was-built-2026-10-28">1.6 What was built (2026-10-28) <a id="t1-done"></a></h3>
 <ul>
-<li><strong>Switch:</strong> <code>AI_PROVIDER=anthropic|openai</code> (default <code>openai</code>). <code>AI_MODEL</code> (default <strong><code>claude-haiku-5-5</code></strong>, jay&#39;s D1). The hourly budget default follows the model: Haiku 450k, Sonnet 120k, Opus/Fable 60k, each a worst case of about $280/month or less. The key is <code>ANTHROPIC_API_KEY</code>, and the OpenAI trio is untouched (the rollback).</li>
+<li><strong>Switch:</strong> <code>AI_PROVIDER=anthropic|openai</code> (default <code>openai</code>). <code>AI_MODEL</code> (default <strong><code>claude-sonnet-5-5</code></strong>, jay&#39;s D1). The hourly budget default follows the model: Haiku 450k, Sonnet 120k, Opus/Fable 60k, each a worst case of about $280/month or less. The key is <code>ANTHROPIC_API_KEY</code>, and the OpenAI trio is untouched (the rollback).</li>
 <li><strong><code>lib/ai-provider.ts</code>:</strong> <code>claude()</code> client, <code>claudeModel()</code>, <code>claudeFallbacks()</code> (server-side refusal fallback on Opus/Fable/Sonnet, off for Haiku), <code>classifyClaudeError()</code> (402/&quot;credit balance&quot; → quota, <code>RateLimitError</code> → rate), <code>reportClaudeLimit()</code>, <code>aiModelLabel()</code>, <code>activeModelInfo()</code>.</li>
 <li><strong><code>lib/jay-chat.ts</code>:</strong> <code>streamClaude()</code>. It uses <code>stream: true</code> so HTTP errors throw before streaming (the route still returns 502), caches the persona prefix up to <code>[Context about</code>, drops leading assistant turns (Claude requires a user turn first), records usage, and shows a short notice on refusal. <code>probeClaude()</code> uses 16 max tokens. The hourly budget defaults to 60k on Opus/Fable and 450k otherwise; env still wins, and <code>||</code> (not <code>??</code>) means an empty value doesn&#39;t become 0.</li>
 <li><strong><code>lib/agent-estimate.ts</code>:</strong> Claude path without <code>temperature</code>, with a JSON schema in <code>output_config.format</code> instead of regex extraction.</li>

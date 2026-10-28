@@ -8,7 +8,7 @@ Source doc: [`../tasks/current-plan.md`](../tasks/current-plan.md) — rewritten
 
 ## Done
 
-- T1 built and smoke-tested locally (Opus, Haiku and Sonnet 5.5; default Haiku per jay) (provider switch, streaming, probe, estimate, dynamic label, bold rendering); not deployed
+- T1 built and smoke-tested locally (Opus, Haiku and Sonnet 5.5; default Sonnet per jay, final) (provider switch, streaming, probe, estimate, dynamic label, bold rendering); not deployed
 - (planning only; nothing built)
 - current-plan T1: recorded jay's Console credit ($200 promo, expires 2026-11-05 UTC, no card) and added step 0, a provider switch for rollback
 
@@ -63,3 +63,10 @@ All three passed the probe, KO/EN answers, the 900-token cache read and the sche
 - Browser (Playwright, Chrome): the label reads "… — Claude Haiku 5.5 + 이력 기반 RAG" after the switch.
 - Bold renders as `<strong>` (5 tags, no `**` left). Single-asterisk italics and markdown links still show raw.
 - Not deployed.
+
+### T1: final default model is Sonnet 5.5
+
+**Cause:** After the Haiku entry above, jay: "sonnet would be better".
+**Reasoning:** Sonnet 5.5 had already passed every live check that day (probe, KO/EN answers, cache read, schema JSON). It sits between Haiku and Opus on both price (~$0.014/question) and answer quality, and its 120k/h budget default was already in place.
+**Change:** `claudeModel()` default is `claude-sonnet-5-5`; the D1 row, §1.6 and `ai-chat.md` were updated to match.
+**Result:** The running dev server (:3100) shows "Claude Sonnet 5.5" in the chat label. Not deployed.

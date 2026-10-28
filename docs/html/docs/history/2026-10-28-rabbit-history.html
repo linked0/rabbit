@@ -43,7 +43,7 @@
 </ul>
 <h2 id="done">Done</h2>
 <ul>
-<li>T1 built and smoke-tested locally (Opus, Haiku and Sonnet 5.5; default Haiku per jay) (provider switch, streaming, probe, estimate, dynamic label, bold rendering); not deployed</li>
+<li>T1 built and smoke-tested locally (Opus, Haiku and Sonnet 5.5; default Sonnet per jay, final) (provider switch, streaming, probe, estimate, dynamic label, bold rendering); not deployed</li>
 <li>(planning only; nothing built)</li>
 <li>current-plan T1: recorded jay&#39;s Console credit ($200 promo, expires 2026-11-05 UTC, no card) and added step 0, a provider switch for rollback</li>
 </ul>
@@ -114,6 +114,11 @@
 <li>Bold renders as <code>&lt;strong&gt;</code> (5 tags, no <code>**</code> left). Single-asterisk italics and markdown links still show raw.</li>
 <li>Not deployed.</li>
 </ul>
+<h3 id="t1-final-default-model-is-sonnet-55">T1: final default model is Sonnet 5.5</h3>
+<p><strong>Cause:</strong> After the Haiku entry above, jay: &quot;sonnet would be better&quot;.
+<strong>Reasoning:</strong> Sonnet 5.5 had already passed every live check that day (probe, KO/EN answers, cache read, schema JSON). It sits between Haiku and Opus on both price (~$0.014/question) and answer quality, and its 120k/h budget default was already in place.
+<strong>Change:</strong> <code>claudeModel()</code> default is <code>claude-sonnet-5-5</code>; the D1 row, §1.6 and <code>ai-chat.md</code> were updated to match.
+<strong>Result:</strong> The running dev server (:3100) shows &quot;Claude Sonnet 5.5&quot; in the chat label. Not deployed.</p>
 
   </article>
 </div>
