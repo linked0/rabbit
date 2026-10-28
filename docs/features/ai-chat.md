@@ -54,8 +54,13 @@ an isolated build, not a retrofit, so there was zero risk to the existing privat
 > `AI_API_KEY` (DashScope/Qwen) — with no second consumer, a separate key no longer isolated
 > anything. `ChatMessage` moved into `lib/jay-chat.ts`.
 
-**Model:** **Qwen Flash** via DashScope's OpenAI-compatible endpoint (switched from `gpt-4o-mini`
-2026-08-12 — same wire format, ~45% cheaper per typical turn, which funded a 3× budget raise).
+**Model (2026-10-28):** two providers behind one switch, `AI_PROVIDER`.
+- **`anthropic`** — Claude through the native Messages API (`@anthropic-ai/sdk`). The model is `AI_MODEL`, default `claude-opus-5-5`; `claude-haiku-5-5` is the cheap option. The key is `ANTHROPIC_API_KEY` locally; in Cloud Run the secret `rabbit-anthropic-key` is filled from `CLOUD_ANTHROPIC_API_KEY`. Measured on the first test: about 4,300 uncached input tokens per question (the RAG context) plus a 900-token persona prefix served from the prompt cache. That is about **$0.03 per question on Opus 5.5** and about $0.001 on Haiku 5.5.
+- **`openai`** (default, and the rollback) — the OpenAI-compatible path (`AI_API_ENDPOINT` / `AI_API_KEY` / `AI_API_MODEL`). Production ran `gpt-4o-mini` here until the switch.
+- **Why both are kept:** jay's only API credit is a $200 promotional grant that expires 2026-11-05 (UTC), with no card on file. If it runs out or expires, `AI_PROVIDER=openai` brings Jay Chat back without a code change. See `../tasks/current-plan.md` §1.
+- The label under the chat ("… — Claude Opus 5.5 + RAG …") comes from `aiModelLabel()`, so it follows the config. It used to be hardcoded as "Qwen Flash", and was still showing that while production ran gpt-4o-mini.
+
+*History:* Qwen Flash via DashScope from 2026-08-12 (switched from `gpt-4o-mini`; same wire format, ~45% cheaper per turn, which funded a 3× budget raise), later back to `gpt-4o-mini`, then Claude from 2026-10-28.
 
 **How it stays safe as a public, keyless endpoint:**
 - **API key** — historically a dedicated key (`JAY_CHAT_OPENAI_API_KEY`), separate from the

@@ -1,3 +1,4 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { notifyAiLimit } from "./visitor-notify";
 
 // LLM 제공자 — 키 하나, 엔드포인트 하나, 모델 하나. 소비자 둘이 같은 것을 읽는다.
@@ -69,4 +70,85 @@ export async function reportIfLimited(llm: AiProvider, status: number, body: str
   } catch (e) {
     console.error("ai-provider: limit notify failed", e);
   }
+}
+
+// ── Claude (T1, jay 2026-10-28) ───────────────────────────────────────
+// `AI_PROVIDER=anthropic` 이면 세 소비자(Jay Chat · 헬스 프로브 · 에이전트 추정)가
+// 위의 OpenAI 호환 경로 대신 Anthropic Messages API(@anthropic-ai/sdk)를 쓴다.
+// **OpenAI 경로를 지우지 않는 이유:** jay 의 API 크레딧은 2026-11-05(UTC)에 만료되는
+// $200 프로모션뿐이고 카드가 없다. 만료되면 env 하나(`AI_PROVIDER=openai`)로 코드 배포
+// 없이 되돌아가야 한다 (docs/tasks/current-plan.md §1.4 0단계).
+// 키는 `ANTHROPIC_API_KEY` — SDK 가 스스로 읽는다. OpenAI 키(`AI_API_KEY`)와 이름을
+// 나누는 것도 같은 이유다: 전환 기간엔 두 키가 함께 살아 있어야 한다.
+export type ProviderKind = "anthropic" | "openai";
+
+export function providerKind(): ProviderKind {
+  return process.env.AI_PROVIDER === "anthropic" ? "anthropic" : "openai";
+}
+
+/// D1 이 정해지기 전의 기본값은 하우스 기본(Opus 5.5). Haiku 로 바꾸려면
+/// `AI_MODEL=claude-haiku-5-5` 한 줄이면 된다.
+export function claudeModel(): string {
+  return process.env.AI_MODEL || "claude-opus-5-5";
+}
+
+let claudeClient: Anthropic | null = null;
+export function claude(): Anthropic {
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY가 설정되지 않았습니다.");
+  return (claudeClient ??= new Anthropic());
+}
+
+/// 서버 측 거절 폴백 — 정책 거절이 나면 같은 호출 안에서 다른 모델이 이어 받는다.
+/// Opus/Fable/Sonnet 5.5 에만 있다(Haiku 5.5 는 서버 측 폴백이 없다).
+export function claudeFallbacks(model: string): { betas?: Anthropic.Beta.AnthropicBeta[]; fallbacks?: "default" } {
+  return /^claude-(opus|fable|sonnet)-/.test(model)
+    ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" }
+    : {};
+}
+
+/// Claude 실패를 "quota / rate / 그 외"로 가른다. 문구 대신 **SDK 의 오류 타입과
+/// 상태 코드**를 본다: 429 `RateLimitError` = 스로틀(기다리면 풀림), 402
+/// `billing_error` = 크레딧 소진(돈을 넣어야 풀림). 크레딧 소진이 402 가 아니라
+/// 400 "credit balance" 문구로 올 가능성도 있어 그 문구도 quota 로 본다 —
+/// 처음 실제로 소진될 때 어느 쪽인지 확인할 것 (current-plan §1.3).
+export function classifyClaudeError(e: unknown): { kind: "quota" | "rate" | null; status: number; detail: string } {
+  if (e instanceof Anthropic.APIError) {
+    const status = e.status ?? 0;
+    const detail = e.message ?? "";
+    if (status === 402 || /credit balance|billing/i.test(detail)) return { kind: "quota", status, detail };
+    if (e instanceof Anthropic.RateLimitError) return { kind: "rate", status, detail };
+    return { kind: null, status, detail };
+  }
+  return { kind: null, status: 0, detail: String(e instanceof Error ? e.message : e) };
+}
+
+/// 한도면 텔레그램으로 알린다. 던지지 않는다 — reportIfLimited 와 같은 약속.
+export async function reportClaudeLimit(e: unknown): Promise<void> {
+  const c = classifyClaudeError(e);
+  if (!c.kind) return;
+  try {
+    await notifyAiLimit({ kind: c.kind, host: "api.anthropic.com", model: claudeModel(), status: c.status, detail: c.detail });
+  } catch (err) {
+    console.error("ai-provider: limit notify failed", err);
+  }
+}
+
+/// 지금 실제로 도는 모델의 사람용 이름 — Jay Chat 안내 문구에 쓴다. 하드코딩했던
+/// "Qwen Flash"는 운영이 gpt-4o-mini 로 바뀐 뒤에도 남아 거짓말을 하고 있었다
+/// (jay, 2026-10-28). 이제 설정에서 나오므로 모델을 바꾸면 문구도 따라간다.
+export function aiModelLabel(): string {
+  if (providerKind() === "anthropic") {
+    const [, family, ...ver] = claudeModel().split("-");
+    return family ? `Claude ${family[0].toUpperCase()}${family.slice(1)} ${ver.join(".")}`.trim() : claudeModel();
+  }
+  const m = aiProvider().model;
+  const known: Record<string, string> = { "gpt-4o-mini": "GPT-4o mini", "qwen-flash": "Qwen Flash" };
+  return known[m] ?? m;
+}
+
+/// 헬스 체크·알림이 "어디를 불렀는지" 말할 때 쓴다.
+export function activeModelInfo(): { host: string; model: string } {
+  return providerKind() === "anthropic"
+    ? { host: "api.anthropic.com", model: claudeModel() }
+    : { host: aiProvider().host, model: aiProvider().model };
 }

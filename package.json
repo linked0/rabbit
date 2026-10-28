@@ -2,7 +2,7 @@
   "name": "rabbit",
   "version": "0.1.0",
   "private": true,
-  "description": "PoC \u2014 crypto portfolio summary & forecast (connects to Verex, deploys to GCP Cloud Run)",
+  "description": "PoC — crypto portfolio summary & forecast (connects to Verex, deploys to GCP Cloud Run)",
   "packageManager": "pnpm@11.5.1",
   "scripts": {
     "dev": "next dev -p 3100",
@@ -24,6 +24,7 @@
     "docs:logs": "node scripts/generate-logs-html.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@metamask/smart-accounts-kit": "^1.7.0",
     "@nktkas/hyperliquid": "^0.33.2",
     "@prisma/client": "5.22.0",

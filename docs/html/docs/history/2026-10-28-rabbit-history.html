@@ -43,6 +43,7 @@
 </ul>
 <h2 id="done">Done</h2>
 <ul>
+<li>T1 built and smoke-tested locally on Claude Opus 5.5 (provider switch, streaming, probe, estimate, dynamic label, bold rendering); not deployed</li>
 <li>(planning only; nothing built)</li>
 <li>current-plan T1: recorded jay&#39;s Console credit ($200 promo, expires 2026-11-05 UTC, no card) and added step 0, a provider switch for rollback</li>
 </ul>
@@ -62,6 +63,18 @@
 <strong>Reasoning:</strong> The page settles what I could not verify earlier. It shows a one-off <strong>promotional</strong> grant ($200 of $200, granted 2026-10-19, expires 2026-11-05 UTC) for Agent SDK, API, Batch, Playground and Managed Agents (not Claude Code). The purchased balance is $0, auto-reload is off and there is no payment method, so nothing can be charged and the API stops when the credit is gone. Two consequences: the test is free, and a Claude-only Jay Chat would go down on 11/5 unless credits are bought.
 <strong>Change:</strong> <code>current-plan.md</code> §0 T1 row (the deadline), §1.2 (a credit table), §1.4 step 0 (build behind <code>AI_PROVIDER=anthropic|openai</code> so one env change rolls back).
 <strong>Result:</strong> The plan now has a hard date. Build and test T1 before 2026-11-05 09:00 KST.</p>
+<h3 id="t1-built-rabbits-llm-can-run-on-claude-switch-not-replacement">T1 built: Rabbit&#39;s LLM can run on Claude (switch, not replacement)</h3>
+<p><strong>Cause:</strong> jay: &quot;go ahead and change this part&quot;, then pasted the Jay Chat subtitle that still said &quot;Qwen Flash&quot;. The key <code>rabbit-local</code> was already in <code>.env</code> as <code>ANTHROPIC_API_KEY</code>.
+<strong>Reasoning:</strong> The model was not chosen, so I used the plan&#39;s default (Opus 5.5) and made the model one env line (<code>AI_MODEL</code>). The OpenAI path stays as the rollback because the only credit is a promo grant expiring 2026-11-05 with no card. Production must not switch by accident, so <code>deploy.sh</code> goes to Claude only with a <code>CLOUD_ANTHROPIC_API_KEY</code>, never the laptop key. Two bugs were caught before running anything:</p>
+<ul>
+<li><code>deploy.sh</code> now passes an empty budget var, and <code>??</code> would have turned it into a budget of 0, refusing every chat. Fixed with <code>||</code>.</li>
+<li><code>withBold(&quot;&quot;)</code> returns a truthy array and would have hidden the &quot;생각 중…&quot; placeholder.
+<strong>Change:</strong> <code>lib/ai-provider.ts</code>, <code>lib/jay-chat.ts</code>, <code>lib/agent-estimate.ts</code>, <code>app/api/jay-chat/health/route.ts</code>, <code>app/home/page.tsx</code>, <code>app/JayChatClient.tsx</code>, <code>scripts/deploy.sh</code>, <code>docs/features/ai-chat.md</code>, new <code>scripts/smoke-claude.ts</code>, <code>@anthropic-ai/sdk</code> 1.3.0. Details are in current-plan §1.6.
+<strong>Result:</strong></li>
+<li>The smoke test against the real API passed: probe ok, Korean and English answers in the right language and in the third person, 900 tokens read from the prompt cache, and the estimate returned schema-valid JSON.</li>
+<li>Measured cost corrects the plan: the RAG context is ~4,300 input tokens, so Opus is ~$0.03 per question, not $0.014.</li>
+<li><code>tsc</code> clean. Not deployed. The browser UI has not been checked, because jay&#39;s dev server on :3100 was hung and was left alone.</li>
+</ul>
 
   </article>
 </div>

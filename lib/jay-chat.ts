@@ -3,7 +3,18 @@
 // Always-on About-me persona (never general-purpose) + its own cost/abuse guardrails,
 // since this endpoint is reachable by anyone with no login.
 
-import { aiProvider, classifyLimit, reportIfLimited } from "./ai-provider";
+import type Anthropic from "@anthropic-ai/sdk";
+import {
+  aiProvider,
+  classifyLimit,
+  reportIfLimited,
+  providerKind,
+  claude,
+  claudeModel,
+  claudeFallbacks,
+  classifyClaudeError,
+  reportClaudeLimit,
+} from "./ai-provider";
 
 export type ChatMessage = {
   role: "user" | "assistant" | "system";
@@ -32,7 +43,15 @@ const MAX_OUTPUT_TOKENS = 1500;
 // the absolute worst-case monthly ceiling near what 150k cost on gpt-4o-mini (~$40 vs ~$27).
 // History: the original 30k died at ~question 11 — the client resends the whole conversation
 // every turn, so cost grew quadratically; question 20 cost 8× question 1 (measured, 2026-08-02).
-const HOURLY_TOKEN_BUDGET = Number(process.env.JAY_CHAT_HOURLY_TOKEN_BUDGET ?? 450000);
+// Claude Opus 는 토큰당 단가가 gpt-4o-mini 의 ~27배라, 같은 450k 로 두면 악용 시 최악이
+// 월 ~$2,100 이다. Opus/Fable 이면 기본값을 60k(최악 ~$280/월)로 낮춘다 — env 가 있으면
+// env 가 이긴다 (jay, 2026-10-28; current-plan §1.2).
+// `||`, not `??`: deploy.sh passes the var empty when .env has no value, and
+// Number("") is 0 — which would refuse every chat as over budget.
+const HOURLY_TOKEN_BUDGET = Number(
+  process.env.JAY_CHAT_HOURLY_TOKEN_BUDGET ||
+    (providerKind() === "anthropic" && /^claude-(opus|fable)-/.test(claudeModel()) ? 60000 : 450000),
+);
 let windowStart = Date.now();
 let tokensUsedThisHour = 0;
 
@@ -80,6 +99,7 @@ export function burstLimited(ip: string): boolean {
 export async function streamJayChat(
   messages: ChatMessage[]
 ): Promise<ReadableStream<Uint8Array>> {
+  if (providerKind() === "anthropic") return streamClaude(messages);
   const llm = aiProvider();
   if (!llm.key) throw new Error("AI_API_KEY가 설정되지 않았습니다.");
 
@@ -148,6 +168,7 @@ export type ProbeResult =
   | { ok: false; model: string; host: string; status: number; limit: "quota" | "rate" | null; detail: string };
 
 export async function probeJayChat(): Promise<ProbeResult> {
+  if (providerKind() === "anthropic") return probeClaude();
   const llm = aiProvider();
   if (!llm.key) {
     return { ok: false, model: llm.model, host: llm.host, status: 0, limit: null, detail: "AI_API_KEY 없음" };
@@ -181,4 +202,104 @@ export async function probeJayChat(): Promise<ProbeResult> {
   }
   if (tokens) recordTokenUsage(tokens);
   return { ok: true, model: llm.model, host: llm.host, tokens };
+}
+
+// --- Claude 경로 (T1, 2026-10-28) ---
+// 라우트와 JayChatClient 가 기대하는 계약은 그대로다: 평문 텍스트 스트림.
+
+// Opus 5.5 는 생각(thinking)을 끌 수 없고, 생각 토큰도 max_tokens 안에서 쓴다.
+// 1,500 은 생각 + 답에 빠듯해서 Claude 경로만 넉넉히 둔다 — 비용 상한은 어차피
+// 시간당 예산이 잡는다.
+const CLAUDE_MAX_TOKENS = 4000;
+
+/// 시스템 프롬프트를 [고정 페르소나 | 질문마다 바뀌는 RAG 컨텍스트]로 자른다.
+/// 앞쪽만 cache_control 을 달아 두 번째 질문부터 캐시에서 읽게 한다.
+function claudeSystem(messages: ChatMessage[]): Anthropic.TextBlockParam[] {
+  const sys = messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
+  const cut = sys.indexOf("[Context about");
+  if (cut <= 0) return [{ type: "text", text: sys }];
+  return [
+    { type: "text", text: sys.slice(0, cut), cache_control: { type: "ephemeral" } },
+    { type: "text", text: sys.slice(cut) },
+  ];
+}
+
+/// Claude 는 첫 메시지가 user 여야 한다. 라우트가 히스토리 꼬리(6개)만 보내서
+/// assistant 로 시작할 수 있으므로, 앞쪽의 assistant 를 떼어 낸다.
+function claudeTurns(messages: ChatMessage[]): Anthropic.MessageParam[] {
+  const turns = messages
+    .filter((m) => m.role !== "system")
+    .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+  while (turns.length && turns[0].role !== "user") turns.shift();
+  return turns;
+}
+
+async function streamClaude(messages: ChatMessage[]): Promise<ReadableStream<Uint8Array>> {
+  const model = claudeModel();
+  let events: AsyncIterable<Anthropic.Beta.BetaRawMessageStreamEvent>;
+  try {
+    // `stream: true` 로 부르면 HTTP 오류가 여기서(스트림 시작 전에) 던져진다 — 그래야
+    // 라우트가 502 를 돌려줄 수 있다. 스트림 도중에 터지면 방문자는 빈 말풍선만 본다.
+    events = await claude().beta.messages.create({
+      model,
+      max_tokens: CLAUDE_MAX_TOKENS,
+      system: claudeSystem(messages),
+      messages: claudeTurns(messages),
+      output_config: { effort: "low" },
+      stream: true,
+      ...claudeFallbacks(model),
+    });
+  } catch (e) {
+    await reportClaudeLimit(e);
+    const c = classifyClaudeError(e);
+    throw new Error(`${model} 오류: HTTP ${c.status} (api.anthropic.com)`);
+  }
+
+  const encoder = new TextEncoder();
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      let tokens = 0;
+      try {
+        for await (const ev of events) {
+          if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") {
+            controller.enqueue(encoder.encode(ev.delta.text));
+          } else if (ev.type === "message_start") {
+            const u = ev.message.usage;
+            tokens += (u.input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0);
+          } else if (ev.type === "message_delta") {
+            tokens += ev.usage.output_tokens ?? 0;
+            if (ev.delta.stop_reason === "refusal") {
+              controller.enqueue(encoder.encode("\n\n(이 질문에는 답할 수 없습니다. / I can't answer that one.)"));
+            }
+          }
+        }
+      } catch (e) {
+        await reportClaudeLimit(e);
+        console.error("jay-chat: claude stream failed", e);
+      } finally {
+        if (tokens) recordTokenUsage(tokens);
+        controller.close();
+      }
+    },
+  });
+}
+
+async function probeClaude(): Promise<ProbeResult> {
+  const model = claudeModel();
+  try {
+    const r = await claude().beta.messages.create({
+      model,
+      max_tokens: 16,
+      messages: [{ role: "user", content: "ping" }],
+      output_config: { effort: "low" },
+      ...claudeFallbacks(model),
+    });
+    const tokens = (r.usage.input_tokens ?? 0) + (r.usage.output_tokens ?? 0);
+    if (tokens) recordTokenUsage(tokens);
+    return { ok: true, model, host: "api.anthropic.com", tokens };
+  } catch (e) {
+    await reportClaudeLimit(e);
+    const c = classifyClaudeError(e);
+    return { ok: false, model, host: "api.anthropic.com", status: c.status, limit: c.kind, detail: c.detail.slice(0, 300) };
+  }
 }

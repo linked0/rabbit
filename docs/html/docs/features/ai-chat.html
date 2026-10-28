@@ -83,8 +83,14 @@ now the site&#39;s only chat, and the &quot;dedicated key&quot; isolation below 
 <code>AI_API_KEY</code> (DashScope/Qwen) — with no second consumer, a separate key no longer isolated
 anything. <code>ChatMessage</code> moved into <code>lib/jay-chat.ts</code>.</p>
 </blockquote>
-<p><strong>Model:</strong> <strong>Qwen Flash</strong> via DashScope&#39;s OpenAI-compatible endpoint (switched from <code>gpt-4o-mini</code>
-2026-08-12 — same wire format, ~45% cheaper per typical turn, which funded a 3× budget raise).</p>
+<p><strong>Model (2026-10-28):</strong> two providers behind one switch, <code>AI_PROVIDER</code>.</p>
+<ul>
+<li><strong><code>anthropic</code></strong> — Claude through the native Messages API (<code>@anthropic-ai/sdk</code>). The model is <code>AI_MODEL</code>, default <code>claude-opus-5-5</code>; <code>claude-haiku-5-5</code> is the cheap option. The key is <code>ANTHROPIC_API_KEY</code> locally; in Cloud Run the secret <code>rabbit-anthropic-key</code> is filled from <code>CLOUD_ANTHROPIC_API_KEY</code>. Measured on the first test: about 4,300 uncached input tokens per question (the RAG context) plus a 900-token persona prefix served from the prompt cache. That is about <strong>$0.03 per question on Opus 5.5</strong> and about $0.001 on Haiku 5.5.</li>
+<li><strong><code>openai</code></strong> (default, and the rollback) — the OpenAI-compatible path (<code>AI_API_ENDPOINT</code> / <code>AI_API_KEY</code> / <code>AI_API_MODEL</code>). Production ran <code>gpt-4o-mini</code> here until the switch.</li>
+<li><strong>Why both are kept:</strong> jay&#39;s only API credit is a $200 promotional grant that expires 2026-11-05 (UTC), with no card on file. If it runs out or expires, <code>AI_PROVIDER=openai</code> brings Jay Chat back without a code change. See <code>../tasks/current-plan.md</code> §1.</li>
+<li>The label under the chat (&quot;… — Claude Opus 5.5 + RAG …&quot;) comes from <code>aiModelLabel()</code>, so it follows the config. It used to be hardcoded as &quot;Qwen Flash&quot;, and was still showing that while production ran gpt-4o-mini.</li>
+</ul>
+<p><em>History:</em> Qwen Flash via DashScope from 2026-08-12 (switched from <code>gpt-4o-mini</code>; same wire format, ~45% cheaper per turn, which funded a 3× budget raise), later back to <code>gpt-4o-mini</code>, then Claude from 2026-10-28.</p>
 <p><strong>How it stays safe as a public, keyless endpoint:</strong></p>
 <ul>
 <li><strong>API key</strong> — historically a dedicated key (<code>JAY_CHAT_OPENAI_API_KEY</code>), separate from the

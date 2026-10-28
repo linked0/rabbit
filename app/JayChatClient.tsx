@@ -6,7 +6,17 @@ import { pick } from "@/lib/i18n";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-export default function JayChatClient() {
+// 답변의 **굵게** 만 렌더한다 (2026-10-28). 말풍선은 평문(pre-wrap)이라 Claude 가 쓰는
+// `**…**` 가 별표 그대로 보였다. 마크다운 전체가 아니라 이 한 가지만, innerHTML 없이
+// React 노드로 — 방문자 입력이 섞여도 HTML 이 주입될 길이 없다. 스트리밍 중 아직
+// 닫히지 않은 `**` 는 닫힐 때까지 그대로 보인다.
+function withBold(text: string) {
+  return text.split(/(\*\*[^*\n]+\*\*)/g).map((part, i) =>
+    part.length > 4 && part.startsWith("**") && part.endsWith("**") ? <strong key={i}>{part.slice(2, -2)}</strong> : part
+  );
+}
+
+export default function JayChatClient({ modelLabel }: { modelLabel: string }) {
   const { lang } = useLang();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -138,12 +148,13 @@ export default function JayChatClient() {
   return (
     <section className="panel">
       <p className="muted" style={{ marginBottom: 12 }}>
-        {/* 실제로 쓰는 모델만 적는다 — 현재 Jay Chat 은 OpenAI 만 호출한다(lib/jay-chat.ts).
-            로컬 LLM 은 아직 연결돼 있지 않으므로 붙이지 않는다 (2026-08-01, jay와 확인). */}
+        {/* 실제로 쓰는 모델만 적는다 (2026-08-01, jay와 확인). 모델 이름은 서버가 설정에서
+            읽어 내려준다 — 하드코딩했던 "Qwen Flash"는 운영이 gpt-4o-mini 로 바뀐 뒤에도
+            남아 있었다 (jay, 2026-10-28). lib/ai-provider.ts aiModelLabel(). */}
         {pick(
           lang,
-          "이현재에 대해 물어보세요 — Qwen Flash + 이력 기반 RAG. 대화는 저장되지 않습니다.",
-          "Ask anything about Hyunjae Lee — Qwen Flash + RAG over his résumé. Nothing is stored."
+          `이현재에 대해 물어보세요 — ${modelLabel} + 이력 기반 RAG. 대화는 저장되지 않습니다.`,
+          `Ask anything about Hyunjae Lee — ${modelLabel} + RAG over his résumé. Nothing is stored.`
         )}
       </p>
       {examplePrompts.length > 0 && (
@@ -160,8 +171,13 @@ export default function JayChatClient() {
           <div key={i} className={`msg ${m.role}`}>
             <div className="who">{m.role === "user" ? pick(lang, "나", "You") : "Jay Chat"}</div>
             <div className="bubble">
-              {m.content ||
-                (busy && i === messages.length - 1 ? pick(lang, "생각 중…", "Thinking…") : "")}
+              {m.content
+                ? m.role === "assistant"
+                  ? withBold(m.content)
+                  : m.content
+                : busy && i === messages.length - 1
+                  ? pick(lang, "생각 중…", "Thinking…")
+                  : ""}
             </div>
           </div>
         ))}

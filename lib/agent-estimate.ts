@@ -1,5 +1,5 @@
 import { prisma } from "./db";
-import { aiProvider, reportIfLimited } from "./ai-provider";
+import { aiProvider, reportIfLimited, providerKind, claude, claudeModel, claudeFallbacks, reportClaudeLimit, classifyClaudeError } from "./ai-provider";
 
 // J2 / R-D — LLM 확률 추정.
 //
@@ -44,7 +44,7 @@ export async function estimate(args: {
   withinHours?: number;
 }): Promise<Estimate | null> {
   const llm = aiProvider();
-  if (!llm.key) {
+  if (providerKind() !== "anthropic" && !llm.key) {
     throw new Error(
       "AI_API_KEY is not set — the estimate step needs it",
     );
@@ -73,6 +73,10 @@ export async function estimate(args: {
   ]
     .filter(Boolean)
     .join("\n");
+
+  if (providerKind() === "anthropic") {
+    return { ...(await estimateWithClaude(user)), citedNewsIds: news.map((n) => n.id) };
+  }
 
   const res = await fetch(llm.endpoint, {
     method: "POST",
@@ -122,4 +126,44 @@ export async function estimate(args: {
     rationale: (parsed.rationale ?? "").trim() || "(no rationale returned)",
     citedNewsIds: news.map((n) => n.id),
   };
+}
+
+// Claude 경로 (T1, 2026-10-28). OpenAI 경로와 두 가지가 다르다:
+// - `temperature` 를 보내지 않는다 — Opus 5.5 는 샘플링 파라미터를 400 으로 거절한다.
+//   결정성은 이제 스키마가 맡는다.
+// - 정규식으로 JSON 을 긁어내지 않는다 — `output_config.format` 의 JSON 스키마가
+//   응답 모양을 보장한다. p 의 범위(0..1)는 스키마가 아니라 아래 검사가 지킨다.
+const ESTIMATE_SCHEMA = {
+  type: "object",
+  properties: { p: { type: "number" }, rationale: { type: "string" } },
+  required: ["p", "rationale"],
+  additionalProperties: false,
+} as const;
+
+async function estimateWithClaude(user: string): Promise<{ p: number; rationale: string }> {
+  const model = claudeModel();
+  let text = "";
+  try {
+    const r = await claude().beta.messages.create({
+      model,
+      max_tokens: 2000, // 생각 토큰 포함 — 답 자체는 한 문장이다
+      system: SYSTEM,
+      messages: [{ role: "user", content: user }],
+      output_config: { effort: "low", format: { type: "json_schema", schema: ESTIMATE_SCHEMA } },
+      ...claudeFallbacks(model),
+    });
+    if (r.stop_reason === "refusal") throw new Error(`estimate: ${model} refused`);
+    text = r.content.map((b) => (b.type === "text" ? b.text : "")).join("");
+  } catch (e) {
+    await reportClaudeLimit(e);
+    const c = classifyClaudeError(e);
+    throw c.status
+      ? new Error(`estimate: ${model} at api.anthropic.com returned ${c.status}: ${c.detail.slice(0, 200)}`)
+      : e;
+  }
+  const parsed = JSON.parse(text) as { p?: number; rationale?: string };
+  if (typeof parsed.p !== "number" || !Number.isFinite(parsed.p) || parsed.p < 0 || parsed.p > 1) {
+    throw new Error(`estimate: p is not a probability — ${JSON.stringify(parsed.p)}`);
+  }
+  return { p: parsed.p, rationale: (parsed.rationale ?? "").trim() || "(no rationale returned)" };
 }

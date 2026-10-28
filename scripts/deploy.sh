@@ -84,6 +84,10 @@ upsert_secret rabbit-telegram-bot-token "${TELEGRAM_BOT_TOKEN:-}"
 # 결제 데모용 서버 전용 키 (PoCs /poc/ap2, /poc/toss) — 없으면 결제 버튼만 실패한다.
 upsert_secret rabbit-stripe-secret "${STRIPE_SECRET_KEY:-}"
 upsert_secret rabbit-toss-secret   "${TOSS_SECRET_KEY:-}"
+# Claude (T1, jay 2026-10-28). **CLOUD_ 접두어만** 올린다 — 로컬 .env 의
+# ANTHROPIC_API_KEY 는 노트북용 rabbit-local 키(30일 만료)라서, 그게 운영 시크릿을
+# 덮으면 운영이 jay 의 노트북 키로 조용히 돌다가 만료일에 죽는다.
+upsert_secret rabbit-anthropic-key "${CLOUD_ANTHROPIC_API_KEY:-}"
 
 # Jay Chat 한도 점검 프로브의 공유 비밀 (jay, 2026-10-09). .env 에 두지 않고 처음 한 번만
 # 여기서 만든다 — 값은 Cloud Run(env)과 Cloud Scheduler(헤더) 사이에서만 오가고 사람은 몰라도
@@ -117,6 +121,7 @@ fi
 [ -n "${STRIPE_SECRET_KEY:-}" ] && SECRETS="$SECRETS,STRIPE_SECRET_KEY=rabbit-stripe-secret:latest"
 [ -n "${TOSS_SECRET_KEY:-}" ] && SECRETS="$SECRETS,TOSS_SECRET_KEY=rabbit-toss-secret:latest"
 SECRETS="$SECRETS,HEALTH_CHECK_SECRET=rabbit-health-secret:latest"
+[ -n "${CLOUD_ANTHROPIC_API_KEY:-}" ] && SECRETS="$SECRETS,ANTHROPIC_API_KEY=rabbit-anthropic-key:latest"
 
 # 공개 클라이언트 키는 시크릿이 아니라 평범한 env 로 넘긴다 — 어차피 브라우저로 전달되는 값이다.
 # NEXT_PUBLIC_* 를 쓰지 않는 이유: 그 접두어는 빌드 시점에 코드에 박히는데, Cloud Run 은 소스에서
@@ -135,6 +140,13 @@ PUBLIC_ENV=""
 # Jay Chat 이 401 로 죽는다. 셋은 언제나 함께 움직여야 한다.
 # 비워 두면 코드 기본값(DashScope + qwen-flash)이라 예전과 같다.
 AI_ENV=",AI_API_ENDPOINT=${AI_API_ENDPOINT:-},AI_API_MODEL=${AI_API_MODEL:-}"
+# 제공자 스위치 (T1). 운영이 Claude 로 가는 건 **운영용 키가 있을 때만**이다 —
+# 로컬 .env 에 AI_PROVIDER=anthropic 을 켜 둔 채 배포해도, CLOUD_ANTHROPIC_API_KEY 가
+# 없으면 운영은 OpenAI 로 남는다. 되돌리기: .env 에서 AI_PROVIDER 를 지우고 재배포.
+CLOUD_AI_PROVIDER=openai
+if [ "${AI_PROVIDER:-}" = "anthropic" ] && [ -n "${CLOUD_ANTHROPIC_API_KEY:-}" ]; then CLOUD_AI_PROVIDER=anthropic; fi
+AI_ENV="${AI_ENV},AI_PROVIDER=${CLOUD_AI_PROVIDER},AI_MODEL=${AI_MODEL:-}"
+echo "▶ LLM 제공자: ${CLOUD_AI_PROVIDER}${AI_MODEL:+ ($AI_MODEL)}"
 
 # Prisma 엔진 강제 (jay, 2026-09-04, 라이브 콘솔). buildpack 런 이미지는 openssl 3 인데
 # Prisma 가 감지에 실패해 1.1.x 엔진을 고르고 libssl.so.1.1 이 없어 죽는다. binaryTargets
@@ -162,7 +174,7 @@ gcloud run deploy "$SERVICE" \
   --region "$REGION" \
   --allow-unauthenticated \
   --max-instances 1 \
-  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-},TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-},JAY_CHAT_HOURLY_TOKEN_BUDGET=${JAY_CHAT_HOURLY_TOKEN_BUDGET:-450000}${AI_ENV}${PRISMA_ENV}${MENU_ENV}${PUBLIC_ENV}" \
+  --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-},TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-},JAY_CHAT_HOURLY_TOKEN_BUDGET=${JAY_CHAT_HOURLY_TOKEN_BUDGET:-}${AI_ENV}${PRISMA_ENV}${MENU_ENV}${PUBLIC_ENV}" \
   --set-secrets "$SECRETS"
 
 # Cloud SQL 연결 — deploy.env에 CLOUDSQL_INSTANCE=프로젝트:리전:인스턴스 설정 시

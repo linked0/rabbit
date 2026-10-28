@@ -1,5 +1,5 @@
 import { probeJayChat } from "@/lib/jay-chat";
-import { aiProvider } from "@/lib/ai-provider";
+import { activeModelInfo } from "@/lib/ai-provider";
 import { chainDef, readChain } from "@/lib/chains";
 import { notifyDevnetDown, notifyJayChatDown } from "@/lib/visitor-notify";
 
@@ -30,7 +30,7 @@ async function checkJayChat() {
     return r;
   } catch (e) {
     // 네트워크 오류 등 — 제공자에 닿지도 못한 경우.
-    const llm = aiProvider();
+    const llm = activeModelInfo();
     await notifyJayChatDown({ host: llm.host, model: llm.model, status: 0, detail: String(e) });
     return { ok: false as const, error: String(e) };
   }

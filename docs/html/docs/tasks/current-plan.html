@@ -63,8 +63,8 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 <tbody><tr>
 <td><strong>T1</strong></td>
 <td><a href="#t1">Rabbit&#39;s LLM → Claude</a></td>
-<td><strong>Planned.</strong> Facts checked; nothing built. <strong>$200 promo API credit expires 2026-11-05 UTC</strong> (<a href="#t1-cost">§1.2</a>)</td>
-<td>jay puts <code>ANTHROPIC_API_KEY</code> in <code>.env</code> and picks the model (<a href="#t-decide">D1</a>), then build §1.4</td>
+<td><strong>Built + tested locally 2026-10-28</strong> on <code>claude/claude-api</code> (merged to <code>main</code>), <strong>not deployed</strong>: production still runs OpenAI. Smoke test passed (probe, KO/EN streaming, cache read, estimate JSON). <strong>$200 promo API credit expires 2026-11-05 UTC</strong> (<a href="#t1-cost">§1.2</a>)</td>
+<td>jay: confirm the model (D1, built with Opus 5.5), create the <code>rabbit-cloud</code> key → <code>CLOUD_ANTHROPIC_API_KEY</code> + <code>AI_PROVIDER=anthropic</code> in <code>.env</code>, then <code>./scripts/deploy.sh</code> (<a href="#t1-done">§1.6</a>)</td>
 </tr>
 <tr>
 <td><strong>T2</strong></td>
@@ -173,12 +173,12 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 </tr>
 <tr>
 <td><code>claude-haiku-5-5</code></td>
-<td>~$0.0004</td>
+<td>~$0.0004 (estimate) → ~$0.001 at the measured token counts</td>
 <td>~$50 / month</td>
 </tr>
 <tr>
 <td><code>claude-opus-5-5</code></td>
-<td>~$0.014</td>
+<td><del>$0.014 (plan estimate) → **</del>$0.03 measured** (4,300-token RAG context + 900 cached)</td>
 <td>~$2,100 / month → <strong>lower the budget to ~60k/hour</strong> (~$280 worst case)</td>
 </tr>
 </tbody></table>
@@ -246,6 +246,17 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 <li><code>npx tsc --noEmit</code> clean. The agent console&#39;s estimate returns valid JSON at least 5 times out of 5.</li>
 <li>Deployed: <code>POST /api/jay-chat/health</code> with the secret → <code>{&quot;ok&quot;:true, &quot;jayChat&quot;:{&quot;ok&quot;:true,&quot;model&quot;:&quot;claude-…&quot;}, &quot;devnet&quot;:{…}}</code>.</li>
 <li>Break the key on a scratch revision (or call with a bad key locally) and confirm the 🛑 Telegram alert. Quota can&#39;t be forced, so check that the code path maps 402 to 🚨.</li>
+</ul>
+<h3 id="16-what-was-built-2026-10-28">1.6 What was built (2026-10-28) <a id="t1-done"></a></h3>
+<ul>
+<li><strong>Switch:</strong> <code>AI_PROVIDER=anthropic|openai</code> (default <code>openai</code>). <code>AI_MODEL</code> (default <code>claude-opus-5-5</code>). The key is <code>ANTHROPIC_API_KEY</code>, and the OpenAI trio is untouched (the rollback).</li>
+<li><strong><code>lib/ai-provider.ts</code>:</strong> <code>claude()</code> client, <code>claudeModel()</code>, <code>claudeFallbacks()</code> (server-side refusal fallback on Opus/Fable/Sonnet, off for Haiku), <code>classifyClaudeError()</code> (402/&quot;credit balance&quot; → quota, <code>RateLimitError</code> → rate), <code>reportClaudeLimit()</code>, <code>aiModelLabel()</code>, <code>activeModelInfo()</code>.</li>
+<li><strong><code>lib/jay-chat.ts</code>:</strong> <code>streamClaude()</code>. It uses <code>stream: true</code> so HTTP errors throw before streaming (the route still returns 502), caches the persona prefix up to <code>[Context about</code>, drops leading assistant turns (Claude requires a user turn first), records usage, and shows a short notice on refusal. <code>probeClaude()</code> uses 16 max tokens. The hourly budget defaults to 60k on Opus/Fable and 450k otherwise; env still wins, and <code>||</code> (not <code>??</code>) means an empty value doesn&#39;t become 0.</li>
+<li><strong><code>lib/agent-estimate.ts</code>:</strong> Claude path without <code>temperature</code>, with a JSON schema in <code>output_config.format</code> instead of regex extraction.</li>
+<li><strong>UI:</strong> the label under Jay Chat comes from <code>aiModelLabel()</code> (it used to be a stale hardcoded &quot;Qwen Flash&quot;). Assistant bubbles render <code>**bold**</code> as <code>&lt;strong&gt;</code> via React nodes, never <code>innerHTML</code>.</li>
+<li><strong><code>scripts/deploy.sh</code>:</strong> <code>rabbit-anthropic-key</code> comes only from <code>CLOUD_ANTHROPIC_API_KEY</code>. Production uses Claude only if <code>AI_PROVIDER=anthropic</code> <strong>and</strong> that key is set; otherwise it stays on <code>openai</code> (it prints <code>▶ LLM 제공자: …</code>). The budget var is passed through and no longer forced to 450000.</li>
+<li><strong>Smoke test:</strong> <code>scripts/smoke-claude.ts</code> (instructions in its header). Results 2026-10-28: label <code>Claude Opus 5.5</code>, probe ok (26 tokens), Korean answer 7.6 s, English 9.3 s, cache read 900 tokens per call, estimate <code>{&quot;p&quot;:0.995,…}</code>.</li>
+<li><strong>Not checked yet:</strong> the UI in a browser (jay&#39;s <code>next dev</code> on :3100 was hung and was left alone), and the deployed path.</li>
 </ul>
 <h2 id="2-t2--eip-7702-done-by-us">2. T2 — EIP-7702, done by us <a id="t2"></a></h2>
 <h3 id="21-what-exists-today">2.1 What exists today</h3>

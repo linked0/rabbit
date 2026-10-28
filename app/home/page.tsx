@@ -4,6 +4,7 @@ import Nav from "../Nav";
 import VerexBallLazy from "./VerexBallLazy";
 import ProfileLinks from "./ProfileLinks";
 import JayChatClient from "../JayChatClient";
+import { aiModelLabel } from "@/lib/ai-provider";
 import { PROFILE } from "@/lib/home-content";
 import { JAYVERSE, projectUrl, isLocalHost } from "@/lib/jayverse";
 import { verexUrl } from "@/lib/verex";
@@ -108,7 +109,7 @@ export default function HomePage() {
       {/* Jay Chat — 별도 페이지에서 홈으로 통합 (2026-08-01, jay). */}
       <section className="panel">
         <h2>{pick(lang, "제이 챗", "Jay Chat")}</h2>
-        <JayChatClient />
+        <JayChatClient modelLabel={aiModelLabel()} />
       </section>
 
       <p className="muted" style={{ fontSize: 13 }}>
