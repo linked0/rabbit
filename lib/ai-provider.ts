@@ -86,10 +86,13 @@ export function providerKind(): ProviderKind {
   return process.env.AI_PROVIDER === "anthropic" ? "anthropic" : "openai";
 }
 
-/// D1 이 정해지기 전의 기본값은 하우스 기본(Opus 5.5). Haiku 로 바꾸려면
-/// `AI_MODEL=claude-haiku-5-5` 한 줄이면 된다.
+/// D1 결정 (jay, 2026-10-28): 기본값은 **Haiku 5.5**. 같은 날 Opus → Haiku → Sonnet → Haiku 로
+/// 오간 끝에 정했다. 질문당 ~$0.001 (Sonnet ~$0.014, Opus ~$0.03), 답이 ~1–4초로 가장 빠르고,
+/// 이력 기반 페르소나 답변에는 충분하다(세 모델 모두 스모크 테스트 통과).
+/// 바꾸려면 `AI_MODEL=claude-sonnet-5-5` 또는 `claude-opus-5-5` 한 줄이면 된다 —
+/// 시간당 예산 기본값은 모델에 따라 자동으로 달라진다(jay-chat.ts defaultHourlyBudget).
 export function claudeModel(): string {
-  return process.env.AI_MODEL || "claude-opus-5-5";
+  return process.env.AI_MODEL || "claude-haiku-5-5";
 }
 
 let claudeClient: Anthropic | null = null;

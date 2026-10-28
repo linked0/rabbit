@@ -8,7 +8,7 @@ Source doc: [`../tasks/current-plan.md`](../tasks/current-plan.md) — rewritten
 
 ## Done
 
-- T1 built and smoke-tested locally on Claude Opus 5.5 (provider switch, streaming, probe, estimate, dynamic label, bold rendering); not deployed
+- T1 built and smoke-tested locally (Opus, Haiku and Sonnet 5.5; default Haiku per jay) (provider switch, streaming, probe, estimate, dynamic label, bold rendering); not deployed
 - (planning only; nothing built)
 - current-plan T1: recorded jay's Console credit ($200 promo, expires 2026-11-05 UTC, no card) and added step 0, a provider switch for rollback
 
@@ -41,3 +41,25 @@ Source doc: [`../tasks/current-plan.md`](../tasks/current-plan.md) — rewritten
 - The smoke test against the real API passed: probe ok, Korean and English answers in the right language and in the third person, 900 tokens read from the prompt cache, and the estimate returned schema-valid JSON.
 - Measured cost corrects the plan: the RAG context is ~4,300 input tokens, so Opus is ~$0.03 per question, not $0.014.
 - `tsc` clean. Not deployed. The browser UI has not been checked, because jay's dev server on :3100 was hung and was left alone.
+
+### T1: browser check, then the default model settled on Haiku 5.5
+
+**Cause:** jay asked to run rabbit for testing. While it ran he said "Default should be haiku", then "Sonnet would better", then "sorry haiku".
+**Reasoning:** Each model was switched in and tested live, so the decision rests on measurements:
+
+| Model | Latency | Per question |
+|---|---|---|
+| Haiku 5.5 | 1.4 s on the route, 3.5–4.8 s in the smoke test | ~$0.001 |
+| Sonnet 5.5 | 2.2 s on the route, 4.2–6.8 s in the smoke test | ~$0.014 |
+| Opus 5.5 | 5–9 s | ~$0.03 |
+
+All three passed the probe, KO/EN answers, the 900-token cache read and the schema JSON estimate. Sonnet at the old 450k/h budget has a ~$1,050/month worst case, so the budget default became per model rather than an Opus-only special case.
+**Change:**
+- `claudeModel()` default is `claude-haiku-5-5`.
+- `defaultHourlyBudget()` in `lib/jay-chat.ts`: Opus/Fable 60k, Sonnet 120k, Haiku/OpenAI 450k.
+- `current-plan.md` D1 marked decided, T1 row and §1.6 updated; `ai-chat.md` updated.
+- The dev server runs as `AI_PROVIDER=anthropic pnpm dev` on :3100 (jay's `.env` unchanged).
+**Result:**
+- Browser (Playwright, Chrome): the label reads "… — Claude Haiku 5.5 + 이력 기반 RAG" after the switch.
+- Bold renders as `<strong>` (5 tags, no `**` left). Single-asterisk italics and markdown links still show raw.
+- Not deployed.

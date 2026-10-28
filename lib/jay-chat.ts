@@ -43,14 +43,21 @@ const MAX_OUTPUT_TOKENS = 1500;
 // the absolute worst-case monthly ceiling near what 150k cost on gpt-4o-mini (~$40 vs ~$27).
 // History: the original 30k died at ~question 11 — the client resends the whole conversation
 // every turn, so cost grew quadratically; question 20 cost 8× question 1 (measured, 2026-08-02).
-// Claude Opus 는 토큰당 단가가 gpt-4o-mini 의 ~27배라, 같은 450k 로 두면 악용 시 최악이
-// 월 ~$2,100 이다. Opus/Fable 이면 기본값을 60k(최악 ~$280/월)로 낮춘다 — env 가 있으면
-// env 가 이긴다 (jay, 2026-10-28; current-plan §1.2).
+// 같은 450k 로 두면 악용 시 최악이 Opus ~$2,100/월, Sonnet ~$1,050/월이다. 그래서 모델별로
+// 최악을 ~$280/월에 맞춘 기본값을 둔다: Opus/Fable 60k, Sonnet 120k, Haiku·OpenAI 450k.
+// env 가 있으면 env 가 이긴다 (jay, 2026-10-28; current-plan §1.2).
+function defaultHourlyBudget(): number {
+  if (providerKind() !== "anthropic") return 450000;
+  const m = claudeModel();
+  if (/^claude-(opus|fable)-/.test(m)) return 60000;
+  if (/^claude-sonnet-/.test(m)) return 120000;
+  return 450000;
+}
 // `||`, not `??`: deploy.sh passes the var empty when .env has no value, and
 // Number("") is 0 — which would refuse every chat as over budget.
 const HOURLY_TOKEN_BUDGET = Number(
   process.env.JAY_CHAT_HOURLY_TOKEN_BUDGET ||
-    (providerKind() === "anthropic" && /^claude-(opus|fable)-/.test(claudeModel()) ? 60000 : 450000),
+    defaultHourlyBudget(),
 );
 let windowStart = Date.now();
 let tokensUsedThisHour = 0;

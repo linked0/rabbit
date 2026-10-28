@@ -18,7 +18,7 @@
 
 | # | Task | State | Next step |
 |---|---|---|---|
-| **T1** | [Rabbit's LLM → Claude](#t1) | **Built + tested locally 2026-10-28** on `claude/claude-api` (merged to `main`), **not deployed**: production still runs OpenAI. Smoke test passed (probe, KO/EN streaming, cache read, estimate JSON). **$200 promo API credit expires 2026-11-05 UTC** ([§1.2](#t1-cost)) | jay: confirm the model (D1, built with Opus 5.5), create the `rabbit-cloud` key → `CLOUD_ANTHROPIC_API_KEY` + `AI_PROVIDER=anthropic` in `.env`, then `./scripts/deploy.sh` ([§1.6](#t1-done)) |
+| **T1** | [Rabbit's LLM → Claude](#t1) | **Built + tested 2026-10-28** (smoke test + browser) on `main`, default model **Haiku 5.5** (D1 decided), **not deployed**: production still runs OpenAI. **$200 promo API credit expires 2026-11-05 UTC** ([§1.2](#t1-cost)) | jay: create the `rabbit-cloud` key → `CLOUD_ANTHROPIC_API_KEY` + `AI_PROVIDER=anthropic` in `.env`, then `./scripts/deploy.sh` ([§1.6](#t1-done)) |
 | **T2** | [EIP-7702, done by us](#t2) | **Planned.** The delegator contract is on the devnet (checked 2026-10-28) | build §2.4 steps 1–4 |
 | **T3** | [x402 with the x402.org facilitator](#t3) | **Planned.** Facilitator networks checked; `@x402/*` 2.20 installed but unused | jay decides the paid resource ([D3](#t-decide)), then §3.4 |
 | **T4** | [Discord (then X) bot](#t4) | **Planned.** Nothing exists | jay creates the Discord application (§4.4 step 1) |
@@ -32,7 +32,7 @@
 
 | # | Decision | Options | Recommended | If left undecided |
 |---|---|---|---|---|
-| **D1** | **Which Claude model Jay Chat uses** | **(a)** `claude-opus-5-5`, $4 / $20 per 1M tokens · **(b)** `claude-haiku-5-5`, $0.10 / $0.50 | No pick for jay: this is a cost call. The house default is (a). See the cost table in [§1.2](#t1-cost). If (a), the hourly token budget must drop (§1.4 step 6) | Build with (a) and the lowered budget |
+| ~~**D1**~~ **DECIDED 2026-10-28** | **Which Claude model Jay Chat uses** | Opus 5.5 · Sonnet 5.5 · Haiku 5.5 (all three smoke-tested live) | jay: **Haiku 5.5** (after Opus → Haiku → Sonnet → Haiku the same day). ~$0.001/question, answers in ~1–4 s | — |
 | **D2** | **Where the bot lives first** | **(a)** Discord · **(b)** X | **(a)** Discord: free API, slash commands over HTTP, fits Cloud Run. X's API pricing must be checked first ([§4.2](#t4-x)) | Discord |
 | **D3** | **What the x402 demo sells** | **(a)** a signed price quote ("the agent pays for its price feed") · **(b)** an aphorism for $0.01 (ap2-test's old idea) | **(a)**: it is the story already written in `../features/README-history.md` (item 2) and reuses Markets/Pyth data | (a) |
 
@@ -57,7 +57,7 @@ Prices from the Claude API reference, cached 2026-10-06. A Jay Chat question is 
 | Model | Per question (≈) | Worst case at the current 450k tokens/hour budget, 24/7 |
 |---|---|---|
 | `gpt-4o-mini` (today) | ~$0.0005 | ~$70 / month |
-| `claude-haiku-5-5` | ~$0.0004 (estimate) → ~$0.001 at the measured token counts | ~$50 / month |
+| `claude-haiku-5-5` **(chosen)** | ~$0.0004 (estimate) → ~$0.001 at the measured token counts | ~$50 / month |
 | `claude-opus-5-5` | ~$0.014 (plan estimate) → **~$0.03 measured** (4,300-token RAG context + 900 cached) | ~$2,100 / month → **lower the budget to ~60k/hour** (~$280 worst case) |
 
 The worst case only happens if someone hammers the endpoint for a month. The budget is the cap, and the provider-side spend limit in the Anthropic Console is the real backstop: set one either way.
@@ -106,7 +106,7 @@ Whether a new grant appears each month is not shown on that page. Treat it as on
 
 ### 1.6 What was built (2026-10-28) <a id="t1-done"></a>
 
-- **Switch:** `AI_PROVIDER=anthropic|openai` (default `openai`). `AI_MODEL` (default `claude-opus-5-5`). The key is `ANTHROPIC_API_KEY`, and the OpenAI trio is untouched (the rollback).
+- **Switch:** `AI_PROVIDER=anthropic|openai` (default `openai`). `AI_MODEL` (default **`claude-haiku-5-5`**, jay's D1). The hourly budget default follows the model: Haiku 450k, Sonnet 120k, Opus/Fable 60k, each a worst case of about $280/month or less. The key is `ANTHROPIC_API_KEY`, and the OpenAI trio is untouched (the rollback).
 - **`lib/ai-provider.ts`:** `claude()` client, `claudeModel()`, `claudeFallbacks()` (server-side refusal fallback on Opus/Fable/Sonnet, off for Haiku), `classifyClaudeError()` (402/"credit balance" → quota, `RateLimitError` → rate), `reportClaudeLimit()`, `aiModelLabel()`, `activeModelInfo()`.
 - **`lib/jay-chat.ts`:** `streamClaude()`. It uses `stream: true` so HTTP errors throw before streaming (the route still returns 502), caches the persona prefix up to `[Context about`, drops leading assistant turns (Claude requires a user turn first), records usage, and shows a short notice on refusal. `probeClaude()` uses 16 max tokens. The hourly budget defaults to 60k on Opus/Fable and 450k otherwise; env still wins, and `||` (not `??`) means an empty value doesn't become 0.
 - **`lib/agent-estimate.ts`:** Claude path without `temperature`, with a JSON schema in `output_config.format` instead of regex extraction.
