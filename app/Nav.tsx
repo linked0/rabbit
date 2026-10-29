@@ -60,7 +60,8 @@ const MENU: NavItem[] = [
   // 라이브 — 실제로 돌아가는 카드만. 이제 카드로 들어가는 **유일한** 메뉴다.
   // ⚠️ 새 메뉴는 `ALLOW_LIVE=true` 가 있어야 뜬다 — .env 에 넣었고, deploy.sh 가
   // ALLOW_* 를 전부 Cloud Run env 로 전달하므로 배포 시 자동으로 따라간다.
-  { href: "/live", ko: "데모", en: "Demo", code: "LIVE", pub: true },
+  // 이름: 데모 → Jayverse (jay, 2026-10-29). 라우트는 /live 그대로 — 옛 /jayverse 페이지(81행)와는 별개다.
+  { href: "/live", ko: "Jayverse", en: "Jayverse", code: "LIVE", pub: true },
   // Hot demos(AA / 정산 에이전트 / 오디터) 최상단 메뉴는 제거 (2026-09-15, jay).
   // 2026-09-10 에 "자주 쓰는 데모는 한 번에"라며 셋을 올렸는데, 데모로 들어가는 문이
   // 데모 메뉴와 각자의 메뉴로 둘씩 생겨 상단바가 길어졌다. 이제 전부 /live 카드로 들어간다.

@@ -6,6 +6,7 @@ Source doc: alice item `pocs-agent-payments-korea-control-plane`, §1 "How it ge
 
 - Demo card `memory-poison` at `/live/memory-poison`: an interactive SVG that walks the memory-poisoning attack with @kindofblue91 as the owner (attacker, shared memory, agent, treasury, 5 validators, and the buttons ① Poison → ⑤ Steal), plus a defense toggle
 
+- Top menu "Demo" renamed to "Jayverse" (tab, /live heading, rail title, back links); route stays /live
 - Demo section: a card-list rail on the left of every `/live` page (jay's sketch), a chip strip on phones
 
 ## Done
@@ -42,3 +43,10 @@ Source doc: alice item `pocs-agent-payments-korea-control-plane`, §1 "How it ge
 - Mermaid diagrams keep an 820px minimum inside the shell, instead of shrinking to about 7px text between 900 and about 1190px.
 
 The fifth, the rail label "Settlement Agent" differing from the console page's h1, was kept on purpose: it is the name in jay's sketch. The three cards outside `/live` (/market, /xyz, /til/…) are listed, but the rail does not appear on their pages. `tsc` is clean, and nothing scrolls sideways at 390 or 1024. Not deployed.
+
+### Top menu: Demo → Jayverse
+
+**Cause:** jay: "Change top menu name Demo to Jayverse".
+**Reasoning:** Renaming only the tab would leave the page it opens titled "데모", so every label for the section changes together: the tab, the `/live` heading, the rail heading and the "← Demo" back links. The route stays `/live`, so no links break. The old `/jayverse` page, whose menu was removed on 2026-08-11, is a different route and is left as it was.
+**Change:** `app/Nav.tsx` (both languages now read "Jayverse"), `app/BackLinkClient.tsx`, `app/live/layout.tsx`, `app/live/page.tsx`, `app/live/memory-poison/page.tsx`.
+**Result:** In Chrome the tab reads "Jayverse" and stays lit on `/live`, on the demo pages and on `/market?from=live`. The heading, rail title and back link all read Jayverse. `tsc` is clean. Not deployed.

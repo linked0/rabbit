@@ -19,7 +19,7 @@ export default function LiveLayout({ children }: { children: React.ReactNode }) 
     // the header on a phone), while tab and screen-reader order stay header → page → rail.
     <div className="live-shell">
       {children}
-      <LiveRail title={pick(lang, "데모", "Demo")} allLabel={pick(lang, "전체 보기", "All demos")} items={items} />
+      <LiveRail title={"Jayverse"} allLabel={pick(lang, "전체 보기", "All demos")} items={items} />
     </div>
   );
 }

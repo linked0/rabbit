@@ -21,7 +21,7 @@ export default function MemoryPoisonPage() {
     <>
       <Nav />
       <main>
-        <BackLink lang={lang} href="/live" ko="데모" en="Demo" />
+        <BackLink lang={lang} href="/live" ko="Jayverse" en="Jayverse" />
         <h1>{t("가짜 편지 — 오염된 메모리가 송금을 돌린다", "The fake letter — poisoned memory redirects a transfer")}</h1>
         <p className="sub">
           {t(

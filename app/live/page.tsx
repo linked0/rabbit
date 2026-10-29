@@ -25,7 +25,7 @@ export default function LivePage() {
     <>
       <Nav />
       <main>
-        <h1>{pick(lang, "데모", "Demo")}</h1>
+        <h1>{"Jayverse"}</h1>
         <p className="sub">
           {pick(
             lang,

@@ -41,6 +41,8 @@
 <ul>
 <li><p>Demo card <code>memory-poison</code> at <code>/live/memory-poison</code>: an interactive SVG that walks the memory-poisoning attack with @kindofblue91 as the owner (attacker, shared memory, agent, treasury, 5 validators, and the buttons ① Poison → ⑤ Steal), plus a defense toggle</p>
 </li>
+<li><p>Top menu &quot;Demo&quot; renamed to &quot;Jayverse&quot; (tab, /live heading, rail title, back links); route stays /live</p>
+</li>
 <li><p>Demo section: a card-list rail on the left of every <code>/live</code> page (jay&#39;s sketch), a chip strip on phones</p>
 </li>
 </ul>
@@ -78,6 +80,11 @@
 <li>Mermaid diagrams keep an 820px minimum inside the shell, instead of shrinking to about 7px text between 900 and about 1190px.</li>
 </ul>
 <p>The fifth, the rail label &quot;Settlement Agent&quot; differing from the console page&#39;s h1, was kept on purpose: it is the name in jay&#39;s sketch. The three cards outside <code>/live</code> (/market, /xyz, /til/…) are listed, but the rail does not appear on their pages. <code>tsc</code> is clean, and nothing scrolls sideways at 390 or 1024. Not deployed.</p>
+<h3 id="top-menu-demo--jayverse">Top menu: Demo → Jayverse</h3>
+<p><strong>Cause:</strong> jay: &quot;Change top menu name Demo to Jayverse&quot;.
+<strong>Reasoning:</strong> Renaming only the tab would leave the page it opens titled &quot;데모&quot;, so every label for the section changes together: the tab, the <code>/live</code> heading, the rail heading and the &quot;← Demo&quot; back links. The route stays <code>/live</code>, so no links break. The old <code>/jayverse</code> page, whose menu was removed on 2026-08-11, is a different route and is left as it was.
+<strong>Change:</strong> <code>app/Nav.tsx</code> (both languages now read &quot;Jayverse&quot;), <code>app/BackLinkClient.tsx</code>, <code>app/live/layout.tsx</code>, <code>app/live/page.tsx</code>, <code>app/live/memory-poison/page.tsx</code>.
+<strong>Result:</strong> In Chrome the tab reads &quot;Jayverse&quot; and stays lit on <code>/live</code>, on the demo pages and on <code>/market?from=live</code>. The heading, rail title and back link all read Jayverse. <code>tsc</code> is clean. Not deployed.</p>
 
   </article>
 </div>
