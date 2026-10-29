@@ -1,4 +1,4 @@
-# Rabbit — current plan: Claude API · EIP-7702 · x402 · bot accounts · Kubernetes · RAG
+# Rabbit — current plan: Claude API · EIP-7702 · x402 · bot accounts · Kubernetes · RAG · my own model
 
 > **Written for:** the agent (or jay) who picks this up in `~/work/rabbit`, possibly on another
 > machine with no conversation history. This file is the resumable state. The four tasks come
@@ -15,12 +15,17 @@
 > 5. Containers and Kubernetes PoC (Tier 3)
 > 6. RAG: measure Jay Chat's retrieval, then bring it to Wonderland (Tier 2)
 >
+> Added 2026-10-29, jay: "Add T7: My AI model", then "how can I train or fine tune a existing model with my 128G mac
+> book, compare it to RTX Spark or something":
+>
+> 7. My AI model: fine-tune an open model on the M5 Max, compared with DGX Spark / RTX Spark
+>
 > **The earlier plan** (Chains menu brief and the 2026-09-23 status board) is kept unchanged at
 > the end of this file under [Earlier plan (archived)](#archive).
 
 ## 0. Summary <a id="now"></a>
 
-*Last updated 2026-10-28 (KST).*
+*Last updated 2026-10-29 (KST).*
 
 | # | Task | State | Next step |
 |---|---|---|---|
@@ -30,9 +35,10 @@
 | **T4** | [Discord (then X) bot](#t4) | **Planned.** Nothing exists | jay creates the Discord application (§4.4 step 1) |
 | **T5** | [Rabbit's image on Kubernetes (PoC)](#t5) | **Planned (2026-10-29).** The Dockerfile and `.dockerignore` already exist (Cloud Run); no cluster, no manifests | §5.3 step 1: audit the image (`docker history`, size, digest) |
 | **T6** | [RAG: measure Jay Chat, then Wonderland](#t6) | **Planned (2026-10-29).** Jay Chat already has lexical RAG (`lib/about-me.ts` `retrieve()`); no eval set, no embeddings | §6.3 step 1: write the eval set, run today's retrieval against it |
+| **T7** | [My AI model: fine-tune an open model on the Mac](#t7) | **Planned (2026-10-29).** M5 Max 128 GB and Ollama 0.40.12 are ready; mlx-lm 0.29.1 is too old; no dataset. Hardware compared in [§7.4](#t7-hw): the Mac is enough, so there is no need for a Spark | §7.5 step 1: fresh mlx-lm venv, then the dataset; base model per [D5](#t-decide) |
 
 - **Repo / branch:** `~/work/rabbit`. This plan was written on `claude/plan-claude-7702-x402-bots` (off `main` at `462909f`). Give each task its own branch: `claude/claude-api`, `claude/eip7702-diy`, `claude/x402-facilitator`, `claude/discord-bot`.
-- **Suggested order:** T1 → T2 → T3 → T4. T1 changes the one paid dependency every other feature talks through. T2 and T3 are independent demos. T4 reuses T1's chat and the health check, so it goes last. T5 and T6 (added 2026-10-29) are independent of T2–T4 and can run in any gap; T6 before T4 is worth it, because the bot's `/ask` answers through the same retrieval. Branches: `claude/k8s-poc`, `claude/rag-eval`.
+- **Suggested order:** T1 → T2 → T3 → T4. T1 changes the one paid dependency every other feature talks through. T2 and T3 are independent demos. T4 reuses T1's chat and the health check, so it goes last. T5 and T6 (added 2026-10-29) are independent of T2–T4 and can run in any gap; T6 before T4 is worth it, because the bot's `/ask` answers through the same retrieval. T7 comes after T6, because it is scored with T6's eval set. Branches: `claude/k8s-poc`, `claude/rag-eval`, `claude/my-model`.
 - **History:** the planning session is logged in [`../history/2026-10-28-rabbit-history.md`](../history/2026-10-28-rabbit-history.md). The groundwork it builds on (the Jay Chat health check, Telegram alerts, devnet recovery) is in alice's `docs/history/2026-10-09-rabbit-history.md`.
 - **Not touched by this plan:** the parked `claude/markets-pyth` branch (Markets menu on Pyth, last commit 2026-10-20, not merged to `main`).
 
@@ -44,6 +50,8 @@
 | **D2** | **Where the bot lives first** | **(a)** Discord · **(b)** X | **(a)** Discord: free API, slash commands over HTTP, fits Cloud Run. X's API pricing must be checked first ([§4.2](#t4-x)) | Discord |
 | **D3** | **What the x402 demo sells** | **(a)** a signed price quote ("the agent pays for its price feed") · **(b)** an aphorism for $0.01 (ap2-test's old idea) | **(a)**: it is the story already written in `../features/README-history.md` (item 2) and reuses Markets/Pyth data | (a) |
 | **D4** | **Embeddings for T6 option B** | **(a)** an embedding API (Voyage, the provider Anthropic's docs point to; one new key, cents for this corpus) · **(b)** a local multilingual model run at build time (no key, no data leaves the Mac, one new dependency) | decide after §6.3 step 2: if the eval shows option C (whole corpus in a cached prompt) wins, no embeddings are needed at all | skip B, compare A (today) with C only |
+| **D5** | **T7's base model** | **(a)** Qwen3.5-4B · **(b)** Qwen3.5-9B · **(c)** Gemma 4 E4B · **(d)** Kanana-2-3B ([§7.3](#t7)) | **(a)**: Apache-2.0, multilingual, supported end to end (mlx-lm → Ollama), fast to iterate; then (c) as an A/B | (a) |
+| **D6** | **Does T7's model face visitors?** | **(a)** local only · **(b)** Cloud Run L4 (~$1.05/h while up, scales to zero) · **(c)** a tunnel to the Mac behind a secret ([§7.6](#t7)) | **(a)** until §7.5 step 5 shows the fine-tune beats base + RAG | (a) |
 
 ## 1. T1 — Rabbit's LLM → Claude <a id="t1"></a>
 
@@ -329,6 +337,94 @@ agent; Rabbit already has a real image, so this PoC uses that one. Local only: $
 ### 6.5 Results
 
 *(empty until §6.3 steps 2–3 run)*
+
+## 7. T7 — My AI model: fine-tune an open model on the Mac <a id="t7"></a>
+
+jay, 2026-10-29: *"Add T7: My AI model"*, then *"how can I train or fine tune a existing model with my 128G mac book, compare it to RTX Spark or something"*. The facts below come from two research passes the same day: each claim was checked by a second, skeptical agent against official docs and the installed packages. Prices carry their date.
+
+### 7.1 What "my model" means here, and what it proves
+
+- **Mine = a weights file on jay's disk:** an open-weights base model, plus a LoRA that jay trained on his own data, running on his Mac with no API key. Training a model from scratch is out of scope: it is a learning exercise, not a usable model.
+- **Claude cannot be the base.** The Claude API docs say *"The Claude API does not currently offer fine-tuning"* (glossary, checked 2026-10-29). The only public Claude fine-tune we found was Claude 3 Haiku on Bedrock (preview July 2024, GA November 2024). So Claude Sonnet 5.5 plus RAG (today's Jay Chat) is the **yardstick**, not the base.
+- **The judgment call from #82 still applies:** *retrieval rather than fine-tuning*. A LoRA teaches voice, format and behaviour well, and facts poorly. So T7 measures both "fine-tune alone" and "fine-tune + T6's retrieval" against Claude + RAG, and accepts that the honest result may be "the fine-tune only wins on cost and privacy".
+
+### 7.2 What exists today (checked 2026-10-29)
+
+| Piece | State | Note for T7 |
+|---|---|---|
+| Mac | MacBook Pro **M5 Max, 40-core GPU, 128 GB**, 614 GB/s; macOS 26.6.2 | the M5 GPU Neural Accelerators need macOS ≥ 26.2 with MLX, so this machine is fine. By default the GPU can wire only part of the memory (about 75%, ~96 GB, by secondary sources; `iogpu.wired_limit_mb` is 0 = default). `sudo sysctl iogpu.wired_limit_mb=<MB>` raises the cap until the next reboot. Leave 8–16 GB for macOS: too high a value has caused kernel panics (mlx-lm #883) |
+| Ollama | **0.40.12** with `llama3.3:70b`, `llama3.1:70b` (×3 quantizations), `qwen2.5-coder:32b`, `nomic-embed-text` | **LoRA adapters were removed in v0.34.1** (`ADAPTER` in a Modelfile now fails: "LoRA adapters are no longer supported"). A fine-tune must be **fused** first, then imported as safetensors: `ollama create -q int4`. The MLX runner registers `qwen3`, `qwen3_5`, `gemma4` and `llama` (Llama 3.x), but not `qwen2`, `mistral` or `gemma3` |
+| mlx-lm | **0.29.1 on Xcode Python 3.9, too old**: it has no `qwen3_5` or `gemma4` model files | the current version is 0.32.2 (2026-10-16), which needs Python ≥ 3.11. `uv` and Homebrew Python 3.14 are installed, so make a fresh venv (§7.5 step 1) |
+| Data | `content/profile/*.md` (72 KB), `lib/home-content.ts`, PoC and TIL cards: the Jay Chat corpus | all public. T6's eval set (`docs/tasks/rag-eval.json`, planned) is the shared yardstick |
+| Rabbit hook | `lib/ai-provider.ts`, OpenAI-compatible path (`AI_API_ENDPOINT`, `AI_API_MODEL`, `AI_API_KEY`) | both `mlx_lm.server` (`/v1/chat/completions`, `--adapter-path`) and Ollama (`http://localhost:11434/v1/`, key ignored) speak this protocol. A local fine-tune should plug into Jay Chat by env alone, once the server starts with thinking off (§7.5 step 3; not tested yet) |
+| Already pulled | Llama 3.1/3.3 70B | **not a good base**: Korean is not one of Llama 3.1's officially supported languages, and the licence requires "Built with Llama" plus a `Llama…` name once the model is served or shared |
+
+### 7.3 Which base model (D5)
+
+| Candidate | Licence | Korean | Tooling (mlx-lm → Ollama) | Verdict |
+|---|---|---|---|---|
+| **Qwen3.5-4B** (base and instruct, Feb 2026) | Apache-2.0 | 201 languages; MMMLU 81.2 for the 9B | `qwen3_5` in mlx-lm and in Ollama's MLX runner | **recommended first**: small enough for fast LoRA runs. It *thinks by default*, so the chat template must pass `enable_thinking: false` |
+| Qwen3.5-9B | Apache-2.0 | same | same | the step up if 4B is too weak |
+| Gemma 4 E4B (Apr 2026) | Apache-2.0, though whether Google's Prohibited Use Policy still binds it is unsettled | 140+ pre-training languages; Korean not named | `gemma4` in both | A/B challenger |
+| Kanana-2-3B-instruct (Kakao, 2026-07-27) | Kanana licence: running your own service is allowed; sharing the model needs "Powered by Kanana" and a `Kanana…` name | Korean specialist (Kakao's own numbers beat Qwen3.5-2B on KoMT-Bench and KoSimpleQA) | plain `Qwen3ForCausalLM`, so it should load as `qwen3` (not run) | optional third, if Korean is the weak spot |
+| ~~EXAONE 4.x~~ | **non-commercial, research and education only** | strong | — | ruled out: a chat on jay's site is neither |
+| ~~Llama 3.x~~ | custom (Built with Llama, name prefix) | not officially supported | — | ruled out |
+
+### 7.4 The MacBook vs DGX Spark (and "RTX Spark") <a id="t7-hw"></a>
+
+There are **two NVIDIA products** with that name. **DGX Spark** is the Linux box with the GB10 chip and 128 GB; ASUS GX10, Acer GN100 and others use the same chip. **RTX Spark** is a separate Windows-on-Arm PC platform (the N1X chip, up to 128 GB) that went on sale on 2026-10-16.
+
+| | **jay's M5 Max 128 GB** | **DGX Spark** (GB10) | **RTX Spark** (Windows) | RTX 5090 desktop | Rented H100 80 GB |
+|---|---|---|---|---|---|
+| Memory | 128 GB unified (GPU cap ~75% by default) | 128 GB unified (64 GB model since 2026-10-23) | up to 128 GB; one unit showed 110 GB usable by the GPU | 32 GB | 80 GB |
+| Bandwidth: drives **inference** speed | **614 GB/s** | 273 GB/s | ~300 GB/s | 1,792 GB/s | HBM |
+| Compute: drives **training** speed | no TFLOPS published; Apple claims >4× M4 Max AI compute | measured BF16 ~60–100 TFLOPS, dense FP4 ~500 | "1 PFLOP AI" (precision not stated) | very high | datacenter |
+| Training software | **mlx-lm** (LoRA, auto-QLoRA, DoRA, full); Unsloth Core on Mac is "in the works" | CUDA + PyTorch, **official Unsloth**, TRL/PEFT, NeMo | CUDA 13.4 for Windows on Arm (2026-09-09), unproven; no Linux | full CUDA | full CUDA |
+| Measured LoRA, 7–8B | **none for M4/M5 yet**; old: ~250 tok/s on an M1 Max (Mistral 7B), ~475 on an M2 Ultra; community: Qwen3.5-4B QLoRA ~115 tok/s on an M1 64 GB | **6,970 tok/s**, Llama 3.1 8B LoRA (NVIDIA's table; the same article's prose gives other numbers) | none published | no reliable number | fastest |
+| Big jobs | 70B QLoRA fits in memory; unmeasured, slow | 70B QLoRA 760 tok/s; gpt-oss-120b QLoRA in ~68 GB | in theory like Spark | NVIDIA: its Spark runs do not fit in 32 GB | rent bigger |
+| Single-user decode afterwards | **fast** (bandwidth) | slow: 20.5 tok/s for an 8B at FP8, batch 1 (LMSYS) | likely like Spark | very fast | very fast |
+| Price (date) | **already owned** | $3,999 (2025-10) → $4,699 (2026-02) → **$6,950** (2026-10-02) | Surface Dev Box 128 GB $5,999 (2026-10-07) | $1,999 MSRP; ~$3.7–4.3k street (2026-08) | $3.29–4.29/GPU-h (Lambda, 2026-10-29) |
+
+**For T7, the Mac is enough.** The dataset is ~1,000 Q&A pairs from a 72 KB corpus, about 0.3M tokens per epoch. At an assumed 300–1,000 tok/s, a 4B LoRA takes about 5–20 minutes per epoch, and an 8B about twice that. These are *derived estimates*, because nobody has published an M5 Max LoRA number; step 4 measures the real one. A Spark would do the same job in minutes, which saves little on a job this size. Spark's real advantage is CUDA (Unsloth and NVIDIA's playbooks) and big compute-bound jobs (70B QLoRA, full fine-tunes, RL). It decodes more slowly than the Mac. **If T7 ever outgrows the Mac, rent an H100 for an hour (under $5) before buying a $7k box.** RTX Spark is too new for training: CUDA on Windows-on-Arm is weeks old and has no benchmarks. Laptop caveat: LMSYS saw thermal drop-off on Macs under sustained load, so train plugged in with the lid open, and watch `Peak mem` and tok/s in the log.
+
+### 7.5 Steps (branch `claude/my-model`)
+
+1. **Toolchain:** `uv venv ~/.venvs/mlx --python 3.12 && uv pip install -p ~/.venvs/mlx "mlx-lm[train]"`, then **`source ~/.venvs/mlx/bin/activate`**. Every later `mlx_lm.*` command runs in that shell. Without it, the bare commands resolve to the old 0.29.1 in `~/Library/Python/3.9/bin`, which is on `PATH`: `--help` would pass while running the wrong version. Python 3.12 is chosen because uv already has a managed 3.12 installed; mlx also ships 3.14 wheels. Check that `which mlx_lm.lora` points under `~/.venvs/mlx`, that `python -c 'import mlx_lm; print(mlx_lm.__version__)'` prints 0.32.x, and that `mlx_lm.generate --model Qwen/Qwen3.5-4B` answers. Use the dotted commands: `python -m mlx_lm.lora` is deprecated.
+2. **Dataset** (`ml/t7/`; the scripts are committed, the generated data is git-ignored):
+   - `scripts/t7-build-dataset.mjs` asks Claude to write Korean and English Q&A pairs grounded in each corpus chunk, about 1,000 in total. Each pair cites its chunk's `source`.
+   - jay reviews a sample of 30.
+   - The script writes `train/valid/test.jsonl` in mlx-lm's **chat format** (`{"messages": [...]}`), with plain answers and no thinking block, so training and serving use the same no-thinking template.
+   - **T6's eval questions are never in train**: the script checks for overlap.
+   - Only the public corpus goes in: nothing from Wonderland, no private items, no `.env`.
+3. **Baseline:** `mlx_lm.server --model Qwen/Qwen3.5-4B --chat-template-args '{"enable_thinking": false}'` (check the flag in `mlx_lm.server --help`). Without it, Qwen3.5 thinks and spends Jay Chat's 1,500-token `max_tokens` on thinking: `lib/jay-chat.ts` sends no `chat_template_kwargs`. Then run Jay Chat locally with `AI_PROVIDER=openai AI_API_ENDPOINT=http://localhost:8080/v1/chat/completions AI_API_MODEL=…` and run T6's eval script. That gives the base model's numbers with and without retrieval.
+4. **Train:** `mlx_lm.lora --model Qwen/Qwen3.5-4B --train --data ml/t7/data --mask-prompt --batch-size 4 --iters 600 --adapter-path ml/t7/adapters`. `--mask-prompt` computes the loss on answers only. If memory is short, use a 4-bit base (which turns this into QLoRA), `--grad-checkpoint` or a smaller `--num-layers`. Record tok/s, peak memory, wall time and the validation-loss curve in §7.7: **this is the first real M5 Max LoRA number**.
+5. **Evaluate:** restart the server with `--adapter-path ml/t7/adapters` (keeping `--chat-template-args`) and rerun the eval. The four rows are **Claude + RAG**, **base + RAG**, **fine-tune**, and **fine-tune + RAG**. For each, record recall, the 8 answer checks, latency, and cost per question.
+6. **Package:**
+   - `mlx_lm.fuse --model Qwen/Qwen3.5-4B --adapter-path ml/t7/adapters --save-path ml/t7/fused --dequantize`.
+   - Then a Modelfile `FROM ./ml/t7/fused` + `SYSTEM …` → `ollama create jay-model -q int4` → `ollama run --think=false jay-model`. Through `/v1`, check that the answer carries no thinking; if it does, set thinking off in the Modelfile's template.
+   - Do not use `--export-gguf`: it supports only Llama and Mistral models at fp16. If a GGUF is ever needed, use llama.cpp's `convert_hf_to_gguf.py` + `llama-quantize`.
+7. **Model card** `ml/t7/MODEL_CARD.md`: base and its licence, the data and how it was made, the training settings, the eval table, and the known failure modes.
+8. **(Only if D6 says so) put it in front of visitors.** See §7.6.
+
+### 7.6 Serving it publicly (D6), only after step 5 shows it is worth it
+
+| Option | Cost shape | Catch |
+|---|---|---|
+| **Stay local** (recommended) | $0 | visitors cannot use it. Show the eval table and a recorded demo instead |
+| Cloud Run with an L4 GPU (24 GB) | ~$0.67/h for the GPU, **~$1.05/h** for 4 vCPU/16 GiB + L4 (us-central1, non-zonal, 2026-10-29); scales to zero; billed from container start to stop in 100 ms steps, at least 1 minute per start. Zonal redundancy is on by default (~$1.42/h), so deploy with it off | no GPU region in Seoul or Tokyo; the nearest is Singapore. Cold start = instance (~5 s) + model load; needs a startup probe |
+| A tunnel to the Mac (Cloudflare Tunnel or Tailscale Funnel) | $0 | the chat goes down when the Mac sleeps. **Never expose port 11434 raw**: tens of thousands of unauthenticated Ollama servers have been found exposed (LeakIX, 2026-02: 12,269), and attackers have sold access to hijacked LLM endpoints (Pillar Security, "Operation Bizarre Bazaar"). Put a secret in front (a Next.js proxy, or Cloudflare Access service tokens). `cloudflared` is not installed yet |
+| Together or Fireworks | fine-tune ~$0.34–0.50 per 1M training tokens (≤16B) | **serverless LoRA is gone at both**; a LoRA runs only on a dedicated endpoint billed per GPU-hour (H100 ~$5.49–8/h) |
+
+### 7.7 Acceptance, risks, results
+
+- **Done when:** `ollama run jay-model` answers offline; §7.7 has the four-row eval table, plus the measured M5 Max training numbers; there is a model card; and the T7 decision is written down (keep it local, serve it, or drop it).
+- **Risk: confident wrong facts.** A fine-tune makes up résumé details more fluently than a base model. Keep retrieval in the loop, and make the 8 answer checks include facts the model must *not* invent.
+- **Risk: eval leakage.** If eval questions end up in train, the scores are inflated. Step 2's overlap check is the guard.
+- **Risk: licence on distribution.** Apache-2.0 for Qwen3.5 asks only for the notice. Kanana, Llama and Gemma add naming or policy duties once the model is shared or served. Keep the base's licence file next to the fused weights.
+- **Risk: the toolchain moves fast.** Ollama dropped adapters six weeks ago, mlx-lm shipped 0.32.0–0.32.2 within two weeks (2026-10-01 to 10-16), and the installed 0.29.1 is already three minor versions behind. Pin the versions in the model card.
+- **Out of scope:** pre-training, RL/DPO (a stretch after SFT), the 70B models, buying hardware.
+
+**Results:** *(empty until §7.5 steps 3–5 run)*
 
 ---
 
