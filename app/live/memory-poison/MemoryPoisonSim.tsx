@@ -184,7 +184,9 @@ export default function MemoryPoisonSim({ lang }: { lang: Lang }) {
         </span>
       </div>
 
-      <svg viewBox="0 25 760 395" style={{ width: "100%", height: "auto", marginTop: 12 }} role="img"
+      {/* On a phone the drawing would shrink to ~5px text; keep it legible and let it scroll in its own box. */}
+      <div style={{ overflowX: "auto", marginTop: 12 }}>
+      <svg viewBox="0 25 760 395" style={{ width: "100%", minWidth: 600, height: "auto", display: "block" }} role="img"
         aria-label={t("공격자, 주인, 메모리, 에이전트, 금고, 검증자 5명, 수신자 사이의 흐름", "Flow between attacker, owner, memory, agent, treasury, five validators and recipients")}>
         {/* static wires */}
         <g stroke="var(--border)" strokeWidth={1.5} fill="none">
@@ -239,6 +241,7 @@ export default function MemoryPoisonSim({ lang }: { lang: Lang }) {
           </circle>
         ))}
       </svg>
+      </div>
 
       <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
         {log.length === 0 && (

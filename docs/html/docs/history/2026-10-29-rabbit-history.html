@@ -39,7 +39,10 @@
 <p>Source doc: alice item <code>pocs-agent-payments-korea-control-plane</code>, §1 &quot;How it gets robbed: three side doors&quot;, point 2 &quot;The fake letter&quot; (Patlan et al. 2025), quoted by jay in chat. No task in <code>docs/tasks/current-plan.md</code> covers it.</p>
 <h2 id="added">Added</h2>
 <ul>
-<li>Demo card <code>memory-poison</code> at <code>/live/memory-poison</code>: an interactive SVG that walks the memory-poisoning attack with @kindofblue91 as the owner (attacker, shared memory, agent, treasury, 5 validators, and the buttons ① Poison → ⑤ Steal), plus a defense toggle</li>
+<li><p>Demo card <code>memory-poison</code> at <code>/live/memory-poison</code>: an interactive SVG that walks the memory-poisoning attack with @kindofblue91 as the owner (attacker, shared memory, agent, treasury, 5 validators, and the buttons ① Poison → ⑤ Steal), plus a defense toggle</p>
+</li>
+<li><p>Demo section: a card-list rail on the left of every <code>/live</code> page (jay&#39;s sketch), a chip strip on phones</p>
+</li>
 </ul>
 <h2 id="done">Done</h2>
 <ul>
@@ -60,6 +63,21 @@
 <li>No console errors and no horizontal scroll at 390 px. The card appears on <code>/live</code>.</li>
 <li>Not deployed.</li>
 </ul>
+<h3 id="demo-a-card-list-on-the-left-of-every-demo-page">Demo: a card list on the left of every demo page</h3>
+<p><strong>Cause:</strong> jay sent a sketch of the agent console page with a hand-drawn &quot;Card list (panel)&quot; down the left (&quot;The fake letter&quot;, &quot;Settlement agent&quot;, …): &quot;make the demo page like this&quot;.
+<strong>Reasoning:</strong> All 9 <code>/live</code> pages render the same <code>&lt;Nav/&gt;</code> + <code>&lt;main&gt;</code> pair, so one <code>app/live/layout.tsx</code> can wrap them in a CSS grid (the rail on the left over the full height, the header and page on the right) without editing any page. The card order moved into <code>lib/live-cards.ts</code> so the <code>/live</code> grid and the rail cannot drift apart. The rail shows each title&#39;s part before &quot; — &quot;, which gives the sketch&#39;s names.
+<strong>Change:</strong></p>
+<ul>
+<li>New <code>lib/live-cards.ts</code> (<code>liveCards</code>, <code>railLabel</code>), <code>app/live/layout.tsx</code> and <code>app/live/LiveRail.tsx</code>. <code>app/live/page.tsx</code> now uses <code>liveCards()</code>.</li>
+<li><code>.live-shell</code> / <code>.live-rail</code> CSS appended to <code>app/globals.css</code>. Under 900px the rail becomes a horizontal chip strip between the header and the page.</li>
+<li>The fake-letter drawing keeps a 600px minimum and scrolls inside its own box on phones. It had shrunk to about 5px text.
+<strong>Result:</strong> A review workflow ran 8 agents: desktop, phone, interaction and code checkers, each followed by a skeptic. It upheld 5 findings and refuted 3. Four were fixed and re-verified in Chrome:</li>
+<li>The active chip on a phone is scrolled into view.</li>
+<li>The match is longest-prefix, so <code>/live/aa/scenarios/*</code> lights AA while <code>/live/agent/console</code> still beats <code>/live/agent</code>.</li>
+<li>The DOM order is header → page → rail.</li>
+<li>Mermaid diagrams keep an 820px minimum inside the shell, instead of shrinking to about 7px text between 900 and about 1190px.</li>
+</ul>
+<p>The fifth, the rail label &quot;Settlement Agent&quot; differing from the console page&#39;s h1, was kept on purpose: it is the name in jay&#39;s sketch. The three cards outside <code>/live</code> (/market, /xyz, /til/…) are listed, but the rail does not appear on their pages. <code>tsc</code> is clean, and nothing scrolls sideways at 390 or 1024. Not deployed.</p>
 
   </article>
 </div>
