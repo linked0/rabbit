@@ -37,7 +37,8 @@
   <article>
 <h1 id="2026-10-29--rabbit-history">2026-10-29 — rabbit history</h1>
 <p>Source doc: alice item <code>pocs-agent-payments-korea-control-plane</code>, §1 &quot;How it gets robbed: three side doors&quot;, point 2 &quot;The fake letter&quot; (Patlan et al. 2025), quoted by jay in chat. No task in <code>docs/tasks/current-plan.md</code> covers it.
-The T7 entry implements <a href="../tasks/current-plan.html#t7"><code>../tasks/current-plan.md</code> §7</a> (written in that entry).</p>
+The T7 entry implements <a href="../tasks/current-plan.html#t7"><code>../tasks/current-plan.md</code> §7</a> (written in that entry).
+The masters-move entry implements alice <code>.agent-work/jayv-reorg/SPEC.md</code> (jay&#39;s Jayv reorganisation spec, 2026-10-29; alice is private, so the path is cited, not linked).</p>
 <h2 id="added">Added</h2>
 <ul>
 <li><p>Demo card <code>memory-poison</code> at <code>/live/memory-poison</code>: an interactive SVG that walks the memory-poisoning attack with @kindofblue91 as the owner (attacker, shared memory, agent, treasury, 5 validators, and the buttons ① Poison → ⑤ Steal), plus a defense toggle</p>
@@ -51,6 +52,8 @@ The T7 entry implements <a href="../tasks/current-plan.html#t7"><code>../tasks/c
 <li><p>Plan: T7 &quot;My AI model&quot; (fine-tune an open model on the M5 Max; the Mac compared with DGX Spark / RTX Spark), plus decisions D5 and D6</p>
 </li>
 <li><p><code>current-plan.md</code>: two new tasks, T5 (Rabbit&#39;s image on Kubernetes, PoC) and T6 (RAG: measure Jay Chat, then Wonderland), plus decision D4 (embeddings)</p>
+</li>
+<li><p>Planning and design masters moved to alice (Wonderland) <code>docs/jayv/</code>: 69 files here are now one-line stubs (<code>docs/features/*.md</code>, <code>docs/tasks/*.md</code> incl. <code>current-plan.md</code>, <code>docs/tasks/archive/*</code>, <code>docs/tasks/details/*</code>, <code>docs/rabbit-design.md</code>)</p>
 </li>
 </ul>
 <h2 id="done">Done</h2>
@@ -130,6 +133,15 @@ For a ~1,000-pair dataset the Mac is enough (an estimated 5–20 min per epoch f
 <strong>Result:</strong> <code>tsc</code> is clean. In Chrome at 390 and 1440 px, in both languages: no sideways scroll on the page or inside the tables, and no console errors. Not deployed.</li>
 </ul>
 </li>
+</ul>
+<h3 id="planning-and-design-masters-move-to-alice-wonderland">Planning and design masters move to alice (Wonderland)</h3>
+<p><strong>Cause:</strong> jay, 2026-10-29: &quot;Rabbit is for code for service, Alice is for design, document, information.&quot; Every planning/design document master moves from rabbit to alice, where each becomes a Jayv item (alice <code>.agent-work/jayv-reorg/SPEC.md</code>).
+<strong>Reasoning:</strong> One home per document stops the two repos drifting; alice already renders these files as Jayv items (Tasks T1–T8, Candidates C1–C15, design docs, a hidden archive). The paths stay in rabbit as one-line stubs because code comments in <code>app/</code> and <code>lib/</code> cite <code>docs/features|tasks/...</code>. Kept here: code-side docs (<code>AGENTS.md</code>, <code>dev.md</code>, <code>sub-agents.md</code>, <code>handbook/</code>, <code>runbooks/</code>, <code>knowledge/</code>), history, logs, trace, and the old Nostra material in <code>docs/archive/</code> and <code>docs/issues/</code> (another project; not moved).
+<strong>Change:</strong></p>
+<ul>
+<li>69 files replaced by <code>Moved to Wonderland (alice): docs/jayv/&lt;dir&gt;/&lt;key&gt;.md — Rabbit is for code; design and planning documents live in alice.</code>: 44 from <code>docs/features/</code> (the hub <code>README.md</code> → <code>docs/jayv/docs/rabbit-features.md</code>), 24 to <code>docs/jayv/archive/</code> (18 old <code>docs/tasks/*.md</code>, 3 in <code>tasks/archive/</code>, 2 in <code>tasks/details/</code>, <code>docs/rabbit-design.md</code>).</li>
+<li><code>docs/tasks/current-plan.md</code> → split: §1–§7 became the alice Tasks <code>task-claude-api</code> … <code>task-my-model</code> (T1–T7), the &quot;Earlier plan (archived 2026-10-28)&quot; part became <code>docs/jayv/archive/rabbit-earlier-plan.md</code>; its stub names both.
+<strong>Result:</strong> Text moved verbatim (each alice master body equals the rabbit file it replaced). alice&#39;s <code>scripts/rabbit-docs.mjs</code> no longer mirrors the hub or the plan, so the stubs never overwrite those items. <code>scripts/generate-docs-html.mjs</code> will now render the stubs into <code>docs/html</code>. Branch <code>claude/jayv-masters-to-alice</code>, fast-forwarded into main.</li>
 </ul>
 
   </article>

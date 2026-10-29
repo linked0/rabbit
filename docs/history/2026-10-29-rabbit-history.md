@@ -2,6 +2,7 @@
 
 Source doc: alice item `pocs-agent-payments-korea-control-plane`, §1 "How it gets robbed: three side doors", point 2 "The fake letter" (Patlan et al. 2025), quoted by jay in chat. No task in `docs/tasks/current-plan.md` covers it.
 The T7 entry implements [`../tasks/current-plan.md` §7](../tasks/current-plan.md#t7) (written in that entry).
+The masters-move entry implements alice `.agent-work/jayv-reorg/SPEC.md` (jay's Jayv reorganisation spec, 2026-10-29; alice is private, so the path is cited, not linked).
 
 ## Added
 
@@ -12,6 +13,7 @@ The T7 entry implements [`../tasks/current-plan.md` §7](../tasks/current-plan.m
 - Fake-letter page: a "With real accounts" section (Discord in, X out: the 8 steps, the keys, three rules)
 - Plan: T7 "My AI model" (fine-tune an open model on the M5 Max; the Mac compared with DGX Spark / RTX Spark), plus decisions D5 and D6
 - `current-plan.md`: two new tasks, T5 (Rabbit's image on Kubernetes, PoC) and T6 (RAG: measure Jay Chat, then Wonderland), plus decision D4 (embeddings)
+- Planning and design masters moved to alice (Wonderland) `docs/jayv/`: 69 files here are now one-line stubs (`docs/features/*.md`, `docs/tasks/*.md` incl. `current-plan.md`, `docs/tasks/archive/*`, `docs/tasks/details/*`, `docs/rabbit-design.md`)
 
 ## Done
 
@@ -94,3 +96,12 @@ For a ~1,000-pair dataset the Mac is enough (an estimated 5–20 min per epoch f
   - The X credential was a mix of OAuth 1.0a and 2.0; it is now "OAuth 2.0 user token (tweet.write)".
   - The plan said `DISCORD_APP_ID` while `.env` has `DISCORD_APPLICATION_ID`, so the plan now uses the `.env` name.
 **Result:** `tsc` is clean. In Chrome at 390 and 1440 px, in both languages: no sideways scroll on the page or inside the tables, and no console errors. Not deployed.
+
+### Planning and design masters move to alice (Wonderland)
+
+**Cause:** jay, 2026-10-29: "Rabbit is for code for service, Alice is for design, document, information." Every planning/design document master moves from rabbit to alice, where each becomes a Jayv item (alice `.agent-work/jayv-reorg/SPEC.md`).
+**Reasoning:** One home per document stops the two repos drifting; alice already renders these files as Jayv items (Tasks T1–T8, Candidates C1–C15, design docs, a hidden archive). The paths stay in rabbit as one-line stubs because code comments in `app/` and `lib/` cite `docs/features|tasks/...`. Kept here: code-side docs (`AGENTS.md`, `dev.md`, `sub-agents.md`, `handbook/`, `runbooks/`, `knowledge/`), history, logs, trace, and the old Nostra material in `docs/archive/` and `docs/issues/` (another project; not moved).
+**Change:**
+- 69 files replaced by `Moved to Wonderland (alice): docs/jayv/<dir>/<key>.md — Rabbit is for code; design and planning documents live in alice.`: 44 from `docs/features/` (the hub `README.md` → `docs/jayv/docs/rabbit-features.md`), 24 to `docs/jayv/archive/` (18 old `docs/tasks/*.md`, 3 in `tasks/archive/`, 2 in `tasks/details/`, `docs/rabbit-design.md`).
+- `docs/tasks/current-plan.md` → split: §1–§7 became the alice Tasks `task-claude-api` … `task-my-model` (T1–T7), the "Earlier plan (archived 2026-10-28)" part became `docs/jayv/archive/rabbit-earlier-plan.md`; its stub names both.
+**Result:** Text moved verbatim (each alice master body equals the rabbit file it replaced). alice's `scripts/rabbit-docs.mjs` no longer mirrors the hub or the plan, so the stubs never overwrite those items. `scripts/generate-docs-html.mjs` will now render the stubs into `docs/html`. Branch `claude/jayv-masters-to-alice`, fast-forwarded into main.
