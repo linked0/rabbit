@@ -9,6 +9,7 @@ The T7 entry implements [`../tasks/current-plan.md` §7](../tasks/current-plan.m
 
 - Top menu "Demo" renamed to "Jayverse" (tab, /live heading, rail title, back links); route stays /live
 - Demo section: a card-list rail on the left of every `/live` page (jay's sketch), a chip strip on phones
+- Fake-letter page: a "With real accounts" section (Discord in, X out: the 8 steps, the keys, three rules)
 - Plan: T7 "My AI model" (fine-tune an open model on the M5 Max; the Mac compared with DGX Spark / RTX Spark), plus decisions D5 and D6
 - `current-plan.md`: two new tasks, T5 (Rabbit's image on Kubernetes, PoC) and T6 (RAG: measure Jay Chat, then Wonderland), plus decision D4 (embeddings)
 
@@ -77,3 +78,19 @@ For a ~1,000-pair dataset the Mac is enough (an estimated 5–20 min per epoch f
 - Decisions D5 (base model: Qwen3.5-4B) and D6 (local only until the eval says otherwise).
 - The order note: T7 goes after T6, because it reuses T6's eval set.
 **Result:** Plan only; nothing installed or trained. The next step is §7.5 step 1 (fresh mlx-lm venv). No real M5 Max LoRA number exists yet, so step 4 records the first one.
+
+### Fake-letter page: how it maps onto real Discord and X accounts
+
+**Cause:** jay pasted my chat answer on "a simple scenario for using X and Discord accounts in my agent" and asked to add that explanation to "The fake letter" page.
+**Reasoning:**
+- Content: the same scenario ("Pay Alice 10 jUSD" from Discord, receipt on X), as a new section under "What it shows". It reuses the simulation's lesson: the recipient comes from the owner's command, never from memory.
+- Layout: the ASCII flow became a step table (# / between / what), so it wraps on a phone.
+- Scope: the page stays explanation only. Nothing connects to Discord or X.
+**Change:**
+- New `app/live/memory-poison/ChannelsScenario.tsx`: steps ①–⑧, a key table, three rules, two simpler variants, and a "not connected" note, in Korean and English. It is rendered from `page.tsx`.
+- A review workflow (14 agents) upheld 4 findings, which also corrected the chat answer:
+  - Discord signs the interaction and the user signs nothing, so the rules now say "Discord-signed" and keep the user id check separate.
+  - "Discord only = T4" was wrong: T4 plans only `/ask` and `/status`, with no `/pay`.
+  - The X credential was a mix of OAuth 1.0a and 2.0; it is now "OAuth 2.0 user token (tweet.write)".
+  - The plan said `DISCORD_APP_ID` while `.env` has `DISCORD_APPLICATION_ID`, so the plan now uses the `.env` name.
+**Result:** `tsc` is clean. In Chrome at 390 and 1440 px, in both languages: no sideways scroll on the page or inside the tables, and no console errors. Not deployed.

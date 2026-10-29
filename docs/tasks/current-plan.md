@@ -245,7 +245,7 @@ An ordinary EOA becomes a smart account for as long as we like: **sign authoriza
 
 ### 4.4 Steps
 
-1. **jay:** create the application in the Discord Developer Portal and add a bot user. Copy the **application id**, **public key** and **bot token** into `.env` (`DISCORD_APP_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`). Invite the bot to a test server with the `applications.commands` scope.
+1. **jay:** create the application in the Discord Developer Portal and add a bot user. Copy the **application id**, **public key** and **bot token** into `.env` (`DISCORD_APPLICATION_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`; the names already in `.env` since 2026-10-29). Invite the bot to a test server with the `applications.commands` scope.
 2. `scripts/register-discord-commands.mjs`: PUT the command list to the application (guild-scoped while testing, global later).
 3. `app/api/discord/interactions/route.ts`:
    - verify the **Ed25519 signature** (`X-Signature-Ed25519` + `X-Signature-Timestamp` over the raw body; `node:crypto` can verify ed25519) and reject anything unsigned,

@@ -6,6 +6,7 @@ import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 import { POC_CARDS } from "@/lib/poc-cards";
 import MemoryPoisonSim from "./MemoryPoisonSim";
+import ChannelsScenario from "./ChannelsScenario";
 
 const CARD = POC_CARDS.find((c) => c.key === "memory-poison")!;
 
@@ -63,6 +64,8 @@ export default function MemoryPoisonPage() {
             </p>
           </div>
         </div>
+
+        <ChannelsScenario lang={lang} />
 
         <TechNotes cards={[CARD]} lang={lang} />
       </main>

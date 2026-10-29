@@ -434,7 +434,7 @@ the end of this file under <a href="#archive">Earlier plan (archived)</a>.</p>
 </tbody></table>
 <h3 id="44-steps">4.4 Steps</h3>
 <ol>
-<li><strong>jay:</strong> create the application in the Discord Developer Portal and add a bot user. Copy the <strong>application id</strong>, <strong>public key</strong> and <strong>bot token</strong> into <code>.env</code> (<code>DISCORD_APP_ID</code>, <code>DISCORD_PUBLIC_KEY</code>, <code>DISCORD_BOT_TOKEN</code>). Invite the bot to a test server with the <code>applications.commands</code> scope.</li>
+<li><strong>jay:</strong> create the application in the Discord Developer Portal and add a bot user. Copy the <strong>application id</strong>, <strong>public key</strong> and <strong>bot token</strong> into <code>.env</code> (<code>DISCORD_APPLICATION_ID</code>, <code>DISCORD_PUBLIC_KEY</code>, <code>DISCORD_BOT_TOKEN</code>; the names already in <code>.env</code> since 2026-10-29). Invite the bot to a test server with the <code>applications.commands</code> scope.</li>
 <li><code>scripts/register-discord-commands.mjs</code>: PUT the command list to the application (guild-scoped while testing, global later).</li>
 <li><code>app/api/discord/interactions/route.ts</code>:<ul>
 <li>verify the <strong>Ed25519 signature</strong> (<code>X-Signature-Ed25519</code> + <code>X-Signature-Timestamp</code> over the raw body; <code>node:crypto</code> can verify ed25519) and reject anything unsigned,</li>
