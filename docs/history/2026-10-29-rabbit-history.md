@@ -8,6 +8,7 @@ Source doc: alice item `pocs-agent-payments-korea-control-plane`, §1 "How it ge
 
 - Top menu "Demo" renamed to "Jayverse" (tab, /live heading, rail title, back links); route stays /live
 - Demo section: a card-list rail on the left of every `/live` page (jay's sketch), a chip strip on phones
+- `current-plan.md`: two new tasks, T5 (Rabbit's image on Kubernetes, PoC) and T6 (RAG: measure Jay Chat, then Wonderland), plus decision D4 (embeddings)
 
 ## Done
 
@@ -50,3 +51,12 @@ The fifth, the rail label "Settlement Agent" differing from the console page's h
 **Reasoning:** Renaming only the tab would leave the page it opens titled "데모", so every label for the section changes together: the tab, the `/live` heading, the rail heading and the "← Demo" back links. The route stays `/live`, so no links break. The old `/jayverse` page, whose menu was removed on 2026-08-11, is a different route and is left as it was.
 **Change:** `app/Nav.tsx` (both languages now read "Jayverse"), `app/BackLinkClient.tsx`, `app/live/layout.tsx`, `app/live/page.tsx`, `app/live/memory-poison/page.tsx`.
 **Result:** In Chrome the tab reads "Jayverse" and stays lit on `/live`, on the demo pages and on `/market?from=live`. The heading, rail title and back link all read Jayverse. `tsc` is clean. Not deployed.
+
+### current-plan: T5 Kubernetes PoC and T6 RAG added
+
+Source: alice `ai-engineer-builds-the-car` (Deep #82), Tier 2 (RAG) and Tier 3 (containers and Kubernetes); [`../tasks/current-plan.md`](../tasks/current-plan.md) §5, §6.
+
+**Cause:** jay asked what a PoC for #82's "Containers and Kubernetes" bullet would be and what to do for RAG in our systems, then said "Add the two task into the Current plan".
+**Reasoning:** Rabbit already has the pieces, so both tasks start from them instead of from toy examples. The multi-stage Dockerfile and `.dockerignore` serve Cloud Run today, and Jay Chat already does keyword RAG in `lib/about-me.ts`. For T5, k3d instead of kind, because kind's default CNI ignores NetworkPolicy and the egress test would pass falsely. For T6, the corpus is small (~83 chunks, ~72 KB of profile markdown), so "no retrieval, whole corpus in a cached prompt" is compared against today's keywords and a hybrid embedding search, and an eval set comes first. Embeddings wait on D4.
+**Change:** `current-plan.md`: title, task list (items 5–6), summary rows T5/T6, suggested order, D4, and new sections §5 (why, what exists, 7 steps, acceptance/risks) and §6 (what exists, the A/B/C judgment table, 6 steps ending in Wonderland, risks, an empty results table).
+**Result:** Plan only; nothing built. Branches named `claude/k8s-poc` and `claude/rag-eval`.

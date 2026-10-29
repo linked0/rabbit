@@ -1,4 +1,4 @@
-# Rabbit — current plan: Claude API · EIP-7702 · x402 · bot accounts
+# Rabbit — current plan: Claude API · EIP-7702 · x402 · bot accounts · Kubernetes · RAG
 
 > **Written for:** the agent (or jay) who picks this up in `~/work/rabbit`, possibly on another
 > machine with no conversation history. This file is the resumable state. The four tasks come
@@ -8,6 +8,12 @@
 > 2. 7702 한번 구현해보자 (implement EIP-7702 ourselves)
 > 3. x402.org facilitator는 개발·테스트넷 전용이다 — 활용해보기 (use the x402.org facilitator)
 > 4. X나 Discord 봇계정 연동해보기 (connect an X or Discord bot account)
+>
+> Added 2026-10-29 from alice `ai-engineer-builds-the-car` (Deep #82, the Tier 2 and Tier 3 skills), jay: "Add the two
+> task into the Current plan":
+>
+> 5. Containers and Kubernetes PoC (Tier 3)
+> 6. RAG: measure Jay Chat's retrieval, then bring it to Wonderland (Tier 2)
 >
 > **The earlier plan** (Chains menu brief and the 2026-09-23 status board) is kept unchanged at
 > the end of this file under [Earlier plan (archived)](#archive).
@@ -22,9 +28,11 @@
 | **T2** | [EIP-7702, done by us](#t2) | **Planned.** The delegator contract is on the devnet (checked 2026-10-28) | build §2.4 steps 1–4 |
 | **T3** | [x402 with the x402.org facilitator](#t3) | **Planned.** Facilitator networks checked; `@x402/*` 2.20 installed but unused | jay decides the paid resource ([D3](#t-decide)), then §3.4 |
 | **T4** | [Discord (then X) bot](#t4) | **Planned.** Nothing exists | jay creates the Discord application (§4.4 step 1) |
+| **T5** | [Rabbit's image on Kubernetes (PoC)](#t5) | **Planned (2026-10-29).** The Dockerfile and `.dockerignore` already exist (Cloud Run); no cluster, no manifests | §5.3 step 1: audit the image (`docker history`, size, digest) |
+| **T6** | [RAG: measure Jay Chat, then Wonderland](#t6) | **Planned (2026-10-29).** Jay Chat already has lexical RAG (`lib/about-me.ts` `retrieve()`); no eval set, no embeddings | §6.3 step 1: write the eval set, run today's retrieval against it |
 
 - **Repo / branch:** `~/work/rabbit`. This plan was written on `claude/plan-claude-7702-x402-bots` (off `main` at `462909f`). Give each task its own branch: `claude/claude-api`, `claude/eip7702-diy`, `claude/x402-facilitator`, `claude/discord-bot`.
-- **Suggested order:** T1 → T2 → T3 → T4. T1 changes the one paid dependency every other feature talks through. T2 and T3 are independent demos. T4 reuses T1's chat and the health check, so it goes last.
+- **Suggested order:** T1 → T2 → T3 → T4. T1 changes the one paid dependency every other feature talks through. T2 and T3 are independent demos. T4 reuses T1's chat and the health check, so it goes last. T5 and T6 (added 2026-10-29) are independent of T2–T4 and can run in any gap; T6 before T4 is worth it, because the bot's `/ask` answers through the same retrieval. Branches: `claude/k8s-poc`, `claude/rag-eval`.
 - **History:** the planning session is logged in [`../history/2026-10-28-rabbit-history.md`](../history/2026-10-28-rabbit-history.md). The groundwork it builds on (the Jay Chat health check, Telegram alerts, devnet recovery) is in alice's `docs/history/2026-10-09-rabbit-history.md`.
 - **Not touched by this plan:** the parked `claude/markets-pyth` branch (Markets menu on Pyth, last commit 2026-10-20, not merged to `main`).
 
@@ -35,6 +43,7 @@
 | ~~**D1**~~ **DECIDED 2026-10-28** | **Which Claude model Jay Chat uses** | Opus 5.5 · Sonnet 5.5 · Haiku 5.5 (all three smoke-tested live) | jay: **Sonnet 5.5** (final, after Opus → Haiku → Sonnet → Haiku → Sonnet the same day). ~$0.014/question, ~2–7 s, budget default 120k/h | — |
 | **D2** | **Where the bot lives first** | **(a)** Discord · **(b)** X | **(a)** Discord: free API, slash commands over HTTP, fits Cloud Run. X's API pricing must be checked first ([§4.2](#t4-x)) | Discord |
 | **D3** | **What the x402 demo sells** | **(a)** a signed price quote ("the agent pays for its price feed") · **(b)** an aphorism for $0.01 (ap2-test's old idea) | **(a)**: it is the story already written in `../features/README-history.md` (item 2) and reuses Markets/Pyth data | (a) |
+| **D4** | **Embeddings for T6 option B** | **(a)** an embedding API (Voyage, the provider Anthropic's docs point to; one new key, cents for this corpus) · **(b)** a local multilingual model run at build time (no key, no data leaves the Mac, one new dependency) | decide after §6.3 step 2: if the eval shows option C (whole corpus in a cached prompt) wins, no embeddings are needed at all | skip B, compare A (today) with C only |
 
 ## 1. T1 — Rabbit's LLM → Claude <a id="t1"></a>
 
@@ -244,6 +253,82 @@ An ordinary EOA becomes a smart account for as long as we like: **sign authoriza
 - `/ask` in the test server returns a persona answer within ~15 s. A request with a bad signature gets 401. `/status` matches the health endpoint.
 - **Risk:** the public bot spends the same LLM budget as the web chat, so it shares the hourly budget (one pool), not a second one.
 - **Risk:** a leaked bot token can post as the bot anywhere it's invited. It lives only in Secret Manager and `.env`; rotate it in the portal if it ever appears in a log.
+
+## 5. T5 — Rabbit's image on Kubernetes (PoC) <a id="t5"></a>
+
+### 5.1 Why, and what it proves
+
+alice `ai-engineer-builds-the-car` (Deep #82), Tier 3: *"Containers and Kubernetes. Package the agent and its runtime so it
+deploys the same way on hybrid cloud or bare metal."* The claim to prove is that sentence: **one image digest runs unchanged
+in three places** (Mac Docker, a local Kubernetes cluster, Cloud Run) and gives the same answers. The item's generic PoC uses a toy
+agent; Rabbit already has a real image, so this PoC uses that one. Local only: $0, production untouched.
+
+### 5.2 What exists today
+
+| Piece | Where | Note for the PoC |
+|---|---|---|
+| Multi-stage `Dockerfile` | repo root | runner copies only `.next/standalone`, `.next/static`, `public`, `content` (matches the Docker rule); `AUTH_SECRET=build-time-dummy-secret` is set in the **builder** stage only. Confirm it is not in the runner's env |
+| `.dockerignore` | repo root | check it keeps out `.env*`, `.git`, `node_modules` |
+| Agent tick | `app/api/agent/tick/route.ts` + `lib/agent-tick.ts`, driven by `app/api/agent/scheduler` (`lib/agent-scheduler.ts`) | today an HTTP call starts each tick. In the cluster a `CronJob` makes that call |
+| Runtime secrets | Cloud Run env + Secret Manager | in the cluster they come from a `Secret` built from `.env` at apply time, never committed |
+
+### 5.3 Steps
+
+1. **Audit the image.** `docker build -t rabbit:poc .`, then `docker history --no-trunc rabbit:poc` and `docker inspect` (env) to check that no layer or env var holds a real secret. Write down the image size and the **digest** (`sha256:…`); every later step uses this digest.
+2. **Place 1, Mac:** `docker run -p 3000:3000 --env-file .env.local rabbit:poc`. Check `/`, `/api/jay-chat/health` and one Jay Chat question.
+3. **Place 2, local Kubernetes:** use **k3d**, not kind. k3s ships a NetworkPolicy controller, while kind's default CNI ignores NetworkPolicy, so the egress test in step 4 would pass for the wrong reason. Then `k3d image import rabbit:poc`, and in `infra/k8s/` (new, manifests only):
+   - `deployment.yaml`: one replica, CPU and memory requests/limits, readiness probe on `/`, liveness on the same, non-root `securityContext`.
+   - `service.yaml`: ClusterIP; `kubectl port-forward` to test.
+   - The secret is created by command, never as a file in git: `kubectl create secret generic rabbit-env --from-env-file=.env.local`.
+4. **Egress allowlist** (`networkpolicy.yaml`): default-deny egress, then allow DNS, the Claude API, the devnet RPC and the DB host. NetworkPolicy matches **IPs/CIDRs, not hostnames**, so the PoC resolves them at apply time and notes that this breaks when the IPs change. The production answer is an egress proxy, which is out of scope here. Test: from the pod, `curl https://example.com` fails and a Jay Chat question still works. This is the containment layer from alice `its-not-just-the-sandbox` (#93).
+5. **The agent as a scheduled job:** `cronjob.yaml` with a small curl image that calls the Service's `/api/agent/tick` with the scheduler's shared secret, every 5 minutes, `concurrencyPolicy: Forbid`. `kubectl logs job/…` shows each tick. Stretch goal, not required: a CLI entry for one tick (`node scripts/agent-tick.mjs`) so each run is its own Job with its own limits and logs. That is the unit a per-run trace attaches to later (#82, observability).
+6. **Place 3, Cloud Run:** compare the digest of the revision that is live now with the PoC digest. If they differ, the PoC image is the one from step 1 (same Dockerfile, newer commit). Do **not** deploy it; the claim is already shown by step 2 running the image Cloud Run would run.
+7. **Write up** in §5.4: image size, cold start (k3d pod ready time, Cloud Run's from its logs), and what broke.
+
+### 5.4 Acceptance and risks
+
+- The same digest serves `/` and a Jay Chat answer on Docker and on k3d. No secret in `docker history` or `docker inspect`. A pod cannot reach `example.com`. The CronJob's ticks appear in the logs.
+- **Risk:** the CronJob and Cloud Scheduler both tick the same devnet agent → double ticks. Point the cluster's `.env` at a local Anvil fork, or keep the CronJob `suspend: true` except during the test.
+- **Risk:** `.env.local` holds real keys and the cluster is local, so delete the cluster when done (`k3d cluster delete`).
+- **Out of scope:** Helm, autoscaling, service mesh, a multi-node or cloud cluster (GKE). Next only if this works.
+
+## 6. T6 — RAG: measure Jay Chat, then Wonderland <a id="t6"></a>
+
+### 6.1 What exists today
+
+- Jay Chat's "About me" mode **is already RAG**: `lib/about-me.ts` builds ~83 chunks (profile and projects from `lib/home-content.ts`, PoC and TIL cards, the 11 files in `content/profile/*.md`, ~72 KB), `retrieve(query, k=4)` scores them by **keyword overlap** (with a Korean substring fallback), and `buildAboutMeSystemMessage()` injects the top chunks. The header says the upgrade path: swap `retrieve()` for an embedding search without touching the route or UI.
+- Known misses: 2026-08-02 "지금은 어디서 일해요?" matched nothing, because the corpus says "현재", so a core-set fallback was added. Keyword overlap cannot see a paraphrase. That is the gap embeddings close.
+- Measured: a question carries a ~4,300-token RAG context (§1.2).
+- **Nothing measures retrieval quality.** That is the first thing to build, and the evaluation gap #82 itself names.
+
+### 6.2 The judgment call first
+
+#82's point is that judgment matters more than code: *retrieval rather than … or no model at all.* For Jay Chat the corpus is small (~72 KB of markdown plus cards, roughly 20–30k tokens; measure it in step 1). So compare three options, not one:
+
+| Option | What it is | Cost/latency shape |
+|---|---|---|
+| **A** (today) | keyword `retrieve()`, top 4 | ~4.3k tokens per question |
+| **B** | hybrid: embeddings plus today's keywords, merged by rank (reciprocal rank fusion) | same tokens as A; vectors built once at build time into a JSON (83 vectors, brute-force cosine, no vector DB) |
+| **C** | **no retrieval**: the whole corpus in the system prompt with prompt caching (T1 made the chat Claude) | more input tokens per question, but cached reads are billed at a fraction of the input price (check current pricing in the Claude API docs); nothing can be "not retrieved" |
+
+### 6.3 Steps
+
+1. **Eval set:** `docs/tasks/rag-eval.json`, 25 questions in English and Korean. Each has the chunk `source` that must be retrieved, and for 8 of them a fact the answer must contain. Include the known misses (지금은 어디서 일해요?, 학교는 어디 나왔나요?) and paraphrases with no shared keyword. `scripts/rag-eval.mjs` prints recall@4 per option, plus token counts. Also print the corpus's total tokens (`count_tokens`).
+2. **Baseline A:** run it and record the numbers in §6.5.
+3. **Option C:** build the full-corpus system prompt behind a flag (`JAY_CHAT_RAG=full`) with a cache breakpoint after the corpus; run the 8 answer checks and record tokens, cache hits, cost per question and latency.
+4. **Option B** (only if C loses, or the corpus will grow past what C can carry): D4 picks the embedding source; `scripts/build-embeddings.mjs` writes `lib/about-me.vectors.json` at build time; `retrieve()` becomes hybrid with the same signature.
+5. **Pick** A, B or C by the numbers (recall and answer checks first, then cost), switch the default, and keep the eval in CI-less form: rerun `rag-eval.mjs` whenever `content/profile` changes.
+6. **Then Wonderland** (alice repo, its own task file there when started): the same recipe over ~1,400 items, which is too big for option C, so B. First user: the daily 09:45 item job's "find the related not-done item to merge into", plus the duplicate check before a new card (on 2026-10-29 an unlink card already existed and was found only by luck). Later an "ask Wonderland" box. Index local and git-ignored; **exclude private items** (Min, the morning report, the Stick/Thought tiles).
+
+### 6.4 Acceptance and risks
+
+- An eval script and a table in §6.5 that say which option wins, with numbers, and the default switched to it.
+- **Risk, injection:** retrieved text is data, never instructions. Jay Chat's corpus is our own and public, so the risk is low; Wonderland's holds quoted outside articles. The system prompt says so, and the retriever never feeds tool calls. (alice Grammar item on *"the agent's routine ingest reads it into a plaintext store the attacker can read"* is this risk in one sentence.)
+- **Risk, privacy:** never index private Wonderland content into anything that leaves the Mac.
+
+### 6.5 Results
+
+*(empty until §6.3 steps 2–3 run)*
 
 ---
 

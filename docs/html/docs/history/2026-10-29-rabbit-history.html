@@ -45,6 +45,8 @@
 </li>
 <li><p>Demo section: a card-list rail on the left of every <code>/live</code> page (jay&#39;s sketch), a chip strip on phones</p>
 </li>
+<li><p><code>current-plan.md</code>: two new tasks, T5 (Rabbit&#39;s image on Kubernetes, PoC) and T6 (RAG: measure Jay Chat, then Wonderland), plus decision D4 (embeddings)</p>
+</li>
 </ul>
 <h2 id="done">Done</h2>
 <ul>
@@ -85,6 +87,12 @@
 <strong>Reasoning:</strong> Renaming only the tab would leave the page it opens titled &quot;데모&quot;, so every label for the section changes together: the tab, the <code>/live</code> heading, the rail heading and the &quot;← Demo&quot; back links. The route stays <code>/live</code>, so no links break. The old <code>/jayverse</code> page, whose menu was removed on 2026-08-11, is a different route and is left as it was.
 <strong>Change:</strong> <code>app/Nav.tsx</code> (both languages now read &quot;Jayverse&quot;), <code>app/BackLinkClient.tsx</code>, <code>app/live/layout.tsx</code>, <code>app/live/page.tsx</code>, <code>app/live/memory-poison/page.tsx</code>.
 <strong>Result:</strong> In Chrome the tab reads &quot;Jayverse&quot; and stays lit on <code>/live</code>, on the demo pages and on <code>/market?from=live</code>. The heading, rail title and back link all read Jayverse. <code>tsc</code> is clean. Not deployed.</p>
+<h3 id="current-plan-t5-kubernetes-poc-and-t6-rag-added">current-plan: T5 Kubernetes PoC and T6 RAG added</h3>
+<p>Source: alice <code>ai-engineer-builds-the-car</code> (Deep #82), Tier 2 (RAG) and Tier 3 (containers and Kubernetes); <a href="../tasks/current-plan.html"><code>../tasks/current-plan.md</code></a> §5, §6.</p>
+<p><strong>Cause:</strong> jay asked what a PoC for #82&#39;s &quot;Containers and Kubernetes&quot; bullet would be and what to do for RAG in our systems, then said &quot;Add the two task into the Current plan&quot;.
+<strong>Reasoning:</strong> Rabbit already has the pieces, so both tasks start from them instead of from toy examples. The multi-stage Dockerfile and <code>.dockerignore</code> serve Cloud Run today, and Jay Chat already does keyword RAG in <code>lib/about-me.ts</code>. For T5, k3d instead of kind, because kind&#39;s default CNI ignores NetworkPolicy and the egress test would pass falsely. For T6, the corpus is small (~83 chunks, ~72 KB of profile markdown), so &quot;no retrieval, whole corpus in a cached prompt&quot; is compared against today&#39;s keywords and a hybrid embedding search, and an eval set comes first. Embeddings wait on D4.
+<strong>Change:</strong> <code>current-plan.md</code>: title, task list (items 5–6), summary rows T5/T6, suggested order, D4, and new sections §5 (why, what exists, 7 steps, acceptance/risks) and §6 (what exists, the A/B/C judgment table, 6 steps ending in Wonderland, risks, an empty results table).
+<strong>Result:</strong> Plan only; nothing built. Branches named <code>claude/k8s-poc</code> and <code>claude/rag-eval</code>.</p>
 
   </article>
 </div>
