@@ -1,5 +1,12 @@
 import { buildAboutMeSystemMessage } from "@/lib/about-me";
-import { streamJayChat, acquire, burstLimited, Overloaded, OverBudget, type ChatMessage } from "@/lib/jay-chat";
+import {
+  streamJayChat, acquire, burstLimited, estimateInputTokens, maxOutputTokens,
+  anonSpentThisHour, noteAnonSpend, Overloaded, OverBudget, type ChatMessage, type Lease,
+} from "@/lib/jay-chat";
+import { admit, rollHour } from "@/lib/jay-chat-gate";
+import { TICKET_COOKIE, verifyTicket, ticketsConfigured } from "@/lib/jay-chat-ticket";
+import { worstCaseCost } from "@/lib/ai-provider";
+import { auth } from "@/auth";
 import { notifyChatStart, notifyChatMilestone } from "@/lib/visitor-notify";
 
 // Public, keyless "About Jay" persona endpoint — no login required (see middleware.ts
@@ -29,6 +36,19 @@ const MAX_TOTAL_CHARS = 12000;
 // 있고, 맨 뒤 값만 우리 앞단이 쓴 값이다. 예전엔 [0] 을 키로 써서, 매 요청 가짜 IP 를 넣는
 // 스크립트는 분당 제한에 **한 번도** 걸리지 않았다 (T1 §1.8).
 // 앞에 로드밸런서를 두게 되면 신뢰 홉이 하나 늘어난다 — 그때 TRUSTED_PROXY_HOPS=1.
+// 다른 사이트가 방문자의 브라우저로 이 API 를 부르지 못하게 한다 (§1.9 item 2).
+// Origin 이 아예 없는 요청(서버 간 호출, curl)은 막지 않는다 — 쿠키 검사가 그쪽을 맡는다.
+function foreignOrigin(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  if (!origin) return false;
+  const host = req.headers.get("host");
+  try {
+    return new URL(origin).host !== host;
+  } catch {
+    return true;
+  }
+}
+
 const TRUSTED_PROXY_HOPS = Number(process.env.TRUSTED_PROXY_HOPS || 0);
 let loggedHops = false;
 
@@ -48,6 +68,9 @@ function clientIp(req: Request): string {
 
 export async function POST(req: Request) {
   const ip = clientIp(req);
+  if (foreignOrigin(req)) {
+    return Response.json({ error: "요청 출처가 올바르지 않습니다." }, { status: 403 });
+  }
   if (burstLimited(ip)) {
     return Response.json({ error: "너무 빠릅니다 — 잠시 후 다시 시도해주세요." }, { status: 429 });
   }
@@ -117,28 +140,54 @@ export async function POST(req: Request) {
   }
   const outgoing = [buildAboutMeSystemMessage(lastUser?.content ?? ""), ...bounded];
 
-  // 예산·동시성은 **호출 직전에, 보낼 내용이 확정된 뒤** 잡는다 (T1 §1.8).
-  let lease;
+  // ── 입장 판정 (T1 §1.9, §1.10) ────────────────────────────────────────
+  // 신원: 쿠키(사람 단위) · IP 대역(돌려 쓰는 주소) · 로그인(jay). 셋이 각자 몫을 갖는다.
+  const ticket = verifyTicket(req.headers.get("cookie")?.match(new RegExp(`${TICKET_COOKIE}=([^;]+)`))?.[1]);
+  if (ticketsConfigured() && !ticket) {
+    // 페이지를 거치지 않고 바로 부른 요청. 사람에게는 새로고침이면 풀린다.
+    return Response.json({ error: "페이지를 새로고침한 뒤 다시 시도해주세요." }, { status: 403 });
+  }
+  const owner = Boolean((await auth())?.user);
+
+  const estInput = estimateInputTokens(outgoing);
+  const gate = await admit(
+    { ip, cookieId: ticket?.id ?? null, returning: Boolean(ticket?.returning), owner },
+    estInput
+  );
+  if (!gate.ok) return Response.json({ error: gate.message }, { status: gate.status });
+
+  // 시간 상한(인메모리)은 그 안쪽 층이다 — 게이트를 통과한 뒤에 잡는다.
+  const estCost = worstCaseCost(gate.model, estInput, gate.maxTokens);
+  let hourLease: Lease;
   try {
-    lease = acquire(outgoing);
+    hourLease = acquire(estCost);
   } catch (e) {
+    await gate.settle(0); // 게이트에서 잡은 예약을 돌려준다 — 안 그러면 거절된 요청이 남의 몫을 먹는다
     if (e instanceof Overloaded) {
-      return Response.json(
-        { error: "지금 처리 중인 요청이 많습니다 — 잠시 후 다시 시도해주세요." },
-        { status: 429 }
-      );
+      return Response.json({ error: "지금 처리 중인 요청이 많습니다 — 잠시 후 다시 시도해주세요." }, { status: 429 });
     }
     if (e instanceof OverBudget) {
-      return Response.json(
-        { error: "이번 시간의 채팅 한도에 도달했습니다 — 잠시 후 다시 시도해주세요." },
-        { status: 429 }
-      );
+      return Response.json({ error: "이번 시간의 채팅 한도에 도달했습니다 — 정각에 다시 열립니다." }, { status: 429 });
     }
     throw e;
   }
 
+  // 한 번의 정산으로 네 층을 모두 닫는다.
+  const anonymous = !owner && !ticket?.returning;
+  const lease: Lease = {
+    async settle(actualCost?: number) {
+      const cost = actualCost && actualCost > 0 ? actualCost : estCost;
+      hourLease.settle(cost);
+      if (anonymous) noteAnonSpend(cost);
+      rollHour(anonSpentThisHour()); // 시간이 바뀌었으면 공격 모드를 다시 센다
+      // **기다린다.** 날려 보내면 Cloud Run 이 CPU 를 거둬 갈 때 쓰기가 유실되고,
+      // 예약액(최악 추정)이 장부에 그대로 남아 하루 상한이 몇 배 일찍 닫힌다.
+      await gate.settle(cost);
+    },
+  };
+
   try {
-    const stream = await streamJayChat(outgoing, lease);
+    const stream = await streamJayChat(outgoing, lease, { model: gate.model, maxTokens: gate.maxTokens });
     return new Response(stream, {
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     });

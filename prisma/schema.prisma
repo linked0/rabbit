@@ -165,3 +165,19 @@ enum TickVerdict {
   SKIP_EXPIRED // mandate 만료 — 체인이 거절
   SKIP_NO_ESTIMATE // 게이트/뉴스 없음 등으로 추정 자체를 부르지 않음
 }
+
+// Jay Chat 지출 장부 (T1 §1.10, 2026-10-30). 한 줄 = 하나의 상한.
+//   day:2026-10-30            그날 전체          $2.50
+//   week:2026-W44             그 주 전체         $10.00
+//   ip:1.2.3.0/24:2026-10-30  IP 대역 하루 몫    $0.20
+//   ck:<id>:2026-10-30        쿠키 하루 몫       $0.20
+//   anon:2026-10-30           익명 몫(= day - 예약분)
+// 시간당 상한은 여기 없다 — 인메모리로 충분하고(§1.9 item 8), 재시작마다 0으로 돌아가도
+// 그 위의 일·주 상한이 받아 준다. 반대로 일·주를 메모리에 두면 배포 한 번에 리셋된다.
+model ChatSpend {
+  key       String   @id
+  cap       Decimal  @db.Decimal(12, 6)
+  used      Decimal  @db.Decimal(12, 6) @default(0)
+  updatedAt DateTime @updatedAt
+}
+

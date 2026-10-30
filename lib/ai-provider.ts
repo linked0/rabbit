@@ -155,3 +155,63 @@ export function activeModelInfo(): { host: string; model: string } {
     ? { host: "api.anthropic.com", model: claudeModel() }
     : { host: aiProvider().host, model: aiProvider().model };
 }
+
+// ── 모델별 단가, 달러 (T1 §1.10, jay 2026-10-30: "10 dollar in a week") ─────────
+// 상한을 **토큰이 아니라 달러로** 센다. 토큰으로 세면 `AI_MODEL` 이 바뀌는 순간 상한의
+// 뜻이 달라진다 — Haiku 5.5 는 Sonnet 5.5 보다 입력이 20배 싸다. 캐시 읽기도 제값(1/10)으로
+// 쳐야 상한이 현실과 맞는다.
+//
+// 단위: 100만 토큰당 달러.
+//   input / output      — Anthropic 공개 요금
+//   cacheRead           — 공개된 값이 있으면 그대로, 없으면 input 의 0.1배
+//   cacheWrite(5분)     — 공개 표에 따로 없어 input 의 1.25배로 둔다(표준 비율)
+// 파생값은 아래 주석에 표시했다. **모델을 바꿀 때 요금 페이지와 대조할 것.**
+export type ModelPrice = { input: number; cacheWrite: number; cacheRead: number; output: number };
+
+const PRICES: Record<string, ModelPrice> = {
+  // 공개: $2 / $10, 캐시 읽기 $0.20. cacheWrite 는 파생(1.25×).
+  "claude-sonnet-5-5": { input: 2.0, cacheWrite: 2.5, cacheRead: 0.2, output: 10.0 },
+  "claude-sonnet-5": { input: 2.0, cacheWrite: 2.5, cacheRead: 0.2, output: 10.0 },
+  "claude-sonnet-4-6": { input: 3.0, cacheWrite: 3.75, cacheRead: 0.3, output: 15.0 },
+  // 공개: $0.10 / $0.50 (10만 토큰 이하 프롬프트). 그 위는 $0.50 / $2.50 — 우리 요청은
+  // 꼬리를 12,000자로 묶어 두므로 늘 아래 구간이다. 캐시 값은 파생.
+  "claude-haiku-5-5": { input: 0.1, cacheWrite: 0.125, cacheRead: 0.01, output: 0.5 },
+  "claude-haiku-4-5": { input: 1.0, cacheWrite: 1.25, cacheRead: 0.1, output: 5.0 },
+  // 공개: $4 / $20, 캐시 읽기 $0.20. cacheWrite 파생.
+  "claude-opus-5-5": { input: 4.0, cacheWrite: 5.0, cacheRead: 0.2, output: 20.0 },
+  "claude-opus-5": { input: 5.0, cacheWrite: 6.25, cacheRead: 0.5, output: 25.0 },
+};
+
+// 모르는 모델은 **가장 비싼 값**으로 친다. 모르는 쪽으로 틀릴 때 돈이 새지 않는 방향.
+const UNKNOWN_PRICE: ModelPrice = { input: 10.0, cacheWrite: 12.5, cacheRead: 1.0, output: 50.0 };
+
+export function priceOf(model: string): ModelPrice {
+  return PRICES[model] ?? UNKNOWN_PRICE;
+}
+
+/** 저렴한 모델로 내려갈 때 쓸 이름 (§1.9 item 5). */
+export const CHEAP_MODEL = process.env.JAY_CHAT_CHEAP_MODEL || "claude-haiku-5-5";
+
+export type Usage = {
+  input?: number;
+  cacheWrite?: number;
+  cacheRead?: number;
+  output?: number;
+};
+
+/** 사용량 → 달러. */
+export function costOf(model: string, u: Usage): number {
+  const p = priceOf(model);
+  return (
+    ((u.input ?? 0) * p.input +
+      (u.cacheWrite ?? 0) * p.cacheWrite +
+      (u.cacheRead ?? 0) * p.cacheRead +
+      (u.output ?? 0) * p.output) /
+    1_000_000
+  );
+}
+
+/** 호출 전 최악 비용: 입력은 추정치, 출력은 max_tokens 를 다 쓴다고 본다. */
+export function worstCaseCost(model: string, estimatedInput: number, maxOutput: number): number {
+  return costOf(model, { input: estimatedInput, output: maxOutput });
+}

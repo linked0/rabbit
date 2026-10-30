@@ -4,7 +4,10 @@
 // since this endpoint is reachable by anyone with no login.
 
 import type Anthropic from "@anthropic-ai/sdk";
+import { CAPS } from "./jay-chat-spend";
 import {
+  costOf,
+  worstCaseCost,
   aiProvider,
   classifyLimit,
   reportIfLimited,
@@ -46,39 +49,40 @@ const MAX_OUTPUT_TOKENS = 1500;
 // 같은 450k 로 두면 악용 시 최악이 Opus ~$2,100/월, Sonnet ~$1,050/월이다. 그래서 모델별로
 // 최악을 ~$280/월에 맞춘 기본값을 둔다: Opus/Fable 60k, Sonnet 120k, Haiku·OpenAI 450k.
 // env 가 있으면 env 가 이긴다 (jay, 2026-10-28; current-plan §1.2).
-function defaultHourlyBudget(): number {
-  if (providerKind() !== "anthropic") return 450000;
-  const m = claudeModel();
-  if (/^claude-(opus|fable)-/.test(m)) return 60000;
-  if (/^claude-sonnet-/.test(m)) return 120000;
-  return 450000;
-}
-// `||`, not `??`: deploy.sh passes the var empty when .env has no value, and
-// Number("") is 0 — which would refuse every chat as over budget.
-const HOURLY_TOKEN_BUDGET = Number(
-  process.env.JAY_CHAT_HOURLY_TOKEN_BUDGET ||
-    defaultHourlyBudget(),
-);
+// 시간 상한도 **달러**다 (T1 §1.10). 토큰으로 세던 때는 모델이 바뀌면 상한의 뜻이 같이
+// 바뀌었다 — Haiku 로 내려가면 같은 토큰이 20분의 1 값이다. 달러로 세면 그 문제가 없다.
+// 기본값 $0.50/시간: 하루 $2.50 을 전속력으로 5시간이면 채우는 속도 (§1.9 item 9).
 let windowStart = Date.now();
-let tokensUsedThisHour = 0;
+let dollarsUsedThisHour = 0;
 
 function currentHourWindow() {
   const now = Date.now();
   if (now - windowStart >= 60 * 60 * 1000) {
     windowStart = now;
-    tokensUsedThisHour = 0;
-    reservedThisHour = 0; // 지난 창의 예약은 지난 창과 함께 사라진다 (아래 settle 이 창을 대조한다)
+    dollarsUsedThisHour = 0;
+    reservedThisHour = 0;
+    anonThisHour = 0; // 지난 창의 예약은 지난 창과 함께 사라진다 (아래 settle 이 창을 대조한다)
   }
-  return { tokensUsedThisHour, remaining: HOURLY_TOKEN_BUDGET - tokensUsedThisHour - reservedThisHour };
+  return { used: dollarsUsedThisHour, remaining: CAPS.hour - dollarsUsedThisHour - reservedThisHour };
 }
 
 export function budgetExhausted(): boolean {
   return currentHourWindow().remaining <= 0;
 }
 
-function recordTokenUsage(tokens: number) {
+function recordCost(dollars: number) {
   currentHourWindow(); // roll the window first if needed
-  tokensUsedThisHour += tokens;
+  dollarsUsedThisHour += dollars;
+}
+
+/** 이번 시간에 익명이 쓴 돈 — 공격 모드 판정에 쓴다 (§1.9 item 9). */
+let anonThisHour = 0;
+export function anonSpentThisHour(): number {
+  currentHourWindow();
+  return anonThisHour;
+}
+export function noteAnonSpend(dollars: number) {
+  anonThisHour += dollars;
 }
 
 // --- 선예약 + 동시 호출 상한 (T1 §1.8, 2026-10-30) ---
@@ -106,28 +110,30 @@ export class OverBudget extends Error {
 }
 
 export type Lease = {
-  /** 실제 사용 토큰으로 정산한다. 값을 모르면(스트림이 usage 없이 끝났으면) 추정치를 문다. */
-  settle(actualTokens?: number): void;
+  /** 실제 **비용(달러)** 으로 정산한다. 값을 모르면(usage 없이 끝났으면) 추정치를 문다.
+   *  DB 를 건드리는 구현이 있으므로 프라미스를 돌려줄 수 있다 — 호출부는 스트림이
+   *  닫히기 **전에** 기다려야 한다. Cloud Run 은 응답을 보낸 뒤 CPU 를 거둬 가서,
+   *  기다리지 않은 쓰기는 끝나지 못하고 예약이 그대로 남는다(= 상한이 일찍 닫힌다). */
+  settle(actualCost?: number): void | Promise<void>;
 };
 
 /** 보수적인 입력 토큰 추정. 한국어는 1–1.5자/토큰, 영어는 ~4자/토큰이라 2자/토큰으로 잡는다
  *  — 과소 추정이 유일하게 위험한 방향이므로 한국어 쪽에 맞춰 둔다. */
-function estimateInputTokens(messages: ChatMessage[]): number {
+export function estimateInputTokens(messages: ChatMessage[]): number {
   const chars = messages.reduce((n, m) => n + (m.content?.length ?? 0), 0);
   return Math.ceil(chars / 2) + 200; // + 포맷 오버헤드
 }
 
-function maxOutputTokens(): number {
+export function maxOutputTokens(): number {
   return providerKind() === "anthropic" ? CLAUDE_MAX_TOKENS : MAX_OUTPUT_TOKENS;
 }
 
-/** 호출 전에 자리와 예산을 함께 잡는다. 둘 중 하나라도 안 되면 던진다. */
-export function acquire(messages: ChatMessage[]): Lease {
+/** 호출 전에 자리와 **시간 예산(달러)** 을 함께 잡는다. 둘 중 하나라도 안 되면 던진다. */
+export function acquire(estimate: number): Lease {
   currentHourWindow(); // 창을 먼저 굴린다
   if (inFlight >= MAX_IN_FLIGHT) throw new Overloaded();
 
-  const estimate = estimateInputTokens(messages) + maxOutputTokens();
-  if (tokensUsedThisHour + reservedThisHour + estimate > HOURLY_TOKEN_BUDGET) throw new OverBudget();
+  if (dollarsUsedThisHour + reservedThisHour + estimate > CAPS.hour) throw new OverBudget();
 
   inFlight++;
   reservedThisHour += estimate;
@@ -150,8 +156,8 @@ export function acquire(messages: ChatMessage[]): Lease {
       // 창이 굴렀으면 이 예약도 사용량도 지난 창의 것이다. 새 창을 오염시키지 않는다.
       if (windowStart !== openedIn) return;
       reservedThisHour = Math.max(0, reservedThisHour - estimate);
-      // usage 를 못 받았으면 공짜로 넘기지 않고 추정치를 문다.
-      tokensUsedThisHour += actualTokens && actualTokens > 0 ? actualTokens : estimate;
+      // 실제 비용을 못 받았으면 공짜로 넘기지 않고 추정치를 문다.
+      dollarsUsedThisHour += actualTokens && actualTokens > 0 ? actualTokens : estimate;
     },
   };
   return lease;
@@ -180,11 +186,14 @@ export function burstLimited(ip: string): boolean {
 // 뒀지만(남용 시 단독 폐기), 유일하게 남은 다른 소비자였던 오너 전용 챗을 삭제하면서
 // 격리로 얻는 게 없어졌다. 이제 이 키를 쓰는 곳은 Jay Chat 뿐이라 폐기해도 다른 기능이
 // 죽지 않는다. 값은 DashScope(Model Studio) API 키.
+export type StreamOpts = { model?: string; maxTokens?: number };
+
 export async function streamJayChat(
   messages: ChatMessage[],
-  lease?: Lease
+  lease?: Lease,
+  opts: StreamOpts = {}
 ): Promise<ReadableStream<Uint8Array>> {
-  if (providerKind() === "anthropic") return streamClaude(messages, lease);
+  if (providerKind() === "anthropic") return streamClaude(messages, lease, opts);
   const llm = aiProvider();
   if (!llm.key) throw new Error("AI_API_KEY가 설정되지 않았습니다.");
 
@@ -218,11 +227,15 @@ export async function streamJayChat(
   let used = 0;
   // lease 가 있으면 정산은 **끝날 때 한 번**이다. 예전처럼 transform 안에서 바로 더하면
   // 예약과 사용량이 이중으로 잡힌다.
-  const done = () => (lease ? lease.settle(used) : used && recordTokenUsage(used));
+  const done = async () => {
+    const cost = costOf(llm.model, { input: used }); // OpenAI 호환 응답은 total_tokens 하나뿐
+    if (lease) await lease.settle(cost);
+    else if (cost) recordCost(cost);
+  };
 
   return res.body.pipeThrough(
     new TransformStream<Uint8Array, Uint8Array>({
-      flush() { done(); },   // 정상 종료. 중간 이탈은 acquire 의 워치독이 받는다
+      async flush() { await done(); },   // 정상 종료. 중간 이탈은 acquire 의 워치독이 받는다
       transform(chunk, controller) {
         buf += decoder.decode(chunk, { stream: true });
         const lines = buf.split("\n");
@@ -290,7 +303,7 @@ export async function probeJayChat(): Promise<ProbeResult> {
   } catch {
     // 200 인데 JSON 이 아니면 토큰 수만 모른다 — 프로브는 성공이다.
   }
-  if (tokens) recordTokenUsage(tokens);
+  if (tokens) recordCost(costOf(llm.model, { input: tokens }));
   return { ok: true, model: llm.model, host: llm.host, tokens };
 }
 
@@ -324,15 +337,17 @@ function claudeTurns(messages: ChatMessage[]): Anthropic.MessageParam[] {
   return turns;
 }
 
-async function streamClaude(messages: ChatMessage[], lease?: Lease): Promise<ReadableStream<Uint8Array>> {
-  const model = claudeModel();
+async function streamClaude(messages: ChatMessage[], lease?: Lease, opts: StreamOpts = {}): Promise<ReadableStream<Uint8Array>> {
+  // 게이트가 모델을 내렸으면(§1.9 item 5) 그 모델로 부른다.
+  const model = opts.model || claudeModel();
+  const maxOut = opts.maxTokens ?? CLAUDE_MAX_TOKENS;
   let events: AsyncIterable<Anthropic.Beta.BetaRawMessageStreamEvent>;
   try {
     // `stream: true` 로 부르면 HTTP 오류가 여기서(스트림 시작 전에) 던져진다 — 그래야
     // 라우트가 502 를 돌려줄 수 있다. 스트림 도중에 터지면 방문자는 빈 말풍선만 본다.
     events = await claude().beta.messages.create({
       model,
-      max_tokens: CLAUDE_MAX_TOKENS,
+      max_tokens: maxOut,
       system: claudeSystem(messages),
       messages: claudeTurns(messages),
       output_config: { effort: "low" },
@@ -350,16 +365,20 @@ async function streamClaude(messages: ChatMessage[], lease?: Lease): Promise<Rea
   const encoder = new TextEncoder();
   return new ReadableStream<Uint8Array>({
     async start(controller) {
-      let tokens = 0;
+      // 항목별로 모은다. 전부 더해 버리면 캐시 읽기(입력의 1/10 값)가 제값보다 비싸게
+      // 계산되어 상한이 실제보다 빨리 닫힌다.
+      const usage = { input: 0, cacheWrite: 0, cacheRead: 0, output: 0 };
       try {
         for await (const ev of events) {
           if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") {
             controller.enqueue(encoder.encode(ev.delta.text));
           } else if (ev.type === "message_start") {
             const u = ev.message.usage;
-            tokens += (u.input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0);
+            usage.input += u.input_tokens ?? 0;
+            usage.cacheWrite += u.cache_creation_input_tokens ?? 0;
+            usage.cacheRead += u.cache_read_input_tokens ?? 0;
           } else if (ev.type === "message_delta") {
-            tokens += ev.usage.output_tokens ?? 0;
+            usage.output += ev.usage.output_tokens ?? 0;
             if (ev.delta.stop_reason === "refusal") {
               controller.enqueue(encoder.encode("\n\n(이 질문에는 답할 수 없습니다. / I can't answer that one.)"));
             }
@@ -369,8 +388,9 @@ async function streamClaude(messages: ChatMessage[], lease?: Lease): Promise<Rea
         await reportClaudeLimit(e);
         console.error("jay-chat: claude stream failed", e);
       } finally {
-        if (lease) lease.settle(tokens);
-        else if (tokens) recordTokenUsage(tokens);
+        const cost = costOf(model, usage);
+        if (lease) await lease.settle(cost); // 스트림을 닫기 전에 끝낸다 (위 주석)
+        else if (cost) recordCost(cost);
         controller.close();
       }
     },
@@ -392,7 +412,7 @@ async function probeClaude(): Promise<ProbeResult> {
       ...claudeFallbacks(model),
     });
     const tokens = (r.usage.input_tokens ?? 0) + (r.usage.output_tokens ?? 0);
-    if (tokens) recordTokenUsage(tokens);
+    if (tokens) recordCost(costOf(model, { input: tokens }));
     return { ok: true, model, host: "api.anthropic.com", tokens };
   } catch (e) {
     await reportClaudeLimit(e);

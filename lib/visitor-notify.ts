@@ -112,3 +112,13 @@ export function notifyJayChatDown(args: { host: string; model: string; status: n
 export function notifyDevnetDown(problem: string, statusUrl: string): Promise<void> {
   return send(`🐰 ⛓️ Rabbit — Jayverse Devnet health check failed\n${problem}\n${statusUrl}`);
 }
+
+// 지출 알림 (T1 §1.9 item 6, §1.10). 임계값마다 한 번씩만 — 같은 창에서 반복하면
+// 소음이 되고, 정작 봐야 할 한 건이 묻힌다. 중복 제거는 호출부(jay-chat-gate)가 한다.
+export function notifySpend(text: string, topPrefixes: Array<{ key: string; used: number }> = []): Promise<void> {
+  const top = topPrefixes.length
+    ? "\n상위 대역: " + topPrefixes.map((t) => `${t.key.split(":")[1]} $${t.used.toFixed(3)}`).join(", ")
+    : "";
+  return send(`🐰 ${text}${top}`);
+}
+

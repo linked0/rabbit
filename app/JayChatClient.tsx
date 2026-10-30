@@ -79,6 +79,13 @@ export default function JayChatClient({ modelLabel }: { modelLabel: string }) {
     }
   }
 
+  // 입장권을 미리 받아 둔다 (T1 §1.9 item 2). 첫 질문을 보낼 때 쿠키가 이미 있어야
+  // /api/jay-chat 이 403 으로 되돌리지 않는다. 실패해도 조용히 지나간다 — 비밀값이
+  // 없는 환경에서는 서버가 입장권 검사를 아예 켜지 않는다.
+  useEffect(() => {
+    fetch("/api/jay-chat/ticket", { credentials: "same-origin" }).catch(() => {});
+  }, []);
+
   useEffect(() => {
     const el = logRef.current;
     if (!el) return;
