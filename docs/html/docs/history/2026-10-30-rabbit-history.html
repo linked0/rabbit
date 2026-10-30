@@ -41,6 +41,7 @@
 <ul>
 <li><code>scripts/deploy.sh</code> carries the Discord keys to Cloud Run: <code>DISCORD_BOT_TOKEN</code> → Secret Manager <code>rabbit-discord-bot-token</code>; <code>DISCORD_PUBLIC_KEY</code> and <code>DISCORD_APPLICATION_ID</code> → plain env (<code>PUBLIC_ENV</code>)</li>
 <li><code>scripts/claude-stability-check.sh</code>: a one-off look at Jay Chat on Claude after the promo credit expires (health probe, 26 h of quota/rate errors, scheduler state, revision → report + Telegram)</li>
+<li><code>app/api/discord/interactions/route.ts</code> (T4 step 3): Discord&#39;s Ed25519 signature check, PING → PONG, a &quot;not answering yet&quot; reply to commands; the path is in <code>PUBLIC_PATHS</code></li>
 </ul>
 <h2 id="done">Done</h2>
 <ul>
@@ -56,6 +57,11 @@
 <strong>Reasoning:</strong> a session cron dies with the session, and a cloud routine has no gcloud access, so the check is a local script. The hourly Cloud Scheduler probe <code>rabbit-jay-chat-health</code> already sends a Telegram message on every quota, rate or down failure. This script adds one look back over the whole day (26 h, which covers the expiry at 09:00 KST on 11-05) and one summary.
 <strong>Change:</strong> <code>scripts/claude-stability-check.sh</code> runs the health POST (secret read from Secret Manager, never printed), <code>gcloud logging read</code> for errors and credit/quota/rate/402/429 lines, the scheduler state and the live revision. It writes <code>~/Library/Logs/rabbit-claude-check.md</code> and sends the summary to Telegram (<code>--no-send</code> skips that). The launchd job <code>com.jay.rabbit-claude-check</code> (11-06 10:07 KST) unloads itself after it runs. Installing the plist was blocked by the session&#39;s permission check, so jay installs it (command in the chat reply).
 <strong>Result:</strong> test run 13:47 KST: OK, <code>claude-sonnet-5-5</code>, 26 tokens, 0 error lines, scheduler ENABLED. The 13:39 deploy (<code>rabbit-00175-cfz</code>) created <code>rabbit-discord-bot-token</code>, and Cloud Run has all three Discord env names.</p>
+<h3 id="t4-step-3-the-discord-interactions-route">T4 step 3: the Discord interactions route</h3>
+<p><strong>Cause:</strong> jay saved <code>https://www.jaylabs.xyz/api/discord/interactions</code> in the Developer Portal and got &quot;인증 오류: interactions_endpoint_url: 지정한 인터랙션 엔드포인트 url을 인증할 수 없습니다&quot;, then said &quot;go&quot;. There was no route, and middleware answered 401 to Discord&#39;s verification PING.
+<strong>Reasoning:</strong> Discord saves the URL only if a signed PING gets <code>200 {&quot;type&quot;:1}</code> and a bad signature gets <code>401</code>, so this needs exactly the verification part of step 3. <code>/ask</code> needs the deferred reply plus a Cloud Tasks follow-up (step 4), so commands get an ephemeral &quot;not answering yet&quot; reply for now. The signature is checked with <code>node:crypto</code> (the 32-byte public key wrapped in its SPKI DER prefix), so there is no new dependency. A 5-minute timestamp window blocks replays.
+<strong>Change:</strong> new <code>app/api/discord/interactions/route.ts</code>; <code>/api/discord/interactions</code> added to <code>PUBLIC_PATHS</code> in <code>middleware.ts</code> (the signature is the guard).
+<strong>Result:</strong> with a generated test key, a signed PING returns 200 <code>{&quot;type&quot;:1}</code>. A bad signature, no signature, a tampered body and a 10-minute-old timestamp all return 401, and a signed command returns type 4 with flags 64. <code>tsc</code> is clean. On <code>next dev</code> an unsigned POST reaches the route (its own 401 body), not the login wall. Not deployed: jay runs <code>./scripts/deploy.sh</code>, then saves the URL in the portal.</p>
 
   </article>
 </div>
