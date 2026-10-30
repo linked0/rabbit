@@ -40,6 +40,7 @@
 <h2 id="added">Added</h2>
 <ul>
 <li><code>scripts/deploy.sh</code> carries the Discord keys to Cloud Run: <code>DISCORD_BOT_TOKEN</code> → Secret Manager <code>rabbit-discord-bot-token</code>; <code>DISCORD_PUBLIC_KEY</code> and <code>DISCORD_APPLICATION_ID</code> → plain env (<code>PUBLIC_ENV</code>)</li>
+<li><code>scripts/claude-stability-check.sh</code>: a one-off look at Jay Chat on Claude after the promo credit expires (health probe, 26 h of quota/rate errors, scheduler state, revision → report + Telegram)</li>
 </ul>
 <h2 id="done">Done</h2>
 <ul>
@@ -50,6 +51,11 @@
 <strong>Reasoning:</strong> <code>deploy.sh</code> already turns <code>.env</code> into Secret Manager versions (<code>upsert_secret</code>, a new version only when the value changes). Only the bot token is secret. The public key and application id are public values, so they go in <code>PUBLIC_ENV</code> like the Toss and thirdweb client keys and cost nothing in Secret Manager. Every line is guarded by <code>[ -n … ]</code>, so a deploy without the keys behaves as before.
 <strong>Change:</strong> <code>upsert_secret rabbit-discord-bot-token</code>, <code>DISCORD_BOT_TOKEN=rabbit-discord-bot-token:latest</code> in <code>SECRETS</code>, and two <code>PUBLIC_ENV</code> lines.
 <strong>Result:</strong> <code>bash -n</code> is clean, and a dry run with <code>.env</code> yields the secret mapping and both env names. Not deployed. No code reads the keys yet, and that comes with T4. jay confirmed the leaked bot token was already reset and the new one is in <code>.env</code>, so the next <code>./scripts/deploy.sh</code> uploads the new token.</p>
+<h3 id="jay-chat-check-for-2026-11-06-after-the-claude-promo-credit-expires">Jay Chat check for 2026-11-06, after the Claude promo credit expires</h3>
+<p><strong>Cause:</strong> jay: T1 has nothing big left except the $200 promo credit expiry (2026-11-05 UTC) and the usage rate limit; &quot;you can check the stableness of the chat at 6th November&quot;.
+<strong>Reasoning:</strong> a session cron dies with the session, and a cloud routine has no gcloud access, so the check is a local script. The hourly Cloud Scheduler probe <code>rabbit-jay-chat-health</code> already sends a Telegram message on every quota, rate or down failure. This script adds one look back over the whole day (26 h, which covers the expiry at 09:00 KST on 11-05) and one summary.
+<strong>Change:</strong> <code>scripts/claude-stability-check.sh</code> runs the health POST (secret read from Secret Manager, never printed), <code>gcloud logging read</code> for errors and credit/quota/rate/402/429 lines, the scheduler state and the live revision. It writes <code>~/Library/Logs/rabbit-claude-check.md</code> and sends the summary to Telegram (<code>--no-send</code> skips that). The launchd job <code>com.jay.rabbit-claude-check</code> (11-06 10:07 KST) unloads itself after it runs. Installing the plist was blocked by the session&#39;s permission check, so jay installs it (command in the chat reply).
+<strong>Result:</strong> test run 13:47 KST: OK, <code>claude-sonnet-5-5</code>, 26 tokens, 0 error lines, scheduler ENABLED. The 13:39 deploy (<code>rabbit-00175-cfz</code>) created <code>rabbit-discord-bot-token</code>, and Cloud Run has all three Discord env names.</p>
 
   </article>
 </div>
