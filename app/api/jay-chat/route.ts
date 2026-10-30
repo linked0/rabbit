@@ -1,5 +1,5 @@
 import { buildAboutMeSystemMessage } from "@/lib/about-me";
-import { streamJayChat, budgetExhausted, burstLimited, type ChatMessage } from "@/lib/jay-chat";
+import { streamJayChat, acquire, burstLimited, Overloaded, OverBudget, type ChatMessage } from "@/lib/jay-chat";
 import { notifyChatStart, notifyChatMilestone } from "@/lib/visitor-notify";
 
 // Public, keyless "About Jay" persona endpoint — no login required (see middleware.ts
@@ -20,17 +20,36 @@ const MAX_MESSAGE_CHARS = 2000; // caps a single USER message's size
 // 어시스턴트 히스토리는 거부 대신 잘라서 통과 — 정상 답변은 이 안에 다 들어오고
 // (1500토큰 ≈ 한국어 ~2000-3000자), 조작된 초대형 페이로드만 비용 없이 무력화된다.
 const MAX_ASSISTANT_CHARS = 8000;
+// 업스트림으로 나가는 **꼬리 전체**의 상한 (T1 §1.8, 2026-10-30). 지금까지 상한은 메시지
+// 하나씩에만 있어서(user 2,000자 · assistant 8,000자), 꼬리 6개를 꽉 채우면 한 요청이
+// 48,000자 ≈ 20k 토큰까지 갔다. 요청 하나의 최악 비용을 눌러야 예약(acquire)도 정확해진다.
+const MAX_TOTAL_CHARS = 12000;
+
+// X-Forwarded-For 는 프록시가 **뒤에 덧붙인다**. 그래서 맨 앞 값은 호출자가 마음대로 쓸 수
+// 있고, 맨 뒤 값만 우리 앞단이 쓴 값이다. 예전엔 [0] 을 키로 써서, 매 요청 가짜 IP 를 넣는
+// 스크립트는 분당 제한에 **한 번도** 걸리지 않았다 (T1 §1.8).
+// 앞에 로드밸런서를 두게 되면 신뢰 홉이 하나 늘어난다 — 그때 TRUSTED_PROXY_HOPS=1.
+const TRUSTED_PROXY_HOPS = Number(process.env.TRUSTED_PROXY_HOPS || 0);
+let loggedHops = false;
+
+function clientIp(req: Request): string {
+  const parts = (req.headers.get("x-forwarded-for") ?? "")
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+  if (!loggedHops) {
+    // 배포 뒤 한 번만, **IP 는 빼고** 홉 개수만 남긴다 — 신뢰 홉 설정이 맞는지 확인용.
+    loggedHops = true;
+    console.log(`jay-chat: x-forwarded-for hops=${parts.length} trusted=${TRUSTED_PROXY_HOPS}`);
+  }
+  if (!parts.length) return "unknown";
+  return parts[Math.max(0, parts.length - 1 - TRUSTED_PROXY_HOPS)] || "unknown";
+}
 
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = clientIp(req);
   if (burstLimited(ip)) {
     return Response.json({ error: "너무 빠릅니다 — 잠시 후 다시 시도해주세요." }, { status: 429 });
-  }
-  if (budgetExhausted()) {
-    return Response.json(
-      { error: "이번 시간의 채팅 한도에 도달했습니다 — 잠시 후 다시 시도해주세요." },
-      { status: 429 }
-    );
   }
 
   // 검증 실패는 원인별로 다른 메시지를 준다 — 예전엔 전부 "messages 배열이 필요합니다"로
@@ -86,14 +105,45 @@ export async function POST(req: Request) {
       ? { ...m, content: m.content.slice(0, MAX_ASSISTANT_CHARS) }
       : m
   );
-  const outgoing = [buildAboutMeSystemMessage(lastUser?.content ?? ""), ...recent];
+  // 꼬리 전체가 MAX_TOTAL_CHARS 를 넘으면 **오래된 쪽부터** 떨군다. 마지막 질문은 언제나
+  // 남는다 — 그게 없으면 답할 대상이 사라진다.
+  const bounded: ChatMessage[] = [];
+  let total = 0;
+  for (let i = recent.length - 1; i >= 0; i--) {
+    const len = recent[i].content.length;
+    if (bounded.length && total + len > MAX_TOTAL_CHARS) break;
+    bounded.unshift(recent[i]);
+    total += len;
+  }
+  const outgoing = [buildAboutMeSystemMessage(lastUser?.content ?? ""), ...bounded];
+
+  // 예산·동시성은 **호출 직전에, 보낼 내용이 확정된 뒤** 잡는다 (T1 §1.8).
+  let lease;
+  try {
+    lease = acquire(outgoing);
+  } catch (e) {
+    if (e instanceof Overloaded) {
+      return Response.json(
+        { error: "지금 처리 중인 요청이 많습니다 — 잠시 후 다시 시도해주세요." },
+        { status: 429 }
+      );
+    }
+    if (e instanceof OverBudget) {
+      return Response.json(
+        { error: "이번 시간의 채팅 한도에 도달했습니다 — 잠시 후 다시 시도해주세요." },
+        { status: 429 }
+      );
+    }
+    throw e;
+  }
 
   try {
-    const stream = await streamJayChat(outgoing);
+    const stream = await streamJayChat(outgoing, lease);
     return new Response(stream, {
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
   } catch (e) {
+    lease.settle(); // 업스트림이 이미 과금했을 수 있다 — 추정치로 물고 자리를 돌려준다
     return Response.json({ error: String(e) }, { status: 502 });
   }
 }
