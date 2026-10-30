@@ -49,7 +49,7 @@
 <p><strong>Cause:</strong> jay (&quot;Check #5001 … tell me the step for the cloud&quot;, then &quot;go&quot;): the three Discord keys were only in the local <code>.env</code>. #5001&#39;s workflow rule says the cloud reads Secret Manager instead.
 <strong>Reasoning:</strong> <code>deploy.sh</code> already turns <code>.env</code> into Secret Manager versions (<code>upsert_secret</code>, a new version only when the value changes). Only the bot token is secret. The public key and application id are public values, so they go in <code>PUBLIC_ENV</code> like the Toss and thirdweb client keys and cost nothing in Secret Manager. Every line is guarded by <code>[ -n … ]</code>, so a deploy without the keys behaves as before.
 <strong>Change:</strong> <code>upsert_secret rabbit-discord-bot-token</code>, <code>DISCORD_BOT_TOKEN=rabbit-discord-bot-token:latest</code> in <code>SECRETS</code>, and two <code>PUBLIC_ENV</code> lines.
-<strong>Result:</strong> <code>bash -n</code> is clean, and a dry run with <code>.env</code> yields the secret mapping and both env names. Not deployed. No code reads the keys yet, and that comes with T4. Reset the leaked bot token before the next <code>./scripts/deploy.sh</code>, or the old token becomes the first secret version.</p>
+<strong>Result:</strong> <code>bash -n</code> is clean, and a dry run with <code>.env</code> yields the secret mapping and both env names. Not deployed. No code reads the keys yet, and that comes with T4. jay confirmed the leaked bot token was already reset and the new one is in <code>.env</code>, so the next <code>./scripts/deploy.sh</code> uploads the new token.</p>
 
   </article>
 </div>
