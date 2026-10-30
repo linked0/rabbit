@@ -978,6 +978,50 @@ export const POC_CARDS: DemoCard[] = [
       "순수 evaluate(config) → Matrix 엔진이 (행동 × 액터) 셀을 모두 채우고 심각도를 계산한다. 절대 근거 없는 판정을 내지 않는다 — 설정이 결정하지 못하는 것은 'unknown / not-verified'다(확신에 찬 오답 셀이 빈 셀보다 나쁘다). 공급자별 파서가 벤더의 비밀 아닌 export 를 표준 형태로 매핑하고, 못 읽은 필드는 경고와 함께 벤더 기본값으로 폴백한다. 전부 클라이언트 사이드 — 키·네트워크 없음.",
   },
   {
+    // 가짜 편지 (jay, 2026-10-29): Patlan et al. (2025) 의 ElizaOS 메모리 주입 사례를 jay 의
+    // X 계정(@kindofblue91)을 주인으로 다시 짠 시뮬레이션. 출처는 alice
+    // pocs-agent-payments-korea-control-plane §1 의 "The fake letter" 항목. 모델 호출·서명·
+    // 트랜잭션이 없는 순수 클라이언트 페이지다 — 공개 페이지를 실제 인젝션 실험대로 쓰게
+    // 두지 않고, API 크레딧도 쓰지 않는다.
+    key: "memory-poison",
+    title: "The fake letter — poisoned agent memory redirects a transfer",
+    titleKo: "가짜 편지 — 오염된 에이전트 메모리가 송금을 돌린다",
+    description:
+      "A forged \"past conversation\" posted on Discord lands in an agent's shared memory; the owner's later X request pays the attacker, and five validators approve it. Step through it, then switch the defense on.",
+    descriptionKo:
+      "Discord 에 올린 위조 '지난 대화'가 에이전트의 공유 메모리에 들어가고, 주인이 나중에 X 로 한 송금 요청이 공격자에게 갑니다 — 검증자 다섯이 승인한 채로. 단계별로 눌러 본 뒤 방어를 켜 보세요.",
+    status: "live",
+    date: "2026-10-29",
+    updated: "2026-10-29",
+    href: "/live/memory-poison",
+    howTo:
+      "Press ① Poison memory → ② Tweet request (@kindofblue91) → ③ Agent plans → ④ Validators vote → ⑤ Steal, and watch the money move. Reset, tick the defense, and run it again. Skip ① for a clean transfer. Scripted: no model, no keys, no chain.",
+    howToKo:
+      "① 메모리 오염 → ② 트윗 요청(@kindofblue91) → ③ 에이전트 계획 → ④ 검증자 투표 → ⑤ 탈취 실행 순으로 누르며 돈이 움직이는 것을 보세요. 초기화하고 방어를 켠 뒤 다시 해 보세요. ①을 건너뛰면 정상 송금입니다. 스크립트 시뮬레이션 — 모델·키·체인 없음.",
+    purpose:
+      "Most agent-security talk is about the model's judgement. Patlan et al. (2025) showed a cheaper path: an ElizaOS agent keeps one memory log for every platform, so an attacker on Discord can post text that is later read back as something the owner said, and a transfer the owner requested on X goes to the attacker (on Sepolia, a research demo). The demo makes two claims visible. Memory is untrusted input, and storing it makes an indirect prompt injection persistent. And validators add nothing if they all check the same property, the agent's own signature, which the poisoned agent produces honestly.",
+    purposeKo:
+      "에이전트 보안 논의는 대개 모델의 판단을 다룹니다. Patlan 외(2025)는 더 싼 길을 보였습니다. ElizaOS 에이전트는 모든 플랫폼에 메모리 로그 하나를 쓰기 때문에, Discord 의 공격자가 올린 글이 나중에 '주인이 한 말'로 다시 읽히고, 주인이 X 로 요청한 송금이 공격자에게 갑니다(Sepolia, 연구 데모). 이 데모는 두 가지를 눈에 보이게 합니다. 메모리는 신뢰할 수 없는 입력이고, 저장되는 순간 간접 프롬프트 인젝션이 지속성을 얻습니다. 그리고 검증자들이 모두 같은 성질, 즉 에이전트 자신의 서명만 본다면 아무것도 더하지 못합니다. 오염된 에이전트도 그 서명은 정직하게 만들어 내니까요.",
+    howItWorks:
+      "A client-side state machine with five steps; no LLM is called. ① writes a forged line into the shared memory with no provenance. ② is the owner's request on X, \"send 10 jUSD to Alice\". ③ the agent resolves the recipient from memory, so the poisoned run plans 0xBAD. ④ five validators vote with a quorum of three. In the naive mode each checks the agent's signature and the amount cap, both true, so the vote is 5/5. In the defended mode each re-derives the recipient from the owner's signed request and compares it with tx.to; memory is never an input, so the poisoned plan gets 0/5. ⑤ moves the money only on quorum. The real fix it points at is intent binding: the request the human signed, not the agent's context, defines what may be paid.",
+    howItWorksKo:
+      "다섯 단계짜리 클라이언트 상태 기계이고 LLM 은 호출하지 않습니다. ①은 출처 표시 없이 위조 줄 하나를 공유 메모리에 씁니다. ②는 주인의 X 요청 \"Alice 에게 10 jUSD 보내 줘\"입니다. ③에서 에이전트가 메모리로 수신자를 정하므로 오염된 경우 0xBAD 로 계획합니다. ④ 검증자 다섯이 쿼럼 3으로 투표합니다. 기본 모드에서는 각자 에이전트 서명과 금액 한도를 보는데 둘 다 참이라 5/5 입니다. 방어 모드에서는 각자 주인이 서명한 요청에서 수신자를 다시 꺼내 tx.to 와 비교합니다. 메모리는 입력이 아니므로 오염된 계획은 0/5 입니다. ⑤는 쿼럼일 때만 돈을 옮깁니다. 가리키는 실제 해법은 의도 바인딩입니다. 무엇을 지불해도 되는지는 에이전트의 문맥이 아니라 사람이 서명한 요청이 정합니다.",
+    diagrams: [
+      {
+        title: "Naive vs defended — where the recipient comes from",
+        titleKo: "기본 vs 방어 — 수신자가 어디서 오나",
+        src: `flowchart LR
+    A["Attacker on Discord<br/>forged 'past conversation'"] --> M["Shared memory<br/>no provenance"]
+    O["@kindofblue91 on X<br/>send 10 jUSD to Alice"] --> G["Agent"]
+    M --> G
+    G -->|"tx.to = 0xBAD, signed by the agent"| V{"5 validators"}
+    V -->|"naive: signature + cap → 5/5"| X["Paid to attacker"]
+    O -.->|"defended: recipient from the signed request"| V
+    V -->|"defended: Alice ≠ 0xBAD → 0/5"| S["Money stays"]`,
+      },
+    ],
+  },
+  {
     // 서비스 탐방 42/113에서 넘어온 카드 (jay, 2026-08-11). 다른 카드와 성격이 다르다 —
     // "이 서비스를 쓸까"가 아니라 "관리형이 죽을 때 무엇이 남는가"를 배우는 항목이고,
     // 마침 agent 카드가 손으로 짜고 있는 배관(논스·가스·재시도)과 정확히 같은 층이다.
