@@ -88,6 +88,8 @@ upsert_secret rabbit-toss-secret   "${TOSS_SECRET_KEY:-}"
 # ANTHROPIC_API_KEY 는 노트북용 rabbit-local 키(30일 만료)라서, 그게 운영 시크릿을
 # 덮으면 운영이 jay 의 노트북 키로 조용히 돌다가 만료일에 죽는다.
 upsert_secret rabbit-anthropic-key "${CLOUD_ANTHROPIC_API_KEY:-}"
+# Discord 봇 (T4, jay 2026-10-30). 토큰만 시크릿 — 공개 키와 애플리케이션 id 는 아래 PUBLIC_ENV.
+upsert_secret rabbit-discord-bot-token "${DISCORD_BOT_TOKEN:-}"
 
 # Jay Chat 한도 점검 프로브의 공유 비밀 (jay, 2026-10-09). .env 에 두지 않고 처음 한 번만
 # 여기서 만든다 — 값은 Cloud Run(env)과 Cloud Scheduler(헤더) 사이에서만 오가고 사람은 몰라도
@@ -122,6 +124,7 @@ fi
 [ -n "${TOSS_SECRET_KEY:-}" ] && SECRETS="$SECRETS,TOSS_SECRET_KEY=rabbit-toss-secret:latest"
 SECRETS="$SECRETS,HEALTH_CHECK_SECRET=rabbit-health-secret:latest"
 [ -n "${CLOUD_ANTHROPIC_API_KEY:-}" ] && SECRETS="$SECRETS,ANTHROPIC_API_KEY=rabbit-anthropic-key:latest"
+[ -n "${DISCORD_BOT_TOKEN:-}" ] && SECRETS="$SECRETS,DISCORD_BOT_TOKEN=rabbit-discord-bot-token:latest"
 
 # 공개 클라이언트 키는 시크릿이 아니라 평범한 env 로 넘긴다 — 어차피 브라우저로 전달되는 값이다.
 # NEXT_PUBLIC_* 를 쓰지 않는 이유: 그 접두어는 빌드 시점에 코드에 박히는데, Cloud Run 은 소스에서
@@ -132,6 +135,9 @@ PUBLIC_ENV=""
 [ -n "${CLOUD_VEREX_API_URL:-}" ] && PUBLIC_ENV="${PUBLIC_ENV},VEREX_API_URL=${CLOUD_VEREX_API_URL}"
 [ -n "${NEXT_PUBLIC_TOSS_CLIENT_KEY:-}" ] && PUBLIC_ENV="${PUBLIC_ENV},TOSS_CLIENT_KEY=${NEXT_PUBLIC_TOSS_CLIENT_KEY}"
 [ -n "${NEXT_PUBLIC_THIRDWEB_CLIENT_ID:-}" ] && PUBLIC_ENV="${PUBLIC_ENV},THIRDWEB_CLIENT_ID=${NEXT_PUBLIC_THIRDWEB_CLIENT_ID}"
+# Discord 상호작용 서명 검증용 공개 키와 애플리케이션 id (공개 값, T4).
+[ -n "${DISCORD_PUBLIC_KEY:-}" ] && PUBLIC_ENV="${PUBLIC_ENV},DISCORD_PUBLIC_KEY=${DISCORD_PUBLIC_KEY}"
+[ -n "${DISCORD_APPLICATION_ID:-}" ] && PUBLIC_ENV="${PUBLIC_ENV},DISCORD_APPLICATION_ID=${DISCORD_APPLICATION_ID}"
 
 # LLM 제공자 — 키는 시크릿, **엔드포인트와 모델은 비밀이 아니라 평범한 env** 다
 # (2026-08-28). 이 둘을 빠뜨리면 배포는 성공하는데 운영이 조용히 깨진다:
