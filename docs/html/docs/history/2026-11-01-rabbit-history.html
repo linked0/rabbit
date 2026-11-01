@@ -45,6 +45,7 @@
 <h2 id="done">Done</h2>
 <ul>
 <li>/chains Where it runs → every resource in both projects, one row each, in three groups (Jayverse, Verex, outside), stopped ones included</li>
+<li><code>scripts/prune-secret-versions.sh</code>: destroys every rabbit-* secret version except the newest enabled one (dry run by default)</li>
 <li><code>scripts/deploy.sh</code> deploys <code>rabbit</code> as <code>rabbit-run</code> (<code>--service-account</code>). Secrets are granted to that account, not the default one.</li>
 <li><code>scripts/deploy.env.example</code>: <code>REGION</code> corrected to <code>asia-northeast1</code> and the Cloud SQL example to <code>rabbit-db</code>; the template still pointed at Seoul from before the July move.</li>
 </ul>
@@ -69,6 +70,13 @@
 <li><strong>Change:</strong> <code>lib/cloud.ts</code> <code>GROUPS</code> + one <code>PLACEMENTS</code> row per resource, with <code>check: { fixed: &quot;on&quot; | &quot;warm&quot; | &quot;sleeps&quot; | &quot;stopped&quot; }</code>. In the page: group header rows, a hollow dot for stopped, a dimmed row for anything off, and left-aligned cells (<code>.gf-where</code> in <code>globals.css</code>).</li>
 <li><strong>Result:</strong> checked through jay&#39;s own dev server (:3100): 13 rows in 3 groups, the staging DB and the local Anvil hollow. Across both projects, 4 things are always on: the devnet VM, two databases and Verex&#39;s warm API. At most 12 run at once.</li>
 <li><strong>Gotcha:</strong> my earlier second <code>next dev -p 3011</code> in the same folder shared <code>.next</code> and broke jay&#39;s :3100 page (<code>ChunkLoadError … VerexBall_tsx</code>). The fix is restarting his <code>pnpm dev</code>. The rule is now in memory: one dev server per repo.</li>
+</ul>
+<h3 id="cost-plan-october-bill-and-the-secret-versions-that-were-never-destroyed">Cost plan: October bill, and the secret versions that were never destroyed</h3>
+<ul>
+<li><strong>Cause:</strong> jay asked whether merging Verex into Rabbit would cut costs, and showed October&#39;s bill: ₩289,602 (Rabbit ₩180,229, Verex ₩109,373).</li>
+<li><strong>Reasoning:</strong> merging projects saves ₩0, because billing is per resource. Three lines are 80% of the bill, each with a found cause. <strong>Compute Engine ₩91K:</strong> the devnet VM, raised to <code>e2-standard-2</code> after the 10-10 OOM. <strong>Verex Cloud Run ₩75K:</strong> <code>verex-api-prod</code> with <code>min-instances 1</code> + <code>--no-cpu-throttling</code> for its in-process settlement worker (07-29). <strong>Secret Manager ₩68K:</strong> ~960 versions still enabled, up to 101 per secret. <code>deploy.sh</code> said the extra versions were destroyed on 10-09; they never were, although no new ones appeared after that day. Plan, by saving: (1) prune versions ~₩66K; (2) Verex worker → Cloud Scheduler drain + min 0 ~₩70K; (3) VM → e2-medium ~₩35K; (4) one Cloud SQL instance for both <del>₩28K; keep the projects separate. jay asked about (3): measured on the VM, anvil holds <strong>2.9 GB</strong> six days after the weekly trim (5.9 GB cap, 8 GB VM), so on e2-medium (4 GB) the OOM would be back. (3) is off unless the trim runs daily and memory is measured again. Moving everything to Seoul later needs an external HTTPS load balancer (</del>$18/mo), because Firebase Hosting strips Auth.js cookies (07-27). That roughly cancels the DB merge&#39;s saving, so do it only for a reason (real users / privacy law, the DB merge).</li>
+<li><strong>Change:</strong> <code>scripts/prune-secret-versions.sh</code> (dry run: 846 versions, ~$51/mo); the <code>deploy.sh</code> comment corrected. Destroying was blocked for me (&quot;secret-store writes&quot;), so jay runs <code>--apply</code>.</li>
+<li><strong>Result:</strong> pending jay&#39;s run. The least-privilege move is complete: jay removed Editor at 16:12 KST, and his 16:13 deploy built and deployed without it (<code>rabbit-00187</code>, <code>rabbit-run</code>). The live /chains panel shows the database as up.</li>
 </ul>
 
   </article>

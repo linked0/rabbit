@@ -47,7 +47,8 @@ RUN_SA="${RUN_SA:-rabbit-run@${PROJECT_ID}.iam.gserviceaccount.com}"
 # 예전엔 배포마다 무조건 새 버전을 추가했다. Secret Manager 는 **활성 버전 하나하나**에
 # 월 $0.06 을 받고, 비활성(disabled) 버전도 똑같이 받는다 — 2026-10-09 에 12개 시크릿이
 # 버전 864개(~$52/월, 하루 ~₩2.2K)로 불어나 청구서에서 Cloud Run 보다 큰 줄이 돼 있었다.
-# 그날 latest 만 남기고 나머지는 destroy 했다. 같은 값이면 버전을 만들지 않는다 (jay).
+# 그날 latest 만 남기고 destroy 했다고 적었지만 실제로는 남아 있었다(2026-11-01 확인: 846개, 10월 ₩68K) —
+# 정리는 scripts/prune-secret-versions.sh --apply. 같은 값이면 버전을 만들지 않는다 (jay).
 upsert_secret() {
   local name=$1 value=$2
   if [ -z "$value" ]; then
