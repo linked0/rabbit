@@ -9,6 +9,7 @@ import {
   CHAINS, CAPABILITIES, chainDef, readChains, IN_CLOUD,
   type ChainDef, type ChainKey, type ChainReading, type Cell,
 } from "@/lib/chains";
+import { PLACEMENTS, pingDatabase } from "@/lib/cloud";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 import type { Address } from "viem";
@@ -134,6 +135,7 @@ export default async function ChainsPage() {
       : Promise.resolve({ book: {} as Record<string, Address>, count: null as number | null }),
     Promise.all(SERVICES.map((svc) => probe(svc.url))),
   ]);
+  const dbUp = await pingDatabase();
   const found = Object.keys(book).length;
   const devnetRead = readings.devnet;
 
@@ -292,6 +294,67 @@ export default async function ChainsPage() {
             );
           })}
         </div>
+
+        {/* ---- where it runs (jay, 2026-11-01) — provider and city only; see lib/cloud.ts for what is left out ---- */}
+        <Panel title={pick(lang, "어디서 돌아가나", "Where it runs")}>
+          <table className="gf-table">
+            <thead>
+              <tr>
+                <th>{pick(lang, "구성 요소", "Part")}</th>
+                <th>{pick(lang, "실행 환경", "Runs on")}</th>
+                <th>{pick(lang, "지역", "Where")}</th>
+                <th>{pick(lang, "가동 방식", "Running")}</th>
+                <th>{pick(lang, "지금", "Now")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PLACEMENTS.map((pl) => {
+                // "up" | "down" | "n/a" (not checkable from where this page renders) and a short label
+                let state: "up" | "down" | "na" = "na";
+                let label = "";
+                const ck = pl.check;
+                if ("self" in ck) {
+                  state = "up";
+                  label = IN_CLOUD ? pick(lang, "이 페이지를 보내는 중", "serving this page") : pick(lang, "로컬 실행 중", "running locally");
+                } else if ("urls" in ck) {
+                  const ups = ck.urls.filter((u) => liveness[SERVICES.findIndex((s) => s.url === u)] === "up").length;
+                  state = ups === ck.urls.length ? "up" : "down";
+                  label = `${ups}/${ck.urls.length} ${pick(lang, "응답", "up")}`;
+                } else if ("db" in ck) {
+                  if (dbUp === null) label = pick(lang, "라이브 사이트에서만 확인", "checked on the live site only");
+                  else { state = dbUp ? "up" : "down"; label = dbUp ? pick(lang, "응답함", "up") : pick(lang, "무응답", "no answer"); }
+                } else {
+                  const r = readings[ck.chain];
+                  if (r.skipped) label = pick(lang, "여기서는 확인 불가", "not reachable from here");
+                  else if (r.reachable) { state = "up"; label = pick(lang, "블록 생성 중", "making blocks"); }
+                  // a local fork that is not running is off, not broken — grey, like a skipped check
+                  else if (ck.chain === "local") label = pick(lang, "꺼져 있음", "off");
+                  else { state = "down"; label = pick(lang, "무응답", "no answer"); }
+                }
+                const dot = state === "up" ? "#17803d" : state === "down" ? "#b42318" : "rgba(128,128,128,0.55)";
+                return (
+                  <tr key={pl.key}>
+                    <td style={{ fontWeight: 600 }}>{pick(lang, pl.partKo, pl.part)}</td>
+                    <td>{pick(lang, pl.runsOnKo, pl.runsOn)}</td>
+                    <td>{pick(lang, pl.whereKo, pl.where)}</td>
+                    <td>{pick(lang, pl.runningKo, pl.running)}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      <span className="gf-dot" style={{ background: dot }} />
+                      {label}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <p className="gf-note">
+            {pick(
+              lang,
+              "웹 서비스는 도쿄, 데브넷은 서울입니다. 서울에서는 Cloud Run 에 커스텀 도메인을 붙일 수 없어서 웹 서비스가 2026년 7월 도쿄로 옮겼고, 도메인 매핑이 필요 없는 데브넷 VM 은 서울에 있습니다. Cloud Run 서비스는 각각 컨테이너 1개로 상한이 걸려 있습니다. 프로젝트 ID, IP, 계정 이름, 비용은 일부러 싣지 않습니다.",
+              "The web services are in Tokyo and the devnet is in Seoul. Cloud Run cannot attach a custom domain in Seoul, so the web services moved to Tokyo in July 2026; the devnet VM needs no domain mapping and stays in Seoul. Each Cloud Run service is capped at one container. Project ids, IPs, account names and billing are left off on purpose.",
+            )}
+          </p>
+        </Panel>
 
         {/* ---- recent blocks — 맨 위 (jay, 2026-09-15). 이 페이지에 와서 가장 먼저
              확인하는 것이 "지금 돌고 있나"이고, 그 답은 블록이 늘어나는 것이다. ---- */}

@@ -35,9 +35,13 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
   artifactregistry.googleapis.com secretmanager.googleapis.com \
   cloudscheduler.googleapis.com --project "$PROJECT_ID"
 
-# Cloud Run 리비전이 사용하는 기본 컴퓨트 서비스 계정 — 시크릿 읽기 권한 부여 대상
+# Cloud Run 리비전의 실행 계정 — 시크릿 읽기 권한 부여 대상.
+# 2026-11-01 (jay, "go"): 기본 컴퓨트 계정(프로젝트 전체 roles/editor)에서 전용 계정 rabbit-run 으로
+# 옮겼다. 이 계정은 자기 시크릿 읽기 + Cloud SQL client 만 갖는다(최소 권한). 공개 페이지에 버그가
+# 있어 누가 메타데이터 서버 토큰을 얻어도 프로젝트 전체가 아니라 이 둘에만 닿는다.
+# 계정 생성·권한 부여는 scripts/apply-least-privilege.sh (한 번, jay 가 실행).
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
-RUN_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+RUN_SA="${RUN_SA:-rabbit-run@${PROJECT_ID}.iam.gserviceaccount.com}"
 
 # 시크릿 upsert — 값이 바뀌었을 때만 새 버전 추가, 없으면 생성.
 # 예전엔 배포마다 무조건 새 버전을 추가했다. Secret Manager 는 **활성 버전 하나하나**에
@@ -179,6 +183,7 @@ gcloud run deploy "$SERVICE" \
   --project "$PROJECT_ID" \
   --region "$REGION" \
   --allow-unauthenticated \
+  --service-account "$RUN_SA" \
   --max-instances 1 \
   --set-env-vars "APP_MODE=cloud,SESSION_MAX_AGE=${SESSION_MAX_AGE:-3600},ALLOWED_EMAILS=${ALLOWED_EMAILS:-},HL_ACCOUNT_ADDRESS=${HL_ACCOUNT_ADDRESS:-},TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-},JAY_CHAT_HOURLY_TOKEN_BUDGET=${JAY_CHAT_HOURLY_TOKEN_BUDGET:-},JAY_CHAT_MAX_IN_FLIGHT=${JAY_CHAT_MAX_IN_FLIGHT:-},JAY_CHAT_LEASE_TIMEOUT_MS=${JAY_CHAT_LEASE_TIMEOUT_MS:-},TRUSTED_PROXY_HOPS=${TRUSTED_PROXY_HOPS:-},JAY_CHAT_CAP_WEEK=${JAY_CHAT_CAP_WEEK:-},JAY_CHAT_CAP_DAY=${JAY_CHAT_CAP_DAY:-},JAY_CHAT_CAP_HOUR=${JAY_CHAT_CAP_HOUR:-},JAY_CHAT_CAP_VISITOR_DAY=${JAY_CHAT_CAP_VISITOR_DAY:-},JAY_CHAT_CAP_RESERVED_DAY=${JAY_CHAT_CAP_RESERVED_DAY:-},JAY_CHAT_CHEAP_MODEL=${JAY_CHAT_CHEAP_MODEL:-},JAY_CHAT_DENY_PREFIXES=${JAY_CHAT_DENY_PREFIXES:-}${AI_ENV}${PRISMA_ENV}${MENU_ENV}${PUBLIC_ENV}" \
   --set-secrets "$SECRETS"
