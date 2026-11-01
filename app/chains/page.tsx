@@ -9,7 +9,7 @@ import {
   CHAINS, CAPABILITIES, chainDef, readChains, IN_CLOUD,
   type ChainDef, type ChainKey, type ChainReading, type Cell,
 } from "@/lib/chains";
-import { PLACEMENTS, pingDatabase } from "@/lib/cloud";
+import { GROUPS, PLACEMENTS, pingDatabase, type Placement } from "@/lib/cloud";
 import { getLang } from "@/lib/lang";
 import { pick } from "@/lib/i18n";
 import type { Address } from "viem";
@@ -297,7 +297,7 @@ export default async function ChainsPage() {
 
         {/* ---- where it runs (jay, 2026-11-01) — provider and city only; see lib/cloud.ts for what is left out ---- */}
         <Panel title={pick(lang, "어디서 돌아가나", "Where it runs")}>
-          <table className="gf-table">
+          <table className="gf-table gf-where">
             <thead>
               <tr>
                 <th>{pick(lang, "구성 요소", "Part")}</th>
@@ -308,50 +308,63 @@ export default async function ChainsPage() {
               </tr>
             </thead>
             <tbody>
-              {PLACEMENTS.map((pl) => {
-                // "up" | "down" | "n/a" (not checkable from where this page renders) and a short label
-                let state: "up" | "down" | "na" = "na";
-                let label = "";
-                const ck = pl.check;
-                if ("self" in ck) {
-                  state = "up";
-                  label = IN_CLOUD ? pick(lang, "이 페이지를 보내는 중", "serving this page") : pick(lang, "로컬 실행 중", "running locally");
-                } else if ("urls" in ck) {
-                  const ups = ck.urls.filter((u) => liveness[SERVICES.findIndex((s) => s.url === u)] === "up").length;
-                  state = ups === ck.urls.length ? "up" : "down";
-                  label = `${ups}/${ck.urls.length} ${pick(lang, "응답", "up")}`;
-                } else if ("db" in ck) {
-                  if (dbUp === null) label = pick(lang, "라이브 사이트에서만 확인", "checked on the live site only");
-                  else { state = dbUp ? "up" : "down"; label = dbUp ? pick(lang, "응답함", "up") : pick(lang, "무응답", "no answer"); }
-                } else {
-                  const r = readings[ck.chain];
-                  if (r.skipped) label = pick(lang, "여기서는 확인 불가", "not reachable from here");
-                  else if (r.reachable) { state = "up"; label = pick(lang, "블록 생성 중", "making blocks"); }
-                  // a local fork that is not running is off, not broken — grey, like a skipped check
-                  else if (ck.chain === "local") label = pick(lang, "꺼져 있음", "off");
-                  else { state = "down"; label = pick(lang, "무응답", "no answer"); }
-                }
-                const dot = state === "up" ? "#17803d" : state === "down" ? "#b42318" : "rgba(128,128,128,0.55)";
-                return (
-                  <tr key={pl.key}>
-                    <td style={{ fontWeight: 600 }}>{pick(lang, pl.partKo, pl.part)}</td>
-                    <td>{pick(lang, pl.runsOnKo, pl.runsOn)}</td>
-                    <td>{pick(lang, pl.whereKo, pl.where)}</td>
-                    <td>{pick(lang, pl.runningKo, pl.running)}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>
-                      <span className="gf-dot" style={{ background: dot }} />
-                      {label}
-                    </td>
-                  </tr>
-                );
-              })}
+              {(Object.keys(GROUPS) as Placement["group"][]).flatMap((g) => [
+                <tr key={`g-${g}`} className="gf-where-group">
+                  <td colSpan={5}>{pick(lang, GROUPS[g].titleKo, GROUPS[g].title)}</td>
+                </tr>,
+                ...PLACEMENTS.filter((pl) => pl.group === g).map((pl) => {
+                  // up = checked and answering, down = checked and silent, na = not checked from here, off = known stopped
+                  let state: "up" | "down" | "na" | "off" = "na";
+                  let label = "";
+                  const ck = pl.check;
+                  if ("self" in ck) {
+                    state = "up";
+                    label = IN_CLOUD ? pick(lang, "이 페이지를 보내는 중", "serving this page") : pick(lang, "로컬 실행 중", "running locally");
+                  } else if ("urls" in ck) {
+                    const ups = ck.urls.filter((u) => liveness[SERVICES.findIndex((s) => s.url === u)] === "up").length;
+                    state = ups === ck.urls.length ? "up" : "down";
+                    label = ups === ck.urls.length ? pick(lang, "응답함", "up") : pick(lang, "무응답", "no answer");
+                  } else if ("db" in ck) {
+                    if (dbUp === null) label = pick(lang, "라이브 사이트에서만 확인", "checked on the live site only");
+                    else { state = dbUp ? "up" : "down"; label = dbUp ? pick(lang, "응답함", "up") : pick(lang, "무응답", "no answer"); }
+                  } else if ("fixed" in ck) {
+                    if (ck.fixed === "stopped") { state = "off"; label = pick(lang, "꺼져 있음", "stopped"); }
+                    else if (ck.fixed === "sleeps") label = pick(lang, "확인 안 함 — 깨우면 과금", "not probed — would wake it");
+                    else label = pick(lang, "켜져 있음 (설정 기준)", "on (per config)");
+                  } else {
+                    const r = readings[ck.chain];
+                    if (r.skipped) label = pick(lang, "여기서는 확인 불가", "not reachable from here");
+                    else if (r.reachable) { state = "up"; label = pick(lang, "블록 생성 중", "making blocks"); }
+                    // a local fork that is not running is off, not broken
+                    else if (ck.chain === "local") { state = "off"; label = pick(lang, "꺼져 있음", "off"); }
+                    else { state = "down"; label = pick(lang, "무응답", "no answer"); }
+                  }
+                  const dot =
+                    state === "up" ? { background: "#17803d" }
+                    : state === "down" ? { background: "#b42318" }
+                    : state === "off" ? { background: "transparent", boxShadow: "inset 0 0 0 1.5px rgba(128,128,128,0.7)" }
+                    : { background: "rgba(128,128,128,0.55)" };
+                  return (
+                    <tr key={pl.key} className={state === "off" ? "gf-where-off" : undefined}>
+                      <td style={{ fontWeight: 600 }}>{pick(lang, pl.partKo, pl.part)}</td>
+                      <td>{pick(lang, pl.runsOnKo, pl.runsOn)}</td>
+                      <td>{pick(lang, pl.whereKo, pl.where)}</td>
+                      <td>{pick(lang, pl.runningKo, pl.running)}</td>
+                      <td style={{ whiteSpace: "nowrap" }}>
+                        <span className="gf-dot" style={dot} />
+                        {label}
+                      </td>
+                    </tr>
+                  );
+                }),
+              ])}
             </tbody>
           </table>
           <p className="gf-note">
             {pick(
               lang,
-              "웹 서비스는 도쿄, 데브넷은 서울입니다. 서울에서는 Cloud Run 에 커스텀 도메인을 붙일 수 없어서 웹 서비스가 2026년 7월 도쿄로 옮겼고, 도메인 매핑이 필요 없는 데브넷 VM 은 서울에 있습니다. Cloud Run 서비스는 각각 컨테이너 1개로 상한이 걸려 있습니다. 프로젝트 ID, IP, 계정 이름, 비용은 일부러 싣지 않습니다.",
-              "The web services are in Tokyo and the devnet is in Seoul. Cloud Run cannot attach a custom domain in Seoul, so the web services moved to Tokyo in July 2026; the devnet VM needs no domain mapping and stays in Seoul. Each Cloud Run service is capped at one container. Project ids, IPs, account names and billing are left off on purpose.",
+              "Jayverse 웹 서비스는 도쿄, 데브넷은 서울입니다. 서울에서는 Cloud Run 에 커스텀 도메인을 붙일 수 없어서 웹 서비스가 2026년 7월 도쿄로 옮겼고, 도메인 매핑이 필요 없는 데브넷 VM 은 서울에 있습니다. Verex 는 처음부터 서울에 있습니다. 빈 원은 꺼져 있는 것, 회색 점은 여기서 확인하지 않은 것입니다. 이 페이지는 클라우드 상태를 읽을 권한을 일부러 갖지 않습니다(최소 권한). 프로젝트 ID, IP, 계정 이름, 비용은 싣지 않습니다.",
+              "The Jayverse web services are in Tokyo and the devnet is in Seoul. Cloud Run cannot attach a custom domain in Seoul, so the web services moved to Tokyo in July 2026; the devnet VM needs no domain mapping and stays in Seoul. Verex has been in Seoul from the start. A hollow dot means stopped; a grey dot means not checked from here. This page deliberately has no permission to read the cloud's own state (least privilege). Project ids, IPs, account names and billing are left off.",
             )}
           </p>
         </Panel>

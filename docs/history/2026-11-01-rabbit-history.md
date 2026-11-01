@@ -9,6 +9,7 @@ Source doc: no task file. This came from a chat with jay about whether showing t
 
 ## Done
 
+- /chains Where it runs → every resource in both projects, one row each, in three groups (Jayverse, Verex, outside), stopped ones included
 - `scripts/deploy.sh` deploys `rabbit` as `rabbit-run` (`--service-account`). Secrets are granted to that account, not the default one.
 - `scripts/deploy.env.example`: `REGION` corrected to `asia-northeast1` and the Cloud SQL example to `rabbit-db`; the template still pointed at Seoul from before the July move.
 
@@ -25,3 +26,11 @@ Source doc: no task file. This came from a chat with jay about whether showing t
 - **Reasoning:** the provider and the city are public anyway (response headers, the devnet's IP block, the page's own "rendering on Cloud Run" line). What would help an attacker stays off: the project id, IPs, zones, machine types, service-account names and billing. The live status reuses the probes the page already makes. The only new call is a `SELECT 1` to Cloud SQL, at most every 30 s with a 2 s ceiling, because the page refreshes every 5 s. A local Anvil that isn't running shows grey "off", not red.
 - **Change:** `lib/cloud.ts` (`PLACEMENTS`, `pingDatabase`) and a table panel under the chain cards in `app/chains/page.tsx`, in Korean and English. It shows: the web app, Cloud Run in Tokyo; Exchange · Wallet · Number, Cloud Run in Tokyo (n/3 up); the database, Cloud SQL in Tokyo, always on; the devnet, a Compute Engine VM in Seoul, always on; Sepolia; Anvil on jay's Mac.
 - **Result:** `npx tsc --noEmit` clean, and the panel was checked in headless Chrome on `next dev`. It goes live with the next deploy. The project check also corrected two things I had told jay. A Cloud SQL instance (`db-f1-micro`, always on) runs in Tokyo, so at most **6** things run, not 5. The devnet VM is `e2-standard-2`, not `e2-small`.
+
+### Where it runs: every resource, stopped ones included
+
+- **Cause:** jay: "show the instance also that are not running", with a screenshot of the first version (one row per kind, right-aligned cells).
+- **Reasoning:** a full inventory of both projects (`gcloud run/compute/sql list`, every status) found what the first version left out. Verex has its own project in Seoul with 4 Cloud Run services; `verex-api-prod` keeps 1 container warm, so it is always on. Verex has 2 databases: production always on, staging **stopped** (`activationPolicy NEVER`). Nothing else is hidden: no stopped VMs, unattached disks, Cloud Run jobs or spare static IPs. The page cannot read the cloud's own state, and should not (least privilege), so the rows it cannot probe show the config as of 2026-11-01. A sleeping staging service is not probed, because a probe would wake it and bill it.
+- **Change:** `lib/cloud.ts` `GROUPS` + one `PLACEMENTS` row per resource, with `check: { fixed: "on" | "warm" | "sleeps" | "stopped" }`. In the page: group header rows, a hollow dot for stopped, a dimmed row for anything off, and left-aligned cells (`.gf-where` in `globals.css`).
+- **Result:** checked through jay's own dev server (:3100): 13 rows in 3 groups, the staging DB and the local Anvil hollow. Across both projects, 4 things are always on: the devnet VM, two databases and Verex's warm API. At most 12 run at once.
+- **Gotcha:** my earlier second `next dev -p 3011` in the same folder shared `.next` and broke jay's :3100 page (`ChunkLoadError … VerexBall_tsx`). The fix is restarting his `pnpm dev`. The rule is now in memory: one dev server per repo.

@@ -44,6 +44,7 @@
 </ul>
 <h2 id="done">Done</h2>
 <ul>
+<li>/chains Where it runs → every resource in both projects, one row each, in three groups (Jayverse, Verex, outside), stopped ones included</li>
 <li><code>scripts/deploy.sh</code> deploys <code>rabbit</code> as <code>rabbit-run</code> (<code>--service-account</code>). Secrets are granted to that account, not the default one.</li>
 <li><code>scripts/deploy.env.example</code>: <code>REGION</code> corrected to <code>asia-northeast1</code> and the Cloud SQL example to <code>rabbit-db</code>; the template still pointed at Seoul from before the July move.</li>
 </ul>
@@ -60,6 +61,14 @@
 <li><strong>Reasoning:</strong> the provider and the city are public anyway (response headers, the devnet&#39;s IP block, the page&#39;s own &quot;rendering on Cloud Run&quot; line). What would help an attacker stays off: the project id, IPs, zones, machine types, service-account names and billing. The live status reuses the probes the page already makes. The only new call is a <code>SELECT 1</code> to Cloud SQL, at most every 30 s with a 2 s ceiling, because the page refreshes every 5 s. A local Anvil that isn&#39;t running shows grey &quot;off&quot;, not red.</li>
 <li><strong>Change:</strong> <code>lib/cloud.ts</code> (<code>PLACEMENTS</code>, <code>pingDatabase</code>) and a table panel under the chain cards in <code>app/chains/page.tsx</code>, in Korean and English. It shows: the web app, Cloud Run in Tokyo; Exchange · Wallet · Number, Cloud Run in Tokyo (n/3 up); the database, Cloud SQL in Tokyo, always on; the devnet, a Compute Engine VM in Seoul, always on; Sepolia; Anvil on jay&#39;s Mac.</li>
 <li><strong>Result:</strong> <code>npx tsc --noEmit</code> clean, and the panel was checked in headless Chrome on <code>next dev</code>. It goes live with the next deploy. The project check also corrected two things I had told jay. A Cloud SQL instance (<code>db-f1-micro</code>, always on) runs in Tokyo, so at most <strong>6</strong> things run, not 5. The devnet VM is <code>e2-standard-2</code>, not <code>e2-small</code>.</li>
+</ul>
+<h3 id="where-it-runs-every-resource-stopped-ones-included">Where it runs: every resource, stopped ones included</h3>
+<ul>
+<li><strong>Cause:</strong> jay: &quot;show the instance also that are not running&quot;, with a screenshot of the first version (one row per kind, right-aligned cells).</li>
+<li><strong>Reasoning:</strong> a full inventory of both projects (<code>gcloud run/compute/sql list</code>, every status) found what the first version left out. Verex has its own project in Seoul with 4 Cloud Run services; <code>verex-api-prod</code> keeps 1 container warm, so it is always on. Verex has 2 databases: production always on, staging <strong>stopped</strong> (<code>activationPolicy NEVER</code>). Nothing else is hidden: no stopped VMs, unattached disks, Cloud Run jobs or spare static IPs. The page cannot read the cloud&#39;s own state, and should not (least privilege), so the rows it cannot probe show the config as of 2026-11-01. A sleeping staging service is not probed, because a probe would wake it and bill it.</li>
+<li><strong>Change:</strong> <code>lib/cloud.ts</code> <code>GROUPS</code> + one <code>PLACEMENTS</code> row per resource, with <code>check: { fixed: &quot;on&quot; | &quot;warm&quot; | &quot;sleeps&quot; | &quot;stopped&quot; }</code>. In the page: group header rows, a hollow dot for stopped, a dimmed row for anything off, and left-aligned cells (<code>.gf-where</code> in <code>globals.css</code>).</li>
+<li><strong>Result:</strong> checked through jay&#39;s own dev server (:3100): 13 rows in 3 groups, the staging DB and the local Anvil hollow. Across both projects, 4 things are always on: the devnet VM, two databases and Verex&#39;s warm API. At most 12 run at once.</li>
+<li><strong>Gotcha:</strong> my earlier second <code>next dev -p 3011</code> in the same folder shared <code>.next</code> and broke jay&#39;s :3100 page (<code>ChunkLoadError … VerexBall_tsx</code>). The fix is restarting his <code>pnpm dev</code>. The rule is now in memory: one dev server per repo.</li>
 </ul>
 
   </article>
