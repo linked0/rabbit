@@ -1517,3 +1517,14 @@ a.ghost:hover {
 .stack-402 { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--inset); border: 1px solid var(--border); font-size: 11px; overflow-x: auto; }
 .stack-bubble-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .stack-bubble-actions button { font-size: 12.5px; padding: 6px 10px; }
+
+/* /live/stack 는 폭 상한이 없다 (jay, 2026-11-02: "this page doesn't have fixed width") — 판이 main 을 다 쓴다. */
+main.stack-main { max-width: none; }
+.stack-box.plan { cursor: pointer; }
+.stack-box.plan:hover rect { fill: var(--muted-surface); }
+/* 말풍선의 "표준" 메뉴 — 긴 설명은 전부 이 버튼들 뒤에 있다. */
+.stack-std { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.stack-std-k { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
+.stack-std-b { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--accent); background: transparent; color: var(--text); }
+.stack-std-b.dim { border-color: var(--border); color: var(--muted); }
+.stack-std-b:hover { background: var(--muted-surface); }
