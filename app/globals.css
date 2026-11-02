@@ -1499,17 +1499,21 @@ a.ghost:hover {
   .stack-box.ready rect { stroke-width: 4; }
 }
 
-/* 팝업 — 지갑 창처럼. 배경을 누르거나 Esc 로 닫힌다. */
-.stack-backdrop { position: fixed; inset: 0; z-index: 50; background: rgb(0 0 0 / .45); display: grid; place-items: center; padding: 16px; }
-.stack-modal { width: min(440px, 100%); background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; box-shadow: 0 20px 60px rgb(0 0 0 / .35); font-size: 14px; }
-.stack-modal p { margin: 8px 0 0; line-height: 1.55; }
-.stack-modal-h { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
-.stack-modal.wallet { border-color: #f6851b; }
-.stack-modal.wallet .stack-modal-h { color: #f6851b; }
-.stack-fox { font-size: 18px; }
-.stack-req { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--muted-surface); display: grid; gap: 8px; font-size: 13px; }
+/* 말풍선 — 페이지 위의 모달이 아니라 판 안의 대사 상자 (jay, 2026-11-02: 모달은 "이질적").
+   <foreignObject> 안에 있어 viewBox 단위로 그려지고 판과 함께 커지고 줄어든다. Esc 나 × 로 닫는다. */
+.stack-bubble { position: relative; box-sizing: border-box; width: 100%; max-height: 100%; overflow: auto; background: var(--panel); color: var(--text); border: 1.5px solid var(--accent); border-radius: 12px; padding: 12px 14px; box-shadow: 0 10px 30px rgb(0 0 0 / .18); font-size: 12.5px; line-height: 1.5; }
+.stack-bubble p { margin: 6px 0 0; }
+.stack-bubble-h { font-weight: 700; font-size: 13.5px; display: flex; align-items: center; gap: 6px; padding-right: 22px; }
+.stack-bubble-x { position: absolute; top: 6px; right: 8px; width: 22px; height: 22px; padding: 0; line-height: 20px; font-size: 15px; border-radius: 999px; background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.stack-bubble.wallet { border-color: #f6851b; }
+.stack-bubble.wallet .stack-bubble-h { color: #f6851b; }
+.stack-fox { font-size: 16px; }
+.stack-req { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--muted-surface); display: grid; gap: 6px; font-size: 12px; }
 .stack-req-site { font-weight: 600; }
-.stack-req-row { display: flex; gap: 8px; align-items: flex-start; line-height: 1.45; }
-.stack-req-row.sub { font-size: 12px; }
-.stack-402 { margin: 10px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--inset); border: 1px solid var(--border); font-size: 12px; overflow-x: auto; }
-.stack-modal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.stack-req-row { display: grid; grid-template-columns: 74px 1fr; gap: 6px; align-items: start; line-height: 1.4; }
+.stack-req .stack-chip { background: var(--panel); }
+/* 전역 .sub 를 쓰지 않는다 — 그 여백이 grid 트랙을 23px 키웠다 (2026-11-02 측정). */
+.stack-req-note { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.stack-402 { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--inset); border: 1px solid var(--border); font-size: 11px; overflow-x: auto; }
+.stack-bubble-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.stack-bubble-actions button { font-size: 12.5px; padding: 6px 10px; }

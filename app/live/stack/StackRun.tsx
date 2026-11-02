@@ -287,6 +287,109 @@ export default function StackRun({ lang }: { lang: Lang }) {
     onClick: ready === id ? () => setPopup(id) : undefined,
   });
 
+  // ── 말풍선: 판 안에서, 말하는 칸 옆에 (jay, 2026-11-02: 페이지 위에 뜨는 모달은 "이질적") ──
+  // 고정 슬롯 하나(오른쪽 위, 모든 국면에서 비어 있는 자리)에 두고, 말하는 칸까지 선을 긋는다.
+  const B = { x: 548, y: 18, w: 300, h: 252 }; // 아래쪽 한계: 서비스 제공자 칸 윗변(277)
+  const leader = popup && (
+      <line
+        x1={Math.min(Math.max(N[popup].x, B.x), B.x + B.w)}
+        y1={Math.min(Math.max(N[popup].y, B.y), B.y + B.h)}
+        x2={N[popup].x}
+        y2={N[popup].y}
+        stroke="var(--accent)"
+        strokeWidth={1.5}
+        strokeDasharray="3 3"
+      />
+  );
+  const bubble = popup && (
+      <foreignObject x={B.x} y={B.y} width={B.w} height={B.h} style={{ overflow: "visible" }}>
+        <div className={`stack-bubble${popup === "wallet" ? " wallet" : ""}`} role="dialog" aria-modal="false">
+          <button className="stack-bubble-x" aria-label={t("닫기", "Close")} onClick={() => setPopup(null)}>×</button>
+            {popup === "user" && (
+            <>
+              <div className="stack-bubble-h">{t("사용자 — 주인", "User — owner")}</div>
+              <p>
+                {t(
+                  `뉴스를 보고 데이터를 사는 에이전트를 돌리고 싶습니다. 매번 서명하고 싶지는 않고, 그렇다고 지갑을 통째로 맡길 수도 없습니다. 에이전트에게 "최대 ${CAP} jUSD, 1시간" 위임을 줍니다.`,
+                  `You want an agent that reads news and buys data. You do not want to sign every time, and you cannot hand it the whole wallet. You give it a mandate: "up to ${CAP} jUSD, 1 hour".`,
+                )}
+              </p>
+              <div className="stack-bubble-actions">
+                <button onClick={userGive}>{t("위임 주기", "Give mandate")}</button>
+              </div>
+            </>
+          )}
+          {popup === "wallet" && (
+            <>
+              <div className="stack-bubble-h">
+                <span className="stack-fox" aria-hidden>🦊</span> MetaMask
+              </div>
+              <div className="stack-req">
+                <div className="stack-req-site">jaylabs.xyz {t("가 요청합니다", "requests")}</div>
+                <div className="stack-req-row">
+                  <span className="stack-chip">EIP-7702</span>
+                  {t("계정에 코드 붙이기 — 주소·키 그대로", "Attach code — address and key unchanged")}
+                </div>
+                <div className="stack-req-row">
+                  <span className="stack-chip">ERC-7715</span>
+                  {t(`권한: ≤ ${CAP} jUSD · 1시간 · 에이전트에게`, `Permission: ≤ ${CAP} jUSD · 1 hour · to the agent`)}
+                </div>
+                <div className="stack-req-note">
+                  {t("서명 1회 · 이후 팝업 없음 · 한도는 컨트랙트가 집행", "One signature · no popups after · the cap is enforced by a contract")}
+                </div>
+              </div>
+              <div className="stack-bubble-actions">
+                <button onClick={walletAgree}>{t("동의", "Confirm")}</button>
+                <button className="ghost" onClick={walletReject}>{t("거절", "Reject")}</button>
+              </div>
+            </>
+          )}
+          {popup === "agent" && (
+            <>
+              <div className="stack-bubble-h">{t("에이전트 — 틱", "Agent — tick")}</div>
+              <p>
+                {t(
+                  `타이머가 울렸습니다. 뉴스 3건 → 모델 확률 0.62 → 호가 0.55 → 데이터 피드를 사기로 결정 (${PRICE} jUSD). 남은 한도 ${remaining.toFixed(2)} jUSD.`,
+                  `The timer fired. 3 news items → model probability 0.62 → order book 0.55 → decision: buy the data feed (${PRICE} jUSD). ${remaining.toFixed(2)} jUSD left on the mandate.`,
+                )}
+              </p>
+              <div className="stack-bubble-actions">
+                <button onClick={() => agentSpend(PRICE)}>{t(`제공자에게서 구매 (${PRICE} jUSD)`, `Buy from provider (${PRICE} jUSD)`)}</button>
+                <button onClick={() => agentSpend(OVER)} style={{ background: "var(--red)", borderColor: "var(--red)", color: "#fff" }}>
+                  {t(`${OVER} jUSD 로 사 보기 (한도 초과)`, `Try buying for ${OVER} jUSD (over the cap)`)}
+                </button>
+              </div>
+            </>
+          )}
+          {popup === "provider" && (
+            <>
+              <div className="stack-bubble-h">{t("서비스 제공자", "Service provider")}</div>
+              <pre className="stack-402">{`HTTP/1.1 402 Payment Required\nX-Price: ${PRICE} jUSD\nX-Pay-To: 0xFEED…CAFE`}</pre>
+              <p>{t("x402 — 요금표가 응답 그 자체로 돌아옵니다. 에이전트가 값을 치르고 같은 요청을 다시 보냅니다.", "x402 — the price comes back as the response itself. The agent pays and resends the same request.")}</p>
+              <div className="stack-bubble-actions">
+                <button onClick={providerPay}>{t("x402 로 결제하고 다시 요청", "Pay via x402 and retry")}</button>
+              </div>
+            </>
+          )}
+          {popup === "ap2" && (
+            <>
+              <div className="stack-bubble-h">AP2 — Payment Mandate</div>
+              <p>
+                {t(
+                  `Cart Mandate 가 고정한 내용: 데이터 피드 1건, ${PRICE} jUSD. 어느 법정화폐 레일로 정산할까요? 같은 ⑥ 단계가 두 개의 라이브 데모로 갈립니다.`,
+                  `Pinned by the Cart Mandate: one data feed, ${PRICE} jUSD. Which fiat rail settles it? The same step ⑥ forks into two live demos.`,
+                )}
+              </p>
+              <div className="stack-bubble-actions">
+                <button onClick={() => ap2Settle("stripe")}>Stripe (USD)</button>
+                <button onClick={() => ap2Settle("toss")}>{t("토스페이먼츠 (KRW)", "Toss Payments (KRW)")}</button>
+              </div>
+            </>
+          )}
+        </div>
+      </foreignObject>
+  );
+
   return (
     <div className="panel" style={{ marginTop: 16, maxWidth: 900 }}>
       {/* ── 진행 + 초기화 ───────────────────────────────────────── */}
@@ -357,6 +460,8 @@ export default function StackRun({ lang }: { lang: Lang }) {
             "Flow between the user, MetaMask, the delegator contract, the agent, the service provider and AP2",
           )}
         >
+          {/* 말풍선 연결선은 칸 아래에 깔리게 먼저 그린다 — 끝이 칸에 가려져 모서리 계산이 필요 없다. */}
+          {leader}
           <Wire a={N.user} b={N.wallet} live={phase !== "user"} label="EIP-7702" />
           <Wire a={N.wallet} b={N.delegator} live={granted} label="ERC-7715" />
           <Wire a={N.delegator} b={N.agent} live={spent > 0} label="ERC-7710" both />
@@ -383,6 +488,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
               <animate attributeName="opacity" values="1;1;0" dur="1.2s" fill="freeze" />
             </circle>
           ))}
+          {bubble}
         </svg>
       </div>
 
@@ -421,98 +527,6 @@ export default function StackRun({ lang }: { lang: Lang }) {
         ))}
       </div>
 
-      {/* ── 팝업 ─────────────────────────────────────────────── */}
-      {popup && (
-        <div className="stack-backdrop" onClick={() => setPopup(null)}>
-          <div className={`stack-modal${popup === "wallet" ? " wallet" : ""}`} role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            {popup === "user" && (
-              <>
-                <div className="stack-modal-h">{t("사용자 — 주인", "User — owner")}</div>
-                <p>
-                  {t(
-                    `뉴스를 보고 데이터를 사는 에이전트를 돌리고 싶습니다. 매번 서명하고 싶지는 않고, 그렇다고 지갑을 통째로 맡길 수도 없습니다. 에이전트에게 "최대 ${CAP} jUSD, 1시간" 위임을 줍니다.`,
-                    `You want an agent that reads news and buys data. You do not want to sign every time, and you cannot hand it the whole wallet. You give it a mandate: "up to ${CAP} jUSD, 1 hour".`,
-                  )}
-                </p>
-                <div className="stack-modal-actions">
-                  <button onClick={userGive}>{t("위임 주기", "Give mandate")}</button>
-                  <button className="ghost" onClick={() => setPopup(null)}>{t("닫기", "Close")}</button>
-                </div>
-              </>
-            )}
-            {popup === "wallet" && (
-              <>
-                <div className="stack-modal-h">
-                  <span className="stack-fox" aria-hidden>🦊</span> MetaMask
-                </div>
-                <div className="stack-req">
-                  <div className="stack-req-site">jaylabs.xyz {t("가 요청합니다", "requests")}</div>
-                  <div className="stack-req-row">
-                    <span className="stack-chip">EIP-7702</span>
-                    {t("이 계정에 코드를 붙입니다 (주소·키는 그대로)", "Attach code to this account (address and key unchanged)")}
-                  </div>
-                  <div className="stack-req-row">
-                    <span className="stack-chip">ERC-7715</span>
-                    {t(`권한 부여: 최대 ${CAP} jUSD · 1시간 · 대상: 에이전트`, `Grant permission: up to ${CAP} jUSD · 1 hour · to: the agent`)}
-                  </div>
-                  <div className="stack-req-row sub">
-                    {t("서명 1회 · 이후 팝업 없음 · 한도는 caveat enforcer 컨트랙트가 집행", "One signature · no popups after · the cap is enforced by the caveat-enforcer contract")}
-                  </div>
-                </div>
-                <div className="stack-modal-actions">
-                  <button onClick={walletAgree}>{t("동의", "Confirm")}</button>
-                  <button className="ghost" onClick={walletReject}>{t("거절", "Reject")}</button>
-                </div>
-              </>
-            )}
-            {popup === "agent" && (
-              <>
-                <div className="stack-modal-h">{t("에이전트 — 틱", "Agent — tick")}</div>
-                <p>
-                  {t(
-                    `타이머가 울렸습니다. 뉴스 3건 → 모델 확률 0.62 → 호가 0.55 → 데이터 피드를 사기로 결정 (${PRICE} jUSD). 남은 한도 ${remaining.toFixed(2)} jUSD.`,
-                    `The timer fired. 3 news items → model probability 0.62 → order book 0.55 → decision: buy the data feed (${PRICE} jUSD). ${remaining.toFixed(2)} jUSD left on the mandate.`,
-                  )}
-                </p>
-                <div className="stack-modal-actions">
-                  <button onClick={() => agentSpend(PRICE)}>{t(`제공자에게서 구매 (${PRICE} jUSD)`, `Buy from provider (${PRICE} jUSD)`)}</button>
-                  <button onClick={() => agentSpend(OVER)} style={{ background: "var(--red)", borderColor: "var(--red)", color: "#fff" }}>
-                    {t(`${OVER} jUSD 로 사 보기 (한도 초과)`, `Try buying for ${OVER} jUSD (over the cap)`)}
-                  </button>
-                  <button className="ghost" onClick={() => setPopup(null)}>{t("닫기", "Close")}</button>
-                </div>
-              </>
-            )}
-            {popup === "provider" && (
-              <>
-                <div className="stack-modal-h">{t("서비스 제공자", "Service provider")}</div>
-                <pre className="stack-402">{`HTTP/1.1 402 Payment Required\nX-Price: ${PRICE} jUSD\nX-Pay-To: 0xFEED…CAFE`}</pre>
-                <p>{t("x402 — 요금표가 응답 그 자체로 돌아옵니다. 에이전트가 값을 치르고 같은 요청을 다시 보냅니다.", "x402 — the price comes back as the response itself. The agent pays and resends the same request.")}</p>
-                <div className="stack-modal-actions">
-                  <button onClick={providerPay}>{t("x402 로 결제하고 다시 요청", "Pay via x402 and retry")}</button>
-                  <button className="ghost" onClick={() => setPopup(null)}>{t("닫기", "Close")}</button>
-                </div>
-              </>
-            )}
-            {popup === "ap2" && (
-              <>
-                <div className="stack-modal-h">AP2 — Payment Mandate</div>
-                <p>
-                  {t(
-                    `Cart Mandate 가 고정한 내용: 데이터 피드 1건, ${PRICE} jUSD. 어느 법정화폐 레일로 정산할까요? 같은 ⑥ 단계가 두 개의 라이브 데모로 갈립니다.`,
-                    `Pinned by the Cart Mandate: one data feed, ${PRICE} jUSD. Which fiat rail settles it? The same step ⑥ forks into two live demos.`,
-                  )}
-                </p>
-                <div className="stack-modal-actions">
-                  <button onClick={() => ap2Settle("stripe")}>Stripe (USD)</button>
-                  <button onClick={() => ap2Settle("toss")}>{t("토스페이먼츠 (KRW)", "Toss Payments (KRW)")}</button>
-                  <button className="ghost" onClick={() => setPopup(null)}>{t("닫기", "Close")}</button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
