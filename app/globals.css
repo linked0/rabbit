@@ -1442,3 +1442,40 @@ a.ghost:hover {
 .gf-where td { text-align: left; vertical-align: top; }
 .gf-where-group td { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; opacity: .6; padding-top: 14px; }
 .gf-where-off td { opacity: .6; }
+
+/* /live/stack — "한 번의 실행" 판 (jay, 2026-11-02 손그림: "shown with game like interface").
+   HUD 가 게임의 체력 바 노릇을 한다 — 위임 한도가 줄어드는 것을 숫자가 아니라 막대로 본다. */
+.stack-hud {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--muted-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.stack-hud-k { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.stack-hud-v { font-size: 17px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.stack-bar { display: block; height: 6px; margin-top: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.stack-bar > span { display: block; height: 100%; background: var(--accent); transition: width 400ms; }
+
+/* 저널 한 줄에 붙는 표준 이름표. 어느 단계가 어느 표준인지 읽는 순간 보이게. */
+.stack-chip {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--muted-surface);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.stack-link { font-weight: 600; white-space: nowrap; }
+
+/* 표준 표 — 좁은 화면에서는 줄이지 말고 가로로 밀리게 둔다 (읽히는 쪽이 중요). */
+.stack-table-wrap { overflow-x: auto; margin-top: 12px; }
+.stack-table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 13px; }
+.stack-table th, .stack-table td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.stack-table th { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }

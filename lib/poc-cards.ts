@@ -684,6 +684,32 @@ export const POC_CARDS: DemoCard[] = [
       "서처 경로는 서버에 보관된 키로 EIP-1559 트랜잭션을 서명하고, SDK 없이 직접 Flashbots의 X-Flashbots-Signature 인증 헤더를(일회용 평판 서명자로) 구성합니다. 제출 전에 eth_callBundle로 시뮬레이션해 revert를 먼저 걸러내고, 포함률을 높이기 위해 여러 블록 빌더 릴레이에 eth_sendBundle을 동시에 전송합니다. 별도 폴러가 트랜잭션 영수증을 확인해 번들이 실제로 포함됐는지 판단합니다. 관찰자 경로는 공개 메인넷 릴레이 4곳의 Data API에 서버에서 동시 요청을 보내고, block_hash로 중복을 제거한 뒤 빌더 점유율과 입찰가 분포를 집계해 20초마다 갱신합니다.",
   },
   {
+    key: "agent-stack",
+    important: true,
+    title: "One run — how the six demos coordinate",
+    titleKo: "한 번의 실행 — 여섯 데모가 어떻게 맞물리나",
+    description:
+      "A board you run: one agent spend from the 7702 upgrade to fiat settlement, every step linking to the demo that executes it.",
+    descriptionKo:
+      "돌려 보는 판 — 7702 업그레이드부터 법정화폐 정산까지 에이전트 지출 한 건. 각 단계는 그것을 실제로 돌리는 데모로 이어집니다.",
+    status: "live",
+    href: "/live/stack",
+    date: "2026-11-02",
+    updated: "2026-11-02",
+    howTo:
+      "Press ① through ⑥ and watch the mandate bar drain. At any point press \"Try to overspend\" — the caveat enforcer refuses a transaction whose signature is perfectly valid. Scripted: no wallet, no chain, no key.",
+    howToKo:
+      "① 부터 ⑥ 까지 누르며 위임 한도 막대가 줄어드는 것을 보세요. 중간에 \"한도 넘겨 보기\"를 누르면 서명이 멀쩡한 트랜잭션을 caveat enforcer 가 되돌립니다. 각본입니다 — 지갑도, 체인도, 키도 없습니다.",
+    purpose:
+      "The six live demos here each answer one question: what a 7702 delegation designator looks like, how a session key spends inside a cap, what an agent's journal holds that the chain cannot, how a mandate settles on Stripe or Toss. None of them answers the question a visitor actually arrives with — in what order do these engage when money leaves? This page is that missing view, and it is deliberately not a seventh demo: nothing new runs here. Its value is being the only place where the six are drawn as one sequence, with every step linking back to the page that really executes it, and with the standards named on the wires instead of buried in prose.",
+    purposeKo:
+      "여기 라이브 여섯 장은 각각 한 가지 질문에만 답합니다 — 7702 위임 지정자가 어떻게 생겼나, 세션 키가 한도 안에서 어떻게 쓰이나, 체인이 재구성 못 하는 저널에는 무엇이 남나, mandate 가 Stripe·토스에서 어떻게 정산되나. 정작 방문자가 들고 오는 질문 — \"그래서 돈이 나갈 때 무슨 순서로 맞물리나\" — 에는 어느 장도 답하지 않았습니다. 이 페이지가 그 빠진 화면이고, 일곱 번째 데모가 아닙니다: 여기서 새로 도는 것은 없습니다. 값어치는 여섯 장이 하나의 순서로 그려진 유일한 자리라는 데 있습니다. 각 단계는 그것을 실제로 돌리는 페이지로 되돌아가고, 표준은 산문에 묻히는 대신 선 위에 이름으로 붙어 있습니다.",
+    howItWorks:
+      "A scripted client-side board: a six-step state machine over an SVG laid out from jay's sketch — User —EIP-7702→ MetaMask → delegator contract ↔ agent → service provider, with AP2 beneath the agent. Each step lights its node and wire, animates a packet along the edge, and appends a journal line carrying the standard's name and a link to the demo that runs it. The mandate cap is the game's resource bar: redeeming draws it down, and an always-available \"overspend\" button shows the caveat enforcer reverting a transaction whose signature is perfectly valid — the one thing this board exists to make felt rather than read. A rail toggle sends step ⑥ to either the Stripe or the Toss demo. Two tables below carry the standards (EIP-7702, ERC-7715, ERC-7710, ERC-4337, EIP-712, x402, AP2, with ERC-8004 / ERC-1271 / ERC-5792 marked \"named only\") and the demo-to-step map. ERC-20 is deliberately absent: it is the money that moves, not a part that engages. No chain, no signature, no model call, no key — a public page must not be able to summon a wallet or spend API credit.",
+    howItWorksKo:
+      "각본으로 도는 클라이언트 판입니다: jay 의 손그림 배치 그대로 그린 SVG 위의 6단계 상태 기계 — User —EIP-7702→ MetaMask → Delegator 컨트랙트 ↔ 에이전트 → 서비스 제공자, 에이전트 아래에 AP2. 각 단계는 해당 노드와 선을 켜고, 간선을 따라 패킷을 움직이고, 표준 이름과 그 단계를 실제로 돌리는 데모 링크를 단 저널 한 줄을 남깁니다. 위임 한도가 이 게임의 체력 바입니다 — 행사하면 줄어들고, 언제든 누를 수 있는 \"한도 넘겨 보기\"는 서명이 멀쩡한 트랜잭션을 caveat enforcer 가 되돌리는 장면을 보여 줍니다. 이 판이 존재하는 이유가 바로 그 한 장면을 읽는 대신 느끼게 하는 것입니다. 레일 토글은 ⑥ 단계를 Stripe 또는 토스 데모로 보냅니다. 판 아래 두 표는 걸려 있는 표준(EIP-7702, ERC-7715, ERC-7710, ERC-4337, EIP-712, x402, AP2 — ERC-8004 / ERC-1271 / ERC-5792 는 \"이름만\"으로 표시)과 데모↔단계 대응을 싣습니다. ERC-20 은 일부러 뺐습니다: 움직이는 돈이지 맞물리는 부품이 아닙니다. 체인도, 서명도, 모델 호출도, 키도 없습니다 — 공개 페이지가 지갑을 부르거나 API 크레딧을 쓸 수 있으면 안 됩니다.",
+  },
+  {
     key: "ap2",
     important: true,
     title: "AP2 — Stripe settlement",
