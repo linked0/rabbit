@@ -25,7 +25,14 @@ import type { Lang } from "@/lib/i18n";
 //
 // **각본이다.** 체인도, 서명도, 모델 호출도 없다 — 실제로 도는 것은 각 줄이 링크하는
 // 데모 페이지 쪽이고, 여기서 틀리면 안 되는 것은 숫자가 아니라 **순서와 누가 무엇을 막는가**다.
+//
+// **지도 → 펼친 판** (jay, 2026-11-03 손그림: "A) Map: agentic payment scenario — user — Canton scenario ·
+// if I click one square above, the screen goes like this · B) unfolded detail"). 맨 위에는 두 시나리오가
+// 사용자 하나를 사이에 두고 이어진 지도만 있고, 네모를 누르면 그 시나리오의 판이 아래에 펼쳐진다.
+// 같은 손그림의 나머지 둘: 판의 테두리는 없앤다("we don't need border no more"), 사용자 칸 두 개는
+// 하나로 합친다("should be merged") — 사용자는 지도 가운데 한 번만 있고, 각 판은 그 사람에서 시작한다.
 
+type Scenario = "agentic" | "canton";
 type Phase = "user" | "wallet" | "agent" | "provider" | "ap2" | "done";
 type StackNode = "user" | "wallet" | "delegator" | "agent" | "provider" | "ap2";
 type CantonNode = "cuser" | "operator" | "sync" | "validator" | "daml";
@@ -40,6 +47,7 @@ const PRICE = 2.4; // 에이전트가 사는 데이터 피드 한 건
 const OVER = 7; // 한도를 넘는 시도
 
 // jay 의 손그림 배치 그대로. 좌표를 바꾸면 그림의 뜻이 바뀌므로 한 곳에 모아 둔다.
+// 두 시나리오는 각자 자기 판에 그려지므로 Canton 좌표도 왼쪽 끝에서 시작한다.
 const N: Record<NodeId, Node> = {
   user: { x: 430, y: 48 },
   wallet: { x: 430, y: 168 },
@@ -48,13 +56,14 @@ const N: Record<NodeId, Node> = {
   provider: { x: 726, y: 304 },
   ap2: { x: 430, y: 446 },
   // Canton 구역 (T5)
-  cuser: { x: 990, y: 48 },
-  operator: { x: 990, y: 210 },
-  sync: { x: 1195, y: 120 },
-  validator: { x: 1195, y: 250 },
-  daml: { x: 1195, y: 380 },
+  // 구역은 사용자보다 한 칸 내려 둔다 — 사용자에서 말풍선으로 가는 선이 구역 제목을 가로지르지 않게.
+  cuser: { x: 180, y: 48 },
+  operator: { x: 180, y: 270 },
+  sync: { x: 440, y: 140 },
+  validator: { x: 440, y: 270 },
+  daml: { x: 440, y: 400 },
 };
-const CANTON_FRAME = { x: 1098, y: 66, w: 194, h: 370 };
+const CANTON_FRAME = { x: 343, y: 86, w: 194, h: 370 };
 
 // ── 표준 설명 — 말풍선의 "표준" 메뉴가 연다 ─────────────────────────────────
 // `runs` 는 거짓말을 막는 칸이다: 여기 데모에서 실제로 도는 것과 이름만 걸린 것을 같은 목록에 두되 구분한다.
@@ -196,6 +205,7 @@ type Flash = { node: NodeId; tone: "good" | "bad"; key: number };
 export default function StackRun({ lang }: { lang: Lang }) {
   const t = (ko: string, en: string) => (lang === "ko" ? ko : en);
   const tx = (x: Txt) => (lang === "ko" ? x.ko : x.en);
+  const [view, setView] = useState<Scenario | null>(null); // 펼친 시나리오 — 없으면 지도만
   const [phase, setPhase] = useState<Phase>("user");
   const [popup, setPopup] = useState<NodeId | null>(null);
   const [detail, setDetail] = useState<string | null>(null); // 열린 "표준" 설명
@@ -289,7 +299,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
     agent: phase === "agent" ? t("깨어남 — 눌러 보세요", "awake — press") : granted ? t("지출함", "spent") : t("잠듦", "asleep"),
     provider: phase === "provider" ? t("HTTP 402 — 눌러 보세요", "HTTP 402 — press") : phase === "ap2" || phase === "done" ? t("결제됨 · 데이터 전달", "paid · data delivered") : "HTTP 402",
     ap2: phase === "ap2" ? t("정산 대기 — 눌러 보세요", "awaiting settlement — press") : phase === "done" ? t("영수증 · 저널 한 줄", "receipt · one journal line") : t("법정화폐 레일", "fiat rail"),
-    cuser: t("같은 사람 · 계약의 당사자", "same person · a party to the contract"),
+    cuser: t("계약의 당사자", "a party to the contract"),
     operator: t("Jayverse · validator 노드", "Jayverse · validator node"),
     sync: t("순서만 정함", "orders only"),
     validator: t("private ledger", "private ledger"),
@@ -318,7 +328,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
   // 고정 슬롯 하나(스택 구역 오른쪽 위, 모든 국면에서 비어 있는 자리)에 두고, 말하는 칸까지 선을 긋는다.
   // 아래 한계는 서비스 제공자 칸 윗변(277)이다. 표준 설명을 읽는 동안만은 그 아래로 자란다 —
   // 읽는 중에는 판을 누를 일이 없고, 스크롤되는 말풍선보다 긴 말풍선이 낫다.
-  const B = { x: 548, y: 18, w: 300, h: detail ? 420 : 252 };
+  const B = { x: view === "canton" ? 580 : 548, y: 18, w: 300, h: detail ? 420 : 252 };
   const leader = popup && (
     <line
       x1={Math.min(Math.max(N[popup].x, B.x), B.x + B.w)} y1={Math.min(Math.max(N[popup].y, B.y), B.y + B.h)}
@@ -405,7 +415,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
             </>)}
             {popup === "cuser" && (<>
               <div className="stack-bubble-h">{t("사용자 — Canton 쪽", "User — on Canton")}</div>
-              <p>{t("왼쪽과 같은 사람이다. 여기서는 Daml 계약의 당사자(party) — 자기가 당사자인 sub-transaction 만 본다.", "The same person as on the left. Here a party to a Daml contract — sees only the sub-transactions it is party to.")}</p>
+              <p>{t("지출 시나리오의 주인과 같은 사람이다. 여기서는 Daml 계약의 당사자(party) — 자기가 당사자인 sub-transaction 만 본다.", "The same person who owns the agent in the spend scenario. Here a party to a Daml contract — sees only the sub-transactions it is party to.")}</p>
             </>)}
             {popup === "operator" && (<>
               <div className="stack-bubble-h">{t("운영자 — Jayverse", "Operator — Jayverse")}</div>
@@ -421,95 +431,126 @@ export default function StackRun({ lang }: { lang: Lang }) {
     </foreignObject>
   );
 
+  // 지도의 네모를 누르면 그 시나리오가 펼쳐진다. 열린 것을 다시 누르면 접힌다.
+  const pick = (v: Scenario) => { close(); setView((cur) => (cur === v ? null : v)); };
+  const svgStyle = { width: "100%", maxWidth: 1100, minWidth: 700, height: "auto", display: "block" } as const;
+
   return (
-    <div className="panel stack-board" style={{ marginTop: 16 }}>
-      {/* ── 진행 + 초기화 ───────────────────────────────────────── */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
-        {steps.map((s) => <span key={s.n} className={`stack-step${s.done ? " done" : ""}`}>{s.n} {s.label}</span>)}
-        <button className="ghost" onClick={reset} style={{ marginLeft: "auto" }}>{t("초기화", "Reset")}</button>
+    <div className="stack-board" style={{ marginTop: 16 }}>
+      {/* ── 지도: 두 시나리오가 사용자 하나를 사이에 두고 이어진다 ─────────── */}
+      <div className="stack-map">
+        <button className={`stack-map-box${view === "agentic" ? " on" : ""}`} aria-expanded={view === "agentic"} onClick={() => pick("agentic")}>
+          <b>{t("에이전트 결제 시나리오", "Agentic payment scenario")}</b>
+          <span>{t("여섯 데모 · EIP-7702 → AP2", "six demos · EIP-7702 → AP2")}</span>
+        </button>
+        <span className="stack-map-wire" aria-hidden />
+        <span className="stack-map-user">{t("사용자", "User")}</span>
+        <span className="stack-map-wire dashed" aria-hidden />
+        <button className={`stack-map-box plan${view === "canton" ? " on" : ""}`} aria-expanded={view === "canton"} onClick={() => pick("canton")}>
+          <b>{t("Canton 시나리오", "Canton scenario")}</b>
+          <span>{t("계획 · T5 · 테스트넷만", "planned · T5 · test networks only")}</span>
+        </button>
       </div>
-      <p className="sub" style={{ fontSize: 13, marginTop: 8 }}>
-        {phase === "done"
-          ? t(`끝 — ${PRICE} jUSD 가 ${railName} 로 정산됐고 ${refused ? `${refused}번의 초과 시도가 컨트랙트에서 막혔습니다. 초기화하고 이번엔 거절 없이 돌려 보세요.` : "한 번도 거절되지 않았습니다. 초기화하고 이번엔 한도를 넘겨 보세요."}`,
-              `Done — ${PRICE} jUSD settled via ${railName}, ${refused ? `${refused} overspend attempt${refused > 1 ? "s" : ""} stopped by the contract. Reset and run it clean this time.` : "nothing refused. Reset and try breaking the cap this time."}`)
-          : t("깜빡이는 칸을 누르세요. 말풍선의 '표준' 버튼이 그 칸에 걸린 표준의 설명을 엽니다. 오른쪽 Canton 구역(T5)은 계획이라 점선입니다 — 눌러서 읽을 수는 있습니다.",
-              "Press the blinking box. A bubble's 'standards' buttons open the explanation of each standard on that box. The Canton region on the right (T5) is a plan, hence dashed — you can still press it to read.")}
-      </p>
+      {!view && <p className="sub" style={{ fontSize: 13, marginTop: 10 }}>{t("네모를 누르면 그 시나리오의 판이 아래에 펼쳐집니다.", "Press a box to unfold that scenario's board below.")}</p>}
 
-      {/* ── HUD: 위임 한도가 이 게임의 체력 바다 ───────────────── */}
-      <div className="stack-hud">
-        <div><div className="stack-hud-k">{t("위임 한도", "Mandate")}</div><div className="stack-hud-v">{spent.toFixed(2)} / {CAP.toFixed(2)} jUSD</div><div className="stack-bar" aria-hidden><span style={{ width: `${(spent / CAP) * 100}%` }} /></div></div>
-        <div><div className="stack-hud-k">{t("차례", "Turn")}</div><div className="stack-hud-v">{phase === "done" ? t("완료", "done") : { user: t("사용자", "User"), wallet: "MetaMask", agent: t("에이전트", "Agent"), provider: t("서비스 제공자", "Provider"), ap2: "AP2" }[phase]}</div></div>
-        <div><div className="stack-hud-k">{t("거절된 시도", "Refused")}</div><div className="stack-hud-v" style={refused ? { color: "var(--red)" } : undefined}>{refused}</div></div>
-        <div><div className="stack-hud-k">{t("에이전트의 ETH", "Agent's ETH")}</div><div className="stack-hud-v">0 <span className="sub" style={{ fontSize: 12, fontWeight: 400 }}>({t("가스는 paymaster", "paymaster pays gas")})</span></div></div>
-      </div>
+      {view === "agentic" && (<>
+        {/* ── 진행 + 초기화 ───────────────────────────────────────── */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 18 }}>
+          {steps.map((s) => <span key={s.n} className={`stack-step${s.done ? " done" : ""}`}>{s.n} {s.label}</span>)}
+          <button className="ghost" onClick={reset} style={{ marginLeft: "auto" }}>{t("초기화", "Reset")}</button>
+        </div>
+        <p className="sub" style={{ fontSize: 13, marginTop: 8 }}>
+          {phase === "done"
+            ? t(`끝 — ${PRICE} jUSD 가 ${railName} 로 정산됐고 ${refused ? `${refused}번의 초과 시도가 컨트랙트에서 막혔습니다. 초기화하고 이번엔 거절 없이 돌려 보세요.` : "한 번도 거절되지 않았습니다. 초기화하고 이번엔 한도를 넘겨 보세요."}`,
+                `Done — ${PRICE} jUSD settled via ${railName}, ${refused ? `${refused} overspend attempt${refused > 1 ? "s" : ""} stopped by the contract. Reset and run it clean this time.` : "nothing refused. Reset and try breaking the cap this time."}`)
+            : t("깜빡이는 칸을 누르세요. 말풍선의 '표준' 버튼이 그 칸에 걸린 표준의 설명을 엽니다.",
+                "Press the blinking box. A bubble's 'standards' buttons open the explanation of each standard on that box.")}
+        </p>
 
-      {/* ── 판 ───────────────────────────────────────────────── */}
-      {/* 폰에서 줄이면 글자가 5px 이 되므로, 읽을 수 있는 크기를 지키고 가로 스크롤을 준다. */}
-      <div style={{ overflowX: "auto", marginTop: 14 }}>
-        <svg viewBox="0 14 1300 470" style={{ width: "100%", minWidth: 900, height: "auto", display: "block" }} role="img"
-          aria-label={t("사용자, MetaMask, Delegator 컨트랙트, 에이전트, 서비스 제공자, AP2, 그리고 Canton 구역(운영자, synchronizer, validator, Daml) 사이의 흐름", "Flow between the user, MetaMask, the delegator contract, the agent, the service provider, AP2, and the Canton region (operator, synchronizer, validator, Daml)")}>
-          {/* 말풍선 연결선은 칸 아래에 깔리게 먼저 그린다 — 끝이 칸에 가려져 모서리 계산이 필요 없다. */}
-          {leader}
+        {/* ── HUD: 위임 한도가 이 게임의 체력 바다 ───────────────── */}
+        <div className="stack-hud">
+          <div><div className="stack-hud-k">{t("위임 한도", "Mandate")}</div><div className="stack-hud-v">{spent.toFixed(2)} / {CAP.toFixed(2)} jUSD</div><div className="stack-bar" aria-hidden><span style={{ width: `${(spent / CAP) * 100}%` }} /></div></div>
+          <div><div className="stack-hud-k">{t("차례", "Turn")}</div><div className="stack-hud-v">{phase === "done" ? t("완료", "done") : { user: t("사용자", "User"), wallet: "MetaMask", agent: t("에이전트", "Agent"), provider: t("서비스 제공자", "Provider"), ap2: "AP2" }[phase]}</div></div>
+          <div><div className="stack-hud-k">{t("거절된 시도", "Refused")}</div><div className="stack-hud-v" style={refused ? { color: "var(--red)" } : undefined}>{refused}</div></div>
+          <div><div className="stack-hud-k">{t("에이전트의 ETH", "Agent's ETH")}</div><div className="stack-hud-v">0 <span className="sub" style={{ fontSize: 12, fontWeight: 400 }}>({t("가스는 paymaster", "paymaster pays gas")})</span></div></div>
+        </div>
 
-          {/* 스택 구역 */}
-          <Wire a={N.user} b={N.wallet} live={phase !== "user"} label="EIP-7702" />
-          <Wire a={N.wallet} b={N.delegator} live={granted} label="ERC-7715" />
-          <Wire a={N.delegator} b={N.agent} live={spent > 0} label="ERC-7710" both />
-          <Wire a={N.agent} b={N.provider} live={phase === "ap2" || phase === "done"} label="x402" />
-          <Wire a={N.agent} b={N.ap2} live={phase === "done"} label="AP2" both at={0.66} />
+        {/* ── 판 ───────────────────────────────────────────────── */}
+        {/* 폰에서 줄이면 글자가 5px 이 되므로, 읽을 수 있는 크기를 지키고 가로 스크롤을 준다. */}
+        <div style={{ overflowX: "auto", marginTop: 14 }}>
+          <svg viewBox="0 14 880 470" style={svgStyle} role="img"
+            aria-label={t("사용자, MetaMask, Delegator 컨트랙트, 에이전트, 서비스 제공자, AP2 사이의 흐름", "Flow between the user, MetaMask, the delegator contract, the agent, the service provider and AP2")}>
+            {/* 말풍선 연결선은 칸 아래에 깔리게 먼저 그린다 — 끝이 칸에 가려져 모서리 계산이 필요 없다. */}
+            {leader}
+            <Wire a={N.user} b={N.wallet} live={phase !== "user"} label="EIP-7702" />
+            <Wire a={N.wallet} b={N.delegator} live={granted} label="ERC-7715" />
+            <Wire a={N.delegator} b={N.agent} live={spent > 0} label="ERC-7710" both />
+            <Wire a={N.agent} b={N.provider} live={phase === "ap2" || phase === "done"} label="x402" />
+            <Wire a={N.agent} b={N.ap2} live={phase === "done"} label="AP2" both at={0.66} />
 
-          {/* Canton 구역 (T5) — 계획이라 전부 점선·흐림 */}
-          <rect x={CANTON_FRAME.x} y={CANTON_FRAME.y} width={CANTON_FRAME.w} height={CANTON_FRAME.h} rx={14} fill="none" stroke="var(--border)" strokeWidth={1.5} strokeDasharray="8 5" />
-          <text x={CANTON_FRAME.x + CANTON_FRAME.w / 2} y={CANTON_FRAME.y - 10} textAnchor="middle" fontSize={12} fontWeight={700} fill="var(--muted)">Canton Network · T5</text>
-          <text x={CANTON_FRAME.x + CANTON_FRAME.w / 2} y={CANTON_FRAME.y + CANTON_FRAME.h + 16} textAnchor="middle" fontSize={11} fill="var(--muted)">{t("계획 · #5001 (T5) · 테스트넷만", "planned · #5001 (T5) · test networks only")}</text>
-          <Wire a={N.user} b={N.cuser} live={false} label={t("같은 사람", "same person")} plan at={0.78} />
-          <Wire a={N.cuser} b={N.operator} live={false} label={t("당사자", "party")} plan />
-          <Wire a={N.operator} b={N.validator} live={false} label="" plan />
-          <Wire a={N.sync} b={N.validator} live={false} label="" plan />
-          <Wire a={N.validator} b={N.daml} live={false} label="" plan />
+            <Box {...boxProps("user")} w={150} title={t("사용자", "User")} sub={status.user} />
+            <Box {...boxProps("wallet")} w={180} title="MetaMask" sub={status.wallet} />
+            <Box {...boxProps("delegator")} w={196} title={t("Delegator 컨트랙트", "Delegator contract")} sub={status.delegator} contract />
+            <Box {...boxProps("agent")} w={170} title={t("에이전트", "Agent")} sub={status.agent} />
+            <Box {...boxProps("provider")} w={180} title={t("서비스 제공자", "Service provider")} sub={status.provider} />
+            <Box {...boxProps("ap2")} w={210} title={rail ? `AP2 — ${railName}` : "AP2"} sub={status.ap2} />
 
-          <Box {...boxProps("user")} w={150} title={t("사용자", "User")} sub={status.user} />
-          <Box {...boxProps("wallet")} w={180} title="MetaMask" sub={status.wallet} />
-          <Box {...boxProps("delegator")} w={196} title={t("Delegator 컨트랙트", "Delegator contract")} sub={status.delegator} contract />
-          <Box {...boxProps("agent")} w={170} title={t("에이전트", "Agent")} sub={status.agent} />
-          <Box {...boxProps("provider")} w={180} title={t("서비스 제공자", "Service provider")} sub={status.provider} />
-          <Box {...boxProps("ap2")} w={210} title={rail ? `AP2 — ${railName}` : "AP2"} sub={status.ap2} />
+            {/* ERC-4337 은 간선이 아니라 에이전트가 트랜잭션을 내보내는 방식이라, 노드에 붙인 칩으로 둔다. */}
+            <Chip x={N.agent.x} y={N.agent.y + 44} text="ERC-4337 · UserOp · paymaster" live={spent > 0} />
+            {/* ERC-8004 은 이 판에서 유일하게 **안 도는** 조각이다 — 자리를 비워 두는 대신 흐릿하게 그려 둔다. */}
+            <Chip x={N.provider.x} y={N.provider.y + 44} text={t("ERC-8004 · 에이전트 신원 (설명만)", "ERC-8004 · agent identity (explainer)")} live={false} />
 
-          <Box {...boxProps("cuser")} w={150} title={t("사용자", "User")} sub={status.cuser} />
-          <Box {...boxProps("operator")} w={170} title={t("운영자", "Operator")} sub={status.operator} />
-          <Box {...boxProps("sync")} w={170} title="Global Synchronizer" sub={status.sync} />
-          <Box {...boxProps("validator")} w={170} title="Validator" sub={status.validator} contract />
-          <Box {...boxProps("daml")} w={170} title={t("Daml 계약", "Daml contract")} sub={status.daml} contract />
+            {/* 끝난 패킷은 투명한 채로 도착 칸 위에 남는다 — 포인터를 꺼 두지 않으면 그 칸의 클릭을 가로챈다. */}
+            {packets.map((p) => (
+              <circle key={p.id} r={7} fill={p.color} style={{ pointerEvents: "none" }}>
+                <animate attributeName="cx" from={p.from.x} to={p.to.x} dur="0.9s" fill="freeze" />
+                <animate attributeName="cy" from={p.from.y} to={p.to.y} dur="0.9s" fill="freeze" />
+                <animate attributeName="opacity" values="1;1;0" dur="1.2s" fill="freeze" />
+              </circle>
+            ))}
+            {bubble}
+          </svg>
+        </div>
 
-          {/* ERC-4337 은 간선이 아니라 에이전트가 트랜잭션을 내보내는 방식이라, 노드에 붙인 칩으로 둔다. */}
-          <Chip x={N.agent.x} y={N.agent.y + 44} text="ERC-4337 · UserOp · paymaster" live={spent > 0} />
-          {/* ERC-8004 은 이 판에서 유일하게 **안 도는** 조각이다 — 자리를 비워 두는 대신 흐릿하게 그려 둔다. */}
-          <Chip x={N.provider.x} y={N.provider.y + 44} text={t("ERC-8004 · 에이전트 신원 (설명만)", "ERC-8004 · agent identity (explainer)")} live={false} />
-
-          {/* 끝난 패킷은 투명한 채로 도착 칸 위에 남는다 — 포인터를 꺼 두지 않으면 그 칸의 클릭을 가로챈다. */}
-          {packets.map((p) => (
-            <circle key={p.id} r={7} fill={p.color} style={{ pointerEvents: "none" }}>
-              <animate attributeName="cx" from={p.from.x} to={p.to.x} dur="0.9s" fill="freeze" />
-              <animate attributeName="cy" from={p.from.y} to={p.to.y} dur="0.9s" fill="freeze" />
-              <animate attributeName="opacity" values="1;1;0" dur="1.2s" fill="freeze" />
-            </circle>
+        {/* ── 저널: 한 줄씩. 긴 설명은 말풍선의 표준 메뉴에 ──────────── */}
+        <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+          {log.length === 0 && <p className="sub" style={{ fontSize: 13 }}>{t("각 줄은 그 단계를 실제로 돌리는 데모 페이지로 이어집니다 — 이 판은 각본이고, 돌아가는 것은 그쪽입니다.", "Every line links to the demo that actually runs that step — this board is scripted; those pages are not.")}</p>}
+          {log.map((l, i) => (
+            <div key={i} style={{ fontSize: 13, paddingLeft: 10, borderLeft: `3px solid ${l.tone === "bad" ? "var(--red)" : l.tone === "good" ? "var(--green)" : l.tone === "chain" ? "var(--accent)" : "var(--border)"}` }}>
+              {l.chip && <span className="stack-chip">{l.chip}</span>}
+              {l.text}
+              {l.href && <> <Link href={`${l.href}?from=live`} className="stack-link">{l.hrefLabel} →</Link></>}
+            </div>
           ))}
-          {bubble}
-        </svg>
-      </div>
+        </div>
+      </>)}
 
-      {/* ── 저널: 한 줄씩. 긴 설명은 말풍선의 표준 메뉴에 ──────────── */}
-      <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
-        {log.length === 0 && <p className="sub" style={{ fontSize: 13 }}>{t("각 줄은 그 단계를 실제로 돌리는 데모 페이지로 이어집니다 — 이 판은 각본이고, 돌아가는 것은 그쪽입니다.", "Every line links to the demo that actually runs that step — this board is scripted; those pages are not.")}</p>}
-        {log.map((l, i) => (
-          <div key={i} style={{ fontSize: 13, paddingLeft: 10, borderLeft: `3px solid ${l.tone === "bad" ? "var(--red)" : l.tone === "good" ? "var(--green)" : l.tone === "chain" ? "var(--accent)" : "var(--border)"}` }}>
-            {l.chip && <span className="stack-chip">{l.chip}</span>}
-            {l.text}
-            {l.href && <> <Link href={`${l.href}?from=live`} className="stack-link">{l.hrefLabel} →</Link></>}
-          </div>
-        ))}
-      </div>
+      {view === "canton" && (<>
+        <p className="sub" style={{ fontSize: 13, marginTop: 18 }}>
+          {t("T5 는 아직 계획(후보)이라 전부 점선입니다 — 칸을 눌러 무엇을 하게 될지 읽을 수 있습니다.", "T5 is still a plan (a candidate), so everything is dashed — press a box to read what it will do.")}
+        </p>
+        <div style={{ overflowX: "auto", marginTop: 14 }}>
+          <svg viewBox="0 14 900 470" style={svgStyle} role="img"
+            aria-label={t("사용자, 운영자, synchronizer, validator, Daml 계약 사이의 흐름 (계획)", "Flow between the user, the operator, the synchronizer, the validator and the Daml contract (planned)")}>
+            {leader}
+            {/* Canton 구역 (T5) — 계획이라 전부 점선·흐림 */}
+            <rect x={CANTON_FRAME.x} y={CANTON_FRAME.y} width={CANTON_FRAME.w} height={CANTON_FRAME.h} rx={14} fill="none" stroke="var(--border)" strokeWidth={1.5} strokeDasharray="8 5" />
+            <text x={CANTON_FRAME.x + CANTON_FRAME.w / 2} y={CANTON_FRAME.y - 10} textAnchor="middle" fontSize={12} fontWeight={700} fill="var(--muted)">Canton Network · T5</text>
+            <text x={CANTON_FRAME.x + CANTON_FRAME.w / 2} y={CANTON_FRAME.y + CANTON_FRAME.h + 16} textAnchor="middle" fontSize={11} fill="var(--muted)">{t("계획 · #5001 (T5) · 테스트넷만", "planned · #5001 (T5) · test networks only")}</text>
+            <Wire a={N.cuser} b={N.operator} live={false} label={t("당사자", "party")} plan />
+            <Wire a={N.operator} b={N.validator} live={false} label="" plan />
+            <Wire a={N.sync} b={N.validator} live={false} label="" plan />
+            <Wire a={N.validator} b={N.daml} live={false} label="" plan />
+
+            <Box {...boxProps("cuser")} w={150} title={t("사용자", "User")} sub={status.cuser} />
+            <Box {...boxProps("operator")} w={170} title={t("운영자", "Operator")} sub={status.operator} />
+            <Box {...boxProps("sync")} w={170} title="Global Synchronizer" sub={status.sync} />
+            <Box {...boxProps("validator")} w={170} title="Validator" sub={status.validator} contract />
+            <Box {...boxProps("daml")} w={170} title={t("Daml 계약", "Daml contract")} sub={status.daml} contract />
+            {bubble}
+          </svg>
+        </div>
+      </>)}
     </div>
   );
 }

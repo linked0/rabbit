@@ -1528,3 +1528,24 @@ main.stack-main { max-width: none; }
 .stack-std-b { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--accent); background: transparent; color: var(--text); }
 .stack-std-b.dim { border-color: var(--border); color: var(--muted); }
 .stack-std-b:hover { background: var(--muted-surface); }
+
+/* /live/stack 지도 (jay, 2026-11-03 손그림: "A) Map: agentic payment scenario — user — Canton scenario").
+   두 네모가 사용자 동그라미 하나를 사이에 두고 이어진다. 누른 네모가 아래에 판을 펼친다. */
+.stack-map { display: flex; align-items: center; max-width: 760px; }
+.stack-map-box { flex: 1 1 0; min-width: 0; display: grid; gap: 4px; text-align: center; padding: 14px 12px; border: 1.5px solid var(--border); border-radius: 12px; background: var(--panel); color: var(--text); font: inherit; cursor: pointer; }
+.stack-map-box b { font-size: 15px; }
+.stack-map-box span { font-size: 12px; color: var(--muted); }
+.stack-map-box:hover { background: var(--muted-surface); }
+.stack-map-box.plan { border-style: dashed; }
+.stack-map-box.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.stack-map-wire { flex: 0 0 24px; border-top: 1.5px solid var(--border); }
+.stack-map-wire.dashed { border-top-style: dashed; }
+.stack-map-user { flex: none; width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid var(--text); display: grid; place-items: center; font-size: 13px; font-weight: 600; }
+.stack-map-box { white-space: normal; }
+@media (max-width: 520px) {
+  .stack-map-box { padding: 10px 6px; }
+  .stack-map-box b { font-size: 13px; }
+  .stack-map-box span { font-size: 11px; }
+  .stack-map-user { width: 48px; height: 48px; font-size: 12px; }
+  .stack-map-wire { flex-basis: 10px; }
+}
