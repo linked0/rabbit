@@ -14,11 +14,20 @@ import { sortDemoCards, type DemoCard } from "./demo-cards";
 // 틀어진다. 자리만 원하는 것이므로 자리만 옮긴다.
 const AUDITOR_SLOT = 5; // 0-based → 여섯 번째
 
+// 같은 판의 세 가지 보기 — Bird View 바로 뒤에 Metaverse View, Game View 가 붙는다 (jay, 2026-11-03).
+// 날짜로 정렬하면 새 둘이 Bird View 앞으로 가 버리므로, 오디터와 같은 이유로 자리만 옮긴다.
+const VIEWS_AFTER = "agent-stack";
+const VIEWS = ["agent-metaverse", "agent-game"];
+
 export function liveCards(): DemoCard[] {
-  const live = sortDemoCards([...POC_CARDS, ...TIL_CARDS].filter((c) => c.status === "live"));
-  const i = live.findIndex((c) => c.key === "authority-auditor");
-  if (i < 0) return live; // 카드가 없거나 live 가 아니면 그대로 — 자리 지정은 보너스지 요구사항이 아니다
-  const out = [...live];
+  let out = sortDemoCards([...POC_CARDS, ...TIL_CARDS].filter((c) => c.status === "live"));
+  const views = VIEWS.map((k) => out.find((c) => c.key === k)).filter((c): c is DemoCard => !!c);
+  if (out.some((c) => c.key === VIEWS_AFTER)) {
+    out = out.filter((c) => !VIEWS.includes(c.key));
+    out.splice(out.findIndex((c) => c.key === VIEWS_AFTER) + 1, 0, ...views);
+  }
+  const i = out.findIndex((c) => c.key === "authority-auditor");
+  if (i < 0) return out; // 카드가 없거나 live 가 아니면 그대로 — 자리 지정은 보너스지 요구사항이 아니다
   const [auditor] = out.splice(i, 1);
   out.splice(Math.min(AUDITOR_SLOT, out.length), 0, auditor);
   return out;

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game View</title>
+<!-- Game View loader (jay, 2026-11-03: "Unity version of Bird View"). Loads the rabbit-hole WebGL build
+     copied in by scripts/sync-game-view.sh, full size inside the /live/game iframe. `view=bird` makes the
+     build run BirdGame instead of the street; `dpr` lets its IMGUI scale on high-density screens. -->
+<style>
+  html, body { margin: 0; height: 100%; background: #0a0f1c; overflow: hidden; font: 14px/1.5 -apple-system, "Apple SD Gothic Neo", sans-serif; color: #e2e8f0; }
+  #c { width: 100%; height: 100%; display: block; }
+  #bar { position: absolute; left: 50%; top: 50%; width: 220px; height: 6px; margin: -3px 0 0 -110px; background: #1e293b; border-radius: 3px; overflow: hidden; }
+  #bar > i { display: block; height: 100%; width: 0; background: #3b82f6; transition: width .2s; }
+  #msg { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 24px; }
+</style>
+</head>
+<body>
+<canvas id="c" tabindex="-1"></canvas>
+<div id="bar"><i></i></div>
+<div id="msg"></div>
+<script>
+  history.replaceState(null, "", location.pathname + "?view=bird&dpr=" + (window.devicePixelRatio || 1));
+  var bar = document.getElementById("bar"), msg = document.getElementById("msg");
+  function fail(text) { bar.remove(); msg.style.display = "grid"; msg.textContent = text; }
+  var s = document.createElement("script");
+  s.src = "Build/WebGL.loader.js";
+  s.onerror = function () { fail("The Unity build is not published here yet (Build/WebGL.loader.js is missing). Run scripts/sync-game-view.sh after building rabbit-hole."); };
+  s.onload = function () {
+    createUnityInstance(document.getElementById("c"), {
+      dataUrl: "Build/WebGL.data.unityweb",
+      frameworkUrl: "Build/WebGL.framework.js.unityweb",
+      codeUrl: "Build/WebGL.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "jaylabs", productName: "Burrow", productVersion: "1.0",
+    }, function (p) { bar.firstChild.style.width = (p * 100) + "%"; })
+      .then(function () { bar.remove(); })
+      .catch(function (e) { fail("Unity could not start: " + e); });
+  };
+  document.body.appendChild(s);
+</script>
+</body>
+</html>

@@ -95,6 +95,6 @@ export const config = {
   // 게임 번들 제외는 2026-09-22 에 빠졌다 — 게임이 서브모듈 임베드를 그만두고
   // game.jaylabs.xyz 로 나갔으므로 이 앱이 게임 에셋을 서빙할 일이 없다.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|profile/|whitepaper/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|profile/|whitepaper/|game-view/).*)",
   ],
 };

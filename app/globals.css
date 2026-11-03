@@ -1549,3 +1549,21 @@ main.stack-main { max-width: none; }
   .stack-map-user { width: 48px; height: 48px; font-size: 12px; }
   .stack-map-wire { flex-basis: 10px; }
 }
+
+/* /live/metaverse — Metaverse View (jay, 2026-11-03: "a game version of Bird View"). 3D 캔버스가 게임
+   화면이라 사이트 테마와 상관없이 어둡고, HUD 와 말풍선은 그 위에 HTML 로 뜬다. */
+.mv-stage { position: relative; height: min(72vh, 660px); min-height: 440px; border-radius: 14px; overflow: hidden; background: #0a0f1c; }
+.mv-hud { position: absolute; top: 12px; left: 12px; max-width: min(420px, calc(100% - 24px)); padding: 10px 12px; border-radius: 10px; background: rgb(10 15 28 / .78); color: #e2e8f0; pointer-events: auto; }
+.mv-hud-k { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #93c5fd; }
+.mv-hud-t { font-size: 13px; margin-top: 3px; line-height: 1.45; }
+.mv-hud-b { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.mv-hud-b button { font-size: 12px; padding: 5px 10px; color: #e2e8f0; border-color: #334155; background: transparent; }
+.mv-hud-b button:hover { background: #1e293b; }
+.mv-bubble { position: absolute; top: 12px; right: 12px; width: 300px; max-height: calc(100% - 24px); }
+.mv-fallback { padding: 24px; color: #e2e8f0; }
+@media (max-width: 640px) {
+  .mv-stage { height: 74vh; }
+  .mv-bubble { top: auto; bottom: 8px; left: 8px; right: 8px; width: auto; max-height: 55%; }
+}
+/* /live/game — Game View: rabbit-hole 의 Unity WebGL 빌드를 iframe 으로 (jay, 2026-11-03). */
+.gv-frame { display: block; width: 100%; height: 100%; border: 0; }

@@ -686,8 +686,10 @@ export const POC_CARDS: DemoCard[] = [
   {
     key: "agent-stack",
     important: true,
-    title: "One run — how the six demos coordinate",
-    titleKo: "한 번의 실행 — 여섯 데모가 어떻게 맞물리나",
+    // 이름: "한 번의 실행" → Bird View (jay, 2026-11-03). 같은 내용의 게임판이 둘 더 있다 — 3D 의
+    // Metaverse View(agent-metaverse), Unity 의 Game View(agent-game). 레일에서는 셋이 붙어 다닌다(lib/live-cards.ts).
+    title: "Bird View — how the six demos coordinate",
+    titleKo: "Bird View — 여섯 데모가 어떻게 맞물리나",
     description:
       "A board you run: one agent spend from the 7702 upgrade to fiat settlement, every step linking to the demo that executes it.",
     descriptionKo:
@@ -695,7 +697,7 @@ export const POC_CARDS: DemoCard[] = [
     status: "live",
     href: "/live/stack",
     date: "2026-11-02",
-    updated: "2026-11-02",
+    updated: "2026-11-03",
     howTo:
       "Press ① through ⑥ and watch the mandate bar drain. At any point press \"Try to overspend\" — the caveat enforcer refuses a transaction whose signature is perfectly valid. Scripted: no wallet, no chain, no key.",
     howToKo:
@@ -708,6 +710,60 @@ export const POC_CARDS: DemoCard[] = [
       "A scripted client-side board: a six-step state machine over an SVG laid out from jay's sketch — User —EIP-7702→ MetaMask → delegator contract ↔ agent → service provider, with AP2 beneath the agent. Each step lights its node and wire, animates a packet along the edge, and appends a journal line carrying the standard's name and a link to the demo that runs it. The mandate cap is the game's resource bar: redeeming draws it down, and an always-available \"overspend\" button shows the caveat enforcer reverting a transaction whose signature is perfectly valid — the one thing this board exists to make felt rather than read. A rail toggle sends step ⑥ to either the Stripe or the Toss demo. Two tables below carry the standards (EIP-7702, ERC-7715, ERC-7710, ERC-4337, EIP-712, x402, AP2, with ERC-8004 / ERC-1271 / ERC-5792 marked \"named only\") and the demo-to-step map. ERC-20 is deliberately absent: it is the money that moves, not a part that engages. No chain, no signature, no model call, no key — a public page must not be able to summon a wallet or spend API credit.",
     howItWorksKo:
       "각본으로 도는 클라이언트 판입니다: jay 의 손그림 배치 그대로 그린 SVG 위의 6단계 상태 기계 — User —EIP-7702→ MetaMask → Delegator 컨트랙트 ↔ 에이전트 → 서비스 제공자, 에이전트 아래에 AP2. 각 단계는 해당 노드와 선을 켜고, 간선을 따라 패킷을 움직이고, 표준 이름과 그 단계를 실제로 돌리는 데모 링크를 단 저널 한 줄을 남깁니다. 위임 한도가 이 게임의 체력 바입니다 — 행사하면 줄어들고, 언제든 누를 수 있는 \"한도 넘겨 보기\"는 서명이 멀쩡한 트랜잭션을 caveat enforcer 가 되돌리는 장면을 보여 줍니다. 이 판이 존재하는 이유가 바로 그 한 장면을 읽는 대신 느끼게 하는 것입니다. 레일 토글은 ⑥ 단계를 Stripe 또는 토스 데모로 보냅니다. 판 아래 두 표는 걸려 있는 표준(EIP-7702, ERC-7715, ERC-7710, ERC-4337, EIP-712, x402, AP2 — ERC-8004 / ERC-1271 / ERC-5792 는 \"이름만\"으로 표시)과 데모↔단계 대응을 싣습니다. ERC-20 은 일부러 뺐습니다: 움직이는 돈이지 맞물리는 부품이 아닙니다. 체인도, 서명도, 모델 호출도, 키도 없습니다 — 공개 페이지가 지갑을 부르거나 API 크레딧을 쓸 수 있으면 안 됩니다.",
+  },
+  {
+    // Bird View 의 게임판 (jay, 2026-11-03: "one more menu Metaverse View that is a game view … I click a one
+    // scenario box, it's bloated and pops up the related component").
+    key: "agent-metaverse",
+    title: "Metaverse View — walk the two scenarios",
+    titleKo: "Metaverse View — 두 시나리오를 걸어 다니기",
+    description:
+      "Bird View as a 3D game: press an island and it swells while that scenario's parts rise, with a jUSD orb running the route.",
+    descriptionKo:
+      "Bird View 의 3D 게임판 — 섬을 누르면 부풀면서 그 시나리오의 부품이 솟아오르고, jUSD 구슬이 순서대로 선을 탑니다.",
+    status: "live",
+    href: "/live/metaverse",
+    date: "2026-11-03",
+    updated: "2026-11-03",
+    howTo:
+      "Press an island (or its button in the HUD). It swells with a spring, the user walks onto it and its parts pop up one by one. Press a part for its bubble and a standard chip for the full explanation; press the ground to close, Esc to go back.",
+    howToKo:
+      "섬(또는 HUD 의 버튼)을 누르세요. 섬이 출렁이며 부풀고, 사용자가 걸어 들어가고, 부품이 하나씩 솟아오릅니다. 부품을 누르면 말풍선이, 표준 칩을 누르면 긴 설명이 뜹니다. 바닥을 누르면 닫히고 Esc 는 뒤로 갑니다.",
+    purpose:
+      "Bird View says in what order the six demos engage; this says the same thing as a place you walk through. The one user standing between two islands is the point Bird View's map makes — the agentic payment and the Canton plan are two scenarios of the same person.",
+    purposeKo:
+      "Bird View 가 여섯 데모의 순서를 말한다면, 여기는 같은 말을 걸어 다니는 공간으로 합니다. 두 섬 사이에 선 사용자 한 명이 Bird View 지도가 하는 말 그대로입니다 — 에이전트 결제와 Canton 계획은 같은 사람의 두 시나리오입니다.",
+    howItWorks:
+      "react-three-fiber over three.js, client only. Each island is a cylinder whose scale follows a spring (the swell); parts are boxes that pop with a back-out ease, wires are cylinder segments (dashed for the planned Canton side), and labels are canvas-texture sprites. The standards text is shared with Bird View through app/live/stack/std.ts. Scripted: no chain, no signature, no key.",
+    howItWorksKo:
+      "three.js 위의 react-three-fiber, 브라우저에서만 돕니다. 섬은 크기가 스프링을 따르는 원기둥(부푸는 장면), 부품은 back-out 으로 튀어나오는 상자, 선은 원기둥 토막(계획인 Canton 쪽은 점선), 글자는 캔버스 텍스처 스프라이트입니다. 표준 설명은 app/live/stack/std.ts 로 Bird View 와 같이 씁니다. 각본입니다 — 체인도, 서명도, 키도 없습니다.",
+  },
+  {
+    // Bird View 의 Unity 판 (jay, 2026-11-03: "one more view like Game View which is using Unity engine …
+    // this one is Unity version of Bird View"). 빌드는 rabbit-hole 의 BirdGame, 복사는 scripts/sync-game-view.sh.
+    key: "agent-game",
+    title: "Game View — Bird View in Unity",
+    titleKo: "Game View — Bird View 를 Unity 로",
+    description:
+      "The same two scenarios built in Unity and run as WebGL: tiles swell into boards, the user pawn walks on, parts pop up.",
+    descriptionKo:
+      "같은 두 시나리오를 Unity 로 짓고 WebGL 로 돌립니다 — 타일이 판으로 부풀고, 사용자 말이 걸어 들어가고, 부품이 솟아오릅니다.",
+    status: "live",
+    href: "/live/game",
+    date: "2026-11-03",
+    updated: "2026-11-03",
+    howTo:
+      "Press a scenario tile (or its button). It swells into a board, the user pawn walks onto it, and the parts pop up in Bird View's layout. Press a part or the user for its panel and its standards; Esc goes back.",
+    howToKo:
+      "시나리오 타일(또는 버튼)을 누르세요. 판으로 부풀고, 사용자 말이 걸어 들어가고, 부품이 Bird View 배치대로 솟아오릅니다. 부품이나 사용자를 누르면 패널과 표준이 뜨고, Esc 는 뒤로 갑니다.",
+    purpose:
+      "Bird View in the engine the street was ported to (rabbit-hole), so the same board can later carry modeled assets, animation and sound that browser primitives cannot.",
+    purposeKo:
+      "거리를 옮겨 둔 엔진(rabbit-hole)으로 그린 Bird View 입니다. 같은 판이 나중에 브라우저 기본 도형으로는 못 하는 모델·애니메이션·소리를 실을 수 있게.",
+    howItWorks:
+      "rabbit-hole's BirdGame (C#, built-in primitives, IMGUI) runs when the page URL carries view=bird, so one WebGL build serves both the street and this board. scripts/sync-game-view.sh copies the build into public/game-view/, and /live/game frames it. Text inside the Unity canvas is English: WebGL has no OS fonts, and the built-in font has no Korean glyphs.",
+    howItWorksKo:
+      "페이지 URL 에 view=bird 가 있으면 rabbit-hole 의 BirdGame(C#, 기본 도형, IMGUI)이 돕니다 — WebGL 빌드 하나가 거리와 이 판을 함께 맡습니다. scripts/sync-game-view.sh 가 빌드를 public/game-view/ 로 복사하고 /live/game 이 그것을 띄웁니다. Unity 화면 안의 글자는 영어입니다: WebGL 에는 OS 글꼴이 없고 내장 글꼴에 한글 글리프가 없습니다.",
   },
   {
     key: "ap2",
