@@ -694,10 +694,11 @@ export const POC_CARDS: DemoCard[] = [
       "A board you run: one agent spend from the 7702 upgrade to fiat settlement, every step linking to the demo that executes it.",
     descriptionKo:
       "돌려 보는 판 — 7702 업그레이드부터 법정화폐 정산까지 에이전트 지출 한 건. 각 단계는 그것을 실제로 돌리는 데모로 이어집니다.",
+    // 세 번째 시나리오 (jay, 2026-11-09): 지도의 사용자 아래에 "AiTM 중계 피싱" 판 — 같은 사람이 공격당하는 쪽.
     status: "live",
     href: "/live/stack",
     date: "2026-11-02",
-    updated: "2026-11-03",
+    updated: "2026-11-09",
     howTo:
       "Press ① through ⑥ and watch the mandate bar drain. At any point press \"Try to overspend\" — the caveat enforcer refuses a transaction whose signature is perfectly valid. Scripted: no wallet, no chain, no key.",
     howToKo:
@@ -715,8 +716,8 @@ export const POC_CARDS: DemoCard[] = [
     // Bird View 의 게임판 (jay, 2026-11-03: "one more menu Metaverse View that is a game view … I click a one
     // scenario box, it's bloated and pops up the related component").
     key: "agent-metaverse",
-    title: "Metaverse View — walk the two scenarios",
-    titleKo: "Metaverse View — 두 시나리오를 걸어 다니기",
+    title: "Metaverse View — walk the three scenarios",
+    titleKo: "Metaverse View — 세 시나리오를 걸어 다니기",
     description:
       "Bird View as a 3D game: press an island and it swells while that scenario's parts rise, with a jUSD orb running the route.",
     descriptionKo:
@@ -724,15 +725,15 @@ export const POC_CARDS: DemoCard[] = [
     status: "live",
     href: "/live/metaverse",
     date: "2026-11-03",
-    updated: "2026-11-03",
+    updated: "2026-11-09",
     howTo:
       "Press an island (or its button in the HUD). It swells with a spring, the user walks onto it and its parts pop up one by one. Press a part for its bubble and a standard chip for the full explanation; press the ground to close, Esc to go back.",
     howToKo:
       "섬(또는 HUD 의 버튼)을 누르세요. 섬이 출렁이며 부풀고, 사용자가 걸어 들어가고, 부품이 하나씩 솟아오릅니다. 부품을 누르면 말풍선이, 표준 칩을 누르면 긴 설명이 뜹니다. 바닥을 누르면 닫히고 Esc 는 뒤로 갑니다.",
     purpose:
-      "Bird View says in what order the six demos engage; this says the same thing as a place you walk through. The one user standing between two islands is the point Bird View's map makes — the agentic payment and the Canton plan are two scenarios of the same person.",
+      "Bird View says in what order the six demos engage; this says the same thing as a place you walk through. The one user standing between two islands is the point Bird View's map makes — the agentic payment and the Canton plan are two scenarios of the same person. Since 2026-11-09 a third, red island sits in front: AiTM relay phishing, where the same person is the target and a red orb carries the request, the real page and the relayed OTP.",
     purposeKo:
-      "Bird View 가 여섯 데모의 순서를 말한다면, 여기는 같은 말을 걸어 다니는 공간으로 합니다. 두 섬 사이에 선 사용자 한 명이 Bird View 지도가 하는 말 그대로입니다 — 에이전트 결제와 Canton 계획은 같은 사람의 두 시나리오입니다.",
+      "Bird View 가 여섯 데모의 순서를 말한다면, 여기는 같은 말을 걸어 다니는 공간으로 합니다. 두 섬 사이에 선 사용자 한 명이 Bird View 지도가 하는 말 그대로입니다 — 에이전트 결제와 Canton 계획은 같은 사람의 두 시나리오입니다. 2026-11-09부터는 앞쪽에 붉은 세 번째 섬이 있습니다 — AiTM 중계 피싱. 같은 사람이 이번에는 공격당하는 쪽이고, 붉은 구슬이 요청 · 진짜 화면 · 중계된 OTP 를 나릅니다.",
     howItWorks:
       "react-three-fiber over three.js, client only. Each island is a cylinder whose scale follows a spring (the swell); parts are boxes that pop with a back-out ease, wires are cylinder segments (dashed for the planned Canton side), and labels are canvas-texture sprites. The standards text is shared with Bird View through app/live/stack/std.ts. Scripted: no chain, no signature, no key.",
     howItWorksKo:
@@ -745,13 +746,13 @@ export const POC_CARDS: DemoCard[] = [
     title: "Game View — Bird View in Unity",
     titleKo: "Game View — Bird View 를 Unity 로",
     description:
-      "The same two scenarios built in Unity and run as WebGL: tiles swell into boards, the user pawn walks on, parts pop up.",
+      "The same three scenarios built in Unity and run as WebGL: tiles swell into boards, the user pawn walks on, parts pop up.",
     descriptionKo:
-      "같은 두 시나리오를 Unity 로 짓고 WebGL 로 돌립니다 — 타일이 판으로 부풀고, 사용자 말이 걸어 들어가고, 부품이 솟아오릅니다.",
+      "같은 세 시나리오를 Unity 로 짓고 WebGL 로 돌립니다 — 타일이 판으로 부풀고, 사용자 말이 걸어 들어가고, 부품이 솟아오릅니다.",
     status: "live",
     href: "/live/game",
     date: "2026-11-03",
-    updated: "2026-11-03",
+    updated: "2026-11-09",
     howTo:
       "Press a scenario tile (or its button). It swells into a board, the user pawn walks onto it, and the parts pop up in Bird View's layout. Press a part or the user for its panel and its standards; Esc goes back.",
     howToKo:

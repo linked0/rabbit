@@ -18,8 +18,8 @@ export default function GamePage() {
         <h1>{t("Game View — Bird View 를 Unity 로", "Game View — Bird View in Unity")}</h1>
         <p className="sub">
           {t(
-            "Bird View 와 같은 두 시나리오를 Unity 엔진으로 그린 판입니다. 시나리오 타일을 누르면 판으로 부풀고, 사용자가 걸어 들어가고, 부품이 솟아오릅니다. Unity 화면 안의 글자는 영어입니다.",
-            "The same two scenarios as Bird View, drawn with the Unity engine. Press a scenario tile and it swells into a board, the user walks onto it, and its parts pop up.",
+            "Bird View 와 같은 세 시나리오(에이전트 결제 · Canton · AiTM 중계 피싱)를 Unity 엔진으로 그린 판입니다. 시나리오 타일을 누르면 판으로 부풀고, 사용자가 걸어 들어가고, 부품이 솟아오릅니다. Unity 화면 안의 글자는 영어입니다.",
+            "The same three scenarios as Bird View (agentic payment, Canton, AiTM relay phishing), drawn with the Unity engine. Press a scenario tile and it swells into a board, the user walks onto it, and its parts pop up.",
           )}
         </p>
         <div className="mv-stage" style={{ marginTop: 16 }}>

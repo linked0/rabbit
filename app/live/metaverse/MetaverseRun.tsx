@@ -12,7 +12,7 @@ import { CAP, PRICE, STD, type Txt } from "../stack/std";
 // of Bird View"). Bird View(/live/stack)의 지도와 같은 내용을 3D 섬으로 그린다.
 //
 // - 처음에는 섬 두 개(에이전트 결제 · Canton)와 그 사이에 선 **사용자 한 명**만 있다 — Bird View 지도의
-//   "두 시나리오, 같은 사람"을 그대로 옮긴 것이다.
+//   "두 시나리오, 같은 사람"을 그대로 옮긴 것이다. (11/9부터 세 번째 섬 — 아래 참고)
 // - 섬을 누르면 그 섬이 **부풀고**(스프링이라 한 번 출렁인다), 사용자가 그 섬으로 걸어가고, 부품이
 //   하나씩 **솟아오른다**. 다른 섬은 작아져 옆으로 비켜난다 — 누르면 그쪽으로 건너간다.
 // - 부품을 누르면 말풍선이 뜨고, 그 안의 표준 버튼은 Bird View 와 같은 설명(std.ts)을 연다.
@@ -20,9 +20,13 @@ import { CAP, PRICE, STD, type Txt } from "../stack/std";
 //   Canton(T5)은 계획이라 반투명·점선이고 구슬도 돌지 않는다 — 돌지 않는 것을 도는 것처럼 그리지 않는다.
 //
 // 각본이다: 체인도, 서명도, 키도 없다. 실제로 도는 것은 말풍선이 링크하는 데모들이다.
+//
+// **세 번째 섬: AiTM 중계 피싱** (jay, 2026-11-09, Bird View 와 같은 날 같은 요청). 두 섬 앞쪽(카메라 쪽)에
+// 붉은 섬으로 놓인다 — 같은 사용자가 공격당하는 시나리오다. 구슬도 붉다: 사용자 → 프록시 → 진짜 사이트 →
+// (진짜 화면이 돌아옴) → 사용자 → 프록시 → 공격자의 다른 거래. 막는 길(패스키)은 Bird View 판에서 고른다.
 
-type Scenario = "agentic" | "canton";
-type CompId = "user" | "wallet" | "delegator" | "agent" | "provider" | "ap2" | "operator" | "sync" | "validator" | "daml";
+type Scenario = "agentic" | "canton" | "relay";
+type CompId = "user" | "wallet" | "delegator" | "agent" | "provider" | "ap2" | "operator" | "sync" | "validator" | "daml" | "proxy" | "site" | "other" | "guard";
 type V2 = [number, number]; // 섬 위 좌표 (x, z) — z 가 작을수록 화면 위쪽(먼 쪽)
 type Comp = { id: CompId; at: V2; title: Txt; tint: string; contract?: boolean; body: Txt; menu: string[] };
 type BeamDef = { a: V2; b: V2; label: string | Txt; both?: boolean; off?: V2 }; // off: 이름표를 옆으로 비키는 거리
@@ -89,17 +93,51 @@ const COMPS: Record<Scenario, Comp[]> = {
     { id: "validator", at: [1.1, 0.25], title: { ko: "Validator", en: "Validator" }, tint: "#94a3b8", contract: true, body: STD.Validator.role, menu: ["Validator", "Daml"] },
     { id: "daml", at: [1.1, 1.55], title: { ko: "Daml 계약", en: "Daml contract" }, tint: "#94a3b8", contract: true, body: STD.Daml.role, menu: ["Daml", "Guardrail"] },
   ],
+  relay: [
+    {
+      id: "proxy", at: [0, -0.9], title: { ko: "공격자 프록시", en: "Attacker's proxy" }, tint: "#ef4444",
+      body: {
+        ko: "가짜 도메인(지어낸 예시: verex-settle.example)이 진짜 사이트의 리버스 프록시로 동작한다. 요청을 그대로 넘기고 응답을 그대로 돌려줘서 화면은 100% 진짜다. 결제 단계에서만 양식을 바꾸고 OTP 를 복사한다.",
+        en: "A fake domain (a made-up example: verex-settle.example) acts as a reverse proxy for the real site. It forwards requests and returns responses unchanged, so the screen is 100% real. Only at the payment step does it swap the form and copy the OTP.",
+      },
+      menu: ["AiTM", "Session"],
+    },
+    {
+      id: "site", at: [1.9, -0.9], title: { ko: "진짜 사이트 · Verex", en: "Real site · Verex" }, tint: "#60a5fa",
+      body: {
+        ko: "해킹당하지 않았다. 평소처럼 응답할 뿐이라 로그에는 '정상 사용자 + 낯선 IP(프록시)'만 남는다. 패스키로 승인하면 서명의 origin 이 가짜 도메인이라 여기서 거절된다.",
+        en: "Never hacked. It answers as usual, so its log shows only 'a normal user + an unfamiliar IP (the proxy)'. With a passkey approval, the signature's origin is the fake domain and it is rejected here.",
+      },
+      menu: ["CSP", "SRI", "WebAuthn"],
+    },
+    {
+      id: "other", at: [0, 1.0], title: { ko: "공격자의 다른 거래", en: "Attacker's other payment" }, tint: "#f97316",
+      body: {
+        ko: "공격자가 같은 시각에 열어 둔 결제다. 사용자가 자기 거래에 넣는다고 믿은 OTP 가 이 거래의 3-D Secure 에 들어간다 — 2차 인증이 '어느 거래'를 묶지 않기 때문이다.",
+        en: "A payment the attacker opened at the same moment. The OTP the user believes is for their own transaction goes into this one's 3-D Secure — because the second factor does not bind 'which transaction'.",
+      },
+      menu: ["3DS", "AiTM"],
+    },
+    {
+      id: "guard", at: [1.9, 1.0], title: { ko: "서버의 네 신호", en: "Server's four signals" }, tint: "#a78bfa", contract: true,
+      body: {
+        ko: "① 내 도메인이 아닌 Origin 의 POST ② TLS 세션과 앱 세션의 불일치 ③ 같은 쿠키가 두 IP 에서 ④ 결제 스크립트 해시(SRI) 불일치. 넷은 신호이고, 패스키(WebAuthn)만 구조로 막는다.",
+        en: "① A POST from an Origin that is not mine ② a TLS/app session mismatch ③ one cookie from two IPs ④ a payment-script hash (SRI) mismatch. The four are signals; only a passkey (WebAuthn) blocks it by structure.",
+      },
+      menu: ["CSP", "Session", "SRI", "WebAuthn"],
+    },
+  ],
 };
 // 사용자는 두 섬의 같은 사람이다 — 섬을 펼치면 그 섬의 이 자리로 걸어간다.
 const USER: Comp = {
   id: "user", at: [0, 0], title: { ko: "사용자", en: "User" }, tint: "#ffffff",
   body: {
-    ko: "두 시나리오의 같은 사람. 에이전트 결제 섬에서는 지갑의 주인(EOA)이고, Canton 섬에서는 Daml 계약의 당사자(party) — 자기가 당사자인 sub-transaction 만 본다.",
-    en: "The same person in both scenarios. On the agentic-payment island, the wallet's owner (an EOA); on the Canton island, a party to a Daml contract — seeing only the sub-transactions it is party to.",
+    ko: "세 시나리오의 같은 사람. 에이전트 결제 섬에서는 지갑의 주인(EOA)이고, Canton 섬에서는 Daml 계약의 당사자(party), 피싱 섬에서는 문자 링크를 누르는 사람 — 그리고 그 섬은 그가 가짜를 알아보리라고 기대하지 않는다.",
+    en: "The same person in all three scenarios: on the agentic-payment island the wallet's owner (an EOA), on the Canton island a party to a Daml contract, on the phishing island the one who taps the text-message link — and that island does not count on them spotting the fake.",
   },
-  menu: ["EIP-7702", "Validator"],
+  menu: ["EIP-7702", "Validator", "WebAuthn"],
 };
-const STAND: Record<Scenario, V2> = { agentic: [0, -2.3], canton: [-1.1, -1.95] };
+const STAND: Record<Scenario, V2> = { agentic: [0, -2.3], canton: [-1.1, -1.95], relay: [-1.95, -0.9] };
 const BEAMS: Record<Scenario, BeamDef[]> = {
   agentic: [
     { a: STAND.agentic, b: [0, -1.2], label: "EIP-7702" },
@@ -114,9 +152,37 @@ const BEAMS: Record<Scenario, BeamDef[]> = {
     { a: [1.1, -1.05], b: [1.1, 0.25], label: "" },
     { a: [1.1, 0.25], b: [1.1, 1.55], label: "" },
   ],
+  relay: [
+    { a: STAND.relay, b: [0, -0.9], label: { ko: "가짜 주소", en: "fake address" } },
+    { a: [0, -0.9], b: [1.9, -0.9], label: { ko: "진짜 서버", en: "real server" } },
+    { a: [0, -0.9], b: [0, 1.0], label: { ko: "OTP 중계", en: "OTP relay" }, off: [-0.75, 0] },
+    { a: [1.9, -0.9], b: [1.9, 1.0], label: { ko: "검사", en: "checks" }, off: [0.6, 0] },
+  ],
 };
-// jUSD 구슬이 도는 순서: [간선 번호, 거꾸로 가나] — 사용자 → MetaMask → Delegator → 에이전트 → 제공자 → 에이전트 → AP2.
-const ROUTE: Array<[number, boolean]> = [[0, false], [1, false], [2, false], [3, false], [3, true], [4, false]];
+// 구슬이 도는 순서: [간선 번호, 거꾸로 가나].
+// 에이전트 결제: 사용자 → MetaMask → Delegator → 에이전트 → 제공자 → 에이전트 → AP2.
+// 중계 피싱: 사용자 → 프록시 → 진짜 사이트 → 프록시 → 사용자 (진짜 화면) → 프록시 → 공격자의 다른 거래 (OTP).
+const ROUTES: Partial<Record<Scenario, Array<[number, boolean]>>> = {
+  agentic: [[0, false], [1, false], [2, false], [3, false], [3, true], [4, false]],
+  relay: [[0, false], [1, false], [1, true], [0, true], [0, false], [2, false]],
+};
+const ORB: Record<Scenario, string> = { agentic: "#4ade80", canton: "#4ade80", relay: "#f87171" };
+// 섬의 자리: 접혀 있을 때(home)와 다른 섬이 펼쳐졌을 때(aside). [넓은 화면, 좁은 화면]
+const HOME: Record<Scenario, [[number, number, number], [number, number, number]]> = {
+  agentic: [[-4.3, 0, -1.2], [-3.0, 0, -3.4]],
+  canton: [[4.3, 0, -1.2], [3.0, 0, -3.4]],
+  relay: [[0, 0, 4.2], [0, 0, 3.6]],
+};
+const ASIDE: Record<Scenario, [[number, number, number], [number, number, number]]> = {
+  agentic: [[-7.6, 0, -3.6], [-3.4, 0, -6.4]],
+  canton: [[7.6, 0, -3.6], [3.4, 0, -6.4]],
+  relay: [[0, 0, -7.2], [0, 0, -7.6]],
+};
+const ISLAND: Record<Scenario, { title: Txt; sub: Txt; color: string; emissive: string; ring: string }> = {
+  agentic: { title: { ko: "에이전트 결제 시나리오", en: "Agentic payment scenario" }, sub: { ko: "여섯 데모 · EIP-7702 → AP2", en: "six demos · EIP-7702 → AP2" }, color: "#1e3a8a", emissive: "#2563eb", ring: "#60a5fa" },
+  canton: { title: { ko: "Canton 시나리오", en: "Canton scenario" }, sub: { ko: "계획 · T5 · 테스트넷만", en: "planned · T5 · test networks only" }, color: "#334155", emissive: "#475569", ring: "#94a3b8" },
+  relay: { title: { ko: "AiTM 중계 피싱 시나리오", en: "AiTM relay-phishing scenario" }, sub: { ko: "진짜 화면 · OTP 중계 · 패스키가 막는다", en: "a real screen · a relayed OTP · a passkey blocks it" }, color: "#7f1d1d", emissive: "#dc2626", ring: "#f87171" },
+};
 
 const backOut = (t: number) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
 
@@ -262,9 +328,8 @@ function Island({ id, open, narrow, lang, onOpen, picked, onPick }: {
   const scale = useRef(1), vel = useRef(0);
   const [hover, setHover] = useState(false);
   const isOpen = open === id;
-  const sign = id === "agentic" ? -1 : 1;
-  const home: [number, number, number] = narrow ? [0, 0, sign * 3.4] : [sign * 4.3, 0, 0];
-  const aside: [number, number, number] = narrow ? [sign * 3.4, 0, -6.4] : [sign * 7.6, 0, -3.6];
+  const home = HOME[id][narrow ? 1 : 0];
+  const aside = ASIDE[id][narrow ? 1 : 0];
   const tPos = open === null ? home : isOpen ? [0, 0, 0] : aside;
   const tScale = open === null ? 1 : isOpen ? BLOAT : 0.38;
   const active = useRef(-1);
@@ -281,25 +346,25 @@ function Island({ id, open, narrow, lang, onOpen, picked, onPick }: {
     p.lerp(new THREE.Vector3(...(tPos as [number, number, number])), 1 - Math.exp(-dt * 4));
     // 섬 이름표: 접혀 있으면 가운데 위, 펼치면 가까운 쪽 가장자리로 비켜 준다 — 먼 쪽에는 사용자가 선다.
     if (label.current) label.current.position.lerp(new THREE.Vector3(0, isOpen ? 0.55 : 1.25, isOpen ? RADIUS + 0.45 : 0), 1 - Math.exp(-dt * 5));
-    // jUSD 구슬 (에이전트 결제 섬만)
+    // 구슬 (에이전트 결제 섬은 jUSD, 피싱 섬은 붉은 요청·OTP)
+    const route = ROUTES[id];
     if (orb.current) {
-      if (!isOpen || plan) { orb.current.visible = false; active.current = -1; runT.current = 0; return; }
+      if (!isOpen || plan || !route) { orb.current.visible = false; active.current = -1; runT.current = 0; return; }
       runT.current += dt;
       const t = runT.current - 1.6; // 부품이 다 솟은 뒤에 출발
-      const per = 0.85, cycle = ROUTE.length * per + 1.2;
+      const per = 0.85, cycle = route.length * per + 1.2;
       if (t < 0) { orb.current.visible = false; return; }
       const c = t % cycle, i = Math.floor(c / per);
-      if (i >= ROUTE.length) { orb.current.visible = false; active.current = -1; return; }
-      const [bi, rev] = ROUTE[i];
-      const bd = BEAMS.agentic[bi];
+      if (i >= route.length) { orb.current.visible = false; active.current = -1; return; }
+      const [bi, rev] = route[i];
+      const bd = BEAMS[id][bi];
       const f = (c - i * per) / per, a = rev ? bd.b : bd.a, b = rev ? bd.a : bd.b;
       orb.current.visible = true;
       orb.current.position.set(a[0] + (b[0] - a[0]) * f, TOP + 0.24, a[1] + (b[1] - a[1]) * f);
       active.current = bi;
     }
   });
-  const title = id === "agentic" ? { ko: "에이전트 결제 시나리오", en: "Agentic payment scenario" } : { ko: "Canton 시나리오", en: "Canton scenario" };
-  const sub = id === "agentic" ? { ko: "여섯 데모 · EIP-7702 → AP2", en: "six demos · EIP-7702 → AP2" } : { ko: "계획 · T5 · 테스트넷만", en: "planned · T5 · test networks only" };
+  const { title, sub, color, emissive, ring: ringColor } = ISLAND[id];
   const tx = (x: Txt) => (lang === "ko" ? x.ko : x.en);
   const ring = useMemo(() => {
     const pts = new THREE.Path().absarc(0, 0, RADIUS + 0.02, 0, Math.PI * 2, false).getPoints(96);
@@ -323,14 +388,14 @@ function Island({ id, open, narrow, lang, onOpen, picked, onPick }: {
         onPointerOut={() => { setHover(false); document.body.style.cursor = ""; }}
       >
         <cylinderGeometry args={[RADIUS, RADIUS * 0.9, 0.36, 64]} />
-        <meshStandardMaterial color={plan ? "#334155" : "#1e3a8a"} roughness={0.7} transparent={plan} opacity={plan ? 0.7 : 1}
-          emissive={plan ? "#475569" : "#2563eb"} emissiveIntensity={glow ? 0.55 : 0.18} />
+        <meshStandardMaterial color={color} roughness={0.7} transparent={plan} opacity={plan ? 0.7 : 1}
+          emissive={emissive} emissiveIntensity={glow ? 0.55 : 0.18} />
       </mesh>
       <lineLoop ref={ringRef} geometry={ring}>
-        <lineDashedMaterial color={glow ? "#ffffff" : plan ? "#94a3b8" : "#60a5fa"} dashSize={plan ? 0.25 : 100} gapSize={plan ? 0.15 : 0} />
+        <lineDashedMaterial color={glow ? "#ffffff" : ringColor} dashSize={plan ? 0.25 : 100} gapSize={plan ? 0.15 : 0} />
       </lineLoop>
       <group ref={label} position={[0, 1.25, 0]}>
-        <Label position={[0, 0, 0]} scale={isOpen ? 0.8 : 1.15} border={glow ? "#ffffff" : plan ? "#94a3b8" : "#60a5fa"}
+        <Label position={[0, 0, 0]} scale={isOpen ? 0.8 : 1.15} border={glow ? "#ffffff" : ringColor}
           lines={[{ text: tx(title), size: 15, weight: 700, color: "#ffffff" }, { text: tx(sub), size: 11, weight: 500, color: "#cbd5e1" }]} />
       </group>
       {plan && (
@@ -349,7 +414,7 @@ function Island({ id, open, narrow, lang, onOpen, picked, onPick }: {
       ))}
       <mesh ref={orb} visible={false}>
         <sphereGeometry args={[0.12, 20, 20]} />
-        <meshBasicMaterial color="#4ade80" />
+        <meshBasicMaterial color={ORB[id]} />
       </mesh>
     </group>
   );
@@ -407,7 +472,7 @@ function Rig({ open, narrow }: { open: Scenario | null; narrow: boolean }) {
   const { camera } = useThree();
   const look = useRef(new THREE.Vector3());
   useFrame((_, dt) => {
-    const pos = open ? (narrow ? [0, 15, 10] : [0, 10.2, 6.2]) : narrow ? [0, 24, 7] : [0, 8.6, 11.2];
+    const pos = open ? (narrow ? [0, 15, 10] : [0, 10.2, 6.2]) : narrow ? [0, 27, 9] : [0, 10.5, 13.5];
     const a = 1 - Math.exp(-dt * 3);
     camera.position.lerp(new THREE.Vector3(pos[0], pos[1], pos[2]), a);
     look.current.lerp(new THREE.Vector3(0, 0, open ? -0.4 : 0), a);
@@ -458,14 +523,15 @@ export default function MetaverseRun({ lang }: { lang: Lang }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [pick, open]);
 
-  const other: Scenario | null = open === "agentic" ? "canton" : open === "canton" ? "agentic" : null;
-  const name = (s: Scenario) => (s === "agentic" ? t("에이전트 결제 시나리오", "Agentic payment scenario") : t("Canton 시나리오", "Canton scenario"));
+  const ALL: Scenario[] = ["agentic", "canton", "relay"];
+  const others = ALL.filter((x) => open && x !== open);
+  const name = (s: Scenario) => tx(ISLAND[s].title);
   const s = detail ? STD[detail] : null;
 
   return (
     <div className="mv-stage" style={{ marginTop: 16 }}>
       <Canvas
-        camera={{ position: [0, 8.6, 11.2], fov: 40 }}
+        camera={{ position: [0, 10.5, 13.5], fov: 40 }}
         dpr={[1, 2]}
         gl={{ antialias: true }}
         onPointerMissed={() => { setPick(null); setDetail(null); }}
@@ -485,6 +551,7 @@ export default function MetaverseRun({ lang }: { lang: Lang }) {
         <Rig open={open} narrow={narrow} />
         <Island id="agentic" open={open} narrow={narrow} lang={lang} onOpen={openIsland} picked={pick?.id ?? null} onPick={choose} />
         <Island id="canton" open={open} narrow={narrow} lang={lang} onOpen={openIsland} picked={pick?.id ?? null} onPick={choose} />
+        <Island id="relay" open={open} narrow={narrow} lang={lang} onOpen={openIsland} picked={pick?.id ?? null} onPick={choose} />
         <Avatar open={open} narrow={narrow} lang={lang} picked={pick?.id === "user"} onPick={choose} />
       </Canvas>
 
@@ -498,11 +565,8 @@ export default function MetaverseRun({ lang }: { lang: Lang }) {
         <div className="mv-hud-b">
           {open ? (<>
             <button className="ghost" onClick={() => openIsland(null)}>{t("← 전체 보기", "← Overview")}</button>
-            {other && <button className="ghost" onClick={() => openIsland(other)}>{name(other)} →</button>}
-          </>) : (<>
-            <button className="ghost" onClick={() => openIsland("agentic")}>{name("agentic")}</button>
-            <button className="ghost" onClick={() => openIsland("canton")}>{name("canton")}</button>
-          </>)}
+            {others.map((o) => <button key={o} className="ghost" onClick={() => openIsland(o)}>{name(o)} →</button>)}
+          </>) : ALL.map((o) => <button key={o} className="ghost" onClick={() => openIsland(o)}>{name(o)}</button>)}
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 // /live/stack(Bird View)와 /live/metaverse(Metaverse View)가 함께 읽는 표준 설명.
+// Game View(rabbit-hole BirdGame.cs)는 같은 내용을 영어로 따로 들고 있다 — 고칠 때 함께 고친다.
 // 두 화면이 같은 설명을 들고 있어야 한쪽만 고쳐지는 일이 없다 (jay, 2026-11-03: "Metaverse View is a
 // game version of Bird View").
 
@@ -136,6 +137,62 @@ export const STD: Record<string, Std> = {
     detail: {
       ko: "T5 는 후보(dark horse)다. 우리 핵심은 EVM 이고 Canton 은 Daml — 다른 언어·툴체인·운영 모델이라 #1–9 어디도 이것을 필요로 하지 않는다. 그래도 S&P·Kaiko·DTCC 같은 기관이 규제 데이터 상품에 Canton 을 고르고 있어, 라이선스 데이터 PoC 가 그 세계와 말을 섞으려면 여기 테스트가 가장 싼 배움이다.",
       en: "T5 is a candidate (dark horse). Our core is EVM and Canton is Daml — a different language, toolchain and operating model, and nothing in #1–9 needs it. Yet S&P, Kaiko and DTCC are choosing Canton for regulated data products, so if a licensed-data PoC ever talks to that world, a test here is the cheapest way to learn what it costs.",
+    },
+    runs: "plan",
+  },
+  // ── AiTM 중계 피싱 (jay, 2026-11-09: 모닝 리포트 11/8 Tech Note "진짜 사이트를 빌려 쓰는 피싱") ──
+  // 이 시나리오에서 rabbit 이 직접 돌리는 것은 없다. 그래서 공격 쪽은 "named", 방어 쪽은 "plan"(잴 것)이다.
+  AiTM: {
+    id: "AiTM",
+    role: { ko: "중간자 피싱 — 진짜 사이트를 리버스 프록시로 그대로 보여 주고, 입력만 중간에서 가로챈다.", en: "Adversary-in-the-middle phishing — the real site, shown through a reverse proxy, with the input taken in the middle." },
+    detail: {
+      ko: "공격자 도메인이 피해 사이트의 리버스 프록시로 동작한다: 사용자의 요청을 진짜 서버로 전달하고 응답(화면·가격·장바구니·세션 쿠키)을 그대로 돌려준다. 그래서 화면은 100% 진짜다. 결제 단계에서만 양식을 바꾸거나 스크립트를 주입해 카드정보·OTP 를 복사하고, 같은 시각 다른 거래의 3-D Secure 에 넣는다. 피해 사이트는 해킹당하지 않았으므로 로그에는 '정상 사용자 + 낯선 IP(프록시)'만 남는다. Evilginx 류 도구가 2017년부터 있다(일반 지식). 출처: 모닝 리포트 11/8 Tech Note — InfoHawk 보고서 원문 미열람, 운영자 실시간 제어는 InfoHawk 추정.",
+      en: "The attacker's domain acts as a reverse proxy for the real site: it forwards the user's requests to the real server and returns the responses (pages, prices, cart, session cookie) unchanged, so the screen is 100% real. Only at the payment step does it swap the form or inject a script to copy the card data and OTP, then push them into another transaction's 3-D Secure at the same moment. The real site was never hacked, so its logs show only 'a normal user + an unfamiliar IP (the proxy)'. Evilginx-style tools have existed since 2017 (general knowledge). Source: the 11/8 morning-report Tech Note — the InfoHawk report itself not opened; the live-operator detail is InfoHawk's estimate.",
+    },
+    runs: "named",
+  },
+  "3DS": {
+    id: "3-D Secure",
+    role: { ko: "카드 결제의 2차 인증 — '누가'는 확인하지만 '어느 거래'에 답하는지는 사용자가 볼 수 없다.", en: "The second factor for card payments — it checks who, but the user cannot see which transaction they are answering." },
+    detail: {
+      ko: "OTP 나 앱 승인은 '지금 이 사람이 맞다'를 증명한다. 그런데 중계되는 순간, 사용자는 자기 거래에 답한다고 믿으면서 공격자의 다른 거래에 답한다. 2차 인증이 '내가 하는 거래'를 보증하지 않게 되는 지점이 여기다.",
+      en: "An OTP or app approval proves 'this is the right person, now'. Once it is relayed, the user believes they are answering their own transaction while answering the attacker's. This is where a second factor stops guaranteeing 'the transaction I am making'.",
+    },
+    runs: "named",
+  },
+  WebAuthn: {
+    id: "WebAuthn · 패스키",
+    role: { ko: "서명에 origin 이 묶인다 — 프록시 도메인에서는 진짜 사이트용 서명이 나오지 않는다. AiTM 에 대한 유일한 구조적 방어.", en: "The signature is bound to the origin — a proxy domain cannot get a signature for the real site. The only structural defence against AiTM." },
+    detail: {
+      ko: "브라우저는 패스키 서명에 지금 열린 페이지의 origin 을 넣고, 키는 등록한 사이트(rpId)에만 쓰인다. 사용자가 가짜 도메인에 있으면 브라우저가 진짜 사이트의 키를 꺼내지 않거나, 꺼내도 origin 이 달라 서버 검증이 실패한다. 사용자가 속아도 막힌다 — '가짜를 알아보기'가 아니라 구조로 막는 방법이다. 잴 것: Verex 정산·출금 승인 경로를 WebAuthn 으로.",
+      en: "The browser puts the current page's origin into the passkey signature, and the key works only for the site it was registered to (rpId). On a fake domain the browser either will not use the real site's key, or the origin differs and the server's check fails. It holds even when the user is fooled — a structural block, not 'spot the fake'. To measure: Verex's settlement and withdrawal approvals on WebAuthn.",
+    },
+    runs: "plan",
+  },
+  CSP: {
+    id: "CSP · Origin",
+    role: { ko: "신호 ① — 양식이 내 도메인이 아닌 곳에서 왔다.", en: "Signal ① — the form came from somewhere that is not my domain." },
+    detail: {
+      ko: "CSP form-action 'self' 로 양식이 다른 곳으로 가지 못하게 하고, 서버는 POST 의 Origin/Referer 가 내 도메인인지 본다. 다만 리버스 프록시는 헤더를 고쳐 쓸 수 있어서 이것만으로는 못 막는다 — 신호일 뿐이다. 잴 것: rabbit 공개 폼에 CSP form-action 한 줄.",
+      en: "CSP form-action 'self' keeps forms from posting elsewhere, and the server checks that a POST's Origin/Referer is its own domain. A reverse proxy can rewrite headers, though, so this alone does not stop it — it is a signal. To measure: one CSP form-action line on rabbit's public forms.",
+    },
+    runs: "plan",
+  },
+  Session: {
+    id: "세션 · IP",
+    role: { ko: "신호 ②③ — TLS 세션과 앱 세션이 맞지 않고, 같은 쿠키가 짧은 시간에 두 IP 에서 보인다.", en: "Signals ②③ — the TLS session and the app session do not match, and the same cookie shows up from two IPs within minutes." },
+    detail: {
+      ko: "프록시는 사용자와 TLS 를 하나, 진짜 서버와 TLS 를 하나 따로 맺는다. 토큰 바인딩처럼 세션을 TLS 에 묶으면 어긋남이 드러난다. 또 훔친 쿠키를 공격자가 자기 쪽에서 다시 쓰면, 같은 세션 쿠키가 프록시 IP 와 다른 IP 에서 짧은 간격으로 보인다.",
+      en: "The proxy holds one TLS session with the user and a separate one with the real server; binding the session to TLS (token binding) exposes the mismatch. And when the attacker reuses the stolen cookie from their own side, the same session cookie appears from the proxy's IP and another IP within a short gap.",
+    },
+    runs: "plan",
+  },
+  SRI: {
+    id: "SRI",
+    role: { ko: "신호 ④ — 결제 양식의 스크립트가 내가 배포한 것과 다르다.", en: "Signal ④ — the payment form's script is not the one I shipped." },
+    detail: {
+      ko: "Subresource Integrity 는 스크립트 태그에 해시를 붙여, 내용이 다르면 브라우저가 실행하지 않게 한다. 프록시가 응답에 스크립트를 주입하거나 바꾸면 해시가 맞지 않는다. 프록시가 HTML 의 해시까지 고쳐 쓰면 못 막으니, 서버 쪽 무결성 보고와 같이 쓴다.",
+      en: "Subresource Integrity puts a hash on a script tag so the browser refuses to run changed content. A proxy that injects or swaps a script breaks the hash. A proxy that also rewrites the hash in the HTML gets past it, so pair it with server-side integrity reports.",
     },
     runs: "plan",
   },

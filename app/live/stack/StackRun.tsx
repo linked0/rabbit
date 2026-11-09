@@ -33,11 +33,19 @@ import { CAP, PRICE, OVER, STD, type Txt } from "./std";
 // 같은 손그림의 나머지 둘: 판의 테두리는 없앤다("we don't need border no more"), 사용자 칸 두 개는
 // 하나로 합친다("should be merged") — 사용자는 지도 가운데 한 번만 있고, 각 판은 그 사람에서 시작한다.
 
-type Scenario = "agentic" | "canton";
+// **세 번째 시나리오: AiTM 중계 피싱** (jay, 2026-11-09: 모닝 리포트 11/8 Tech Note "진짜 사이트를 빌려 쓰는
+// 피싱"을 "Bird view, Metaverse View, Game View 에 모두 추가"). 같은 사용자가 이번에는 공격당하는 쪽이다.
+// 링크 → 프록시 → 진짜 서버 → (진짜 화면이 돌아옴) → 승인. 승인을 OTP 로 하면 프록시가 그것을 다른 거래의
+// 3-D Secure 로 중계하고, 패스키로 하면 origin 이 달라 서명이 쓸모없어진다 — 이 판이 보여 주려는 것은
+// "사용자가 가짜를 알아보기"가 아니라 "서버와 구조가 중계를 알아채기"다. 도메인 이름은 지어낸 예시다.
+type Scenario = "agentic" | "canton" | "relay";
 type Phase = "user" | "wallet" | "agent" | "provider" | "ap2" | "done";
+type RPhase = "lure" | "relay" | "page" | "pay" | "done";
+type Method = "otp" | "passkey";
 type StackNode = "user" | "wallet" | "delegator" | "agent" | "provider" | "ap2";
 type CantonNode = "cuser" | "operator" | "sync" | "validator" | "daml";
-type NodeId = StackNode | CantonNode;
+type RelayNode = "ruser" | "proxy" | "site" | "other" | "guard";
+type NodeId = StackNode | CantonNode | RelayNode;
 type Rail = "stripe" | "toss";
 type Tone = "info" | "good" | "bad" | "chain";
 type Node = { x: number; y: number };
@@ -58,8 +66,17 @@ const N: Record<NodeId, Node> = {
   sync: { x: 440, y: 140 },
   validator: { x: 440, y: 270 },
   daml: { x: 440, y: 400 },
+  // AiTM 중계 피싱 — 위 줄: 사용자 → 공격자 프록시 → 진짜 사이트. 아래 줄: 공격자의 다른 거래 · 서버의 네 신호.
+  // 말풍선은 왼쪽 아래 빈자리에 뜬다.
+  ruser: { x: 110, y: 90 },
+  proxy: { x: 430, y: 90 },
+  site: { x: 760, y: 90 },
+  other: { x: 520, y: 280 },
+  guard: { x: 760, y: 280 },
 };
 const CANTON_FRAME = { x: 343, y: 86, w: 194, h: 370 };
+const FAKE = "verex-settle.example"; // 지어낸 가짜 도메인
+const REAL = "verex"; // 진짜 사이트 (rpId)
 
 type Packet = { id: number; from: Node; to: Node; color: string };
 type Line = { tone: Tone; text: string; chip?: string; href?: string; hrefLabel?: string };
@@ -79,12 +96,16 @@ export default function StackRun({ lang }: { lang: Lang }) {
   const [packets, setPackets] = useState<Packet[]>([]);
   const [log, setLog] = useState<Line[]>([]);
   const [flash, setFlash] = useState<Flash | null>(null);
+  const [rphase, setRphase] = useState<RPhase>("lure"); // 중계 피싱 판의 차례
+  const [method, setMethod] = useState<Method | null>(null);
+  const [rlog, setRlog] = useState<Line[]>([]); // 중계 피싱 판의 저널 — 에이전트 결제 판과 섞이지 않게 따로
 
   let seq = 0;
   const send = (list: Array<{ from: Node; to: Node; color: string }>) =>
     setPackets(list.map((p) => ({ ...p, id: Date.now() + seq++ })));
   // **오래된 것이 위로.** 이 페이지가 답하려는 질문이 "무슨 순서로 맞물리나"라서 역순이면 읽는 방향이 거꾸로가 된다.
   const note = (l: Line) => setLog((prev) => [...prev, l]);
+  const rnote = (l: Line) => setRlog((prev) => [...prev, l]);
   const blink = (node: NodeId, tone: "good" | "bad") => setFlash({ node, tone, key: Date.now() });
   const open = (id: NodeId) => { setPopup(id); setDetail(null); };
   const close = () => { setPopup(null); setDetail(null); };
@@ -149,6 +170,39 @@ export default function StackRun({ lang }: { lang: Lang }) {
   }
   function reset() {
     setPhase("user"); close(); setRail(null); setSpent(0); setRefused(0); setLastRefused(false); setPackets([]); setLog([]); setFlash(null);
+    setRphase("lure"); setMethod(null); setRlog([]);
+  }
+
+  // ── 중계 피싱 판의 동작 ───────────────────────────────────────────────
+  function lureOpen() {
+    close(); setRphase("relay");
+    send([{ from: N.ruser, to: N.proxy, color: "var(--accent)" }]);
+    rnote({ tone: "info", text: t(`문자의 링크를 열었다 — ${FAKE}. 주소만 다르고, 아직 아무 일도 없다.`, `Opened the link in the text message — ${FAKE}. Only the address differs; nothing has happened yet.`) });
+  }
+  function proxyForward() {
+    close(); setRphase("page");
+    send([{ from: N.proxy, to: N.site, color: "var(--red)" }]);
+    blink("proxy", "bad");
+    rnote({ tone: "bad", chip: "AiTM", text: t("프록시가 요청을 그대로 진짜 서버로 넘겼다. 사용자와 TLS 하나, 진짜 서버와 TLS 하나 — 두 연결의 가운데에 앉았다.", "The proxy passed the request straight to the real server: one TLS session with the user, another with the server — sitting in the middle of both.") });
+  }
+  function siteRespond() {
+    close(); setRphase("pay");
+    send([{ from: N.site, to: N.proxy, color: "var(--green)" }, { from: N.proxy, to: N.ruser, color: "var(--green)" }]);
+    blink("site", "good");
+    rnote({ tone: "info", text: t("진짜 서버가 평소처럼 답했다 — 화면·금액·세션 쿠키. 사용자 화면은 100% 진짜이고, 서버 로그에는 '정상 사용자 + 낯선 IP' 뿐이다.", "The real server answered as usual — page, amount, session cookie. The user's screen is 100% real; the server log shows only 'a normal user + an unfamiliar IP'.") });
+  }
+  function approve(m: Method) {
+    close(); setMethod(m); setRphase("done");
+    if (m === "otp") {
+      send([{ from: N.ruser, to: N.proxy, color: "var(--accent)" }, { from: N.proxy, to: N.other, color: "var(--red)" }]);
+      blink("other", "bad");
+      rnote({ tone: "bad", chip: "3-D Secure", text: t("OTP 6자리를 입력했다. 프록시가 결제 양식을 바꿔치고 그 OTP 를 같은 시각 공격자의 다른 거래에 넣었다 — 2차 인증은 '누가'만 확인했고 '어느 거래'는 묶지 않았다.", "Typed the 6-digit OTP. The proxy swapped the payment form and pushed that OTP into the attacker's other transaction at the same moment — the second factor checked who, not which transaction.") });
+      rnote({ tone: "chain", chip: t("신호 ②③④", "signals ②③④"), text: t("서버가 켜 두었다면 볼 수 있던 것: TLS·세션 불일치, 같은 쿠키가 두 IP 에서, 결제 스크립트 해시 불일치. 신호일 뿐 — 막는 것은 구조다.", "What the server could have seen, had it looked: a TLS/session mismatch, one cookie from two IPs, a payment-script hash mismatch. Signals only — what blocks it is structure.") });
+    } else {
+      send([{ from: N.ruser, to: N.proxy, color: "var(--accent)" }, { from: N.proxy, to: N.site, color: "var(--red)" }]);
+      blink("guard", "good");
+      rnote({ tone: "good", chip: "WebAuthn", text: t(`패스키 서명에 지금 페이지의 origin(${FAKE})이 들어갔다. 서버가 기대한 것은 ${REAL} — 검증 실패. 프록시가 그대로 넘겨도 쓸모없는 서명이고, 사용자는 속았는데도 막혔다.`, `The passkey signature carried the current page's origin (${FAKE}). The server expected ${REAL} — verification failed. Relayed as-is, the signature is useless; the user was fooled and it still held.`) });
+    }
   }
 
   // ── 화면의 상태 줄: 컨트랙트가 끼는 동작마다 여기 글자가 바뀐다 ──────────
@@ -167,18 +221,35 @@ export default function StackRun({ lang }: { lang: Lang }) {
     sync: t("순서만 정함", "orders only"),
     validator: t("private ledger", "private ledger"),
     daml: t("Number 읽기 · DvP", "Number reading · DvP"),
+    ruser: rphase === "lure" ? t("문자 링크 — 눌러 보세요", "a text-message link — press")
+      : rphase === "pay" ? t("승인 단계 — 눌러 보세요", "approval step — press")
+      : method === "otp" ? t("OTP 를 넘겨줌", "handed over the OTP") : method === "passkey" ? t("속았지만 막힘", "fooled, still blocked") : t("가짜 주소에 있음", "on the fake address"),
+    proxy: rphase === "relay" ? t("요청 받음 — 눌러 보세요", "request in — press") : rphase === "lure" ? FAKE : method === "passkey" ? t("서명 중계 — 쓸모없음", "relayed a useless signature") : t("가운데에 앉음", "sitting in the middle"),
+    site: rphase === "page" ? t("요청 도착 — 눌러 보세요", "request arrived — press") : method === "passkey" ? t(`origin ≠ ${REAL} → 거절`, `origin ≠ ${REAL} → rejected`) : t("해킹당하지 않음", "not hacked"),
+    other: method === "otp" ? t("3DS 통과 — 돈이 나감", "3DS passed — money out") : t("공격자의 결제 대기", "the attacker's payment, waiting"),
+    guard: method === "passkey" ? t("구조로 막음 (패스키)", "blocked by structure (passkey)") : method === "otp" ? t("신호만 남음 ②③④", "signals only ②③④") : t("① Origin ② 세션 ③ IP ④ SRI", "① Origin ② session ③ IP ④ SRI"),
   };
   const lit: Record<NodeId, boolean> = {
     user: phase !== "user", wallet: phase !== "user", delegator: granted, agent: granted,
     provider: phase === "ap2" || phase === "done", ap2: phase === "done",
     cuser: false, operator: false, sync: false, validator: false, daml: false,
+    ruser: rphase !== "lure", proxy: rphase !== "lure" && rphase !== "relay", site: rphase === "pay" || rphase === "done",
+    other: method === "otp", guard: method === "passkey",
   };
   const CANTON: CantonNode[] = ["cuser", "operator", "sync", "validator", "daml"];
-  const boxProps = (id: NodeId) => ({
-    n: N[id], live: lit[id], ready: ready === id, flash: flash?.node === id ? flash : null,
-    plan: CANTON.includes(id as CantonNode),
-    onClick: ready === id || CANTON.includes(id as CantonNode) ? () => open(id) : undefined,
-  });
+  // 중계 피싱 판의 차례: 링크(사용자) → 프록시 → 진짜 사이트 → 다시 사용자(승인). 신호 칸은 언제든 읽을 수 있다.
+  const rready: NodeId | null = rphase === "lure" || rphase === "pay" ? "ruser" : rphase === "relay" ? "proxy" : rphase === "page" ? "site" : null;
+  const RELAY: RelayNode[] = ["ruser", "proxy", "site", "other", "guard"];
+  const boxProps = (id: NodeId) => {
+    const isRelay = RELAY.includes(id as RelayNode);
+    const turn = isRelay ? rready === id : ready === id;
+    const free = CANTON.includes(id as CantonNode) || id === "guard" || (isRelay && rphase === "done");
+    return {
+      n: N[id], live: lit[id], ready: turn, flash: flash?.node === id ? flash : null,
+      plan: CANTON.includes(id as CantonNode),
+      onClick: turn || free ? () => open(id) : undefined,
+    };
+  };
 
   // 진행 표시줄 — 버튼이 아니라 지나온 칸의 기록이다. 누르는 곳은 판 위다.
   const steps = [
@@ -191,7 +262,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
   // 고정 슬롯 하나(스택 구역 오른쪽 위, 모든 국면에서 비어 있는 자리)에 두고, 말하는 칸까지 선을 긋는다.
   // 아래 한계는 서비스 제공자 칸 윗변(277)이다. 표준 설명을 읽는 동안만은 그 아래로 자란다 —
   // 읽는 중에는 판을 누를 일이 없고, 스크롤되는 말풍선보다 긴 말풍선이 낫다.
-  const B = { x: view === "canton" ? 580 : 548, y: 18, w: 300, h: detail ? 420 : 252 };
+  const B = view === "relay" ? { x: 16, y: 140, w: 300, h: detail ? 345 : 250 } : { x: view === "canton" ? 580 : 548, y: 18, w: 300, h: detail ? 420 : 252 };
   const leader = popup && (
     <line
       x1={Math.min(Math.max(N[popup].x, B.x), B.x + B.w)} y1={Math.min(Math.max(N[popup].y, B.y), B.y + B.h)}
@@ -205,6 +276,8 @@ export default function StackRun({ lang }: { lang: Lang }) {
     agent: ["ERC-7710", "ERC-4337", "ERC-5792"], provider: ["x402", "ERC-8004", "ERC-1271"], ap2: ["AP2", "EIP-712"],
     cuser: ["Validator", "Guardrail"], operator: ["Validator", "Synchronizer", "Guardrail"],
     sync: ["Synchronizer"], validator: ["Validator", "Daml"], daml: ["Daml", "Guardrail"],
+    ruser: ["AiTM", "WebAuthn"], proxy: ["AiTM", "Session"], site: ["CSP", "SRI"], other: ["3DS", "AiTM"],
+    guard: ["CSP", "Session", "SRI", "WebAuthn"],
   };
   const StdMenu = ({ id }: { id: NodeId }) => (
     <div className="stack-std">
@@ -287,6 +360,47 @@ export default function StackRun({ lang }: { lang: Lang }) {
             {popup === "sync" && (<><div className="stack-bubble-h">Global Synchronizer</div><p>{tx(STD.Synchronizer.role)}</p></>)}
             {popup === "validator" && (<><div className="stack-bubble-h">Validator</div><p>{tx(STD.Validator.role)}</p></>)}
             {popup === "daml" && (<><div className="stack-bubble-h">{t("Daml 계약", "Daml contract")}</div><p>{tx(STD.Daml.role)}</p></>)}
+            {popup === "ruser" && rphase === "lure" && (<>
+              <div className="stack-bubble-h">{t("사용자 — 문자 한 통", "User — one text message")}</div>
+              <div className="stack-req">
+                <div className="stack-req-site">{t("[Verex] 정산 보류 — 24시간 안에 확인하세요", "[Verex] Settlement on hold — confirm within 24 hours")}</div>
+                <div className="stack-req-row"><span className="stack-chip">{t("링크", "link")}</span>https://{FAKE}/settle</div>
+                <div className="stack-req-note">{t("가짜 도메인은 지어낸 예시다.", "The fake domain is a made-up example.")}</div>
+              </div>
+              <div className="stack-bubble-actions"><button onClick={lureOpen}>{t("링크 열기", "Open the link")}</button></div>
+            </>)}
+            {popup === "ruser" && rphase === "pay" && (<>
+              <div className="stack-bubble-h">{t("정산 승인", "Approve the settlement")}</div>
+              <p>{t("화면은 진짜 Verex 그대로다 — 금액도, 내 이름도 맞다. 주소창만 다르다. 어떻게 승인할까?", "The screen is the real Verex — the amount and your name are right. Only the address bar differs. How do you approve?")}</p>
+              <div className="stack-bubble-actions">
+                <button onClick={() => approve("otp")} style={{ background: "var(--red)", borderColor: "var(--red)", color: "#fff" }}>{t("OTP 6자리 입력", "Type the 6-digit OTP")}</button>
+                <button onClick={() => approve("passkey")}>{t("패스키로 승인", "Approve with a passkey")}</button>
+              </div>
+            </>)}
+            {popup === "ruser" && rphase !== "lure" && rphase !== "pay" && (<>
+              <div className="stack-bubble-h">{t("사용자", "User")}</div>
+              <p>{t("에이전트 결제 판의 그 주인과 같은 사람이다. 이번 판에서는 공격당하는 쪽 — 그리고 이 판은 그가 가짜를 알아보리라고 기대하지 않는다.", "The same person who owns the agent on the agentic board. On this board, the target — and this board does not count on them spotting the fake.")}</p>
+            </>)}
+            {popup === "proxy" && (<>
+              <div className="stack-bubble-h">{t("공격자 도메인 — 리버스 프록시", "Attacker's domain — reverse proxy")}</div>
+              <p>{t(`${FAKE} 는 페이지를 만들지 않는다. 받은 요청을 진짜 서버로 넘기고, 돌아온 응답을 그대로 돌려준다. 결제 단계에서만 양식을 바꾸거나 스크립트를 넣는다.`, `${FAKE} builds no pages. It forwards each request to the real server and returns the response unchanged, swapping the form or injecting a script only at the payment step.`)}</p>
+              {rphase === "relay" && <div className="stack-bubble-actions"><button onClick={proxyForward} style={{ background: "var(--red)", borderColor: "var(--red)", color: "#fff" }}>{t("진짜 서버로 넘기기", "Forward to the real server")}</button></div>}
+            </>)}
+            {popup === "site" && (<>
+              <div className="stack-bubble-h">{t("진짜 사이트 — Verex 정산 페이지", "The real site — Verex settlement page")}</div>
+              <p>{t("해킹당하지 않았다. 평소처럼 응답할 뿐이다 — 그래서 로그에는 '정상 사용자 + 낯선 IP(프록시)'만 남는다.", "It was never hacked. It just answers as usual — so its log shows only 'a normal user + an unfamiliar IP (the proxy)'.")}</p>
+              {rphase === "page" && <div className="stack-bubble-actions"><button onClick={siteRespond}>{t("평소처럼 응답", "Answer as usual")}</button></div>}
+            </>)}
+            {popup === "other" && (<>
+              <div className="stack-bubble-h">{t("공격자의 다른 거래 — 3-D Secure", "The attacker's other transaction — 3-D Secure")}</div>
+              <p>{method === "otp"
+                ? t("같은 시각에 공격자가 연 결제다. 사용자가 자기 거래에 넣었다고 믿은 OTP 가 여기서 쓰였다.", "A payment the attacker opened at the same moment. The OTP the user thought was for their own transaction was used here.")
+                : t("공격자는 같은 시각에 다른 결제를 열어 두고, 사용자의 2차 인증이 중계되어 오기를 기다린다.", "The attacker keeps another payment open at the same moment and waits for the user's second factor to be relayed in.")}</p>
+            </>)}
+            {popup === "guard" && (<>
+              <div className="stack-bubble-h">{t("서버가 중계를 알아채는 네 신호", "Four signals the server can use to catch the relay")}</div>
+              <p>{t("① 내 도메인이 아닌 Origin 의 POST (CSP form-action) ② TLS 세션과 앱 세션의 불일치 ③ 같은 쿠키가 짧은 시간에 두 IP 에서 ④ 결제 스크립트 해시(SRI) 불일치. 앞의 넷은 신호이고, 패스키(WebAuthn)만 구조로 막는다.", "① A POST whose Origin is not my domain (CSP form-action) ② the TLS session and the app session do not match ③ one cookie from two IPs within minutes ④ the payment script's hash (SRI) does not match. These four are signals; only a passkey (WebAuthn) blocks it by structure.")}</p>
+            </>)}
             <StdMenu id={popup} />
           </>
         )}
@@ -295,12 +409,14 @@ export default function StackRun({ lang }: { lang: Lang }) {
   );
 
   // 지도의 네모를 누르면 그 시나리오가 펼쳐진다. 열린 것을 다시 누르면 접힌다.
-  const pick = (v: Scenario) => { close(); setView((cur) => (cur === v ? null : v)); };
+  const pick = (v: Scenario) => { close(); setPackets([]); setView((cur) => (cur === v ? null : v)); };
   const svgStyle = { width: "100%", maxWidth: 1100, minWidth: 700, height: "auto", display: "block" } as const;
 
   return (
     <div className="stack-board" style={{ marginTop: 16 }}>
-      {/* ── 지도: 두 시나리오가 사용자 하나를 사이에 두고 이어진다 ─────────── */}
+      {/* ── 지도: 시나리오들이 사용자 하나를 사이에 두고 이어진다 ─────────── */}
+      {/* 위 줄은 사용자가 쓰는 두 시나리오, 사용자 아래로 내려온 선 끝은 사용자가 공격당하는 시나리오다. */}
+      <div className="stack-map-wrap">
       <div className="stack-map">
         <button className={`stack-map-box${view === "agentic" ? " on" : ""}`} aria-expanded={view === "agentic"} onClick={() => pick("agentic")}>
           <b>{t("에이전트 결제 시나리오", "Agentic payment scenario")}</b>
@@ -313,6 +429,12 @@ export default function StackRun({ lang }: { lang: Lang }) {
           <b>{t("Canton 시나리오", "Canton scenario")}</b>
           <span>{t("계획 · T5 · 테스트넷만", "planned · T5 · test networks only")}</span>
         </button>
+      </div>
+      <span className="stack-map-vwire" aria-hidden />
+      <button className={`stack-map-box threat${view === "relay" ? " on" : ""}`} aria-expanded={view === "relay"} onClick={() => pick("relay")}>
+        <b>{t("AiTM 중계 피싱 시나리오", "AiTM relay-phishing scenario")}</b>
+        <span>{t("진짜 화면 · OTP 중계 · 패스키가 막는다", "a real screen · a relayed OTP · a passkey blocks it")}</span>
+      </button>
       </div>
       {!view && <p className="sub" style={{ fontSize: 13, marginTop: 10 }}>{t("네모를 누르면 그 시나리오의 판이 아래에 펼쳐집니다.", "Press a box to unfold that scenario's board below.")}</p>}
 
@@ -414,9 +536,77 @@ export default function StackRun({ lang }: { lang: Lang }) {
           </svg>
         </div>
       </>)}
+
+      {view === "relay" && (<>
+        {/* ── 진행 + 초기화 ───────────────────────────────────────── */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 18 }}>
+          {[
+            { n: "①", label: t("링크", "link"), done: rphase !== "lure" },
+            { n: "②", label: t("중계", "relay"), done: rphase === "pay" || rphase === "done" || rphase === "page" },
+            { n: "③", label: t("진짜 화면", "real page"), done: rphase === "pay" || rphase === "done" },
+            { n: "④", label: t("승인", "approve"), done: rphase === "done" },
+            { n: "⑤", label: method === "passkey" ? t("막힘", "blocked") : method === "otp" ? t("털림", "stolen") : t("결과", "result"), done: rphase === "done" },
+          ].map((s) => <span key={s.n} className={`stack-step${s.done ? " done" : ""}`}>{s.n} {s.label}</span>)}
+          <button className="ghost" onClick={reset} style={{ marginLeft: "auto" }}>{t("초기화", "Reset")}</button>
+        </div>
+        <p className="sub" style={{ fontSize: 13, marginTop: 8 }}>
+          {rphase === "done"
+            ? method === "otp"
+              ? t("털렸습니다 — 사용자는 아무것도 잘못 보지 않았습니다. 초기화하고 이번엔 패스키로 승인해 보세요.", "Stolen — and the user saw nothing wrong. Reset and approve with a passkey this time.")
+              : t("막혔습니다 — 사용자는 속았는데도요. 초기화하고 OTP 로 하면 어떻게 되는지 보세요.", "Blocked — even though the user was fooled. Reset and see what an OTP does.")
+            : t("깜빡이는 칸을 누르세요. 오른쪽 아래 '네 신호' 칸은 언제든 읽을 수 있습니다.", "Press the blinking box. The 'four signals' box at the bottom right can be read at any time.")}
+        </p>
+
+        {/* ── HUD ─────────────────────────────────────────────────── */}
+        <div className="stack-hud">
+          <div><div className="stack-hud-k">{t("주소창", "Address bar")}</div><div className="stack-hud-v" style={{ fontSize: 13 }}>{rphase === "lure" ? "—" : FAKE}</div></div>
+          <div><div className="stack-hud-k">{t("승인 방식", "Approval")}</div><div className="stack-hud-v">{method === "otp" ? "OTP" : method === "passkey" ? t("패스키", "passkey") : "—"}</div></div>
+          <div><div className="stack-hud-k">{t("결과", "Outcome")}</div><div className="stack-hud-v" style={method === "otp" ? { color: "var(--red)" } : method === "passkey" ? { color: "var(--green)" } : undefined}>{method === "otp" ? t("다른 거래로 돈이 나감", "money out via another transaction") : method === "passkey" ? t("서명 거절 · 돈 그대로", "signature rejected · money stays") : t("진행 중", "in progress")}</div></div>
+        </div>
+
+        <div style={{ overflowX: "auto", marginTop: 14 }}>
+          <svg viewBox="0 14 880 476" style={svgStyle} role="img"
+            aria-label={t("사용자, 공격자 프록시, 진짜 사이트, 공격자의 다른 거래, 서버의 네 신호 사이의 흐름", "Flow between the user, the attacker's proxy, the real site, the attacker's other transaction and the server's four signals")}>
+            {leader}
+            <Wire a={N.ruser} b={N.proxy} live={rphase !== "lure"} label={t("TLS ① 가짜 주소", "TLS ① fake address")} />
+            <Wire a={N.proxy} b={N.site} live={rphase !== "lure" && rphase !== "relay"} label={t("TLS ② 진짜 서버", "TLS ② real server")} />
+            <Wire a={N.proxy} b={N.other} live={method === "otp"} label={t("OTP 중계", "OTP relay")} />
+            <Wire a={N.site} b={N.guard} live={method !== null} label={t("검사", "checks")} />
+
+            <Box {...boxProps("ruser")} w={170} title={t("사용자", "User")} sub={status.ruser} />
+            <Box {...boxProps("proxy")} w={210} title={t("공격자 프록시", "Attacker's proxy")} sub={status.proxy} />
+            <Box {...boxProps("site")} w={190} title={t("진짜 사이트 · Verex", "Real site · Verex")} sub={status.site} />
+            <Box {...boxProps("other")} w={200} title={t("공격자의 다른 거래", "Attacker's other payment")} sub={status.other} />
+            <Box {...boxProps("guard")} w={200} title={t("서버의 네 신호", "Server's four signals")} sub={status.guard} contract />
+            <Chip x={N.guard.x} y={N.guard.y + 44} text={t("패스키(WebAuthn)만 구조로 막는다", "only a passkey (WebAuthn) blocks by structure")} live={method === "passkey"} />
+
+            {packets.map((p) => (
+              <circle key={p.id} r={7} fill={p.color} style={{ pointerEvents: "none" }}>
+                <animate attributeName="cx" from={p.from.x} to={p.to.x} dur="0.9s" fill="freeze" />
+                <animate attributeName="cy" from={p.from.y} to={p.to.y} dur="0.9s" fill="freeze" />
+                <animate attributeName="opacity" values="1;1;0" dur="1.2s" fill="freeze" />
+              </circle>
+            ))}
+            {bubble}
+          </svg>
+        </div>
+
+        <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+          {rlog.length === 0 && <p className="sub" style={{ fontSize: 13 }}>{t("각본입니다 — 네트워크도, 진짜 OTP 도 없습니다. 출처: 모닝 리포트 11/8 Tech Note (InfoHawk 보고서 원문 미열람, 도구·역사·네 신호는 일반 지식).", "Scripted — no network, no real OTP. Source: the 11/8 morning-report Tech Note (InfoHawk report not opened; tools, history and the four signals are general knowledge).")}</p>}
+          {rlog.map((l, i) => (
+            <div key={i} style={{ fontSize: 13, paddingLeft: 10, borderLeft: `3px solid ${l.tone === "bad" ? "var(--red)" : l.tone === "good" ? "var(--green)" : l.tone === "chain" ? "var(--accent)" : "var(--border)"}` }}>
+              {l.chip && <span className="stack-chip">{l.chip}</span>}
+              {l.text}
+            </div>
+          ))}
+        </div>
+      </>)}
     </div>
   );
 }
+
+// 글자 폭 어림: 한글은 글자 크기만큼, 라틴 문자는 그 0.6배쯤. 한글 라벨이 칩 밖으로 넘치지 않게 한다.
+const textW = (s: string, size: number) => [...s].reduce((w, ch) => w + (/[\u3131-\uD79D]/.test(ch) ? size : size * 0.6), 0);
 
 function Wire({ a, b, live, label, both, at = 0.5, plan }:
   { a: Node; b: Node; live: boolean; label: string; both?: boolean; at?: number; plan?: boolean }) {
@@ -428,7 +618,7 @@ function Wire({ a, b, live, label, both, at = 0.5, plan }:
     <g>
       <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={color} strokeWidth={live ? 2.4 : 1.5} strokeDasharray={plan ? "5 4" : undefined} style={{ transition: "stroke 300ms" }} />
       {label && <>
-        <rect x={mx - label.length * 3.6 - 7} y={my - 10} width={label.length * 7.2 + 14} height={20} rx={10} fill="var(--bg)" />
+        <rect x={mx - textW(both ? `${label} ↔` : label, 12) / 2 - 7} y={my - 10} width={textW(both ? `${label} ↔` : label, 12) + 14} height={20} rx={10} fill="var(--bg)" />
         <text x={mx} y={my + 4} textAnchor="middle" fontSize={12} fontWeight={600} fill={live ? "var(--accent)" : "var(--muted)"}>{both ? `${label} ↔` : label}</text>
       </>}
     </g>
@@ -455,7 +645,7 @@ function Box({ n, w, title, sub, live, ready, flash, onClick, contract, plan }: 
 }
 
 function Chip({ x, y, text, live }: { x: number; y: number; text: string; live: boolean }) {
-  const w = text.length * 6.4 + 16;
+  const w = textW(text, 11) + 16;
   return (
     <g>
       <rect x={x - w / 2} y={y} width={w} height={20} rx={10} fill="var(--muted-surface)" stroke={live ? "var(--accent)" : "var(--border)"} />
