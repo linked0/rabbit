@@ -49,7 +49,7 @@ type Scenario = "agentic" | "canton" | "relay";
 type Phase = "user" | "wallet" | "agent" | "provider" | "facilitator" | "ap2" | "done";
 type RPhase = "lure" | "relay" | "page" | "pay" | "done";
 type Method = "otp" | "passkey";
-type StackNode = "user" | "wallet" | "delegator" | "agent" | "provider" | "facilitator" | "ap2";
+type StackNode = "user" | "wallet" | "delegator" | "manager" | "agent" | "provider" | "facilitator" | "ap2";
 type CantonNode = "cuser" | "operator" | "sync" | "validator" | "daml";
 type RelayNode = "ruser" | "proxy" | "site" | "other" | "guard";
 type NodeId = StackNode | CantonNode | RelayNode;
@@ -63,6 +63,9 @@ const N: Record<NodeId, Node> = {
   user: { x: 430, y: 48 },
   wallet: { x: 430, y: 168 },
   delegator: { x: 142, y: 304 },
+  // DelegationManager — Delegator 바로 아래 (jay, 2026-11-11: "DelegationManager도 그림에 넣어줘"). 에이전트가 부르는
+  // 곳은 Delegator 가 아니라 여기다: redeemDelegations → caveat enforcer 훅 → Delegator 의 executeFromExecutor.
+  manager: { x: 142, y: 446 },
   agent: { x: 430, y: 304 },
   provider: { x: 726, y: 304 },
   ap2: { x: 430, y: 446 },
@@ -152,16 +155,16 @@ export default function StackRun({ lang }: { lang: Lang }) {
     close();
     if (amount > remaining) {
       setRefused((n) => n + 1); setLastRefused(true);
-      send([{ from: N.agent, to: N.delegator, color: "var(--red)" }]);
-      blink("delegator", "bad");
+      send([{ from: N.agent, to: N.manager, color: "var(--red)" }]);
+      blink("manager", "bad");
       note({ tone: "bad", chip: "ERC-7710", text: t(`${amount} jUSD 시도 → caveat enforcer 가 되돌림 (남은 한도 ${remaining.toFixed(2)}). 서명은 멀쩡했다 — 막은 것은 컨트랙트.`, `Tried ${amount} jUSD → the caveat enforcer reverted it (${remaining.toFixed(2)} left). The signature was fine — a contract stopped it.`) });
       return;
     }
     setLastRefused(false); setSpent((s) => s + amount); setPhase("provider");
-    send([{ from: N.agent, to: N.delegator, color: "var(--accent)" }, { from: N.delegator, to: N.agent, color: "var(--green)" }]);
-    blink("delegator", "good");
+    send([{ from: N.agent, to: N.manager, color: "var(--accent)" }, { from: N.manager, to: N.delegator, color: "var(--green)" }]);
+    blink("manager", "good");
     note({ tone: "info", href: "/live/agent", hrefLabel: t("자율 결제 에이전트", "Autonomous agent"), text: t("에이전트가 깨어나 스스로 결정 — 뉴스 → 확률 → 호가 → 산다. 전부 오프체인.", "The agent woke and decided on its own — news → probability → order book → buy. All off-chain.") });
-    note({ tone: "chain", chip: "ERC-7710 · ERC-4337", href: "/live/aa", hrefLabel: t("AA 데모", "AA demo"), text: t(`redeemDelegations 통과 (${amount} ≤ ${CAP}). UserOperation, 가스는 paymaster.`, `redeemDelegations passed (${amount} ≤ ${CAP}). A UserOperation; paymaster paid the gas.`) });
+    note({ tone: "chain", chip: "ERC-7710 · ERC-4337", href: "/live/aa", hrefLabel: t("AA 데모", "AA demo"), text: t(`DelegationManager.redeemDelegations 통과 — 위임 서명 확인 → enforcer 가 ${amount} ≤ ${CAP} 확인 → Delegator 의 executeFromExecutor 로 jUSD 가 나감. UserOperation, 가스는 paymaster.`, `DelegationManager.redeemDelegations passed — delegation signature checked → the enforcer checked ${amount} ≤ ${CAP} → jUSD left through the Delegator's executeFromExecutor. A UserOperation; paymaster paid the gas.`) });
   }
   function providerPay() {
     close(); setPhase("facilitator");
@@ -236,9 +239,12 @@ export default function StackRun({ lang }: { lang: Lang }) {
     user: phase === "user" ? t("차례 — 눌러 보세요", "your move — press") : t("주인 · EOA", "owner · EOA"),
     wallet: phase === "wallet" ? t("요청 대기 중 — 눌러 보세요", "request pending — press") : granted ? t("코드 붙음 · 주소 그대로", "code attached · same address") : t("보통 EOA", "plain EOA"),
     delegator: !granted ? t("위임 없음", "no delegation")
-      : lastRefused ? t(`거절 · revert (${OVER} > ${remaining.toFixed(1)})`, `refused · revert (${OVER} > ${remaining.toFixed(1)})`)
       : spent > 0 ? t(`사용 ${spent.toFixed(2)} / ${CAP} jUSD`, `used ${spent.toFixed(2)} / ${CAP} jUSD`)
       : t(`caveat 저장: ≤ ${CAP} jUSD · 1h`, `caveat stored: ≤ ${CAP} jUSD · 1h`),
+    manager: !granted ? t("redeem 할 위임 없음", "nothing to redeem")
+      : lastRefused ? t(`enforcer 가 revert (${OVER} > ${remaining.toFixed(1)})`, `enforcer reverted (${OVER} > ${remaining.toFixed(1)})`)
+      : spent > 0 ? t("redeem 통과 · 상한 · 만료 확인", "redeemed · cap and expiry checked")
+      : t("redeemDelegations 대기", "awaiting redeemDelegations"),
     agent: phase === "agent" ? t("깨어남 — 눌러 보세요", "awake — press") : granted ? t("지출함", "spent") : t("잠듦", "asleep"),
     provider: phase === "provider" ? t("HTTP 402 — 눌러 보세요", "HTTP 402 — press") : phase === "facilitator" ? t("결제 헤더 받음 · 검증 대기", "payment header in · awaiting verify") : phase === "ap2" || phase === "done" ? t("결제됨 · 데이터 전달", "paid · data delivered") : "HTTP 402",
     facilitator: phase === "facilitator" ? t("검증 요청 — 눌러 보세요", "verify request — press") : phase === "ap2" || phase === "done" ? t("정산됨 · tx 해시", "settled · tx hash") : t("verify · settle (x402.org · CDP 등)", "verify · settle (e.g. x402.org, CDP)"),
@@ -257,7 +263,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
     guard: method === "passkey" ? t("구조로 막음 (패스키)", "blocked by structure (passkey)") : method === "otp" ? t("신호만 남음 ②③④", "signals only ②③④") : t("① Origin ② 세션 ③ IP ④ SRI", "① Origin ② session ③ IP ④ SRI"),
   };
   const lit: Record<NodeId, boolean> = {
-    user: phase !== "user", wallet: phase !== "user", delegator: granted, agent: granted,
+    user: phase !== "user", wallet: phase !== "user", delegator: granted, manager: granted, agent: granted,
     provider: phase === "facilitator" || phase === "ap2" || phase === "done", facilitator: phase === "ap2" || phase === "done", ap2: phase === "done",
     cuser: false, operator: false, sync: false, validator: false, daml: false,
     ruser: rphase !== "lure", proxy: rphase !== "lure" && rphase !== "relay", site: rphase === "pay" || rphase === "done",
@@ -270,7 +276,8 @@ export default function StackRun({ lang }: { lang: Lang }) {
   const boxProps = (id: NodeId) => {
     const isRelay = RELAY.includes(id as RelayNode);
     const turn = isRelay ? rready === id : ready === id;
-    const free = CANTON.includes(id as CantonNode) || id === "guard" || (isRelay && rphase === "done");
+    // 두 컨트랙트 칸은 차례가 없다 — 위임이 생긴 뒤로는 언제든 눌러 표준 설명을 읽을 수 있다.
+    const free = CANTON.includes(id as CantonNode) || id === "guard" || (isRelay && rphase === "done") || ((id === "delegator" || id === "manager") && granted);
     return {
       n: N[id], live: lit[id], ready: turn, flash: flash?.node === id ? flash : null,
       plan: CANTON.includes(id as CantonNode),
@@ -300,7 +307,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
 
   // 각 말풍선의 "표준" 메뉴 — 긴 설명은 전부 여기 뒤에 있다.
   const MENU: Record<NodeId, string[]> = {
-    user: ["EIP-7702"], wallet: ["EIP-7702", "ERC-7715", "EIP-712"], delegator: ["ERC-7710"],
+    user: ["EIP-7702"], wallet: ["EIP-7702", "ERC-7715", "EIP-712"], delegator: ["ERC-7710", "DelegationManager"], manager: ["DelegationManager", "ERC-7710"],
     agent: ["ERC-7710", "ERC-4337", "ERC-5792"], provider: ["x402", "pay.sh", "DSRV", "ERC-8004", "ERC-1271"],
     facilitator: ["Facilitator", "Kora", "x402", "DSRV"], ap2: ["AP2", "EIP-712"],
     cuser: ["Validator", "Guardrail"], operator: ["Validator", "Synchronizer", "Guardrail"],
@@ -359,6 +366,12 @@ export default function StackRun({ lang }: { lang: Lang }) {
             {popup === "delegator" && (<>
               <div className="stack-bubble-h">{t("Delegator 컨트랙트", "Delegator contract")}</div>
               <p>{status.delegator}</p>
+              <p>{t("돈이 실제로 나가는 계정이다. 에이전트가 직접 부르지 않는다 — DelegationManager 가 검사를 마친 뒤 executeFromExecutor 로 이 계정을 움직인다.", "The account the money actually leaves. The agent never calls it directly — the DelegationManager moves it through executeFromExecutor once its checks pass.")}</p>
+            </>)}
+            {popup === "manager" && (<>
+              <div className="stack-bubble-h">DelegationManager</div>
+              <p>{status.manager}</p>
+              <p>{t("에이전트가 부르는 단 하나의 컨트랙트. redeemDelegations 가 위임 서명을 확인하고, caveat enforcer(상한 · 만료)의 훅을 부르고, 통과하면 Delegator 의 executeFromExecutor 로 전송을 실행한다. 한도를 넘으면 여기서 revert 된다.", "The one contract the agent calls. redeemDelegations checks the delegation signature, runs the caveat enforcers' hooks (cap, expiry) and, if they pass, executes the transfer through the Delegator's executeFromExecutor. Past the cap, it reverts here.")}</p>
             </>)}
             {popup === "agent" && (<>
               <div className="stack-bubble-h">{t("에이전트 — 틱", "Agent — tick")}</div>
@@ -500,12 +513,14 @@ export default function StackRun({ lang }: { lang: Lang }) {
         {/* 폰에서 줄이면 글자가 5px 이 되므로, 읽을 수 있는 크기를 지키고 가로 스크롤을 준다. */}
         <div style={{ overflowX: "auto", marginTop: 14 }}>
           <svg viewBox="0 14 880 506" style={svgStyle} role="img"
-            aria-label={t("사용자, MetaMask, Delegator 컨트랙트, 에이전트, 서비스 제공자, 퍼실리테이터, AP2 사이의 흐름", "Flow between the user, MetaMask, the delegator contract, the agent, the service provider, the facilitator and AP2")}>
+            aria-label={t("사용자, MetaMask, Delegator 컨트랙트, DelegationManager, 에이전트, 서비스 제공자, 퍼실리테이터, AP2 사이의 흐름", "Flow between the user, MetaMask, the delegator contract, the DelegationManager, the agent, the service provider, the facilitator and AP2")}>
             {/* 말풍선 연결선은 칸 아래에 깔리게 먼저 그린다 — 끝이 칸에 가려져 모서리 계산이 필요 없다. */}
             {leader}
             <Wire a={N.user} b={N.wallet} live={phase !== "user"} label="EIP-7702" />
             <Wire a={N.wallet} b={N.delegator} live={granted} label="ERC-7715" />
-            <Wire a={N.delegator} b={N.agent} live={spent > 0} label="ERC-7710" both />
+            {/* 에이전트 → DelegationManager(redeemDelegations) → Delegator(executeFromExecutor). 에이전트와 Delegator 사이에 직접 선은 없다. */}
+            <Wire a={N.agent} b={N.manager} live={spent > 0 || lastRefused} label="ERC-7710" at={0.6} />
+            <Wire a={N.manager} b={N.delegator} live={spent > 0} label="executeFromExecutor" />
             <Wire a={N.agent} b={N.provider} live={phase === "facilitator" || phase === "ap2" || phase === "done"} label="x402" />
             <Wire a={N.provider} b={N.facilitator} live={phase === "ap2" || phase === "done"} label="verify · settle" both at={0.62} />
             <Wire a={N.agent} b={N.ap2} live={phase === "done"} label="AP2" both at={0.66} />
@@ -513,6 +528,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Box {...boxProps("user")} w={150} title={t("사용자", "User")} sub={status.user} />
             <Box {...boxProps("wallet")} w={180} title="MetaMask" sub={status.wallet} />
             <Box {...boxProps("delegator")} w={196} title={t("Delegator 컨트랙트", "Delegator contract")} sub={status.delegator} contract />
+            <Box {...boxProps("manager")} w={196} title="DelegationManager" sub={status.manager} contract />
             <Box {...boxProps("agent")} w={170} title={t("에이전트", "Agent")} sub={status.agent} />
             <Box {...boxProps("provider")} w={180} title={t("서비스 제공자", "Service provider")} sub={status.provider} />
             <Box {...boxProps("ap2")} w={210} title={rail ? `AP2 — ${railName}` : "AP2"} sub={status.ap2} />

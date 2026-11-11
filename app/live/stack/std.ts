@@ -44,8 +44,18 @@ export const STD: Record<string, Std> = {
     id: "ERC-7710",
     role: { ko: "스마트 컨트랙트 위임 — 행사할 때마다 caveat enforcer 가 한도를 본다.", en: "Smart-contract delegation — a caveat enforcer checks the cap on every redemption." },
     detail: {
-      ko: `에이전트가 Delegator 컨트랙트에 redeemDelegations 를 부르고, caveat enforcer 가 한도를 확인한 뒤 통과시키거나 되돌린다. 에이전트의 서명이 멀쩡해도 한도를 넘으면 revert — 막는 것은 사람의 승인도 에이전트의 자제력도 아니고 컨트랙트다. 세 표준의 역할이 여기서 갈린다: 7702 가 능력을 주고, 7715 가 권한을 요청하고, 7710 이 집행한다. 콘솔의 부여→틱→상환을 진짜로 돌리려면 Sepolia 포크 anvil 과 verex API 가 이 기기에 떠 있어야 한다.`,
-      en: `The agent calls redeemDelegations on the delegator contract; the caveat enforcer checks the cap and lets it through or reverts it. A perfectly valid signature still reverts past the cap — what stops it is neither a human approval nor the agent's restraint, but a contract. The three standards separate here: 7702 grants the capability, 7715 requests the permission, 7710 enforces it. Running the console's grant → tick → redeem for real needs a Sepolia-fork anvil and the verex API on this machine.`,
+      ko: `에이전트가 DelegationManager 에 redeemDelegations 를 부르고, caveat enforcer 가 한도를 확인한 뒤 통과시키거나 되돌린다. 에이전트의 서명이 멀쩡해도 한도를 넘으면 revert — 막는 것은 사람의 승인도 에이전트의 자제력도 아니고 컨트랙트다. 세 표준의 역할이 여기서 갈린다: 7702 가 능력을 주고, 7715 가 권한을 요청하고, 7710 이 집행한다. 콘솔의 부여→틱→상환을 진짜로 돌리려면 Sepolia 포크 anvil 과 verex API 가 이 기기에 떠 있어야 한다.`,
+      en: `The agent calls redeemDelegations on the DelegationManager; the caveat enforcer checks the cap and lets it through or reverts it. A perfectly valid signature still reverts past the cap — what stops it is neither a human approval nor the agent's restraint, but a contract. The three standards separate here: 7702 grants the capability, 7715 requests the permission, 7710 enforces it. Running the console's grant → tick → redeem for real needs a Sepolia-fork anvil and the verex API on this machine.`,
+    },
+    runs: "live", href: "/live/aa", label: { ko: "AA 데모", en: "AA demo" },
+  },
+  // jay, 2026-11-11: "DelegationManager도 그림에 넣어줘". 함수 이름은 @metamask/delegation-abis 1.1.0 ABI 로 확인했다.
+  DelegationManager: {
+    id: "DelegationManager",
+    role: { ko: "에이전트가 부르는 단 하나의 컨트랙트 — 위임을 검사하고 Delegator 를 움직인다.", en: "The one contract the agent calls — checks the delegation, then moves the Delegator." },
+    detail: {
+      ko: "MetaMask 위임 프레임워크의 진입 컨트랙트다. 에이전트(위임받은 쪽)가 redeemDelegations 를 부르면 차례로 이렇게 된다. 먼저 위임 서명을 확인한다 — EIP-712 도메인 이름이 바로 'DelegationManager' 이고, 위임자가 컨트랙트 계정이면 ERC-1271 isValidSignature 로 묻는다. 다음으로 caveat 마다 enforcer 컨트랙트의 beforeAllHook · beforeHook 를 부른다. 여기서는 ERC20TransferAmountEnforcer(상한)와 TimestampEnforcer(만료)이고, 한도를 넘으면 이 단계에서 revert 된다. 통과하면 Delegator 계정의 executeFromExecutor 로 실제 jUSD 전송을 실행하고, 끝나면 afterHook · afterAllHook 을 부른다. 그래서 에이전트는 Delegator 를 직접 부르지 않는다. 주소는 우리 코드에 없다 — 7715 권한을 주면 MetaMask 가 응답에 담아 알려 준다(정산 콘솔). devnet 에서는 우리가 직접 배포했다. x402 의 ERC-7710 결제도 settle 때 같은 redeemDelegations 를 부른다.",
+      en: "The entry contract of the MetaMask delegation framework. When the agent (the delegate) calls redeemDelegations, this happens in order. First it checks the delegation signature — the EIP-712 domain name is literally 'DelegationManager', and a contract-account delegator is asked through ERC-1271 isValidSignature. Next, for each caveat it calls the enforcer contract's beforeAllHook and beforeHook — here ERC20TransferAmountEnforcer (the cap) and TimestampEnforcer (the expiry); past the cap it reverts at this step. If they pass it executes the actual jUSD transfer through the Delegator account's executeFromExecutor, then calls afterHook and afterAllHook. That is why the agent never calls the Delegator directly. The address is not in our code — MetaMask returns it with the 7715 permission (settlement console); on our devnet we deployed it ourselves. x402's ERC-7710 payments call the same redeemDelegations at settle.",
     },
     runs: "live", href: "/live/aa", label: { ko: "AA 데모", en: "AA demo" },
   },
