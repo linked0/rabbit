@@ -42,7 +42,9 @@ import { CAP, PRICE, OVER, STD, type Txt } from "./std";
 // 과 Kora, pay.sh 를 Bird View 에). 402 를 받은 에이전트가 서명해 다시 부르면 판매자는 퍼실리테이터에 verify(약속)를
 // 묻고, 데이터를 주고, settle(체인 제출 · 가스 대납)한다. 솔라나라면 그 뒤에 Kora 가 fee payer 로 공동 서명한다.
 // pay.sh 는 판매자 자리에 서는 게이트웨이라 서비스 제공자 칸 위의 칩으로 둔다. 셋 다 아직 돌지 않으니 표준 설명의
-// runs 가 plan/named 다.
+// runs 가 plan/named 다. 같은 날 1차 자료로 다시 맞췄다(출처는 std.ts 의 퍼실리테이터 위 주석): 헤더 이름을 v2 스펙대로
+// (PAYMENT-REQUIRED · PAYMENT-SIGNATURE · PAYMENT-RESPONSE), settle 실패 갈림길 버튼, pay.sh 는 "먼저 정산하는 자기
+// 퍼실리테이터", DSRV 는 퍼실리테이터라는 출처를 못 찾아 칸에서 빼고 표준 설명으로만 둔다.
 type Scenario = "agentic" | "canton" | "relay";
 type Phase = "user" | "wallet" | "agent" | "provider" | "facilitator" | "ap2" | "done";
 type RPhase = "lure" | "relay" | "page" | "pay" | "done";
@@ -165,7 +167,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
     close(); setPhase("facilitator");
     send([{ from: N.agent, to: N.provider, color: "var(--accent)" }]);
     blink("provider", "good");
-    note({ tone: "info", chip: "x402", text: t(`402 → 에이전트가 ${PRICE} 짜리 결제에 서명 → 결제 헤더를 붙여 같은 요청 재전송. 아직 돈은 안 움직였다 — 판매자가 퍼실리테이터에 물을 차례.`, `402 → the agent signs a ${PRICE} payment → resends the same request with the payment header. No money has moved yet — the seller asks the facilitator next.`) });
+    note({ tone: "info", chip: "x402", text: t(`402 + PAYMENT-REQUIRED → 에이전트가 ${PRICE} 짜리 transferWithAuthorization 에 EIP-712 서명(오프체인) → PAYMENT-SIGNATURE 헤더를 붙여 같은 요청 재전송. 돈은 아직 에이전트 지갑에 있다 — 판매자가 퍼실리테이터에 물을 차례.`, `402 + PAYMENT-REQUIRED → the agent signs an EIP-712 authorization for a ${PRICE} transferWithAuthorization (off-chain) → resends the same request with a PAYMENT-SIGNATURE header. The money is still in the agent's wallet — the seller asks the facilitator next.`) });
   }
   // 판매자 → 퍼실리테이터: verify(약속) → 데이터 전달 → settle(체인). 이 순서가 이 칸이 보여 주려는 것이다 —
   // 판매자는 돈이 확정되기 전에 일을 한다.
@@ -173,9 +175,17 @@ export default function StackRun({ lang }: { lang: Lang }) {
     close(); setPhase("ap2");
     send([{ from: N.provider, to: N.facilitator, color: "var(--accent)" }, { from: N.facilitator, to: N.provider, color: "var(--green)" }]);
     blink("facilitator", "good");
-    note({ tone: "chain", chip: "verify", text: t("퍼실리테이터가 서명·금액·수신자·만료·재사용을 확인했다 — 약속일 뿐, 돈은 아직.", "The facilitator checked the signature, amount, recipient, expiry and reuse — a promise, not money yet.") });
-    note({ tone: "info", text: t("판매자가 데이터를 넘겼다 — 정산 전에 일을 하는 쪽은 판매자다.", "The seller handed over the data — it works before the money is settled.") });
-    note({ tone: "good", chip: "settle · Kora", text: t("퍼실리테이터가 체인에 제출하고 가스를 냈다(솔라나라면 Kora 가 fee payer 로 공동 서명). 돈은 에이전트 → 제공자로 바로 갔고 퍼실리테이터는 쥐지 않았다. 영수증 = tx 해시.", "The facilitator submitted it on-chain and paid the gas (on Solana, Kora co-signs as fee payer). The money went agent → provider directly; the facilitator never held it. Receipt = the tx hash.") });
+    note({ tone: "chain", chip: "POST /verify", text: t("퍼실리테이터가 서명·잔액·금액·유효기간·토큰을 확인하고 시뮬레이션만 했다 → isValid: true. 체인에는 아무것도 안 썼다 — 약속일 뿐, 돈은 아직 에이전트 지갑에.", "The facilitator checked the signature, balance, amount, validity window and token, and only simulated → isValid: true. Nothing was written on-chain — a promise; the money is still in the agent's wallet.") });
+    note({ tone: "info", text: t("판매자가 데이터를 만들었다 — 스펙의 기본 순서에서 정산 전에 일을 하는 쪽은 판매자다.", "The seller produced the data — in the spec's default order, the seller works before the money is settled.") });
+    note({ tone: "good", chip: "POST /settle", text: t("퍼실리테이터가 transferWithAuthorization 을 체인에 보내고 가스를 냈다. 돈은 에이전트 → 제공자로 바로 갔고 퍼실리테이터는 쥐지 않았다. 판매자는 200 + PAYMENT-RESPONSE(tx 해시)로 데이터를 돌려준다.", "The facilitator sent transferWithAuthorization on-chain and paid the gas. The money went agent → provider directly; the facilitator never held it. The seller returns the data with 200 + PAYMENT-RESPONSE (the tx hash).") });
+    note({ tone: "info", chip: "Solana · Kora", text: t("솔라나라면: 에이전트는 TransferChecked 에 자기 몫만 서명해 두었고, settle 때 Kora 가 fee payer 자리에 서명하면 퍼실리테이터가 RPC 로 보낸다.", "On Solana: the agent signed only its part of a TransferChecked; at settle Kora signs the fee-payer slot and the facilitator sends it through RPC.") });
+  }
+  // 갈림길: verify 는 통과했는데 settle 이 실패하면. 차례는 그대로 두어 다시 정상 정산을 누를 수 있다.
+  function facilitatorFail() {
+    close();
+    send([{ from: N.provider, to: N.facilitator, color: "var(--accent)" }, { from: N.facilitator, to: N.provider, color: "var(--red)" }]);
+    blink("facilitator", "bad");
+    note({ tone: "bad", chip: "settle 실패", text: t("verify 는 통과했고 판매자는 이미 일을 했는데, settle 이 success: false · transaction \"\" 로 돌아왔다(그 사이 잔액이 빠졌거나 유효기간이 지남). 돈은 에이전트 지갑에 그대로다 — 일한 값을 못 받는 쪽은 판매자다. 그래서 maxTimeoutSeconds 를 짧게 두고, 정산을 먼저 하는 방식(pay.sh 처럼)도 있다.", "Verify passed and the seller already did the work, but settle came back success: false · transaction \"\" (the balance moved or the window expired meanwhile). The money is still in the agent's wallet — the seller is the one left unpaid. Hence a short maxTimeoutSeconds, and some settle first instead (as pay.sh does).") });
   }
   function ap2Settle(r: Rail) {
     close(); setRail(r); setPhase("done");
@@ -231,7 +241,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
       : t(`caveat 저장: ≤ ${CAP} jUSD · 1h`, `caveat stored: ≤ ${CAP} jUSD · 1h`),
     agent: phase === "agent" ? t("깨어남 — 눌러 보세요", "awake — press") : granted ? t("지출함", "spent") : t("잠듦", "asleep"),
     provider: phase === "provider" ? t("HTTP 402 — 눌러 보세요", "HTTP 402 — press") : phase === "facilitator" ? t("결제 헤더 받음 · 검증 대기", "payment header in · awaiting verify") : phase === "ap2" || phase === "done" ? t("결제됨 · 데이터 전달", "paid · data delivered") : "HTTP 402",
-    facilitator: phase === "facilitator" ? t("검증 요청 — 눌러 보세요", "verify request — press") : phase === "ap2" || phase === "done" ? t("정산됨 · tx 해시", "settled · tx hash") : t("verify · settle (DSRV 등)", "verify · settle (e.g. DSRV)"),
+    facilitator: phase === "facilitator" ? t("검증 요청 — 눌러 보세요", "verify request — press") : phase === "ap2" || phase === "done" ? t("정산됨 · tx 해시", "settled · tx hash") : t("verify · settle (x402.org · CDP 등)", "verify · settle (e.g. x402.org, CDP)"),
     ap2: phase === "ap2" ? t("정산 대기 — 눌러 보세요", "awaiting settlement — press") : phase === "done" ? t("영수증 · 저널 한 줄", "receipt · one journal line") : t("법정화폐 레일", "fiat rail"),
     cuser: t("계약의 당사자", "a party to the contract"),
     operator: t("Jayverse · validator 노드", "Jayverse · validator node"),
@@ -291,8 +301,8 @@ export default function StackRun({ lang }: { lang: Lang }) {
   // 각 말풍선의 "표준" 메뉴 — 긴 설명은 전부 여기 뒤에 있다.
   const MENU: Record<NodeId, string[]> = {
     user: ["EIP-7702"], wallet: ["EIP-7702", "ERC-7715", "EIP-712"], delegator: ["ERC-7710"],
-    agent: ["ERC-7710", "ERC-4337", "ERC-5792"], provider: ["x402", "pay.sh", "ERC-8004", "ERC-1271"],
-    facilitator: ["Facilitator", "Kora", "x402"], ap2: ["AP2", "EIP-712"],
+    agent: ["ERC-7710", "ERC-4337", "ERC-5792"], provider: ["x402", "pay.sh", "DSRV", "ERC-8004", "ERC-1271"],
+    facilitator: ["Facilitator", "Kora", "x402", "DSRV"], ap2: ["AP2", "EIP-712"],
     cuser: ["Validator", "Guardrail"], operator: ["Validator", "Synchronizer", "Guardrail"],
     sync: ["Synchronizer"], validator: ["Validator", "Daml"], daml: ["Daml", "Guardrail"],
     ruser: ["AiTM", "WebAuthn"], proxy: ["AiTM", "Session"], site: ["CSP", "SRI"], other: ["3DS", "AiTM"],
@@ -360,15 +370,15 @@ export default function StackRun({ lang }: { lang: Lang }) {
             </>)}
             {popup === "provider" && (<>
               <div className="stack-bubble-h">{t("서비스 제공자", "Service provider")}</div>
-              <pre className="stack-402">{`HTTP/1.1 402 Payment Required\nX-Price: ${PRICE} jUSD\nX-Pay-To: 0xFEED…CAFE`}</pre>
-              <div className="stack-bubble-actions"><button onClick={providerPay}>{t("결제에 서명하고 다시 요청", "Sign the payment and retry")}</button></div>
+              <pre className="stack-402">{`HTTP/1.1 402 Payment Required\nPAYMENT-REQUIRED: eyJ4NDAy… (base64)\n accepts[0]: "exact" · ${PRICE} jUSD\n  payTo 0xFEED…CAFE · 60s`}</pre>
+              <div className="stack-bubble-actions"><button onClick={providerPay}>{t("서명하고 다시 요청 (PAYMENT-SIGNATURE)", "Sign and retry (PAYMENT-SIGNATURE)")}</button></div>
             </>)}
             {popup === "facilitator" && (<>
-              <div className="stack-bubble-h">{t("퍼실리테이터 — DSRV 같은 곳", "Facilitator — e.g. DSRV")}</div>
+              <div className="stack-bubble-h">{t("퍼실리테이터 — x402.org · Coinbase CDP 같은 곳", "Facilitator — e.g. x402.org, Coinbase CDP")}</div>
               <p>{phase === "facilitator"
-                ? t("판매자가 결제 헤더를 들고 왔다. 순서는 verify(서명이 맞는지 — 약속) → 판매자가 데이터 전달 → settle(체인 제출, 가스는 여기서). 돈은 여기를 거치지 않는다.", "The seller brought the payment header. The order: verify (is the signature good — a promise) → the seller hands over the data → settle (submit on-chain; the gas is paid here). The money never passes through here.")
-                : t("x402 결제를 검증하고 체인에 정산하는 곳. 돈은 쥐지 않고 가스를 대신 낸다. 솔라나라면 뒤에 Kora 가 fee payer 로 공동 서명한다.", "Verifies an x402 payment and settles it on-chain. Holds no money, pays the gas. On Solana, Kora co-signs behind it as fee payer.")}</p>
-              {phase === "facilitator" && <div className="stack-bubble-actions"><button onClick={facilitatorSettle}>{t("검증하고 정산", "Verify and settle")}</button></div>}
+                ? t("판매자가 PAYMENT-SIGNATURE 를 들고 왔다. 순서는 POST /verify(체인에 안 씀 — 약속) → 판매자가 일함 → POST /settle(체인 제출, 가스는 여기서). 돈은 여기를 거치지 않는다.", "The seller brought the PAYMENT-SIGNATURE. The order: POST /verify (writes nothing on-chain — a promise) → the seller works → POST /settle (submit on-chain; the gas is paid here). The money never passes through here.")
+                : t("x402 결제를 검증하고 체인에 정산하는 곳. 돈은 쥐지 않고 가스를 대신 낸다. 솔라나라면 뒤에서 Kora 가 fee payer 로 서명한다.", "Verifies an x402 payment and settles it on-chain. Holds no money, pays the gas. On Solana, Kora signs behind it as fee payer.")}</p>
+              {phase === "facilitator" && <div className="stack-bubble-actions"><button onClick={facilitatorSettle}>{t("검증하고 정산", "Verify and settle")}</button><button onClick={facilitatorFail} style={{ background: "var(--red)", borderColor: "var(--red)", color: "#fff" }}>{t("settle 이 실패하면?", "What if settle fails?")}</button></div>}
             </>)}
             {popup === "ap2" && (<>
               <div className="stack-bubble-h">AP2 — Payment Mandate</div>
@@ -512,9 +522,10 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Chip x={N.agent.x} y={N.agent.y + 44} text="ERC-4337 · UserOp · paymaster" live={spent > 0} />
             {/* ERC-8004 은 이 판에서 유일하게 **안 도는** 조각이다 — 자리를 비워 두는 대신 흐릿하게 그려 둔다. */}
             <Chip x={N.provider.x} y={N.provider.y + 44} text={t("ERC-8004 · 에이전트 신원 (설명만)", "ERC-8004 · agent identity (explainer)")} live={false} />
-            {/* pay.sh 는 판매자 자리에 서는 게이트웨이, Kora 는 퍼실리테이터 뒤의 서명기 — 둘 다 여기서는 이름만이라 흐린 칩 */}
-            <Chip x={N.provider.x} y={N.provider.y - 53} text={t("pay.sh · API 게이트웨이 (이름만)", "pay.sh · API gateway (named only)")} live={false} />
-            <Chip x={N.facilitator.x} y={N.facilitator.y + 44} text={t("Kora · 솔라나 fee payer (이름만)", "Kora · Solana fee payer (named only)")} live={false} />
+            {/* pay.sh 는 판매자 자리에 서면서 스스로 정산하는 게이트웨이, Kora 는 솔라나 퍼실리테이터 뒤의 서명기 — 둘 다 여기서는 이름만이라 흐린 칩.
+                DSRV 는 퍼실리테이터라는 출처를 못 찾아 칩으로 그리지 않는다 — 서비스 제공자 · 퍼실리테이터 말풍선의 표준 설명에만 둔다. */}
+            <Chip x={N.provider.x} y={N.provider.y - 53} text={t("pay.sh · 먼저 정산하는 게이트웨이 (이름만)", "pay.sh · settle-first gateway (named only)")} live={false} />
+            <Chip x={N.facilitator.x} y={N.facilitator.y + 44} text={t("Kora · 솔라나 fee payer 서명기 (이름만)", "Kora · Solana fee-payer signer (named only)")} live={false} />
 
             {/* 끝난 패킷은 투명한 채로 도착 칸 위에 남는다 — 포인터를 꺼 두지 않으면 그 칸의 클릭을 가로챈다. */}
             {packets.map((p) => (

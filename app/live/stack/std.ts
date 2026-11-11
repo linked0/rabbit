@@ -71,37 +71,49 @@ export const STD: Record<string, Std> = {
     id: "x402",
     role: { ko: "HTTP 402 를 되살린 기계 대 기계 요금.", en: "HTTP 402 revived as machine-to-machine payment." },
     detail: {
-      ko: "응답이 '얼마'를 돌려주고 호출자가 그 자리에서 내고 같은 요청을 다시 보낸다. 지금 이 판에서 비어 있는 칸이다 — 법정화폐 쪽(AP2 · 토스)은 테스트 결제가 실제로 돌지만 기계 대 기계 쪽은 아직 라이브가 없다. 필요한 것은 작다: 402 와 가격을 돌려주는 엔드포인트, 그 값을 내고 다시 부르는 호출자. 다음에 만들 조각.",
-      en: "The response quotes a price, the caller pays inline and resends the same request. This is the empty square on the board today — the fiat side (AP2, Toss) really executes a test payment, but machine-to-machine has no live page yet. What it needs is small: an endpoint that answers 402 with a price, and a caller that pays and retries. The next piece to build.",
+      ko: "응답이 '얼마'를 돌려주고 호출자가 그 자리에서 내고 같은 요청을 다시 보낸다. v2 스펙의 헤더는 셋이다 — 402 응답의 PAYMENT-REQUIRED(base64, accepts[] 에 scheme · network · amount · asset · payTo · maxTimeoutSeconds), 다시 보내는 요청의 PAYMENT-SIGNATURE, 마지막 200 응답의 PAYMENT-RESPONSE(tx 해시). v1 에서는 X-PAYMENT 였다. EVM 의 exact 방식에서 구매자는 EIP-3009 transferWithAuthorization 에 EIP-712 서명을 하고(그 표준이 없는 토큰은 Permit2), ERC-7710 위임으로 내는 길도 스펙에 있다 — 이 판의 에이전트가 쓰는 바로 그 위임이다. 솔라나에서는 TransferChecked 트랜잭션에 구매자 몫만 서명하고 fee payer 자리는 비워 둔다. 지금 이 판에서 비어 있는 칸이다 — 법정화폐 쪽(AP2 · 토스)은 테스트 결제가 실제로 돌지만 기계 대 기계 쪽은 아직 라이브가 없다. 다음에 만들 조각.",
+      en: "The response quotes a price, the caller pays inline and resends the same request. The v2 spec uses three headers — PAYMENT-REQUIRED on the 402 (base64; accepts[] carries scheme, network, amount, asset, payTo, maxTimeoutSeconds), PAYMENT-SIGNATURE on the retried request, and PAYMENT-RESPONSE on the final 200 (the tx hash). v1 called it X-PAYMENT. Under the exact scheme on EVM the buyer signs an EIP-712 authorization for EIP-3009 transferWithAuthorization (Permit2 for tokens without it), and the spec also allows paying through an ERC-7710 delegation — the very delegation this board's agent uses. On Solana the buyer signs only its part of a TransferChecked transaction and leaves the fee-payer slot empty. This is the empty square on the board today — the fiat side (AP2, Toss) really executes a test payment, but machine-to-machine has no live page yet. The next piece to build.",
     },
     runs: "plan",
   },
-  // ── x402 의 뒤편: 퍼실리테이터 · Kora · pay.sh (jay, 2026-11-11: 퍼실리테이터 "결국 DSRV가 하는 일", Kora, pay.sh 를
-  // Bird View 에). 셋 다 여기 데모에서 아직 돌지 않는다 — 퍼실리테이터는 계획(T2, x402.org on Base Sepolia), 나머지는 이름만.
+  // ── x402 의 뒤편: 퍼실리테이터 · Kora · pay.sh · DSRV (jay, 2026-11-11: 퍼실리테이터 "결국 DSRV가 하는 일", Kora,
+  // pay.sh 를 Bird View 에). 같은 날 1차 자료로 다시 맞췄다 — x402 스펙(coinbase/x402 specs: transports-v2/http,
+  // schemes/exact EVM · SVM), docs.x402.org facilitator, CDP network-support, solana-foundation/kora
+  // examples/x402/demo, solana-foundation/pay README · monetize-api.md · proxy/src/http402.rs, DSRV–쿠콘 MOU 보도
+  // (2026-11-06). DSRV 가 퍼실리테이터라는 출처는 못 찾았다 — 그래서 퍼실리테이터 칸에서 DSRV 를 뺐다.
   Facilitator: {
     id: "Facilitator",
     role: { ko: "x402 결제를 검증(verify)하고 체인에 정산(settle)하는 곳 — 돈은 쥐지 않고 가스를 대신 낸다.", en: "Verifies an x402 payment and settles it on-chain — never holds the money, pays the gas." },
     detail: {
-      ko: "판매자가 받은 결제 서명을 대신 확인해 주는 서비스다. /supported 는 지원하는 체인과 방식, /verify 는 서명·금액·수신자·만료·재사용 여부, /settle 은 체인 제출이다. verify 는 약속일 뿐이라 판매자는 settle 전에 일을 하고, 그래서 타임아웃을 짧게 두고 실패하면 닫는다. 돈은 구매자에서 판매자로 체인 위에서 바로 가고 퍼실리테이터를 거치지 않는다. x402.org(테스트넷 전용), Coinbase CDP, PayAI, thirdweb 같은 곳이 이 역할을 하고, 한국에서는 DSRV 가 이 자리에 선다. 우리 다음 조각(T2)은 Base Sepolia 에서 x402.org 를 쓴다 — jUSD 와 우리 devnet 은 지원하지 않기 때문이다.",
-      en: "A service that checks a payment signature for the seller. /supported lists the chains and schemes, /verify checks the signature, amount, recipient, expiry and reuse, /settle submits it on-chain. Verify is only a promise, so the seller works before settle — hence strict timeouts and fail-closed. The money moves buyer → seller on-chain and never passes through the facilitator. x402.org (testnets only), Coinbase CDP, PayAI and thirdweb fill this role; in Korea DSRV stands here. Our next piece (T2) uses x402.org on Base Sepolia, because jUSD and our devnet are not supported.",
+      ko: "판매자가 받은 결제 서명을 대신 확인하고 체인에 올려 주는 서비스다. GET /supported 는 지원하는 scheme · network 와 서명 주소, POST /verify 는 서명 · 잔액 · 금액 · 유효기간 · 토큰과 네트워크를 확인하고 isValid 를 돌려준다 — 체인에는 아무것도 쓰지 않고 시뮬레이션만 한다. POST /settle 은 EVM 이라면 토큰 컨트랙트의 transferWithAuthorization 을 직접 불러 가스를 내고, 돈은 서명에 적힌 수신자에게 바로 간다. 금액도 수신자도 퍼실리테이터가 바꿀 수 없다. 스펙의 기본 순서는 verify → 판매자가 일함 → settle 이라, verify 는 약속일 뿐이고 settle 이 실패하면(success: false, transaction \"\") 돈은 구매자 지갑에 그대로 남는다. 운영하는 곳은 x402.org(개발 · 테스트넷용), Coinbase CDP(Base · Polygon · Arbitrum · Solana 등, 월 1,000건 무료 뒤 건당 $0.001, verify 는 무료) 같은 곳이다. 우리 다음 조각(T2)은 Base Sepolia 에서 x402.org 를 쓴다 — jUSD 와 우리 devnet 은 지원하지 않기 때문이다.",
+      en: "A service that checks a payment signature for the seller and puts it on-chain. GET /supported lists the schemes, networks and signer addresses; POST /verify checks the signature, balance, amount, validity window, token and network and returns isValid — it writes nothing on-chain, it only simulates. On EVM, POST /settle calls the token contract's transferWithAuthorization itself and pays the gas; the money goes straight to the recipient named in the signature, and the facilitator can change neither the amount nor the recipient. The spec's default order is verify → the seller works → settle, so verify is only a promise; if settle fails (success: false, transaction \"\") the money stays in the buyer's wallet. Operators include x402.org (for development and testnets) and Coinbase CDP (Base, Polygon, Arbitrum, Solana and more; 1,000 transactions a month free, then $0.001 each; verify is free). Our next piece (T2) uses x402.org on Base Sepolia, because jUSD and our devnet are not supported.",
     },
     runs: "plan",
   },
   Kora: {
     id: "Kora",
-    role: { ko: "솔라나에서 퍼실리테이터 뒤에 서는 서명기 — 정책을 검사하고 fee payer 로 공동 서명한다.", en: "The signer behind a facilitator on Solana — checks policy, then co-signs as fee payer." },
+    role: { ko: "솔라나 퍼실리테이터가 쓰는 서명기 — 정책을 검사하고 fee payer 로 서명한다.", en: "The signer a Solana facilitator uses — checks policy, then signs as fee payer." },
     detail: {
-      ko: "Solana 재단이 관리하는 오픈소스 서명·수수료 대납 서비스다. 솔라나의 모든 트랜잭션에는 SOL 을 가진 fee payer 가 필요해서, USDC 는 있는데 SOL 이 0 인 에이전트 지갑은 아무것도 못 한다. 구매자는 USDC 전송에 반만 서명하고, settle 때 퍼실리테이터가 Kora 를 불러 정책(허용 프로그램, 금액 상한, 토큰 목록)을 검사한 뒤 fee payer 로 공동 서명해 제출한다. 퍼실리테이터의 대안이 아니라 그 뒤에 포개진 층이다. 여기 데모에서는 이름만 걸려 있다 — 이 판의 체인은 EVM 이다.",
-      en: "An open-source signing and fee-sponsorship service maintained by the Solana Foundation. Every Solana transaction needs a fee payer holding SOL, so an agent wallet with USDC and 0 SOL can do nothing. The buyer half-signs the USDC transfer; at settle the facilitator calls Kora, which checks its policy (allowed programs, amount caps, token list) and co-signs as fee payer. It sits behind the facilitator, not beside it. Named only here — this board's chain is EVM.",
+      ko: "Solana 재단(solana-foundation/kora)의 오픈소스 서명 노드다. 솔라나의 모든 트랜잭션에는 SOL 을 가진 fee payer 가 필요해서, USDC 는 있는데 SOL 이 0 인 에이전트 지갑은 아무것도 못 한다. 공식 데모에서 퍼실리테이터는 Kora 를 자기 SVM 서명기로 등록한다 — getPayerSigner 로 받은 주소가 fee payer 가 되고, settle 때 signTransaction 으로 Kora 가 그 자리에 서명하면 퍼실리테이터가 솔라나 RPC 로 보낸다. 구매자는 자기 몫만 서명해 두었다. 정책(허용하는 프로그램 · 토큰 · 트랜잭션 모양)이 fee payer 키를 지키는 경계다. 퍼실리테이터의 대안이 아니라 그 뒤에 포개진 층이고, 데모에서는 둘을 함께 띄운다. 여기 판에서는 이름만 — 이 판의 체인은 EVM 이다.",
+      en: "An open-source signer node from the Solana Foundation (solana-foundation/kora). Every Solana transaction needs a fee payer holding SOL, so an agent wallet with USDC and 0 SOL can do nothing. In the official demo the facilitator registers Kora as its SVM signer — the address from getPayerSigner becomes the fee payer, and at settle Kora signs that slot through signTransaction, then the facilitator sends it through Solana RPC. The buyer had signed only its own part. The policy (allowed programs, tokens and transaction shapes) is the boundary that protects the fee-payer key. It sits behind the facilitator, not beside it, and the demo runs the two together. Named only on this board — its chain is EVM.",
     },
     runs: "named",
   },
   "pay.sh": {
     id: "pay.sh",
-    role: { ko: "원천 API 의 키를 쥐고 앞에 선 게이트웨이 — '결제가 곧 자격증명'.", en: "A gateway in front of upstream APIs that holds their keys — 'the payment is the credential'." },
+    role: { ko: "솔라나의 x402 · MPP 도구 — 판매자 쪽 게이트웨이와 구매자 쪽 pay CLI.", en: "Solana's x402 and MPP tooling — a seller-side gateway and a buyer-side pay CLI." },
     detail: {
-      ko: "Solana 재단과 Google Cloud 가 내놓은 기계 결제 게이트웨이다. Gemini, BigQuery 같은 API 앞에서 원천 키를 대신 쥐고, 에이전트는 계정도 API 키도 없이 x402 결제로 요청 한 번을 연다. 흐름에서는 판매자(서비스 제공자) 자리에 서고, pay CLI 는 그 앞에서 구매자가 잡는 손잡이다. 여기 데모에서는 이름만 — 우리 /api/x402/quote 를 그런 카탈로그에 올리는 것은 다음 다음 일이다.",
-      en: "A machine-payment gateway from the Solana Foundation and Google Cloud. It stands in front of APIs such as Gemini and BigQuery holding their keys, and an agent opens one request with an x402 payment — no account, no API key. In the flow it sits in the seller's (service provider's) seat; the pay CLI is the buyer's handle on it. Named only here — listing our /api/x402/quote in such a catalogue comes after the next piece.",
+      ko: "Solana 재단이 Google Cloud 와 함께 내놓았다(2026-05-05). 판매자 쪽 pay gate api(배포는 pay server start)는 업스트림 API 앞에 서서 402 를 돌려주고, 결제를 스스로 검증하고, 자기 키로 fee payer 를 한다 — 업스트림 API 키는 환경 변수에서 읽어 요청에 붙이므로 구매자에게는 보이지 않는다. 그러니 이 게이트웨이는 판매자이면서 자기 퍼실리테이터다. 순서도 다르다: x402 exact 결제는 업스트림에 넘기기 전에 체인에 정산된다(정산 → 일). 구매자 쪽 pay 는 curl · claude · codex 를 감싸서, 402 를 만나면 트랜잭션을 준비하고 로컬 지갑(macOS 는 Keychain 의 Touch ID)에 서명을 묻고 다시 보낸다. 체인은 솔라나다. 여기 판에서는 이름만이다.",
+      en: "Launched by the Solana Foundation with Google Cloud (2026-05-05). On the seller side, pay gate api (deployed as pay server start) stands in front of an upstream API, answers 402, verifies the payment itself and acts as fee payer with its own key — it reads the upstream API key from an environment variable and attaches it, so the buyer never sees it. That makes the gateway the seller and its own facilitator. The order differs too: an x402 exact payment settles on-chain before the request goes upstream (settle → work). On the buyer side, pay wraps curl, claude or codex; on a 402 it prepares the transaction, asks the local wallet to sign (Touch ID through Keychain on macOS) and retries. The chain is Solana. Named only on this board.",
+    },
+    runs: "named",
+  },
+  DSRV: {
+    id: "DSRV",
+    role: { ko: "쿠콘의 x402 데이터 API 에 지갑과 노드를 대는 쪽 — 퍼실리테이터라는 출처는 못 찾음.", en: "Supplies wallet and node infrastructure to COOCON's x402 data APIs — no source found that it is a facilitator." },
+    detail: {
+      ko: "확인된 것은 2026-11-06 쿠콘과 맺은 MOU 하나다. 쿠콘이 MCP 로 내는 데이터 API 에 x402 결제를 붙이고, DSRV 는 지갑 기술과 멀티체인 노드 인프라를 댄다. 첫 일은 AI 에이전트 API 결제 PoC 다. 보도에는 퍼실리테이터라는 말도, 체인 이름도 없다. 그래서 이 판에서는 DSRV 를 퍼실리테이터 칸에 쓰지 않는다. 흐름으로 보면 쿠콘이 서비스 제공자(판매자) 자리이고, DSRV 는 그 뒤의 인프라다.",
+      en: "The one confirmed fact is an MOU with COOCON on 2026-11-06. COOCON adds x402 payment to the data APIs it serves over MCP, and DSRV supplies wallet technology and multi-chain node infrastructure. The first job is a PoC for AI-agent API payment. The reports name no facilitator role and no chain. So this board does not write DSRV into the facilitator box. In the flow, COOCON sits in the service-provider (seller) seat and DSRV is the infrastructure behind it.",
     },
     runs: "named",
   },
