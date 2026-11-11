@@ -76,6 +76,35 @@ export const STD: Record<string, Std> = {
     },
     runs: "plan",
   },
+  // ── x402 의 뒤편: 퍼실리테이터 · Kora · pay.sh (jay, 2026-11-11: 퍼실리테이터 "결국 DSRV가 하는 일", Kora, pay.sh 를
+  // Bird View 에). 셋 다 여기 데모에서 아직 돌지 않는다 — 퍼실리테이터는 계획(T2, x402.org on Base Sepolia), 나머지는 이름만.
+  Facilitator: {
+    id: "Facilitator",
+    role: { ko: "x402 결제를 검증(verify)하고 체인에 정산(settle)하는 곳 — 돈은 쥐지 않고 가스를 대신 낸다.", en: "Verifies an x402 payment and settles it on-chain — never holds the money, pays the gas." },
+    detail: {
+      ko: "판매자가 받은 결제 서명을 대신 확인해 주는 서비스다. /supported 는 지원하는 체인과 방식, /verify 는 서명·금액·수신자·만료·재사용 여부, /settle 은 체인 제출이다. verify 는 약속일 뿐이라 판매자는 settle 전에 일을 하고, 그래서 타임아웃을 짧게 두고 실패하면 닫는다. 돈은 구매자에서 판매자로 체인 위에서 바로 가고 퍼실리테이터를 거치지 않는다. x402.org(테스트넷 전용), Coinbase CDP, PayAI, thirdweb 같은 곳이 이 역할을 하고, 한국에서는 DSRV 가 이 자리에 선다. 우리 다음 조각(T2)은 Base Sepolia 에서 x402.org 를 쓴다 — jUSD 와 우리 devnet 은 지원하지 않기 때문이다.",
+      en: "A service that checks a payment signature for the seller. /supported lists the chains and schemes, /verify checks the signature, amount, recipient, expiry and reuse, /settle submits it on-chain. Verify is only a promise, so the seller works before settle — hence strict timeouts and fail-closed. The money moves buyer → seller on-chain and never passes through the facilitator. x402.org (testnets only), Coinbase CDP, PayAI and thirdweb fill this role; in Korea DSRV stands here. Our next piece (T2) uses x402.org on Base Sepolia, because jUSD and our devnet are not supported.",
+    },
+    runs: "plan",
+  },
+  Kora: {
+    id: "Kora",
+    role: { ko: "솔라나에서 퍼실리테이터 뒤에 서는 서명기 — 정책을 검사하고 fee payer 로 공동 서명한다.", en: "The signer behind a facilitator on Solana — checks policy, then co-signs as fee payer." },
+    detail: {
+      ko: "Solana 재단이 관리하는 오픈소스 서명·수수료 대납 서비스다. 솔라나의 모든 트랜잭션에는 SOL 을 가진 fee payer 가 필요해서, USDC 는 있는데 SOL 이 0 인 에이전트 지갑은 아무것도 못 한다. 구매자는 USDC 전송에 반만 서명하고, settle 때 퍼실리테이터가 Kora 를 불러 정책(허용 프로그램, 금액 상한, 토큰 목록)을 검사한 뒤 fee payer 로 공동 서명해 제출한다. 퍼실리테이터의 대안이 아니라 그 뒤에 포개진 층이다. 여기 데모에서는 이름만 걸려 있다 — 이 판의 체인은 EVM 이다.",
+      en: "An open-source signing and fee-sponsorship service maintained by the Solana Foundation. Every Solana transaction needs a fee payer holding SOL, so an agent wallet with USDC and 0 SOL can do nothing. The buyer half-signs the USDC transfer; at settle the facilitator calls Kora, which checks its policy (allowed programs, amount caps, token list) and co-signs as fee payer. It sits behind the facilitator, not beside it. Named only here — this board's chain is EVM.",
+    },
+    runs: "named",
+  },
+  "pay.sh": {
+    id: "pay.sh",
+    role: { ko: "원천 API 의 키를 쥐고 앞에 선 게이트웨이 — '결제가 곧 자격증명'.", en: "A gateway in front of upstream APIs that holds their keys — 'the payment is the credential'." },
+    detail: {
+      ko: "Solana 재단과 Google Cloud 가 내놓은 기계 결제 게이트웨이다. Gemini, BigQuery 같은 API 앞에서 원천 키를 대신 쥐고, 에이전트는 계정도 API 키도 없이 x402 결제로 요청 한 번을 연다. 흐름에서는 판매자(서비스 제공자) 자리에 서고, pay CLI 는 그 앞에서 구매자가 잡는 손잡이다. 여기 데모에서는 이름만 — 우리 /api/x402/quote 를 그런 카탈로그에 올리는 것은 다음 다음 일이다.",
+      en: "A machine-payment gateway from the Solana Foundation and Google Cloud. It stands in front of APIs such as Gemini and BigQuery holding their keys, and an agent opens one request with an x402 payment — no account, no API key. In the flow it sits in the seller's (service provider's) seat; the pay CLI is the buyer's handle on it. Named only here — listing our /api/x402/quote in such a catalogue comes after the next piece.",
+    },
+    runs: "named",
+  },
   "ERC-8004": {
     id: "ERC-8004",
     role: { ko: "온체인 에이전트 신원·평판 — '상대가 정말 그 에이전트인가'.", en: "On-chain agent identity and reputation — 'is the counterparty really that agent'." },

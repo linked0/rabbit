@@ -38,11 +38,16 @@ import { CAP, PRICE, OVER, STD, type Txt } from "./std";
 // 링크 → 프록시 → 진짜 서버 → (진짜 화면이 돌아옴) → 승인. 승인을 OTP 로 하면 프록시가 그것을 다른 거래의
 // 3-D Secure 로 중계하고, 패스키로 하면 origin 이 달라 서명이 쓸모없어진다 — 이 판이 보여 주려는 것은
 // "사용자가 가짜를 알아보기"가 아니라 "서버와 구조가 중계를 알아채기"다. 도메인 이름은 지어낸 예시다.
+// **x402 의 뒤편: 퍼실리테이터** (jay, 2026-11-11: x402 흐름에서 퍼실리테이터가 하는 일 — "결국 DSRV가 하는 일" —
+// 과 Kora, pay.sh 를 Bird View 에). 402 를 받은 에이전트가 서명해 다시 부르면 판매자는 퍼실리테이터에 verify(약속)를
+// 묻고, 데이터를 주고, settle(체인 제출 · 가스 대납)한다. 솔라나라면 그 뒤에 Kora 가 fee payer 로 공동 서명한다.
+// pay.sh 는 판매자 자리에 서는 게이트웨이라 서비스 제공자 칸 위의 칩으로 둔다. 셋 다 아직 돌지 않으니 표준 설명의
+// runs 가 plan/named 다.
 type Scenario = "agentic" | "canton" | "relay";
-type Phase = "user" | "wallet" | "agent" | "provider" | "ap2" | "done";
+type Phase = "user" | "wallet" | "agent" | "provider" | "facilitator" | "ap2" | "done";
 type RPhase = "lure" | "relay" | "page" | "pay" | "done";
 type Method = "otp" | "passkey";
-type StackNode = "user" | "wallet" | "delegator" | "agent" | "provider" | "ap2";
+type StackNode = "user" | "wallet" | "delegator" | "agent" | "provider" | "facilitator" | "ap2";
 type CantonNode = "cuser" | "operator" | "sync" | "validator" | "daml";
 type RelayNode = "ruser" | "proxy" | "site" | "other" | "guard";
 type NodeId = StackNode | CantonNode | RelayNode;
@@ -59,6 +64,7 @@ const N: Record<NodeId, Node> = {
   agent: { x: 430, y: 304 },
   provider: { x: 726, y: 304 },
   ap2: { x: 430, y: 446 },
+  facilitator: { x: 726, y: 446 }, // 서비스 제공자 바로 아래 — 판매자가 묻는 곳 (2026-11-11)
   // Canton 구역 (T5)
   // 구역은 사용자보다 한 칸 내려 둔다 — 사용자에서 말풍선으로 가는 선이 구역 제목을 가로지르지 않게.
   cuser: { x: 180, y: 48 },
@@ -156,10 +162,20 @@ export default function StackRun({ lang }: { lang: Lang }) {
     note({ tone: "chain", chip: "ERC-7710 · ERC-4337", href: "/live/aa", hrefLabel: t("AA 데모", "AA demo"), text: t(`redeemDelegations 통과 (${amount} ≤ ${CAP}). UserOperation, 가스는 paymaster.`, `redeemDelegations passed (${amount} ≤ ${CAP}). A UserOperation; paymaster paid the gas.`) });
   }
   function providerPay() {
-    close(); setPhase("ap2");
+    close(); setPhase("facilitator");
     send([{ from: N.agent, to: N.provider, color: "var(--accent)" }]);
     blink("provider", "good");
-    note({ tone: "info", chip: "x402", text: t(`402 → ${PRICE} jUSD 지불 → 같은 요청 재전송 → 데이터 전달.`, `402 → paid ${PRICE} jUSD → same request resent → data delivered.`) });
+    note({ tone: "info", chip: "x402", text: t(`402 → 에이전트가 ${PRICE} 짜리 결제에 서명 → 결제 헤더를 붙여 같은 요청 재전송. 아직 돈은 안 움직였다 — 판매자가 퍼실리테이터에 물을 차례.`, `402 → the agent signs a ${PRICE} payment → resends the same request with the payment header. No money has moved yet — the seller asks the facilitator next.`) });
+  }
+  // 판매자 → 퍼실리테이터: verify(약속) → 데이터 전달 → settle(체인). 이 순서가 이 칸이 보여 주려는 것이다 —
+  // 판매자는 돈이 확정되기 전에 일을 한다.
+  function facilitatorSettle() {
+    close(); setPhase("ap2");
+    send([{ from: N.provider, to: N.facilitator, color: "var(--accent)" }, { from: N.facilitator, to: N.provider, color: "var(--green)" }]);
+    blink("facilitator", "good");
+    note({ tone: "chain", chip: "verify", text: t("퍼실리테이터가 서명·금액·수신자·만료·재사용을 확인했다 — 약속일 뿐, 돈은 아직.", "The facilitator checked the signature, amount, recipient, expiry and reuse — a promise, not money yet.") });
+    note({ tone: "info", text: t("판매자가 데이터를 넘겼다 — 정산 전에 일을 하는 쪽은 판매자다.", "The seller handed over the data — it works before the money is settled.") });
+    note({ tone: "good", chip: "settle · Kora", text: t("퍼실리테이터가 체인에 제출하고 가스를 냈다(솔라나라면 Kora 가 fee payer 로 공동 서명). 돈은 에이전트 → 제공자로 바로 갔고 퍼실리테이터는 쥐지 않았다. 영수증 = tx 해시.", "The facilitator submitted it on-chain and paid the gas (on Solana, Kora co-signs as fee payer). The money went agent → provider directly; the facilitator never held it. Receipt = the tx hash.") });
   }
   function ap2Settle(r: Rail) {
     close(); setRail(r); setPhase("done");
@@ -214,7 +230,8 @@ export default function StackRun({ lang }: { lang: Lang }) {
       : spent > 0 ? t(`사용 ${spent.toFixed(2)} / ${CAP} jUSD`, `used ${spent.toFixed(2)} / ${CAP} jUSD`)
       : t(`caveat 저장: ≤ ${CAP} jUSD · 1h`, `caveat stored: ≤ ${CAP} jUSD · 1h`),
     agent: phase === "agent" ? t("깨어남 — 눌러 보세요", "awake — press") : granted ? t("지출함", "spent") : t("잠듦", "asleep"),
-    provider: phase === "provider" ? t("HTTP 402 — 눌러 보세요", "HTTP 402 — press") : phase === "ap2" || phase === "done" ? t("결제됨 · 데이터 전달", "paid · data delivered") : "HTTP 402",
+    provider: phase === "provider" ? t("HTTP 402 — 눌러 보세요", "HTTP 402 — press") : phase === "facilitator" ? t("결제 헤더 받음 · 검증 대기", "payment header in · awaiting verify") : phase === "ap2" || phase === "done" ? t("결제됨 · 데이터 전달", "paid · data delivered") : "HTTP 402",
+    facilitator: phase === "facilitator" ? t("검증 요청 — 눌러 보세요", "verify request — press") : phase === "ap2" || phase === "done" ? t("정산됨 · tx 해시", "settled · tx hash") : t("verify · settle (DSRV 등)", "verify · settle (e.g. DSRV)"),
     ap2: phase === "ap2" ? t("정산 대기 — 눌러 보세요", "awaiting settlement — press") : phase === "done" ? t("영수증 · 저널 한 줄", "receipt · one journal line") : t("법정화폐 레일", "fiat rail"),
     cuser: t("계약의 당사자", "a party to the contract"),
     operator: t("Jayverse · validator 노드", "Jayverse · validator node"),
@@ -231,7 +248,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
   };
   const lit: Record<NodeId, boolean> = {
     user: phase !== "user", wallet: phase !== "user", delegator: granted, agent: granted,
-    provider: phase === "ap2" || phase === "done", ap2: phase === "done",
+    provider: phase === "facilitator" || phase === "ap2" || phase === "done", facilitator: phase === "ap2" || phase === "done", ap2: phase === "done",
     cuser: false, operator: false, sync: false, validator: false, daml: false,
     ruser: rphase !== "lure", proxy: rphase !== "lure" && rphase !== "relay", site: rphase === "pay" || rphase === "done",
     other: method === "otp", guard: method === "passkey",
@@ -255,7 +272,8 @@ export default function StackRun({ lang }: { lang: Lang }) {
   const steps = [
     { n: "①", label: "EIP-7702", done: granted }, { n: "②", label: "ERC-7715", done: granted },
     { n: "③", label: t("깨어남", "wake"), done: spent > 0 }, { n: "④", label: "ERC-7710", done: spent > 0 },
-    { n: "⑤", label: "x402", done: phase === "ap2" || phase === "done" }, { n: "⑥", label: "AP2", done: phase === "done" },
+    { n: "⑤", label: "x402", done: phase === "facilitator" || phase === "ap2" || phase === "done" },
+    { n: "⑥", label: t("퍼실리테이터", "facilitator"), done: phase === "ap2" || phase === "done" }, { n: "⑦", label: "AP2", done: phase === "done" },
   ];
 
   // ── 말풍선: 판 안에서, 말하는 칸 옆에 (모달은 "이질적") ─────────────────────
@@ -273,7 +291,8 @@ export default function StackRun({ lang }: { lang: Lang }) {
   // 각 말풍선의 "표준" 메뉴 — 긴 설명은 전부 여기 뒤에 있다.
   const MENU: Record<NodeId, string[]> = {
     user: ["EIP-7702"], wallet: ["EIP-7702", "ERC-7715", "EIP-712"], delegator: ["ERC-7710"],
-    agent: ["ERC-7710", "ERC-4337", "ERC-5792"], provider: ["x402", "ERC-8004", "ERC-1271"], ap2: ["AP2", "EIP-712"],
+    agent: ["ERC-7710", "ERC-4337", "ERC-5792"], provider: ["x402", "pay.sh", "ERC-8004", "ERC-1271"],
+    facilitator: ["Facilitator", "Kora", "x402"], ap2: ["AP2", "EIP-712"],
     cuser: ["Validator", "Guardrail"], operator: ["Validator", "Synchronizer", "Guardrail"],
     sync: ["Synchronizer"], validator: ["Validator", "Daml"], daml: ["Daml", "Guardrail"],
     ruser: ["AiTM", "WebAuthn"], proxy: ["AiTM", "Session"], site: ["CSP", "SRI"], other: ["3DS", "AiTM"],
@@ -342,7 +361,14 @@ export default function StackRun({ lang }: { lang: Lang }) {
             {popup === "provider" && (<>
               <div className="stack-bubble-h">{t("서비스 제공자", "Service provider")}</div>
               <pre className="stack-402">{`HTTP/1.1 402 Payment Required\nX-Price: ${PRICE} jUSD\nX-Pay-To: 0xFEED…CAFE`}</pre>
-              <div className="stack-bubble-actions"><button onClick={providerPay}>{t("x402 로 결제하고 다시 요청", "Pay via x402 and retry")}</button></div>
+              <div className="stack-bubble-actions"><button onClick={providerPay}>{t("결제에 서명하고 다시 요청", "Sign the payment and retry")}</button></div>
+            </>)}
+            {popup === "facilitator" && (<>
+              <div className="stack-bubble-h">{t("퍼실리테이터 — DSRV 같은 곳", "Facilitator — e.g. DSRV")}</div>
+              <p>{phase === "facilitator"
+                ? t("판매자가 결제 헤더를 들고 왔다. 순서는 verify(서명이 맞는지 — 약속) → 판매자가 데이터 전달 → settle(체인 제출, 가스는 여기서). 돈은 여기를 거치지 않는다.", "The seller brought the payment header. The order: verify (is the signature good — a promise) → the seller hands over the data → settle (submit on-chain; the gas is paid here). The money never passes through here.")
+                : t("x402 결제를 검증하고 체인에 정산하는 곳. 돈은 쥐지 않고 가스를 대신 낸다. 솔라나라면 뒤에 Kora 가 fee payer 로 공동 서명한다.", "Verifies an x402 payment and settles it on-chain. Holds no money, pays the gas. On Solana, Kora co-signs behind it as fee payer.")}</p>
+              {phase === "facilitator" && <div className="stack-bubble-actions"><button onClick={facilitatorSettle}>{t("검증하고 정산", "Verify and settle")}</button></div>}
             </>)}
             {popup === "ap2" && (<>
               <div className="stack-bubble-h">AP2 — Payment Mandate</div>
@@ -455,7 +481,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
         {/* ── HUD: 위임 한도가 이 게임의 체력 바다 ───────────────── */}
         <div className="stack-hud">
           <div><div className="stack-hud-k">{t("위임 한도", "Mandate")}</div><div className="stack-hud-v">{spent.toFixed(2)} / {CAP.toFixed(2)} jUSD</div><div className="stack-bar" aria-hidden><span style={{ width: `${(spent / CAP) * 100}%` }} /></div></div>
-          <div><div className="stack-hud-k">{t("차례", "Turn")}</div><div className="stack-hud-v">{phase === "done" ? t("완료", "done") : { user: t("사용자", "User"), wallet: "MetaMask", agent: t("에이전트", "Agent"), provider: t("서비스 제공자", "Provider"), ap2: "AP2" }[phase]}</div></div>
+          <div><div className="stack-hud-k">{t("차례", "Turn")}</div><div className="stack-hud-v">{phase === "done" ? t("완료", "done") : { user: t("사용자", "User"), wallet: "MetaMask", agent: t("에이전트", "Agent"), provider: t("서비스 제공자", "Provider"), facilitator: t("퍼실리테이터", "Facilitator"), ap2: "AP2" }[phase]}</div></div>
           <div><div className="stack-hud-k">{t("거절된 시도", "Refused")}</div><div className="stack-hud-v" style={refused ? { color: "var(--red)" } : undefined}>{refused}</div></div>
           <div><div className="stack-hud-k">{t("에이전트의 ETH", "Agent's ETH")}</div><div className="stack-hud-v">0 <span className="sub" style={{ fontSize: 12, fontWeight: 400 }}>({t("가스는 paymaster", "paymaster pays gas")})</span></div></div>
         </div>
@@ -463,14 +489,15 @@ export default function StackRun({ lang }: { lang: Lang }) {
         {/* ── 판 ───────────────────────────────────────────────── */}
         {/* 폰에서 줄이면 글자가 5px 이 되므로, 읽을 수 있는 크기를 지키고 가로 스크롤을 준다. */}
         <div style={{ overflowX: "auto", marginTop: 14 }}>
-          <svg viewBox="0 14 880 470" style={svgStyle} role="img"
-            aria-label={t("사용자, MetaMask, Delegator 컨트랙트, 에이전트, 서비스 제공자, AP2 사이의 흐름", "Flow between the user, MetaMask, the delegator contract, the agent, the service provider and AP2")}>
+          <svg viewBox="0 14 880 506" style={svgStyle} role="img"
+            aria-label={t("사용자, MetaMask, Delegator 컨트랙트, 에이전트, 서비스 제공자, 퍼실리테이터, AP2 사이의 흐름", "Flow between the user, MetaMask, the delegator contract, the agent, the service provider, the facilitator and AP2")}>
             {/* 말풍선 연결선은 칸 아래에 깔리게 먼저 그린다 — 끝이 칸에 가려져 모서리 계산이 필요 없다. */}
             {leader}
             <Wire a={N.user} b={N.wallet} live={phase !== "user"} label="EIP-7702" />
             <Wire a={N.wallet} b={N.delegator} live={granted} label="ERC-7715" />
             <Wire a={N.delegator} b={N.agent} live={spent > 0} label="ERC-7710" both />
-            <Wire a={N.agent} b={N.provider} live={phase === "ap2" || phase === "done"} label="x402" />
+            <Wire a={N.agent} b={N.provider} live={phase === "facilitator" || phase === "ap2" || phase === "done"} label="x402" />
+            <Wire a={N.provider} b={N.facilitator} live={phase === "ap2" || phase === "done"} label="verify · settle" both at={0.62} />
             <Wire a={N.agent} b={N.ap2} live={phase === "done"} label="AP2" both at={0.66} />
 
             <Box {...boxProps("user")} w={150} title={t("사용자", "User")} sub={status.user} />
@@ -479,11 +506,15 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Box {...boxProps("agent")} w={170} title={t("에이전트", "Agent")} sub={status.agent} />
             <Box {...boxProps("provider")} w={180} title={t("서비스 제공자", "Service provider")} sub={status.provider} />
             <Box {...boxProps("ap2")} w={210} title={rail ? `AP2 — ${railName}` : "AP2"} sub={status.ap2} />
+            <Box {...boxProps("facilitator")} w={200} title={t("퍼실리테이터", "Facilitator")} sub={status.facilitator} />
 
             {/* ERC-4337 은 간선이 아니라 에이전트가 트랜잭션을 내보내는 방식이라, 노드에 붙인 칩으로 둔다. */}
             <Chip x={N.agent.x} y={N.agent.y + 44} text="ERC-4337 · UserOp · paymaster" live={spent > 0} />
             {/* ERC-8004 은 이 판에서 유일하게 **안 도는** 조각이다 — 자리를 비워 두는 대신 흐릿하게 그려 둔다. */}
             <Chip x={N.provider.x} y={N.provider.y + 44} text={t("ERC-8004 · 에이전트 신원 (설명만)", "ERC-8004 · agent identity (explainer)")} live={false} />
+            {/* pay.sh 는 판매자 자리에 서는 게이트웨이, Kora 는 퍼실리테이터 뒤의 서명기 — 둘 다 여기서는 이름만이라 흐린 칩 */}
+            <Chip x={N.provider.x} y={N.provider.y - 53} text={t("pay.sh · API 게이트웨이 (이름만)", "pay.sh · API gateway (named only)")} live={false} />
+            <Chip x={N.facilitator.x} y={N.facilitator.y + 44} text={t("Kora · 솔라나 fee payer (이름만)", "Kora · Solana fee payer (named only)")} live={false} />
 
             {/* 끝난 패킷은 투명한 채로 도착 칸 위에 남는다 — 포인터를 꺼 두지 않으면 그 칸의 클릭을 가로챈다. */}
             {packets.map((p) => (
