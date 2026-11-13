@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Lang } from "@/lib/i18n";
 import { CAP, PRICE, OVER, STD, type Txt } from "./std";
 
@@ -125,7 +126,12 @@ type Flash = { node: NodeId; tone: "good" | "bad"; key: number };
 export default function StackRun({ lang }: { lang: Lang }) {
   const t = (ko: string, en: string) => (lang === "ko" ? ko : en);
   const tx = (x: Txt) => (lang === "ko" ? x.ko : x.en);
-  const [view, setView] = useState<Scenario | null>(null); // 펼친 시나리오 — 없으면 지도만
+  // 펼친 시나리오 — 없으면 지도만. 왼쪽 레일의 Bird View 하위 메뉴(?s=agentic|canton|relay)와 같은 상태를 나눠 쓴다.
+  const sp = useSearchParams();
+  const router = useRouter();
+  const asScenario = (s: string | null): Scenario | null => (s === "agentic" || s === "canton" || s === "relay" ? s : null);
+  const [view, setView] = useState<Scenario | null>(() => asScenario(sp.get("s")));
+  useEffect(() => { setView(asScenario(sp.get("s"))); }, [sp]);
   const [phase, setPhase] = useState<Phase>("user");
   const [popup, setPopup] = useState<NodeId | null>(null);
   const [detail, setDetail] = useState<string | null>(null); // 열린 "표준" 설명
@@ -863,7 +869,13 @@ MessageTransmitterV2.receiveMessage(message, attestation)
   );
 
   // 지도의 네모를 누르면 그 시나리오가 펼쳐진다. 열린 것을 다시 누르면 접힌다.
-  const pick = (v: Scenario) => { close(); setPackets([]); setView((cur) => (cur === v ? null : v)); };
+  // 지도의 네모를 눌러도 주소가 바뀌어 레일의 하위 메뉴가 같이 켜진다. 같은 네모를 다시 누르면 접힌다.
+  const pick = (v: Scenario) => {
+    close(); setPackets([]);
+    const next = view === v ? null : v;
+    setView(next);
+    router.replace(next ? `/live/stack?s=${next}` : "/live/stack", { scroll: false });
+  };
   const svgStyle = { width: "100%", maxWidth: 1100, minWidth: 700, height: "auto", display: "block" } as const;
 
   return (

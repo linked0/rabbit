@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 // Left card list on every Demo page (jay, 2026-10-29, sketch: "Card list (panel)" beside the
 // agent console). Labels and hrefs come from the server layout; this component only needs the
 // pathname to mark the open demo, which is why it is the one client piece.
 
-export type RailItem = { key: string; href: string; label: string };
+export type RailSub = { key: string; href: string; label: string };
+export type RailItem = { key: string; href: string; label: string; subs?: RailSub[] };
 
 export default function LiveRail({ title, allLabel, items }: { title: string; allLabel: string; items: RailItem[] }) {
   const path = usePathname();
+  const sp = useSearchParams();
   const ref = useRef<HTMLElement>(null);
 
   // Longest-prefix match: /live/aa/scenarios/* lights AA, while /live/agent/console still
@@ -50,6 +52,21 @@ export default function LiveRail({ title, allLabel, items }: { title: string; al
               <Link href={`${it.href}?from=live`} className={active ? "active" : undefined} aria-current={active ? "page" : undefined}>
                 {it.label}
               </Link>
+              {/* 하위 메뉴 — 지금은 Bird View 의 세 시나리오뿐. 어느 것이 열렸는지는 ?s= 로 안다. */}
+              {it.subs && (
+                <ol className="live-rail-sub">
+                  {it.subs.map((sub) => {
+                    const on = path === it.href && sp.get("s") === sub.key;
+                    return (
+                      <li key={sub.key}>
+                        <Link href={`${sub.href}&from=live`} className={on ? "active" : undefined} aria-current={on ? "page" : undefined}>
+                          {sub.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
             </li>
           );
         })}

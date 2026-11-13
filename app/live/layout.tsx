@@ -13,6 +13,13 @@ export default function LiveLayout({ children }: { children: React.ReactNode }) 
     key: c.key,
     href: c.href ?? `/poc/${c.key}`,
     label: railLabel(pick(lang, c.titleKo, c.title)),
+    // Bird View 아래의 세 시나리오 (jay, 2026-11-13: "these three are under the Bird View as sub menus").
+    // 각 항목은 /live/stack?s=… 로 그 시나리오의 판을 바로 펼친다.
+    subs: c.key === "agent-stack" ? [
+      { key: "agentic", href: "/live/stack?s=agentic", label: pick(lang, "에이전트 결제", "Agentic payment") },
+      { key: "canton", href: "/live/stack?s=canton", label: "Canton" },
+      { key: "relay", href: "/live/stack?s=relay", label: pick(lang, "AiTM 중계 피싱", "AiTM relay phishing") },
+    ] : undefined,
   }));
   return (
     // Rail after the page in the DOM: the grid areas place it on the left (or as a strip under
