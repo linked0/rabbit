@@ -145,6 +145,25 @@ export const STD: Record<string, Std> = {
     },
     runs: "live", href: "/live/ap2", label: { ko: "AP2 / 토스", en: "AP2 / Toss" },
   },
+  // 다른 레일 두 갈래 (jay, 2026-11-13: Stripe · Mastercard 같은 주체, SWIFT 해외 송금). x402 와 나란히 두는 비교용이다.
+  "Card rail": {
+    id: "Card rail",
+    role: { ko: "판매자가 당겨 가는 결제 — 승인은 몇 초, 돈은 며칠 뒤, 몇 달 뒤에도 되돌려질 수 있다.", en: "A payment the seller pulls — authorized in seconds, paid days later, reversible months on." },
+    detail: {
+      ko: "주체는 넷이다. 판매자, 매입 쪽(Stripe 같은 PG · 매입사), 카드 네트워크(Mastercard · Visa), 발급 은행. ① 판매자가 PG 에 청구 ② PG 가 네트워크를 거쳐 발급 은행에 승인 요청 ③ 발급 은행이 한도 · 사기를 보고 승인 — 카드에 hold 만 걸리고 돈은 안 움직인다(x402 의 /verify 와 같은 약속) ④ 하루 끝에 네트워크가 건들을 모아 상계(청산), interchange 수수료 확정 ⑤ 발급 은행이 네트워크를 거쳐 매입 쪽으로 송금(정산) ⑥ PG 가 수수료를 떼고 판매자에게 지급 — Stripe 는 보통 영업일 이틀 안팎. 국내 카드(토스페이먼츠)는 카드사가 발급사이자 매입사라 VAN 을 거쳐 카드사가 직접 매입한다. x402 와 가장 다른 점은 되돌릴 수 있다는 것이다 — 차지백은 몇 달 뒤에도 온다. AP2 mandate 가 필요한 자리가 여기다.",
+      en: "Four parties: the seller, the acquiring side (a PG such as Stripe), the card network (Mastercard, Visa) and the issuing bank. ① The seller charges through the PG ② the PG asks the issuer for authorization through the network ③ the issuer checks limit and fraud and approves — only a hold, no money moves (a promise, like x402's /verify) ④ at day's end the network nets the batch (clearing) and interchange is fixed ⑤ the issuer sends funds through the network to the acquiring side (settlement) ⑥ the PG takes its fee and pays the seller — Stripe typically in about two business days. For Korean cards (Toss Payments) the card company both issues and acquires, so it acquires directly over the VAN. The biggest difference from x402 is reversibility — chargebacks arrive months later, which is exactly where AP2 mandates are needed.",
+    },
+    runs: "live", href: "/live/ap2", label: { ko: "AP2 / Stripe", en: "AP2 / Stripe" },
+  },
+  SWIFT: {
+    id: "SWIFT",
+    role: { ko: "은행 사이의 지급 메시지망 — 메시지만 나르고, 돈은 은행끼리 맡겨 둔 계좌에서 움직인다.", en: "The banks' payment-message network — it carries messages; money moves between accounts banks hold with each other." },
+    detail: {
+      ko: "해외 송금은 내는 쪽이 밀어 보낸다. ① 판매자가 청구서(수취 은행 BIC · 계좌번호 IBAN · 금액)를 보낸다 ② 송금 은행이 출금하고 SWIFT 로 지급 메시지(MT103, 지금은 ISO 20022 pacs.008)를 보낸다 ③ 달러라면 보통 미국의 중계 은행이 노스트로 계좌 사이로 돈을 옮기고 수수료를 뗀다 — 중계가 여럿이면 수수료도 여러 번 ④ 수취 은행이 자금세탁 · 제재 검사와 환전을 하고 판매자 계좌에 넣는다. SWIFT gpi 는 UETR 로 송금을 추적하고, 수취 은행까지 같은 날 닿는 일이 많지만 검사와 환전까지 며칠 걸리기도 한다. 카드와 달리 차지백이 없고 되돌리려면 받은 쪽의 동의가 필요하다 — 이 점은 x402 와 같다. 다른 점은 속도와 중계마다 붙는 수수료이고, 스테이블코인이 해외 송금 대안으로 거론되는 이유다. 이 판에서는 각본으로만 돈다.",
+      en: "A cross-border transfer is pushed by the payer. ① The seller sends an invoice (beneficiary bank BIC, account IBAN, amount) ② the sender's bank debits and sends a payment message over SWIFT (MT103, now ISO 20022 pacs.008) ③ for dollars, a US correspondent bank usually moves the money between nostro accounts and takes a fee — more hops, more fees ④ the beneficiary bank runs AML and sanctions checks and FX, then credits the seller. SWIFT gpi tracks a transfer by its UETR; it often reaches the beneficiary bank the same day, but checks and FX can still take days. Unlike cards there is no chargeback; reversing needs the receiver's consent — the same as x402. The differences are speed and per-hop fees, which is why stablecoins come up as a cross-border alternative. On this board it is scripted only.",
+    },
+    runs: "named",
+  },
   "ERC-1271": {
     id: "ERC-1271",
     role: { ko: "isValidSignature — 컨트랙트 계정이 오프체인 서명을 증명하는 방법.", en: "isValidSignature — how a contract account proves an off-chain signature." },
