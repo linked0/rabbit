@@ -206,12 +206,26 @@ export default function StackRun({ lang }: { lang: Lang }) {
     blink("facilitator", "bad");
     note({ tone: "bad", chip: "settle 실패", text: t("verify 는 통과했고 판매자는 이미 일을 했는데, settle 이 success: false · transaction \"\" 로 돌아왔다(그 사이 잔액이 빠졌거나 유효기간이 지남). 돈은 에이전트 지갑에 그대로다 — 일한 값을 못 받는 쪽은 판매자다. 그래서 maxTimeoutSeconds 를 짧게 두고, 정산을 먼저 하는 방식(pay.sh 처럼)도 있다.", "Verify passed and the seller already did the work, but settle came back success: false · transaction \"\" (the balance moved or the window expired meanwhile). The money is still in the agent's wallet — the seller is the one left unpaid. Hence a short maxTimeoutSeconds, and some settle first instead (as pay.sh does).") });
   }
-  function ap2Settle(r: Rail) {
-    close(); setRail(r); setPhase("done");
-    send([{ from: N.agent, to: N.ap2, color: "var(--accent)" }, { from: N.ap2, to: N.agent, color: "var(--green)" }]);
+  // **AP2 는 레일이 아니라 mandate 층이다** (jay, 2026-11-13: "fix it as you recommended"). 예전 ⑦은 x402 로 이미 낸
+  // 데이터 피드를 Stripe/토스로 한 번 더 "정산"해서, 같은 구매를 두 번 내는 것처럼 보였다. 이제 ⑦은 이번 구매의
+  // mandate 세 장이 판 위 어디에 있었는지 짚기만 하고 돈은 옮기지 않는다. Stripe/토스는 x402 **대신** 쓸 수 있는
+  // 다른 레일로만 보여 준다 — mandate 는 같고 레일만 다르다.
+  const mandateNote = () => note({ tone: "info", chip: "AP2 · mandate", text: t(
+    `이번 구매의 mandate 세 장 — Intent = ② 위임(≤ ${CAP} jUSD · 1h, 집행은 enforcer), Cart = ⑤ 402 의 PAYMENT-REQUIRED(무엇을 · 얼마에 · payTo — AP2 에서는 가맹점이 서명), Payment = ⑥ 퍼실리테이터에 넘긴 서명. AP2 는 돈을 옮기지 않는다 — 분쟁 · 차지백 때 꺼내는 증거다. 이번 레일은 x402.`,
+    `This purchase's three mandates — Intent = ② the delegation (≤ ${CAP} jUSD · 1 h, enforced by the enforcer), Cart = ⑤ the 402's PAYMENT-REQUIRED (what · how much · payTo — in AP2 the merchant signs it), Payment = ⑥ the signature handed to the facilitator. AP2 moves no money — it is the evidence you pull out in a dispute or chargeback. This time the rail was x402.`) });
+  function ap2Record() {
+    close(); setPhase("done");
+    send([{ from: N.agent, to: N.ap2, color: "var(--accent)" }]);
     blink("ap2", "good");
+    mandateNote();
+  }
+  function ap2Alt(r: Rail) {
+    close(); setRail(r); setPhase("done");
+    send([{ from: N.agent, to: N.ap2, color: "var(--accent)" }]);
+    blink("ap2", "good");
+    mandateNote();
     const name = r === "toss" ? t("토스페이먼츠", "Toss Payments") : "Stripe";
-    note({ tone: "good", chip: "AP2 Payment Mandate", href: r === "stripe" ? "/live/ap2" : "/live/toss", hrefLabel: r === "stripe" ? "AP2 — Stripe" : "Toss Payments", text: t(`${name} 테스트 결제 → 영수증 → 저널 한 줄.`, `${name} test payment → receipt → one journal line.`) });
+    note({ tone: "info", chip: t("다른 레일", "another rail"), href: r === "stripe" ? "/live/ap2" : "/live/toss", hrefLabel: r === "stripe" ? "AP2 — Stripe" : "Toss Payments", text: t(`가정 — 같은 Cart Mandate 를 x402 대신 ${name}${r === "toss" ? "로" : " 로"} 냈다면: Payment Mandate 가 카드망 · PG 로 가고, 테스트 결제 → 영수증 → 저널 한 줄. x402 에 더해서가 아니라 대신이다. 그 데모에서 실제로 돈다.`, `Suppose the same Cart Mandate had gone over ${name} instead of x402: the Payment Mandate goes to the card network / PG, then test payment → receipt → one journal line. Instead of x402, not on top of it. That demo actually runs it.`) });
   }
   function reset() {
     setPhase("user"); close(); setRail(null); setSpent(0); setRefused(0); setLastRefused(false); setPackets([]); setLog([]); setFlash(null);
@@ -266,7 +280,9 @@ export default function StackRun({ lang }: { lang: Lang }) {
     agent: phase === "agent" ? t("깨어남 — 눌러 보세요", "awake — press") : granted ? t("지출함", "spent") : t("잠듦", "asleep"),
     provider: phase === "provider" ? t("HTTP 402 — 눌러 보세요", "HTTP 402 — press") : phase === "facilitator" ? t("결제 헤더 받음 · 검증 대기", "payment header in · awaiting verify") : phase === "ap2" || phase === "done" ? t("결제됨 · 데이터 전달", "paid · data delivered") : "HTTP 402",
     facilitator: phase === "facilitator" ? t("검증 요청 — 눌러 보세요", "verify request — press") : phase === "ap2" || phase === "done" ? t("정산됨 · tx 해시", "settled · tx hash") : t("verify · settle (x402.org · CDP 등)", "verify · settle (e.g. x402.org, CDP)"),
-    ap2: phase === "ap2" ? t("정산 대기 — 눌러 보세요", "awaiting settlement — press") : phase === "done" ? t("영수증 · 저널 한 줄", "receipt · one journal line") : t("법정화폐 레일", "fiat rail"),
+    ap2: phase === "ap2" ? t("mandate 짚기 — 눌러 보세요", "check the mandates — press")
+      : phase === "done" ? (rail ? t(`mandate 세 장 · 비교 레일 ${railName}`, `three mandates · compared with ${railName}`) : t("mandate 세 장 · 저널 한 줄", "three mandates · one journal line"))
+      : t("의도 · 장바구니 · 결제의 증거", "evidence: intent · cart · payment"),
     cuser: t("계약의 당사자", "a party to the contract"),
     operator: t("Jayverse · validator 노드", "Jayverse · validator node"),
     sync: t("순서만 정함", "orders only"),
@@ -308,7 +324,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
     { n: "①", label: "EIP-7702", done: upgraded }, { n: "②", label: "ERC-7715", done: granted },
     { n: "③", label: t("깨어남", "wake"), done: spent > 0 }, { n: "④", label: "ERC-7710", done: spent > 0 },
     { n: "⑤", label: "x402", done: phase === "facilitator" || phase === "ap2" || phase === "done" },
-    { n: "⑥", label: t("퍼실리테이터", "facilitator"), done: phase === "ap2" || phase === "done" }, { n: "⑦", label: "AP2", done: phase === "done" },
+    { n: "⑥", label: t("퍼실리테이터", "facilitator"), done: phase === "ap2" || phase === "done" }, { n: "⑦", label: "AP2 mandate", done: phase === "done" },
   ];
 
   // ── 말풍선: 판 안에서, 말하는 칸 옆에 (모달은 "이질적") ─────────────────────
@@ -420,9 +436,15 @@ export default function StackRun({ lang }: { lang: Lang }) {
               {phase === "facilitator" && <div className="stack-bubble-actions"><button onClick={facilitatorSettle}>{t("검증하고 정산", "Verify and settle")}</button><button onClick={facilitatorFail} style={{ background: "var(--red)", borderColor: "var(--red)", color: "#fff" }}>{t("settle 이 실패하면?", "What if settle fails?")}</button></div>}
             </>)}
             {popup === "ap2" && (<>
-              <div className="stack-bubble-h">AP2 — Payment Mandate</div>
-              <p>{t(`Cart Mandate 가 고정한 것: 데이터 피드 1건, ${PRICE} jUSD. 어느 법정화폐 레일로 정산할까?`, `Pinned by the Cart Mandate: one data feed, ${PRICE} jUSD. Which fiat rail settles it?`)}</p>
-              <div className="stack-bubble-actions"><button onClick={() => ap2Settle("stripe")}>Stripe (USD)</button><button onClick={() => ap2Settle("toss")}>{t("토스페이먼츠 (KRW)", "Toss Payments (KRW)")}</button></div>
+              <div className="stack-bubble-h">{t("AP2 — mandate 층", "AP2 — mandate layer")}</div>
+              <p>{phase === "ap2"
+                ? t("돈을 옮기는 칸이 아니다. 이번 구매에서 Intent = ② 위임, Cart = ⑤ 402, Payment = ⑥ 서명. 레일은 x402 였다 — 카드 레일이었다면 같은 mandate 가 Stripe · 토스로 갔다.", "Not a box that moves money. In this purchase: Intent = ② the delegation, Cart = ⑤ the 402, Payment = ⑥ the signature. The rail was x402 — on a card rail, the same mandates would have gone to Stripe or Toss.")
+                : status.ap2}</p>
+              {phase === "ap2" && <div className="stack-bubble-actions">
+                <button onClick={ap2Record}>{t("mandate 짚기", "Check mandates")}</button>
+                <button className="ghost" onClick={() => ap2Alt("stripe")}>{t("Stripe 였다면", "If Stripe")}</button>
+                <button className="ghost" onClick={() => ap2Alt("toss")}>{t("토스였다면", "If Toss")}</button>
+              </div>}
             </>)}
             {popup === "cuser" && (<>
               <div className="stack-bubble-h">{t("사용자 — Canton 쪽", "User — on Canton")}</div>
@@ -521,8 +543,8 @@ export default function StackRun({ lang }: { lang: Lang }) {
         </div>
         <p className="sub" style={{ fontSize: 13, marginTop: 8 }}>
           {phase === "done"
-            ? t(`끝 — ${PRICE} jUSD 가 ${railName} 로 정산됐고 ${refused ? `${refused}번의 초과 시도가 컨트랙트에서 막혔습니다. 초기화하고 이번엔 거절 없이 돌려 보세요.` : "한 번도 거절되지 않았습니다. 초기화하고 이번엔 한도를 넘겨 보세요."}`,
-                `Done — ${PRICE} jUSD settled via ${railName}, ${refused ? `${refused} overspend attempt${refused > 1 ? "s" : ""} stopped by the contract. Reset and run it clean this time.` : "nothing refused. Reset and try breaking the cap this time."}`)
+            ? t(`끝 — ${PRICE} jUSD 가 x402 로 정산됐고 ${refused ? `${refused}번의 초과 시도가 컨트랙트에서 막혔습니다. 초기화하고 이번엔 거절 없이 돌려 보세요.` : "한 번도 거절되지 않았습니다. 초기화하고 이번엔 한도를 넘겨 보세요."}`,
+                `Done — ${PRICE} jUSD settled via x402, ${refused ? `${refused} overspend attempt${refused > 1 ? "s" : ""} stopped by the contract. Reset and run it clean this time.` : "nothing refused. Reset and try breaking the cap this time."}`)
             : t("깜빡이는 칸을 누르세요. 말풍선의 '표준' 버튼이 그 칸에 걸린 표준의 설명을 엽니다.",
                 "Press the blinking box. A bubble's 'standards' buttons open the explanation of each standard on that box.")}
         </p>
@@ -550,7 +572,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Wire a={N.manager} b={N.delegator} live={spent > 0} label="executeFromExecutor" />
             <Wire a={N.agent} b={N.provider} live={phase === "facilitator" || phase === "ap2" || phase === "done"} label="x402" />
             <Wire a={N.provider} b={N.facilitator} live={phase === "ap2" || phase === "done"} label="verify · settle" both at={0.62} />
-            <Wire a={N.agent} b={N.ap2} live={phase === "done"} label="AP2" both at={0.66} />
+            <Wire a={N.agent} b={N.ap2} live={phase === "done"} label="mandate" both at={0.66} />
 
             <Box {...boxProps("user")} w={150} title={t("사용자", "User")} sub={status.user} />
             <Box {...boxProps("wallet")} w={180} title="MetaMask" sub={status.wallet} />
@@ -558,7 +580,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Box {...boxProps("manager")} w={196} title="DelegationManager" sub={status.manager} contract />
             <Box {...boxProps("agent")} w={170} title={t("에이전트", "Agent")} sub={status.agent} />
             <Box {...boxProps("provider")} w={180} title={t("서비스 제공자", "Service provider")} sub={status.provider} />
-            <Box {...boxProps("ap2")} w={210} title={rail ? `AP2 — ${railName}` : "AP2"} sub={status.ap2} />
+            <Box {...boxProps("ap2")} w={210} title={t("AP2 · mandate 층", "AP2 · mandate layer")} sub={status.ap2} />
             <Box {...boxProps("facilitator")} w={200} title={t("퍼실리테이터", "Facilitator")} sub={status.facilitator} />
 
             {/* ERC-4337 은 간선이 아니라 에이전트가 트랜잭션을 내보내는 방식이라, 노드에 붙인 칩으로 둔다. */}

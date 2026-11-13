@@ -74,8 +74,8 @@ const COMPS: Record<Scenario, Comp[]> = {
     {
       id: "ap2", at: [0, 1.4], title: { ko: "AP2", en: "AP2" }, tint: "#fbbf24",
       body: {
-        ko: "Cart Mandate 가 '무엇을 얼마에'를 고정하고, Payment Mandate 가 법정화폐 레일로 넘어간다 — Stripe 테스트 결제 또는 토스페이먼츠. 영수증이 돌아오고 저널에 한 줄이 남는다.",
-        en: "The Cart Mandate pins what is bought at what price; the Payment Mandate crosses to a fiat rail — a Stripe test payment or Toss Payments. A receipt comes back and one journal line remains.",
+        ko: "레일이 아니라 mandate 층이다. Intent(사용자의 한도) · Cart(무엇을 얼마에) · Payment(결제망에 알림) 세 장이 '누가 무엇을 허락했나'의 증거로 남고, 돈은 그 밑의 레일 — x402, 또는 x402 대신 Stripe · 토스 — 이 옮긴다.",
+        en: "A mandate layer, not a rail. Intent (the user's limits), Cart (what at what price) and Payment (tells the network) stay as evidence of who authorized what; the money moves on the rail underneath — x402, or Stripe or Toss instead of it.",
       },
       menu: ["AP2", "EIP-712"],
     },
