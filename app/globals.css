@@ -1439,7 +1439,10 @@ a.ghost:hover {
   .live-rail ol { display: flex; gap: 6px; }
   .live-rail a { white-space: nowrap; padding: 5px 10px; font-size: 13px; }
   .live-rail a.active { box-shadow: inset 0 -2px 0 var(--accent); }
-  .live-rail ol.live-rail-sub { display: none; } /* 폰의 가로 띠에서는 지도의 네모로 고른다 */
+  /* 폰의 가로 띠: 지도가 없어졌으니 하위 메뉴도 띠 위의 칩으로 — Bird View 칩 바로 뒤에 이어 붙인다. */
+  .live-rail li:has(> ol.live-rail-sub) { display: contents; }
+  .live-rail ol.live-rail-sub { display: contents; }
+  .live-rail-sub a { font-size: 12.5px; }
 }
 
 /* /chains "Where it runs" (2026-11-01): text columns read left to right; project rows group the resources */
@@ -1539,27 +1542,6 @@ main.stack-main { max-width: none; }
 .stack-std-b.dim { border-color: var(--border); color: var(--muted); }
 .stack-std-b:hover { background: var(--muted-surface); }
 
-/* /live/stack 지도 (jay, 2026-11-03 손그림: "A) Map: agentic payment scenario — user — Canton scenario").
-   두 네모가 사용자 동그라미 하나를 사이에 두고 이어진다. 누른 네모가 아래에 판을 펼친다. */
-.stack-map { display: flex; align-items: center; max-width: 760px; }
-.stack-map-box { flex: 1 1 0; min-width: 0; display: grid; gap: 4px; text-align: center; padding: 14px 12px; border: 1.5px solid var(--border); border-radius: 12px; background: var(--panel); color: var(--text); font: inherit; cursor: pointer; }
-.stack-map-box b { font-size: 15px; }
-.stack-map-box span { font-size: 12px; color: var(--muted); }
-.stack-map-box:hover { background: var(--muted-surface); }
-.stack-map-box.plan { border-style: dashed; }
-.stack-map-box.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.stack-map-wire { flex: 0 0 24px; border-top: 1.5px solid var(--border); }
-.stack-map-wire.dashed { border-top-style: dashed; }
-.stack-map-user { flex: none; width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid var(--text); display: grid; place-items: center; font-size: 13px; font-weight: 600; }
-.stack-map-box { white-space: normal; }
-@media (max-width: 520px) {
-  .stack-map-box { padding: 10px 6px; }
-  .stack-map-box b { font-size: 13px; }
-  .stack-map-box span { font-size: 11px; }
-  .stack-map-user { width: 48px; height: 48px; font-size: 12px; }
-  .stack-map-wire { flex-basis: 10px; }
-}
-
 /* /live/metaverse — Metaverse View (jay, 2026-11-03: "a game version of Bird View"). 3D 캔버스가 게임
    화면이라 사이트 테마와 상관없이 어둡고, HUD 와 말풍선은 그 위에 HTML 로 뜬다. */
 .mv-stage { position: relative; height: min(72vh, 660px); min-height: 440px; border-radius: 14px; overflow: hidden; background: #0a0f1c; }
@@ -1578,10 +1560,3 @@ main.stack-main { max-width: none; }
 /* /live/game — Game View: rabbit-hole 의 Unity WebGL 빌드를 iframe 으로 (jay, 2026-11-03). */
 .gv-frame { display: block; width: 100%; height: 100%; border: 0; }
 
-/* Bird View 지도의 세 번째 시나리오 (AiTM 중계 피싱, 2026-11-09): 사용자 동그라미 아래로 선이 내려와
-   공격당하는 시나리오의 네모에 닿는다. 빨간 테두리는 "공격받는 쪽"이라는 표시다. */
-.stack-map-wrap { display: grid; justify-items: center; max-width: 760px; }
-.stack-map-wrap .stack-map { width: 100%; }
-.stack-map-vwire { width: 0; height: 22px; border-left: 1.5px solid var(--border); }
-.stack-map-box.threat { flex: none; width: min(300px, 100%); border-color: color-mix(in srgb, var(--red) 55%, var(--border)); }
-.stack-map-box.threat.on { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }

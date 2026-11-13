@@ -56,7 +56,7 @@ export default function LiveRail({ title, allLabel, items }: { title: string; al
               {it.subs && (
                 <ol className="live-rail-sub">
                   {it.subs.map((sub) => {
-                    const on = path === it.href && sp.get("s") === sub.key;
+                    const on = path === it.href && (sp.get("s") ?? it.subs![0].key) === sub.key; // s 가 없으면 첫 항목이 열린 판
                     return (
                       <li key={sub.key}>
                         <Link href={`${sub.href}&from=live`} className={on ? "active" : undefined} aria-current={on ? "page" : undefined}>

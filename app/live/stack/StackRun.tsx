@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import type { Lang } from "@/lib/i18n";
 import { CAP, PRICE, OVER, STD, type Txt } from "./std";
 
@@ -126,12 +126,13 @@ type Flash = { node: NodeId; tone: "good" | "bad"; key: number };
 export default function StackRun({ lang }: { lang: Lang }) {
   const t = (ko: string, en: string) => (lang === "ko" ? ko : en);
   const tx = (x: Txt) => (lang === "ko" ? x.ko : x.en);
-  // 펼친 시나리오 — 없으면 지도만. 왼쪽 레일의 Bird View 하위 메뉴(?s=agentic|canton|relay)와 같은 상태를 나눠 쓴다.
+  // 펼친 시나리오. **지도는 없앴다** (jay, 2026-11-13: "we don't need this because we have menus") — 왼쪽 레일의
+  // Bird View 하위 메뉴가 ?s=agentic|canton|relay 로 고르고, s 가 없으면 에이전트 결제 판이 열린다.
   const sp = useSearchParams();
-  const router = useRouter();
-  const asScenario = (s: string | null): Scenario | null => (s === "agentic" || s === "canton" || s === "relay" ? s : null);
-  const [view, setView] = useState<Scenario | null>(() => asScenario(sp.get("s")));
-  useEffect(() => { setView(asScenario(sp.get("s"))); }, [sp]);
+  const asScenario = (s: string | null): Scenario => (s === "canton" || s === "relay" ? s : "agentic");
+  const [view, setView] = useState<Scenario>(() => asScenario(sp.get("s")));
+  // 메뉴로 다른 판에 가면 열린 말풍선과 날던 패킷은 정리한다.
+  useEffect(() => { setView(asScenario(sp.get("s"))); setPopup(null); setDetail(null); setPeek(null); setTerm(null); setPackets([]); }, [sp]);
   const [phase, setPhase] = useState<Phase>("user");
   const [popup, setPopup] = useState<NodeId | null>(null);
   const [detail, setDetail] = useState<string | null>(null); // 열린 "표준" 설명
@@ -868,42 +869,10 @@ MessageTransmitterV2.receiveMessage(message, attestation)
     </foreignObject>
   );
 
-  // 지도의 네모를 누르면 그 시나리오가 펼쳐진다. 열린 것을 다시 누르면 접힌다.
-  // 지도의 네모를 눌러도 주소가 바뀌어 레일의 하위 메뉴가 같이 켜진다. 같은 네모를 다시 누르면 접힌다.
-  const pick = (v: Scenario) => {
-    close(); setPackets([]);
-    const next = view === v ? null : v;
-    setView(next);
-    router.replace(next ? `/live/stack?s=${next}` : "/live/stack", { scroll: false });
-  };
   const svgStyle = { width: "100%", maxWidth: 1100, minWidth: 700, height: "auto", display: "block" } as const;
 
   return (
     <div className="stack-board" style={{ marginTop: 16 }}>
-      {/* ── 지도: 시나리오들이 사용자 하나를 사이에 두고 이어진다 ─────────── */}
-      {/* 위 줄은 사용자가 쓰는 두 시나리오, 사용자 아래로 내려온 선 끝은 사용자가 공격당하는 시나리오다. */}
-      <div className="stack-map-wrap">
-      <div className="stack-map">
-        <button className={`stack-map-box${view === "agentic" ? " on" : ""}`} aria-expanded={view === "agentic"} onClick={() => pick("agentic")}>
-          <b>{t("에이전트 결제 시나리오", "Agentic payment scenario")}</b>
-          <span>{t("여섯 데모 · EIP-7702 → AP2", "six demos · EIP-7702 → AP2")}</span>
-        </button>
-        <span className="stack-map-wire" aria-hidden />
-        <span className="stack-map-user">{t("사용자", "User")}</span>
-        <span className="stack-map-wire dashed" aria-hidden />
-        <button className={`stack-map-box plan${view === "canton" ? " on" : ""}`} aria-expanded={view === "canton"} onClick={() => pick("canton")}>
-          <b>{t("Canton 시나리오", "Canton scenario")}</b>
-          <span>{t("계획 · T5 · 테스트넷만", "planned · T5 · test networks only")}</span>
-        </button>
-      </div>
-      <span className="stack-map-vwire" aria-hidden />
-      <button className={`stack-map-box threat${view === "relay" ? " on" : ""}`} aria-expanded={view === "relay"} onClick={() => pick("relay")}>
-        <b>{t("AiTM 중계 피싱 시나리오", "AiTM relay-phishing scenario")}</b>
-        <span>{t("진짜 화면 · OTP 중계 · 패스키가 막는다", "a real screen · a relayed OTP · a passkey blocks it")}</span>
-      </button>
-      </div>
-      {!view && <p className="sub" style={{ fontSize: 13, marginTop: 10 }}>{t("네모를 누르면 그 시나리오의 판이 아래에 펼쳐집니다.", "Press a box to unfold that scenario's board below.")}</p>}
-
       {view === "agentic" && (<>
         {/* ── 진행 + 초기화 ───────────────────────────────────────── */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 18 }}>
