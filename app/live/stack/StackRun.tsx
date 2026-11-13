@@ -759,7 +759,8 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Chip x={N.pg.x} y={N.pg.y - 66} text={t("카드 레일 — Stripe · Mastercard", "card rail — Stripe · Mastercard")} live={rail === "stripe"} />
             <Box {...boxProps("krbank")} w={180} title={KB} sub={status.krbank} plan={!rail} />
             <Box {...boxProps("corr")} w={180} title={CB} sub={status.corr} plan={!rail} />
-            <Box {...boxProps("usbank")} w={180} title={UB} sub={status.usbank} plan={!rail} />
+            {/* 판매자의 미국 은행은 세 레일이 모두 끝나는 곳이라 점선 없이 늘 실선 (jay, 2026-11-13: "use line for that box not a dotted line"). */}
+            <Box {...boxProps("usbank")} w={180} title={UB} sub={status.usbank} />
             <Chip x={N.corr.x} y={N.corr.y - 66} text={t("국경을 넘는 은행 줄 — 한국 → 미국 (USD)", "cross-border bank rail — Korea → US (USD)")} live={rail === "swift" || rail === "stripe"} />
             <Box {...boxProps("onramp")} w={180} title={nodeName("onramp")} sub={status.onramp} plan={rail !== "stable"} />
             <Box {...boxProps("chain")} w={180} title={nodeName("chain")} sub={status.chain} plan={rail !== "stable"} />
