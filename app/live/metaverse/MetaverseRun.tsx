@@ -42,8 +42,8 @@ const COMPS: Record<Scenario, Comp[]> = {
     {
       id: "wallet", at: [0, -1.2], title: { ko: "MetaMask", en: "MetaMask" }, tint: "#f6851b",
       body: {
-        ko: `주인이 단 한 번 답하는 팝업. EIP-7702 로 계정에 코드를 붙이고(주소·키 그대로), ERC-7715 로 에이전트에게 "최대 ${CAP} jUSD, 1시간" 권한을 준다. 이 뒤로 팝업은 없다.`,
-        en: `The one popup the owner answers. EIP-7702 attaches code to the account (same address, same key) and ERC-7715 grants the agent "up to ${CAP} jUSD, 1 hour". No popups after this.`,
+        ko: `주인이 따로 두 번 답한다. ① EIP-7702 로 계정에 코드를 붙인다(주소·키 그대로, 한 번만, 이것만으로는 권한이 없다). ② 사이트의 ERC-7715 요청에 에이전트에게 "최대 ${CAP} jUSD, 1시간" 권한을 준다. 서명도 따로다. 이 뒤로 팝업은 없다.`,
+        en: `The owner answers twice, separately. ① EIP-7702 attaches code to the account (same address and key, once, granting nothing by itself). ② The site's ERC-7715 request grants the agent "up to ${CAP} jUSD, 1 hour" — a separate signature. No popups after this.`,
       },
       menu: ["EIP-7702", "ERC-7715", "EIP-712"],
     },

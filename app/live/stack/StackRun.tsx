@@ -46,7 +46,11 @@ import { CAP, PRICE, OVER, STD, type Txt } from "./std";
 // (PAYMENT-REQUIRED · PAYMENT-SIGNATURE · PAYMENT-RESPONSE), settle 실패 갈림길 버튼, pay.sh 는 "먼저 정산하는 자기
 // 퍼실리테이터", DSRV 는 퍼실리테이터라는 출처를 못 찾아 칸에서 빼고 표준 설명으로만 둔다.
 type Scenario = "agentic" | "canton" | "relay";
-type Phase = "user" | "wallet" | "agent" | "provider" | "facilitator" | "ap2" | "done";
+// **①과 ②는 따로 서는 두 단계** (jay, 2026-11-13: "the step 1 and step 2 is different, independent step"). 예전에는 MetaMask
+// 팝업 하나가 EIP-7702(계정에 코드 붙이기)와 ERC-7715(권한 부여)를 한꺼번에 끝냈다. 실제로는 7702 는 계정을 한 번 바꾸는
+// 서명이고 아무 권한도 주지 않으며, 7715 는 사이트가 따로 보내는 요청이라 서명도 따로다. 그래서 "wallet"(① 전환)과
+// "grant"(② 권한) 두 차례로 나눴다. ①을 마친 뒤 ②를 거절하면 코드는 붙은 채로 권한은 없다.
+type Phase = "user" | "wallet" | "grant" | "agent" | "provider" | "facilitator" | "ap2" | "done";
 type RPhase = "lure" | "relay" | "page" | "pay" | "done";
 type Method = "otp" | "passkey";
 type StackNode = "user" | "wallet" | "delegator" | "manager" | "agent" | "provider" | "facilitator" | "ap2";
@@ -130,26 +134,38 @@ export default function StackRun({ lang }: { lang: Lang }) {
   }, [popup]);
 
   const remaining = CAP - spent;
-  const ready: NodeId | null = phase === "done" ? null : phase; // 차례가 된 칸 = 깜빡이는 칸
+  const ready: NodeId | null = phase === "done" ? null : phase === "grant" ? "wallet" : phase; // 차례가 된 칸 = 깜빡이는 칸
   const railName = rail === "toss" ? t("토스페이먼츠", "Toss Payments") : "Stripe";
-  const granted = phase !== "user" && phase !== "wallet";
+  const upgraded = phase !== "user" && phase !== "wallet"; // ① 7702 로 코드가 붙음
+  const granted = upgraded && phase !== "grant"; // ② 7715 권한까지 받음
 
   // ── 동작들: 말풍선의 버튼이 부른다. 긴 설명은 STD 에 있으니 저널은 한 줄씩이다 ───
   function userGive() {
     close(); setPhase("wallet");
     send([{ from: N.user, to: N.wallet, color: "var(--accent)" }]);
-    note({ tone: "info", text: t(`주인: "에이전트에게 최대 ${CAP} jUSD, 1시간 위임." 아직 아무것도 서명되지 않았다 — 지갑이 물어볼 차례.`, `Owner: "give the agent up to ${CAP} jUSD for 1 hour." Nothing signed yet — the wallet's turn to ask.`) });
+    note({ tone: "info", text: t(`주인: "에이전트에게 최대 ${CAP} jUSD, 1시간 위임." 아직 아무것도 서명되지 않았다. 지갑이 두 번, 따로 물어본다 — ① 계정 전환, ② 권한.`, `Owner: "give the agent up to ${CAP} jUSD for 1 hour." Nothing signed yet. The wallet asks twice, separately — ① account upgrade, ② permission.`) });
   }
-  function walletAgree() {
+  // ① EIP-7702 — 계정을 한 번 바꾸는 서명. 권한은 하나도 주지 않는다.
+  function walletUpgrade() {
+    close(); setPhase("grant");
+    send([{ from: N.user, to: N.wallet, color: "var(--accent)" }]);
+    blink("delegator", "good");
+    note({ tone: "chain", chip: "① EIP-7702", href: "/live/7702", hrefLabel: t("7702 인스펙터", "7702 inspector"), text: t("계정에 Delegator 코드가 붙었다 — 주소·키 그대로. 아직 누구에게도 권한은 없다. 이 전환은 한 번이면 남고, 이미 전환된 계정이면 이 단계는 없다.", "The Delegator code is attached to the account — same address, same key. Nobody has any permission yet. The upgrade happens once and stays; an already-upgraded account skips this step.") });
+  }
+  function walletUpgradeReject() {
+    close();
+    note({ tone: "bad", text: t("① 거절 — 계정은 그대로 보통 EOA 다. 코드가 없으니 ②의 권한도 받을 수 없다. MetaMask 를 다시 눌러 보라.", "① Rejected — the account stays a plain EOA. Without code it cannot take ②'s permission either. Press MetaMask again.") });
+  }
+  // ② ERC-7715 — 사이트가 따로 보내는 권한 요청. 서명도 따로다.
+  function walletGrant() {
     close(); setPhase("agent");
     send([{ from: N.wallet, to: N.delegator, color: "var(--accent)" }]);
     blink("delegator", "good");
-    note({ tone: "chain", chip: "EIP-7702", href: "/live/7702", hrefLabel: t("7702 인스펙터", "7702 inspector"), text: t("계정에 코드가 붙었다 — 주소·키 그대로.", "Code attached to the account — same address, same key.") });
-    note({ tone: "chain", chip: "ERC-7715 · EIP-712", href: "/live/agent/console", hrefLabel: t("정산 에이전트 콘솔", "Settlement console"), text: t(`위임 저장 — caveat ≤ ${CAP} jUSD · 1h. 이 뒤로 팝업 없음.`, `Delegation stored — caveat ≤ ${CAP} jUSD · 1 h. No popups after this.`) });
+    note({ tone: "chain", chip: "② ERC-7715 · EIP-712", href: "/live/agent/console", hrefLabel: t("정산 에이전트 콘솔", "Settlement console"), text: t(`권한 부여 — 위임 서명, caveat ≤ ${CAP} jUSD · 1h. ①과는 다른 서명이다. 이 뒤로 팝업 없음.`, `Permission granted — a delegation signature, caveat ≤ ${CAP} jUSD · 1 h. A different signature from ①. No popups after this.`) });
   }
-  function walletReject() {
+  function walletGrantReject() {
     close();
-    note({ tone: "bad", text: t("거절 — 아무것도 쓰이지 않았고 에이전트는 계속 잠들어 있다. MetaMask 를 다시 눌러 보라.", "Rejected — nothing written, the agent stays asleep. Press MetaMask again.") });
+    note({ tone: "bad", text: t("② 거절 — 코드는 붙은 채로 남고, 권한은 없다. 에이전트는 계속 잠들어 있다. ①과 ②가 따로라는 뜻이다. MetaMask 를 다시 눌러 보라.", "② Rejected — the code stays attached, with no permission. The agent stays asleep. That is what ① and ② being separate means. Press MetaMask again.") });
   }
   function agentSpend(amount: number) {
     close();
@@ -237,8 +253,10 @@ export default function StackRun({ lang }: { lang: Lang }) {
   // ── 화면의 상태 줄: 컨트랙트가 끼는 동작마다 여기 글자가 바뀐다 ──────────
   const status: Record<NodeId, string> = {
     user: phase === "user" ? t("차례 — 눌러 보세요", "your move — press") : t("주인 · EOA", "owner · EOA"),
-    wallet: phase === "wallet" ? t("요청 대기 중 — 눌러 보세요", "request pending — press") : granted ? t("코드 붙음 · 주소 그대로", "code attached · same address") : t("보통 EOA", "plain EOA"),
-    delegator: !granted ? t("위임 없음", "no delegation")
+    wallet: phase === "wallet" ? t("① 계정 전환 요청 — 눌러 보세요", "① upgrade request — press")
+      : phase === "grant" ? t("② 권한 요청 — 눌러 보세요", "② permission request — press")
+      : granted ? t("코드 붙음 · 권한 부여됨", "code attached · permission granted") : t("보통 EOA", "plain EOA"),
+    delegator: !upgraded ? t("코드 없음", "no code") : !granted ? t("코드 붙음 · 위임 없음", "code attached · no delegation")
       : spent > 0 ? t(`사용 ${spent.toFixed(2)} / ${CAP} jUSD`, `used ${spent.toFixed(2)} / ${CAP} jUSD`)
       : t(`caveat 저장: ≤ ${CAP} jUSD · 1h`, `caveat stored: ≤ ${CAP} jUSD · 1h`),
     manager: !granted ? t("redeem 할 위임 없음", "nothing to redeem")
@@ -263,7 +281,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
     guard: method === "passkey" ? t("구조로 막음 (패스키)", "blocked by structure (passkey)") : method === "otp" ? t("신호만 남음 ②③④", "signals only ②③④") : t("① Origin ② 세션 ③ IP ④ SRI", "① Origin ② session ③ IP ④ SRI"),
   };
   const lit: Record<NodeId, boolean> = {
-    user: phase !== "user", wallet: phase !== "user", delegator: granted, manager: granted, agent: granted,
+    user: phase !== "user", wallet: phase !== "user", delegator: upgraded, manager: granted, agent: granted,
     provider: phase === "facilitator" || phase === "ap2" || phase === "done", facilitator: phase === "ap2" || phase === "done", ap2: phase === "done",
     cuser: false, operator: false, sync: false, validator: false, daml: false,
     ruser: rphase !== "lure", proxy: rphase !== "lure" && rphase !== "relay", site: rphase === "pay" || rphase === "done",
@@ -287,7 +305,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
 
   // 진행 표시줄 — 버튼이 아니라 지나온 칸의 기록이다. 누르는 곳은 판 위다.
   const steps = [
-    { n: "①", label: "EIP-7702", done: granted }, { n: "②", label: "ERC-7715", done: granted },
+    { n: "①", label: "EIP-7702", done: upgraded }, { n: "②", label: "ERC-7715", done: granted },
     { n: "③", label: t("깨어남", "wake"), done: spent > 0 }, { n: "④", label: "ERC-7710", done: spent > 0 },
     { n: "⑤", label: "x402", done: phase === "facilitator" || phase === "ap2" || phase === "done" },
     { n: "⑥", label: t("퍼실리테이터", "facilitator"), done: phase === "ap2" || phase === "done" }, { n: "⑦", label: "AP2", done: phase === "done" },
@@ -353,15 +371,23 @@ export default function StackRun({ lang }: { lang: Lang }) {
               <p>{t(`뉴스를 보고 데이터를 사는 에이전트를 돌리고 싶다. 매번 서명하기는 싫고, 지갑을 통째로 맡길 수도 없다. 에이전트에게 "최대 ${CAP} jUSD, 1시간" 위임을 준다.`, `You want an agent that reads news and buys data. You do not want to sign every time, and you cannot hand it the whole wallet. You give it a mandate: "up to ${CAP} jUSD, 1 hour".`)}</p>
               <div className="stack-bubble-actions"><button onClick={userGive}>{t("위임 주기", "Give mandate")}</button></div>
             </>)}
-            {popup === "wallet" && (<>
-              <div className="stack-bubble-h"><span className="stack-fox" aria-hidden>🦊</span> MetaMask</div>
+            {popup === "wallet" && phase === "wallet" && (<>
+              <div className="stack-bubble-h"><span className="stack-fox" aria-hidden>🦊</span> MetaMask — ① {t("계정 전환", "account upgrade")}</div>
+              <div className="stack-req">
+                <div className="stack-req-site">{t("스마트 계정으로 전환할까요?", "Switch to a smart account?")}</div>
+                <div className="stack-req-row"><span className="stack-chip">EIP-7702</span>{t("계정에 Delegator 코드 붙이기 — 주소·키 그대로", "Attach the Delegator code — address and key unchanged")}</div>
+                <div className="stack-req-note">{t("한 번만 하는 전환 · 이것만으로는 아무에게도 권한이 없음 · 이미 전환된 계정이면 뜨지 않음", "A one-time upgrade · grants nobody anything by itself · not shown if the account is already upgraded")}</div>
+              </div>
+              <div className="stack-bubble-actions"><button onClick={walletUpgrade}>{t("전환", "Upgrade")}</button><button className="ghost" onClick={walletUpgradeReject}>{t("거절", "Reject")}</button></div>
+            </>)}
+            {popup === "wallet" && phase === "grant" && (<>
+              <div className="stack-bubble-h"><span className="stack-fox" aria-hidden>🦊</span> MetaMask — ② {t("권한 요청", "permission request")}</div>
               <div className="stack-req">
                 <div className="stack-req-site">jaylabs.xyz {t("가 요청합니다", "requests")}</div>
-                <div className="stack-req-row"><span className="stack-chip">EIP-7702</span>{t("계정에 코드 붙이기 — 주소·키 그대로", "Attach code — address and key unchanged")}</div>
                 <div className="stack-req-row"><span className="stack-chip">ERC-7715</span>{t(`권한: ≤ ${CAP} jUSD · 1시간 · 에이전트에게`, `Permission: ≤ ${CAP} jUSD · 1 hour · to the agent`)}</div>
-                <div className="stack-req-note">{t("서명 1회 · 이후 팝업 없음 · 한도는 컨트랙트가 집행", "One signature · no popups after · the cap is enforced by a contract")}</div>
+                <div className="stack-req-note">{t("①과 다른 서명 · 이후 팝업 없음 · 한도는 컨트랙트가 집행", "A separate signature from ① · no popups after · the cap is enforced by a contract")}</div>
               </div>
-              <div className="stack-bubble-actions"><button onClick={walletAgree}>{t("동의", "Confirm")}</button><button className="ghost" onClick={walletReject}>{t("거절", "Reject")}</button></div>
+              <div className="stack-bubble-actions"><button onClick={walletGrant}>{t("동의", "Confirm")}</button><button className="ghost" onClick={walletGrantReject}>{t("거절", "Reject")}</button></div>
             </>)}
             {popup === "delegator" && (<>
               <div className="stack-bubble-h">{t("Delegator 컨트랙트", "Delegator contract")}</div>
@@ -504,7 +530,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
         {/* ── HUD: 위임 한도가 이 게임의 체력 바다 ───────────────── */}
         <div className="stack-hud">
           <div><div className="stack-hud-k">{t("위임 한도", "Mandate")}</div><div className="stack-hud-v">{spent.toFixed(2)} / {CAP.toFixed(2)} jUSD</div><div className="stack-bar" aria-hidden><span style={{ width: `${(spent / CAP) * 100}%` }} /></div></div>
-          <div><div className="stack-hud-k">{t("차례", "Turn")}</div><div className="stack-hud-v">{phase === "done" ? t("완료", "done") : { user: t("사용자", "User"), wallet: "MetaMask", agent: t("에이전트", "Agent"), provider: t("서비스 제공자", "Provider"), facilitator: t("퍼실리테이터", "Facilitator"), ap2: "AP2" }[phase]}</div></div>
+          <div><div className="stack-hud-k">{t("차례", "Turn")}</div><div className="stack-hud-v">{phase === "done" ? t("완료", "done") : { user: t("사용자", "User"), wallet: "MetaMask ①", grant: "MetaMask ②", agent: t("에이전트", "Agent"), provider: t("서비스 제공자", "Provider"), facilitator: t("퍼실리테이터", "Facilitator"), ap2: "AP2" }[phase]}</div></div>
           <div><div className="stack-hud-k">{t("거절된 시도", "Refused")}</div><div className="stack-hud-v" style={refused ? { color: "var(--red)" } : undefined}>{refused}</div></div>
           <div><div className="stack-hud-k">{t("에이전트의 ETH", "Agent's ETH")}</div><div className="stack-hud-v">0 <span className="sub" style={{ fontSize: 12, fontWeight: 400 }}>({t("가스는 paymaster", "paymaster pays gas")})</span></div></div>
         </div>
@@ -516,8 +542,9 @@ export default function StackRun({ lang }: { lang: Lang }) {
             aria-label={t("사용자, MetaMask, Delegator 컨트랙트, DelegationManager, 에이전트, 서비스 제공자, 퍼실리테이터, AP2 사이의 흐름", "Flow between the user, MetaMask, the delegator contract, the DelegationManager, the agent, the service provider, the facilitator and AP2")}>
             {/* 말풍선 연결선은 칸 아래에 깔리게 먼저 그린다 — 끝이 칸에 가려져 모서리 계산이 필요 없다. */}
             {leader}
-            <Wire a={N.user} b={N.wallet} live={phase !== "user"} label="EIP-7702" />
-            <Wire a={N.wallet} b={N.delegator} live={granted} label="ERC-7715" />
+            {/* ①과 ②는 따로 켜진다: ① 주인의 EOA 가 7702 권한서명으로 계정을 전환, ② 사이트의 7715 요청에 위임을 서명. */}
+            <Wire a={N.user} b={N.wallet} live={upgraded} label="① EIP-7702" />
+            <Wire a={N.wallet} b={N.delegator} live={granted} label="② ERC-7715" />
             {/* 에이전트 → DelegationManager(redeemDelegations) → Delegator(executeFromExecutor). 에이전트와 Delegator 사이에 직접 선은 없다. */}
             <Wire a={N.agent} b={N.manager} live={spent > 0 || lastRefused} label="ERC-7710" at={0.6} />
             <Wire a={N.manager} b={N.delegator} live={spent > 0} label="executeFromExecutor" />

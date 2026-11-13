@@ -17,14 +17,14 @@ export const STD: Record<string, Std> = {
     id: "EIP-7702",
     role: { ko: "EOA 가 주소와 키를 그대로 둔 채 코드를 갖는다.", en: "An EOA keeps its address and key but gains code." },
     detail: {
-      ko: "지갑이 권한서명 하나를 붙여 보내면 계정의 코드 자리에 0xef0100‖구현주소 가 쓰인다 — 주소도 키도 그대로인데 이제 계정이 코드를 실행한다. 화면에는 아무 흔적이 남지 않는 단계라, 따로 들여다볼 페이지를 만들어 둔 것이 7702 인스펙터다. 이곳의 다른 모든 계정 추상화 데모의 전제조건이다.",
-      en: "The wallet attaches one authorization and 0xef0100‖implementation lands in the account's code slot — same address, same key, but the account now runs code. Nothing on screen shows it happened, which is exactly why the 7702 inspector exists. It is the precondition behind every other account-abstraction demo here.",
+      ko: "지갑이 권한서명 하나를 붙여 보내면 계정의 코드 자리에 0xef0100‖구현주소 가 쓰인다 — 주소도 키도 그대로인데 이제 계정이 코드를 실행한다. 화면에는 아무 흔적이 남지 않는 단계라, 따로 들여다볼 페이지를 만들어 둔 것이 7702 인스펙터다. 이곳의 다른 모든 계정 추상화 데모의 전제조건이다. ERC-7715 권한 부여와는 따로 서는 단계다 — 한 번 전환하면 남고, 이것만으로는 아무에게도 권한이 없다.",
+      en: "The wallet attaches one authorization and 0xef0100‖implementation lands in the account's code slot — same address, same key, but the account now runs code. Nothing on screen shows it happened, which is exactly why the 7702 inspector exists. It is the precondition behind every other account-abstraction demo here. It stands apart from the ERC-7715 grant — the upgrade happens once and stays, and by itself grants nobody anything.",
     },
     runs: "live", href: "/live/7702", label: { ko: "7702 인스펙터", en: "7702 inspector" },
   },
   "ERC-7715": {
     id: "ERC-7715",
-    role: { ko: "wallet_grantPermissions — 주인이 답하는 단 하나의 팝업.", en: "wallet_grantPermissions — the single popup the owner answers." },
+    role: { ko: "wallet_grantPermissions — 7702 전환과 따로, 사이트가 보내는 권한 요청.", en: "wallet_grantPermissions — a permission request the site sends, separate from the 7702 upgrade." },
     detail: {
       ko: `주인이 팝업에 한 번 답한다: "최대 ${CAP} jUSD, 1시간". 그 서명이 Delegator 컨트랙트에 위임으로 저장되고, 한도 자체는 caveat enforcer 라는 별개의 컨트랙트가 들고 있다. 이 뒤로 팝업은 없다 — 권한이 곧 인가이기 때문이다. 정산 에이전트 콘솔이 실제 MetaMask 팝업으로 이 부여를 한다.`,
       en: `The owner answers one popup: "up to ${CAP} jUSD, 1 hour". That signature is stored in the delegator contract as a delegation, and the cap itself lives in a separate caveat-enforcer contract. No popup after this — the permission is the authorization. The settlement console performs this grant through the real MetaMask popup.`,
