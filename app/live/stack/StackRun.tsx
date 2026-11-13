@@ -78,22 +78,22 @@ const N: Record<NodeId, Node> = {
   // provider" · "we need other entities like Stripe, Mastercard" · "international rail with Swift"). 서비스 제공자 오른쪽에
   // 세로 한 줄. 위 = 판매자 쪽(매입 PG · 수취 은행), 가운데 = 망(Mastercard · VAN · SWIFT 중계), 아래 = 내는 쪽(발급 은행 ·
   // 카드사 · 송금 은행). 고른 레일에 따라 칸 이름이 바뀐다.
-  pg: { x: 1090, y: 304 },
-  network: { x: 1090, y: 446 },
-  issuer: { x: 1090, y: 588 },
+  pg: { x: 970, y: 304 },
+  network: { x: 970, y: 446 },
+  issuer: { x: 970, y: 588 },
   // **국경을 넘는 은행 줄** (jay, 2026-11-13: "the service provider take its settlement money from other countries's banks …
   // with some international bank rails" · "My scenario is the Service provider is US company and user is a Korean" · "the Issuer
   // bank should connect the rails you created"). 미국 판매자 · 한국 사용자라 돈은 한국 → 미국으로 간다. 맨 아래 줄은
   // 한국 은행(발급 카드사 바로 아래) → 미국 정산 · 중계 은행 → 판매자의 미국 은행. 카드 레일에서는 한국 카드사가 하루치
   // 달러 정산을 이 줄로 보내고, SWIFT 레일에서는 사용자의 송금이 같은 줄을 지난다.
-  krbank: { x: 1090, y: 720 },
-  corr: { x: 750, y: 720 },
+  krbank: { x: 970, y: 720 },
+  corr: { x: 690, y: 720 },
   usbank: { x: 410, y: 720 },
   // **스테이블코인 줄** (jay, 2026-11-13: "the stable coin used in X402 should also connected banks with some bridge and block
   // chain" · "even though the bird view could be complex, you can do it"). 은행 줄 바로 아래에 나란히: 한국 은행 → 온램프 →
   // 블록체인(브리지) → 오프램프 → 미국 은행. x402 의 USDC 가 어디서 와서 어디로 내려가는지, 국경을 어디서 넘는지 보여 준다.
-  onramp: { x: 1090, y: 860 },
-  chain: { x: 750, y: 860 },
+  onramp: { x: 970, y: 860 },
+  chain: { x: 690, y: 860 },
   offramp: { x: 410, y: 860 },
   // Canton 구역 (T5)
   // 구역은 사용자보다 한 칸 내려 둔다 — 사용자에서 말풍선으로 가는 선이 구역 제목을 가로지르지 않게.
@@ -409,7 +409,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
     krbank: cur?.node === "krbank" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : !rail ? t("원화 → 달러", "KRW → USD")
       : rail === "stable" ? (cstep >= 1 || phase === "done" ? t("원화 → 온램프 (국내)", "KRW → on-ramp (domestic)") : t("대기", "waiting"))
       : (rail === "swift" ? cstep >= 2 : cstep >= 5) || phase === "done" ? t("원화 → 달러 · 송금함", "KRW → USD · sent") : t("대기", "waiting"),
-    corr: cur?.node === "corr" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : !rail || rail === "stable" ? t("노스트로 계좌가 있는 곳", "where the nostro account sits")
+    corr: cur?.node === "corr" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : !rail || rail === "stable" ? t("SWIFT · 노스트로", "SWIFT · nostro")
       : (rail === "swift" ? cstep >= 3 : cstep >= 6) || phase === "done" ? (rail === "swift" ? t("Fedwire · CHIPS 로 넘김", "passed on over Fedwire / CHIPS") : t("Stripe 쪽으로 정산함", "settled to Stripe's side")) : t("대기", "waiting"),
     usbank: cur?.node === "usbank" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : !rail ? t("판매자의 USD 계좌", "the seller's USD account")
       : phase === "done" ? (rail === "swift" ? t("검사 · 입금", "checked · credited") : rail === "stable" ? t("오프램프에서 입금 (국내)", "credited from the off-ramp (domestic)") : t("ACH 입금", "ACH credit")) : t("대기", "waiting"),
@@ -662,7 +662,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
 
   // 지도의 네모를 누르면 그 시나리오가 펼쳐진다. 열린 것을 다시 누르면 접힌다.
   const pick = (v: Scenario) => { close(); setPackets([]); setView((cur) => (cur === v ? null : v)); };
-  const svgStyle = { width: "100%", maxWidth: 1200, minWidth: 700, height: "auto", display: "block" } as const;
+  const svgStyle = { width: "100%", maxWidth: 1100, minWidth: 700, height: "auto", display: "block" } as const;
 
   return (
     <div className="stack-board" style={{ marginTop: 16 }}>
@@ -715,7 +715,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
         {/* ── 판 ───────────────────────────────────────────────── */}
         {/* 폰에서 줄이면 글자가 5px 이 되므로, 읽을 수 있는 크기를 지키고 가로 스크롤을 준다. */}
         <div style={{ overflowX: "auto", marginTop: 14 }}>
-          <svg viewBox="0 14 1190 910" style={svgStyle} role="img"
+          <svg viewBox="0 14 1070 910" style={svgStyle} role="img"
             aria-label={t("사용자, MetaMask, Delegator 컨트랙트, DelegationManager, 에이전트, 서비스 제공자, 퍼실리테이터, AP2, 그리고 x402 대신 쓰는 카드 · SWIFT 레일 사이의 흐름", "Flow between the user, MetaMask, the delegator contract, the DelegationManager, the agent, the service provider, the facilitator, AP2, and the card and SWIFT rails used instead of x402")}>
             {/* 말풍선 연결선은 칸 아래에 깔리게 먼저 그린다 — 끝이 칸에 가려져 모서리 계산이 필요 없다. */}
             {leader}
@@ -736,14 +736,14 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Wire a={N.pg} b={N.network} live={lit.network} label="" plan={rail !== "stripe"} />
             <Wire a={N.network} b={N.issuer} live={lit.issuer} label="" plan={rail !== "stripe"} />
             {/* 국경을 넘는 은행 줄(맨 아래) — 한국 카드사가 바로 위에서 이어진다. */}
-            <Wire a={N.issuer} b={N.krbank} live={rail === "stripe" && lit.krbank} label={rail ? "" : t("달러 정산", "USD settlement")} plan={rail !== "stripe"} />
-            <Wire a={N.krbank} b={N.corr} live={lit.corr} label={rail ? "" : t("은행 간 해외 송금", "bank-to-bank wire")} plan={!rail} />
-            <Wire a={N.corr} b={N.usbank} live={rail === "swift" && lit.usbank} label={rail ? "" : "Fedwire · CHIPS"} plan={rail !== "swift"} />
+            <Wire a={N.issuer} b={N.krbank} live={rail === "stripe" && lit.krbank} label={t("달러 정산", "USD settlement")} plan={rail !== "stripe"} />
+            <Wire a={N.krbank} b={N.corr} live={lit.corr} label={t("SWIFT · 노스트로", "SWIFT · nostro")} plan={!rail} />
+            <Wire a={N.corr} b={N.usbank} live={rail === "swift" && lit.usbank} label="Fedwire · CHIPS" plan={rail !== "swift"} />
             {/* 스테이블코인 줄 — 은행 줄과 나란히. 양 끝은 은행(국내 이체), 국경은 가운데 체인에서 넘는다. */}
-            <Wire a={N.krbank} b={N.onramp} live={lit.onramp} label={rail ? "" : t("원화", "KRW")} plan={rail !== "stable"} />
-            <Wire a={N.onramp} b={N.chain} live={lit.chain} label={rail ? "" : t("USDC 출금", "USDC out")} plan={rail !== "stable"} />
-            <Wire a={N.chain} b={N.offramp} live={lit.offramp} label={rail ? "" : t("USDC 상환", "USDC redeem")} plan={rail !== "stable"} />
-            <Wire a={N.offramp} b={N.usbank} live={rail === "stable" && phase === "done"} label={rail ? "" : "ACH · Fedwire"} plan={rail !== "stable"} />
+            <Wire a={N.krbank} b={N.onramp} live={lit.onramp} label={t("원화", "KRW")} plan={rail !== "stable"} />
+            <Wire a={N.onramp} b={N.chain} live={lit.chain} label={t("USDC 출금", "USDC out")} plan={rail !== "stable"} />
+            <Wire a={N.chain} b={N.offramp} live={lit.offramp} label={t("USDC 상환", "USDC redeem")} plan={rail !== "stable"} />
+            <Wire a={N.offramp} b={N.usbank} live={rail === "stable" && phase === "done"} label="ACH · Fedwire" plan={rail !== "stable"} />
 
             <Box {...boxProps("user")} w={150} title={t("사용자", "User")} sub={status.user} />
             <Box {...boxProps("wallet")} w={180} title="MetaMask" sub={status.wallet} />
@@ -765,7 +765,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Box {...boxProps("onramp")} w={180} title={nodeName("onramp")} sub={status.onramp} plan={rail !== "stable"} />
             <Box {...boxProps("chain")} w={180} title={nodeName("chain")} sub={status.chain} plan={rail !== "stable"} />
             <Box {...boxProps("offramp")} w={180} title={nodeName("offramp")} sub={status.offramp} plan={rail !== "stable"} />
-            <Chip x={N.chain.x} y={N.chain.y + 34} text={t("브리지 · CCTP — depositForBurn → receiveMessage", "bridge · CCTP — depositForBurn → receiveMessage")} live={rail === "stable" && (cstep >= 3 || phase === "done")} />
+            <Chip x={N.chain.x} y={N.chain.y + 34} text={t("브리지 — 체인이 다르면 CCTP burn → mint", "bridge — another chain? CCTP burn → mint")} live={rail === "stable" && (cstep >= 3 || phase === "done")} />
 
             {/* ERC-4337 은 간선이 아니라 에이전트가 트랜잭션을 내보내는 방식이라, 노드에 붙인 칩으로 둔다. */}
             <Chip x={N.agent.x} y={N.agent.y + 44} text="ERC-4337 · UserOp · paymaster" live={spent > 0} />
@@ -776,29 +776,6 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Chip x={N.provider.x} y={N.provider.y - 53} text={t("pay.sh · 먼저 정산하는 게이트웨이 (이름만)", "pay.sh · settle-first gateway (named only)")} live={false} />
             <Chip x={N.facilitator.x} y={N.facilitator.y + 44} text={t("Kora · 솔라나 fee payer 서명기 (이름만)", "Kora · Solana fee-payer signer (named only)")} live={false} />
 
-            {/* **선 위의 실제 API · 메시지** (jay, 2026-11-13: "show some box containing the real api between the line like swift api").
-                고른 레일의 것만 그린다. 단계를 지나면 진하게. 은행 사이 선은 "메시지(SWIFT)"와 "돈(노스트로)"을 두 줄로 나눠 적는다 —
-                둘을 한 줄로 적었던 것이 헷갈림의 원인이었다. 출처: Stripe · Circle Mint · Bridge · Upbit · Swift API 문서 (std.ts 주석). */}
-            {rail === "stripe" && <>
-              <ApiTag x={908} y={304} live={cstep >= 1 || phase === "done"} lines={["Stripe API", "POST /v1/payment_intents"]} />
-              <ApiTag x={N.pg.x} y={375} live={cstep >= 2 || phase === "done"} lines={["ISO 8583", t("0100 승인 요청 · 0110 응답", "0100 auth request · 0110 reply")]} />
-              <ApiTag x={N.network.x} y={517} live={cstep >= 4 || phase === "done"} lines={[t("IPM 청산 파일 (GCMS)", "IPM clearing file (GCMS)"), t("하루 한 번 · 상계", "once a day · netted")]} />
-              <ApiTag x={N.issuer.x} y={654} live={cstep >= 5 || phase === "done"} lines={[t("카드사 → 자기 은행", "issuer → its bank"), t("달러 정산 지시", "USD settlement order")]} />
-              <ApiTag x={920} y={720} live={cstep >= 5 || phase === "done"} lines={[t("메시지: SWIFT pacs.009", "message: SWIFT pacs.009"), t("돈: 노스트로 계좌", "money: nostro account")]} />
-              <ApiTag x={N.usbank.x} y={662} live={phase === "done"} lines={["Stripe: POST /v1/payouts", t("→ ACH (NACHA 파일)", "→ ACH (NACHA file)")]} />
-            </>}
-            {rail === "swift" && <>
-              <ApiTag x={920} y={720} live={cstep >= 2 || phase === "done"} lines={[t("메시지: SWIFT pacs.008", "message: SWIFT pacs.008"), t("돈: 노스트로 계좌 차감", "money: nostro debited")]} />
-              <ApiTag x={580} y={720} live={cstep >= 3 || phase === "done"} lines={["Fedwire · CHIPS", "ISO 20022 pacs.008"]} />
-              <ApiTag x={N.corr.x} y={790} live={cstep >= 2 || phase === "done"} lines={["SWIFT gpi Tracker API", "GET /payments/{uetr}/transactions"]} />
-            </>}
-            {rail === "stable" && <>
-              <ApiTag x={N.krbank.x} y={790} live={cstep >= 1 || phase === "done"} lines={[t("원화 입금", "KRW deposit"), t("실명 확인 계좌 · 국내 이체", "verified account · domestic")]} />
-              <ApiTag x={920} y={860} live={cstep >= 2 || phase === "done"} lines={[t("Upbit API (예)", "Upbit API (e.g.)"), "POST /v1/withdraws/coin"]} />
-              <ApiTag x={N.chain.x} y={795} live={cstep >= 3 || phase === "done"} lines={["x402 settle", "USDC.transferWithAuthorization"]} />
-              <ApiTag x={580} y={860} live={cstep >= 4 || phase === "done"} lines={["Bridge liquidation addr", "POST /v0/customers/…"]} />
-              <ApiTag x={N.usbank.x} y={790} live={phase === "done"} lines={["Circle Mint", "POST /v1/businessAccount/payouts"]} />
-            </>}
             {/* 끝난 패킷은 투명한 채로 도착 칸 위에 남는다 — 포인터를 꺼 두지 않으면 그 칸의 클릭을 가로챈다. */}
             {packets.map((p) => (
               <circle key={p.id} r={7} fill={p.color} style={{ pointerEvents: "none" }}>
@@ -954,20 +931,6 @@ function Box({ n, w, title, sub, live, ready, flash, onClick, contract, plan }: 
         strokeDasharray={contract || plan ? "6 3" : undefined} style={{ transition: "stroke 300ms" }} />
       <text x={n.x} y={n.y - 4} textAnchor="middle" fontSize={13} fontWeight={600} fill={plan ? "var(--muted)" : "var(--text)"}>{title}</text>
       <text x={n.x} y={n.y + 14} textAnchor="middle" fontSize={11} fill={flash?.tone === "bad" ? "var(--red)" : ready ? "var(--accent)" : "var(--muted)"} fontWeight={ready ? 600 : 400}>{sub}</text>
-    </g>
-  );
-}
-
-// 선 위에 얹는 작은 코드 상자 — 그 구간에서 실제로 오가는 API 호출이나 메시지 형식.
-function ApiTag({ x, y, lines, live }: { x: number; y: number; lines: string[]; live: boolean }) {
-  const w = Math.max(...lines.map((l) => textW(l, 10))) + 14;
-  const h = lines.length * 13 + 8;
-  return (
-    <g style={{ pointerEvents: "none" }}>
-      <rect x={x - w / 2} y={y - h / 2} width={w} height={h} rx={4} fill="var(--panel)" stroke={live ? "var(--accent)" : "var(--border)"} strokeDasharray={live ? undefined : "3 2"} />
-      {lines.map((l, i) => (
-        <text key={i} x={x} y={y - h / 2 + 15 + i * 13} textAnchor="middle" fontSize={10} fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace" fill={live ? "var(--accent)" : "var(--muted)"}>{l}</text>
-      ))}
     </g>
   );
 }
