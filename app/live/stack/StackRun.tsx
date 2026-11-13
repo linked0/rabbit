@@ -53,11 +53,11 @@ type Scenario = "agentic" | "canton" | "relay";
 type Phase = "user" | "wallet" | "grant" | "agent" | "provider" | "facilitator" | "ap2" | "card" | "done";
 type RPhase = "lure" | "relay" | "page" | "pay" | "done";
 type Method = "otp" | "passkey";
-type StackNode = "user" | "wallet" | "delegator" | "manager" | "agent" | "provider" | "facilitator" | "ap2" | "pg" | "network" | "issuer";
+type StackNode = "user" | "wallet" | "delegator" | "manager" | "agent" | "provider" | "facilitator" | "ap2" | "pg" | "network" | "issuer" | "usbank" | "corr" | "krbank" | "onramp" | "chain" | "offramp";
 type CantonNode = "cuser" | "operator" | "sync" | "validator" | "daml";
 type RelayNode = "ruser" | "proxy" | "site" | "other" | "guard";
 type NodeId = StackNode | CantonNode | RelayNode;
-type Rail = "stripe" | "toss" | "swift";
+type Rail = "stripe" | "swift" | "stable";
 type Tone = "info" | "good" | "bad" | "chain";
 type Node = { x: number; y: number };
 
@@ -81,6 +81,20 @@ const N: Record<NodeId, Node> = {
   pg: { x: 970, y: 304 },
   network: { x: 970, y: 446 },
   issuer: { x: 970, y: 588 },
+  // **국경을 넘는 은행 줄** (jay, 2026-11-13: "the service provider take its settlement money from other countries's banks …
+  // with some international bank rails" · "My scenario is the Service provider is US company and user is a Korean" · "the Issuer
+  // bank should connect the rails you created"). 미국 판매자 · 한국 사용자라 돈은 한국 → 미국으로 간다. 맨 아래 줄은
+  // 한국 은행(발급 카드사 바로 아래) → 미국 정산 · 중계 은행 → 판매자의 미국 은행. 카드 레일에서는 한국 카드사가 하루치
+  // 달러 정산을 이 줄로 보내고, SWIFT 레일에서는 사용자의 송금이 같은 줄을 지난다.
+  krbank: { x: 970, y: 720 },
+  corr: { x: 690, y: 720 },
+  usbank: { x: 410, y: 720 },
+  // **스테이블코인 줄** (jay, 2026-11-13: "the stable coin used in X402 should also connected banks with some bridge and block
+  // chain" · "even though the bird view could be complex, you can do it"). 은행 줄 바로 아래에 나란히: 한국 은행 → 온램프 →
+  // 블록체인(브리지) → 오프램프 → 미국 은행. x402 의 USDC 가 어디서 와서 어디로 내려가는지, 국경을 어디서 넘는지 보여 준다.
+  onramp: { x: 970, y: 860 },
+  chain: { x: 690, y: 860 },
+  offramp: { x: 410, y: 860 },
   // Canton 구역 (T5)
   // 구역은 사용자보다 한 칸 내려 둔다 — 사용자에서 말풍선으로 가는 선이 구역 제목을 가로지르지 않게.
   cuser: { x: 180, y: 48 },
@@ -142,11 +156,11 @@ export default function StackRun({ lang }: { lang: Lang }) {
   }, [popup]);
 
   const remaining = CAP - spent;
-  const railName = rail === "toss" ? t("토스페이먼츠", "Toss Payments") : rail === "swift" ? "SWIFT" : "Stripe";
-  // 오른쪽 세 칸의 이름 — 레일을 고르기 전에는 카드 레일(Stripe · Mastercard)로 흐리게 서 있다.
-  const P = rail === "toss" ? t("토스페이먼츠", "Toss Payments") : rail === "swift" ? t("수취 은행", "Beneficiary bank") : "Stripe";
-  const M = rail === "toss" ? t("VAN · 카드사망", "VAN network") : rail === "swift" ? t("SWIFT · 중계 은행", "SWIFT · correspondent") : "Mastercard";
-  const I = rail === "toss" ? t("카드사", "Card company") : rail === "swift" ? t("송금 은행", "Sender's bank") : t("카드 발급 은행", "Issuing bank");
+  const railName = rail === "swift" ? "SWIFT" : rail === "stable" ? t("x402 → 은행", "x402 → banks") : "Stripe";
+  // 오른쪽 세로줄 = 카드망(미국 판매자의 Stripe · Mastercard · 한국 카드사). SWIFT 레일에서는 흐리게 남는다.
+  const P = "Stripe";
+  const M = "Mastercard";
+  const I = t("한국 카드사", "Korean card issuer");
   // 한국어 조사: 받침이 있으면 이/을/으로, 없으면 가/를/로 (ㄹ 받침은 "로"). 라틴 이름은 이 판의 다른 곳처럼 띄우고 모음형.
   const josa = (w: string, withB: string, noB: string) => {
     const c = w.charCodeAt(w.length - 1);
@@ -155,50 +169,79 @@ export default function StackRun({ lang }: { lang: Lang }) {
     if (noB === "로") return w + (b === 0 || b === 8 ? "로" : "으로");
     return w + (b ? withB : noB);
   };
+  // 아래 줄 세 칸 — 레일에 따라 같은 은행 자리가 다른 역할을 한다.
+  const KB = rail === "swift" || rail === "stable" ? t("사용자의 한국 은행", "User's Korean bank") : rail === "stripe" ? t("카드사의 한국 은행", "Issuer's Korean bank") : t("한국 은행", "Korean bank");
+  const CB = rail === "swift" ? t("뉴욕 중계 은행", "NY correspondent bank") : rail === "stripe" ? t("미국 정산 은행", "US settlement bank") : t("뉴욕 중계 · 정산 은행", "NY correspondent / settlement");
+  const UB = t("판매자의 미국 은행", "Seller's US bank");
+  const nodeName = (id: NodeId) => id === "provider" ? t("서비스 제공자 (미국)", "Service provider (US)") : id === "pg" ? P : id === "network" ? M : id === "issuer" ? I
+    : id === "usbank" ? UB : id === "corr" ? CB : id === "krbank" ? KB
+    : id === "onramp" ? t("온램프 · 한국 거래소", "On-ramp · Korean exchange") : id === "chain" ? t("블록체인 · USDC", "Blockchain · USDC") : id === "offramp" ? t("오프램프 · Circle · Bridge", "Off-ramp · Circle · Bridge") : id;
   const cardFinal = () => note({ tone: "good", chip: t("비교", "compare"), text: t(
     "x402 는 settle 한 번에 판매자 지갑으로 들어왔고 되돌릴 수 없다. 카드는 승인은 몇 초지만 돈은 며칠 뒤에 들어오고, 몇 달 뒤에도 차지백으로 되돌려질 수 있다 — 그때 꺼내는 증거가 AP2 mandate 다.",
     "x402 landed in the seller's wallet in one settle and cannot be reversed. A card authorizes in seconds, but the money arrives days later and can be clawed back by a chargeback months on — and the AP2 mandates are the evidence pulled out then.") });
   type CStep = { node: StackNode; btn: string; say: string; run: () => void };
+  // 카드 레일 — 미국 판매자, 한국 카드사가 발급한 Mastercard.
   const CARD: CStep[] = [
-    { node: "provider", btn: t(`${josa(P, "으로", "로")} 청구`, `Charge via ${P}`),
-      say: t(`카드 결제는 판매자에서 시작한다. 에이전트가 넘긴 카드 토큰(과 AP2 Payment Mandate)으로 판매자 서버가 ${P} 에 ${PRICE} 달러를 청구한다.`, `A card payment starts at the seller. With the card token the agent handed over (and the AP2 Payment Mandate), the seller's server charges $${PRICE} through ${P}.`),
-      run: () => { send([{ from: N.provider, to: N.pg, color: "var(--accent)" }]); note({ tone: "info", chip: t("카드 ① 청구", "card ① charge"), text: t(`판매자 → ${P}: ${PRICE} 달러 청구. 판매자가 당겨 가는 결제다.`, `Seller → ${P}: a $${PRICE} charge. The seller pulls the money.`) }); } },
+    { node: "provider", btn: t("Stripe 로 청구", "Charge via Stripe"),
+      say: t(`미국 판매자가 Stripe 로 ${PRICE} 달러를 청구한다. 카드는 한국 카드사가 발급한 Mastercard — 에이전트가 넘긴 카드 토큰(과 AP2 Payment Mandate)으로. 판매자가 당겨 가는 결제다.`, `The US seller charges $${PRICE} through Stripe. The card is a Mastercard issued by a Korean card company — via the token the agent handed over (and the AP2 Payment Mandate). The seller pulls the money.`),
+      run: () => { send([{ from: N.provider, to: N.pg, color: "var(--accent)" }]); note({ tone: "info", chip: t("카드 ① 청구", "card ① charge"), text: t(`미국 판매자 → Stripe: ${PRICE} 달러 청구 (한국 발급 카드).`, `US seller → Stripe: a $${PRICE} charge (Korean-issued card).`) }); } },
     { node: "pg", btn: t("승인 요청", "Request authorization"),
-      say: t(`${josa(P, "이", "가")} 매입 쪽(acquirer)에서 승인 요청을 ${josa(M, "을", "를")} 거쳐 ${josa(I, "으로", "로")} 보낸다.`, `${P}, on the acquiring side, sends the authorization request through ${M} to the ${I}.`),
-      run: () => { send([{ from: N.pg, to: N.network, color: "var(--accent)" }, { from: N.network, to: N.issuer, color: "var(--accent)" }]); note({ tone: "info", chip: t("카드 ② 승인 요청", "card ② auth request"), text: t(`${P} → ${M} → ${I}. 메시지만 갔다.`, `${P} → ${M} → ${I}. Only a message moved.`) }); } },
+      say: t("Stripe 가 매입 쪽에서 승인 요청을 Mastercard 망에 보내고, Mastercard 가 국경을 넘어 한국 카드사로 넘긴다. 메시지만 간다.", "Stripe, on the acquiring side, sends the authorization request into the Mastercard network, which carries it across the border to the Korean issuer. Only a message moves."),
+      run: () => { send([{ from: N.pg, to: N.network, color: "var(--accent)" }, { from: N.network, to: N.issuer, color: "var(--accent)" }]); note({ tone: "info", chip: t("카드 ② 승인 요청", "card ② auth request"), text: t(`Stripe → Mastercard → ${I}. 메시지만 국경을 넘었다.`, `Stripe → Mastercard → the ${I}. Only a message crossed the border.`) }); } },
     { node: "issuer", btn: t("승인", "Approve"),
-      say: t(`${josa(I, "이", "가")} 한도와 사기 여부를 본다. 승인하면 카드에 ${PRICE} 만큼 hold 만 걸리고 돈은 아직 안 움직인다 — x402 의 /verify 처럼 약속이다.`, `The ${I} checks the limit and fraud. Approval only puts a $${PRICE} hold on the card; no money moves yet — a promise, like x402's /verify.`),
-      run: () => { send([{ from: N.issuer, to: N.network, color: "var(--green)" }, { from: N.network, to: N.pg, color: "var(--green)" }, { from: N.pg, to: N.provider, color: "var(--green)" }]); blink("issuer", "good"); note({ tone: "chain", chip: t("카드 ③ 승인", "card ③ approved"), text: t(`${I} 승인 · hold. 몇 초. 판매자는 승인만 보고 데이터를 내준다 — 돈은 아직 오지 않았다.`, `${I} approved · hold. Seconds. The seller delivers the data on the approval alone — the money has not arrived.`) }); } },
+      say: t(`${josa(I, "이", "가")} 한도와 사기 여부를 보고 달러로 승인한다. 카드에 hold 만 걸리고 돈은 아직 안 움직인다 — x402 의 /verify 처럼 약속이다. 사용자에게는 나중에 환율과 해외 이용 수수료를 붙여 원화로 청구한다.`, `The ${I} checks the limit and fraud and approves in dollars. Only a hold — no money moves yet, a promise like x402's /verify. The user is billed later in KRW, with the exchange rate and an overseas-use fee added.`),
+      run: () => { send([{ from: N.issuer, to: N.network, color: "var(--green)" }, { from: N.network, to: N.pg, color: "var(--green)" }, { from: N.pg, to: N.provider, color: "var(--green)" }]); blink("issuer", "good"); note({ tone: "chain", chip: t("카드 ③ 승인", "card ③ approved"), text: t(`${I} 승인 · USD hold. 몇 초. 판매자는 승인만 보고 데이터를 내준다 — 돈은 아직 오지 않았다.`, `${I} approved · USD hold. Seconds. The seller delivers the data on the approval alone — the money has not arrived.`) }); } },
     { node: "network", btn: t("청산 (하루 끝)", "Clear (end of day)"),
-      say: rail === "toss"
-        ? t("국내 카드는 카드사가 발급사이자 매입사다. 토스페이먼츠가 모아 보낸 매입 요청을 VAN 이 카드사로 실어 나르고, 카드사가 직접 매입하고 정산 금액을 확정한다.", "In Korea the card company both issues and acquires. Toss Payments' batched capture goes over the VAN to the card company, which acquires and fixes the settlement amount itself.")
-        : t("하루 끝, Mastercard 가 그날 건들을 모아 발급 은행과 매입 쪽이 주고받을 금액을 맞춘다(청산). interchange 수수료가 여기서 정해진다.", "At day's end Mastercard batches the day's transactions and nets what the issuing bank and the acquiring side owe each other (clearing). Interchange fees are set here."),
-      run: () => { blink("network", "good"); note({ tone: "info", chip: t("카드 ④ 청산", "card ④ clearing"), text: rail === "toss" ? t("VAN 으로 매입 전문 → 카드사가 매입 · 정산 금액 확정.", "Capture over the VAN → the card company acquires and fixes the amount.") : t("Mastercard 가 하루치를 모아 상계 — 수수료 확정.", "Mastercard nets the day's batch — fees fixed.") }); } },
-    { node: "issuer", btn: t("정산 송금", "Send settlement"),
-      say: t(`${josa(I, "이", "가")} 수수료를 뺀 돈을 ${josa(M, "을", "를")} 거쳐 ${P} 쪽으로 보낸다(정산). 카드 주인은 다음 달 명세서로 갚는다.`, `The ${I} sends the money, less fees, through ${M} to ${P} (settlement). The cardholder pays it off on next month's statement.`),
-      run: () => { send([{ from: N.issuer, to: N.network, color: "var(--green)" }, { from: N.network, to: N.pg, color: "var(--green)" }]); note({ tone: "chain", chip: t("카드 ⑤ 정산", "card ⑤ settlement"), text: t(`돈이 처음으로 움직였다: ${I} → ${M} → ${P}.`, `Money moves for the first time: ${I} → ${M} → ${P}.`) }); } },
+      say: t("하루 끝, Mastercard 가 나라를 넘나든 건들을 모아 상계하고 환율과 수수료(interchange · 해외 결제 수수료)를 확정한다. 누가 누구에게 달러로 얼마를 보낼지 여기서 정해진다.", "At day's end Mastercard batches the cross-border transactions, nets them, and fixes the exchange rate and fees (interchange, cross-border fees). Who sends how many dollars to whom is decided here."),
+      run: () => { blink("network", "good"); note({ tone: "info", chip: t("카드 ④ 청산", "card ④ clearing"), text: t("Mastercard 가 하루치를 모아 상계 — 환율 · 수수료 확정.", "Mastercard nets the day's batch — FX rate and fees fixed.") }); } },
+    { node: "issuer", btn: t("달러 정산 송금", "Send USD settlement"),
+      say: t(`${josa(I, "이", "가")} 원화로 달러를 사서 자기 한국 은행을 통해 Mastercard 의 미국 정산 은행으로 보낸다 — 은행 사이 해외 송금(SWIFT 메시지 + 뉴욕의 달러 계좌). 건별이 아니라 하루치를 한 번에 보낸다.`, `The ${I} buys dollars with KRW and sends them through its Korean bank to Mastercard's US settlement bank — a bank-to-bank cross-border transfer (a SWIFT message plus a dollar account in New York). Not per purchase: one transfer for the whole day.`),
+      run: () => { send([{ from: N.issuer, to: N.krbank, color: "var(--green)" }, { from: N.krbank, to: N.corr, color: "var(--green)" }]); blink("krbank", "good"); note({ tone: "chain", chip: t("카드 ⑤ 정산 · 국경", "card ⑤ settlement · border"), text: t(`돈이 처음으로 움직였다: ${I} → 한국 은행(원화 → 달러) → 미국 정산 은행. 국경을 넘는 건 이 하루치 묶음 한 번이다.`, `Money moves for the first time: ${I} → Korean bank (KRW → USD) → US settlement bank. The border is crossed once, by this daily batch.`) }); } },
+    { node: "corr", btn: t("Stripe 쪽으로 정산", "Settle to Stripe"),
+      say: t("미국 정산 은행이 Mastercard 의 지시대로 매입 쪽(Stripe 의 은행)에 달러를 넣는다. 여기서부터는 미국 안이다.", "The US settlement bank credits the acquiring side (Stripe's bank) on Mastercard's instruction. From here on it is all inside the US."),
+      run: () => { send([{ from: N.corr, to: N.pg, color: "var(--green)" }]); blink("corr", "good"); note({ tone: "chain", chip: t("카드 ⑥ 매입 쪽 입금", "card ⑥ acquirer credited"), text: t("미국 정산 은행 → Stripe 쪽. 수수료가 빠진 달러.", "US settlement bank → Stripe's side. Dollars, less fees.") }); } },
     { node: "pg", btn: t("판매자에게 지급", "Pay out to the seller"),
-      say: rail === "toss"
-        ? t("토스페이먼츠가 수수료를 떼고, 계약한 정산 주기(영업일 기준)대로 판매자 계좌에 넣는다.", "Toss Payments takes its fee and pays the seller's account on the contracted settlement cycle (business days).")
-        : t("Stripe 가 수수료를 떼고 판매자 은행 계좌로 지급한다 — 보통 영업일 이틀 안팎.", "Stripe takes its fee and pays out to the seller's bank account — typically about two business days."),
-      run: () => { send([{ from: N.pg, to: N.provider, color: "var(--green)" }]); blink("provider", "good"); note({ tone: "good", chip: t("카드 ⑥ 지급", "card ⑥ payout"), text: t(`${P} → 판매자 계좌. 며칠 뒤에야 판매자 손에 돈이 들어왔다.`, `${P} → the seller's account. Only now, days later, does the seller hold the money.`) }); cardFinal(); } },
+      say: t("Stripe 가 수수료(해외 카드면 더 붙는다)를 떼고 ACH 로 판매자의 미국 은행에 넣는다 — 보통 영업일 이틀 안팎.", "Stripe takes its fee (more for a foreign card) and pays the seller's US bank over ACH — typically about two business days."),
+      run: () => { send([{ from: N.pg, to: N.usbank, color: "var(--green)" }, { from: N.usbank, to: N.provider, color: "var(--green)" }]); blink("provider", "good"); note({ tone: "good", chip: t("카드 ⑦ 지급", "card ⑦ payout"), text: t("Stripe → (ACH) → 판매자의 미국 은행. 며칠 뒤에야 판매자 손에 달러가 들어왔다.", "Stripe → (ACH) → the seller's US bank. Only now, days later, does the seller hold the dollars.") });
+        cardFinal();
+        note({ tone: "good", chip: t("비교 · 국경", "compare · border"), text: t("미국 판매자는 달러를 미국 안에서 받았다 — 국경을 넘는 일은 한국 카드사와 Mastercard 가 하루치 묶음으로 처리했다. 비용은 사용자 쪽(환율 · 해외 이용 수수료)과 판매자 쪽(해외 카드 수수료)에 나뉘어 붙는다. x402 는 한국 사용자의 지갑에서 미국 판매자의 지갑으로 한 번에 갔다 — 체인에는 국경이 없다.", "The US seller got dollars inside the US — the border crossing was done by the Korean issuer and Mastercard in a daily batch. The cost is split between the user (FX, overseas-use fee) and the seller (foreign-card fee). x402 went from the Korean user's wallet to the US seller's wallet in one step — the chain has no border.") }); } },
   ];
+  // SWIFT 레일 — 한국 사용자가 미국 판매자에게 직접 해외 송금. 아래 줄을 그대로 지난다.
   const WIRE: CStep[] = [
     { node: "provider", btn: t("청구서 보내기", "Send the invoice"),
-      say: t(`판매자가 청구서를 보낸다 — 수취 은행의 BIC, 계좌번호(IBAN), ${PRICE} 달러. 계좌이체는 판매자가 당겨 가지 않고 내는 쪽이 밀어 보낸다.`, `The seller sends an invoice — the beneficiary bank's BIC, the account number (IBAN), $${PRICE}. A bank transfer is not pulled by the seller; the payer pushes it.`),
-      run: () => { send([{ from: N.provider, to: N.agent, color: "var(--accent)" }]); note({ tone: "info", chip: "SWIFT ①", text: t("판매자 → 에이전트: 청구서 (BIC · IBAN · 금액).", "Seller → agent: an invoice (BIC · IBAN · amount).") }); } },
-    { node: "issuer", btn: t("송금 지시", "Instruct the transfer"),
-      say: t("사용자의 은행이 계좌에서 돈을 빼고 SWIFT 로 지급 메시지(MT103, 요즘은 ISO 20022 pacs.008)를 보낸다. SWIFT 는 메시지만 나른다 — 돈은 은행끼리 서로 맡겨 둔 계좌(노스트로)에서 움직인다.", "The user's bank debits the account and sends a payment message over SWIFT (MT103, now ISO 20022 pacs.008). SWIFT carries only messages — the money moves between accounts banks hold with each other (nostro)."),
-      run: () => { send([{ from: N.agent, to: N.issuer, color: "var(--accent)" }, { from: N.issuer, to: N.network, color: "var(--accent)" }]); note({ tone: "chain", chip: "SWIFT ② MT103 · pacs.008", text: t("송금 은행이 출금 → SWIFT 메시지 발송. 메시지와 돈은 따로 간다.", "The sender's bank debits → SWIFT message sent. The message and the money travel separately.") }); } },
-    { node: "network", btn: t("중계", "Relay"),
-      say: t("달러 송금은 보통 미국의 중계 은행을 거친다. 송금 은행의 계좌에서 빼서 수취 은행 쪽 계좌에 넣고, 수수료를 뗀다. 중계가 여럿이면 수수료도 여러 번. 어디쯤 왔는지는 SWIFT gpi 의 UETR 로 추적한다.", "A dollar transfer usually passes a correspondent bank in the US. It debits the sender's bank's account, credits the beneficiary side, and takes a fee. More hops, more fees. SWIFT gpi tracks where it is by its UETR."),
-      run: () => { send([{ from: N.network, to: N.pg, color: "var(--green)" }]); blink("network", "good"); note({ tone: "chain", chip: "SWIFT ③ gpi", text: t("중계 은행: 노스트로 계좌 간 이체 · 수수료 차감 → 수취 은행으로.", "Correspondent: nostro-to-nostro move · fee taken → on to the beneficiary bank.") }); } },
-    { node: "pg", btn: t("입금 처리", "Credit the seller"),
-      say: t("수취 은행이 자금세탁 · 제재 검사를 하고 원화로 바꿔 판매자 계좌에 넣는다. gpi 로 수취 은행까지는 같은 날 닿는 일이 많지만, 검사와 환전까지 며칠 걸리기도 한다.", "The beneficiary bank runs AML and sanctions checks, converts to KRW and credits the seller. With gpi it often reaches the beneficiary bank the same day, but checks and FX can still take days."),
-      run: () => { send([{ from: N.pg, to: N.provider, color: "var(--green)" }]); blink("provider", "good"); note({ tone: "good", chip: "SWIFT ④", text: t("수취 은행 → 판매자 계좌 (원화). 검사 · 환전 뒤 입금.", "Beneficiary bank → the seller's account (KRW), after checks and FX.") });
-        note({ tone: "good", chip: t("비교", "compare"), text: t("x402 는 몇 초에 가스 몇 센트, SWIFT 는 영업일 단위에 중계마다 수수료. 둘 다 내는 쪽이 밀어 보내는 결제라 차지백이 없고, 되돌리려면 받은 쪽의 동의가 필요하다 — 스테이블코인이 해외 송금의 대안으로 거론되는 이유다.", "x402 takes seconds and a few cents of gas; SWIFT takes business days and a fee per hop. Both are pushed by the payer, so there is no chargeback; reversing needs the receiver's consent — which is why stablecoins come up as a cross-border alternative.") }); } },
+      say: t(`미국 판매자가 청구서를 보낸다 — 은행의 SWIFT 코드(BIC), 계좌번호, ${PRICE} 달러. 미국은 IBAN 을 쓰지 않는다. 계좌이체는 판매자가 당겨 가지 않고 내는 쪽이 밀어 보낸다.`, `The US seller sends an invoice — its bank's SWIFT code (BIC), the account number, $${PRICE}. The US does not use IBAN. A bank transfer is not pulled by the seller; the payer pushes it.`),
+      run: () => { send([{ from: N.provider, to: N.user, color: "var(--accent)" }]); note({ tone: "info", chip: "SWIFT ①", text: t("미국 판매자 → 한국 사용자: 청구서 (BIC · 계좌번호 · 금액).", "US seller → Korean user: an invoice (BIC · account number · amount).") }); } },
+    { node: "krbank", btn: t("해외 송금 신청", "Request the wire"),
+      say: t("사용자가 한국 은행에 해외 송금을 신청한다. 은행은 원화를 달러로 바꾸고(환전 스프레드), 송금 사유를 확인하고, SWIFT 로 지급 메시지(MT103, 지금은 ISO 20022 pacs.008)를 보낸다. 달러는 이 은행이 뉴욕에 둔 달러 계좌(노스트로)에서 나간다. 수수료를 누가 낼지(OUR · SHA · BEN)도 메시지에 적는다.", "The user asks the Korean bank for an overseas transfer. The bank converts KRW to USD (an FX spread), checks the purpose, and sends a payment message over SWIFT (MT103, now ISO 20022 pacs.008). The dollars leave from the bank's dollar account in New York (its nostro). Who pays the fees (OUR · SHA · BEN) is in the message."),
+      run: () => { send([{ from: N.user, to: N.krbank, color: "var(--accent)" }, { from: N.krbank, to: N.corr, color: "var(--accent)" }]); blink("krbank", "good"); note({ tone: "chain", chip: "SWIFT ② MT103 · pacs.008", text: t("한국 은행: 원화 → 달러 · 송금 사유 확인 → SWIFT 메시지. 메시지와 돈은 따로 간다.", "Korean bank: KRW → USD · purpose checked → SWIFT message. Message and money travel separately.") }); } },
+    { node: "corr", btn: t("중계", "Relay"),
+      say: t("뉴욕 중계 은행이 한국 은행의 달러 계좌에서 빼서 Fedwire · CHIPS 로 판매자의 미국 은행에 넣고, 수수료를 뗀다. 중계가 하나 더 끼면 수수료도 한 번 더. 어디쯤인지는 SWIFT gpi 의 UETR 로 본다.", "The NY correspondent debits the Korean bank's dollar account, pays the seller's US bank over Fedwire / CHIPS, and takes a fee. One more hop, one more fee. SWIFT gpi shows where it is by its UETR."),
+      run: () => { send([{ from: N.corr, to: N.usbank, color: "var(--green)" }]); blink("corr", "good"); note({ tone: "chain", chip: "SWIFT ③ gpi", text: t("뉴욕 중계 은행 → (Fedwire · CHIPS) → 판매자의 미국 은행 · 중계 수수료.", "NY correspondent → (Fedwire / CHIPS) → the seller's US bank · relay fee.") }); } },
+    { node: "usbank", btn: t("입금", "Credit the seller"),
+      say: t("판매자의 미국 은행이 메시지와 돈을 맞춰 보고 제재(OFAC) 검사를 한 뒤 입금한다. gpi 로 같은 날 닿는 일이 많지만 검사 때문에 늦어지기도 한다.", "The seller's US bank matches the message to the funds, runs sanctions (OFAC) checks, and credits the seller. With gpi it often arrives the same day, but checks can delay it."),
+      run: () => { send([{ from: N.usbank, to: N.provider, color: "var(--green)" }]); blink("provider", "good"); note({ tone: "good", chip: "SWIFT ④", text: t("판매자의 미국 은행 → 판매자 계좌 (USD).", "Seller's US bank → the seller's account (USD).") });
+        note({ tone: "good", chip: t("비교", "compare"), text: t("x402 는 몇 초에 가스 몇 센트, SWIFT 는 영업일 단위에 환전 스프레드와 중계마다 수수료. 둘 다 내는 쪽이 밀어 보내는 결제라 차지백이 없고, 되돌리려면 받은 쪽의 동의가 필요하다 — 스테이블코인이 해외 송금의 대안으로 거론되는 이유다.", "x402 takes seconds and a few cents of gas; SWIFT takes business days, an FX spread and a fee per hop. Both are pushed by the payer, so there is no chargeback; reversing needs the receiver's consent — which is why stablecoins come up as a cross-border alternative.") }); } },
   ];
-  const CSTEPS = rail === "swift" ? WIRE : CARD;
+  // x402 를 은행까지 — 같은 2.4 달러가 원화 은행에서 출발해 체인을 지나 달러 은행에 내려앉는 길.
+  const STABLE: CStep[] = [
+    { node: "krbank", btn: t("원화 보내기", "Send KRW"),
+      say: t("한국 사용자가 자기 은행에서 원화를 온램프(거래소 계정)로 보낸다. 국내 이체라 국경은 아직 넘지 않았다.", "The Korean user sends KRW from their bank to the on-ramp (an exchange account). A domestic transfer — no border crossed yet."),
+      run: () => { send([{ from: N.user, to: N.krbank, color: "var(--accent)" }, { from: N.krbank, to: N.onramp, color: "var(--accent)" }]); blink("krbank", "good"); note({ tone: "info", chip: t("스테이블 ① 원화", "stable ① KRW"), text: t("사용자의 한국 은행 → 온램프. 국내 이체.", "User's Korean bank → on-ramp. A domestic transfer.") }); } },
+    { node: "onramp", btn: t("USDC 사서 지갑으로", "Buy USDC to the wallet"),
+      say: t("온램프가 원화로 USDC 를 사 주고 사용자의 지갑(이 판에서는 Delegator 계정)으로 출금한다. 여기서 처음 블록체인에 올라탄다. 원화로 어떤 스테이블코인을 살 수 있는지, 외부 지갑 출금 규칙(트래블 룰)은 거래소와 규제마다 다르다.", "The on-ramp buys USDC with the KRW and withdraws it to the user's wallet (on this board, the Delegator account). This is where the money first gets on-chain. Which stablecoins KRW can buy, and the rules for withdrawing to an outside wallet (travel rule), vary by exchange and regulation."),
+      run: () => { send([{ from: N.onramp, to: N.chain, color: "var(--accent)" }, { from: N.chain, to: N.delegator, color: "var(--green)" }]); blink("onramp", "good"); note({ tone: "chain", chip: t("스테이블 ② 온램프", "stable ② on-ramp"), text: t("원화 → USDC → 사용자 지갑(Delegator 계정). 위임 한도가 쓰는 돈이 바로 이것이다.", "KRW → USDC → the user's wallet (Delegator account). This is the money the delegation's cap spends.") }); } },
+    { node: "chain", btn: t("x402 정산 · 브리지", "x402 settle · bridge"),
+      say: t("⑥ 에서 퍼실리테이터가 보낸 transferWithAuthorization 이 이 체인 위의 한 줄이다 — 한국 사용자의 지갑 → 미국 판매자의 지갑, 몇 초, 국경 없음. 판매자가 다른 체인에서 받고 싶으면 브리지가 잇는다: Circle 의 CCTP 는 원래 체인에서 USDC 를 태우고(burn) 저쪽 체인에서 새로 찍는다(mint).", "The transferWithAuthorization the facilitator sent at ⑥ is one line on this chain — the Korean user's wallet → the US seller's wallet, seconds, no border. If the seller wants it on another chain, a bridge connects them: Circle's CCTP burns the USDC on the source chain and mints it on the other."),
+      run: () => { send([{ from: N.facilitator, to: N.chain, color: "var(--accent)" }, { from: N.chain, to: N.provider, color: "var(--green)" }]); blink("chain", "good"); note({ tone: "chain", chip: t("스테이블 ③ 체인 · 브리지", "stable ③ chain · bridge"), text: t("체인 위: 사용자 지갑 → 판매자 지갑 (x402 settle). 국경을 넘는 건 이 한 줄이다. 체인이 다르면 CCTP burn → mint.", "On-chain: user's wallet → seller's wallet (the x402 settle). This one line is the border crossing. Different chain? CCTP burn → mint.") }); } },
+    { node: "offramp", btn: t("USDC → 달러", "USDC → USD"),
+      say: t("판매자가 받은 USDC 를 오프램프로 보낸다 — Circle 같은 발행사에 상환(redeem)하거나, Stripe 가 인수한 Bridge 같은 곳이 받아 달러로 바꾼다. 1 USDC = 1 달러. 여기서 다시 은행 세계로 내려온다.", "The seller sends the USDC it received to an off-ramp — redeemed with an issuer like Circle, or taken by a service like Bridge (bought by Stripe) and turned into dollars. 1 USDC = 1 USD. This is where it comes back down to the banking world."),
+      run: () => { send([{ from: N.provider, to: N.chain, color: "var(--accent)" }, { from: N.chain, to: N.offramp, color: "var(--accent)" }]); blink("offramp", "good"); note({ tone: "chain", chip: t("스테이블 ④ 오프램프", "stable ④ off-ramp"), text: t("판매자 지갑 → 오프램프: USDC 상환 → 달러.", "Seller's wallet → off-ramp: USDC redeemed → USD.") }); } },
+    { node: "usbank", btn: t("입금", "Credit the seller"),
+      say: t("오프램프가 ACH 나 Fedwire 로 판매자의 미국 은행에 달러를 넣는다. 국내 이체다 — 은행은 양쪽 끝에서 국내 이체만 했고, 국경은 체인 위에서 한 번 넘었다.", "The off-ramp pays dollars into the seller's US bank over ACH or Fedwire. A domestic transfer — the banks only did domestic transfers at each end, and the border was crossed once, on-chain."),
+      run: () => { send([{ from: N.offramp, to: N.usbank, color: "var(--green)" }, { from: N.usbank, to: N.provider, color: "var(--green)" }]); blink("provider", "good"); note({ tone: "good", chip: t("스테이블 ⑤ 입금", "stable ⑤ credit"), text: t("오프램프 → (ACH · Fedwire) → 판매자의 미국 은행.", "Off-ramp → (ACH / Fedwire) → the seller's US bank.") });
+        note({ tone: "good", chip: t("비교 · 국경", "compare · border"), text: t("은행 줄(SWIFT)은 노스트로 계좌로 국경을 넘고, 카드는 Mastercard 의 하루치 정산으로 넘고, 스테이블코인은 체인 위 한 줄로 넘는다. 비용은 양쪽 끝(환전 스프레드 · 온램프 · 오프램프 수수료)과 가스로 옮겨 간다. 판매자가 USDC 를 그대로 쓰면 오프램프조차 필요 없다.", "The bank rail (SWIFT) crosses the border through nostro accounts, the card crosses it in Mastercard's daily settlement, and the stablecoin crosses it in one on-chain line. The cost moves to the two ends (FX spread, on- and off-ramp fees) and gas. If the seller keeps spending USDC, it does not even need the off-ramp.") }); } },
+  ];
+  const CSTEPS = rail === "swift" ? WIRE : rail === "stable" ? STABLE : CARD;
   const cur = phase === "card" ? CSTEPS[cstep] : null;
   const ready: NodeId | null = phase === "done" ? null : phase === "grant" ? "wallet" : cur ? cur.node : phase === "card" ? null : (phase as NodeId); // 차례가 된 칸 = 깜빡이는 칸
   const settled = phase === "ap2" || phase === "card" || phase === "done"; // x402 정산이 끝난 뒤
@@ -290,9 +333,10 @@ export default function StackRun({ lang }: { lang: Lang }) {
     send([{ from: N.agent, to: N.ap2, color: "var(--accent)" }]);
     blink("ap2", "good");
     mandateNote();
-    const name = r === "toss" ? t("토스페이먼츠", "Toss Payments") : r === "swift" ? t("SWIFT 해외 송금", "a SWIFT wire") : "Stripe";
-    const demo = r === "stripe" ? { href: "/live/ap2", hrefLabel: "AP2 — Stripe" } : r === "toss" ? { href: "/live/toss", hrefLabel: "Toss Payments" } : {};
-    note({ tone: "info", chip: t("다른 레일 (가정)", "another rail (suppose)"), ...demo, text: t(`가정 — 같은 구매를 x402 대신 ${name}${r === "toss" ? "로" : " 로"} 했다면. x402 에 더해서가 아니라 대신이다. 오른쪽 줄에서 한 칸씩, 서비스 제공자부터.`, `Suppose the same purchase had gone over ${name} instead of x402 — instead of it, not on top of it. Step through the right-hand column, starting at the service provider.`) });
+    const name = r === "swift" ? t("SWIFT 해외 송금", "a SWIFT wire") : t("Stripe 카드 결제", "a Stripe card payment");
+    if (r === "stable") { note({ tone: "info", chip: t("x402 → 은행", "x402 → banks"), text: t("이번엔 대신이 아니라 x402 그 자체를 따라간다 — USDC 가 한국 은행의 원화에서 와서 미국 은행의 달러로 내려가는 길. 맨 아래 줄에서 한 칸씩.", "This time not instead of x402 but x402 itself — where the USDC comes from (KRW in a Korean bank) and where it lands (USD in a US bank). Step along the bottom row.") }); return; }
+    const demo = r === "stripe" ? { href: "/live/ap2", hrefLabel: "AP2 — Stripe" } : {};
+    note({ tone: "info", chip: t("다른 레일 (가정)", "another rail (suppose)"), ...demo, text: t(`가정 — 같은 구매를 x402 대신 ${name}으로 했다면 — 한국 사용자, 미국 판매자. x402 에 더해서가 아니라 대신이다. 판 오른쪽과 아래 줄에서 한 칸씩, 서비스 제공자부터.`, `Suppose the same purchase had gone over ${name} instead of x402 — instead of it, not on top of it. Korean user, US seller. Step through the right-hand column and the bottom row, starting at the service provider.`) });
   }
   // 다른 레일의 한 단계를 돌리고 다음 칸으로. 마지막 단계 뒤에 끝.
   function cardRun() {
@@ -356,15 +400,25 @@ export default function StackRun({ lang }: { lang: Lang }) {
     ap2: phase === "ap2" ? t("mandate 짚기 — 눌러 보세요", "check the mandates — press")
       : phase === "card" || phase === "done" ? (rail ? t(`mandate 세 장 · 비교 레일 ${railName}`, `three mandates · compared with ${railName}`) : t("mandate 세 장 · 저널 한 줄", "three mandates · one journal line"))
       : t("의도 · 장바구니 · 결제의 증거", "evidence: intent · cart · payment"),
-    pg: cur?.node === "pg" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : !rail ? t("매입 · PG (x402 대신)", "acquirer · PG (instead of x402)")
-      : rail === "swift" ? (phase === "done" ? t("검사 · 환전 · 입금", "checked · FX · credited") : cstep >= 3 ? t("자금 도착", "funds in") : t("판매자의 은행", "the seller's bank"))
-      : phase === "done" ? t("수수료 떼고 지급", "paid out, minus fees") : cstep >= 5 ? t("정산금 도착", "settlement in") : cstep >= 2 ? t("승인 요청 보냄", "auth request sent") : cstep >= 1 ? t("청구 받음", "charge received") : t("대기", "waiting"),
-    network: cur?.node === "network" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : !rail ? t("카드 네트워크", "card network")
-      : rail === "swift" ? (cstep >= 3 || phase === "done" ? t("중계함 · 수수료 뗌", "relayed · fee taken") : cstep >= 2 ? t("MT103 받음", "MT103 in") : t("메시지만 나름", "carries messages only"))
-      : cstep >= 4 || phase === "done" ? t("청산함 · 수수료 확정", "cleared · fees set") : cstep >= 2 ? t("승인 요청 중계", "auth relayed") : t("대기", "waiting"),
-    issuer: cur?.node === "issuer" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : !rail ? t("카드 발급", "card issuer")
-      : rail === "swift" ? (cstep >= 2 || phase === "done" ? t("출금 · 메시지 보냄", "debited · message sent") : t("사용자의 은행", "the user's bank"))
-      : cstep >= 5 || phase === "done" ? t("정산 송금함", "settlement sent") : cstep >= 3 ? t("승인 · hold", "approved · hold") : t("대기", "waiting"),
+    pg: cur?.node === "pg" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : rail !== "stripe" ? t("매입 · PG (미국)", "acquirer · PG (US)")
+      : phase === "done" ? t("수수료 떼고 ACH 지급", "paid out over ACH, minus fees") : cstep >= 6 ? t("정산금 도착", "settlement in") : cstep >= 2 ? t("승인 요청 보냄", "auth request sent") : cstep >= 1 ? t("청구 받음", "charge received") : t("대기", "waiting"),
+    network: cur?.node === "network" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : rail !== "stripe" ? t("카드 네트워크 · 국경을 넘음", "card network · crosses borders")
+      : cstep >= 4 || phase === "done" ? t("청산 · 환율 · 수수료 확정", "cleared · FX and fees fixed") : cstep >= 2 ? t("승인 요청 중계", "auth relayed") : t("대기", "waiting"),
+    issuer: cur?.node === "issuer" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : rail !== "stripe" ? t("발급 · 사용자의 카드", "issuer · the user's card")
+      : cstep >= 5 || phase === "done" ? t("달러 정산 송금함", "USD settlement sent") : cstep >= 3 ? t("승인 · USD hold", "approved · USD hold") : t("대기", "waiting"),
+    krbank: cur?.node === "krbank" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : !rail ? t("원화 → 달러", "KRW → USD")
+      : rail === "stable" ? (cstep >= 1 || phase === "done" ? t("원화 → 온램프 (국내)", "KRW → on-ramp (domestic)") : t("대기", "waiting"))
+      : (rail === "swift" ? cstep >= 2 : cstep >= 5) || phase === "done" ? t("원화 → 달러 · 송금함", "KRW → USD · sent") : t("대기", "waiting"),
+    corr: cur?.node === "corr" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : !rail || rail === "stable" ? t("SWIFT · 노스트로", "SWIFT · nostro")
+      : (rail === "swift" ? cstep >= 3 : cstep >= 6) || phase === "done" ? (rail === "swift" ? t("Fedwire · CHIPS 로 넘김", "passed on over Fedwire / CHIPS") : t("Stripe 쪽으로 정산함", "settled to Stripe's side")) : t("대기", "waiting"),
+    usbank: cur?.node === "usbank" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : !rail ? t("판매자의 USD 계좌", "the seller's USD account")
+      : phase === "done" ? (rail === "swift" ? t("검사 · 입금", "checked · credited") : rail === "stable" ? t("오프램프에서 입금 (국내)", "credited from the off-ramp (domestic)") : t("ACH 입금", "ACH credit")) : t("대기", "waiting"),
+    onramp: cur?.node === "onramp" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : rail !== "stable" ? t("원화 → USDC", "KRW → USDC")
+      : cstep >= 2 || phase === "done" ? t("USDC 출금함", "USDC withdrawn") : cstep >= 1 ? t("원화 받음", "KRW in") : t("대기", "waiting"),
+    chain: cur?.node === "chain" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : rail !== "stable" ? t("x402 settle 이 적히는 곳", "where the x402 settle lands")
+      : cstep >= 3 || phase === "done" ? t("사용자 → 판매자 · 국경 없음", "user → seller · no border") : cstep >= 2 ? t("USDC 가 사용자 지갑에", "USDC in the user's wallet") : t("대기", "waiting"),
+    offramp: cur?.node === "offramp" ? `${cur.btn} — ${t("눌러 보세요", "press")}` : rail !== "stable" ? t("USDC → 달러", "USDC → USD")
+      : cstep >= 4 || phase === "done" ? t("상환 · 달러로", "redeemed · to USD") : t("대기", "waiting"),
     cuser: t("계약의 당사자", "a party to the contract"),
     operator: t("Jayverse · validator 노드", "Jayverse · validator node"),
     sync: t("순서만 정함", "orders only"),
@@ -381,7 +435,11 @@ export default function StackRun({ lang }: { lang: Lang }) {
   const lit: Record<NodeId, boolean> = {
     user: phase !== "user", wallet: phase !== "user", delegator: upgraded, manager: granted, agent: granted,
     provider: phase === "facilitator" || settled, facilitator: settled, ap2: phase === "card" || phase === "done",
-    pg: !!rail && (cstep >= 1 || phase === "done"), network: !!rail && (cstep >= 2 || phase === "done"), issuer: !!rail && (cstep >= 2 || phase === "done"),
+    pg: rail === "stripe" && (cstep >= 1 || phase === "done"), network: rail === "stripe" && (cstep >= 2 || phase === "done"), issuer: rail === "stripe" && (cstep >= 2 || phase === "done"),
+    krbank: !!rail && ((rail === "swift" ? cstep >= 2 : rail === "stable" ? cstep >= 1 : cstep >= 5) || phase === "done"),
+    corr: (rail === "swift" || rail === "stripe") && ((rail === "swift" ? cstep >= 2 : cstep >= 5) || phase === "done"),
+    usbank: !!rail && ((rail === "swift" && cstep >= 3) || phase === "done"),
+    onramp: rail === "stable" && (cstep >= 1 || phase === "done"), chain: rail === "stable" && (cstep >= 2 || phase === "done"), offramp: rail === "stable" && (cstep >= 4 || phase === "done"),
     cuser: false, operator: false, sync: false, validator: false, daml: false,
     ruser: rphase !== "lure", proxy: rphase !== "lure" && rphase !== "relay", site: rphase === "pay" || rphase === "done",
     other: method === "otp", guard: method === "passkey",
@@ -394,7 +452,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
     const isRelay = RELAY.includes(id as RelayNode);
     const turn = isRelay ? rready === id : ready === id;
     // 두 컨트랙트 칸은 차례가 없다 — 위임이 생긴 뒤로는 언제든 눌러 표준 설명을 읽을 수 있다.
-    const free = CANTON.includes(id as CantonNode) || id === "guard" || (isRelay && rphase === "done") || ((id === "delegator" || id === "manager") && granted) || ((id === "pg" || id === "network" || id === "issuer") && phase === "done" && !!rail);
+    const free = CANTON.includes(id as CantonNode) || id === "guard" || (isRelay && rphase === "done") || ((id === "delegator" || id === "manager") && granted) || (["pg", "network", "issuer", "usbank", "corr", "krbank", "onramp", "chain", "offramp"].includes(id) && phase === "done" && !!rail);
     return {
       n: N[id], live: lit[id], ready: turn, flash: flash?.node === id ? flash : null,
       plan: CANTON.includes(id as CantonNode),
@@ -428,7 +486,9 @@ export default function StackRun({ lang }: { lang: Lang }) {
     user: ["EIP-7702"], wallet: ["EIP-7702", "ERC-7715", "EIP-712"], delegator: ["ERC-7710", "DelegationManager"], manager: ["DelegationManager", "ERC-7710"],
     agent: ["ERC-7710", "ERC-4337", "ERC-5792"], provider: ["x402", "pay.sh", "DSRV", "ERC-8004", "ERC-1271"],
     facilitator: ["Facilitator", "Kora", "x402", "DSRV"], ap2: ["AP2", "EIP-712"],
-    pg: ["Card rail", "SWIFT", "AP2"], network: ["Card rail", "SWIFT"], issuer: ["Card rail", "SWIFT"],
+    pg: ["Card rail", "AP2"], network: ["Card rail"], issuer: ["Card rail", "SWIFT"],
+    krbank: ["SWIFT", "Card rail", "Ramp"], corr: ["SWIFT", "Card rail"], usbank: ["SWIFT", "Ramp"],
+    onramp: ["Ramp"], chain: ["Ramp", "x402"], offramp: ["Ramp"],
     cuser: ["Validator", "Guardrail"], operator: ["Validator", "Synchronizer", "Guardrail"],
     sync: ["Synchronizer"], validator: ["Validator", "Daml"], daml: ["Daml", "Guardrail"],
     ruser: ["AiTM", "WebAuthn"], proxy: ["AiTM", "Session"], site: ["CSP", "SRI"], other: ["3DS", "AiTM"],
@@ -509,12 +569,12 @@ export default function StackRun({ lang }: { lang: Lang }) {
               </div>
             </>)}
             {cur && popup === cur.node && (<>
-              <div className="stack-bubble-h">{popup === "provider" ? t("서비스 제공자", "Service provider") : popup === "pg" ? P : popup === "network" ? M : I} · {t(`${railName} 레일`, `${railName} rail`)} {cstep + 1}/{CSTEPS.length}</div>
+              <div className="stack-bubble-h">{nodeName(popup)} · {t(`${railName} 레일`, `${railName} rail`)} {cstep + 1}/{CSTEPS.length}</div>
               <p>{cur.say}</p>
               <div className="stack-bubble-actions"><button onClick={cardRun}>{cur.btn}</button></div>
             </>)}
-            {(popup === "pg" || popup === "network" || popup === "issuer") && !cur && (<>
-              <div className="stack-bubble-h">{popup === "pg" ? P : popup === "network" ? M : I}</div>
+            {["pg", "network", "issuer", "usbank", "corr", "krbank", "onramp", "chain", "offramp"].includes(popup) && !cur && (<>
+              <div className="stack-bubble-h">{nodeName(popup)}</div>
               <p>{status[popup]}</p>
             </>)}
             {popup === "provider" && !cur && (<>
@@ -532,13 +592,13 @@ export default function StackRun({ lang }: { lang: Lang }) {
             {popup === "ap2" && (<>
               <div className="stack-bubble-h">{t("AP2 — mandate 층", "AP2 — mandate layer")}</div>
               <p>{phase === "ap2"
-                ? t("돈을 옮기는 칸이 아니다. 이번 구매에서 Intent = ② 위임, Cart = ⑤ 402, Payment = ⑥ 서명. 레일은 x402 였다. 다른 레일이었다면? 오른쪽 줄에서 따라가 본다.", "Not a box that moves money. In this purchase: Intent = ② the delegation, Cart = ⑤ the 402, Payment = ⑥ the signature. The rail was x402. What if it were another rail? Follow it down the right-hand column.")
+                ? t("돈을 옮기는 칸이 아니다. 이번 구매에서 Intent = ② 위임, Cart = ⑤ 402, Payment = ⑥ 서명. 레일은 x402 였다. 다른 레일이었다면? 판 오른쪽과 아래 줄에서 따라가 본다.", "Not a box that moves money. In this purchase: Intent = ② the delegation, Cart = ⑤ the 402, Payment = ⑥ the signature. The rail was x402. What if it were another rail? Follow it on the right-hand column and the bottom row.")
                 : status.ap2}</p>
               {phase === "ap2" && <div className="stack-bubble-actions">
                 <button onClick={ap2Record}>{t("mandate 짚기", "Check mandates")}</button>
                 <button className="ghost" onClick={() => ap2Alt("stripe")}>{t("Stripe 였다면", "If Stripe")}</button>
-                <button className="ghost" onClick={() => ap2Alt("toss")}>{t("토스였다면", "If Toss")}</button>
                 <button className="ghost" onClick={() => ap2Alt("swift")}>{t("SWIFT 였다면", "If SWIFT")}</button>
+                <button className="ghost" onClick={() => ap2Alt("stable")}>{t("x402 를 은행까지", "x402 to the banks")}</button>
               </div>}
             </>)}
             {popup === "cuser" && (<>
@@ -647,7 +707,7 @@ export default function StackRun({ lang }: { lang: Lang }) {
         {/* ── HUD: 위임 한도가 이 게임의 체력 바다 ───────────────── */}
         <div className="stack-hud">
           <div><div className="stack-hud-k">{t("위임 한도", "Mandate")}</div><div className="stack-hud-v">{spent.toFixed(2)} / {CAP.toFixed(2)} jUSD</div><div className="stack-bar" aria-hidden><span style={{ width: `${(spent / CAP) * 100}%` }} /></div></div>
-          <div><div className="stack-hud-k">{t("차례", "Turn")}</div><div className="stack-hud-v">{phase === "done" ? t("완료", "done") : { user: t("사용자", "User"), wallet: "MetaMask ①", grant: "MetaMask ②", agent: t("에이전트", "Agent"), provider: t("서비스 제공자", "Provider"), facilitator: t("퍼실리테이터", "Facilitator"), ap2: "AP2", card: cur ? (cur.node === "provider" ? t("서비스 제공자", "Provider") : cur.node === "pg" ? P : cur.node === "network" ? M : I) : "" }[phase]}</div></div>
+          <div><div className="stack-hud-k">{t("차례", "Turn")}</div><div className="stack-hud-v">{phase === "done" ? t("완료", "done") : { user: t("사용자", "User"), wallet: "MetaMask ①", grant: "MetaMask ②", agent: t("에이전트", "Agent"), provider: t("서비스 제공자", "Provider"), facilitator: t("퍼실리테이터", "Facilitator"), ap2: "AP2", card: cur ? nodeName(cur.node) : "" }[phase]}</div></div>
           <div><div className="stack-hud-k">{t("거절된 시도", "Refused")}</div><div className="stack-hud-v" style={refused ? { color: "var(--red)" } : undefined}>{refused}</div></div>
           <div><div className="stack-hud-k">{t("에이전트의 ETH", "Agent's ETH")}</div><div className="stack-hud-v">0 <span className="sub" style={{ fontSize: 12, fontWeight: 400 }}>({t("가스는 paymaster", "paymaster pays gas")})</span></div></div>
         </div>
@@ -655,11 +715,14 @@ export default function StackRun({ lang }: { lang: Lang }) {
         {/* ── 판 ───────────────────────────────────────────────── */}
         {/* 폰에서 줄이면 글자가 5px 이 되므로, 읽을 수 있는 크기를 지키고 가로 스크롤을 준다. */}
         <div style={{ overflowX: "auto", marginTop: 14 }}>
-          <svg viewBox="0 14 1070 606" style={svgStyle} role="img"
+          <svg viewBox="0 14 1070 910" style={svgStyle} role="img"
             aria-label={t("사용자, MetaMask, Delegator 컨트랙트, DelegationManager, 에이전트, 서비스 제공자, 퍼실리테이터, AP2, 그리고 x402 대신 쓰는 카드 · SWIFT 레일 사이의 흐름", "Flow between the user, MetaMask, the delegator contract, the DelegationManager, the agent, the service provider, the facilitator, AP2, and the card and SWIFT rails used instead of x402")}>
             {/* 말풍선 연결선은 칸 아래에 깔리게 먼저 그린다 — 끝이 칸에 가려져 모서리 계산이 필요 없다. */}
             {leader}
             {/* ①과 ②는 따로 켜진다: ① 주인의 EOA 가 7702 권한서명으로 계정을 전환, ② 사이트의 7715 요청에 위임을 서명. */}
+            {/* 사용자 ↔ 서비스 제공자 (jay, 2026-11-13: "User and Service Provider should also be connected"). 실제 손님은 사용자다 —
+                x402 에서는 에이전트를 통해 사고, 카드 레일에서는 카드 주인, SWIFT 에서는 송금하는 쪽. 먼저 그려 칩이 위에 덮이게 한다. */}
+            <Wire a={N.user} b={N.provider} live={phase === "facilitator" || settled} label={rail === "stripe" ? t("카드 주인", "cardholder") : rail === "swift" ? t("송금인", "remitter") : t("고객", "customer")} at={0.3} />
             <Wire a={N.user} b={N.wallet} live={upgraded} label="① EIP-7702" />
             <Wire a={N.wallet} b={N.delegator} live={granted} label="② ERC-7715" />
             {/* 에이전트 → DelegationManager(redeemDelegations) → Delegator(executeFromExecutor). 에이전트와 Delegator 사이에 직접 선은 없다. */}
@@ -668,10 +731,19 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Wire a={N.agent} b={N.provider} live={phase === "facilitator" || settled} label="x402" />
             <Wire a={N.provider} b={N.facilitator} live={settled} label="verify · settle" both at={0.62} />
             <Wire a={N.agent} b={N.ap2} live={phase === "card" || phase === "done"} label="mandate" both at={0.66} />
-            {/* 다른 레일 — 고르기 전에는 점선으로 흐리게. 위에서 아래로 판매자 쪽 → 망 → 내는 쪽. */}
-            <Wire a={N.provider} b={N.pg} live={lit.pg} label="" plan={!rail} />
-            <Wire a={N.pg} b={N.network} live={lit.network} label="" plan={!rail} />
-            <Wire a={N.network} b={N.issuer} live={lit.issuer} label="" plan={!rail} />
+            {/* 카드망(오른쪽 세로줄) — Stripe 레일에서만 켜진다. 위에서 아래로 판매자 쪽 → 망 → 한국 카드사. */}
+            <Wire a={N.provider} b={N.pg} live={lit.pg} label="" plan={rail !== "stripe"} />
+            <Wire a={N.pg} b={N.network} live={lit.network} label="" plan={rail !== "stripe"} />
+            <Wire a={N.network} b={N.issuer} live={lit.issuer} label="" plan={rail !== "stripe"} />
+            {/* 국경을 넘는 은행 줄(맨 아래) — 한국 카드사가 바로 위에서 이어진다. */}
+            <Wire a={N.issuer} b={N.krbank} live={rail === "stripe" && lit.krbank} label={t("달러 정산", "USD settlement")} plan={rail !== "stripe"} />
+            <Wire a={N.krbank} b={N.corr} live={lit.corr} label={t("SWIFT · 노스트로", "SWIFT · nostro")} plan={!rail} />
+            <Wire a={N.corr} b={N.usbank} live={rail === "swift" && lit.usbank} label="Fedwire · CHIPS" plan={rail !== "swift"} />
+            {/* 스테이블코인 줄 — 은행 줄과 나란히. 양 끝은 은행(국내 이체), 국경은 가운데 체인에서 넘는다. */}
+            <Wire a={N.krbank} b={N.onramp} live={lit.onramp} label={t("원화", "KRW")} plan={rail !== "stable"} />
+            <Wire a={N.onramp} b={N.chain} live={lit.chain} label={t("USDC 출금", "USDC out")} plan={rail !== "stable"} />
+            <Wire a={N.chain} b={N.offramp} live={lit.offramp} label={t("USDC 상환", "USDC redeem")} plan={rail !== "stable"} />
+            <Wire a={N.offramp} b={N.usbank} live={rail === "stable" && phase === "done"} label="ACH · Fedwire" plan={rail !== "stable"} />
 
             <Box {...boxProps("user")} w={150} title={t("사용자", "User")} sub={status.user} />
             <Box {...boxProps("wallet")} w={180} title="MetaMask" sub={status.wallet} />
@@ -681,10 +753,18 @@ export default function StackRun({ lang }: { lang: Lang }) {
             <Box {...boxProps("provider")} w={180} title={t("서비스 제공자", "Service provider")} sub={status.provider} />
             <Box {...boxProps("ap2")} w={210} title={t("AP2 · mandate 층", "AP2 · mandate layer")} sub={status.ap2} />
             <Box {...boxProps("facilitator")} w={200} title={t("퍼실리테이터", "Facilitator")} sub={status.facilitator} />
-            <Box {...boxProps("pg")} w={170} title={P} sub={status.pg} plan={!rail} />
-            <Box {...boxProps("network")} w={170} title={M} sub={status.network} plan={!rail} />
-            <Box {...boxProps("issuer")} w={170} title={I} sub={status.issuer} plan={!rail} />
-            <Chip x={N.pg.x} y={N.pg.y - 66} text={rail ? t(`${railName} 레일 (가정)`, `${railName} rail (suppose)`) : t("다른 레일 — x402 대신", "another rail — instead of x402")} live={!!rail} />
+            <Box {...boxProps("pg")} w={170} title={P} sub={status.pg} plan={rail !== "stripe"} />
+            <Box {...boxProps("network")} w={170} title={M} sub={status.network} plan={rail !== "stripe"} />
+            <Box {...boxProps("issuer")} w={170} title={I} sub={status.issuer} plan={rail !== "stripe"} />
+            <Chip x={N.pg.x} y={N.pg.y - 66} text={t("카드 레일 — Stripe · Mastercard", "card rail — Stripe · Mastercard")} live={rail === "stripe"} />
+            <Box {...boxProps("krbank")} w={180} title={KB} sub={status.krbank} plan={!rail} />
+            <Box {...boxProps("corr")} w={180} title={CB} sub={status.corr} plan={!rail} />
+            <Box {...boxProps("usbank")} w={180} title={UB} sub={status.usbank} plan={!rail} />
+            <Chip x={N.corr.x} y={N.corr.y - 66} text={t("국경을 넘는 은행 줄 — 한국 → 미국 (USD)", "cross-border bank rail — Korea → US (USD)")} live={rail === "swift" || rail === "stripe"} />
+            <Box {...boxProps("onramp")} w={180} title={nodeName("onramp")} sub={status.onramp} plan={rail !== "stable"} />
+            <Box {...boxProps("chain")} w={180} title={nodeName("chain")} sub={status.chain} plan={rail !== "stable"} />
+            <Box {...boxProps("offramp")} w={180} title={nodeName("offramp")} sub={status.offramp} plan={rail !== "stable"} />
+            <Chip x={N.chain.x} y={N.chain.y + 34} text={t("브리지 — 체인이 다르면 CCTP burn → mint", "bridge — another chain? CCTP burn → mint")} live={rail === "stable" && (cstep >= 3 || phase === "done")} />
 
             {/* ERC-4337 은 간선이 아니라 에이전트가 트랜잭션을 내보내는 방식이라, 노드에 붙인 칩으로 둔다. */}
             <Chip x={N.agent.x} y={N.agent.y + 44} text="ERC-4337 · UserOp · paymaster" live={spent > 0} />
