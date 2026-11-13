@@ -1517,6 +1517,12 @@ a.ghost:hover {
 .stack-402 { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--inset); border: 1px solid var(--border); font-size: 11px; overflow-x: auto; }
 .stack-bubble-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .stack-bubble-actions button { font-size: 12.5px; padding: 6px 10px; }
+/* 말풍선 속 용어 링크 · 선과 칸의 ⓘ (2026-11-13) */
+.stack-term { all: unset; color: var(--accent); text-decoration: underline dotted; text-underline-offset: 2px; cursor: pointer; font: inherit; }
+.stack-term:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.stack-wire-hit { cursor: pointer; pointer-events: stroke; }
+.stack-info { cursor: pointer; }
+.stack-info:hover circle { stroke: var(--accent); }
 
 /* /live/stack 는 폭 상한이 없다 (jay, 2026-11-02: "this page doesn't have fixed width") — 판이 main 을 다 쓴다. */
 main.stack-main { max-width: none; }
